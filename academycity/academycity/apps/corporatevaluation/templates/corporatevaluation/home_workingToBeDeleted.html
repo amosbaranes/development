@@ -1,0 +1,106 @@
+{% extends "academycity/base.html" %}
+{% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
+{% load core_tags %}
+
+{% block content %}
+
+<style>
+
+h5 {
+	font-family: sans-serif;
+	font-size: 34px;
+}
+
+nav > .nav.nav-tabs{
+
+  border: none;
+    color:#fff;
+    background:#272e38;
+    border-radius:0;
+
+}
+nav > div a.nav-item.nav-link,
+nav > div a.nav-item.nav-link.active
+{
+  border: none;
+    padding: 18px 25px;
+    color:#fff;
+    background:#272e38;
+    border-radius:0;
+}
+
+nav > div a.nav-item.nav-link.active:after
+ {
+  content: "";
+  position: relative;
+  bottom: -60px;
+  left: -10%;
+  border: 15px solid transparent;
+  border-top-color: #e74c3c ;
+}
+.tab-content{
+  background: #fdfdfd;
+    line-height: 25px;
+    border: 1px solid #ddd;
+    border-top:5px solid #e74c3c;
+    border-bottom:5px solid #e74c3c;
+    padding:30px 25px;
+}
+
+nav > div a.nav-item.nav-link:hover,
+nav > div a.nav-item.nav-link:focus
+{
+  border: none;
+    background: #e74c3c;
+    color:#fff;
+    border-radius:0;
+    transition:background 0.20s linear;
+}
+</style>
+
+<div class="container">
+    <table>
+
+        <tr>
+            <td>Year:</td>
+            <td>
+                <select name="valuation_year" id="valuation_year" onChange="valuation_year_fun(event)">
+                    <option value='0'>--------------------</option>
+                </select>
+            </td>
+        </tr>
+    </table>
+</div>
+
+<script>
+
+function valuation_year_fun(event)
+{
+ e = event.target
+ alert(e.outerHTML)
+ v = e.options[e.selectedIndex].value
+ alert(v)
+}
+
+function create_valuation_year()
+{
+alert(126)
+    var output = document.getElementById("valuation_year")
+    this_year = new Date().getFullYear();
+    this_year -= 1
+alert(127)
+    var option = document.createElement("option");
+    for(var i = this_year; i > 2016 ; i--)
+    {
+        var option = document.createElement("option");
+        option.text = i;
+        option.value = i;
+        output.add(option);
+    }
+}
+
+
+create_valuation_year()
+
+</script>
+{% endblock %}

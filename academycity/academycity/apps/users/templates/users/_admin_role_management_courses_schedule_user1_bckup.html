@@ -1,0 +1,55 @@
+{% extends "courses/course_schedule/formset_base.html" %}
+{% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
+
+
+{% block content %}
+<h4 style="color:blue"><u>Scheduled courses and users for course: {{ course.name }}</u></h4>
+{% for course_schedule in course.course_schedules.all|dictsort:"start_date" %}
+<h5 style="margin-left:20px;color:green">Scheduled course: <u>{{ course_schedule.name }}</u><br/>
+      From: {{ course_schedule.start_date }}   To: {{ course_schedule.end_date }}</h5>
+
+
+<table class="w3-table-all w3-hoverable" style="width:80%; margin-left:5px;">
+    <thead>
+      <tr class="w3-light-blue">
+        <th style="border: 1px solid black;width:10%">Student Name</th>
+        <th style="border: 1px solid black;width:10%">Status-Active?</th>
+      </tr>
+    </thead>
+      {% for course_course_schedule in course_schedule.course_course_schedules.all %}
+        <tr><td style="padding-right:50px">
+                <span>
+                    {{ course_course_schedule.slug }}:
+                    {{ course_course_schedule.user.get_full_name }}
+                </span>
+                <a href="#" data-slug="{{course_course_schedule.slug}}" type="class_schedule_delete">
+                    <i class="fa fa-trash-alt"></i>
+                </a>
+            </td>
+            <td>
+                <span id="{{ course_course_schedule.slug }}">
+                  {% if course_course_schedule.active %}
+                  Active
+                  {% else %}
+                  Not Active
+                  {% endif %}
+                </span> &nbsp;
+                <a href="#" data-slug="{{course_course_schedule.slug}}" type="class_schedule"
+                  data-action="{% if course_course_schedule.active %}de{% endif %}activate" >
+                  {% if course_course_schedule.active %}
+                  Deactivate
+                  {% else %}
+                  Activate
+                  {% endif %}
+                </a>
+            </td>
+        </tr>
+      {% endfor %}
+  </table>
+  <hr/>
+{% endfor %}
+
+{% endblock %}
+
+
+

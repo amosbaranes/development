@@ -1,0 +1,94 @@
+{% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
+{% load cms_tags %}
+<style>
+
+.pill_ {
+  background-color: lightblue;
+  border: none;
+  color: black;
+  padding: 8px 30px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  margin: 20px 2px;
+  cursor: pointer;
+  border-radius: 16px;
+}
+
+
+.pill_send_button {
+  background-color: lightgray;
+  border: none;
+  color: black;
+  padding: 4px 30px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  margin-bottom: 10px;
+  cursor: pointer;
+  border-radius: 16px;
+}
+</style>
+        <div style="text-align:center">
+          <h2 class="pill_" style="font-size: 15px;">Contact</h2>
+          <h3><span style="color:blue"><b>Contact Us</span></b></h3>
+          <p style="padding: 15px 30px;">We are here to serve you better. So, contact us in any channel.</p>
+        </div>
+            <div class="row1">
+              <div class="column1">
+                <div class="card">
+                    <h3>
+                <i class='fa fa-map-marker' style='font-size:36px;color:blue'></i>
+                Our Address</h3>
+                <p>{{town.address1}}</p><p>{{town.address2}}</p>
+                </div>
+              </div>
+              <div class="column1">
+                <div class="card">
+                <i class='fa fa-envelope' style='font-size:36px;color:red'></i>
+
+                  <h3>Email Us</h3>
+                  <p><a href="mailto:{{ town.email }}">mailto:{{ town.email }}</a></p>
+                </div>
+              </div>
+
+              <div class="column1">
+                <div class="card">
+                <i class='fa fa-phone' style='font-size:36px;color:blue'></i>
+                  <h3>Call Us</h3>
+                  <p>{{ town.phone }}</p>
+                </div>
+              </div>
+            </div>
+
+
+        <div class="row" data-aos="fade-up" data-aos-delay="100" onclick="send_contact_us(event)">
+
+          <div class="col-lg-6 " style="padding:20px">
+            {% render_placeholder town.town_contact_us.description %}
+          </div>
+
+          <div class="col-lg-6">
+
+              <div class="text-center" style="padding-bottom:20px"><img id="town_logo" src="{{ town.logo.url }}" width="70px" class="rounded-circle center"></div>
+              <div class="row">
+                <div class="col form-group">
+                  <input type="text" name="name" class="form-control" id="contact_us_name" placeholder="Your Name" required>
+                </div>
+                <div class="col form-group">
+                  <input type="email" class="form-control" name="email" id="contact_us_email" placeholder="Your Email" required>
+                </div>
+              </div>
+              <div class="form-group">
+                <input type="text" class="form-control" name="subject" id="contact_us_subject" placeholder="Subject" required>
+              </div>
+              <div class="form-group">
+                <textarea class="form-control" name="message" rows="5" id="contact_us_message" placeholder="Message" required></textarea>
+              </div>
+              <div class="my-3">
+                <div id="sent-message" hidden="hidden">Your message has been sent. Thank you!</div>
+              </div>
+              <div class="text-center"><button type="submit" slug="{{ town.slug }}" class="pill_send_button">Send Message</button></div>
+          </div>
+        </div>
+

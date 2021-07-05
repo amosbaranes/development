@@ -1,0 +1,75 @@
+{% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    {% block title %}
+    <title>Title</title>
+    {% endblock%}
+
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+  <meta content="" name="description">
+  <meta content="" name="keywords">
+
+  {% block meta %}
+  {% endblock %}
+
+ {% block links %}
+ {% endblock %}
+</head>
+
+
+<body>
+  {% block body_content0 %}
+
+      {% block body_content %}
+      {% endblock %}
+
+  {% endblock %}
+
+  {% block js %}
+  {% endblock %}
+
+
+  <p id="demo"></p>
+    <script src="{% static 'vendor/jquery/jquery.min.js' %}"></script>
+    <script src="{% static 'js/npm/cookie/js.cookie.min.js' %}"></script>
+  <script>
+
+  var csrftoken = Cookies.get('csrftoken');
+  function csrfSafeMethod(method) {
+    // these HTTP methods do not require CSRF protection
+    return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+  }
+  $.ajaxSetup({
+    beforeSend: function(xhr, settings) {
+      if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+        xhr.setRequestHeader("X-CSRFToken", csrftoken);
+      }
+    }
+  });
+
+  $(document).ready(function(){
+    post_ajax_create_action = function (verb_="", app_="", model_, obj_slug_=null, pkey_=null) {
+      $.post(link_create_action,
+        {
+          verb: verb_,
+          app: app_,
+          model: model_,
+          obj_slug: obj_slug_,
+          pkey: pkey_
+        },
+        function(data){
+            alert(data["status"])
+        }
+      );
+    }
+
+    {% block domready %}
+    {% endblock %}
+  });
+</script>
+
+</body>
+</html>

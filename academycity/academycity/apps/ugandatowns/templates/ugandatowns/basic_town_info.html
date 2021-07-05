@@ -1,0 +1,119 @@
+<div hidden="hidden" id="town_info_"
+      town_logo = "{{ town.logo.url }}"
+      town_name="{{town.town_name}}"
+      town_mayor="{{town.mayor}}"
+      town_clerk="{{town.town_clerk}}"
+
+      town_name="{{town.town_name}}"
+      address1="{{town.address1}}"
+      address2="{{town.address2}}"
+      phone="{{town.phone}}"
+      email="{{town.email}}"
+
+      media_ticker="{{town.media_ticker}}"
+      bottom_info_color="{{town.bottom_info_color}}"
+>
+  <div id="projects_menus_" class="dropdown">
+    <button class="dropbtn">
+        <i class="fa fa-tasks" aria-hidden="true"></i> Projects
+    </button>
+    <div class="dropdown-content">
+       {% for project_ in projects %}
+            <a id="project_{{project_.slug}}" menu="projects" item_slug="{{project_.slug}}" href=
+                {% if request.user.is_staff %}"{{ project_.get_absolute_url }}"{% else %}"#"{% endif %}
+                style="font-size: 20px;">
+                {{project_.project_name}}
+            </a>
+       {% endfor %}
+    </div>
+  </div>
+
+  <div id="directors_menus_" class="dropdown">
+    <button class="dropbtn">
+      <i class="fa fa-user-plus"></i> Directors
+    </button>
+    <div class="dropdown-content">
+       {% for director_ in directors %}
+            <a id="director_{{director_.slug}}" menu="directors" item_slug="{{director_.slug}}" href=
+                {% if request.user.is_staff %}"{{ director_.get_absolute_url }}"{% else %}"#"{% endif %}
+                style="font-size: 20px;">
+                {{director_.position}}
+            </a>
+       {% endfor %}
+    </div>
+  </div>
+
+  <div id="services_menus_" class="dropdown">
+    <button class="dropbtn">
+      <i class="fa fa-wrench"></i> Services
+    </button>
+    <div class="dropdown-content">
+       {% for service_ in services %}
+            <a id="service_{{director_.slug}}" menu="services" item_slug="{{service_.slug}}" href=
+                {% if request.user.is_staff %}"{{ service_.get_absolute_url }}"{% else %}"#"{% endif %}
+                style="font-size: 20px;">
+                {{service_.service_name}}
+            </a>
+       {% endfor %}
+    </div>
+  </div>
+
+  <div id="tenders_menus_" class="dropdown">
+    <button class="dropbtn">
+      <i class="fa fa-gavel"></i> Tenders
+    </button>
+    <div class="dropdown-content">
+       {% for tender_ in tenders %}
+            <a id="tender_{{tender_.slug}}" menu="tenders" item_slug="{{tender_.slug}}" href=
+                {% if request.user.is_staff %}"{{ tender_.get_absolute_url }}"{% else %}"#"{% endif %}
+                style="font-size: 20px;">
+                {{tender_.tender_name}}
+            </a>
+       {% endfor %}
+    </div>
+  </div>
+
+  <div id="tourism_menus_" class="dropdown">
+    <button class="dropbtn">
+      <i class="fa fa-tripadvisor"></i> Tourism
+    </button>
+    <div class="dropdown-content">
+       {% for tourism_ in tourism %}
+            <a id="tourism_{{tourism_.slug}}" menu="tourism" item_slug="{{tourism_.slug}}" href=
+                {% if request.user.is_staff %}"{{ tourism_.get_absolute_url }}"{% else %}"#"{% endif %}
+                style="font-size: 20px;">
+                {{tourism_.tourism_name}}
+            </a>
+       {% endfor %}
+    </div>
+  </div>
+
+  <div id="careers_menus_" class="dropdown">
+    <button class="dropbtn">
+      <i class="fa fa-briefcase"></i> Careers
+    </button>
+    <div class="dropdown-content">
+       {% for career_ in careers %}
+            <a id="career_{{career_.slug}}" menu="careers" item_slug="{{career_.slug}}" href=
+                {% if request.user.is_staff %}"{{ career_.get_absolute_url }}"{% else %}"#"{% endif %}
+                style="font-size: 20px;">
+                {{career_.career_name}}
+            </a>
+       {% endfor %}
+    </div>
+  </div>
+
+
+  <marquee id="newannouncement_menus_" behavior="scroll" direction="up" scrollamount="3"
+           onmouseover="this.stop()" onmouseout="this.start()">
+           {% for newannouncement_ in newannouncements %}
+                <a id="newannouncement_{{newannouncement_.slug}}" menu="newannouncements"
+                   item_slug="{{newannouncement_.slug}}" href=
+                    {% if request.user.is_staff %}"{{ newannouncement_.get_absolute_url }}"{% else %}"#"{% endif %}
+                    style="font-size: 20px;">
+                    {{newannouncement_.newannouncement_name}}
+                </a><br/>
+           {% endfor %}
+  </marquee>
+
+</div>

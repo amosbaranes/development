@@ -1,0 +1,129 @@
+
+<!-- {% block content %} -->
+
+<style>
+    td.num {padding-left: 7px;}
+</style>
+<div class="container" onchange="onchange_course_schedule(event)">
+    <div>
+        <br/>
+        <h4>Course Schedule: </h4>
+        <br/>
+        <input id="{{course_schedule.id}}" app="courses" model="CourseSchedule"
+                                pkey="{{ course_schedule.id }}" field="name"
+                                value="{{course_schedule.name}}" size="30" />
+        <br/>
+        <br/>
+        <table>
+        <thead><th>Field</th><th>Value</th></thead>
+        <tbody>
+        <tr><td>Instructors</td>
+            <td class="num">
+                <select name="instructors" id="instructors" multiple size="5" type="multiple_select"
+                        app="courses" model="CourseSchedule" pkey="{{ course_schedule.id }}" field="instructors">
+                <option value='0'>--------------------</option>
+                    {% for ins in course_schedule.course.instructors.all %}
+                        {% if ins in course_schedule.instructors.all %}
+                            <option value='{{ ins.id }}' selected>{{ ins }}</option>
+                        {% else %}
+                            <option value='{{ ins.id }}' >{{ ins }}</option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
+            </td></tr>
+
+        <tr><td>Assignment Method</td>
+            <td class="num">
+                <select name="assignment_method" id="assignment_method"
+                        app="courses" model="CourseSchedule" pkey="{{ course_schedule.id }}" field="assignment_method">
+                <option value='0'>--------------------</option>
+                    {% for i in course_schedule.ASSIGNMENT_METHOD %}
+                        {% if i.0 == course_schedule.assignment_method %}
+                            <option value='{{ i.0 }}' selected>{{ i.1 }}</option>
+                        {% else %}
+                            <option value='{{ i.0 }}' >{{ i.1 }}</option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
+            </td></tr>
+        <tr><td>Min Students Per Team</td>
+            <td class="num"><input id="min_students_per_team"
+                                   app="courses" model="CourseSchedule"
+                                   pkey="{{ course_schedule.id }}" field="min_students_per_team"
+                                   value="{{course_schedule.min_students_per_team}}" size="5" />
+            </td></tr>
+        <tr><td>Max Students Per Team</td>
+            <td class="num"><input id="max_students_per_team"
+                                   app="courses" model="CourseSchedule"
+                                   pkey="{{ course_schedule.id }}" field="max_students_per_team"
+                                   value="{{course_schedule.max_students_per_team}}" size="5" />
+            </td></tr>
+        <tr><td>Max number of teams</td>
+            <td class="num"><input id="max_number_of_teams"
+                                   app="courses" model="CourseSchedule"
+                                   pkey="{{ course_schedule.id }}" field="max_number_of_teams"
+                                   value="{{course_schedule.max_number_of_teams}}" size="5" />
+            </td></tr>
+        <tr><td>Min number of teams</td>
+            <td class="num"><input id="min_number_of_teams"
+                                   app="courses" model="CourseSchedule"
+                                   pkey="{{ course_schedule.id }}" field="min_number_of_teams"
+                                   value="{{course_schedule.min_number_of_teams}}" size="5" />
+            </td></tr>
+        <tr><td>Price</td>
+            <td class="num">$<input id="price"
+                                   app="courses" model="CourseSchedule"
+                                   pkey="{{ course_schedule.id }}" field="price"
+                                   value="{{course_schedule.price}}" size="5" />
+            </td></tr>
+        <tr><td>Certificate number</td>
+            <td class="num"><input id="certificate_number"
+                                   app="courses" model="CourseSchedule"
+                                   pkey="{{ course_schedule.id }}" field="certificate_number"
+                                   value="{{course_schedule.certificate_number}}" size="5" />
+            </td></tr>
+        <tr><td>Start date</td>
+            <td class="num">
+                <input app="courses" model="CourseSchedule" pkey="{{ course_schedule.id }}" field="start_date"
+                        type="date" id="start_date" name="start_date"
+                       value='{{course_schedule.start_date|date:'Y-m-d'}}'
+                min="2020-01-01" max="2025-12-31">
+            </td></tr>
+        <tr><td>End date</td>
+            <td class="num">
+                <input app="courses" model="CourseSchedule" pkey="{{ course_schedule.id }}" field="end_date"
+                        type="date" id="end_date" name="end_date"
+                       value='{{course_schedule.end_date|date:'Y-m-d'}}'
+                min="2020-01-01" max="2025-12-31">
+            </td></tr>
+        <tr><td>Active</td>
+            <td class="num">
+              {% if course_schedule.active %}
+                <input app="courses" model="CourseSchedule" pkey="{{ course_schedule.id }}" field="active"
+                        type="checkbox" checked />
+              {% else %}
+                <input app="courses" model="CourseSchedule" pkey="{{ course_schedule.id }}" field="active"
+                        type="checkbox" />
+              {% endif %}
+        </td></tr>
+
+        </tbody>
+    </table>
+    </div>
+
+    <div>
+        <br/>
+        {% if target %}
+            {% if course_schedule.course.link_model == "game" %}
+                {% include "globsim/_game.html" with game=target %}
+            {% endif %}
+        {% else %}
+         no target
+        {% endif %}
+    </div>
+        <input type="button" value="Done (go back)" style="color:red"
+                  onclick="window.history.go(-1);"/></b>
+</div>
+
+<!--{% endblock %}-->
+

@@ -1,0 +1,11 @@
+{% extends "courses/courses_products_base.html" %}
+{% load static i18n %}
+
+{% block content_ %}
+  <h1>Your payment has not been processed</h1>
+  <p>There was a problem processing your payment.</p>
+  <a href="{% url 'courses:payment_process' %}"
+     class="button">{% trans "Try Payment again for Invoice: " %} {{order.id}}
+  </a>
+
+{% endblock %}

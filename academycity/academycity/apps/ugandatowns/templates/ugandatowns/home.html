@@ -1,0 +1,390 @@
+{% extends "ugandatowns_base.html" %}
+{% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
+{% load cms_tags %}
+{% load core_tags %}
+
+{% block title %}
+    <title>{{company_obj.country_name}}</title>
+{% endblock title %}
+
+{% block add_css %}
+    <link href="{% static 'css/ugandatowns.css' %}" rel="stylesheet">
+{% endblock add_css %}
+
+{% block content %}
+
+<style>
+    <style>
+#conferences {
+  font-family: Arial, Helvetica, sans-serif;
+  border-collapse: collapse;
+  width: 100%;
+}
+
+#conferences td, #conferences th {
+  border: 1px solid #ddd;
+  padding: 8px;
+}
+
+#conferences tr:nth-child(even){background-color: #f2f2f2;}
+
+#conferences tr:hover {background-color: #ddd;}
+
+#conferences th {
+  padding-top: 12px;
+  padding-bottom: 12px;
+  text-align: left;
+  background-color: darkblue;
+  color: white;
+}
+</style>
+
+<div id="myMenu" class="sidenav" style="border:1px dotted black;overflow: scroll;" onclick="show_town(event)">
+   <input type="text" id="mySearch" onkeyup="search(event)" placeholder="Search.." title="Type in a category">
+   {% for town_ in company_obj.towns.all %}
+    <a id="home_{{town_.slug}}" href=
+    {% if request.user.is_staff %}"{{ town_.get_absolute_url }}"{% else %}"#"{% endif %} slug="{{town_.slug}}"
+    style="font-size: 20px;">
+    {{town_.town_name}}
+    </a>
+   {% endfor %}
+</div>
+
+<div id="town_header" class="town_header">
+    {% placeholder "header" %}
+
+    {% if request.user|has_group:"tc_ug"%}
+        Town Clerk: {{ request.user.first_name }} {{ request.user.last_name }}
+        <br/>
+        <a id="" href="#" class="badge badge-pill badge-info" onclick="create_new_conference(event)">
+            Create new conference:
+        </a>
+        <input id="conference_id" type="text" placeholder="Enter conference name" />
+        <div id="conferencing">
+              {% include 'ugandatowns/_conferences.html' %}
+        </div>
+        <br/>
+    {% endif %}
+</div>
+
+<div id="town_title" class="town_title">
+      <div class="row">
+        <div id="town_info" class="column_title" style="background-color:#ccc;">
+            <div class="row">
+                <div style="float: left;width: 15%; padding: 10px;">
+                   <img id="town_logo" src="{{ town.logo.url }}" width="70px" class="rounded-circle">
+                </div>
+                <div style="float: left;width: 85%; padding: 10px;font-size:20px;">
+                 {{town.town_name}} Municipal Council<br/>
+                    Mayor: {{town.mayor}}<br/>
+                    Town Clerk: {{town.town_clerk}}
+                </div>
+            </div>
+        </div>
+      <div class="column_title" style="border-left: 5px solid lightgray;background-color:#ccc;">
+            <div id="weather" style="width:150px">
+                <span id="temp" class="temp_" style="padding: 10px;"></span>
+                <span class="temp_description" >
+                    <i id="description" class='' style='font-size:36px;color:red'></i>
+                </span>
+            </div>
+          <h4 style="margin-top:10px">{% now "jS F Y H:i" %}</h4>
+      </div>
+      <div class="column_title" style="border-left: 5px solid lightgray;background-color:#ccc;" onclick="menu_onclick(event, slug='{{town.slug}}')">
+          <marquee id="newannouncement_menus" behavior="scroll" direction="up" scrollamount="3"
+                   onmouseover="this.stop()" onmouseout="this.start()" >
+                   {% for newannouncement_ in newannouncements %}
+                        <a id="newannouncement_{{newannouncement_.slug}}" menu="newannouncements"
+                           item_slug="{{newannouncement_.slug}}" href=
+                            {% if request.user.is_staff %}"{{ newannouncement_.get_absolute_url }}"{% else %}"#"{% endif %}
+                            style="font-size: 20px;">
+                            {{newannouncement_.newannouncement_name}}
+                        </a><br/>
+                   {% endfor %}
+          </marquee>
+      </div>
+    </div>
+</div>
+
+<div id="navbar" class="navbar" onclick="menu_onclick(event, slug='{{town.slug}}')" style="background-color:{{town.menus_info_color}};">
+
+  <a href="#" id="close_open_btn" menu="close_open_menu" to_do="close">&#9776;</a>
+  <a href="#" menu="home"><i menu="home" class="fa fa-home" style="font-size:30px;color:white"></i></a>
+
+  <div id="projects_menus" class="dropdown">
+    <button class="dropbtn">
+        <i class="fa fa-tasks" aria-hidden="true"></i> Projects
+    </button>
+    <div class="dropdown-content">
+       {% for project_ in projects %}
+            <a id="project_{{project_.slug}}" menu="projects" item_slug="{{project_.slug}}" href=
+                {% if request.user.is_staff %}"{{ project_.get_absolute_url }}"{% else %}"#"{% endif %}
+                style="font-size: 20px;">
+                {{project_.project_name}}
+            </a>
+       {% endfor %}
+    </div>
+  </div>
+  <div id="directors_menus" class="dropdown">
+    <button class="dropbtn">
+      <i class="fa fa-user-plus"></i> Directors
+    </button>
+    <div class="dropdown-content">
+       {% for director_ in directors %}
+            <a id="director_{{director_.slug}}" menu="directors" item_slug="{{director_.slug}}" href=
+                {% if request.user.is_staff %}"{{ director_.get_absolute_url }}"{% else %}"#"{% endif %}
+                style="font-size: 20px;">
+                {{director_.position}}
+            </a>
+       {% endfor %}
+    </div>
+  </div>
+  <div id="tenders_menus" class="dropdown">
+    <button class="dropbtn">
+      <i class="fa fa-gavel"></i> Tenders
+    </button>
+    <div class="dropdown-content">
+       {% for tender_ in tenders %}
+            <a id="tender_{{tender_.slug}}" menu="tenders" item_slug="{{tender_.slug}}" href=
+                {% if request.user.is_staff %}"{{ tender_.get_absolute_url }}"{% else %}"#"{% endif %}
+                style="font-size: 20px;">
+                {{tender_.tender_name}}
+            </a>
+       {% endfor %}
+    </div>
+  </div>
+  <div id="services_menus" class="dropdown">
+    <button class="dropbtn">
+      <i class="fa fa-wrench"></i> Services
+    </button>
+    <div class="dropdown-content">
+       {% for service_ in services %}
+            <a id="service_{{director_.slug}}" menu="services" item_slug="{{service_.slug}}" href=
+                {% if request.user.is_staff %}"{{ service_.get_absolute_url }}"{% else %}"#"{% endif %}
+                style="font-size: 20px;">
+                {{service_.service_name}}
+            </a>
+       {% endfor %}
+    </div>
+  </div>
+
+  <div id="tourism_menus" class="dropdown">
+    <button class="dropbtn">
+      <i class="fa fa-tripadvisor"></i> Tourism
+    </button>
+    <div class="dropdown-content">
+       {% for tourism_ in tourism %}
+            <a id="tourism_{{tourism_.slug}}" menu="tourism" item_slug="{{tourism_.slug}}" href=
+                {% if request.user.is_staff %}"{{ tourism_.get_absolute_url }}"{% else %}"#"{% endif %}
+                style="font-size: 20px;">
+                {{tourism_.tourism_name}}
+            </a>
+       {% endfor %}
+    </div>
+  </div>
+
+  <div id="careers_menus" class="dropdown">
+    <button class="dropbtn">
+      <i class="fa fa-briefcase"></i> Careers
+    </button>
+    <div class="dropdown-content">
+       {% for career_ in careers %}
+            <a id="career_{{career_.slug}}" menu="careers" item_slug="{{career_.slug}}" href=
+                {% if request.user.is_staff %}"{{ career_.get_absolute_url }}"{% else %}"#"{% endif %}
+                style="font-size: 20px;">
+                {{career_.career_name}}
+            </a>
+       {% endfor %}
+    </div>
+  </div>
+
+  <a href="#" menu="open_gov"><i class="fa fa-rss"></i> Open Gov</a>
+  <a href="#" menu="faqs"><i class="fa fa-question"></i> FAQs</a>
+
+
+  <a menu="contact_us" item_slug="{{town.slug}}" href=
+        {% if request.user.is_staff %}"{{ town.get_absolute_map_url }}"{% else %}"#"{% endif %} >
+        <i class="fa fa-address-book"></i> Contact Us
+  </a>
+
+
+</div>
+
+<div id="town_content" class="main">
+    {% if html %}
+        {% if html %}
+          {% include 'ugandatowns/contact_us.html' %}
+        {% endif %}
+    {% elif item %}
+      {% include 'ugandatowns/basic_town_item.html' %}
+    {% else %}
+      {% include 'ugandatowns/basic_town.html' %}
+    {% endif %}
+</div>
+
+
+<div id="town_bottom" class="town_bottom" style="border-top: 5px solid #ccc;">
+   <div class="row" style="margin:1px">
+        <div class="column" id="town_contact_" style="background-color:#ccc;">
+          <h3 style="text-align: left;background-color: #ccc;padding: 0px 0px 0px 20px;">Contact</h3>
+          <div id="town_contact_address_" style="padding:0px 20px 20px 20px ;font-size: 15px; color:black;">
+               {{town.town_name}} Municipal Council<br/>
+               {{town.address1}} <br/>
+               {{town.address2}} <br/>
+               Tel: {{town.phone}} <br/>
+               email: {{town.email}}
+          </div>
+          <div id="town_contact_media_" style="padding: 0px 20px 20px 20px ;font-size:24px">
+                &nbsp;<a href="https://facebook.com/{{town.media_ticker}}" target="_blank"><em class="fa fa-facebook" aria-hidden="true"></em></a>
+                &nbsp;<a href="//twitter.com/{{town.media_ticker}}" target="_blank"><em class="fa fa-twitter" aria-hidden="true"></em></a>
+                &nbsp;<a href="//youtube.com/{{town.media_ticker}}" target="_blank"><em class="fa fa-youtube" aria-hidden="true"></em></a>
+                &nbsp;<a href="//instagram.com/{{town.media_ticker}}" target="_blank"><em class="fa fa-instagram" aria-hidden="true"></em></a>
+                &nbsp;<a href="//flickr.com/{{town.media_ticker}}" target="_blank"><em class="fa fa-flickr" aria-hidden="true"></em></a>
+          </div>
+        </div>
+        <div class="column" id="media_column" style="background-color:#ccc;color:{{town.bottom_info_color}}">
+          <h3 style="text-align: left;background-color: #ccc;padding: 0px 0px 0px 20px;">Other Links</h3>
+                <li><a href="https://ict.go.ug" style="color:black" target="_blanklank">Ministry of ICT &#038; National Guidance</a></li>
+                <li><a href="https://www.education.go.ug" style="color:black" target="_blanklank">Ministry of Education, Science, Technology &#038; Sports</a></li>
+
+        </div>
+        <div class="column" style="background-color:#ccc;">
+          <h3 style="text-align: left;background-color: #ccc;padding: 0px 0px 0px 20px;">Useful Links</h3>
+            <ul style="font-size: 15px;">
+                <li><a href="https://ict.go.ug" style="color:black" target="_blanklank">Ministry of ICT &#038; National Guidance</a></li>
+                <li><a href="https://www.education.go.ug" style="color:black" target="_blanklank">Ministry of Education, Science, Technology &#038; Sports</a></li>
+                <li><a href="https://www.education.go.ug" style="color:black" target="_blanklank">Ministry of Education, Science, Technology &#038; Sports</a></li>
+                <li><a href="https://www.finance.go.ug" style="color:black" target="_blanklank">Ministry of Finance, Planning &#038; Economic Development</a></li>
+                <li><a href="https://www.nita.go.ug" style="color:black" target="_blanklank">National Information Technology Authority</a></li>
+                <li><a href="https://www.molg.go.ug" style="color:black" target="_blanklank">Ministry of Local Government</a></li>
+                <li><a href="https://www.psc.go.ug" style="color:black" target="_blanklank">Ministry of Public Service</a></li>
+                <li><a href="https://health.go.ug" style="color:black" target="_blanklank">Ministry of Health</a></li>
+            </ul>
+        </div>
+   </div>
+</div>
+
+<footer>
+  {% static_placeholder "UgandaTownsFooter" %}
+</footer>
+
+<script>
+ var link_menu_town = '{% url "ugandatowns:menu_town" %}'
+ var link_post_contact_us = '{% url "ugandatowns:post_contact_us" %}'
+ var link_basic_town = '{% url "ugandatowns:basic_town" %}'
+
+</script>
+
+{% endblock content %}
+
+{% block base_js %}
+    <script src="{% static 'js/ugandatowns_v1.js' %}"></script>
+
+    <script src="{% static 'js/reconnecting-websocket.js' %}"></script>
+    <script src="{% static 'js/whiteboard_v1.js' %}"></script>
+    <script src="{% static 'js/openvidu/app.js' %}"></script>
+    <script src="{% static 'js/openvidu/openvidu-browser-2.16.0.js' %}"></script>
+	<link rel="shortcut icon" href="resources/images/favicon.ico" type="image/x-icon">
+{% endblock base_js %}
+
+
+{% block domready %}
+
+
+create_new_conference = function(event)
+{
+  elm = document.getElementById("conference_id")
+  var name_ = elm.value
+  $.post('{% url "ugandatowns:create_conference" %}',
+    {
+      name : name_
+    },
+    function(data){
+        document.getElementById("conferencing").innerHTML = data
+        elm.value = ''
+    });
+}
+
+remove_conference = function(event, conference_number)
+{
+  $.post('{% url "ugandatowns:remove_conference" %}',
+    {
+      conference_number : conference_number
+    },
+    function(data){
+        document.getElementById("conferencing").innerHTML = data
+    });
+}
+
+join_conference = function(event, conference_number, conference_number)
+{
+  var loc = window.location
+  var pathname_ = loc.pathname.substring(3, 10000)
+  var lung_ = loc.pathname.substring(0, 3)
+  var user_id = {{request.user.id}}
+
+  // alert(user_id)
+
+  var chat_room_id = conference_number
+  var chat_room_name = conference_number
+  var endpoint = "wss://" + loc.host + lung_ + "/ws/chat/"+chat_room_id+"/"
+
+  //alert(endpoint)
+
+    try{
+       var socket = new ReconnectingWebSocket(endpoint);
+       console.log("endpoint: ", endpoint)
+       console.log("is socket == null? if false socket is on: ", socket == null)
+       //console.log("socket 310", socket)
+    } catch (err) {console.log("socket 321", err.message)}
+
+    socket.onopen = function(e){
+         // ct.setOnSocketOpen()
+    }
+
+    socket.onerror = function(e){
+     console.log("error", 1)
+     console.log("error", e)
+     console.log("error", 1)
+     }
+
+    socket.onclose = function(e){
+     console.log("close", e)
+    }
+
+    // alert(2000)
+
+    socket.onmessage = function(e){
+     if(msg_.type == 'wm')
+     {
+     } else if (msg_.type == 'wc')
+     {
+     }
+    }
+
+    try{
+       console.log("Error video 1000000")
+       try{
+              if( vi) {
+                console.log("vi exist 10000001");
+                vi.remove_win() ;
+               }
+
+        } catch (err_vi)
+        {console.log("Error video 1000000_err_vi: ",err_vi.message)}
+
+       console.log("Error video 10000002")
+       var vi = new openvidu(my_name_="vi", win_name_=chat_room_id, win_title_="Videos - "+chat_room_name, socket=socket,
+                             chat_room_name=chat_room_name, is_instructor=false, use_id=user_id);
+
+       console.log("Error video 10000003", vi)
+
+       vi.set_acWinStatEventListeners(vi);
+    } catch (err)
+    {console.log("Error video 400: ",err.message)
+     alert(err.message)
+    }
+
+}
+
+{% endblock domready %}

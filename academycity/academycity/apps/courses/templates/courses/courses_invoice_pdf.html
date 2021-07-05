@@ -1,0 +1,53 @@
+<html>
+<body>
+  <h1>Academy City</h1>
+  <p>
+    Invoice no. {{ order.id }}</br>
+    <span class="secondary">
+      {{ order.created|date:"M d, Y" }}
+    </span>
+  </p>
+
+  <h4>Bill to:</h4>
+  <p style="margin-top: -15px;">
+    {{ order.user.get_full_name }}<br>
+    {{ order.user.email }}<br>
+    {{ order.user.academics.address }}<br>
+    {{ order.user.academics.zip }}, {{ order.user.academics.city }} {{ order.user.academics.country }}
+  </p>
+
+  <h3>Courses enrolled</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Course</th>
+        <th>Price</th>
+        <th>Quantity</th>
+        <th>Total Price</th>
+        <th>Discount</th>
+        <th>Grand Total</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in order.items.all %}
+        <tr class="row{% cycle "1" "2" %}">
+          <td>{{ item.product.name }}</td>
+          <td class="num">${{ item.price }}</td>
+          <td class="num">{{ item.quantity }}</td>
+          <td class="num">${{ item.total_price }}</td>
+          <td class="num">${{ item.discount }}</td>
+          <td class="num">${{ item.total_price_after_discount }}</td>
+        </tr>
+      {% endfor %}
+      <tr class="total">
+        <td colspan="5">Total</td>
+        <td class="num">${{ order.get_total_price_after_discount }}</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="{% if order.paid %}paid{% else %}pending{% endif %}">
+    {% if order.paid %}Paid{% else %}Pending payment{% endif %}
+  </span>
+</body>
+</html>

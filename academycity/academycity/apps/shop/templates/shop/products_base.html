@@ -1,0 +1,36 @@
+{% extends "academycity/base.html" %}
+{% load static %}
+
+{% block add_css %}
+  <link href="{% static "css/shop_base.css" %}" rel="stylesheet">
+  <link href="{% static "css/shop_pdf.css" %}" rel="stylesheet">
+{% endblock add_css %}
+
+
+{% block content %}
+<div id="subheader">
+   <div class="cart">
+  {% with total_items=cart|length %}
+      {% if cart|length > 0 %}
+        Your cart:
+        <a href="{% url 'cart:cart_detail' %}">
+          {{ total_items }} item{{ total_items|pluralize }},
+          ${{ cart.get_total_price }}
+        </a>
+      {% else %}
+        Your cart is empty.
+      {% endif %}
+    {% endwith %}
+  </div>
+</div>
+
+<div id="content">
+  {% block content_ %}
+  {% endblock %}
+</div>
+{% endblock %}
+
+
+{% block add_js %}
+  <script src="{% static 'vendor/fontawesome-free-5.11.2-web/a076d05399.js' %}"></script>
+{% endblock add_js %}

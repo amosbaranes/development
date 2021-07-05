@@ -1,0 +1,199 @@
+
+{% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
+
+{% block content %}
+<style>
+table {
+  font-family: arial, sans-serif;
+  border-collapse: collapse;
+}
+
+.th {
+  border: 2px solid black;
+  text-align: center;
+  padding: 8px;
+  width:70px;
+}
+
+td {
+  border: 2px solid black;
+  text-align: left;
+  padding: 2px;
+}
+
+input {
+  text-align: right;
+  width:70px;
+}
+
+thead {
+  background-color: lightpink;
+}
+
+tr:nth-child(even) {
+  background-color: lightblue;
+}
+
+</style>
+
+<div class="container">
+
+    <table>
+        <tr>
+            <td rowspan="2">
+                {% trans "Assets" %}: <input id="assets" type="text"
+                                             value="250000" oninput="inputFunction()"
+                                             style="width:70px"  />
+            </td>
+            <td style="padding-left:10px">
+                {% trans "Debt" %}: </td><td id="debt" align="right">
+            </td>
+        </tr>
+        <tr>
+            <td style="padding-left:10px; padding-right:10px">
+                {% trans "Equity" %}: </td><td id="equity" align="right">
+            </td>
+        </tr>
+    </table>
+<br/>
+
+    <table>
+    <caption>Parameters effecting the solution</caption>
+        <tr>
+            <td>
+                ROIC: <input id="roic" type="text"
+                             value="14" oninput="inputFunction()"
+                             style="width:50px"  />%
+            </td>
+            <td style="padding-left:10px">
+                Rd: <input id="rd" type="text"
+                             value="6" oninput="inputFunction()"
+                             style="width:50px"  />%
+            </td>
+            <td style="padding-left:10px">
+                WACC: <input id="wacc" type="text"
+                             value="12" oninput="inputFunction()"
+                             style="width:50px"  />%
+            </td>
+            <td style="padding-left:10px">
+                D/E: </td><td><input id="de" type="text"
+                                     value="5/4" oninput="inputFunction()"
+                                     style="width:50px"  />
+            </td>
+        </tr>
+    </table>
+<br/>
+
+    <div style="color:green">
+    <table>
+        <tr>
+            <td style="width:20px">a</td>
+            <td>EBIT:</td>
+            <td id="ebit" style="width:20px" align="right"></td>
+            <td style="padding-left:20px">{% trans "Assets" %} * ROIC</td>
+        </tr>
+        <tr>
+            <td>b</td>
+            <td style="padding-right:10px">Enterprise Value (V):</td>
+            <td id="v" style="width:20px" align="right"></td>
+            <td style="padding-left:20px">EBIT / WACC</td>
+        </tr>
+        <tr>
+            <td>c</td>
+            <td>Debt (D):</td>
+            <td id="d" style="width:20px" align="right"></td>
+            <td style="padding-left:20px">V * (D/V). Notice, for Debt, Book Value (BV) equal to Market Value (MV).</td>
+        </tr>
+        <tr>
+            <td>d</td>
+            <td>BV Equity:</td>
+            <td id="e" style="width:20px" align="right"></td>
+            <td style="padding-left:20px">{% trans "Assets" %} - D</td>
+        </tr>
+        <tr>
+            <td>e</td>
+            <td>Interest:</td>
+            <td id="i" style="width:20px" align="right"></td>
+            <td style="padding-left:20px">D * Rd</td>
+        </tr>
+        <tr>
+            <td>f</td>
+            <td>E(Re):</td>
+            <td id="re" style="width:20px" align="right"></td>
+            <td style="padding-left:20px">(WACC - Rd*(D/V))/(E/V)</td>
+        </tr>
+        <tr>
+            <td>g</td>
+            <td style="padding-right:10px">MV of Equity:</td>
+            <td id="me" style="width:20px" align="right"></td>
+            <td style="padding-left:20px">V * (E/V) = V - D</td>
+        </tr>
+        <tr>
+            <td>h</td>
+            <td>Dividend:</td>
+            <td id="div" style="width:20px" align="right"></td>
+            <td style="padding-left:20px">E * E(Re)</td>
+        </tr>
+    </table>
+        <table>
+        <tr>
+            <td style="width:20px">i</td>
+            <td style="padding-right:20px;width:152px">Growth:</td>
+            <td id="g" style="width:565px"></td>
+        </tr>
+        </table>
+    </div>
+
+
+<script>
+function inputFunction() {
+
+    de = document.getElementById("de")
+    assets = document.getElementById("assets")
+    roic = document.getElementById("roic")
+    rd = document.getElementById("rd")
+    wacc = document.getElementById("wacc")
+
+    ebit = document.getElementById("ebit")
+    v = document.getElementById("v")
+    debt = document.getElementById("debt")
+    d = document.getElementById("d")
+    e = document.getElementById("e")
+    i = document.getElementById("i")
+    re = document.getElementById("re")
+    equity = document.getElementById("equity")
+    var ebit_ = assets.value * roic.value/100
+
+    ebit.innerHTML = ebit_
+    var v_ = Math.round(100*ebit_/wacc.value)
+    v.innerHTML = v_
+    var de_ = eval(String(de.value))
+    dv = 1-1/(de_*1 + 1)
+
+    D = Math.round(v_*dv)
+    BE = assets.value - D
+    debt.innerHTML = D
+    d.innerHTML = D
+    equity.innerHTML = BE
+    e.innerHTML = BE
+    i_ = Math.round(D*rd.value/100)
+    i.innerHTML = i_
+    re_ = Math.round(100*(wacc.value - rd.value*dv)/(1-dv))/100
+    re.innerHTML = re_ + "%"
+    me_ = v_ - D
+    div_ = Math.round(me_ * re_/100)
+    me.innerHTML = me_
+    div.innerHTML = div_
+    if (roic.value > wacc.value)
+    {g_ = "Since ROIC is higher then WACC growth will increase the equity value"}
+    else if (roic.value < wacc.value)
+    {g_ = "Since WACC is higher then ROIC growth will decrease the equity value"}
+    else
+    {g_ = "Since WACC is equal to ROIC growth will not change the equity value"}
+    g.innerHTML = g_
+}
+  inputFunction()
+</script>
+
+</div>
+{% endblock content %}

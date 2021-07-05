@@ -1,0 +1,112 @@
+<span class="entry-image">
+	<img width="80" height="80" src="https://web.archive.org/web/20180817111928im_/http://checkcashingchicago.com/wp-content/uploads/2014/09/Sibley-Blvd-at-the-Calumet-Expwy-CE-41-80x80.jpg" class="attachment-thumbnail size-thumbnail wp-post-image" alt=""
+		 srcset="{{prev_l.image.url}} 80w,
+		 {{prev_l.image.url}} 36w,
+		 {{prev_l.image.url}} 180w,
+		 {{prev_l.image.url}} 120w,
+		 {{prev_l.image.url}} 450w"
+		 sizes="(max-width: 80px) 100vw, 80px">
+</span>
+
+<div class="avia-slideshow-arrows avia-slideshow-controls">
+<a href="#prev" class="prev-slide" aria-hidden="true" data-av_icon="" data-av_iconfont="entypo-fontello">Previous</a>
+<a href="#next" class="next-slide" aria-hidden="true" data-av_icon="" data-av_iconfont="entypo-fontello">Next</a>
+</div>
+
+<a class="avia-post-nav avia-post-next with-image" href="https://web.archive.org/web/20180817113205/http://checkcashingchicago.com/Locations/sibley-blvd-at-the-calumet-expwy/">    <span class="label iconfont" aria-hidden="true" data-av_icon="" data-av_iconfont="entypo-fontello"></span>
+	<span class="entry-info-wrap">
+		<span class="entry-info">
+			<span class="entry-image">
+				<img width="80" height="80" src="https://web.archive.org/web/20180817113205im_/http://checkcashingchicago.com/wp-content/uploads/2014/09/Sibley-Blvd-at-the-Calumet-Expwy-CE-41-80x80.jpg" class="attachment-thumbnail size-thumbnail wp-post-image" alt=""
+					 srcset="https://web.archive.org/web/20180817113205im_/http://checkcashingchicago.com/wp-content/uploads/2014/09/Sibley-Blvd-at-the-Calumet-Expwy-CE-41-80x80.jpg 80w, https://web.archive.org/web/20180817113205im_/http://checkcashingchicago.com/wp-content/uploads/2014/09/Sibley-Blvd-at-the-Calumet-Expwy-CE-41-36x36.jpg 36w,
+					 https://web.archive.org/web/20180817113205im_/http://checkcashingchicago.com/wp-content/uploads/2014/09/Sibley-Blvd-at-the-Calumet-Expwy-CE-41-180x180.jpg 180w,
+					 https://web.archive.org/web/20180817113205im_/http://checkcashingchicago.com/wp-content/uploads/2014/09/Sibley-Blvd-at-the-Calumet-Expwy-CE-41-120x120.jpg 120w,
+					 https://web.archive.org/web/20180817113205im_/http://checkcashingchicago.com/wp-content/uploads/2014/09/Sibley-Blvd-at-the-Calumet-Expwy-CE-41-450x450.jpg 450w"
+					 sizes="(max-width: 80px) 100vw, 80px"></span>
+			<span class="entry-title">Sibley Blvd at the Calumet Expwy</span>
+		</span>
+	</span>
+</a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+{% for l in locations %}
+									  <div data-ajax-id="{{l.data_ajax_id}}" class=" grid-entry flex_column isotope-item all_sort no_margin post-entry post-entry-{{l.data_ajax_id}} grid-entry-overview grid-loop-{{forloop.counter}} grid-parity-{% if forloop.counter|divisibleby:2 %}even{% else %}odd{% endif %} av_one_third {% if forloop.counter0|divisibleby:3 %}first{% endif %} {{l.region.slug}}_sort default_av_fullwidth ">
+										  <article class="main_color inner-entry" itemscope="itemscope" itemtype="https://schema.org/CreativeWork">
+											  <a href="{{ l.get_absolute_url }}" title="{{l.location_heading}}" data-rel="grid-1" class="grid-image avia-hover-fx">
+												  <img width="1500" height="630" src="{{l.image.url}}" class="attachment-featured_large size-featured_large wp-post-image" alt="location"
+													   srcset="{{l.image.url}}"/>
+											  </a>
+
+											  <div class="grid-content">
+												  <div class="avia-arrow"></div>
+												  <header class="entry-content-header">
+													  <h3 class="grid-entry-title entry-title" itemprop="headline">
+														  <a href="{{ l.get_absolute_url }}" title="{{l.location_heading}}">{{l.location_heading}}</a>
+													  </h3>
+												  </header>
+												  <div class="grid-entry-excerpt entry-content" itemprop="text">
+													  {{l.address1}}<br>
+													  {{l.address2}}<br>
+													  {{l.address3}}<br>
+													  {{l.address4}}
+												  </div>
+											  </div>
+											  <footer class="entry-footer"></footer>
+										  </article>
+									  </div>
+								  {% endfor %}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+     {% if prev_l %}
+       <a class="avia-post-nav avia-post-prev with-image" href="{{ prev_l.get_absolute_url }}">
+           <span class="label iconfont" aria-hidden="true"  data-av_iconfont="entypo-fontello"><i class="fa fa-angle-left"></i></span>
+           <span class="entry-info-wrap">
+               <span class="entry-info">
+                   <span class="entry-title">{{prev_l.location_detail_title}}</span>
+                   <span class="entry-image">
+                       <img width="80" height="80" src="{{prev_l.image.url}}" class="attachment-thumbnail size-thumbnail wp-post-image" alt="{{prev_l.location_detail_title}}"  sizes="(max-width: 80px) 100vw, 80px">
+                   </span>
+               </span>
+           </span>
+       </a>
+     {% endif %}
+
+
+
+       {% if next_l %}
+       <a class="avia-post-nav avia-post-next with-image" href="{{ next_l.get_absolute_url }}">
+           <span class="label iconfont" aria-hidden="true"  data-av_iconfont="entypo-fontello"><i class="fa fa-angle-right"></i></span>
+           <span class="entry-info-wrap">
+               <span class="entry-info">
+                   <span class="entry-image">
+                       <img width="80" height="80" src="{{next_l.image.url}}" class="attachment-thumbnail size-thumbnail wp-post-image" alt="{{next_l.location_detail_title}};"  sizes="(max-width: 80px) 100vw, 80px">
+                   </span>
+                   <span class="entry-title">{{next_l.location_detail_title}}</span>
+               </span>
+           </span>
+       </a>
+       {% endif %}

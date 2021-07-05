@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% load cms_tags %}
+{% load i18n %}
+{% load account socialaccount %}
+{% get_providers as socialaccount_providers %}
+
+{% block content %}
+{% placeholder "header" %}
+{% placeholder "content" %}
+{% endblock content %}
+

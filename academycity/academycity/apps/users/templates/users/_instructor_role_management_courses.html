@@ -1,0 +1,431 @@
+{% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
+<!--
+https://fontawesome.com/icons?d=gallery&c=editors,education,users-people&m=free
+-->
+
+<style>
+div.ex1 {
+  background-color: lightblue;
+  height: 550px;
+  width: 100%;
+  overflow-y: scroll;
+}
+
+th {
+  border: 1px solid black;
+  width:5%;
+  text-align: center;
+}
+
+td {
+  border: 1px solid black;
+}
+tr {
+  border: 1px solid black;
+}
+
+</style>
+
+<h3 style="margin-left:5px; color:blue">Edit scheduled courses for: {{ course.name }}</h3>
+
+<table class="w3-table-all w3-hoverable" style="width:95%; margin-left:5px;">
+    <thead>
+      <tr class="w3-light-blue">
+        <th style="border: 1px solid black;width:10%; text-align: center;" colspan="6">Schedule</th>
+        <th style="border: 1px solid black;width:20%; text-align: center;" rowspan="2">From</th>
+        <th style="border: 1px solid black;width:20%; text-align: center;" rowspan="2">To</th>
+      </tr>
+    <tr>
+        <th style="border: 1px solid black;width:10%; text-align: center;" >Schedule</th>
+        <th style="border: 1px solid black;width:10%; text-align: center;" >Edit</th>
+        <th style="border: 1px solid black;width:10%; text-align: center;" >Assign</th>
+        <th style="border: 1px solid black;width:10%; text-align: center;" >Students</th>
+        <th style="border: 1px solid black;width:10%; text-align: center;" >Random</th>
+        <th style="border: 1px solid black;width:10%; text-align: center;" >Email</th>
+    </tr>
+    </thead>
+    <tbody>
+
+    {% for course_schedule in course_schedules %}
+    <tr>
+        <td style="border: 1px solid black;">
+            <a href="{% url 'courses:course_detail_instructor' course_schedule.course.slug course_schedule.slug %}" >
+                {{ course_schedule.name }}
+            </a>
+        </td>
+
+<!--        <td style="border: 1px solid black; text-align: center;"><a href="{% url 'courses:course_schedule_edit' course_schedule.id %}">-->
+<!--            <i class="fa fa-edit"></i></a>-->
+<!--        </td>-->
+
+        <td style="border: 1px solid black; text-align: center;">
+            <a href="#" >
+            <i class="fa fa-edit" onclick="btn_short_courses_schedule(event)"
+               type="course_schedule_setup" data-view="{% url 'courses:course_schedule_edit' course_schedule.id %}"
+            ></i>
+            </a>
+        </td>
+
+        <td style="border: 1px solid black; text-align: center;">
+            <a href="#" >
+            <i class="fa fa-tasks" onclick="btn_short_courses_schedule(event)"
+               type="course_schedule_setup" data-view="{% url 'courses:course_schedule_random_group_assignment_' course_schedule.slug %}"
+            ></i>
+            </a>
+        </td>
+
+        <td style="border: 1px solid black; text-align: center;">
+            <a href="#" >
+            <i class="fa fa-user-edit" onclick="btn_short_courses_schedule(event)"
+               type="course_schedule_setup" data-view="{% url 'courses:get_registered_list0' course_schedule.slug %}"
+            ></i></a>
+        </td>
+
+        <td style="border: 1px solid black; text-align: center;">
+            <a href="#" >
+            <i class="fa fa-user-check" onclick="btn_short_courses_schedule(event)"
+               type="course_schedule_setup" data-view="{% url 'courses:course_schedule_random_group_assignment' course_schedule.slug %}"
+            ></i></a>
+        </td>
+
+        <td style="border: 1px solid black; text-align: center;">
+            <a href="#" >
+            <i class="fa fa-paper-plane" onclick="btn_short_courses_schedule(event)"
+               type="course_schedule_setup" data-view="{% url 'courses:course_schedule_send_email' course_schedule.slug %}"
+            ></i></a>
+        </td>
+
+<!--        <td style="border: 1px solid black; text-align: center;">-->
+<!--            <a href="{% url 'courses:course_schedule_send_email' course_schedule.slug %}">-->
+<!--            <i class="fa fa-paper-plane"></i></a>-->
+<!--        </td>-->
+
+        <td style="border: 1px solid black;">
+            {{ course_schedule.start_date }}
+        </td>
+        <td style="border: 1px solid black;">
+            {{ course_schedule.end_date }}
+        </td>
+    </tr>
+{% endfor %}
+</tbody>
+</table>
+<div id="output_course_schedule">
+
+</div>
+
+
+<script>
+
+
+function btnClickDepCourse(event)
+{
+   var elm = event.target.parentNode
+   var type = elm.getAttribute("class")
+   if(type=="add_department")
+   {
+     event.preventDefault();
+     var ss = prompt('Enter department name:', '')
+     if(ss != "" && ss != null)
+     {
+       elm.setAttribute('data-on', ss)
+        $.post('{% url "courses:set_new_model_instance" %}',
+          {
+            mn: elm.getAttribute("data-mn"),
+            on: elm.getAttribute("data-on")
+          },
+          function(data){
+              alert(data['status'])
+          }
+        );
+     }
+   } else if (type=="add_course")
+   {
+     event.preventDefault();
+     var ss = prompt('Enter course name:', '')
+     if(ss != "" && ss != null)
+     {
+       elm.setAttribute('data-on', ss)
+        $.post('{% url "courses:set_new_model_instance" %}',
+          {
+            mn: elm.getAttribute("data-mn"),
+            pmn: elm.getAttribute("data-pmn"),
+            pmid: elm.getAttribute("data-pmid"),
+            on: elm.getAttribute("data-on")
+          },
+          function(data){
+              alert(data['status'])
+          }
+        );
+     }
+   } else if (type=="add_course_schedule")
+   {
+     var ss = prompt('Enter schedule name:', '')
+     event.preventDefault();
+     if(ss != "" && ss != null)
+     {
+       elm.setAttribute('data-on', ss);
+       $.post('{% url "courses:set_new_schedule_course" %}',
+          {
+            mn: elm.getAttribute("data-mn") ,
+            pmn: elm.getAttribute("data-pmn") ,
+            pmid: elm.getAttribute("data-pmid") ,
+            on: elm.getAttribute("data-on") ,
+          },
+          function(data){
+              alert(data['status'])
+          }
+       )
+     }
+   } else if (type=="course_schedule")
+   {
+     event.preventDefault();
+      // alert(event.target.outerHTML)
+     var slug = elm.getAttribute("data-slug")
+      // alert(slug)
+        $.post('{% url "courses:get_registered_list1" %}',
+          {
+            slug: slug,
+          },
+          function(data){
+            var output = document.getElementById("scheduled_courses")
+            var ss = data
+            // var ss="<iframe src='/' width='100%' height='500' frameborder='2'></iframe>"
+            output.innerHTML = ss
+          }
+        );
+   }
+   else if (type=="view_course_schedule")
+   {
+     event.preventDefault();
+     var s_url = elm.getAttribute("data-view");
+      //alert(s_url)
+        $.post(s_url,
+          {
+          },
+          function(data){
+            var output = document.getElementById("scheduled_courses")
+            var ss = data
+            output.innerHTML = ss
+          }
+        );
+     //event.preventDefault();
+     //var s_url = elm.getAttribute("data-view");
+     //var output = document.getElementById("scheduled_courses")
+     //var ss="<iframe src='" + s_url + "' width='100%' height='500' frameborder='2'></iframe>"
+     // alert(ss)
+     //output.innerHTML = ss
+   } else if (type=="update_data")
+   {
+      alert("U")
+      var nn = elm.getAttribute("data-course_name")
+      nn = nn.split(' ').join('').toLowerCase()
+      if (nn == "corporatevaluation")
+      {
+         $.post('{% url "corporatevaluation:update_data" %}',
+            {
+            },
+            function(data){
+                alert(data['status'])
+            }
+         )
+      }
+   } else if (type=="update_data_year")
+   {
+      var nn = elm.getAttribute("data-course_name")
+      var nyear = elm.getAttribute("data-nyear")
+      alert(nyear)
+      nn = nn.split(' ').join('').toLowerCase()
+      if (nn == "corporatevaluation")
+      {
+         $.post('{% url "corporatevaluation:update_data_year" %}',
+            {
+              nyear : nyear,
+            },
+            function(data){
+                alert(data['status'])
+            }
+         )
+      }
+   }
+}
+
+
+// for the file: _admin_role_management_short_courses_schedule.html
+btn_short_courses_schedule = function(event)
+{
+   var elm = event.target
+   var type = elm.getAttribute("type")
+   var o_elm=document.getElementById("output_course_schedule")
+  if(type=="course_schedule_setup")
+  {
+     event.preventDefault();
+     var s_url = elm.getAttribute("data-view");
+        $.get(s_url,
+          function(data){
+            o_elm.innerHTML = data
+          }
+        );
+  }
+}
+
+
+function btn_course_schedule_activation(event)
+{
+  //alert("amos_btn_course_schedule_activation")
+  elm = event.target
+  //alert(elm.outerHTML)
+
+  var type = elm.getAttribute("type")
+  //alert(type)
+  if(type=="class_schedule")
+  {
+    event.preventDefault();
+     $.post('{% url "courses:activate_register" %}',
+     {
+       slug: elm.getAttribute("data-slug"),
+       action: elm.getAttribute("data-action")
+     },
+     function(data){
+       if (data['status'] == 'ok') {
+           var previous_action = elm.getAttribute("data-action");
+           elm.setAttribute("data-action", previous_action == 'activate' ? 'deactivate' : 'activate');
+           if(previous_action == 'activate')
+               {ss = 'Active' }
+               else {ss = 'Not Active'};
+           elm.parentNode.children[0].innerHTML = ss
+          if(previous_action == 'activate')
+          {elm.innerHTML='Deactivate'} else
+          {elm.innerHTML='Activate'}
+         }
+     }
+   );
+  } else if (type=="class_schedule_graduate")
+   {
+     event.preventDefault();
+     $.post('{% url "courses:activate_graduate" %}',
+     {
+       slug: elm.getAttribute("data-slug"),
+       action: elm.getAttribute("data-action")
+     },
+     function(data){
+       if (data['status'] == 'ok') {
+           var previous_action = elm.getAttribute("data-action");
+
+           //alert(previous_action)
+
+           elm.setAttribute("data-action", previous_action == 'graduated' ? 'degraduated' : 'graduated');
+           if(previous_action == 'graduated')
+               {ss = 'Not Graduated' }
+               else {ss = 'Graduated'};
+           elm.parentNode.children[0].innerHTML = ss
+
+          if(previous_action == 'graduated')
+          {elm.innerHTML='Graduate'} else
+          {elm.innerHTML='DeGraduate'}
+       }
+     }
+    );
+   } else if (type=="class_schedule_delete")
+   {
+     // alert(222222)
+     // alert(elm.parentNode.outerHTML)
+     elm = elm.parentNode;
+     event.preventDefault();
+     var ss = prompt('Are you sure, you want to delete the record?', 'no')
+     if (ss == 'yes')
+     {
+      $.post('{% url "courses:class_schedule_delete" %}',
+      {
+        slug: elm.getAttribute("data-slug")
+      },
+      function(data){
+        alert(data['status'])
+      }
+      )
+     }
+   } else if (type=="class_schedule_print")
+   {
+     alert(22)
+     // alert(elm.parentNode.outerHTML)
+     elm = elm.parentNode;
+     event.preventDefault();
+     var ss = prompt('Are you sure, you want to delete the record?', 'no')
+     if (ss == 'yes')
+     {
+      $.post('{% url "courses:class_schedule_delete" %}',
+      {
+        slug: elm.getAttribute("data-slug")
+      },
+      function(data){
+        alert(data['status'])
+      }
+      )
+     }
+   } else if (type=="course_schedule_setup_user_email")
+   {
+     event.preventDefault();
+      $.post('{% url "courses:course_schedule_send_email_user" %}',
+      {
+        id: elm.getAttribute("data-id")
+      },
+      function(data){
+        alert(data['status'])
+      }
+      )
+   }
+}
+
+
+function onchange_course_schedule(event)
+{
+ e = event.target
+ value_ = e.value
+ type_ = e.getAttribute("type")
+ app_ = e.getAttribute("app")
+ model_ = e.getAttribute("model")
+ pkey_ = e.getAttribute("pkey")
+ field_ = e.getAttribute("field")
+ if (type_ == "checkbox"){value_ = e.checked}
+    if (type_ == "multiple_select")
+    {
+       value_ = ""
+       if (e.selectedOptions != undefined)
+       {
+            for (var i=0; i < e.selectedOptions.length; i++) {
+                if (i == 0) {s=""} else {s=","}
+                value_ += s + e.selectedOptions[i].value;
+            }
+        }
+    }
+
+    $.post('{% url "core:update_field_model" %}',
+      {
+        app : app_,
+        model: model_,
+        pkey : pkey_,
+        field: field_,
+        value: value_,
+        type: type_
+      },
+      function(data){
+          if (data['status'] != 'ok'){alert(data['status'])}
+      }
+    );
+}
+
+function onchange_target(event)
+{
+ alert("target");
+ e = event.target;
+ e.preventDefault();
+ alert(e.outerHTML)
+ value = e.value
+ alert(value)
+}
+
+
+
+</script>
+
+

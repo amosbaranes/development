@@ -1,0 +1,31 @@
+{% load core_tags %}
+{% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
+
+{% if LANGUAGE_CODE == "ar" %}
+<div dir="RTL"style="text-align: right;" class="row">
+{% else %}
+<div dir="LTR" class="row">
+{% endif%}
+  <div id="gdistributor_nav" class="column left" style="background-color:#80b3ff;" nav_prefix="mr"
+       onclick="click_main_gdistributor(event)">
+        <table id="gdistributor" style="width:200px;">
+              <thead>
+                  <th></th>
+                  <th style="width:70%" scope="col"><b><u>{% trans "Distributors" %}</u></b></th>
+                  <th style="width:20%" scope="col"></th>
+              </thead>
+              <tbody id="gdistributor_projects_">
+                {% for d in distributors %}
+                    <tr>
+                        <td></td>
+                        <td id=mr_{{ d.id }} class="pointer" obj_id="{{d.id}}" type="distributor">
+                          {{ d }}
+                        </td>
+                    </tr>
+                {% endfor %}
+              </tbody>
+        </table>
+  </div>
+  <div id="gdistributor_content" class="column right" style="background-color:#b3d1ff;">
+  </div>
+</div>

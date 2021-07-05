@@ -1,0 +1,341 @@
+{% extends "academycity/base.html" %}
+{% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
+{% load core_tags %}
+
+{% block add_css %}
+    <link href="{% static 'css/courses_styles.css' %}" rel="stylesheet">
+{% endblock add_css %}
+
+{% block content %}
+<style>
+.courses-list {
+	list-style-type: none;
+}
+
+.courses-list li {
+	display: inline-block;
+	margin: 8px;
+	width: 250px;
+}
+
+.courses-list .name, .courses-list .title,
+.courses-detail .title {
+	font-family: sans-serif;
+	font-size: 12px;
+	color: #666;
+	line-height: 1.25em;
+	padding: 0;
+	margin: 0;
+}
+
+.courses-list .name {
+	font-weight: bold;
+}
+
+.courses-description p {
+	font-family: sans-serif;
+	font-size: 12px;
+	color: #666;
+	line-height: 1.25em;
+	margin: 1em 0 0 0;
+}
+
+.courses-detail h1 {
+	font-family: sans-serif;
+	font-size: 20px;
+	margin-bottom: 0;
+}
+
+.courses-detail h3 {
+	font-family: sans-serif;
+	font-size: 14px;
+}
+
+
+h5 {
+	font-family: sans-serif;
+	font-size: 34px;
+}
+
+
+nav > .nav.nav-tabs{
+
+  border: none;
+    color:#fff;
+    background:#272e38;
+    border-radius:0;
+
+}
+nav > div a.nav-item.nav-link,
+nav > div a.nav-item.nav-link.active
+{
+  border: none;
+    padding: 18px 25px;
+    color:#fff;
+    background:#272e38;
+    border-radius:0;
+}
+
+nav > div a.nav-item.nav-link.active:after
+ {
+  content: "";
+  position: relative;
+  bottom: -60px;
+  left: -10%;
+  border: 15px solid transparent;
+  border-top-color: #e74c3c ;
+}
+.tab-content{
+  background: #fdfdfd;
+    line-height: 25px;
+    border: 1px solid #ddd;
+    border-top:5px solid #e74c3c;
+    border-bottom:5px solid #e74c3c;
+    padding:30px 25px;
+}
+
+nav > div a.nav-item.nav-link:hover,
+nav > div a.nav-item.nav-link:focus
+{
+  border: none;
+    background: #e74c3c;
+    color:#fff;
+    border-radius:0;
+    transition:background 0.20s linear;
+}
+</style>
+
+<br/>
+
+<div id="accordion">
+{% for department in departments|dictsort:"order" %}
+  <div class="card">
+    <div class="card-header" id="heading{{forloop.counter}}">
+    <h5 class="mb-0">
+      {% if forloop.first %}
+        <button class="btn" data-toggle="collapse" data-target="#collapse{{forloop.counter}}" aria-expanded="true"
+                aria-controls="collapse{{forloop.counter}}">
+      {% else %}
+        <button class="btn collapsed" data-toggle="collapse" data-target="#collapse{{forloop.counter}}" aria-expanded="false"
+                aria-controls="collapse{{forloop.counter}}">
+
+      {% endif %}
+          <div style="text-align:left">
+            <table>
+                <tr><td>
+                {% thumbnail department.image '250x136' crop subject_location=department.image.subject_location as di %}
+                   <img src="{{ di.url }}" width="{{ di.width }}" height="{{ di.height }}" alt="{{ department.name }}">
+                </td>
+                <td style="padding: 0px 10px 0px 10px; text-align:left">
+                    <span style="color: darkblue; font-size:150%; font:bold">
+                        <u>{% render_model department "name" %}</u></span><br/>
+                  {% render_placeholder department.description %}
+                </td></tr>
+            </table>
+          </div>
+        </button>
+    </h5>
+    </div>
+
+    <div id="collapse{{forloop.counter}}" class="collapse {% if forloop.first %}show{% endif %}" aria-labelledby="heading{{forloop.counter}}" data-parent="#accordion">
+      <div class="card-body">
+                  <div>
+                  {% for course in department.department_courses.all|dictsort:"order" %}
+
+                   {% if user.is_staff or course.active %}
+                    {% thumbnail course.image '250x136' crop subject_location=course.image.subject_location as course_photo %}
+                    <div style="margin:10px 10px 0px 50px">
+                    <table>
+                        <tr><td>
+                             {% if course in user_courses %}
+                                  {% if course.link_app %}
+                                    <a href="{{ user_courses_|get_value_from_dict:course.name }}"
+                                       style="float:left">
+                                        <span class='tooltip_' style="height: 30px;
+                                          text-align: center;
+                                          padding-top: 4px;
+                                          width: 30px;
+                                          background-color: darkblue;
+                                          color: white;
+                                          border-radius: 50%;
+                                          display: inline-block;">
+                                             S
+                                        <span class='tooltiptext'>
+                                            {% trans "Go to Simulation" %}
+                                        </span>
+                                        </span>
+                                    </a><br/>
+                                  {% endif %}
+                             {% else %}
+                                <a href="{{ course.get_schedule_url }}" >
+                                      <span class='tooltip_' style="height: 30px;
+                                                  text-align: center;
+                                                  padding-top: 4px;
+                                                  width: 30px;
+                                                  background-color: darkgreen;
+                                                  color: white;
+                                                  border-radius: 50%;
+                                                  display: inline-block;">
+                                                     R
+                                                <span class='tooltiptext'>
+                                                    {% trans "Go to Registration to access this course" %}
+                                                </span>
+                                      </span>
+                                </a><br/>
+                             {% endif %}
+<!--                        <a href="{{ course.get_absolute_url }}">-->
+                          <img src="{{ course_photo.url }}" width="{{ course_photo.width }}" height="{{ course_photo.height }}" alt="{{ course.name }}">
+<!--                        </a>-->
+                        </td><td style="vertical-align: top; padding-left: 10px;">
+                            {% if course in user_courses %}
+                                  {% if course.link_app %}
+                                     <br/>
+                                  {% endif %}
+                            {% else %}
+                                     <br/>
+                            {% endif %}
+                           {% if user.is_staff %}
+                            <b>{% render_model course "name" %}</b>
+                             <hr style="margin-top: -3px; margin-bottom: -2px" />
+                           {% else %}
+                             <a class="name" href="{{ course.get_absolute_url }}">
+
+                    <span style="color: darkblue; font-size:125%; font:bold"><u>
+                        {{ course.name }}</u>
+                    </span>
+                             </a>
+                           {% endif %}
+                           {% render_placeholder course.description %}
+                        </td>
+                    </table>
+                    </div>
+                   {% endif %}
+
+                  {% endfor %}
+                  </div>
+
+      </div>
+    </div>
+  </div>
+{% endfor %}
+</div>
+
+
+<!--<br/><br/><br/><br/>-->
+<!--<div class="container">-->
+<!--   <div class="row">-->
+<!--      <div class="col-xs-12 ">-->
+<!--          <nav>-->
+<!--            <div  class="nav nav-tabs nav-fill" id="nav-tab" role="tablist">-->
+<!--            {% for department in departments %}-->
+<!--              {% if forloop.first %}-->
+<!--                <a style="height:35px; padding: 5px 0px 0px 0px" class="nav-item nav-link active" id="nav-{{ department.slug }}-tab" data-toggle="tab"-->
+<!--                   href="#nav-{{ department.slug }}" role="tab" aria-controls="nav-{{ department.slug }}"-->
+<!--                   aria-selected="true">{% render_model department "name" %}</a>-->
+<!--              {% else %}-->
+<!--                <a style="height:35px; padding: 5px 0px 0px 0px" class="nav-item nav-link" id="nav-{{ department.slug }}-tab" data-toggle="tab"-->
+<!--                   href="#nav-{{ department.slug }}" role="tab" aria-controls="nav-{{ department.slug }}"-->
+<!--                   aria-selected="false">{% render_model department "name" %}</a>-->
+<!--              {% endif %}-->
+<!--            {% endfor %}-->
+<!--            </div>-->
+<!--          </nav>-->
+<!--          <div class="tab-content py-3 px-3 px-sm-0" id="nav-tabContent">-->
+<!--            {% for department in departments|dictsort:"order" %}-->
+<!--              {% if forloop.first %}-->
+<!--                <div class="tab-pane fade show active" id="nav-{{ department.slug }}" role="tabpanel" aria-labelledby="nav-{{ department.slug}}-tab">-->
+<!--              {% else %}-->
+<!--                <div class="tab-pane fade" id="nav-{{ department.slug }}" role="tabpanel" aria-labelledby="nav-{{ department.slug}}-tab">-->
+<!--              {% endif %}-->
+<!--                <table>-->
+<!--                    <tr>-->
+<!--                        <td>-->
+<!--                {% thumbnail department.image '250x136' crop subject_location=department.image.subject_location as di %}-->
+<!--                <img src="{{ di.url }}" width="{{ di.width }}" height="{{ di.height }}" alt="{{ department.name }}">-->
+<!--                        </td>-->
+<!--                        <td style="padding: 0px 10px 0px 10px">-->
+<!--                  {% render_placeholder department.description %}-->
+<!--                        </td>-->
+<!--                    </tr>-->
+<!--                </table>-->
+<!--                    <hr/>-->
+
+<!--                  <ul class="courses-list">-->
+<!--                  {% for course in department.department_courses.all|dictsort:"order" %}-->
+<!--                   {% if course.active %}-->
+<!--                    {% thumbnail course.image '250x136' crop subject_location=course.image.subject_location as course_photo %}-->
+<!--                    <li>-->
+<!--                        <a href="{{ course.get_schedule_url }}" class="badge badge-success" style="background-color:green">-->
+<!--                          <h6>{% trans "Register" %}</h6>-->
+<!--                        </a>-->
+<!--                             {% if course in user_courses %}-->
+<!--                                  {% if course.link_app %}-->
+<!--                                    <a href="{{ user_courses_|get_value_from_dict:course.name }}" class="badge badge-success"-->
+<!--                                       style="background-color:blue;float:right">-->
+<!--                                      <h6>{% trans "Simulation" %}</h6>-->
+<!--                                    </a>-->
+<!--                                  {% endif %}-->
+<!--                                  <a href="{{ course.get_absolute_url }}">-->
+<!--                             {% else %}-->
+<!--                                <a href="{{ course.get_schedule_url }}">-->
+<!--                             {% endif %}-->
+<!--                          <img src="{{ course_photo.url }}" width="{{ course_photo.width }}" height="{{ course_photo.height }}" alt="{{ course.name }}">-->
+<!--                        </a>-->
+<!--                        <br/>-->
+<!--                       {% if user.is_staff %}-->
+<!--                         {% render_model course "name" %}-->
+<!--                         <hr style="margin-top: -3px; margin-bottom: -2px" />-->
+<!--                         {% render_placeholder course.description %}-->
+<!--                       {% else %}-->
+<!--                         <a class="name" href="{{ course.get_absolute_url }}">{{ course.name }}</a>-->
+<!--                       {% endif %}-->
+<!--                    </li>-->
+<!--                   {% endif %}-->
+<!--                  {% endfor %}-->
+<!--                  </ul>-->
+<!--               </div>-->
+<!--            {% endfor %}-->
+<!--          </div>-->
+<!--      </div>-->
+<!--   </div>-->
+<!--</div>-->
+<!--{% endblock %}-->
+
+
+<!--{% block domready %}-->
+
+<!--  $('a.add_course').click(function(e){-->
+<!--   e.preventDefault();-->
+<!--   var ss = prompt('Enter course name:', '')-->
+<!--   e.target.setAttribute('data-on', ss)-->
+<!--      $.post('{% url "courses:set_new_model_instance" %}',-->
+<!--        {-->
+<!--          mn: $(this).data('mn') ,-->
+<!--          pmn: $(this).data('pmn') ,-->
+<!--          pmid: $(this).data('pmid'),-->
+<!--          on: $(this).data('on')-->
+<!--        },-->
+<!--        function(data){-->
+<!--            alert(data['status'])-->
+<!--        }-->
+<!--      );-->
+<!--  });-->
+
+
+<!--  $('a.add_department').click(function(e){-->
+<!--   e.preventDefault();-->
+<!--   var ss = prompt('Enter course name:', '')-->
+<!--   e.target.setAttribute('data-on', ss)-->
+<!--      $.post('{% url "courses:set_new_model_instance" %}',-->
+<!--        {-->
+<!--          mn: $(this).data('mn') ,-->
+<!--          on: $(this).data('on')-->
+<!--        },-->
+<!--        function(data){-->
+<!--            alert(data['status'])-->
+<!--        }-->
+<!--      );-->
+<!--  });-->
+
+<!--{% endblock %}-->
+

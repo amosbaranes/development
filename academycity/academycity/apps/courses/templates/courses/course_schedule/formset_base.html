@@ -1,0 +1,72 @@
+{% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE }}">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta name="description" content="{% page_attribute meta_description %}">
+    <meta name="author" content="">
+
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+
+    {% block add_css_base %}
+        <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+        <link href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
+<!--
+        <link href="{% static 'vendor/font-awesome-4.7.0/css/font-awesome.min.css' %}" rel="stylesheet">
+-->
+        <link href="{% static 'css/django_cms_original.css' %}" rel="stylesheet">
+
+  <!-- Font Awesome -->
+        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.2/css/all.css">
+    {% endblock add_css_base %}
+
+    {% render_block "css" %}
+    {{ ALDRYN_SNAKE.render_head }}
+
+    {% block add_css %}
+    {% endblock add_css %}
+  </head>
+<body>
+
+{% block content %}
+{% endblock %}
+
+{% block base_js %}
+{% endblock base_js %}
+
+{% render_block "js" %}
+{{ ALDRYN_SNAKE.render_tail }}
+
+{% block add_js %}
+{% endblock add_js %}
+
+<!--
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+-->
+
+<script src="{% static 'vendor/jquery/jquery-3.4.1.min.js' %}"></script>
+<script src="https://cdn.jsdelivr.net/npm/js-cookie@2/src/js.cookie.min.js"></script>
+<script>
+var csrftoken = Cookies.get('csrftoken');
+  function csrfSafeMethod(method) {
+    // these HTTP methods do not require CSRF protection
+    return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+  }
+  $.ajaxSetup({
+    beforeSend: function(xhr, settings) {
+      if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+        xhr.setRequestHeader("X-CSRFToken", csrftoken);
+      }
+    }
+  });
+  $(document).ready(function(){
+
+    {% block domready %}
+    {% endblock %}
+  });
+</script>
+</body>
+</html>

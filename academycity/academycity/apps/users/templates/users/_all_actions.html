@@ -1,0 +1,10 @@
+{% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
+
+<h2>My Actions</h2>
+<div id="action-list">
+  <table>
+  {% for verb in verbs %}
+    <tr><td>{{ verb }}</td></tr>
+  {% endfor %}
+  </table>
+</div>

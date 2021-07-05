@@ -1,0 +1,74 @@
+{% extends "academycity/base.html" %}
+{% load static %}
+{% load parler_tags %}
+
+{% block content %}
+  <div class="container">
+
+      <h2 style="color:blue">{{ course.name }}</h2>
+      {% for course_schedule in course.course_schedules.all|dictsort:"start_date" %}
+        <h5 style="margin-left:20px">{{ course_schedule.name }}<br/>
+            From: {{ course_schedule.start_date }} To: {{ course_schedule.end_date }}</h5>
+        <table style="margin-left:40px">
+            <tr>
+                <td style="width:10px">#</tdstyl>
+                <td style="width:100px">Student Name</td>
+                <td style="width:100px">Status-Active?</td>
+            </tr>
+            {% for course_course_schedule in course_schedule.course_course_schedules.all %}
+              <tr>
+                  <td>{{ forloop.counter }} </td>
+                  <td style="padding-right:50px">{{ course_course_schedule.user.get_full_name }}</td>
+                  <td>
+                      <span id="{{ course_course_schedule.slug }}">
+                        {% if course_course_schedule.active %}
+                        Active
+                        {% else %}
+                        Not Active
+                        {% endif %}
+                      </span> &nbsp;
+                      <a href="#" data-slug="{{course_course_schedule.slug}}"
+                        data-action="{% if course_course_schedule.active %}de{% endif %}activate"
+                        class="link button">
+                        {% if course_course_schedule.active %}
+                        Deactivate
+                        {% else %}
+                        Activate
+                        {% endif %}
+                      </a>
+                  </td>
+              </tr>
+            {% endfor %}
+        </table>
+        <hr/>
+      {% endfor %}
+</div>
+{% endblock %}
+
+
+{% block domready %}
+  $('a.link').click(function(e){
+    e.preventDefault();
+    $.post('{% url "courses:activate_register" %}',
+      {
+        slug: $(this).data('slug'),
+        action: $(this).data('action')
+      },
+      function(data){
+        if (data['status'] == 'ok') {
+          var previous_action = $('a.link').data('action');
+          // toggle data-action
+          $('a.link').data('action', previous_action == 'activate' ? 'deactivate' : 'activate');
+
+            if(previous_action == 'activate')
+                {ss = 'Active' }
+                else {ss = 'Not Active'};
+
+            e.target.parentNode.children[0].innerHTML = ss
+          // toggle link text
+          $('a.link').text(previous_action == 'activate' ? 'Deactivate' : 'Activate');
+        }
+      }
+    );
+  });
+{% endblock %}

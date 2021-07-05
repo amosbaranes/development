@@ -1,0 +1,226 @@
+{% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% block title %}
+    <title>Title</title>
+    {% endblock%}
+
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  {% block meta %}
+  {% endblock %}
+
+  <link rel="stylesheet" type="text/css" href="{% static 'css/main.a399bc1a5519.css' %}">
+ {% block links %}
+ {% endblock %}
+</head>
+
+
+<body>
+  {% block body_content0 %}
+
+      {% block body_nav %}
+        <nav class="topbar topbar--over" id="main-menu">
+            <div class="topbar__container">
+                <div class="topbar__brand">
+                    <button class="topbar__hamburger" data-target="main-menu" aria-label="menu" aria-expanded="false">&#8801;</button>
+                    <a href="/">
+                        <img src="{{ institution_obj.logo_image.url }}" width="72px" height="100px" alt="">
+                    </a>
+                </div>
+                <div class="topbar__menu">
+                    <ul class="topbar__list">
+                        <li class="topbar__item topbar__item--sibling"><a href="/en/news/">News</a></li>
+                        <li class="topbar__item topbar__item--sibling"><a href="/en/courses/">Courses</a></li>
+                        <li class="topbar__item topbar__item--sibling"><a href="/en/categories/">Categories</a></li>
+                        <li class="topbar__item topbar__item--sibling"><a href="/en/organizations/">Organizations</a></li>
+                        <li class="topbar__item topbar__item--sibling"><a href="/en/persons/">Persons</a></li>
+                        <li class="topbar__item topbar__item--sibling"><a href="/en/programs/">Programs</a></li>
+                    </ul>
+                </div>
+
+                <div class="topbar__menu topbar__menu--aside">
+                    <ul class="topbar__list topbar__list--controls">
+
+                        <li class="topbar__item topbar__item--login richie-react richie-react--user-login" data-props='{"profileUrls": {&quot;dashboard&quot;: {&quot;label&quot;: &quot;Dashboard&quot;, &quot;action&quot;: &quot;https://edx.richie.education/dashboard&quot;}, &quot;profile&quot;: {&quot;label&quot;: &quot;Profile&quot;, &quot;action&quot;: &quot;https://edx.richie.education/u/(username)&quot;}, &quot;account&quot;: {&quot;label&quot;: &quot;Account&quot;, &quot;action&quot;: &quot;https://edx.richie.education/account/settings&quot;}}}'>
+                            <div class="user-login">
+                                <button class="user-login__btn user-login__btn--sign-up">Sign up</button>
+                                <button class="user-login__btn user-login__btn--log-in">
+                                    <svg aria-hidden="true" role="img" class="icon"><use xlink:href="#icon-login"></use></svg>
+                                    Log in
+                                </button>
+                            </div>
+                        </li>
+                        <li class="topbar__item topbar__item--cta"><a href="#">Contact us</a></li>
+                    </ul>
+                    <script data-language-selector type="application/json">
+      {
+        "currentLanguage": "en",
+        "languages": {
+
+          "en": {
+            "code": "en",
+            "name": "English",
+            "url": "/en/"
+
+          },
+
+
+          "fr": {
+            "code": "fr",
+            "name": "French",
+            "url": "/fr/"
+
+          }
+
+
+        }
+      }
+      </script>
+
+
+                    <div class="richie-react richie-react--language-selector" data-props-source="[data-language-selector]">
+                        <div class="selector"><label id="downshift-0-label" for="downshift-0-toggle-button" class="offscreen">Select a language:</label>
+                            <button id="downshift-0-toggle-button" aria-haspopup="listbox" aria-expanded="false" aria-labelledby="downshift-0-label downshift-0-toggle-button" class="selector__button">English<svg role="img" class="selector__button__icon" aria-hidden="true">
+                                <use xlink:href="#icon-chevron-down"></use></svg>
+                            </button>
+                            <ul id="downshift-0-menu" role="listbox" aria-labelledby="downshift-0-label" tabindex="-1" class="selector__list selector__list--is-closed">
+
+                            </ul>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </nav>
+      {% endblock %}
+
+      {% block body_content %}
+      {% endblock %}
+
+      {% block body_footer %}
+        <div class="body-footer">
+            <div class="body-footer__container">
+                <div class="body-footer__menu">
+                    <p class="body-footer__subtitle">Learn more</p>
+                    <div class="body-footer__items">
+                        <a href="//localhost:8080/en/annex/about/">About</a>
+                        <a href="//localhost:8080/en/annex/sitemap/">Sitemap</a>
+                        <a href="/styleguide/">Style guide</a>
+                        <div class="nested-item nested-item--list nested-item--0">
+                            <div class="nested-item__content">{{institution_obj.institution_name}} community</div>
+                            <ul class="nested-item__items">
+                                <li><a href="https://"+{{institution_obj.domain_name}}>Website</a></li>
+                                <li><a href="https://github.com/openfun/richie">Github</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="body-footer__brand">
+                    <a href="/">
+                        <img src="{{ institution_obj.footer_image.url }}" width="72px" height="100px" alt=""></a>
+                </div>
+                <div class="body-footer__insert">
+                    <p class="body-footer__title">Life-changing learning!</p>
+                    <script data-language-selector type="application/json">
+      {
+        "currentLanguage": "en",
+        "languages": {
+
+          "en": {
+            "code": "en",
+            "name": "English",
+            "url": "/en/"
+
+          },
+
+
+          "fr": {
+            "code": "fr",
+            "name": "French",
+            "url": "/fr/"
+
+          }
+
+
+        }
+      }
+      </script>
+                    <div class="richie-react richie-react--language-selector" data-props-source="[data-language-selector]"></div>
+
+                    <div class="body-footer__badges">
+                        <a href="https://www.facebook.com/example" class="body-footer__badge" target="_blank">
+                            <svg role="img"><title>Facebook</title><use href="#icon-facebook" /></svg>
+                        </a>
+                        <a href="https://twitter.com/@funmooc" class="body-footer__badge" target="_blank" title="Twitter page">
+                            <svg role="img"><title>Twitter</title><use href="#icon-twitter" /></svg>
+                        </a>
+                        <a href="https://www.linkedin.com/school/franceuniversitenumerique/" class="body-footer__badge" target="_blank" title="Linkedin">
+                            <svg role="img"><title>Linkedin</title><use href="#icon-linkedin" /></svg>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+      {% endblock %}
+
+      {% block body_mentions %}
+        <div class="body-mentions">
+            <div class="body-mentions__container">
+                <div class="body-mentions__poweredby">
+                    <a href="https://academycity.org" target="_blank">
+                        <small>Powered by</small>
+                        <strong>Academy City</strong>
+                    </a>
+                </div>
+            </div>
+        </div>
+      {% endblock %}
+
+  {% endblock %}
+
+  {% block js %}
+  {% endblock %}
+
+
+  <p id="demo"></p>
+    <script src="{% static 'vendor/jquery/jquery.min.js' %}"></script>
+    <script src="{% static 'js/npm/cookie/js.cookie.min.js' %}"></script>
+  <script>
+
+  var csrftoken = Cookies.get('csrftoken');
+  function csrfSafeMethod(method) {
+    // these HTTP methods do not require CSRF protection
+    return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+  }
+  $.ajaxSetup({
+    beforeSend: function(xhr, settings) {
+      if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+        xhr.setRequestHeader("X-CSRFToken", csrftoken);
+      }
+    }
+  });
+
+  $(document).ready(function(){
+    post_ajax_create_action = function (verb_="", app_="", model_, obj_slug_=null, pkey_=null) {
+      $.post(link_create_action,
+        {
+          verb: verb_,
+          app: app_,
+          model: model_,
+          obj_slug: obj_slug_,
+          pkey: pkey_
+        },
+        function(data){
+            alert(data["status"])
+        }
+      );
+    }
+
+    {% block domready %}
+    {% endblock %}
+  });
+</script>
+
+</body>
+</html>

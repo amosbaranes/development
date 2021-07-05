@@ -1,0 +1,421 @@
+{% extends "academycity/base_sidenave.html" %}
+{% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
+
+{% block sidebar_nav %}
+{% if LANGUAGE_CODE == "ar" %}
+    <div dir="RTL" class="list-group border-0 card text-center text-md-right float-right">
+{% else %}
+    <div dir="LTR" class="list-group border-0 card text-center text-md-left">
+{% endif%}
+
+    <div align="center" style="margin: 10px 0px 10px 0px;">
+    {% thumbnail course.image '200x136' crop subject_location=course.image.subject_location as course_photo %}
+        <img src="{{ course_photo.url }}" width="{{ course_photo.width }}" height="{{ course_photo.height }}"
+             alt="{{ course.name }}">
+    </div>
+
+    {% if user.is_staff %}
+        <h6>
+        <a href="/" class="add_section_sub badge badge-pill badge-primary"
+           data-mn="section" data-pmn="course" data-pmid="{{ course.id }}" data-on="Need to change" >
+            Add Section
+        </a>
+        </h6>
+    {% endif %}
+
+    <div id="sections"><br/>
+    {% for section in course.course_sections.all|dictsort:"order" %}
+        <a href="#menu1sub{{ section.id }}" data-id="{{ section.id }}" class="list-group-item" data-toggle="collapse"
+           aria-expanded="false" style="background-color:gray;">
+            <span class="w3-badge w3-blue">{{ section.order }}</span>&nbsp;
+        {{ section.name }}
+        </a>
+
+        <div class="collapse" id="menu1sub{{ section.id }}">
+
+            {% if user.is_staff %}
+                <a href="/" class="add_section_sub badge badge-pill badge-primary" style="size:5"
+                   data-mn="subsection" data-pmn="section" data-pmid="{{ section.id }}" data-on="Need to change" >
+                    Add Sub Section
+                </a>
+            {% endif %}
+
+            {% for sub_section in section.section_sub_sections.all|dictsort:"order" %}
+                <a href="/" data-id="{{ sub_section.id }}" class="plugin list-group-item"
+                   data-parent="#menu1sub{{ section.id }}" data-slug="{{ sub_section.slug }}">
+                    <span class="w3-badge w3-small w3-red">{{ sub_section.order }}</span>&nbsp; {{ sub_section }}</a>
+
+                {% if user.is_staff %}
+                    <a href="{{ sub_section.get_absolute_url }}"> &nbsp; <i class="fa fa-user-circle" ></i></a>
+                {% endif %}
+            {% endfor %}
+            {% if user.is_staff %}
+            <!--
+                &nbsp;&nbsp;&nbsp;<a href="/" class="test badge badge-pill badge-primary" style="size:5"
+                   data-type="staff" data-id="{{ section.id }}" >
+                    Edit test questions
+                </a>
+            -->
+            &nbsp;&nbsp;&nbsp;<a href="{{ section.get_edit_test_url }}" style="size:5"
+                                 class="badge badge-pill badge-primary">Edit test questions</a>
+            {% else %}
+                &nbsp;&nbsp;&nbsp;<a href="/" class="test badge badge-pill badge-primary" style="size:15"
+                                     data-id="{{ section.id }}" >Take a test</a>
+            {% endif %}
+        </div>
+    {% endfor %}
+    </div>
+
+    <br/>
+    <br/>
+    <br/>
+    <!--
+    https://fontawesome.com/v4.7.0/examples/
+    -->
+    <!--
+    <a href="#" class="list-group-item d-inline-block collapsed" data-parent="#sidebar"><i class="fa fa-heart"></i> <span class="d-none d-md-inline">Item 2</span></a>
+
+    <a href="#" class="list-group-item d-inline-block collapsed" data-parent="#sidebar"><i class="fa fa-clock-o"></i> <span class="d-none d-md-inline">Link</span></a>
+    <a href="#" class="list-group-item d-inline-block collapsed" data-parent="#sidebar"><i class="fa fa-th"></i> <span class="d-none d-md-inline">Link</span></a>
+    <a href="#" class="list-group-item d-inline-block collapsed" data-parent="#sidebar"><i class="fa fa-gear"></i> <span class="d-none d-md-inline">Link</span></a>
+    <a href="#" class="list-group-item d-inline-block collapsed" data-parent="#sidebar"><i class="fa fa-calendar"></i> <span class="d-none d-md-inline">Link</span></a>
+    <a href="#" class="list-group-item d-inline-block collapsed" data-parent="#sidebar"><i class="fa fa-envelope"></i> <span class="d-none d-md-inline">Link</span></a>
+    <a href="#" class="list-group-item d-inline-block collapsed" data-parent="#sidebar"><i class="fa fa-bar-chart-o"></i> <span class="d-none d-md-inline">Link</span></a>
+    <a href="#" class="list-group-item d-inline-block collapsed" data-parent="#sidebar"><i class="fa fa-star"></i> <span class="d-none d-md-inline">Link</span></a>
+-->
+
+</div>
+{% endblock sidebar_nav %}
+
+{% block sidebar_main %}
+
+<style>
+table {
+  font-family: arial, sans-serif;
+  border-collapse: collapse;
+}
+
+.th {
+  border: 1px solid black;
+  text-align: center;
+  padding: 8px;
+  width:70px;
+}
+
+td {
+  border: 1px solid black;
+  text-align: left;
+  padding: 2px;
+}
+
+td.no_border {
+  border: 0px solid black;
+  text-align: left;
+  padding: 2px;
+}
+
+.border-lb {border: 1px solid black; border-width: 0 0 0 1px;}
+.border-rb {border: 1px solid black; border-width: 0 1px 0 0;}
+.border-bb {border: 1px solid black; border-width: 0 0 1px 0;}
+
+td.border_right {
+  border-left: 1px solid black;
+  text-align: left;
+  padding: 2px;
+}
+
+td.num {text-align: right;}
+
+input {
+  text-align: right;
+  width:70px;
+}
+
+thead {
+  background-color: lightblue;
+}
+
+tr:nth-child(even) {
+  background-color: lightblue;
+}
+
+</style>
+            <a href="#" data-target="#sidebar" data-toggle="collapse" aria-expanded="false" style="color:black">
+                <i class="fa fa-navicon fa-2x py-2 p-1"></i>
+            </a>&nbsp;&nbsp;&nbsp;
+            <a href="{{ course.syllabus.get_absolute_url }}">
+                <span><font size="5" color="coral">
+                <i class="fa fa-shield fa-rotate-270"></i>
+                    {% trans "Syllabus" %}
+                </font></span></a>
+            </a>
+            &nbsp;&nbsp;
+            <a href="{{ course.get_blog_post_list_url }}">
+                <span><font size="5" color="lightblue">
+                <i class="fa fa-envelope"></i>
+                    {% trans "Blog" %}
+                </font></span></a>
+            </a>&nbsp;&nbsp;
+            <a href="{% url 'courses:home' %}">
+                <span><font size="5" color="lightblue">
+                 <img src="https://www.freeiconspng.com/uploads/courses-icon-6.png"
+                      width="30" alt="Courses.ico" />
+                    {% trans "Back to courses" %}
+                </font>
+                </span>
+            </a>
+
+        {% if LANGUAGE_CODE == "ar" %}
+            <div dir="RTL" class="page-header">
+        {% else %}
+            <div dir="LTR" class="page-header">
+        {% endif%}
+                <h3 style="font-family: 'Times New Roman', Times, serif;">{% render_model course "name" %}:
+                    <span style="color:lightblue">
+                    {% render_model section "name" %}
+                    </span>
+                </h3>
+                   <!--
+                      {% render_placeholder course.description %}
+                      -->
+            </div>
+
+<!--Chat-->
+        <div id="mychatdiv" style="overflow:scroll;position:fixed;background-color:#f1f1f1;z-index:10;text-align:left;
+              border: 1px solid #d3d3d3; right: 1%; top:
+
+             {% if not user.is_staff %}
+                          13%
+             {% else %}
+                          5%
+             {% endif %}
+
+
+              ; width: 400px; height: 250px; "
+              onmouseenter="myEnterFunction(event)" onmouseleave="myLeaveFunction(event)"
+        >
+            <div id="mychatdivheader" style="position: fixed; margin-left:2px; margin-right:2px; padding: 10px;
+               width: 390px; cursor: move; z-index: 10;background-color: #2196F3; color: #fff;text-align:center"
+            >
+            </div>
+            <div class="container"><br/><br/>
+                <input id="input_msg" type="text" style="padding:0px; width:370px" value="" /><br/>
+            </div><br/>
+            <ul id="chat-items" >
+            </ul>
+        </div>
+<!--End Chat-->
+            <div>
+                {% if sub_section %}
+                <div class="col-md-6 col-sm-4 col-lg-12" id="plugin">
+                      <h4 style="color:lightblue">{% render_model sub_section "name" %}</h4>
+                      {% render_placeholder sub_section.description %}
+                </div>
+                {% else %}
+
+                &nbsp;&nbsp;&nbsp;<a href="{% url 'elearning:add_question' section.slug %}"
+                                     class="badge badge-pill badge-primary" style="size:15">
+                    Add Question
+                    </a>
+
+                    <div style="width: 100%; height: 600px; overflow-y: scroll;">
+                        {% get_current_language as LANGUAGE_CODE %}
+                      {% for question in questions %}
+                            {% if LANGUAGE_CODE == "ar" %}
+                              <div class="col-md-6 col-sm-4 col-lg-12" id="plugin"
+                                   style="text-align: right; margin: 0pt 20pt 0pt 0pt;">
+                            {% else %}
+                              <div class="col-md-6 col-sm-4 col-lg-12" id="plugin" >
+                            {% endif%}
+                            <h3><u>Question: {{ forloop.counter }}:
+                            (<a href="{% url 'elearning:delete_question' question.id %}"
+                                class="badge badge-pill badge-warning" style="size:15">
+                                Delete
+                            </a>)</u></h3>
+                          {% render_placeholder question.question_text %}
+                        &nbsp;&nbsp;&nbsp;<a href="{% url 'elearning:add_answer' question.id %}"
+                                             class="badge badge-pill badge-primary" style="size:15">
+                            Add answer
+                            </a><br/>
+                            {% for answer in question.answers.all %}
+                              {% if answer.correct %}
+                                <input class="correct" pkey="{{ answer.id }}" type="checkbox" checked />
+                              {% else %}
+                                <input class="correct" pkey="{{ answer.id }}" type="checkbox" />
+                              {% endif %}
+                              Answer: {{ forloop.counter }}:
+                              (<a href="{% url 'elearning:delete_answer' answer.id %}"
+                                  class="badge badge-pill badge-primary" style="size:15">Delete</a>)
+                              <br/>
+                              {% render_placeholder answer.answer_text %}
+                            {% endfor %}
+                        </div><br/>
+                      {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+<span id="id_chat_room_name" chat_room_id="{{chat_room_id}}" chat_room_name="{{chat_room_name}}"></span>
+{% endblock sidebar_main %}
+
+
+<!--  Good example
+https://www.techiediaries.com/python-django-ajax/
+https://api.jquery.com/category/ajax/
+-->
+
+{% block add_js_sub %}
+    <script src="{% static 'js/reconnecting-websocket.js' %}"></script>
+    <script src="{% static 'js/whiteboard.js' %}"></script>
+{% endblock add_js_sub %}
+
+{% block domready %}
+//------
+var loc = window.location
+var input_msg = document.getElementById("input_msg")
+var chatholder = document.getElementById("chat-items")
+var username = document.getElementById("username")
+var chat_room = document.getElementById("mychatdivheader")
+
+var webStart = "ws://"
+if (loc.protocol == "https:")
+{webStart = "wss://ws/"}
+
+pathname_ = loc.pathname.substring(3, 10000)
+lung_ = loc.pathname.substring(0, 3)
+e_chat_room_name = document.getElementById("id_chat_room_name")
+var chat_room_id = e_chat_room_name.getAttribute("chat_room_id")
+var chat_room_name = e_chat_room_name.getAttribute("chat_room_name")
+
+var endpoint = webStart + loc.host + lung_ + "/ws/chat/"+chat_room_id+"/"
+var socket = new ReconnectingWebSocket(endpoint);
+
+socket.onmessage = function(e){
+ var msg_ = JSON.parse(e.data)
+ if(msg_.type == 'wm')
+ {
+  wm.duplicate_onmove(msg_.msg)
+ } else if (msg_.type == 'wc')
+ {
+   wm.setDefaultColors(msg_.msg)
+   wm.CurrentWhiteboardTab.ctx.strokeStyle = msg_.msg;
+ } else if (msg_.type == 'wt')
+ {
+   //alert("1 - " + msg_.msg)
+   ct = wm.CurrentWhiteboardTab.tabTitle.getAttribute("id")
+   //alert("2 - " + ct)
+  if(msg_.msg != ct)
+  {
+    var event = new Event("click", {bubbles: false});
+    elm_t = document.getElementById(msg_.msg); elm_t.dispatchEvent(event)
+  }
+ } else if (msg_.type == 'add_white_board')
+ {
+  ll = msg_.msg.split(',')
+  wm.duplicate_add_whiteboard(ll[0], ll[1])
+ } else if (msg_.type == 'message')
+ {
+   chatholder.innerHTML = "<li>" + msg_.username + ": " + msg_.msg + "</li>" + chatholder.innerHTML
+ }
+
+ // chatholder.innerHTML += "<li>" + msg_.type + ": " + msg_.msg + "</li>"
+}
+
+
+socket.onopen = function(e){
+     chat_room.innerHTML = "Chat Room - " + chat_room_name
+     input_msg.addEventListener("keyup", function(){
+        if (event.keyCode === 13) {  // enter, return
+            var val = this.value
+            var dic_ = {'type': 'message', 'message': val}
+            socket.send(JSON.stringify(dic_))
+            this.value = ""
+        }
+  }.bind(input_msg, event));
+}
+
+socket.onerror = function(e){
+ console.log("error", 1)
+ console.log("error", e)
+ console.log("error", 1)
+}
+
+socket.onclose = function(e){
+ console.log("close", e)
+}
+
+//--
+wm = new WhiteboardManager(chat_room_id, socket, chat_room_name)
+//--
+// end chat functions
+// ----------------------
+
+
+function say()
+{
+ alert("say")
+}
+
+  $('a.plugin').click(function(e){
+    e.preventDefault();
+      $.post('{% url "courses:sub_section_detail" %}',
+        {
+          slug: $(this).data('slug')
+        },
+        function(data){
+            // alert(data)
+            $('#plugin').empty().append(data)
+        }
+      );
+  });
+
+  $('a.add_section_sub').click(function(e){
+   e.preventDefault();
+   var ss = prompt('enter name', '')
+   e.target.setAttribute('data-on', ss)
+      $.post('{% url "courses:set_new_model_instance" %}',
+        {
+          mn: $(this).data('mn') ,
+          pmn: $(this).data('pmn') ,
+          pmid: $(this).data('pmid'),
+          on: $(this).data('on')
+        },
+        function(data){
+            alert(data['status'])
+        }
+      );
+  });
+
+  $('a.test').click(function(e){
+    e.preventDefault();
+   //alert(e.target.outerHTML)
+
+      $.post('{% url "elearning:set_test" %}',
+        {
+          id: $(this).data('id'),
+        },
+        function(data){
+            //alert(data)
+            $('#plugin').empty().append(data)
+        }
+      );
+  });
+
+
+  $('input.correct').click(function(event){
+        e = event.target
+        //alert(e.outerHTML)
+
+        pkey = e.getAttribute("pkey")
+        value = e.checked
+
+    $.post('{% url "elearning:set_correct_answer" %}',
+      {
+        pkey_ : pkey,
+        value_: value
+      },
+      function(data){
+          //alert(data['status'])
+      });
+  });
+
+{% endblock %}

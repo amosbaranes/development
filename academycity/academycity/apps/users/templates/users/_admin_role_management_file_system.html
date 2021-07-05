@@ -1,0 +1,20 @@
+{% extends "courses/course_schedule/formset_base.html" %}
+{% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
+
+
+{% block content %}
+<div onclick="btn_users(event)">
+<table class="w3-table-all w3-hoverable" style="width:80%; margin-left:5px;">
+    <thead><th></th><th>Memory(GBit)</th></thead>
+    <tbody>
+        <tr><td>Total</td><td>{{fs_info.total}}</td></tr>
+        <tr><td>Used</td><td>{{fs_info.used}}</td></tr>
+        <tr><td>Free</td><td>{{fs_info.free}}</td></tr>
+    </tbody>
+  </table>
+</div>
+
+{% endblock %}
+
+
+

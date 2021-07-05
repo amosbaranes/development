@@ -1,0 +1,46 @@
+@font-face {
+  font-family: 'Lato';
+  font-style: normal;
+  font-weight: 300;
+  src: local('Lato Light'), local('Lato-Light'), url(https://web.archive.org/web/20180806193350im_/http://fonts.gstatic.com/s/lato/v14/S6u9w4BMUTPHh7USSwiPHA.ttf) format('truetype');
+}
+@font-face {
+  font-family: 'Lato';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Lato Regular'), local('Lato-Regular'), url(https://web.archive.org/web/20180806193350im_/http://fonts.gstatic.com/s/lato/v14/S6uyw4BMUTPHjx4wWw.ttf) format('truetype');
+}
+@font-face {
+  font-family: 'Lato';
+  font-style: normal;
+  font-weight: 700;
+  src: local('Lato Bold'), local('Lato-Bold'), url(https://web.archive.org/web/20180806193350im_/http://fonts.gstatic.com/s/lato/v14/S6u9w4BMUTPHh6UVSwiPHA.ttf) format('truetype');
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Lora Regular'), local('Lora-Regular'), url(https://web.archive.org/web/20180806193350im_/http://fonts.gstatic.com/s/lora/v12/0QIvMX1D_JOuMwr7Jg.ttf) format('truetype');
+}
+
+/*
+     FILE ARCHIVED ON 19:33:50 Aug 06, 2018 AND RETRIEVED FROM THE
+     INTERNET ARCHIVE ON 13:43:46 Jun 17, 2021.
+     JAVASCRIPT APPENDED BY WAYBACK MACHINE, COPYRIGHT INTERNET ARCHIVE.
+
+     ALL OTHER CONTENT MAY ALSO BE PROTECTED BY COPYRIGHT (17 U.S.C.
+     SECTION 108(a)(3)).
+*/
+/*
+playback timings (ms):
+  captures_list: 136.684
+  exclusion.robots: 0.217
+  exclusion.robots.policy: 0.209
+  RedisCDXSource: 2.067
+  esindex: 0.014
+  LoadShardBlock: 82.128 (3)
+  PetaboxLoader3.datanode: 1048.496 (5)
+  CDXLines.iter: 25.875 (3)
+  load_resource: 1114.869 (2)
+  PetaboxLoader3.resolve: 95.656 (2)
+*/

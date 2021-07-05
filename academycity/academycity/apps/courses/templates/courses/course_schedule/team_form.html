@@ -1,0 +1,12 @@
+{% extends "courses/course_schedule/formset_base.html" %}
+
+{% block content %}
+<div class="container">
+    <form method="post">{% csrf_token %}
+        {{ form.as_table }}
+        <b><input type="submit" value="Update" style="color:blue" />
+        <input type="button" value="Cancel" style="color:red"
+                  onclick="window.history.go(-1);"/></b>
+    </form>
+</div>
+{% endblock %}

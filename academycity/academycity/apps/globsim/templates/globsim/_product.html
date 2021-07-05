@@ -1,0 +1,40 @@
+{% load core_tags %}
+{% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
+
+{% if LANGUAGE_CODE == "ar" %}
+<div dir="RTL"style="text-align: right;" class="row">
+{% else %}
+<div dir="LTR" class="row">
+{% endif%}
+
+  <div id="product_nav" class="column left" style="background-color:#80b3ff;" nav_prefix="pr"
+       onclick="click_main_product(event)">
+        <table id="product" style="width:200px;">
+              <thead>
+                  <th></th>
+                  <th style="width:70%" scope="col"><b><u>{% trans "Products" %}</u></b></th>
+                  <th style="width:20%" scope="col"></th>
+              </thead>
+              <tbody id="product_projects_">
+                {% for p in products %}
+                    <tr>
+<!--                        <td>{{ p.created_period }}</td>-->
+                        <td></td>
+                        <td id=pr_{{ p.id }} class="pointer" obj_id="{{p.id}}" type="product">
+                          {{ p }}
+                        </td>
+                        {% if p.abundant_period %}
+                            <td></td>
+                        {% else %}
+                            <td id=pr_abandon_{{ p.id }} class="pointer" game_id="{{game.id}}" obj_id="{{p.id}}"
+                                is_abandon="0" onclick="click_abandon(event)">Abandon</td>
+                        {% endif %}
+                    </tr>
+                {% endfor %}
+              </tbody>
+        </table>
+  </div>
+  <div id="product_content" class="column right" style="background-color:#b3d1ff;">
+  </div>
+
+</div>

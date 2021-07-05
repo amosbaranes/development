@@ -1,0 +1,18 @@
+{% load static %}
+<html>
+<body>
+
+<div>
+  <span style="position: absolute; left:210px;top:140px; font-family: Arial, Helvetica, sans-serif;">{{ course_schedule_user.user.first_name }} {{ course_schedule_user.user.last_name }}</span>
+
+  <span style="position: absolute; left:200px;top:188px; font-family: Arial, Helvetica, sans-serif;">{{course_schedule_user.course_schedule.name}}</span>
+
+  <span style="position: absolute; left:570px;top:300px; font-size:11px">{{time|date:"M d, Y"}}</span>
+
+<img src="{{DOMAIN}}{% static "core/diploma.jpeg" %}" alt="My image" height="100" width="72">
+</div>
+
+
+</body>
+</html>
+

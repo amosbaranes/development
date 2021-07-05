@@ -1,0 +1,86 @@
+{% load core_tags %}
+{% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
+
+<style>
+.slidecontainer {
+  width: 100%;
+}
+
+.slider {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 15px;
+  border-radius: 5px;
+  background: #d3d3d3;
+  outline: none;
+  opacity: 0.7;
+  -webkit-transition: .2s;
+  transition: opacity .2s;
+}
+
+.slider:hover {
+  opacity: 1;
+}
+
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  background: #4CAF50;
+  cursor: pointer;
+}
+
+.slider::-moz-range-thumb {
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  background: #4CAF50;
+  cursor: pointer;
+}
+
+</style>
+
+{% if LANGUAGE_CODE == "ar" %}
+<div dir="RTL"style="text-align: right;" class="row">
+{% else %}
+<div dir="LTR" class="row">
+{% endif%}
+  <!--  Navigation  -->
+  <div id="randd_nav" class="column left" style="background-color:#80b3ff;" nav_prefix="rd"
+       onclick="click_main_randd(event, {{game.id}})">
+            <span style="text-align: center; size:15px" class=""><u>{% trans "R & D Projects" %}</u>
+              <a href="#" class="btn btn-small btn-info" obj_id="new" post_create=""
+                 style="padding:0px 5px 0px 5px;margin:10px;background-color:blue">
+                 <i class="fa fa-file-o" style="font-size:15px;color:#00FFFF;"></i> {% trans "New" %}
+              </a>
+            </span>
+            <table id="randd" style="width:250px;">
+                  <thead>
+                      <th style="width:20%" scope="col">{% trans "Year" %}</th>
+                      <th style="width:40%" scope="col">{% trans "Project" %}</th>
+                      <th style="width:40%" scope="col">{% trans "Product" %}</th>
+                  </thead>
+                  <tbody id="randd_projects_" >
+                    {% for rd in randds %}
+                        <tr>
+                            <td>{{ rd.period }}</td>
+                            <td id="rd_{{rd.id}}" class="pointer" obj_id="{{rd.id}}" type="rd" style="color:black">{{ rd.name }}</td>
+                            <td id="rd_pr_{{rd.product_id}}" product_id="{{rd.product_id}}"
+                                type="product" class="pointer" game_period="{{ game.current_period_obj }}"
+                                creation_period="{{ rd.period }}" obj_id="{{rd.id}}" >
+                                {{ rd.product_name }}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                  </tbody>
+            </table>
+  </div>
+  <!--  content  -->
+  <div id="randd_content" class="column right" style="background-color:#b3d1ff;">
+    <h3 align="center">{% trans "R&D Project Detail" %}</h3>
+  </div>
+</div>
+
+

@@ -1,0 +1,149 @@
+{% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
+      <hr/>
+
+<style>
+/* The container */
+.container {
+  display: block;
+  position: relative;
+  padding-left: 35px;
+  margin-bottom: 12px;
+  cursor: pointer;
+  font-size: 22px;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* Hide the browser's default radio button */
+.container input {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+}
+
+/* Create a custom radio button */
+.checkmark {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 25px;
+  width: 25px;
+  background-color: #eee;
+  border-radius: 50%;
+}
+
+/* On mouse-over, add a grey background color */
+.container:hover input ~ .checkmark {
+  background-color: #ccc;
+}
+
+/* When the radio button is checked, add a blue background */
+.container input:checked ~ .checkmark {
+  background-color: #2196F3;
+}
+
+/* Create the indicator (the dot/circle - hidden when not checked) */
+.checkmark:after {
+  content: "";
+  position: absolute;
+  display: none;
+}
+
+/* Show the indicator (dot/circle) when checked */
+.container input:checked ~ .checkmark:after {
+  display: block;
+}
+
+/* Style the indicator (dot/circle) */
+.container .checkmark:after {
+ 	top: 9px;
+	left: 9px;
+	width: 8px;
+	height: 8px;
+	border-radius: 50%;
+	background: white;
+}
+</style>
+
+      <div onclick="btn_answer_section(event)">
+          <span style="color:#39ac39;font-size: 35px;"><b>{% trans "Test Yourself for" %} {{ section.name }}</b></span>
+          <br/><b><u><span id="grade" style="color:blue;font-size: 25px;"></span></u></b>
+          <br/>
+          <br/>
+          <div style="width: 100%; height: 500px; overflow-y: scroll;">
+            {% for question in section.questions.all %}
+              <p class="question" style="color:#0073e6;font-size: 25px;"><strong><u>Question {{ forloop.counter }}:</u>
+                  {% render_placeholder question.question_text %}</strong></p>
+              <ol>
+                {% for answer in question.answers.all %}
+              <li>
+                    <label class="container">
+                        <input type="radio" name="question-{{ question.id }}" ppkey="{{question.id}}"
+                               pkey="{{answer.id}}" iscorrect="{{answer.correct}}"
+                        >{% render_placeholder answer.answer_text %}
+                        <span class="checkmark"></span><span style="font-weight: bold;"></span>
+                    </label>
+              </li>
+                {% endfor %}
+              </ol><br/>
+            {% endfor %}
+          </div>
+      </div>
+<script>
+
+function set_grade(e)
+{
+ if (e.getAttribute("iscorrect") == "True")
+ {
+  e.parentNode.children[3].innerHTML = "correct"
+  e.parentNode.children[3].style.color = '#00cc00'
+ } else
+ {
+  e.parentNode.children[3].innerHTML = "wrong"
+  e.parentNode.children[3].style.color = "red"
+ }
+
+  nbchecked = 0; nbcorrect = 0;
+  var questions = document.getElementsByClassName("question");
+  var radios = document.getElementsByTagName('input');
+  for (i = 0; i < radios.length; i++) {
+    if (radios[i].type == 'radio' && radios[i].checked) {
+        if(radios[i].getAttribute('iscorrect') == 'True')
+        {nbcorrect += 1}
+        // alert(radios[i].outerHTML)
+        nbchecked++;
+    }
+  }
+  document.getElementById("grade").innerHTML = "Grade from Done Questions:" + String(Math.round(nbcorrect*100/nbchecked))
+  + ",      Grade from Total Questions:" + String(Math.round(nbcorrect*100/questions.length))
+}
+
+function btn_answer_section(event){
+     e = event.target;
+     //alert(e.outerHTML)
+     ppkey_ = e.getAttribute('ppkey')
+     pkey_ = e.getAttribute('pkey')
+
+     //alert(parseInt(ppkey_))
+     //alert(parseInt(pkey_))
+
+     if(isNaN(String(ppkey_)) == false)
+     {
+        $.post('{% url "elearning:set_user_answer" %}',
+          {
+            ppkey : ppkey_,
+            pkey : pkey_,
+          },
+          function(data){
+              if(data['status'] != 'ok')
+              {alert('record was not saved')}
+              else
+              {set_grade(e)}
+          }
+        );
+     }
+}
+
+</script>

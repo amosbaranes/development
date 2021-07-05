@@ -1,0 +1,68 @@
+{% extends "academycity/base.html" %}
+{% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
+{% load core_tags %}
+
+
+{% block add_css %}
+    <link href="{% static 'css/partners.css' %}" rel="stylesheet">
+{% endblock add_css %}
+
+{% block content %}
+{% placeholder "header" %}
+{% placeholder "content" %}
+{% endblock content %}
+
+{% block content_code %}
+
+{% if LANGUAGE_CODE == "ar" %}
+<div dir="RTL"style="text-align: right;" class="row">
+{% else %}
+<div dir="LTR" class="row">
+{% endif%}
+    <div class="column left">
+    <table id="instructors">
+        <thead>
+        <th>
+            {% trans "Advisors" %}
+        </th>
+        </thead>
+        {% if tag %}
+        <tr><td style="text-align: center;">
+            ({{ tag }})
+        </td></tr>
+        {% endif %}
+
+    {% for instructor in instructors%}
+        <tr><td>
+            <a href="{{ instructor.get_absolute_url }}">{{instructor}}</a>
+        </td></tr>
+    {% endfor %}
+    </table>
+    </div>
+    <div id="instructor_content" class="column right">
+        {% thumbnail instructor.user.academics.image '150x180' crop subject_location=instructor.user.academics.image.subject_location as instructor_photo %}
+        <img src="{{ instructor_photo.url }}" width="{{ instructor_photo.width }}" height="{{ instructor_photo.height }}" ><br/>
+        <p style="margin-top:10px;margin-bottom:0px;">{% trans "Short Bio" %}:</p>
+        {% render_placeholder instructor.short_bio %}
+
+        <p class="tags">
+            Tags:
+            {% for tag_ in instructor.tags.all %}
+                <a href="{% url 'instructors:instructor_tag' slug=tag_.slug %}"
+                          style="size:15">{{tag_}}</a>
+                      {% if not forloop.last %},{% endif %}
+            {% endfor %}
+        </p>
+        {% if instructor.publications.all|length > 0 %}
+            <p><b>{% trans "Publishes- Refereed articles (partial list)" %}</b></p>
+            <table id="">
+            {% for publication in instructor.publications.all%}
+                <tr><td style="vertical-align: text-top;">{{ forloop.counter }}.&nbsp;</td><td>{{publication.citation}}</td></tr>
+            {% endfor %}
+            </table>
+
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+

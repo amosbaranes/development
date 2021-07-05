@@ -1,0 +1,176 @@
+{% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
+
+{% block content %}
+
+<div class="container" oninput="param_oninput(event)">
+    <span><font size="4">Parameters effecting the solution:</font></span>
+    <table>
+        <tr><td style="padding-left:10px">
+            Assets (A): </td><td>$&nbsp;<input id="assets_" type="text" value="1000" style="width:60px" /></td>
+        </tr>
+        <tr><td style="padding-left:10px">
+            Return On Invested Capital (ROIC): </td><td>&nbsp;&nbsp;&nbsp;<input id="roic_" type="text" value="15" style="width:50px" />&nbsp;%</td>
+        </tr>
+        <tr><td style="padding-left:10px">
+            Debt share (Ds): </td><td>&nbsp;&nbsp;&nbsp;<input id="ds_" type="text" value="60" style="width:50px" />&nbsp;%
+            &nbsp;Equity Share (Es) <span id="es_"></span>&nbsp;%</td>
+        </tr>
+        <tr><td style="padding-left:10px">
+            Interest Rate(Rd): </td><td>&nbsp;&nbsp;&nbsp;<input id="rd_" type="text" value="3.3333" style="width:50px" />&nbsp;%</td>
+        </tr>
+        <tr><td style="padding-left:10px">
+            Return on Equity (Re): </td><td>&nbsp;&nbsp;&nbsp;<input id="re_" type="text" value="15" style="width:50px" />&nbsp;%</td>
+        </tr>
+        <tr><td style="padding-left:10px">
+            Tax Rate (t): </td><td>&nbsp;&nbsp;&nbsp;<input id="tr_" type="text" value="25" style="width:50px" />&nbsp;%</td>
+        </tr>
+        <tr><td style="padding-left:10px">
+            Growth Rate (g): </td><td>&nbsp;&nbsp;&nbsp;<input id="gr_" type="text" value="3" style="width:50px" />&nbsp;%</td>
+        </tr>
+    </table>
+
+<br/>
+<table>
+    <thead>
+    <th></th>
+    <th class="border-bb border-lb" style="text-align: center" colspan="2">Direct Method</th><th></th><th>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</th>
+    <th class="border-bb border-lb" style="text-align: center" colspan="2">Indirect Method</th></th><th>
+    <th></th>
+    </thead>
+    <tbody>
+    <tr>
+        <td>A*ROIC</td>
+        <td class="txt border-lb">EBIT</td><td id="ebit_eq" class="num no_border">150.00</td>
+        <td class="no_border"></td><td class="no_border"></td>
+        <td class="txt border-lb">EBIT</td><td id="ebit_en" class="num no_border">150.00</td>
+        <td class="border-rb"></td><td>A*ROIC</td>
+    </tr>
+    <tr><td>D*Rd</td>
+        <td class="txt border-lb">Interest</td><td id="interest_eq" class="num no_border">
+        <td class="no_border"></td><td class="no_border"></td>
+        <td class="txt border-lb">Interest</td><td id="interest_en" class="num no_border"></td>
+        <td class="border-rb"></td><td></td>
+    </tr>
+    <tr><td>EBIT-Interest</td>
+        <td class="txt border-lb">Ebit After Interest</td><td id="eai_eq" class="num no_border" style="text-decoration: overline"></td>
+        <td class="no_border"></td><td class="no_border"></td>
+        <td class="txt border-lb">Ebit After Interest</td><td id="eai_en" class="num no_border" style="text-decoration: overline">
+        </td><td class="border-rb"></td><td>EBIT</td>
+    </tr>
+    <tr><td>(EBIT-Interest)*t</td>
+        <td class="txt border-lb">Taxes</td><td id="tax_eq" class="num no_border"></td>
+        <td class="no_border"></td><td class="no_border"></td>
+        <td class="txt border-lb">Taxes</td><td id="tax_en" class="num no_border"></td>
+        <td class="border-rb"></td><td>EBIT*t</td>
+    </tr>
+    <tr><td>A*g</td>
+        <td class="txt border-lb">Net Capital Expenditure</td><td id="nce_eq" class="num no_border"></td>
+        <td class="no_border"></td><td class="no_border"></td>
+        <td class="txt border-lb">Net Capital Expenditure</td><td id="nce_en" class="num no_border"></td>
+        <td class="border-rb"></td><td>A*g</td>
+    </tr>
+    <tr><td>MVD*g</td>
+        <td class="txt border-lb">Increase in debt</td><td id="id_eq" class="num no_border"></td>
+        <td class="no_border"></td><td class="no_border"></td>
+        <td class="txt border-lb">Increase in debt</td><td id="id_en" class="num no_border"></td>
+        <td class="border-rb"></td>
+        <td></td>
+    </tr>
+
+    <tr><td></td>
+        <td class="txt border-lb">Free Cash Flow Equity (FCFE)</td><td id="fcfe_eq" class="num no_border" style="text-decoration: overline"></td>
+        <td class="no_border"></td><td class="no_border"></td>
+        <td class="txt border-lb">Free Cash Flow Firm (FCFF)</td><td id="fcff_en" class="num no_border" style="text-decoration: overline"></td><td class="border-rb"></td>
+        <td></td>
+    </tr>
+
+    <tr><td></td>
+        <td class="txt border-lb">Return on Equity E(Re)</td><td id="cofc_eq" class="num no_border"></td>
+        <td class="no_border">%</td><td class="no_border"></td>
+        <td class="txt border-lb">WACC</td><td id="cofc_en" class="num no_border"></td><td class="border-rb">%</td>
+        <td>Rd*(1-t)*Ds+Re*Es</td>
+    </tr>
+    <tr><td class="border-lb"></td>
+        <td class="txt no_border"></td><td class="num no_border"></td>
+        <td class="no_border"></td><td class="no_border"></td>
+        <td class="txt border-lb">Enterprise Value (EV)</td>
+        <td id="v_en" class="num no_border" style="font-weight: bold; text-decoration: overline"></td>
+        <td class="border-rb"></td>
+        <td>FCFF/(WACC-g)</td>
+    </tr>
+    <tr><td class="border-lb"></td>
+        <td class="txt no_border"></td><td class="no_border"></td>
+        <td class="no_border"></td><td class="no_border"></td>
+        <td class="txt border-lb">Debt Value</td><td id="dv_en" class="num no_border"></td>
+        <td class="border-rb"></td><td>EV*Ds</td>
+    </tr>
+    <tr><td>FCFE/(Re-g)</td>
+        <td class="txt border-lb">Equity Value</td><td id="v_eq" class="num no_border"
+                                             style="font-weight: bold; text-decoration: underline overline"></td>
+        <td class="no_border"></td><td class="no_border"></td>
+        <td class="txt border-lb">Equity Value</td><td id="ev_en" class="num no_border"
+                                             style="font-weight: bold; text-decoration: underline overline"></td><td class="border-rb"></td>
+        <td>EV*Es</td>
+    </tr>
+    </tbody>
+</table>
+</div>
+<br/>
+<br/>
+
+<script>
+
+function param_oninput(event) {
+ //elm = event.target
+ //alert(elm.outerHTML)
+ assets = document.getElementById("assets_").value
+ roic = document.getElementById("roic_").value
+ ds = document.getElementById("ds_").value
+ rd = document.getElementById("rd_").value
+ re = document.getElementById("re_").value
+ tr = document.getElementById("tr_").value
+ gr = document.getElementById("gr_").value
+ ebit = (assets*(roic/100)).toFixed(2)
+
+ document.getElementById("es_").innerHTML = (100-ds).toFixed(2)
+ document.getElementById("ebit_en").innerHTML = ebit
+ document.getElementById("eai_en").innerHTML = ebit
+ tax_en = (tr*ebit/100).toFixed(2)
+ document.getElementById("tax_en").innerHTML = tax_en
+ wacc = ((1-tr/100)*(rd/100)*(ds/100)+(1-ds/100)*(re/100))*100
+ document.getElementById("cofc_en").innerHTML = wacc.toFixed(2)
+
+ nce = 0;
+ for(let i = 0; i < 500000; i++)
+ {
+  fcff_en = ebit*(1-(tr/100)) - nce*1
+  v = (fcff_en*100)/(wacc-gr)
+  nce = assets * (gr/100)
+ }
+ fcff_en = ebit*1 - tax_en*1 - nce*1
+ document.getElementById("v_en").innerHTML = v.toFixed(2)
+ document.getElementById("nce_en").innerHTML = (-1*nce).toFixed(2)
+ document.getElementById("tax_en").innerHTML = (-1*tax_en).toFixed(2)
+ document.getElementById("fcff_en").innerHTML = fcff_en.toFixed(2)
+ debt = v*ds/100
+ document.getElementById("dv_en").innerHTML = debt.toFixed(2)
+ document.getElementById("ev_en").innerHTML = (v*(1-ds/100)).toFixed(2)
+
+ document.getElementById("ebit_eq").innerHTML = ebit
+ interest = (rd*v*ds/10000)
+ tax_eq = (ebit - interest)*tr/100
+ document.getElementById("interest_eq").innerHTML = (-1*interest).toFixed(2)
+ document.getElementById("eai_eq").innerHTML = (ebit-interest).toFixed(2)
+ document.getElementById("tax_eq").innerHTML = (-1*tax_eq).toFixed(2)
+ document.getElementById("nce_eq").innerHTML = (-1*nce).toFixed(2)
+ document.getElementById("id_eq").innerHTML = (debt*gr/100).toFixed(2)
+ fcfe = ebit - interest - tax_eq - nce + debt * gr/100
+ document.getElementById("fcfe_eq").innerHTML = fcfe.toFixed(2)
+ document.getElementById("cofc_eq").innerHTML = (1*re).toFixed(2)
+ document.getElementById("v_eq").innerHTML = (v*(1-ds/100)).toFixed(2)
+}
+  param_oninput()
+</script>
+
+</div>
+{% endblock content %}

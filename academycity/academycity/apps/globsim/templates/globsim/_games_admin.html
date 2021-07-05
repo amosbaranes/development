@@ -1,0 +1,41 @@
+{% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
+
+<div id="GamesAdmin" class="tab-pane fade">
+    {% if LANGUAGE_CODE == "ar" %}
+    <div dir="RTL"style="text-align: right;" class="row">
+    {% else %}
+    <div dir="LTR" class="row">
+    {% endif%}
+      <div id="gamesadmin_nav" class="column left" style="background-color:#80b3ff;"
+           onclick="click_main_games_admin(event, '{{game.slug}}')">
+
+            <h4>Game Name: {% render_model game.game_type "name" %}</h4>
+           {% thumbnail game.game_type.image '200x100' crop subject_location=game.image.subject_location as gi %}
+            <img src="{{ gi.url }}" width="{{ gi.width }}" height="{{ gi.height }}" alt="{{ game.name }}">
+
+           <hr style="margin-top: -3px; margin-bottom: -2px" />
+           <br/>
+           {% render_placeholder game.game_type.description %}
+
+            <table id="gamesadmin" style="width:280px;">
+              <tbody id="gamesadmin_projects_">
+               <tr><td><a href="#" class="btn btn-small btn-info" fun="edit_game_info"
+                  style="padding:0px 2px 0px 2px;margin:0px;background-color:blue">{% trans "Edit Game Info" %}</a></td>
+               </tr><tr><td>
+                       <a href="#" class="btn btn-small btn-info" fun="edit_game_distributors"
+                          style="padding:0px 2px 0px 2px;margin:0px;background-color:blue">{% trans "Edit Game Distributors" %}</a>
+                   </td>
+               </tr><tr><td>
+                       <a href="#" class="btn btn-small btn-info" fun="edit_game_finances"
+                          style="padding:0px 2px 0px 2px;margin:0px;background-color:blue">{% trans "Edit Game Finances" %}</a>
+                   </td>
+               </tr>
+              </tbody>
+            </table>
+      </div>
+      <div id="gamesadmin_content" class="column right" style="background-color:#b3d1ff;"  >
+      </div>
+
+    </div>
+</div>
+

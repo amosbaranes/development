@@ -1,0 +1,20 @@
+{% extends "courses/course_schedule/formset_base.html" %}
+{% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
+
+
+{% block content %}
+<div onclick="btn_users(event)">
+<table class="w3-table-all w3-hoverable" style="width:80%; margin-left:5px;">
+    <thead><th></th><th>Memory(GBit)</th></thead>
+    <tbody>
+    {% for f in files%}
+        <tr><td><a href="{% static 'postgres_backup/' %}{{f.0}}" >{{ f.0 }} </a></td><td>{{ f.1 }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% endblock %}
+
+
+

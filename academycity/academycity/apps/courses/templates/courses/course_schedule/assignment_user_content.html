@@ -1,0 +1,44 @@
+{% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
+{% load core_tags %}
+
+                <div data-id="{{ content.id }}"
+                     style="list-style-type: none; margin: 0; padding: 0; overflow: hidden;
+                     background-color: white;">
+                      {% with item=content.item %}
+
+                    <br/>{{ item }} ({{ item|model_name }})<br/>
+                    <a onclick="btn_edit_sub_section(event)" slink="yes" href="#"
+                       data-s_url="{% url 'courses:assignment_user_content_update' content.assignment_user.id item|model_name item.id %}"
+                       style="background-color: #e7e7e7;
+                      border: 1px solid black; border-radius: 5px;  color: black; padding: 3px 20px 3px 22px;
+                      text-align: center; text-decoration: none; display: inline-block;
+                      font-size: 16px; margin: 4px 2px; cursor: pointer;">
+                      Edit
+                    </a>
+
+                    <form action="{% url 'courses:assignment_user_content_delete' content.id %}" method="post">
+                      <input type="submit" value="Delete">
+                      {% csrf_token %}
+                    </form>
+                      {% endwith %}
+                </div>
+
+<script>
+
+function btn_edit_sub_section(event){
+     var elm = event.target
+     var output = window.frames.top.document.getElementsByClassName('assignment_output')[0];
+     var slink = elm.getAttribute("slink");
+     if (slink == "yes")
+     {
+         event.preventDefault();
+         var s_url = elm.getAttribute("data-s_url");
+         var ss="<iframe src='" + s_url + "' width='50%' height='500' frameborder='1'></iframe>"
+         output.innerHTML = ss
+     }
+
+
+
+
+     }
+</script>

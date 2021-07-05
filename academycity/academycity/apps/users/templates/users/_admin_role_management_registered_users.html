@@ -1,0 +1,59 @@
+{% extends "courses/course_schedule/formset_base.html" %}
+{% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
+
+
+{% block content %}
+<div onclick="btn_users(event)">
+<table class="w3-table-all w3-hoverable" style="width:80%; margin-left:5px;">
+        <tr>
+            <td>id</td><td>username</td><td>first_name</td><td>last_name</td><td>email</td>
+            <td>date_joined</td><td>last_login</td><td></td>
+        </tr>
+      {% for u in users.all %}
+        <tr><td>{{ u.id }}</td>
+            <td>{{ u.username }}</td><td>{{ u.first_name }}</td><td>{{ u.last_name }}</td><td>{{ u.email }}</td>
+        <td>{{u.date_joined}}</td><td>{{u.last_login}}</td>
+            <td>
+                <a href="#" data-id="{{u.id}}">
+                    <i class="fa fa-trash-alt" type="delete"></i>
+                </a>
+            </td>
+        </tr>
+      {% endfor %}
+  </table>
+</div>
+
+<script>
+function btn_users(event)
+{
+  elm = event.target
+  //alert(elm.outerHTML)
+  var type = elm.getAttribute("type")
+  //alert(type)
+   if (type=="delete")
+   {
+     //alert(22)
+     //alert(elm.parentNode.outerHTML)
+     elm = elm.parentNode;
+     event.preventDefault();
+     var ss = prompt('Are you sure, you want to delete the record?', 'no')
+     if (ss == 'yes')
+     {
+      $.post('{% url "users:user_delete" %}',
+      {
+        id: elm.getAttribute("data-id")
+      },
+      function(data){
+        alert(data['status'])
+      }
+      )
+     }
+   }
+}
+
+</script>
+
+{% endblock %}
+
+
+

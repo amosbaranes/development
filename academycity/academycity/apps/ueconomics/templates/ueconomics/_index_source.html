@@ -1,0 +1,29 @@
+<div class="table-wrapper">
+    <h3>{{ source.type }}</h3>
+    <div class="table-scroll">
+        <table style="width:60%;">
+        <thead>
+            <tr style="background-color:blue;">
+                <th>sitc2</th><th>Product</th>
+                {% for y in first_product.product_year_data.all %}
+                    {% if y.source == source %}
+                        <th>{{y.year}}</th>
+                    {% endif %}
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+                {% for p in products.all %}
+                    <tr>
+                        <td class="left">{{ p.sitc2 }}</td><td id="{{source}}_{{p.id}}" class="left" style="cursor:pointer">{{ p.description }}</td>
+                        {% for y in p.product_year_data.all %}
+                          {% if y.source == source %}
+                           <td id="{{source}}_{{p.id}}_{{y.year}}" class="right">{{ y.value }}</td>
+                          {% endif %}
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+        </tbody>
+        </table>
+    </div>
+</div>

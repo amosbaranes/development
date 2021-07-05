@@ -1,0 +1,27 @@
+{% load i18n menu_tags %}
+
+<!--
+<ul class="nav navbar-nav navbar-right">
+<div class="dropdown">
+<button class="btn btn-primary dropdown-toggle" type="button" id="about-us" data-toggle="dropdown"
+        aria-haspopup="true" aria-expanded="false">
+    Language
+</button>
+    <div class="dropdown-menu dropdown-menu-right" aria-labelledby="language">
+{% for language in languages %}
+<li class="lang {% if current_language == language.0 %} active{% endif %}">
+	<a href="{% page_language_url language.0 %}" title="{% trans "Change to language:" %} {{ language.1 }}">{{ language.1 }}</a>
+</li>
+    {% endfor %}
+    </div>
+</ul>
+-->
+
+{% for language in languages %}
+    <li style="font-size: 150%;">
+	<a href="{% page_language_url language.0 %}"
+       title="{% trans "Change to language:" %} {{ language.1 }}">
+    <span class="badge badge-pill badge-primary">{{ language.1 }}</span>
+    </a> &nbsp;
+    </li>
+{% endfor %}

@@ -1,0 +1,79 @@
+{% extends "courses/course_schedule/formset_base.html" %}
+{% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
+
+{% block content %}
+<h3 style="margin-left:5px; color:blue">Edit scheduled courses for: {{ course.name }}</h3>
+<table class="w3-table-all w3-hoverable" style="width:95%; margin-left:5px;">
+    <thead>
+      <tr class="w3-light-blue">
+        <th style="border: 1px solid black;width:10%; text-align: center;" colspan="6">Schedule</th>
+        <th style="border: 1px solid black;width:20%; text-align: center;" rowspan="2">From</th>
+        <th style="border: 1px solid black;width:20%; text-align: center;" rowspan="2">To</th>
+      </tr>
+    <tr>
+        <th style="border: 1px solid black;width:10%; text-align: center;" >Schedule</th>
+        <th style="border: 1px solid black;width:10%; text-align: center;" >Edit</th>
+        <th style="border: 1px solid black;width:10%; text-align: center;" >Assign</th>
+        <th style="border: 1px solid black;width:10%; text-align: center;" >Students</th>
+        <th style="border: 1px solid black;width:10%; text-align: center;" >Random</th>
+        <th style="border: 1px solid black;width:10%; text-align: center;" >Email</th>
+    </tr>
+    </thead>
+<tbody onclick="alert(1);btn_short_courses_schedule(event)" >
+{% for course_schedule in course.course_schedules.all|dictsort:"start_date" %}
+    <tr>
+        <td style="border: 1px solid black;">
+            {{ course_schedule.name }}</td>
+        <td style="border: 1px solid black; text-align: center;"><a href="{% url 'courses:course_schedule_edit' course_schedule.id %}">
+            <i class="fa fa-edit"></i></a>
+        </td>
+        <td style="border: 1px solid black; text-align: center;"><a href="{% url 'courses:course_schedule_edit' course_schedule.id %}">
+            <i class="fa fa-tasks"></i></a>
+        </td>
+        <td style="border: 1px solid black; text-align: center;">
+            <a href="{% url 'courses:get_registered_list0' course_schedule.slug %}">
+            <i class="fa fa-user-edit"></i></a></td>
+
+        <td style="border: 1px solid black; text-align: center;">
+            <a href="{% url 'courses:course_schedule_random_group_assignment' course_schedule.slug %}">
+            <i class="fa fa-user-check"></i></a></td>
+
+<!--        <td style="border: 1px solid black; text-align: center;">-->
+<!--            <a href="{% url 'courses:course_schedule_send_email' course_schedule.slug %}">-->
+<!--            <i class="fa fa-paper-plane"></i></a>-->
+<!--        </td>-->
+
+
+        <td style="border: 1px solid black; text-align: center;">
+            <a href="#" data-view="{% url 'courses:course_schedule_send_email' course_schedule.slug %}">
+            <i class="fa fa-paper-plane"></i></a>
+        </td>
+
+        <td style="border: 1px solid black;">
+            {{ course_schedule.start_date }}
+        </td>
+        <td style="border: 1px solid black;">
+            {{ course_schedule.end_date }}
+        </td>
+    </tr>
+{% endfor %}
+</tbody>
+</table>
+
+
+<script>
+
+alert(99)
+
+btn_short_courses_schedule = function(event)
+{
+  alert(2222);
+}
+
+</script>
+
+{% endblock %}
+
+
+
+

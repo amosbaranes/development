@@ -1,0 +1,38 @@
+{% load i18n %}
+  <a href="#" class="show_content" data-page="admin_role_management">Course Management</a>
+
+  <button class="dropdown-btn">Other<i class="fa fa-caret-down"></i></button>
+  <div class="dropdown-container">
+    <a href="{% url 'users:list_institution' %}" >Institutions List</a>
+    <a href="{% url 'shop:product_list' %}" >Product List (shop)</a>
+    <a href="#" class="show_content" data-page="accountant_close_the_books">Close the books</a>
+    <a href="#" class="show_content" data-page="active_simulations">Active Simulations</a>
+  </div>
+
+
+  <button class="dropdown-btn">User Actions
+      <i class="fa fa-caret-down"></i>
+  </button>
+  <div class="dropdown-container">
+    <a href="#" class="show_content" data-page="all_actions">All Actions</a>
+    <a href="#" class="show_content" data-page="courses_actions">Courses Actions</a>
+  </div>
+
+  <button class="dropdown-btn">Manage Images
+      <i class="fa fa-caret-down"></i>
+  </button>
+  <div class="dropdown-container">
+    <a href="{% url 'images:list' %}" >Images List</a>
+    <a href="{% url 'images:image_ranking' %}" >Popular Images</a>
+
+    <a href="javascript:{% include "bookmarklet_launcher.js" %}"><span class="badge badge-pill badge-primary">bm-prod</span></a>
+    <a href="javascript:{% include "bookmarklet_launcher_dev.js" %}"><span class="badge badge-pill badge-primary">bm-dev</span></a>
+
+    <a class="w3-button w3-block w3-left-align" href="#">{% trans "Link" %}</a>
+  </div>
+
+
+<!--
+        <a href=" url 'main:confirm_instructors' %}">Confirm Instructors</a>
+        <a href=" url 'main:linstitution' %}">List of Institutions</a>
+-->

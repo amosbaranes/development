@@ -1,0 +1,2277 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2020-07-15 22:51+0300\n"
+"PO-Revision-Date: 2019-09-14 15:58+0221\n"
+"Last-Translator: b'admin General <amos@drbaranes.com>'\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Translated-Using: django-rosetta 0.9.3\n"
+
+#: academycity/apps/actions/views.py:13
+msgid "Actions  11"
+msgstr "Actions 11"
+
+#: academycity/apps/blog/models.py:22
+msgid "title"
+msgstr "Titre"
+
+#: academycity/apps/blog/models.py:31
+msgid "status"
+msgstr "statut"
+
+#: academycity/apps/blog/templates/blog/post/detail.html:17
+msgid "Share this post"
+msgstr ""
+
+#: academycity/apps/blog/templates/blog/post/detail.html:51
+msgid "Add another comment"
+msgstr ""
+
+#: academycity/apps/blog/templates/blog/post/list.html:11
+msgid "Create Post"
+msgstr ""
+
+#: academycity/apps/blog/templates/blog/post/list.html:15
+msgid "Search posts"
+msgstr ""
+
+#: academycity/apps/blog/templates/blog/post/list.html:39
+msgid "Content"
+msgstr ""
+
+#: academycity/apps/cart/templates/cart/detail.html:4
+#: academycity/apps/courses/templates/courses/course_cart_detail.html:4
+msgid "Your shopping cart"
+msgstr ""
+
+#: academycity/apps/cart/templates/cart/detail.html:12
+#: academycity/apps/courses/templates/courses/course_cart_detail.html:12
+msgid "Image"
+msgstr ""
+
+#: academycity/apps/cart/templates/cart/detail.html:13
+#: academycity/apps/courses/templates/courses/course_cart_detail.html:13
+#: academycity/apps/globsim/models.py:139
+#: academycity/apps/globsim/models.py:140
+#: academycity/apps/globsim/models.py:141
+#: academycity/apps/globsim/models.py:142
+#: academycity/apps/globsim/models.py:143
+#: academycity/apps/globsim/models.py:144
+#: academycity/apps/globsim/models.py:145
+#: academycity/apps/globsim/templates/globsim/_randd.html:62
+#: academycity/apps/globsim/templates/globsim/home.html:37
+#: academycity/apps/globsim/templates/globsim/home_TobeDeleted.html:24
+msgid "Product"
+msgstr "Produit"
+
+#: academycity/apps/cart/templates/cart/detail.html:14
+#: academycity/apps/courses/templates/courses/course_cart_detail.html:14
+msgid "Quantity"
+msgstr "Quantité"
+
+#: academycity/apps/cart/templates/cart/detail.html:15
+#: academycity/apps/courses/templates/courses/course_cart_detail.html:15
+msgid "Remove"
+msgstr "Retirer"
+
+#: academycity/apps/cart/templates/cart/detail.html:16
+#: academycity/apps/courses/templates/courses/course_cart_detail.html:16
+msgid "Unit price"
+msgstr "Prix ​​unitaire"
+
+#: academycity/apps/cart/templates/cart/detail.html:17
+#: academycity/apps/courses/templates/courses/course_cart_detail.html:20
+msgid "Price"
+msgstr "Prix"
+
+#: academycity/apps/cart/templates/cart/detail.html:55
+#: academycity/apps/orders/templates/orders/create.html:4
+msgid "Checkout"
+msgstr "Check-out"
+
+#: academycity/apps/core/views.py:11
+msgid "Core App"
+msgstr "Core App"
+
+#: academycity/apps/corporatevaluation/admin.py:28
+#: academycity/apps/courses/admin.py:26 academycity/apps/courses/admin.py:64
+#: academycity/apps/courses/admin.py:87 academycity/apps/courses/admin.py:108
+#: academycity/apps/courses/admin.py:129 academycity/apps/courses/admin.py:175
+#: academycity/apps/globsim/admin.py:30 academycity/apps/globsim/admin.py:52
+#: academycity/apps/globsim/admin.py:75 academycity/apps/globsim/admin.py:102
+#: academycity/apps/globsim/admin.py:125 academycity/apps/globsim/admin.py:154
+#: academycity/apps/globsim/admin.py:225 academycity/apps/globsim/admin.py:250
+#: academycity/apps/globsim/admin.py:275 academycity/apps/globsim/admin.py:308
+#: academycity/apps/globsim/admin.py:329 academycity/apps/shop/admin.py:22
+#: academycity/apps/shop/admin.py:43
+msgid "Translated Fields"
+msgstr ""
+
+#: academycity/apps/corporatevaluation/cms_plugins.py:11
+msgid "FSA"
+msgstr ""
+
+#: academycity/apps/corporatevaluation/cms_plugins.py:19
+msgid "FSA-HV-I"
+msgstr ""
+
+#: academycity/apps/corporatevaluation/cms_plugins.py:27
+msgid "FSA-HV-BS"
+msgstr ""
+
+#: academycity/apps/corporatevaluation/cms_plugins.py:35
+msgid "FSA-RATIO"
+msgstr ""
+
+#: academycity/apps/corporatevaluation/cms_plugins.py:43
+msgid "WaccEbitRoic"
+msgstr ""
+
+#: academycity/apps/corporatevaluation/cms_plugins.py:51
+msgid "Gordon Equation"
+msgstr ""
+
+#: academycity/apps/corporatevaluation/cms_plugins.py:59
+msgid "DCF-Basic"
+msgstr ""
+
+#: academycity/apps/corporatevaluation/cms_plugins.py:67
+msgid "EquityEnterpriseValuation"
+msgstr ""
+
+#: academycity/apps/corporatevaluation/models.py:94
+#: academycity/apps/corporatevaluation/models.py:95
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/home.html:14
+msgid "Industry"
+msgstr "Industrie"
+
+#: academycity/apps/corporatevaluation/models.py:103
+#: academycity/apps/corporatevaluation/models.py:104
+msgid "Company Info"
+msgstr "Information d'entreprise"
+
+#: academycity/apps/corporatevaluation/models.py:126
+#: academycity/apps/corporatevaluation/models.py:127
+msgid "Company Data"
+msgstr "Les données de la compagnie"
+
+#: academycity/apps/corporatevaluation/models.py:171
+msgid "project"
+msgstr "projet"
+
+#: academycity/apps/corporatevaluation/models.py:172
+msgid "projects"
+msgstr "projets"
+
+#: academycity/apps/corporatevaluation/models.py:190
+#: academycity/apps/courses/models.py:44 academycity/apps/courses/models.py:100
+#: academycity/apps/courses/models.py:155
+#: academycity/apps/courses/models.py:287
+#: academycity/apps/courses/models.py:345
+#: academycity/apps/courses/models.py:378 academycity/apps/globsim/models.py:42
+#: academycity/apps/globsim/models.py:74 academycity/apps/globsim/models.py:114
+#: academycity/apps/globsim/models.py:172
+#: academycity/apps/globsim/models.py:222
+#: academycity/apps/globsim/models.py:274
+#: academycity/apps/globsim/models.py:310
+#: academycity/apps/globsim/models.py:346
+#: academycity/apps/globsim/models.py:396
+#: academycity/apps/globsim/models.py:431
+#: academycity/apps/globsim/models.py:653
+#: academycity/apps/globsim/models.py:731
+#: academycity/apps/globsim/models.py:952 academycity/apps/shop/models.py:30
+#: academycity/apps/shop/models.py:65
+msgid "name"
+msgstr "Nom"
+
+#: academycity/apps/corporatevaluation/models.py:191
+#, fuzzy
+#| msgid "Please supply the department name."
+msgid "Please supply the project name."
+msgstr "S'il vous plaît fournir le nom du département."
+
+#: academycity/apps/corporatevaluation/models.py:192
+#: academycity/apps/courses/models.py:46 academycity/apps/courses/models.py:102
+#: academycity/apps/courses/models.py:157
+#: academycity/apps/courses/models.py:222
+#: academycity/apps/courses/models.py:319
+#: academycity/apps/courses/models.py:346
+#: academycity/apps/courses/models.py:379
+#: academycity/apps/courses/models.py:482 academycity/apps/globsim/models.py:44
+#: academycity/apps/globsim/models.py:76 academycity/apps/globsim/models.py:116
+#: academycity/apps/globsim/models.py:174
+#: academycity/apps/globsim/models.py:224
+#: academycity/apps/globsim/models.py:276
+#: academycity/apps/globsim/models.py:312
+#: academycity/apps/globsim/models.py:348
+#: academycity/apps/globsim/models.py:398
+#: academycity/apps/globsim/models.py:433
+#: academycity/apps/globsim/models.py:655 academycity/apps/shop/models.py:32
+#: academycity/apps/shop/models.py:67
+msgid "slug"
+msgstr ""
+
+#: academycity/apps/corporatevaluation/models.py:193
+#, fuzzy
+#| msgid "Please supply the department name."
+msgid "Please supply the project slug."
+msgstr "S'il vous plaît fournir le nom du département."
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA.html:173
+msgid "Clean data"
+msgstr "Nettoyer les données"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA.html:174
+msgid "Run all transactions"
+msgstr "Exécuter toutes les transactions"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA.html:185
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV.html:24
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV_B.html:22
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_RATIO.html:24
+msgid "Balance Sheet"
+msgstr "Bilan"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA.html:189
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV.html:34
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV.html:196
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV.html:358
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV_B.html:32
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV_B.html:199
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV_B.html:366
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_RATIO.html:34
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/corporate_valuation.html:41
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/corporate_valuation.html:59
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/gordon_equation.html:9
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/wacc_ebit_roic.html:44
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/wacc_ebit_roic.html:93
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/wacc_ebit_roic.html:111
+msgid "Assets"
+msgstr "Les atouts"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA.html:191
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV.html:37
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV.html:199
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV.html:361
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV_B.html:35
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV_B.html:202
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV_B.html:369
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_RATIO.html:37
+#, fuzzy
+#| msgid "Other Current Assets"
+msgid "Current Assets"
+msgstr "Actifs courants"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA.html:192
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV.html:40
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV.html:202
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV.html:364
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV_B.html:38
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV_B.html:205
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV_B.html:372
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_RATIO.html:40
+msgid "Cash"
+msgstr "En espèces"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA.html:195
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV.html:47
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV.html:209
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV.html:371
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV_B.html:45
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV_B.html:212
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV_B.html:379
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_RATIO.html:47
+#, fuzzy
+#| msgid "department"
+msgid "Inventory"
+msgstr "Inventaire"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA.html:198
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV.html:54
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV.html:216
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV.html:378
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV_B.html:52
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV_B.html:219
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV_B.html:386
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_RATIO.html:54
+msgid "Account Receivables"
+msgstr "Comptes débiteurs"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA.html:201
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV.html:61
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV.html:223
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV.html:385
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV_B.html:59
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV_B.html:226
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV_B.html:393
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_RATIO.html:61
+msgid "Other Current Assets"
+msgstr "Autres actifs courants"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA.html:204
+#, fuzzy
+#| msgid "Other Current Assets"
+msgid "Total current assets"
+msgstr "Actifs courants"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA.html:207
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV.html:75
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV.html:237
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV.html:399
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV_B.html:73
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV_B.html:240
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV_B.html:407
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_RATIO.html:75
+#, fuzzy
+#| msgid "Long Term Liabilities"
+msgid "Long Term Assets"
+msgstr "Actifs à long terme"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA.html:208
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV.html:78
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV.html:240
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV.html:402
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV_B.html:76
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV_B.html:243
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV_B.html:410
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_RATIO.html:78
+msgid "Proporties Plants & Equipments"
+msgstr "Propriétés Plantes et équipements"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA.html:211
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV.html:85
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV.html:247
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV.html:409
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV_B.html:83
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV_B.html:250
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV_B.html:417
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_RATIO.html:85
+msgid "Accumulated Depreciation"
+msgstr "Dépréciation accumulée"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA.html:216
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV.html:92
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV.html:254
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV.html:416
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV_B.html:90
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV_B.html:257
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV_B.html:424
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_RATIO.html:92
+msgid "Subsidiaries"
+msgstr "Filiales"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA.html:219
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV.html:99
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV.html:261
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV.html:423
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV_B.html:97
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV_B.html:264
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV_B.html:431
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_RATIO.html:99
+msgid "Intangibles"
+msgstr "Actifs incorporels"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA.html:222
+msgid "Total L.T.A"
+msgstr ""
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA.html:224
+#, fuzzy
+#| msgid "Debt To Total Assets"
+msgid "Total assets"
+msgstr "Dette par rapport au total de l'actif"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA.html:227
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV.html:122
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV.html:284
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV.html:446
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV_B.html:120
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV_B.html:287
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV_B.html:454
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_RATIO.html:122
+msgid "Liabilities"
+msgstr "Passifs"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA.html:228
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV.html:125
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV.html:287
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV.html:449
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV_B.html:123
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV_B.html:290
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV_B.html:457
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_RATIO.html:125
+msgid "Current Liabilities"
+msgstr "Passifs courants"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA.html:231
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV.html:132
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV.html:294
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV.html:456
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV_B.html:130
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV_B.html:297
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV_B.html:464
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_RATIO.html:132
+msgid "Long Term Liabilities"
+msgstr "Long terme Passifs"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA.html:234
+#, fuzzy
+#| msgid "Liabilities"
+msgid "Total Liabilities"
+msgstr "Passifs"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA.html:237
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV.html:147
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV.html:309
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV.html:471
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV_B.html:145
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV_B.html:312
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV_B.html:479
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_RATIO.html:147
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/wacc_ebit_roic.html:54
+msgid "Equity"
+msgstr "Équité"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA.html:238
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV.html:150
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV.html:312
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV.html:474
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV_B.html:148
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV_B.html:315
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV_B.html:482
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_RATIO.html:150
+msgid "Common Stock"
+msgstr "Actions ordinaires"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA.html:241
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV.html:157
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV.html:319
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV.html:481
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV_B.html:155
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV_B.html:322
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV_B.html:489
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_RATIO.html:164
+msgid "Retained Earning"
+msgstr "Des bénéfices non répartis"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA.html:244
+#, fuzzy
+#| msgid "Debt To Total Equity"
+msgid "Total Equity"
+msgstr "Dette par rapport aux capitaux propres"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA.html:247
+#, fuzzy
+#| msgid "Debt To Total Equity"
+msgid "Total Liab. + Equity"
+msgstr "Dette par rapport aux capitaux propres"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA.html:256
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV.html:509
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV_I.html:21
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_RATIO.html:197
+msgid "Income Statement"
+msgstr "releve de revenue"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA.html:260
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV.html:519
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV.html:612
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV.html:705
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV_I.html:31
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV_I.html:129
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV_I.html:227
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_RATIO.html:207
+msgid "Revenue"
+msgstr "Revenu"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA.html:262
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV.html:526
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV.html:619
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV.html:712
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV_I.html:38
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV_I.html:136
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV_I.html:234
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_RATIO.html:214
+msgid "Cost of Goods Sold"
+msgstr "Coût du bien vendu"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA.html:264
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA.html:432
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA.html:438
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV.html:533
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV.html:626
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV.html:719
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV_I.html:45
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV_I.html:143
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV_I.html:241
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_RATIO.html:221
+msgid "Depreciation"
+msgstr "Dépréciation"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA.html:266
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV.html:540
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV.html:633
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV.html:726
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV_I.html:52
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV_I.html:150
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV_I.html:248
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_RATIO.html:228
+msgid "Gross Profit"
+msgstr "Bénéfice brut"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA.html:268
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV.html:547
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV.html:640
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV.html:733
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV_I.html:59
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV_I.html:157
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV_I.html:255
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_RATIO.html:235
+#, fuzzy
+#| msgid "Marketing"
+msgid "Sales & Marketing Exp"
+msgstr "Frais de vente Général et"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA.html:270
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV.html:554
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV.html:647
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV.html:740
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV_I.html:66
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV_I.html:164
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV_I.html:262
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_RATIO.html:242
+msgid "General & Administrative Exp"
+msgstr "Dépenses administratives"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA.html:272
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV.html:561
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV.html:654
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV.html:747
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV_I.html:73
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV_I.html:171
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV_I.html:269
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_RATIO.html:249
+msgid "Operating Profit (EBIT)"
+msgstr "Bénéfice d'exploitation (EBIT)"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA.html:274
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV.html:568
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV.html:661
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV.html:754
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV_I.html:80
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV_I.html:178
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV_I.html:276
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_RATIO.html:256
+msgid "Interest Exp."
+msgstr "Frais d'intérêt"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA.html:276
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV.html:575
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV.html:668
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV.html:761
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV_I.html:87
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV_I.html:185
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV_I.html:283
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_RATIO.html:263
+msgid "Income Before Taxes"
+msgstr "Résultat avant impôt"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA.html:278
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV.html:582
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV.html:675
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV.html:768
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV_I.html:94
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV_I.html:192
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV_I.html:290
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_RATIO.html:270
+msgid "Taxes"
+msgstr "Les taxes"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA.html:280
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA.html:431
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV.html:589
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV.html:682
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV.html:775
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV_I.html:101
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV_I.html:199
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV_I.html:297
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_RATIO.html:277
+msgid "Net Income"
+msgstr "Revenu net"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA.html:283
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA.html:452
+msgid "Case Studies"
+msgstr "Études de cas"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA.html:288
+msgid "Issue Equity 50"
+msgstr "Émission de capitaux propres 50"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA.html:301
+msgid "Issue Debt 600"
+msgstr "Emission de la dette 600"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA.html:315
+msgid "Buy inventory (credit) 800"
+msgstr "Acheter inventaire (crédit) 800"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA.html:330
+msgid "Sale inventory (credit 7) 1274"
+msgstr "Inventaire de vente (crédit 7) 1274"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA.html:345
+msgid "Pay Suppliers 768"
+msgstr "Payer les fournisseurs 768"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA.html:361
+msgid "Buy PP&E 400"
+msgstr "Acheter PP&E 400"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA.html:376
+#, fuzzy
+#| msgid "Interest Exp."
+msgid "Pay Interest 130"
+msgstr "Frais d'intérêt"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA.html:392
+msgid "Invest in Subsidiary 300"
+msgstr "Investir dans la filiale 300"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA.html:407
+#, fuzzy
+#| msgid "Intangibles"
+msgid "Invest in Intangibles 120"
+msgstr "Actifs incorporels"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA.html:425
+msgid "Statement of Cash Flow"
+msgstr "État des flux de trésorerie"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA.html:429
+msgid "Operation"
+msgstr "Opération"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA.html:433
+msgid "Increase in Working Capital"
+msgstr "Changement de WC net"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA.html:434
+#, fuzzy
+#| msgid "Operation"
+msgid "Cash from Operation"
+msgstr "Opération"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA.html:436
+#, fuzzy
+#| msgid "department"
+msgid "Investment"
+msgstr "département"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA.html:437
+msgid "Net Capital Exp"
+msgstr "Net Capital Exp"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA.html:439
+msgid "Cash from investing"
+msgstr "Encaisse d'investissement"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA.html:441
+msgid "Financing Activities"
+msgstr "Activités de financement"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA.html:442
+msgid "Increase in LT. Debt"
+msgstr "Augmentation de LT. Dette"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA.html:443
+msgid "Increase in Common Stock"
+msgstr "Augmentation des actions ordinaires"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA.html:444
+msgid "Dividend"
+msgstr "Dividende"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA.html:445
+msgid "Cash from financing"
+msgstr "Trésorerie de financement"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA.html:447
+msgid "Change in Cash"
+msgstr "Changement en espèces"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA.html:460
+#, fuzzy
+#| msgid "Marketing"
+msgid "Sales & Marketing Exp 110"
+msgstr "Ventes et marketing Exp 110"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA.html:476
+#, fuzzy
+#| msgid "General & Administrative Exp"
+msgid "General and Administrative 75"
+msgstr "Général et administratif 75"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA.html:491
+msgid "Invest in Commercial Paper (6)"
+msgstr "Investir dans du papier commercial (6)"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA.html:506
+#, fuzzy
+#| msgid "Accumulated Depreciation"
+msgid "Account for Depreciation 40"
+msgstr "Dépréciation accumulée"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV.html:186
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV_B.html:189
+msgid "Balance Sheet - Verticals Analysis"
+msgstr "Bilan - Analyse des verticales"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV.html:348
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV_B.html:356
+msgid "Balance Sheet - Horizontal Analysis"
+msgstr "Bilan - Analyse horizontale"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV.html:602
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV_I.html:119
+#, fuzzy
+#| msgid "Income Statement"
+msgid "Income Statement - Vertical"
+msgstr "releve de revenue"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV.html:695
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_HV_I.html:217
+#, fuzzy
+#| msgid "Income Statement"
+msgid "Income Statement - Horizontal"
+msgstr "releve de revenue"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_RATIO.html:157
+msgid "Preferred Stock"
+msgstr "Stock préféré"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_RATIO.html:296
+msgid "Additional information"
+msgstr "Information additionnelle"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_RATIO.html:306
+msgid "Common Shares Outstanding"
+msgstr "Actions ordinaires en circulation"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_RATIO.html:313
+msgid "Market Price Per Share"
+msgstr "Prix​du marché par action"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_RATIO.html:320
+#, fuzzy
+#| msgid "Dividend"
+msgid "Dividend Per Share"
+msgstr "Dividende"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_RATIO.html:327
+#, fuzzy
+#| msgid "Dividend"
+msgid "Preferred Dividend"
+msgstr "Dividende"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_RATIO.html:345
+msgid "Ratio Analysis"
+msgstr "Analyse du ratio"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_RATIO.html:355
+msgid "Liquidity Ratios"
+msgstr "Ratios de liquidité"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_RATIO.html:358
+#, fuzzy
+#| msgid "Current Liabilities"
+msgid "Current Ratio"
+msgstr "Passifs courants"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_RATIO.html:365
+msgid "Quick Ratio"
+msgstr "Ratio rapide"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_RATIO.html:372
+msgid "Debt Service Ratios"
+msgstr "Ratios du service de la dette"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_RATIO.html:375
+msgid "Debt To Total Assets"
+msgstr "Dette par rapport au total de l'actif"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_RATIO.html:382
+msgid "Debt To Total Equity"
+msgstr "Dette par rapport aux capitaux propres"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_RATIO.html:389
+msgid "Times Interest Earned"
+msgstr "Fois intérêts gagnés"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_RATIO.html:396
+msgid "Turn Over Ratios"
+msgstr "Rapports de rotation"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_RATIO.html:399
+msgid "Account Receivables Turnover"
+msgstr "Chiffre d'affaires des comptes clients"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_RATIO.html:406
+#, fuzzy
+#| msgid "department"
+msgid "Inventory Turnover"
+msgstr "département"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_RATIO.html:413
+msgid "Profitability Ratios"
+msgstr "Ratios de rentabilité"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_RATIO.html:416
+msgid "Net Profit On Sale"
+msgstr "Bénéfice net à la vente"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_RATIO.html:423
+#, fuzzy
+#| msgid "Gross Profit"
+msgid "Gross Profit Margin"
+msgstr "Bénéfice brut"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_RATIO.html:430
+#, fuzzy
+#| msgid "Other Current Assets"
+msgid "Return On Assets"
+msgstr "Autres actifs courants"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_RATIO.html:437
+msgid "Return On Equity"
+msgstr "Retour sur capitaux propres"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_RATIO.html:444
+msgid "Other Indicators"
+msgstr "Autres indicateurs"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_RATIO.html:447
+msgid "EPS"
+msgstr "EPS"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_RATIO.html:454
+msgid "P/E"
+msgstr "P/E"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_RATIO.html:461
+msgid "Dividend Rate/Yield"
+msgstr "Taux de dividende / rendement"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_RATIO.html:468
+msgid "Dividend Payout Ratio"
+msgstr "Ratio de distribution de dividendes"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/FSA_RATIO.html:475
+msgid "Book Value"
+msgstr "Valeur comptable"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/home.html:18
+msgid "All Companies"
+msgstr "Toutes les entreprises"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/home.html:26
+msgid "Company"
+msgstr "Compagnie"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/home.html:29
+msgid "Ticker"
+msgstr "Téléscripteur"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/home.html:33
+msgid "Country"
+msgstr "Pays"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/home.html:41
+msgid "Rating"
+msgstr "Évaluation"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/home.html:42
+msgid "Spread"
+msgstr "Propagé"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/home.html:43
+msgid "Tax rate"
+msgstr "Taux d'imposition"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/home.html:64
+#, fuzzy
+#| msgid "Simulation"
+msgid "Calculation"
+msgstr "Simulation"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/home.html:70
+#, fuzzy
+#| msgid "Simulation"
+msgid "Valuation"
+msgstr "Simulation"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/home.html:76
+msgid "Data"
+msgstr "Les données"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/home.html:85
+msgid "Cost of Debt"
+msgstr "Le coût de la dette"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/home.html:89
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/home.html:152
+msgid "Risk Free"
+msgstr "Sans risque"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/home.html:91
+msgid "Interest Expense"
+msgstr "Charges d'intérêts"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/home.html:93
+msgid "Interest Coverage"
+msgstr "Couverture des intérêts"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/home.html:95
+msgid "Estimated Bond Rating"
+msgstr "Cote d'obligation estimée"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/home.html:97
+msgid "Estimated Company Default Spread"
+msgstr "Répartition par défaut estimée de l'entreprise"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/home.html:99
+msgid "Estimated County Default Spread"
+msgstr "Répartition par défaut estimée du comté"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/home.html:101
+msgid "Estimated Cost of Debt"
+msgstr "Coût estimatif de la dette"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/home.html:109
+msgid "Growth and Cost of Equity"
+msgstr "Croissance et coût des capitaux propres"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/home.html:112
+msgid "Add Industry Beta"
+msgstr "Ajouter la version bêta de l'industrie"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/home.html:115
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/home_0_ToBeDeleted.html:167
+msgid "Business"
+msgstr "Affaires"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/home.html:116
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/home_0_ToBeDeleted.html:168
+msgid "Revenues"
+msgstr "Revenus"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/home.html:117
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/home_0_ToBeDeleted.html:169
+msgid "EV/Sales"
+msgstr ""
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/home.html:118
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/home_0_ToBeDeleted.html:170
+msgid "Estimated Value"
+msgstr "Valeur estimée"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/home.html:119
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/home_0_ToBeDeleted.html:171
+msgid "Unlevered Beta"
+msgstr "Bêta sans levier"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/home.html:120
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/home_0_ToBeDeleted.html:172
+msgid "Expected Growth"
+msgstr "Croissance attendue"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/home.html:139
+msgid "Delete"
+msgstr "Supprimer"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/home.html:146
+msgid "Growth"
+msgstr "Croissance"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/home.html:153
+msgid "Unlevred Beta"
+msgstr "Bêta sans levier"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/home.html:154
+msgid "Beta"
+msgstr "Bêta"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/home.html:155
+msgid "Mature marker risk premium"
+msgstr "Prime de risque de marché mature"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/home.html:158
+msgid "Adj. Default Spread"
+msgstr "Adj. Spread par défaut"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/home.html:159
+msgid "Volatility ratio"
+msgstr "Ratio de volatilité"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/home.html:160
+msgid "Total Country Risk"
+msgstr "Risque pays total"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/home.html:161
+msgid "Cost of Equity"
+msgstr "Coût de l'équité"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/home.html:167
+msgid "Estimated ROIC"
+msgstr "ROIC estimé"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/home.html:181
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/home.html:471
+msgid "Effective tax rate"
+msgstr "Taux d'imposition effectif"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/home.html:194
+msgid "Parameters effecting the solution"
+msgstr "Paramètres affectant la solution"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/home.html:437
+#, fuzzy
+#| msgid "Simulation"
+msgid "Simulate"
+msgstr "Simulation"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/home.html:440
+msgid "Range"
+msgstr "Intervalle"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/home.html:441
+msgid "Skew"
+msgstr "Fausser"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/home.html:442
+msgid "# Randomization"
+msgstr "# Randomisation"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/home.html:452
+msgid "Short Term Growth"
+msgstr "Croissance à court terme"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/home.html:455
+msgid "Long Term Growth"
+msgstr "Croissance à long terme"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/home.html:468
+msgid "Marginal tax rate"
+msgstr "Taux d'imposition marginal"
+
+#: academycity/apps/corporatevaluation/templates/corporatevaluation/wacc_ebit_roic.html:49
+msgid "Debt"
+msgstr "Dette"
+
+#: academycity/apps/corporatevaluation/views.py:159
+msgid "wacc_ebit_roic"
+msgstr ""
+
+#: academycity/apps/corporatevaluation/views.py:164
+msgid "CVTeam"
+msgstr ""
+
+#: academycity/apps/courses/cms_apps.py:14
+msgid "Courses"
+msgstr "Cours"
+
+#: academycity/apps/courses/models.py:33
+msgid "department"
+msgstr "département"
+
+#: academycity/apps/courses/models.py:34
+msgid "departments"
+msgstr "départements"
+
+#: academycity/apps/courses/models.py:45
+msgid "Please supply the department name."
+msgstr "S'il vous plaît fournir le nom du département."
+
+#: academycity/apps/courses/models.py:47 academycity/apps/courses/models.py:483
+msgid "Please supply the department slug."
+msgstr ""
+
+#: academycity/apps/courses/models.py:82
+msgid "course"
+msgstr ""
+
+#: academycity/apps/courses/models.py:83
+msgid "courses"
+msgstr ""
+
+#: academycity/apps/courses/models.py:86
+msgid "link_app"
+msgstr ""
+
+#: academycity/apps/courses/models.py:86
+#, fuzzy
+#| msgid "Please supply the department name."
+msgid "Please supply the link_app."
+msgstr "S'il vous plaît fournir le nom du département."
+
+#: academycity/apps/courses/models.py:87
+msgid "link_model"
+msgstr ""
+
+#: academycity/apps/courses/models.py:87
+#, fuzzy
+#| msgid "Please supply the department name."
+msgid "Please supply the link_model."
+msgstr "S'il vous plaît fournir le nom du département."
+
+#: academycity/apps/courses/models.py:101
+msgid "Please supply the course name."
+msgstr ""
+
+#: academycity/apps/courses/models.py:103
+#: academycity/apps/courses/models.py:223
+#: academycity/apps/courses/models.py:320
+#: academycity/apps/courses/models.py:439
+msgid "Please supply the course slug."
+msgstr ""
+
+#: academycity/apps/courses/models.py:147
+#: academycity/apps/courses/models.py:148
+msgid "syllabus"
+msgstr ""
+
+#: academycity/apps/courses/models.py:156
+msgid "Please supply the syllabus name."
+msgstr ""
+
+#: academycity/apps/courses/models.py:158
+msgid "Please supply the syllabus slug."
+msgstr ""
+
+#: academycity/apps/courses/models.py:185
+msgid "course schedule"
+msgstr ""
+
+#: academycity/apps/courses/models.py:186
+msgid "courses schedule"
+msgstr ""
+
+#: academycity/apps/courses/models.py:283
+msgid "team"
+msgstr ""
+
+#: academycity/apps/courses/models.py:284
+msgid "teams"
+msgstr ""
+
+#: academycity/apps/courses/models.py:288
+#, fuzzy
+#| msgid "Please supply the department name."
+msgid "Please supply the team name."
+msgstr "S'il vous plaît fournir le nom du département."
+
+#: academycity/apps/courses/models.py:310
+msgid "course schedule user"
+msgstr ""
+
+#: academycity/apps/courses/models.py:311
+msgid "courses schedule user"
+msgstr ""
+
+#: academycity/apps/courses/models.py:336
+msgid "section"
+msgstr ""
+
+#: academycity/apps/courses/models.py:337
+msgid "sections"
+msgstr ""
+
+#: academycity/apps/courses/models.py:345
+#: academycity/apps/globsim/models.py:114
+#: academycity/apps/globsim/models.py:346
+#: academycity/apps/globsim/models.py:431
+msgid "Please supply the section name."
+msgstr ""
+
+#: academycity/apps/courses/models.py:346
+#: academycity/apps/globsim/models.py:116
+#: academycity/apps/globsim/models.py:348
+#: academycity/apps/globsim/models.py:433
+msgid "Please supply the section slug."
+msgstr ""
+
+#: academycity/apps/courses/models.py:369
+msgid "sub_section"
+msgstr ""
+
+#: academycity/apps/courses/models.py:370
+msgid "sub_sections"
+msgstr ""
+
+#: academycity/apps/courses/models.py:378
+msgid "Please supply the sub section name."
+msgstr ""
+
+#: academycity/apps/courses/models.py:379
+msgid "Please supply the sub section slug."
+msgstr ""
+
+#: academycity/apps/courses/models.py:407
+msgid "Order"
+msgstr ""
+
+#: academycity/apps/courses/models.py:408
+msgid "Orders"
+msgstr ""
+
+#: academycity/apps/courses/models.py:438
+msgid "course_schedule_user_slug"
+msgstr ""
+
+#: academycity/apps/courses/models.py:469
+msgid "chart_of_account"
+msgstr ""
+
+#: academycity/apps/courses/models.py:470
+msgid "chart_of_accounts"
+msgstr ""
+
+#: academycity/apps/courses/models.py:480
+#: academycity/apps/globsim/models.py:163
+#: academycity/apps/globsim/models.py:213
+#: academycity/apps/globsim/models.py:265
+msgid "account"
+msgstr ""
+
+#: academycity/apps/courses/models.py:481
+msgid "Please supply the account name."
+msgstr ""
+
+#: academycity/apps/courses/models.py:498
+msgid "general ledger"
+msgstr ""
+
+#: academycity/apps/courses/models.py:499
+msgid "general ledgers"
+msgstr ""
+
+#: academycity/apps/courses/models.py:529
+#: academycity/apps/globsim/models.py:940 academycity/apps/shop/models.py:52
+msgid "product"
+msgstr ""
+
+#: academycity/apps/courses/models.py:530
+#: academycity/apps/globsim/models.py:941 academycity/apps/shop/models.py:53
+msgid "products"
+msgstr ""
+
+#: academycity/apps/courses/models.py:553
+msgid "assignment"
+msgstr ""
+
+#: academycity/apps/courses/models.py:554
+msgid "assignments"
+msgstr ""
+
+#: academycity/apps/courses/models.py:580
+msgid "assignment_user"
+msgstr ""
+
+#: academycity/apps/courses/models.py:581
+msgid "assignments_user"
+msgstr ""
+
+#: academycity/apps/courses/templates/courses/_register.html:9
+#: academycity/apps/courses/templates/courses/courses_order_cart_empty.html:10
+msgid "Register additional course"
+msgstr "Inscrire un cours supplémentaire"
+
+#: academycity/apps/courses/templates/courses/_register.html:13
+msgid "Check Out"
+msgstr "Check-out"
+
+#: academycity/apps/courses/templates/courses/course_cart_detail.html:17
+msgid "Total price"
+msgstr "Prix​total"
+
+#: academycity/apps/courses/templates/courses/course_cart_detail.html:18
+#: academycity/apps/courses/templates/courses/register_form.html:19
+msgid "Coupon"
+msgstr "Coupon"
+
+#: academycity/apps/courses/templates/courses/course_cart_detail.html:19
+msgid "Discount"
+msgstr ""
+
+#: academycity/apps/courses/templates/courses/course_cart_detail.html:66
+msgid "Add more courses"
+msgstr ""
+
+#: academycity/apps/courses/templates/courses/course_cart_detail.html:68
+msgid "Checkout and Payment"
+msgstr ""
+
+#: academycity/apps/courses/templates/courses/course_details_view.html:10
+msgid "Edit info for course:"
+msgstr ""
+
+#: academycity/apps/courses/templates/courses/course_list_view.html:7
+msgid "List of courses"
+msgstr ""
+
+#: academycity/apps/courses/templates/courses/course_list_view.html:15
+msgid "No articles yet in this language"
+msgstr ""
+
+#: academycity/apps/courses/templates/courses/courses_order_cart_empty.html:4
+#: academycity/apps/courses/templates/courses/courses_order_cart_empty.html:7
+msgid "Cart is empty"
+msgstr ""
+
+#: academycity/apps/courses/templates/courses/courses_order_cart_empty.html:8
+msgid "Your cart is empty. Go to courses to register for courses:"
+msgstr ""
+
+#: academycity/apps/courses/templates/courses/courses_payment_canceled.html:8
+msgid "Try Payment again for Invoice: "
+msgstr "Réessayez le paiement pour la facture:"
+
+#: academycity/apps/courses/templates/courses/home.html:151
+msgid "Register"
+msgstr "S'inscrire"
+
+#: academycity/apps/courses/templates/courses/home.html:158
+msgid "Simulation"
+msgstr "Simulation"
+
+#: academycity/apps/courses/templates/courses/register_form.html:23
+msgid "Register to:"
+msgstr "Inscrivez-vous à:"
+
+#: academycity/apps/courses/templates/courses/syllabus_detail.html:7
+msgid "Back"
+msgstr "Arrière"
+
+#: academycity/apps/courses/views.py:65
+msgid "Courses by Fields"
+msgstr "Cours par domaines"
+
+#: academycity/apps/elearning/models.py:34
+msgid "question"
+msgstr ""
+
+#: academycity/apps/elearning/models.py:35
+msgid "questions"
+msgstr ""
+
+#: academycity/apps/elearning/models.py:48
+msgid "answer"
+msgstr ""
+
+#: academycity/apps/elearning/models.py:49
+msgid "answers"
+msgstr ""
+
+#: academycity/apps/elearning/templates/elearning/_set_test_staff.html:57
+#: academycity/apps/elearning/templates/elearning/_set_test_staff_to_be_deleted.html:55
+msgid "T"
+msgstr ""
+
+#: academycity/apps/elearning/templates/elearning/_set_test_staff.html:58
+#: academycity/apps/elearning/templates/elearning/_set_test_staff_to_be_deleted.html:56
+msgid "Answer"
+msgstr ""
+
+#: academycity/apps/elearning/templates/elearning/_set_test_student.html:71
+msgid "Test Yourself for"
+msgstr ""
+
+#: academycity/apps/globsim/models.py:31
+msgid "game type"
+msgstr ""
+
+#: academycity/apps/globsim/models.py:32
+msgid "game types"
+msgstr ""
+
+#: academycity/apps/globsim/models.py:42
+#, fuzzy
+#| msgid "Please supply the department name."
+msgid "Please supply the game type."
+msgstr "S'il vous plaît fournir le nom du département."
+
+#: academycity/apps/globsim/models.py:44
+#, fuzzy
+#| msgid "Please supply the department name."
+msgid "Please supply the game type slug."
+msgstr "S'il vous plaît fournir le nom du département."
+
+#: academycity/apps/globsim/models.py:60
+msgid "segment"
+msgstr ""
+
+#: academycity/apps/globsim/models.py:61
+#, fuzzy
+#| msgid "departments"
+msgid "segments"
+msgstr "départements"
+
+#: academycity/apps/globsim/models.py:74
+#, fuzzy
+#| msgid "Please supply the department name."
+msgid "Please supply the segment name."
+msgstr "S'il vous plaît fournir le nom du département."
+
+#: academycity/apps/globsim/models.py:76
+#, fuzzy
+#| msgid "Please supply the department name."
+msgid "Please supply the segment slug."
+msgstr "S'il vous plaît fournir le nom du département."
+
+#: academycity/apps/globsim/models.py:92
+msgid "attribute"
+msgstr ""
+
+#: academycity/apps/globsim/models.py:93
+msgid "attributes"
+msgstr ""
+
+#: academycity/apps/globsim/models.py:133
+#: academycity/apps/globsim/models.py:134
+#: academycity/apps/globsim/models.py:135
+msgid "Advertising"
+msgstr ""
+
+#: academycity/apps/globsim/models.py:133
+#: academycity/apps/globsim/models.py:136
+msgid "TV"
+msgstr ""
+
+#: academycity/apps/globsim/models.py:134
+#: academycity/apps/globsim/models.py:137
+msgid "internet"
+msgstr ""
+
+#: academycity/apps/globsim/models.py:135
+#: academycity/apps/globsim/models.py:138
+msgid "magazine"
+msgstr ""
+
+#: academycity/apps/globsim/models.py:136
+#: academycity/apps/globsim/models.py:137
+#: academycity/apps/globsim/models.py:138
+#, fuzzy
+#| msgid "Simulation"
+msgid "PublicRelation"
+msgstr "Simulation"
+
+#: academycity/apps/globsim/models.py:139
+msgid "retail_price"
+msgstr ""
+
+#: academycity/apps/globsim/models.py:140
+msgid "planned_production"
+msgstr ""
+
+#: academycity/apps/globsim/models.py:141
+msgid "inventory_finished_goods"
+msgstr ""
+
+#: academycity/apps/globsim/models.py:142
+msgid "inventory_raw_material"
+msgstr ""
+
+#: academycity/apps/globsim/models.py:143
+msgid "quality_system"
+msgstr ""
+
+#: academycity/apps/globsim/models.py:144
+msgid "quality_inspection"
+msgstr ""
+
+#: academycity/apps/globsim/models.py:145
+msgid "randd"
+msgstr ""
+
+#: academycity/apps/globsim/models.py:149
+msgid "product_type_attribute"
+msgstr ""
+
+#: academycity/apps/globsim/models.py:150
+msgid "product_type_attributes"
+msgstr ""
+
+#: academycity/apps/globsim/models.py:161
+#: academycity/apps/globsim/models.py:211
+#: academycity/apps/globsim/models.py:263 academycity/apps/shop/models.py:22
+msgid "category"
+msgstr ""
+
+#: academycity/apps/globsim/models.py:162
+#: academycity/apps/globsim/models.py:212
+#: academycity/apps/globsim/models.py:264
+#, fuzzy
+#| msgid "Please supply the department name."
+msgid "Please supply category."
+msgstr "S'il vous plaît fournir le nom du département."
+
+#: academycity/apps/globsim/models.py:164
+#: academycity/apps/globsim/models.py:214
+#: academycity/apps/globsim/models.py:266
+#, fuzzy
+#| msgid "Please supply the department name."
+msgid "Please supply account."
+msgstr "S'il vous plaît fournir le nom du département."
+
+#: academycity/apps/globsim/models.py:172
+#: academycity/apps/globsim/models.py:274
+#, fuzzy
+#| msgid "Please supply the department name."
+msgid "Please supply product attribute type."
+msgstr "S'il vous plaît fournir le nom du département."
+
+#: academycity/apps/globsim/models.py:174
+#: academycity/apps/globsim/models.py:276
+#, fuzzy
+#| msgid "Please supply the department name."
+msgid "Please supply product attribute slug."
+msgstr "S'il vous plaît fournir le nom du département."
+
+#: academycity/apps/globsim/models.py:191
+#: academycity/apps/globsim/models.py:192
+#: academycity/apps/globsim/models.py:193
+msgid "Process"
+msgstr ""
+
+#: academycity/apps/globsim/models.py:191
+msgid "technology_improvement"
+msgstr ""
+
+#: academycity/apps/globsim/models.py:192
+msgid "supply_chain_management_system"
+msgstr ""
+
+#: academycity/apps/globsim/models.py:193
+msgid "warehousing"
+msgstr ""
+
+#: academycity/apps/globsim/models.py:194
+msgid "Plant"
+msgstr ""
+
+#: academycity/apps/globsim/models.py:194
+msgid "size"
+msgstr ""
+
+#: academycity/apps/globsim/models.py:195
+#: academycity/apps/globsim/models.py:246
+#: academycity/apps/globsim/models.py:247
+msgid "Quality"
+msgstr ""
+
+#: academycity/apps/globsim/models.py:195
+msgid "internal_control"
+msgstr ""
+
+#: academycity/apps/globsim/models.py:199
+msgid "manufacturing_type_attribute"
+msgstr ""
+
+#: academycity/apps/globsim/models.py:200
+msgid "manufacturing_type_attributes"
+msgstr ""
+
+#: academycity/apps/globsim/models.py:222
+#, fuzzy
+#| msgid "Please supply the department name."
+msgid "Please supply manuf. attribute type."
+msgstr "S'il vous plaît fournir le nom du département."
+
+#: academycity/apps/globsim/models.py:224
+#, fuzzy
+#| msgid "Please supply the department name."
+msgid "Please supply manuf. attribute slug."
+msgstr "S'il vous plaît fournir le nom du département."
+
+#: academycity/apps/globsim/models.py:241
+#: academycity/apps/globsim/models.py:242
+#: academycity/apps/globsim/models.py:243
+#: academycity/apps/globsim/models.py:244
+#: academycity/apps/globsim/models.py:245
+msgid "Salary"
+msgstr ""
+
+#: academycity/apps/globsim/models.py:241
+msgid "employee_salary"
+msgstr ""
+
+#: academycity/apps/globsim/models.py:242
+msgid "manager_salary"
+msgstr ""
+
+#: academycity/apps/globsim/models.py:243
+msgid "number_of_managers"
+msgstr ""
+
+#: academycity/apps/globsim/models.py:244
+msgid "number_of_employees"
+msgstr ""
+
+#: academycity/apps/globsim/models.py:245
+msgid "benefits"
+msgstr ""
+
+#: academycity/apps/globsim/models.py:246
+msgid "employee_training"
+msgstr ""
+
+#: academycity/apps/globsim/models.py:247
+msgid "manager_training"
+msgstr ""
+
+#: academycity/apps/globsim/models.py:251
+msgid "human_resources_type_attribute"
+msgstr ""
+
+#: academycity/apps/globsim/models.py:252
+msgid "human_resources_type_attributes"
+msgstr ""
+
+#: academycity/apps/globsim/models.py:293
+msgid "distributor"
+msgstr ""
+
+#: academycity/apps/globsim/models.py:294
+msgid "distributors"
+msgstr ""
+
+#: academycity/apps/globsim/models.py:310
+#, fuzzy
+#| msgid "Please supply the department name."
+msgid "Please supply the distributor name."
+msgstr "S'il vous plaît fournir le nom du département."
+
+#: academycity/apps/globsim/models.py:312
+#, fuzzy
+#| msgid "Please supply the department name."
+msgid "Please supply the distributor slug."
+msgstr "S'il vous plaît fournir le nom du département."
+
+#: academycity/apps/globsim/models.py:329
+msgid "distributor_attribute"
+msgstr ""
+
+#: academycity/apps/globsim/models.py:330
+msgid "distributor_attributes"
+msgstr ""
+
+#: academycity/apps/globsim/models.py:363
+msgid "distributor_segment"
+msgstr ""
+
+#: academycity/apps/globsim/models.py:364
+msgid "distributor_segments"
+msgstr ""
+
+#: academycity/apps/globsim/models.py:382
+#, fuzzy
+#| msgid "Finance"
+msgid "finance_type"
+msgstr "La finance"
+
+#: academycity/apps/globsim/models.py:383
+#, fuzzy
+#| msgid "Finance"
+msgid "finance_types"
+msgstr "La finance"
+
+#: academycity/apps/globsim/models.py:396
+#, fuzzy
+#| msgid "Please supply the department name."
+msgid "Please supply the finance type name."
+msgstr "S'il vous plaît fournir le nom du département."
+
+#: academycity/apps/globsim/models.py:398
+#, fuzzy
+#| msgid "Please supply the department name."
+msgid "Please supply the finance type slug."
+msgstr "S'il vous plaît fournir le nom du département."
+
+#: academycity/apps/globsim/models.py:414
+msgid "finance_type_attribute"
+msgstr ""
+
+#: academycity/apps/globsim/models.py:415
+msgid "finance_type_attributes"
+msgstr ""
+
+#: academycity/apps/globsim/models.py:462
+msgid "game"
+msgstr "Jeu"
+
+#: academycity/apps/globsim/models.py:463
+msgid "games"
+msgstr "Jeux"
+
+#: academycity/apps/globsim/models.py:654
+#, fuzzy
+#| msgid "Please supply the department name."
+msgid "Please supply the game name."
+msgstr "S'il vous plaît fournir le nom du département."
+
+#: academycity/apps/globsim/models.py:656
+#, fuzzy
+#| msgid "Please supply the department name."
+msgid "Please supply the game slug."
+msgstr "S'il vous plaît fournir le nom du département."
+
+#: academycity/apps/globsim/models.py:674
+#: academycity/apps/globsim/models.py:675
+msgid "schedule_period_date"
+msgstr ""
+
+#: academycity/apps/globsim/models.py:689
+msgid "period"
+msgstr "période"
+
+#: academycity/apps/globsim/models.py:690
+msgid "periods"
+msgstr "périodes"
+
+#: academycity/apps/globsim/models.py:715
+msgid "R and D Project"
+msgstr "Projet R et D"
+
+#: academycity/apps/globsim/models.py:716
+msgid "R and D Projects"
+msgstr "Projets R et D"
+
+#: academycity/apps/globsim/models.py:732
+#, fuzzy
+#| msgid "Please supply the department name."
+msgid "Please supply the R and D name."
+msgstr "S'il vous plaît fournir le nom du département."
+
+#: academycity/apps/globsim/models.py:783
+msgid "randd_attribute"
+msgstr ""
+
+#: academycity/apps/globsim/models.py:784
+msgid "randd_attributes"
+msgstr ""
+
+#: academycity/apps/globsim/models.py:817
+#: academycity/apps/globsim/models.py:818
+msgid "manufacturing data"
+msgstr ""
+
+#: academycity/apps/globsim/models.py:862
+msgid "manufacturing data detail"
+msgstr ""
+
+#: academycity/apps/globsim/models.py:863
+msgid "manufacturing data details"
+msgstr ""
+
+#: academycity/apps/globsim/models.py:879
+#: academycity/apps/globsim/models.py:880
+#, fuzzy
+#| msgid "Product"
+msgid "human resources data"
+msgstr "Produit"
+
+#: academycity/apps/globsim/models.py:923
+msgid "human resource data detail"
+msgstr "détail des données sur les ressources humaines"
+
+#: academycity/apps/globsim/models.py:924
+msgid "human resources data detail"
+msgstr "détail des données sur les ressources humaines"
+
+#: academycity/apps/globsim/models.py:953
+#, fuzzy
+#| msgid "Please supply the department name."
+msgid "Please supply the Product name."
+msgstr "S'il vous plaît fournir le nom du département."
+
+#: academycity/apps/globsim/models.py:1016
+#, fuzzy
+#| msgid "Product"
+msgid "product data"
+msgstr "données produit"
+
+#: academycity/apps/globsim/models.py:1017
+#, fuzzy
+#| msgid "Product"
+msgid "products data"
+msgstr "données produits"
+
+#: academycity/apps/globsim/models.py:1040
+msgid "product data detail"
+msgstr "détail des données produits"
+
+#: academycity/apps/globsim/models.py:1041
+msgid "products data detail"
+msgstr "détail des données produit"
+
+#: academycity/apps/globsim/models.py:1054
+msgid "g_distributor"
+msgstr ""
+
+#: academycity/apps/globsim/models.py:1055
+msgid "g_distributors"
+msgstr ""
+
+#: academycity/apps/globsim/models.py:1104
+msgid "g_distributor_data"
+msgstr ""
+
+#: academycity/apps/globsim/models.py:1105
+msgid "g_distributors_data"
+msgstr ""
+
+#: academycity/apps/globsim/models.py:1124
+msgid "g_distributor_data_detail"
+msgstr ""
+
+#: academycity/apps/globsim/models.py:1125
+msgid "g_distributor_data_details"
+msgstr ""
+
+#: academycity/apps/globsim/models.py:1138
+#, fuzzy
+#| msgid "Finance"
+msgid "finance"
+msgstr "La finance"
+
+#: academycity/apps/globsim/models.py:1139
+#, fuzzy
+#| msgid "Finance"
+msgid "finances"
+msgstr "La finance"
+
+#: academycity/apps/globsim/models.py:1192
+#, fuzzy
+#| msgid "Finance"
+msgid "finance_data"
+msgstr "La finance"
+
+#: academycity/apps/globsim/models.py:1193
+#, fuzzy
+#| msgid "Finance"
+msgid "finances_data"
+msgstr "La finance"
+
+#: academycity/apps/globsim/models.py:1208
+msgid "finance_data_detail"
+msgstr ""
+
+#: academycity/apps/globsim/models.py:1209
+msgid "finance_data_details"
+msgstr ""
+
+#: academycity/apps/globsim/templates/globsim/_edit_game_distributors.html:9
+msgid "New Distributor"
+msgstr "Nouveau distributeur"
+
+#: academycity/apps/globsim/templates/globsim/_edit_game_distributors.html:21
+msgid "New Account"
+msgstr "Nouveau compte"
+
+#: academycity/apps/globsim/templates/globsim/_edit_game_finances.html:9
+msgid "New Finance Institute"
+msgstr "New Finance Institute"
+
+#: academycity/apps/globsim/templates/globsim/_edit_game_finances.html:20
+#, fuzzy
+#| msgid "department"
+msgid "New Instrument"
+msgstr "département"
+
+#: academycity/apps/globsim/templates/globsim/_finance.html:16
+#, fuzzy
+#| msgid "Finance"
+msgid "Finances"
+msgstr "La finance"
+
+#: academycity/apps/globsim/templates/globsim/_games_admin.html:23
+msgid "Edit Game Info"
+msgstr "Modifier les informations du jeu"
+
+#: academycity/apps/globsim/templates/globsim/_games_admin.html:26
+msgid "Edit Game Distributors"
+msgstr "Modifier les distributeurs de jeux"
+
+#: academycity/apps/globsim/templates/globsim/_games_admin.html:30
+msgid "Edit Game Finances"
+msgstr "Modifier les finances du jeu"
+
+#: academycity/apps/globsim/templates/globsim/_gdistributor.html:14
+msgid "Distributors"
+msgstr "Distributrices"
+
+#: academycity/apps/globsim/templates/globsim/_product.html:15
+#, fuzzy
+#| msgid "Product"
+msgid "Products"
+msgstr "Produit"
+
+#: academycity/apps/globsim/templates/globsim/_product_detail.html:2
+#, fuzzy
+#| msgid "Product"
+msgid "Product: "
+msgstr "Produit"
+
+#: academycity/apps/globsim/templates/globsim/_randd.html:52
+#, fuzzy
+#| msgid "R and D Projects"
+msgid "R & D Projects"
+msgstr "Projets R et D"
+
+#: academycity/apps/globsim/templates/globsim/_randd.html:55
+msgid "New"
+msgstr "Nouvelle"
+
+#: academycity/apps/globsim/templates/globsim/_randd.html:60
+msgid "Year"
+msgstr "An"
+
+#: academycity/apps/globsim/templates/globsim/_randd.html:61
+#, fuzzy
+#| msgid "R and D Projects"
+msgid "Project"
+msgstr "Projet"
+
+#: academycity/apps/globsim/templates/globsim/_randd.html:81
+#, fuzzy
+#| msgid "R&D Detail"
+msgid "R&D Project Detail"
+msgstr "Détail R&D"
+
+#: academycity/apps/globsim/templates/globsim/_randd_detail.html:17
+#, fuzzy
+#| msgid "R and D Projects"
+msgid "Project Data"
+msgstr "Données du projet"
+
+#: academycity/apps/globsim/templates/globsim/_randd_detail.html:18
+msgid "Attributes"
+msgstr "Les attributs"
+
+#: academycity/apps/globsim/templates/globsim/_randd_detail.html:24
+#, fuzzy
+#| msgid "departments"
+msgid "Segment"
+msgstr "Segment"
+
+#: academycity/apps/globsim/templates/globsim/_randd_detail.html:37
+msgid "SCU Per Unit"
+msgstr "SCU par unité"
+
+#: academycity/apps/globsim/templates/globsim/_randd_detail.html:50
+msgid "Prime Cost Per Unit"
+msgstr "Coût principal par unité"
+
+#: academycity/apps/globsim/templates/globsim/_randd_detail.html:62
+msgid "Project Expenditure"
+msgstr "Dépenses du projet"
+
+#: academycity/apps/globsim/templates/globsim/_schedule_period_dates.html:108
+msgid "Dates"
+msgstr "Rendez-vous"
+
+#: academycity/apps/globsim/templates/globsim/home.html:37
+#: academycity/apps/globsim/templates/globsim/home_TobeDeleted.html:24
+msgid "Reports"
+msgstr "Rapports"
+
+#: academycity/apps/globsim/templates/globsim/home.html:37
+#: academycity/apps/globsim/templates/globsim/home_TobeDeleted.html:24
+#: academycity/apps/images/models.py:12
+msgid "Finance"
+msgstr "La finance"
+
+#: academycity/apps/globsim/templates/globsim/home.html:37
+#: academycity/apps/globsim/templates/globsim/home_TobeDeleted.html:24
+msgid "Marketing"
+msgstr "Commercialisation"
+
+#: academycity/apps/globsim/templates/globsim/home.html:37
+#: academycity/apps/globsim/templates/globsim/home_TobeDeleted.html:24
+msgid "HR"
+msgstr ""
+
+#: academycity/apps/globsim/templates/globsim/home.html:37
+#: academycity/apps/globsim/templates/globsim/home_TobeDeleted.html:24
+msgid "Manufacturing"
+msgstr "Fabrication"
+
+#: academycity/apps/globsim/templates/globsim/home.html:37
+#: academycity/apps/globsim/templates/globsim/home_TobeDeleted.html:24
+msgid "R&D"
+msgstr ""
+
+#: academycity/apps/globsim/templates/globsim/home.html:38
+msgid "Game Setup"
+msgstr ""
+
+#: academycity/apps/globsim/templates/globsim/home.html:38
+msgid "Games Admin"
+msgstr ""
+
+#: academycity/apps/globsim/views.py:19
+msgid "GlobSim App"
+msgstr "GlobSim App"
+
+#: academycity/apps/globsim/views.py:545
+msgid "Team"
+msgstr ""
+
+#: academycity/apps/images/models.py:10
+msgid "General"
+msgstr "Général"
+
+#: academycity/apps/images/models.py:11
+msgid "Data Science"
+msgstr "Science des données"
+
+#: academycity/apps/images/models.py:13
+msgid "Business Intelligence"
+msgstr "L'intelligence d'entreprise"
+
+#: academycity/apps/images/models.py:14
+msgid "Machine Learning"
+msgstr "Apprentissage automatique"
+
+#: academycity/apps/images/models.py:15
+msgid "Business Simulation"
+msgstr "Simulation d'entreprise"
+
+#: academycity/apps/images/models.py:16
+#: academycity/apps/partners/cms_apps.py:14
+msgid "Partners"
+msgstr "Les partenaires"
+
+#: academycity/apps/images/templates/images/image/detail.html:9
+msgid "back"
+msgstr ""
+
+#: academycity/apps/images/templates/images/image/list.html:3
+msgid "Images bookmarked"
+msgstr ""
+
+#: academycity/apps/orders/templates/orders/created.html:4
+msgid "Thank you"
+msgstr ""
+
+#: academycity/apps/partners/cms_apps.py:25
+#, fuzzy
+#| msgid "Distributors"
+msgid "Instructors"
+msgstr "Distributrices"
+
+#: academycity/apps/partners/templates/partners/home.html:12
+#, fuzzy
+#| msgid "Partners"
+msgid "Our Partners"
+msgstr "Nos partenaires"
+
+#: academycity/apps/partners/templates/partners/instructors.html:26
+msgid "Advisors"
+msgstr "Conseillers"
+
+#: academycity/apps/partners/templates/partners/instructors.html:45
+msgid "Short Bio"
+msgstr "Courte biographie"
+
+#: academycity/apps/partners/templates/partners/instructors.html:57
+msgid "Publishes- Refereed articles (partial list)"
+msgstr "Publications - Articles avec comité de lecture (liste partielle)"
+
+#: academycity/apps/partners/templates/partners/partner.html:12
+msgid "Contact"
+msgstr "Contact"
+
+#: academycity/apps/partners/templates/partners/partner.html:13
+msgid "office"
+msgstr "Bureau"
+
+#: academycity/apps/partners/templates/partners/partner.html:14
+msgid "cell"
+msgstr "Téléphone portable"
+
+#: academycity/apps/partners/templates/partners/partner.html:15
+msgid "Email"
+msgstr "Email"
+
+#: academycity/apps/polls/cms_menus.py:12
+msgid "Polls Menu"
+msgstr ""
+
+#: academycity/apps/polls/cms_plugins_.py:10
+msgid "Polls"
+msgstr ""
+
+#: academycity/apps/polls/cms_plugins_.py:11
+msgid "Poll Plugin"
+msgstr ""
+
+#: academycity/apps/shop/models.py:23
+msgid "categories"
+msgstr ""
+
+#: academycity/apps/shop/models.py:31
+#, fuzzy
+#| msgid "Please supply the department name."
+msgid "Please supply the category name."
+msgstr "S'il vous plaît fournir le nom du département."
+
+#: academycity/apps/shop/models.py:33
+#, fuzzy
+#| msgid "Please supply the department name."
+msgid "Please supply the category slug."
+msgstr "S'il vous plaît fournir le nom du département."
+
+#: academycity/apps/shop/models.py:66
+msgid "Please supply the product name."
+msgstr ""
+
+#: academycity/apps/shop/models.py:68
+#, fuzzy
+#| msgid "Please supply the department name."
+msgid "Please supply the product slug."
+msgstr "S'il vous plaît fournir le nom du département."
+
+#: academycity/apps/shop/templates/shop/product/product_list.html:6
+msgid "Products list"
+msgstr ""
+
+#: academycity/apps/trades/views.py:22
+msgid "Trades App"
+msgstr ""
+
+#: academycity/apps/users/cms_apps.py:14
+msgid "Users"
+msgstr ""
+
+#: academycity/apps/users/models.py:34
+msgid "profile"
+msgstr ""
+
+#: academycity/apps/users/models.py:35
+msgid "profiles"
+msgstr ""
+
+#: academycity/apps/users/models.py:43
+msgid "short_bio"
+msgstr ""
+
+#: academycity/apps/users/models.py:44
+msgid "bio"
+msgstr ""
+
+#: academycity/apps/users/models.py:46
+msgid "address"
+msgstr ""
+
+#: academycity/apps/users/models.py:47
+msgid "zip"
+msgstr ""
+
+#: academycity/apps/users/models.py:48
+msgid "city"
+msgstr ""
+
+#: academycity/apps/users/models.py:49
+msgid "country"
+msgstr ""
+
+#: academycity/apps/users/models.py:51
+msgid "phone"
+msgstr ""
+
+#: academycity/apps/users/models.py:52
+msgid "website"
+msgstr ""
+
+#: academycity/settings/base.py:248 academycity/settings/base.py:260
+msgid "English"
+msgstr "Anglaise"
+
+#: academycity/settings/base.py:249 academycity/settings/base.py:267
+msgid "French"
+msgstr "Française"
+
+#: academycity/settings/base.py:250 academycity/settings/base.py:281
+msgid "Spanish"
+msgstr "Española"
+
+#: academycity/settings/base.py:251 academycity/settings/base.py:274
+msgid "Arabic"
+msgstr "عربى"
+
+#: academycity/templates/academycity/base0.html:73
+#: academycity/templates/academycity/base00.html:52
+msgid "Logout"
+msgstr "Se déconnecter"
+
+#: academycity/templates/academycity/base0.html:77
+#: academycity/templates/academycity/base00.html:56
+msgid "Log in"
+msgstr "S'identifier"
+
+#: academycity/templates/academycity/base0.html:81
+#: academycity/templates/academycity/base00.html:60
+msgid "Sign up"
+msgstr "S'inscrire"
+
+#: academycity/templates/academycity/roles/admin.html:18
+msgid "Link"
+msgstr ""
+
+#: academycity/templates/includes/language_chooser.html:13
+#: academycity/templates/includes/language_chooser.html:22
+msgid "Change to language:"
+msgstr ""
+
+#: academycity/templates/user_home.html:55
+msgid "Edit Profile"
+msgstr ""
+
+#: academycity/templates/user_home.html:57
+msgid "Change Password"
+msgstr ""
+
+#: academycity/templates/user_home.html:65
+msgid "My Dashboard"
+msgstr ""
+
+#, fuzzy
+#~| msgid "Product"
+#~ msgid "Product_randd"
+#~ msgstr "Produit"
+
+#, fuzzy
+#~| msgid "Please supply the department name."
+#~ msgid "Please supply the Manufacturing name."
+#~ msgstr "S'il vous plaît fournir le nom du département."
+
+#, fuzzy
+#~| msgid "Please supply the department name."
+#~ msgid "Please supply the HR name."
+#~ msgstr "S'il vous plaît fournir le nom du département."
+
+#~ msgid "Research and Development"
+#~ msgstr "Recherche et développement"

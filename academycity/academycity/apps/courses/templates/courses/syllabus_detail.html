@@ -1,0 +1,15 @@
+{% extends "academycity/base.html" %}
+{% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
+
+{% block content %}
+    <div class="col-md-6 col-sm-4 col-lg-12 container" id="plugin">
+          <h1 >{% render_model syllabus "name" %}
+           <font size="5">(<a href="{% url 'courses:course_detail' syllabus.course.slug %}" >{% trans "Back" %}</a>)</font>
+          </h1>
+          <hr/>
+          {% render_placeholder syllabus.description %}
+    </div>
+
+{% endblock %}
+
+

@@ -1,0 +1,18 @@
+{% extends "academycity/base.html" %}
+
+{% block content %}
+<div class="container">
+    <ul>
+    <li>
+    <a class="nav-link" href="{% url 'trades:currency_exchange' %}">Currency Exchange</a>
+    </li><li>
+    <a class="nav-link" href="{% url 'trades:get_option_chain' %}">Prepare Option Chain</a>
+    </li><li>
+    <a class="nav-link" href="{% url 'trades:run_options_engine' %}">Algo-Trading</a>
+    </li><li>
+    <a class="nav-link" href="{% url 'trades:option_trading' %}">Option Trading</a>
+    </li>
+    </ul>
+</div>
+
+{% endblock %}

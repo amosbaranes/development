@@ -1,0 +1,37 @@
+{% extends "ugandatowns_base0.html" %}
+{% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
+
+    {% block add_css_base %}
+        <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+        <link href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
+        <link href="{% static 'css/django_cms_original.css' %}" rel="stylesheet">
+        <link href="{% static 'css/messages.css' %}" rel="stylesheet">
+        <link href="{% static 'css/general.css' %}" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+        <link href="https://fonts.googleapis.com/css?family=Montserrat:400,900" rel="stylesheet">
+    {% endblock add_css_base %}
+
+    {% block add_css %}
+    {% endblock add_css %}
+  </head>
+
+<body id="body_base0">
+
+{% cms_toolbar %}
+    {% block content0 %}
+      {% block content %}
+      {% endblock %}
+    {% endblock %}
+
+    {% block content_code %}
+    {% endblock %}
+
+{% render_block "js" %}
+{{ ALDRYN_SNAKE.render_tail }}
+
+    {% block base_js %}
+    {% endblock base_js %}
+
+    {% block add_js %}
+    {% endblock add_js %}
+</body>

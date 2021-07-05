@@ -1,0 +1,38 @@
+{% extends "academycity/base.html" %}
+{% load static %}
+
+{% block title %}
+   <title>OpenVidu</title>
+{% endblock title %}
+
+{% block add_js %}
+    <script src="{% static 'js/openvidu/app.js' %}"></script>
+    <script src="{% static 'js/openvidu/openvidu-browser-2.16.0.js' %}"></script>
+	<link rel="shortcut icon" href="resources/images/favicon.ico" type="image/x-icon">
+	<script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+{% endblock add_js %}
+
+{% block content %}
+	<div id="join">
+		<h1>Join a video session</h1>
+		<form onsubmit="joinSession(); return false">
+			<p>
+				<label>Session:</label>
+				<input type="text" id="sessionId" value="SessionA" required>
+			</p>
+			<p>
+				<input type="submit" value="JOIN">
+			</p>
+		</form>
+	</div>
+
+	<div id="session" style="display: none;">
+		<h1 id="session-header"></h1>
+		<input type="button" onclick="leaveSession()" value="LEAVE">
+		<div>
+			<div id="publisher"><h3>YOU</h3></div>
+			<div id="subscriber"><h3>OTHERS</h3></div>
+		</div>
+	</div>
+
+{% endblock content %}

@@ -1,0 +1,119 @@
+{% extends "academycity/base_user.html" %}
+{% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
+{% load core_tags %}
+
+<!-- SideNav slide-out button -->
+<!-- https://mdbootstrap.com/snippets/jquery/mdbootstrap/670810 -->
+    {% block add_css %}
+        <link href="{% static 'css/user_home.css' %}" rel="stylesheet">
+    {% endblock add_css %}
+
+{% block content %}
+<div>
+    <div id="mySidenav" class="sidenav" style="width:300px">
+        <div class="logo-wrapper sn-ad-avatar-wrapper">
+            <a href="#">
+                <img src="
+            {% if user.academics.image %}
+            {{ user.academics.image.url }}
+          {% else %}
+            {% static 'users/img/no_user_image.png' %}
+          {% endif %}" width="70px" class="rounded-circle">
+                <br/>
+                <span>{{ user.get_full_name }}</span>
+            </a>
+        </div>
+
+        <a href="javascript:void(0)" class="closebtn" onclick="closeNav()" style="padding-left: 275px;"><i
+                class="sv-slim-icon fas fa-angle-double-left"></i></a>
+
+        {% if request.user|has_group:"admins"%}
+          <span class="role">Admin</span>
+          {% include 'academycity/roles/admin.html' %}
+        {% elif request.user|has_group:"staff" %}
+          <span class="role">Staff</span>
+          {% include 'academycity/roles/staff.html' %}
+        {% elif request.user|has_group:"partners" %}
+          <span class="role">Partner</span>
+          {% include 'academycity/roles/partner.html' %}
+        {% elif request.user|has_group:"instructors" %}
+            <span class="role">Instructor</span>
+            {% include 'academycity/roles/instructor.html' %}
+        {% elif request.user|has_group:"accountants" %}
+            <span class="role">Accountant</span>
+            {% include 'academycity/roles/accountant.html' %}
+         {% else %}
+            <span class="role">Student</span>
+            {% include 'academycity/roles/student.html' %}
+        {% endif %}
+
+
+        <button class="dropdown-btn">Profile
+            <i class="fa fa-caret-down"></i>
+        </button>
+        <div class="dropdown-container">
+            <a class="w3-button w3-block w3-left-align" href="{% url 'users:edit_user_profile' %}">{% trans "Edit Profile" %}</a>
+            <a class="w3-button w3-block w3-left-align"
+               href="{% url 'allauth:account_change_password' %}">{% trans "Change Password" %}</a>
+        </div>
+
+        <a href="#" class="show_content" data-page="my_actions">My Actions</a>
+
+    </div>
+
+    <div class="main_" style="background-color: rgba(0,0,0,0.4); margin-left:15px">
+        <h2>{% trans "My Dashboard" %}</h2>
+        <span style="font-size:30px;cursor:pointer;color:blue" onclick="openNav()">&#9776;</span>
+        <div id="page_content">
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block add_js %}
+<script>
+function openNav() {
+  document.getElementById("mySidenav").style.width = "300px";
+  document.getElementsByClassName("main_")[0].style.backgroundColor = "rgba(0,0,0,0.4)";
+}
+
+function closeNav() {
+  document.getElementById("mySidenav").style.width = "0";
+  document.getElementsByClassName("main_")[0].style.backgroundColor = "white";
+}
+
+
+/* Loop through all dropdown buttons to toggle between hiding and showing its dropdown content - This allows the user to have multiple dropdowns without any conflict */
+var dropdown = document.getElementsByClassName("dropdown-btn");
+var i;
+
+for (i = 0; i < dropdown.length; i++) {
+  dropdown[i].addEventListener("click", function() {
+  this.classList.toggle("active");
+  var dropdownContent = this.nextElementSibling;
+  if (dropdownContent.style.display === "block") {
+  dropdownContent.style.display = "none";
+  } else {
+  dropdownContent.style.display = "block";
+  }
+  });
+}
+
+</script>
+{% endblock add_js %}
+
+{% block domready %}
+  $('a.show_content').click(function(e){
+   e.preventDefault();
+      $.post('{% url "users:show_content" %}',
+        {
+          page: $(this).data('page')
+        },
+        function(data){
+            $('#page_content').empty().append(data)
+            closeNav();
+        }
+      );
+  });
+{% endblock %}

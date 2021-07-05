@@ -1,0 +1,73 @@
+{% extends "academycity/base00.html" %}
+{% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
+{% load core_tags %}
+
+{% block title %}
+   <title>GlobSim</title>
+{% endblock title %}
+
+    {% block add_css %}
+        <link href="{% static 'css/globsim.css' %}" rel="stylesheet">
+    {% endblock add_css %}
+
+{% block content %}
+<div class="bs-example">
+    <!-- Location for tabs.  The management tabs has to be entered manually  -->
+    <ul id="tab_titles" class="nav nav-pills">
+    </ul>
+
+    <div id="tab_contents" class="tab-content">
+    </div>
+  <br/>
+</div>
+<span id="tabs_"
+      tabs_s="Reports:{% trans "Reports" %},Finance:{% trans "Finance" %},Marketing:{% trans "Marketing" %},HumanResources:{% trans "HR" %},Manufacturing:{% trans "Manufacturing" %},Product:{% trans "Product" %},RandD:{% trans "R&D" %}"
+tabs_m="GameSetup:Game Setup"
+>
+</span>
+<div id="log_info"></div>
+
+{% endblock content %}
+
+{% block domready %}
+// ================================================
+link1 = '{% url "globsim:get_or_create_product" %}'
+link2 = '{% url "globsim:get_screens" %}'
+link3 = '{% url "globsim:get_sub_screens" %}'
+link_management = '{% url "globsim:management" %}'
+link_abandon_product = '{% url "globsim:update_abandon_product" %}'
+var url_get_screens='{% url "globsim:get_screens" %}'
+var game_id = {{game.id}}
+var tabs_ = document.getElementById("tabs_");
+tabs_s = tabs_.getAttribute("tabs_s")
+tabs_m = tabs_.getAttribute("tabs_m")
+tans_all = tabs_s.split(",")
+tans_all_m = tabs_m.split(",")
+
+var tabs = {};
+for (const property in tans_all) {
+  ss = tans_all[property]
+  ss_ = ss.split(":")
+  tabs[ss_[0]] = ss_[1]
+}
+
+var tabs_management = {};
+for (const property in tans_all_m) {
+  ss = tans_all_m[property]
+  ss_ = ss.split(":")
+  tabs_management[ss_[0]] = ss_[1]
+}
+
+sm = new SimManager(game_id, url_get_screens)
+sm.setTabs(tabs, tabs_management)
+
+{% endblock %}
+
+{% block add_js %}
+   <script src="{% static 'js/globsim/globsim.js' %}"></script>
+   <script src="{% static 'js/globsim/general.js' %}"></script>
+   <script src="{% static 'js/globsim/randd.js' %}"></script>
+   <script src="{% static 'js/globsim/products.js' %}"></script>
+   <script src="{% static 'js/globsim/marketing.js' %}"></script>
+   <script src="{% static 'js/globsim/management.js' %}"></script>
+{% endblock add_js %}

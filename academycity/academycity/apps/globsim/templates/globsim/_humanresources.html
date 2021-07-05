@@ -1,0 +1,42 @@
+{% load core_tags %}
+{% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
+
+{% if LANGUAGE_CODE == "ar" %}
+<div dir="RTL"style="text-align: right;" class="row">
+{% else %}
+<div dir="LTR" class="row">
+{% endif%}
+  <div class="column" style="background-color:#80b3ff;">
+      <table id="human_resources">
+        <thead>
+         <th></th><th></th>
+         {% for period in periods %} <th>{{ period }}</th> {% endfor %}
+        </thead>
+        <tbody>
+        {% for category, accounts_ in accounts.items %}
+        {% for account, periods_ in accounts_.items %}
+         <tr>
+             <td>{{ category }}</td>
+             <td>{{ account }}</td>
+             {% for period in periods %}
+             {% for period_, data in periods_.items %}
+                 {% if period_ == period %}
+                    {% if forloop.parentloop.last %}
+                         <td><input id="input_{{data.0}}" pkey="{{data.0}}"
+                                         size="6" onchange="update_field_model(event, '{% url "core:update_field_model" %}')"
+                                         app="globsim" model="HumanResourcesPeriodDataDetail"
+                                         value="{{data.1}}" field = "amount" type="input" />
+                         </td>
+                    {% else %}
+                       <td>{{data.1}}</td>
+                    {% endif %}
+                 {% endif %}
+             {% endfor %}
+             {% endfor %}
+         </tr>
+        {% endfor %}
+        {% endfor %}
+        </tbody>
+    </table>
+  </div>
+</div>

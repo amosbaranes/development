@@ -1,0 +1,100 @@
+{% extends "academycity/base.html" %}
+{% load thumbnail %}
+{% load static %}
+
+{% block add_css %}
+    <link href="{% static 'css/chat.css' %}" rel='stylesheet'>
+{% endblock add_css %}
+
+{% block add_js %}
+  <script src="{% static 'js/whiteboard.js' %}"></script>
+{% endblock add_js %}
+
+{% block content %}
+
+<div id="drawing_colors"></div>
+<!--<span id="coordinates">coordinates</span>-->
+<!--<button class="button button5" style="background-color: red;border-radius: 12px;" onclick="add_whiteboard(event)">-->
+<!--    Add Whiteboard-->
+<!--</button>-->
+<div id="whiteboard"></div>
+<span id="id_chat_room_name" chat_room_id="12345" chat_room_name="test"></span>
+
+<ul id="chat-items">
+</ul>
+
+<!--<button class="button button5" style="background-color: black;" onclick="change_color(event)"></button>-->
+<!--<button class="button button5" style="background-color: green;" onclick="change_color(event)"></button>-->
+<!--<button class="button button5" style="background-color: red;" onclick="change_color(event)"></button>-->
+<!--<button class="button button5" style="background-color: blue;" onclick="change_color(event)"></button>-->
+
+{% endblock %}
+
+
+{% block domready %}
+// ================================================
+var loc = window.location
+e_chat_room_name = document.getElementById("id_chat_room_name")
+var chat_room_id = e_chat_room_name.getAttribute("chat_room_id")
+var chat_room_name = e_chat_room_name.getAttribute("chat_room_name")
+var chatholder = document.getElementById("chat-items")
+
+var webStart = "ws://"
+if (loc.protocol == "https:")
+{webStart = "wss://"}
+ll = loc.pathname.split("/");
+ll[3] = chat_room_id;
+s = ll.join("/");
+var endpoint = webStart + loc.host + s
+console.log('endpoint', endpoint)
+
+var socket = new ReconnectingWebSocket(endpoint);
+//--
+wm = new WhiteboardManager(chat_room_id, socket)
+//--
+
+socket.onmessage = function(e){
+ var msg_ = JSON.parse(e.data)
+ if(msg_.type == 'wm')
+ {
+  wm.duplicate_onmove(msg_.msg)
+ } else if (msg_.type == 'wc')
+ {
+   wm.setDefaultColors(msg_.msg)
+   wm.CurrentWhiteboardTab.ctx.strokeStyle = msg_.msg;
+ } else if (msg_.type == 'wt')
+ {
+   //alert("1 - " + msg_.msg)
+   ct = wm.CurrentWhiteboardTab.tabTitle.getAttribute("id")
+   //alert("2 - " + ct)
+  if(msg_.msg != ct)
+  {
+    var event = new Event("click", {bubbles: false});
+    elm_t = document.getElementById(msg_.msg); elm_t.dispatchEvent(event)
+  }
+ } else if (msg_.type == 'add_white_board')
+ {
+  ll = msg_.msg.split(',')
+  wm.duplicate_add_whiteboard(ll[0], ll[1])
+ }
+
+ // chatholder.innerHTML += "<li>" + msg_.type + ": " + msg_.msg + "</li>"
+}
+
+socket.onopen = function(e){
+     console.log("onopen", chat_room_name)
+}
+
+socket.onerror = function(e){
+ console.log("error", 1)
+ console.log("error", e)
+ console.log("error", 1)
+}
+
+socket.onclose = function(e){
+ console.log("close", e)
+}
+
+
+{% endblock %}
+

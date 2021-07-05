@@ -1,0 +1,79 @@
+{% extends "base_fabhouseafrica0.html" %}
+{% load static %}
+{% load thumbnail %}
+
+{% block web_head %}
+        <header class="masthead masthead-stacked" role="banner">
+          <div class="x-logobar">
+            <div class="x-logobar-inner">
+              <div class="x-container max width">
+                <a href="{% url 'fabhouseafrica:home' %}" class="x-brand img">
+
+                 {% thumbnail company_obj.image_logo "750x120" crop="center" as image_logo %}
+                  <img src="{{ image_logo.url }}" width="{{ image_logo.width }}" height="{{ image_logo.height }}"
+                       alt="Fab House Africa">
+                </a>
+              </div>
+            </div>
+          </div>
+          <div class="x-navbar-wrap">
+            <div class="x-navbar">
+              <div class="x-navbar-inner">
+                <div class="x-container max width">
+                    <a href="#" id="x-btn-navbar" class="x-btn-navbar collapsed" data-x-toggle="collapse-b" data-x-toggleable="x-nav-wrap-mobile" aria-expanded="false" aria-controls="x-nav-wrap-mobile" role="button">
+                      <i class="x-icon-bars" data-x-icon-s="&#xf0c9;"></i>
+                      <span class="visually-hidden">Navigation</span>
+                    </a>
+                    <nav class="x-nav-wrap desktop" role="navigation">
+                        <ul id="menu-nav-menu" class="x-nav">
+                            <li id="menu-item-1216" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-home current-menu-item page_item page-item-173 current_page_item menu-item-1216"><a href="{% url 'fabhouseafrica:home' %}" aria-current="page"><span>Home</span></a></li>
+                            <li id="menu-item-1220" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1220"><a href="{% url 'fabhouseafrica:catalog' %}"><span>Catalog</span></a></li>
+                            <li id="menu-item-1217" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1217"><a href="{% url 'fabhouseafrica:about' %}"><span>About</span></a></li>
+                            <li id="menu-item-1218" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1218"><a href="{% url 'fabhouseafrica:contact' %}"><span>Contact</span></a></li>
+                            <li id="menu-item-1219" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1219"><a href="{% url 'fabhouseafrica:gallery' %}"><span>Gallery</span></a></li>
+                        </ul>
+                    </nav>
+
+                    <div id="x-nav-wrap-mobile" class="x-nav-wrap mobile x-collapsed" data-x-toggleable="x-nav-wrap-mobile" data-x-toggle-collapse="1" aria-hidden="true" aria-labelledby="x-btn-navbar">
+                        <ul id="menu-nav-menu-1" class="x-nav"><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-home current-menu-item page_item page-item-173 current_page_item menu-item-1216"><a href="{% url 'fabhouseafrica:home' %}" aria-current="page"><span>Home</span></a></li>
+                            <li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1220"><a href="{% url 'fabhouseafrica:catalog' %}"><span>Catalog</span></a></li>
+                            <li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1217"><a href="{% url 'fabhouseafrica:about' %}"><span>About</span></a></li>
+                            <li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1218"><a href="{% url 'fabhouseafrica:contact' %}"><span>Contact</span></a></li>
+                            <li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1219"><a href="{% url 'fabhouseafrica:gallery' %}"><span>Gallery</span></a></li>
+                        </ul>
+                    </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </header>
+{% endblock %}
+
+
+{% block web_footer %}
+        <footer class="x-colophon bottom" role="contentinfo">
+            <div class="x-container max width">
+                <ul id="menu-nav-bott" class="x-nav">
+                    <li id="menu-item-3137" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-home current-menu-item page_item page-item-173 current_page_item menu-item-3137"><a href="#" aria-current="page">Home</a></li>
+                    <li id="menu-item-3139" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children menu-item-3139"><a href="#">Catalog</a></li>
+                    <li id="menu-item-3138" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-3138"><a href="#">About</a></li>
+                    <li id="menu-item-3161" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-3161"><a href="#">Contact</a></li>
+                    <li id="menu-item-3162" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-3162"><a href="#">Gallery</a></li>
+                </ul>
+                <div class="x-social-global">
+                    <a href="https://www.facebook.com/FabHouseAfrica/" class="facebook" title="Facebook" target="_blank">
+                      <i class="x-icon-facebook-square" data-x-icon-b="&#xf082;" aria-hidden="true"></i>
+                    </a>
+                    <a href="https://www.linkedin.com/company/19022313/" class="linkedin" title="LinkedIn" target="_blank">
+                      <i class="x-icon-linkedin-square" data-x-icon-b="&#xf08c;" aria-hidden="true"></i>
+                    </a>
+                    <a href="https://www.instagram.com/fabhouse_afr/" class="instagram" title="Instagram" target="_blank">
+                      <i class="x-icon-instagram" data-x-icon-b="&#xf16d;" aria-hidden="true"></i>
+                    </a>
+                    <a href="https://www.pinterest.com/fabhouseafrica/" class="pinterest" title="Pinterest" target="_blank">
+                      <i class="x-icon-pinterest-square" data-x-icon-b="&#xf0d3;" aria-hidden="true"></i>
+                    </a>
+                </div>
+            </div>
+        </footer>
+{% endblock %}

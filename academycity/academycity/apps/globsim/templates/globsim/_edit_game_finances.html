@@ -1,0 +1,66 @@
+{% load core_tags %}
+{% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
+
+<div onchange="update_field_model(event, '{% url "core:update_field_model" %}')"
+     onclick="click_main_games_admin(event, '{{game.slug}}')" class="row">
+    <div class="column left_setup">
+
+      <a href="#" class="btn btn-sm btn-info" fun="new_finance"
+         style="padding:0px 2px 0px 2px;margin:0px;background-color:blue">{% trans "New Finance Institute" %}</a>
+       {% for f in finance_types %}
+        <br/>Finance Type:
+                <input id="finance_{{f.id}}" obj_slug="{{f.slug}}" app="globsim" pkey="{{f.id}}"
+                       field = "name" size="15" model="FinanceType" value="{{ f.name }}" type="input" />
+                </td>
+                <button class="btn">
+                    <i class="fa fa-trash" fun="delete_finance_type" app="globsim" obj_id="{{f.id}}"></i>
+                </button>
+        <br/>
+        <a href="#" class="btn btn-sm btn-info" fun="new_finance_instrument" obj_id="{{ f.id }}"
+           obj_slug="{{f.slug}}" style="padding:0px 2px 0px 2px;margin:0px;background-color:blue">{% trans "New Instrument" %}</a><br/>
+        <table style="width:300px;">
+          <thead>
+            <th style="width:40%">category</th>
+            <th style="width:10%">account</th>
+            <th style="width:10%">amount</th>
+            <th style="width:10%">min</th>
+            <th style="width:10%">Max</th>
+            <th style="width:10%">Delete</th>
+          </thead>
+        <tbody>
+          {% for a in f.finance_attributes.all %}
+            <tr>
+                <td>{{f.name}}</td>
+                <td>
+                <input id="account_{{a.id}}" app="globsim" pkey="{{a.id}}" field = "name"
+                       obj_slug="{{a.slug}}"
+                       size="10"
+                       model="FinanceTypeAttribute" value="{{ a.name }}" type="input" />
+                </td>
+                <td>
+                <input id="amount_{{a.id}}" app="globsim" pkey="{{a.id}}" field = "amount" size="5"
+                       model="FinanceTypeAttribute" value="{{ a.amount }}" type="input" />
+                </td>
+                <td>
+                <input id="min_{{a.id}}" app="globsim" pkey="{{a.id}}" field = "min" size="5"
+                       model="FinanceTypeAttribute" value="{{ a.min }}" type="input" />
+                </td>
+                <td>
+                <input id="max_{{a.id}}" app="globsim" pkey="{{a.id}}" field = "max" size="5"
+                       model="FinanceTypeAttribute" value="{{ a.max }}" type="input" />
+                </td>
+                <td><button class="btn">
+                    <i class="fa fa-trash" fun="delete_finance_instrument" app="globsim" obj_id="{{a.id}}"></i>
+                </button></td>
+            </tr>
+              {% endfor %}
+        </tbody>
+        </table>
+       {% endfor %}
+        <br/> <br/>
+    </div>
+
+    <div class="column right_setup">
+    </div>
+
+</div>

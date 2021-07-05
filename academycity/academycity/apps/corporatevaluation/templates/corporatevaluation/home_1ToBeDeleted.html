@@ -1,0 +1,106 @@
+{% extends "academycity/base.html" %}
+{% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
+{% load core_tags %}
+
+{% block content %}
+
+<style>
+
+h5 {
+	font-family: sans-serif;
+	font-size: 34px;
+}
+
+nav > .nav.nav-tabs{
+
+  border: none;
+    color:#fff;
+    background:#272e38;
+    border-radius:0;
+
+}
+nav > div a.nav-item.nav-link,
+nav > div a.nav-item.nav-link.active
+{
+  border: none;
+    padding: 18px 25px;
+    color:#fff;
+    background:#272e38;
+    border-radius:0;
+}
+
+nav > div a.nav-item.nav-link.active:after
+ {
+  content: "";
+  position: relative;
+  bottom: -60px;
+  left: -10%;
+  border: 15px solid transparent;
+  border-top-color: #e74c3c ;
+}
+.tab-content{
+  background: #fdfdfd;
+    line-height: 25px;
+    border: 1px solid #ddd;
+    border-top:5px solid #e74c3c;
+    border-bottom:5px solid #e74c3c;
+    padding:30px 25px;
+}
+
+nav > div a.nav-item.nav-link:hover,
+nav > div a.nav-item.nav-link:focus
+{
+  border: none;
+    background: #e74c3c;
+    color:#fff;
+    border-radius:0;
+    transition:background 0.20s linear;
+}
+</style>
+
+<div class="container">
+    <table>
+        <tr>
+            <td>Industry: </td>
+            <td>
+                <select name="industries" id="industries" onChange="industries_fun()">
+                <option value='0'>--------------------</option>
+                <option value='1'>All Companies</option>
+                {% for i in industry %}
+                <option value='{{ i.sic_code }}'>{{ i.sic_description }}</option>
+                {% endfor %}
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <td>Company:</td>
+            <td>
+                <select name="companies" id="companies" onChange="companies_fun(this.options[this.selectedIndex].value)">
+
+
+                    <option value='1'>ABC</option>
+                    <option value='2'>DEF</option>
+                </select>
+            </td>
+        </tr>
+    </table>
+</div>
+
+<script>
+
+
+// Pick Industry
+// -------------
+function industries_fun()
+{
+ alert(1)
+}
+
+function companies_fun(value)
+{
+ alert(11111)
+ alert(value)
+}
+
+</script>
+{% endblock %}

@@ -1,0 +1,63 @@
+{% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
+
+<div id="GameSetup" class="tab-pane fade">
+    {% if LANGUAGE_CODE == "ar" %}
+    <div dir="RTL"style="text-align: right;" class="row">
+    {% else %}
+    <div dir="LTR" class="row">
+    {% endif%}
+
+      <div id="gamesetup_nav" class="column left" style="background-color:#80b3ff;"
+           onclick="click_main_game_setup(event, '{{game.slug}}')">
+
+            <h4>Game Name: {{ game.game_type.name}}</h4>
+           {% thumbnail game.game_type.image '200x100' crop subject_location=game.image.subject_location as gi %}
+            <img src="{{ gi.url }}" width="{{ gi.width }}" height="{{ gi.height }}" alt="{{ game.name }}">
+
+           <hr style="margin-top: -3px; margin-bottom: -2px" />
+           <br/>
+
+            <table id="gamesetup" style="width:280px;">
+              <tbody id="gamesetup_projects_">
+               <tr><td><a href="#" class="btn btn-small btn-info" fun="rollover"
+                  style="padding:0px 2px 0px 2px;margin:0px;background-color:blue">Rollover</a></td>
+                   <td><a href="#" class="btn btn-small btn-info" fun="set_zero"
+                  style="padding:0px 2px 0px 2px;margin:0px;background-color:blue">Set Zero</a></td>
+                   <td><a id="setup_" href="#" class="btn btn-small btn-info" fun="schedule_period_dates"
+                  style="padding:0px 10px 0px 2px;margin:0px 20px 0px 2px;background-color:blue">Setup</a></td>
+               </tr>
+
+               <tr>
+               <td>Change to:</td>
+                <td>
+                <select name="game_type" id="game_type" style="width:70px;"
+                        onchange="change_game_types(event, '{% url "globsim:change_game_types" %}')">
+<!--                <option value='0'>&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;</option>-->
+                    {% for i in game_types %}
+                        {% if i.id == game.game_type.id %}
+                            <option value='{{ i.slug }}' num='{{game.id}}' selected>{{ i.name }}</option>
+                        {% else %}
+                            <option value='{{ i.slug }}' num='{{game.id}}'>{{ i.name }}</option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
+               </td>
+               <td></td></tr>
+              <tr><td><a href="#" class="btn btn-small btn-info" fun="students_list"
+                         slug="{{ game.course_schedule.slug }}"
+                  style="padding:0px 2px 0px 2px;margin:0px;background-color:blue">Student's list</a>
+                  </td><td><a href="#" class="btn btn-small btn-info" fun="random_group_assignment"
+                         slug="{{ game.course_schedule.slug }}"
+                  style="padding:0px 2px 0px 2px;margin:0px;background-color:blue">Create teams (Random)</a>
+                  </td><td></td></tr>
+
+              </tbody>
+            </table>
+
+      </div>
+
+      <div id="gamesetup_content" class="column right" style="background-color:#b3d1ff;">
+      </div>
+    </div>
+</div>
+

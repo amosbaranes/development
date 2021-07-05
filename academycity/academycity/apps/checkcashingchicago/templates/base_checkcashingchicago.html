@@ -1,0 +1,169 @@
+{% extends "base_checkcashingchicago0.html" %}
+{% load static %}
+{% load thumbnail %}
+
+  {% block title %}
+  <title>CFE</title>
+  {% endblock%}
+
+
+{% block links %}
+<link rel="stylesheet" type="text/css" href="{% static 'checkcashingchicago/css/banner-styles.css' %}" />
+<link rel="stylesheet" type="text/css" href="{% static 'checkcashingchicago/css/iconochive.css' %}" />
+<link rel="canonical" href="https://web.archive.org/web/20180805035927/http://checkcashingchicago.com/"/>
+<link rel="dns-prefetch" href="//web.archive.org/web/20180805035927/http://s.w.org/"/>
+<link rel="alternate" type="application/rss+xml" title="Chicago Financial Enterprise » Feed" href="https://web.archive.org/web/20180805035927/http://checkcashingchicago.com/feed/"/>
+<link rel="alternate" type="application/rss+xml" title="Chicago Financial Enterprise » Comments Feed" href="https://web.archive.org/web/20180805035927/http://checkcashingchicago.com/comments/feed/"/>
+<link rel="alternate" type="application/rss+xml" title="Chicago Financial Enterprise » About Comments Feed" href="https://web.archive.org/web/20180805035927/http://checkcashingchicago.com/about/feed/"/>
+<link rel="stylesheet" id="avia-google-webfont" href="{% static 'checkcashingchicago/css/css.css' %}" type="text/css" media="all"/>
+<link rel="stylesheet" id="collapseomatic-css-css" href="{% static 'checkcashingchicago/css/light_style.css' %}" type="text/css" media="all"/>
+<link rel="stylesheet" id="avia-grid-css" href="{% static 'checkcashingchicago/css/grid.css' %}" type="text/css" media="all"/>
+<link rel="stylesheet" id="avia-base-css" href="{% static 'checkcashingchicago/css/base.css' %}" type="text/css" media="all"/>
+<link rel="stylesheet" id="avia-layout-css" href="{% static 'checkcashingchicago/css/layout.css' %}" type="text/css" media="all"/>
+<link rel="stylesheet" id="avia-scs-css" href="{% static 'checkcashingchicago/css/shortcodes.css' %}" type="text/css" media="all"/>
+<link rel="stylesheet" id="avia-popup-css-css" href="{% static 'checkcashingchicago/css/magnific-popup.css' %}" type="text/css" media="screen"/>
+<link rel="stylesheet" id="avia-media-css" href="{% static 'checkcashingchicago/css/mediaelementplayer.css' %}" type="text/css" media="screen"/>
+<link rel="stylesheet" id="avia-print-css" href="{% static 'checkcashingchicago/css/print.css' %}" type="text/css" media="print"/>
+<link rel="stylesheet" id="avia-dynamic-css" href="{% static 'checkcashingchicago/css/cfe_settings.css' %}" type="text/css" media="all"/>
+<link rel="stylesheet" id="avia-custom-css" href="{% static 'checkcashingchicago/css/custom.css' %}" type="text/css" media="all"/>
+<link rel="stylesheet" id="avia-style-css" href="{% static 'checkcashingchicago/css/style.css' %}" type="text/css" media="all"/>
+<link rel="stylesheet" id="mc4wp-form-basic-css" href="{% static 'checkcashingchicago/css/form-basic.min.css' %}" type="text/css" media="all"/>
+<link rel="https://api.w.org/" href="http://checkcashingchicago.com/wp-json/"/>
+<link rel="EditURI" type="application/rsd+xml" title="RSD" href="http://checkcashingchicago.com/xmlrpc.php?rsd"/>
+<link rel="wlwmanifest" type="application/wlwmanifest+xml" href="http://checkcashingchicago.com/wp-includes/wlwmanifest.xml"/>
+<link rel="shortlink" href="https://web.archive.org/web/20180805035927/http://checkcashingchicago.com/"/>
+<link rel="alternate" type="application/json+oembed" href="https://web.archive.org/web/20180805035927/http://checkcashingchicago.com/wp-json/oembed/1.0/embed?url=http%3A%2F%2Fcheckcashingchicago.com%2F"/>
+<link rel="alternate" type="text/xml+oembed" href="https://web.archive.org/web/20180805035927/http://checkcashingchicago.com/wp-json/oembed/1.0/embed?url=http%3A%2F%2Fcheckcashingchicago.com%2F&amp;format=xml"/>
+<link rel="profile" href="http://gmpg.org/xfn/11"/>
+<link rel="alternate" type="application/rss+xml" title="Chicago Financial Enterprise RSS2 Feed" href="https://web.archive.org/web/20180805035927/http://checkcashingchicago.com/feed/"/>
+<link rel="pingback" href="http://checkcashingchicago.com/xmlrpc.php"/>
+{% endblock %}
+
+{% block style %}
+<style type="text/css">
+img.wp-smiley,
+img.emoji {
+	display: inline !important;
+	border: none !important;
+	box-shadow: none !important;
+	height: 1em !important;
+	width: 1em !important;
+	margin: 0 .07em !important;
+	vertical-align: -0.1em !important;
+	background: none !important;
+	padding: 0 !important;
+}
+</style>
+<style type="text/css">
+@font-face {font-family: 'entypo-fontello'; font-weight: normal; font-style: normal;
+src: url('https://web.archive.org/web/20180805035927im_/http://checkcashingchicago.com/wp-content/themes/enfold/config-templatebuilder/avia-template-builder/assets/fonts/entypo-fontello.eot?v=3');
+src: url('https://web.archive.org/web/20180805035927im_/http://checkcashingchicago.com/wp-content/themes/enfold/config-templatebuilder/avia-template-builder/assets/fonts/entypo-fontello.eot?v=3#iefix') format('embedded-opentype'),
+url('https://web.archive.org/web/20180805035927im_/http://checkcashingchicago.com/wp-content/themes/enfold/config-templatebuilder/avia-template-builder/assets/fonts/entypo-fontello.woff?v=3') format('woff'),
+url('https://web.archive.org/web/20180805035927im_/http://checkcashingchicago.com/wp-content/themes/enfold/config-templatebuilder/avia-template-builder/assets/fonts/entypo-fontello.ttf?v=3') format('truetype'),
+url('https://web.archive.org/web/20180805035927im_/http://checkcashingchicago.com/wp-content/themes/enfold/config-templatebuilder/avia-template-builder/assets/fonts/entypo-fontello.svg?v=3#entypo-fontello') format('svg');
+} #top .avia-font-entypo-fontello, body .avia-font-entypo-fontello, html body [data-av_iconfont='entypo-fontello']:before{ font-family: 'entypo-fontello'; }
+</style>
+<style type="text/css">
+.recentcomments a{display:inline !important;padding:0 !important;margin:0 !important;}</style>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'checkcashingchicago/js/analytics.js' %}" type="text/javascript"></script>
+<script type="text/javascript">
+window.addEventListener('DOMContentLoaded',function(){var v=archive_analytics.values;v.service='wb';v.server_name='wwwb-app55.us.archive.org';v.server_ms=235;archive_analytics.send_pageview({});});</script>
+<script type="text/javascript" src="{% static 'checkcashingchicago/js/playback.bundle.js' %}" charset="utf-8"></script>
+<script type="text/javascript" src="{% static 'checkcashingchicago/js/wombat.js' %}" charset="utf-8"></script>
+<script type="text/javascript">
+  __wm.init("https://web.archive.org/web");
+  __wm.wombat("http://checkcashingchicago.com/","20180805035927","https://web.archive.org/","web","/_static/",
+	      "1533441567");
+</script>
+<script type="application/ld+json">
+  {"@context":"https:\/\/web.archive.org\/web\/20180805035927\/https:\/\/schema.org","@type":"WebSite","@id":"#website","url":"https:\/\/web.archive.org\/web\/20180805035927\/http:\/\/checkcashingchicago.com\/","name":"Chicago Financial Enterprise","potentialAction":{"@type":"SearchAction","target":"https:\/\/web.archive.org\/web\/20180805035927\/http:\/\/checkcashingchicago.com\/?s={search_term_string}","query-input":"required name=search_term_string"}}</script>
+<!-- / Yoast SEO plugin. -->
+<script type="text/javascript">
+			window._wpemojiSettings = {"baseUrl":"https:\/\/web.archive.org\/web\/20180805035927\/https:\/\/s.w.org\/images\/core\/emoji\/11\/72x72\/","ext":".png","svgUrl":"https:\/\/web.archive.org\/web\/20180805035927\/https:\/\/s.w.org\/images\/core\/emoji\/11\/svg\/","svgExt":".svg","source":{"concatemoji":"https:\/\/web.archive.org\/web\/20180805035927\/http:\/\/checkcashingchicago.com\/wp-includes\/js\/wp-emoji-release.min.js?ver=4.9.8"}};
+			!function(a,b,c){function d(a,b){var c=String.fromCharCode;l.clearRect(0,0,k.width,k.height),l.fillText(c.apply(this,a),0,0);var d=k.toDataURL();l.clearRect(0,0,k.width,k.height),l.fillText(c.apply(this,b),0,0);var e=k.toDataURL();return d===e}function e(a){var b;if(!l||!l.fillText)return!1;switch(l.textBaseline="top",l.font="600 32px Arial",a){case"flag":return!(b=d([55356,56826,55356,56819],[55356,56826,8203,55356,56819]))&&(b=d([55356,57332,56128,56423,56128,56418,56128,56421,56128,56430,56128,56423,56128,56447],[55356,57332,8203,56128,56423,8203,56128,56418,8203,56128,56421,8203,56128,56430,8203,56128,56423,8203,56128,56447]),!b);case"emoji":return b=d([55358,56760,9792,65039],[55358,56760,8203,9792,65039]),!b}return!1}function f(a){var c=b.createElement("script");c.src=a,c.defer=c.type="text/javascript",b.getElementsByTagName("head")[0].appendChild(c)}var g,h,i,j,k=b.createElement("canvas"),l=k.getContext&&k.getContext("2d");for(j=Array("flag","emoji"),c.supports={everything:!0,everythingExceptFlag:!0},i=0;i<j.length;i++)c.supports[j[i]]=e(j[i]),c.supports.everything=c.supports.everything&&c.supports[j[i]],"flag"!==j[i]&&(c.supports.everythingExceptFlag=c.supports.everythingExceptFlag&&c.supports[j[i]]);c.supports.everythingExceptFlag=c.supports.everythingExceptFlag&&!c.supports.flag,c.DOMReady=!1,c.readyCallback=function(){c.DOMReady=!0},c.supports.everything||(h=function(){c.readyCallback()},b.addEventListener?(b.addEventListener("DOMContentLoaded",h,!1),a.addEventListener("load",h,!1)):(a.attachEvent("onload",h),b.attachEvent("onreadystatechange",function(){"complete"===b.readyState&&c.readyCallback()})),g=c.source||{},g.concatemoji?f(g.concatemoji):g.wpemoji&&g.twemoji&&(f(g.twemoji),f(g.wpemoji)))}(window,document,window._wpemojiSettings);
+		</script>
+<!-- End Wayback Rewrite JS Include -->
+<script type="text/javascript" src="{% static 'checkcashingchicago/js/jquery.js' %}"></script>
+<script type="text/javascript" src="{% static 'checkcashingchicago/js/jquery-migrate.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'checkcashingchicago/js/avia-compat.js' %}"></script>
+<script type="text/javascript">
+var mejsL10n = {"language":"en","strings":{"mejs.install-flash":"You are using a browser that does not have Flash player enabled or installed. Please turn on your Flash player plugin or download the latest version from https:\/\/get.adobe.com\/flashplayer\/","mejs.fullscreen-off":"Turn off Fullscreen","mejs.fullscreen-on":"Go Fullscreen","mejs.download-video":"Download Video","mejs.fullscreen":"Fullscreen","mejs.time-jump-forward":["Jump forward 1 second","Jump forward %1 seconds"],"mejs.loop":"Toggle Loop","mejs.play":"Play","mejs.pause":"Pause","mejs.close":"Close","mejs.time-slider":"Time Slider","mejs.time-help-text":"Use Left\/Right Arrow keys to advance one second, Up\/Down arrows to advance ten seconds.","mejs.time-skip-back":["Skip back 1 second","Skip back %1 seconds"],"mejs.captions-subtitles":"Captions\/Subtitles","mejs.captions-chapters":"Chapters","mejs.none":"None","mejs.mute-toggle":"Mute Toggle","mejs.volume-help-text":"Use Up\/Down Arrow keys to increase or decrease volume.","mejs.unmute":"Unmute","mejs.mute":"Mute","mejs.volume-slider":"Volume Slider","mejs.video-player":"Video Player","mejs.audio-player":"Audio Player","mejs.ad-skip":"Skip ad","mejs.ad-skip-info":["Skip in 1 second","Skip in %1 seconds"],"mejs.source-chooser":"Source Chooser","mejs.stop":"Stop","mejs.speed-rate":"Speed Rate","mejs.live-broadcast":"Live Broadcast","mejs.afrikaans":"Afrikaans","mejs.albanian":"Albanian","mejs.arabic":"Arabic","mejs.belarusian":"Belarusian","mejs.bulgarian":"Bulgarian","mejs.catalan":"Catalan","mejs.chinese":"Chinese","mejs.chinese-simplified":"Chinese (Simplified)","mejs.chinese-traditional":"Chinese (Traditional)","mejs.croatian":"Croatian","mejs.czech":"Czech","mejs.danish":"Danish","mejs.dutch":"Dutch","mejs.english":"English","mejs.estonian":"Estonian","mejs.filipino":"Filipino","mejs.finnish":"Finnish","mejs.french":"French","mejs.galician":"Galician","mejs.german":"German","mejs.greek":"Greek","mejs.haitian-creole":"Haitian Creole","mejs.hebrew":"Hebrew","mejs.hindi":"Hindi","mejs.hungarian":"Hungarian","mejs.icelandic":"Icelandic","mejs.indonesian":"Indonesian","mejs.irish":"Irish","mejs.italian":"Italian","mejs.japanese":"Japanese","mejs.korean":"Korean","mejs.latvian":"Latvian","mejs.lithuanian":"Lithuanian","mejs.macedonian":"Macedonian","mejs.malay":"Malay","mejs.maltese":"Maltese","mejs.norwegian":"Norwegian","mejs.persian":"Persian","mejs.polish":"Polish","mejs.portuguese":"Portuguese","mejs.romanian":"Romanian","mejs.russian":"Russian","mejs.serbian":"Serbian","mejs.slovak":"Slovak","mejs.slovenian":"Slovenian","mejs.spanish":"Spanish","mejs.swahili":"Swahili","mejs.swedish":"Swedish","mejs.tagalog":"Tagalog","mejs.thai":"Thai","mejs.turkish":"Turkish","mejs.ukrainian":"Ukrainian","mejs.vietnamese":"Vietnamese","mejs.welsh":"Welsh","mejs.yiddish":"Yiddish"}};
+</script>
+<script type="text/javascript" src="{% static 'checkcashingchicago/js/mediaelement-and-player.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'checkcashingchicago/js/mediaelement-migrate.min.js' %}"></script>
+<script type="text/javascript">
+/* <![CDATA[ */
+var _wpmejsSettings = {"pluginPath":"\/wp-includes\/js\/mediaelement\/","classPrefix":"mejs-","stretching":"responsive"};
+/* ]]> */
+</script>
+<!--[if lt IE 9]><script src="{% static 'checkcashingchicago/js/js/html5shiv.js' %}"></script><![endif]-->
+
+
+  <script type="text/javascript">
+var colomatduration = 'fast';
+var colomatslideEffect = 'slideFade';
+var colomatpauseInit = '';
+var colomattouchstart = '';
+</script>
+  <script type="text/javascript">
+ /* <![CDATA[ */
+var avia_framework_globals = avia_framework_globals || {};
+    avia_framework_globals.frameworkUrl = 'https://web.archive.org/web/20180805035927/http://checkcashingchicago.com/wp-content/themes/enfold/framework/';
+    avia_framework_globals.installedAt = 'https://web.archive.org/web/20180805035927/http://checkcashingchicago.com/wp-content/themes/enfold/';
+    avia_framework_globals.ajaxurl = 'https://web.archive.org/web/20180805035927/http://checkcashingchicago.com/wp-admin/admin-ajax.php';
+/* ]]> */
+</script>
+  <script type="text/javascript" src="{% static 'checkcashingchicago/js/collapse.js' %}"></script>
+  <script type="text/javascript" src="{% static 'checkcashingchicago/js/avia.js' %}"></script>
+  <script type="text/javascript" src="{% static 'checkcashingchicago/js/shortcodes.js' %}"></script>
+  <script type="text/javascript" src="{% static 'checkcashingchicago/js/jquery.magnific-popup.min.js' %}"></script>
+  <script type="text/javascript" src="{% static 'checkcashingchicago/js/wp-mediaelement.min.js' %}"></script>
+  <script type="text/javascript" src="{% static 'checkcashingchicago/js/wp-embed.min.js' %}"></script>
+
+{% endblock %}
+
+{% block meta %}
+<meta charset="UTF-8"/>
+<!-- page title, displayed in your browser bar -->
+<title>About - Chicago Financial Enterprise</title>
+<!-- mobile setting -->
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<!-- Scripts/CSS and wp_head hook -->
+<!-- This site is optimized with the Yoast SEO plugin v7.9 - https://yoast.com/wordpress/plugins/seo/ -->
+<meta property="og:locale" content="en_US"/>
+<meta property="og:type" content="website"/>
+<meta property="og:title" content="About - Chicago Financial Enterprise"/>
+<meta property="og:url" content="https://web.archive.org/web/20180805035927/http://checkcashingchicago.com/"/>
+<meta property="og:site_name" content="Chicago Financial Enterprise"/>
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="About - Chicago Financial Enterprise"/>
+<meta name="twitter:image" content="{% static 'checkcashingchicago/images/home/09/License-Service-Icon.png' %}"/>
+<!-- google webfont font replacement -->
+<meta name="generator" content="WordPress 4.9.8"/>
+<!--
+Debugging Info for Theme support:
+
+Theme: Enfold
+Version: 3.4.3
+Installed: enfold
+AviaFramework Version: 2.3
+AviaBuilder Version: 0.8
+- - - - - - - - - - -
+ChildTheme: CFE Settings
+ChildTheme Version: 3.1.5
+ChildTheme Installed: enfold
+
+ML:256-PU:44-PLA:7
+WP:4.9.8
+Updates: disabled
+-->
+{% endblock %}
+
+
+  {% block body_content %}
+  {% endblock %}
+
+

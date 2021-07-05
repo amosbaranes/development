@@ -1,0 +1,29 @@
+{% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
+
+{% with user=action.user %}
+<div class="action">
+  <div class="images">
+    {% if action.target %}
+      {% with target=action.target %}
+        {% if target.image %}
+            <a href="{{ target.image.get_absolute_url }}" target="_blank">
+              <img src="{{ target.image.url }}" width="300" alt="{{ image.title }}" class="item-img">
+            </a>
+        {% endif %}
+      {% endwith %}
+    {% endif %}
+  </div>
+  <div class="info">
+    <p>
+      <br/>{{ action.verb }}<br/>
+      <span class="date">{{ action.created|timesince }} ago</span>
+      <br/>
+      {% if action.target %}
+        {% with target=action.target %}
+          <a href="{{ target.get_absolute_url }}">{{ target }}</a>
+        {% endwith %}
+      {% endif %}
+    </p>
+  </div>
+
+{% endwith %}

@@ -1,0 +1,21 @@
+{% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
+<h4>{{ message }}</h4>
+<br/>
+{% if showCheckOut == 1 %}
+    <table>
+        <tr>
+            <td>
+                <a href="{% url 'courses:home' %}" class="btn btn-secondary" role="button"
+                style="margin:0px 10px 0px 10px">{% trans "Register additional course" %}</a>
+            </td>
+            <td>
+                <a href="{% url 'courses:cart_detail' %}" class="btn btn-primary" role="button"
+                   style="border-radius: 35px;">{% trans "Check Out" %}</a>
+            </td>
+        </tr>
+    </table>
+{% else %}
+<h4><a href={{ schedule.course.get_absolute_url }} id="{{ schedule.slug }}"
+   style="display:block;">Go to {{ schedule.course.name }}</a></h4>
+<br/>
+{% endif %}

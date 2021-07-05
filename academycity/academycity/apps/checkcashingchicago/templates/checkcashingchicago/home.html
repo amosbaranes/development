@@ -1,0 +1,307 @@
+{% extends "base_checkcashingchicago.html" %}
+{% load static %}
+
+  {% block body %}
+   <body id="top" class="home page-template-default page page-id-265 stretched lato lora " itemscope="itemscope" itemtype="https://schema.org/WebPage">
+  {% endblock %}
+
+  {% block body_content %}
+
+          <header id="header" class=" header_color dark_bg_color  av_header_top av_logo_left av_main_nav_header av_menu_right av_slim av_header_sticky av_header_shrinking_disabled av_header_stretch_disabled av_mobile_menu_phone av_header_transparency av_header_searchicon_disabled av_header_unstick_top_disabled av_seperator_big_border av_bottom_nav_disabled " role="banner" itemscope="itemscope" itemtype="https://schema.org/WPHeader">
+		  <a id="advanced_menu_toggle" href="#" aria-hidden="true" data-av_icon="" data-av_iconfont="entypo-fontello"></a>
+		  <a id="advanced_menu_hide" href="#" aria-hidden="true" data-av_icon="" data-av_iconfont="entypo-fontello"></a>
+		  <div id="header_main" class="container_wrap container_wrap_logo">
+			  <div class="container av-logo-container">
+				  <div class="inner-container">
+					  <strong class="logo">
+						  <a href="{% url 'checkcashingchicago:home' %}">
+							  <img height="100" width="300"
+							  src="{{ company_obj.logo_image.url }}" alt="Chicago Financial Enterprise"/>
+						  </a>
+					  </strong>
+					  <nav class="main_menu" data-selectname="Select a page" role="navigation" itemscope="itemscope" itemtype="https://schema.org/SiteNavigationElement">
+						  <div class="avia-menu av-main-nav-wrap">
+							  <ul id="avia-menu" class="menu av-main-nav">
+								  <li id="menu-item-270" class="menu-item menu-item-type-custom menu-item-object-custom current-menu-item current_page_item menu-item-homemenu-item-top-level menu-item-top-level-1">
+									  <a href="#about" itemprop="url">
+										  <span class="avia-bullet"></span>
+										  <span class="avia-menu-text">About</span>
+										  <span class="avia-menu-fx">
+											  <span class="avia-arrow-wrap">
+												  <span class="avia-arrow"></span>
+											  </span>
+										  </span>
+									  </a>
+								  </li>
+								  <li id="menu-item-271" class="menu-item menu-item-type-custom menu-item-object-custom current_page_item menu-item-homemenu-item-top-level menu-item-top-level-2">
+									  <a href="#locations" itemprop="url">
+										  <span class="avia-bullet"></span>
+										  <span class="avia-menu-text">Locations</span>
+										  <span class="avia-menu-fx">
+											  <span class="avia-arrow-wrap">
+												  <span class="avia-arrow"></span>
+											  </span>
+										  </span>
+									  </a>
+								  </li>
+								  <li id="menu-item-333" class="menu-item menu-item-type-custom menu-item-object-custom current_page_item menu-item-homemenu-item-top-level menu-item-top-level-3">
+									  <a href="#contact" itemprop="url">
+										  <span class="avia-bullet"></span>
+										  <span class="avia-menu-text">Contact</span>
+										  <span class="avia-menu-fx">
+											  <span class="avia-arrow-wrap">
+												  <span class="avia-arrow"></span>
+											  </span>
+										  </span>
+									  </a>
+								  </li>
+							  </ul>
+						  </div>
+					  </nav>
+				  </div>
+			  </div><!-- end container_wrap-->
+		  </div>
+		  <div class="header_bg"></div>
+		  <!-- end header -->
+	  </header>
+          <div id="about" class="avia-section main_color avia-section-default avia-shadow avia-full-stretch av-parallax-section av-section-color-overlay-active avia-bg-style-parallax  avia-builder-el-0  el_before_av_section  avia-builder-el-first  av-minimum-height av-minimum-height-100 container_wrap fullsize" data-section-bg-repeat="stretch">
+			  <div class="av-parallax" data-avia-parallax-ratio="0.3">
+				  <div class="av-parallax-inner main_color  avia-full-stretch" style="background-repeat: no-repeat;
+				  background-image: url('{{ company_obj.main_image.url }}'); background-attachment: scroll; background-position: top center; ">
+				  </div>
+			  </div>
+			  <div class="av-section-color-overlay-wrap">
+				  <div class="av-section-color-overlay" style="opacity: 0.5; background-color: #0a0a0a; "></div>
+				  <div class="container">
+					  <main role="main" itemprop="mainContentOfPage" class="template-page content  av-content-full alpha units">
+						  <div class="post-entry post-entry-type-page post-entry-265">
+							  <div class="entry-content-wrapper clearfix">
+								  <div class="flex_column av_one_full  flex_column_div first  avia-builder-el-1  avia-builder-el-no-sibling  " style="padding:50px; background-color:#333333; border-radius:0px; ">
+									  <section class="av_textblock_section" itemscope="itemscope" itemtype="https://schema.org/CreativeWork">
+										  <div class="avia_textblock  av_inherit_color" style="color:#bfbfbf; " itemprop="text">
+											  <h1 style="text-align: center;">
+												  <span style="color: #bfbfbf;">{{ company_obj.main_title }}</span>
+											  </h1>
+											  <div style="max-width: 674px; margin: auto; text-align: center;">
+												  <span class="collapseomatic noarrow expandcue" id="id3942" rel="program-highlander" tabindex="0" title="<strong>Who are we?</strong>">
+													  <strong>{{ company_obj.main_sub_title }}</strong>
+												  </span>
+												  <div id="target-id3942" class="collapseomatic_content "><br/>
+													  {{ company_obj.main_sub_description }}<br/>
+												  </div>
+											  </div>
+										  </div>
+									  </section>
+								  </div>
+							  </div>
+						  </div>
+					  </main><!-- close content main element -->
+				  </div>
+			  </div>
+		  </div>
+		  <div id="locations" class="avia-section main_color avia-section-large avia-shadow avia-full-stretch av-parallax-section av-section-color-overlay-active avia-bg-style-parallax  avia-builder-el-3  el_after_av_section  el_before_av_section  container_wrap fullsize" data-section-bg-repeat="stretch">
+			  <div class="av-parallax" data-avia-parallax-ratio="0.3">
+				  <div class="av-parallax-inner main_color  avia-full-stretch" style="background-repeat: no-repeat;
+				  background-image: url({{company_obj.background_location_image.url}}); background-attachment: scroll; background-position: bottom center; ">
+				  </div>
+			  </div>
+			  <div class="av-section-color-overlay-wrap">
+				  <div class="av-section-color-overlay" style="opacity: 0.5; background-color: #ffffff; "></div>
+				  <div class="container">
+					  <div class="template-page content  av-content-full alpha units">
+						  <div class="post-entry post-entry-type-page post-entry-265">
+							  <div class="entry-content-wrapper clearfix">
+								  <section class="av_textblock_section" itemscope="itemscope" itemtype="https://schema.org/CreativeWork">
+									  <div class="avia_textblock " itemprop="text">
+										  <h2 style="text-align: center;">{{company_obj.location_title}}</h2>
+									  </div>
+								  </section>
+								  <div class="sort_width_container av-sort-yes-tax" data-portfolio-id="1">
+									  <div id="js_sort_items">
+										  <div class="av-current-sort-title">
+											  <span class="inner_sort_button">
+												  <span>All</span>
+												  <small class="av-cat-count"> 12 </small>
+											  </span>
+										  </div>
+										  <div class="sort_by_cat  ">
+											  <a href="#" data-filter="all_sort" class="all_sort_button active_sort">
+												  <span class="inner_sort_button">
+													  <span>All</span>
+													  <small class="av-cat-count"> 12 </small>
+												  </span>
+											  </a>
+											  {% for region in company_obj.location_regions.all %}
+											  <span class="text-sep {{region.slug}}_sort_sep">/</span>
+											  <a href="#" data-filter="{{region.slug}}_sort" class="{{region.slug}}_sort_button">
+												  <span class="inner_sort_button">
+													  <span>{{region.region_title}}</span>
+													  <small class="av-cat-count"> {{region.region_locations.count}} </small>
+												  </span>
+											  </a>
+											  {% endfor %}
+										  </div>
+									  </div>
+								  </div>
+								  <div id="location_" class=" grid-sort-container isotope no_margin-container with-excerpt-container grid-total-even grid-col-3 grid-links-" data-portfolio-id="1">
+								  {% for l in locations %}
+									  <div data-ajax-id="{{l.data_ajax_id}}" class=" grid-entry flex_column isotope-item all_sort no_margin post-entry post-entry-{{l.data_ajax_id}} grid-entry-overview grid-loop-{{forloop.counter}} grid-parity-{% if forloop.counter|divisibleby:2 %}even{% else %}odd{% endif %} av_one_third {% if forloop.counter0|divisibleby:3 %}first{% endif %} {{l.region.slug}}_sort default_av_fullwidth ">
+										  <article class="main_color inner-entry" itemscope="itemscope" itemtype="https://schema.org/CreativeWork">
+											  <a href="{{ l.get_absolute_url }}" title="{{l.location_heading}}" data-rel="grid-1" class="grid-image avia-hover-fx">
+												  <img width="1500" height="630" src="{{l.image.url}}" class="attachment-featured_large size-featured_large wp-post-image" alt="location"
+													   srcset="{{l.image.url}}"/>
+											  </a>
+											  <div class="grid-content">
+												  <div class="avia-arrow"></div>
+												  <header class="entry-content-header">
+													  <h3 class="grid-entry-title entry-title" itemprop="headline">
+														  <a href="{{ l.get_absolute_url }}" title="{{l.location_heading}}">{{l.location_heading}}</a>
+													  </h3>
+												  </header>
+												  <div class="grid-entry-excerpt entry-content" itemprop="text">
+													  {{l.address1}}<br>
+													  {{l.address2}}<br>
+													  {{l.address3}}<br>
+													  {{l.address4}}
+												  </div>
+											  </div>
+											  <footer class="entry-footer"></footer>
+										  </article>
+									  </div>
+								  {% endfor %}
+								  </div>
+							  </div>
+						  </div>
+					  </div><!-- close content main div -->
+				  </div>
+				  <div class="av-extra-border-element border-extra-arrow-down">
+					  <div class="av-extra-border-outer">
+						  <div class="av-extra-border-inner" style="background-color:#f5f5f5;"></div>
+					  </div>
+				  </div>
+			  </div>
+		  </div>
+		  <div id="contact" class="avia-section main_color avia-section-default avia-shadow avia-full-stretch av-parallax-section av-section-color-overlay-active avia-bg-style-parallax  avia-builder-el-6  el_after_av_section  avia-builder-el-last  av-minimum-height av-minimum-height-100 container_wrap fullsize" data-section-bg-repeat="stretch">
+			  <div class="av-parallax" data-avia-parallax-ratio="0.3">
+				  <div class="av-parallax-inner main_color  avia-full-stretch" style="background-repeat: no-repeat;
+				   background-image: url({{company_obj.background_currency_image.url}}); background-attachment: scroll; background-position: top center; ">
+				  </div>
+			  </div>
+			  <div class="av-section-color-overlay-wrap"><div class="av-section-color-overlay" style="opacity: 0.5; background-color: #b5b5b5; "></div>
+				  <div class="container">
+					  <div class="template-page content  av-content-full alpha units">
+						  <div class="post-entry post-entry-type-page post-entry-265">
+							  <div class="entry-content-wrapper clearfix">
+								  <div class="flex_column_table av-equal-height-column-flextable">
+									  <div class="flex_column av_two_fifth  flex_column_table_cell av-equal-height-column av-align-top first  avia-builder-el-7  el_before_av_three_fifth  avia-builder-el-first  " style="border-width:1px; border-color:#444444; border-style:solid; padding:20px 50px 20px 50px ; background-color:#333333; border-radius:0px; ">
+										  <div data-autoplay="true" data-interval="7" data-animation="slide" data-show_slide_delay="30" class="avia-content-slider-element-container avia-content-slider-element-slider avia-content-slider avia-smallarrow-slider avia-content-slider-active avia-content-slider1 avia-content-slider-odd  avia-builder-el-8  avia-builder-el-no-sibling  av_inherit_color" style=" color:#e0e0e0; ">
+											  <div class="avia-smallarrow-slider-heading  no-content-slider-heading ">
+												  <div class="new-special-heading">&nbsp;</div>
+												  <div class="avia-slideshow-arrows avia-slideshow-controls">
+													  <a href="#prev" class="prev-slide" aria-hidden="true" data-av_icon="" data-av_iconfont="entypo-fontello">Previous</a>
+                                                      <a href="#next" class="next-slide" aria-hidden="true" data-av_icon="" data-av_iconfont="entypo-fontello">Next</a>
+												  </div>
+											  </div>
+											  <div class="avia-content-slider-inner">
+												  {% for currency in currencies %}
+												  <div class="slide-entry-wrap">
+													  <section class="slide-entry flex_column post-entry slide-entry-overview slide-loop-{{currency.currency_loop}} slide-parity-odd  av_fullwidth first" itemscope="itemscope" itemtype="https://schema.org/CreativeWork">
+														  <div class="slide-entry-excerpt entry-content" itemprop="text">
+															  <h2 style="text-align: center;">
+																  <img class="aligncenter size-full wp-image-{{currency.image_id}}" src="{{currency.image.url}}" alt="Illinois license plate services" width="250" height="149"/>
+																  {{currency.currency_header}}</h2>
+															  <p style="text-align: center;">{{currency.currency_description}}</p>
+															  {% if  currency.id == 1 %}
+															  <div style="font-size: 11px; font-weight: bold; line-height: 150%; max-width: 300px; margin: auto; text-align: center;">
+																  <ul>
+																  {% for location in company_obj.locations.all %}
+																	  <li>
+																		  <a title="{{location.location_heading}}" href="{{ location.get_absolute_url }}" target="_blank">{{location.location_heading}}</a>
+																	  </li>
+																  {% endfor %}
+																  </ul>
+															  </div>
+															  {% endif %}
+														  </div>
+													  </section>
+												  </div>
+												  {% endfor %}
+
+											  </div>
+										  </div>
+									  </div>
+
+									  <div class="av-flex-placeholder"></div>
+									  <div class="flex_column av_three_fifth  flex_column_table_cell av-equal-height-column av-align-top   avia-builder-el-9  el_after_av_two_fifth  avia-builder-el-last  " style="padding:-5px 33px 33px 33px ; border-radius:0px; ">
+										  <section class="av_textblock_section" itemscope="itemscope" itemtype="https://schema.org/CreativeWork">
+											  <div class="avia_textblock " style="font-size:13px; " itemprop="text">
+												  <p style="text-align: center; border-color: #e1e1e1; border-radius: 2px; background-color: #fcfcfc; color: #919191; padding: 13px; padding-top: 40px; padding-bottom: 40px; font-weight: bold;">
+													  <span class="av_font_icon avia_animate_when_visible av-icon-style-  av-no-color avia-icon-pos-center " style="">
+														  <i class="fa fa-envelope" style="font-size:36px"></i>
+
+														  </span>
+													  </span>
+												  </p>
+											  </div>
+										  </section>
+										  <form action="" method="" class="avia_ajax_form av-form-labels-hidden
+										  avia-builder-el-12  el_after_av_textblock  avia-builder-el-last  av-centered-form  "
+												data-avia-form-id="1" data-avia-redirect="" >
+											  <fieldset>
+												  <p class=" first_form  form_element form_element_half" id="element_avia_1_1">
+													  <input name="id_name" class="text_input is_empty" type="text" id="id_name" value="" placeholder="Name*"/>
+												  </p>
+												  <p class=" form_element form_element_half" id="element_avia_2_1">
+													  <input name="id_email" class="text_input is_email" type="text" id="id_email" value="" placeholder="E-Mail*"/>
+												  </p>
+												  <p class=" first_form  form_element form_fullwidth av-last-visible-form-element" >
+													  <textarea placeholder="Message*"  id="id_message" name="id_message" class="text_area is_empty" cols="40" rows="7" id="avia_3_1">
+													  </textarea>
+												  </p>
+												  <p class="hidden">
+													  <input type="text" name="avia_4_1" class="hidden " id="avia_4_1" value=""/>
+												  </p>
+												  <p class="form_element ">
+													  <input type="hidden" value="1" name="avia_generated_form1"/>
+													  <input value="Submit" company_id="{{company_obj.id}}" class="button"
+															 onclick=" send_contact_us(event)" data-sending-label="Sending"/>
+												  </p>
+											  </fieldset>
+										  </form>
+										  <div id="ajaxresponse_1" class="ajaxresponse ajaxresponse_1 hidden"></div>
+									  </div>
+								  </div><!--close column table wrapper. Autoclose:  -->
+							  </div>
+						  </div>
+					  </div><!-- close content main div --> <!-- section close by builder template -->
+				  </div>
+			  </div><!--end builder template-->
+		  </div><!-- close default .container_wrap element -->
+  <script>
+  function send_contact_us(event)
+{
+  event.preventDefault();
+  var elm = event.target
+  var company_id_ = elm.getAttribute('company_id')
+  if (company_id_ == null){return;}
+  var contact_us_name_ = document.getElementById("id_name").value
+  var contact_us_email_ = document.getElementById("id_email").value
+  var contact_us_message_ = document.getElementById("id_message").value
+  $.post("{% url 'checkcashingchicago:post_contact_us'%}",
+    {
+      company_id : company_id_,
+      contact_us_name : contact_us_name_,
+      contact_us_email : contact_us_email_,
+      contact_us_message : contact_us_message_
+    },
+    function(data){
+     alert(data['status'])
+    }
+  ).fail(function(error) { alert(error.responseJSON) });
+}
+  </script>
+{% endblock %}
+
+
+  {% block domready %}
+  {% endblock %}

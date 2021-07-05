@@ -1,0 +1,348 @@
+{% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
+
+{% block content %}
+<style>
+#plugin td.account {
+{% if LANGUAGE_CODE == "ar" %}
+  text-align: right
+{% else %}
+  text-align: left
+{% endif%}
+}
+</style>
+  <div id="is_nav" class="column whole" style="width:80%;padding: 5px 5px 5px 5px;background-color:#80b3ff;"
+        {% if LANGUAGE_CODE == "ar" %}
+            dir="RTL" style="text-align: right;"
+        {% else %}
+            dir="LTR"
+        {% endif%} >
+    <table id="plugin" class="fsahv">
+        <thead>
+        <th colspan="6">{% trans "Income Statement" %}</th>
+        </thead>
+        <tbody>
+        <tr><td class="main"></td>
+            <td class="side">20X1</td>
+            <td class="side">20X2</td>
+            <td class="side">20X3</td>
+            <td class="side">20X4</td>
+            <td class="side">20X5</td>
+        </tr>
+        <tr><td class="account">{% trans "Revenue" %}</td>
+            <td id="revenue0" class="side">2000</td>
+            <td id="revenue1" class="side">2100</td>
+            <td id="revenue2" class="side">1800</td>
+            <td id="revenue3" class="side">2300</td>
+            <td id="revenue4" class="side">2500</td>
+        </tr>
+        <tr><td class="account">&nbsp;-{% trans "Cost of Goods Sold" %}</td>
+            <td id="cofgs0" class="side">-1550</td>
+            <td id="cofgs1" class="side">-1610</td>
+            <td id="cofgs2" class="side">-1150</td>
+            <td id="cofgs3" class="side">-1400</td>
+            <td id="cofgs4" class="side">-1450</td>
+        </tr>
+        <tr><td class="account">&nbsp;-{% trans "Depreciation" %}</td>
+            <td id="depreciation_is0" class="side">-30</td>
+            <td id="depreciation_is1" class="side">-40</td>
+            <td id="depreciation_is2" class="side">-50</td>
+            <td id="depreciation_is3" class="side">-60</td>
+            <td id="depreciation_is4" class="side">-70</td>
+        </tr>
+        <tr><td class="account">{% trans "Gross Profit" %}</td>
+            <td id="gross_profit0" class="side">420</td>
+            <td id="gross_profit1" class="side">450</td>
+            <td id="gross_profit2" class="side">600</td>
+            <td id="gross_profit3" class="side">840</td>
+            <td id="gross_profit4" class="side">980</td>
+        </tr>
+        <tr><td class="account">&nbsp;-{% trans "Sales & Marketing Exp" %}</td>
+            <td id="sales_marketing0" class="side">-100</td>
+            <td id="sales_marketing1" class="side">-110</td>
+            <td id="sales_marketing2" class="side">-100</td>
+            <td id="sales_marketing3" class="side">-90</td>
+            <td id="sales_marketing4" class="side">-100</td>
+        </tr>
+        <tr><td class="account">&nbsp;-{% trans "General & Administrative Exp" %}</td>
+            <td id="general_administrative0" class="side">-60</td>
+            <td id="general_administrative1" class="side">-75</td>
+            <td id="general_administrative2" class="side">-70</td>
+            <td id="general_administrative3" class="side">-65</td>
+            <td id="general_administrative4" class="side">-60</td>
+        </tr>
+        <tr><td class="account">{% trans "Operating Profit (EBIT)" %}</td>
+            <td id="ebit0" class="side">260</td>
+            <td id="ebit1" class="side">265</td>
+            <td id="ebit2" class="side">430</td>
+            <td id="ebit3" class="side">685</td>
+            <td id="ebit4" class="side">820</td>
+        </tr>
+        <tr><td class="account">&nbsp;-{% trans "Interest Exp." %}</td>
+            <td id="interest0" class="side">-120</td>
+            <td id="interest1" class="side">-130</td>
+            <td id="interest2" class="side">-70</td>
+            <td id="interest3" class="side">-50</td>
+            <td id="interest4" class="side">-30</td>
+        </tr>
+        <tr><td class="account">{% trans "Income Before Taxes" %}</td>
+            <td id="income_before_taxes0" class="side">140</td>
+            <td id="income_before_taxes1" class="side">135</td>
+            <td id="income_before_taxes2" class="side">360</td>
+            <td id="income_before_taxes3" class="side">635</td>
+            <td id="income_before_taxes4" class="side">790</td>
+        </tr>
+        <tr><td class="account">&nbsp;-{% trans "Taxes" %}</td>
+            <td id="taxes0" class="side">-25</td>
+            <td id="taxes1" class="side">-23</td>
+            <td id="taxes2" class="side">-30</td>
+            <td id="taxes3" class="side">-65</td>
+            <td id="taxes4" class="side">-85</td>
+        </tr>
+        <tr><td class="account">{% trans "Net Income" %}</td>
+            <td id="net_income_is0" class="side">115</td>
+            <td id="net_income_is1" class="side">112</td>
+            <td id="net_income_is2" class="side">330</td>
+            <td id="net_income_is3" class="side">550</td>
+            <td id="net_income_is4" class="side">705</td>
+        </tr>
+        </tbody>
+    </table>
+  </div>
+  <div id="is_nav_v" class="column whole" style="width:80%;padding: 5px 5px 5px 5px;background-color:#80b3ff;"
+        {% if LANGUAGE_CODE == "ar" %}
+            dir="RTL" style="text-align: right;"
+        {% else %}
+            dir="LTR"
+        {% endif%} >
+    <table id="plugin" class="fsahv">
+        <thead>
+        <th colspan="6">{% trans "Income Statement - Vertical" %}</th>
+        </thead>
+        <tbody>
+        <tr><td class="main"></td>
+            <td class="side">20X1</td>
+            <td class="side">20X2</td>
+            <td class="side">20X3</td>
+            <td class="side">20X4</td>
+            <td class="side">20X5</td>
+        </tr>
+        <tr><td class="account">{% trans "Revenue" %}</td>
+            <td id="revenuev0" class="side">2000</td>
+            <td id="revenuev1" class="side">2100</td>
+            <td id="revenuev2" class="side">1800</td>
+            <td id="revenuev3" class="side">2300</td>
+            <td id="revenuev4" class="side">2500</td>
+        </tr>
+        <tr><td class="account">&nbsp;-{% trans "Cost of Goods Sold" %}</td>
+            <td id="cofgsv0" class="side">-1550</td>
+            <td id="cofgsv1" class="side">-1610</td>
+            <td id="cofgsv2" class="side">-1150</td>
+            <td id="cofgsv3" class="side">-1400</td>
+            <td id="cofgsv4" class="side">-1450</td>
+        </tr>
+        <tr><td class="account">&nbsp;-{% trans "Depreciation" %}</td>
+            <td id="depreciation_isv0" class="side">-30</td>
+            <td id="depreciation_isv1" class="side">-40</td>
+            <td id="depreciation_isv2" class="side">-50</td>
+            <td id="depreciation_isv3" class="side">-60</td>
+            <td id="depreciation_isv4" class="side">-70</td>
+        </tr>
+        <tr><td class="account">{% trans "Gross Profit" %}</td>
+            <td id="gross_profitv0" class="side">420</td>
+            <td id="gross_profitv1" class="side">450</td>
+            <td id="gross_profitv2" class="side">600</td>
+            <td id="gross_profitv3" class="side">840</td>
+            <td id="gross_profitv4" class="side">980</td>
+        </tr>
+        <tr><td class="account">&nbsp;-{% trans "Sales & Marketing Exp" %}</td>
+            <td id="sales_marketingv0" class="side">-100</td>
+            <td id="sales_marketingv1" class="side">-110</td>
+            <td id="sales_marketingv2" class="side">-100</td>
+            <td id="sales_marketingv3" class="side">-90</td>
+            <td id="sales_marketingv4" class="side">-100</td>
+        </tr>
+        <tr><td class="account">&nbsp;-{% trans "General & Administrative Exp" %}</td>
+            <td id="general_administrativev0" class="side">-60</td>
+            <td id="general_administrativev1" class="side">-75</td>
+            <td id="general_administrativev2" class="side">-70</td>
+            <td id="general_administrativev3" class="side">-65</td>
+            <td id="general_administrativev4" class="side">-60</td>
+        </tr>
+        <tr><td class="account">{% trans "Operating Profit (EBIT)" %}</td>
+            <td id="ebitv0" class="side">260</td>
+            <td id="ebitv1" class="side">265</td>
+            <td id="ebitv2" class="side">430</td>
+            <td id="ebitv3" class="side">685</td>
+            <td id="ebitv4" class="side">820</td>
+        </tr>
+        <tr><td class="account">&nbsp;-{% trans "Interest Exp." %}</td>
+            <td id="interestv0" class="side">-120</td>
+            <td id="interestv1" class="side">-130</td>
+            <td id="interestv2" class="side">-70</td>
+            <td id="interestv3" class="side">-50</td>
+            <td id="interestv4" class="side">-30</td>
+        </tr>
+        <tr><td class="account">{% trans "Income Before Taxes" %}</td>
+            <td id="income_before_taxesv0" class="side">140</td>
+            <td id="income_before_taxesv1" class="side">135</td>
+            <td id="income_before_taxesv2" class="side">360</td>
+            <td id="income_before_taxesv3" class="side">635</td>
+            <td id="income_before_taxesv4" class="side">790</td>
+        </tr>
+        <tr><td class="account">&nbsp;-{% trans "Taxes" %}</td>
+            <td id="taxesv0" class="side">-25</td>
+            <td id="taxesv1" class="side">-23</td>
+            <td id="taxesv2" class="side">-30</td>
+            <td id="taxesv3" class="side">-65</td>
+            <td id="taxesv4" class="side">-85</td>
+        </tr>
+        <tr><td class="account">{% trans "Net Income" %}</td>
+            <td id="net_income_isv0" class="side">115</td>
+            <td id="net_income_isv1" class="side">112</td>
+            <td id="net_income_isv2" class="side">330</td>
+            <td id="net_income_isv3" class="side">550</td>
+            <td id="net_income_isv4" class="side">705</td>
+        </tr>
+        </tbody>
+    </table>
+  </div>
+  <div id="is_nav_h" class="column whole" style="width:80%;padding: 5px 5px 5px 5px;background-color:#80b3ff;"
+        {% if LANGUAGE_CODE == "ar" %}
+            dir="RTL" style="text-align: right;"
+        {% else %}
+            dir="LTR"
+        {% endif%} >
+    <table id="plugin" class="fsahv">
+        <thead>
+        <th colspan="6">{% trans "Income Statement - Horizontal" %}</th>
+        </thead>
+        <tbody>
+        <tr><td class="main"></td>
+            <td class="side">20X1</td>
+            <td class="side">20X2</td>
+            <td class="side">20X3</td>
+            <td class="side">20X4</td>
+            <td class="side">20X5</td>
+        </tr>
+        <tr><td class="account">{% trans "Revenue" %}</td>
+            <td id="revenueh0" class="side">2000</td>
+            <td id="revenueh1" class="side">2100</td>
+            <td id="revenueh2" class="side">1800</td>
+            <td id="revenueh3" class="side">2300</td>
+            <td id="revenueh4" class="side">2500</td>
+        </tr>
+        <tr><td class="account">&nbsp;-{% trans "Cost of Goods Sold" %}</td>
+            <td id="cofgsh0" class="side">-1550</td>
+            <td id="cofgsh1" class="side">-1610</td>
+            <td id="cofgsh2" class="side">-1150</td>
+            <td id="cofgsh3" class="side">-1400</td>
+            <td id="cofgsh4" class="side">-1450</td>
+        </tr>
+        <tr><td class="account">&nbsp;-{% trans "Depreciation" %}</td>
+            <td id="depreciation_ish0" class="side">-30</td>
+            <td id="depreciation_ish1" class="side">-40</td>
+            <td id="depreciation_ish2" class="side">-50</td>
+            <td id="depreciation_ish3" class="side">-60</td>
+            <td id="depreciation_ish4" class="side">-70</td>
+        </tr>
+        <tr><td class="account">{% trans "Gross Profit" %}</td>
+            <td id="gross_profith0" class="side">420</td>
+            <td id="gross_profith1" class="side">450</td>
+            <td id="gross_profith2" class="side">600</td>
+            <td id="gross_profith3" class="side">840</td>
+            <td id="gross_profith4" class="side">980</td>
+        </tr>
+        <tr><td class="account">&nbsp;-{% trans "Sales & Marketing Exp" %}</td>
+            <td id="sales_marketingh0" class="side">-100</td>
+            <td id="sales_marketingh1" class="side">-110</td>
+            <td id="sales_marketingh2" class="side">-100</td>
+            <td id="sales_marketingh3" class="side">-90</td>
+            <td id="sales_marketingh4" class="side">-100</td>
+        </tr>
+        <tr><td class="account">&nbsp;-{% trans "General & Administrative Exp" %}</td>
+            <td id="general_administrativeh0" class="side">-60</td>
+            <td id="general_administrativeh1" class="side">-75</td>
+            <td id="general_administrativeh2" class="side">-70</td>
+            <td id="general_administrativeh3" class="side">-65</td>
+            <td id="general_administrativeh4" class="side">-60</td>
+        </tr>
+        <tr><td class="account">{% trans "Operating Profit (EBIT)" %}</td>
+            <td id="ebith0" class="side">260</td>
+            <td id="ebith1" class="side">265</td>
+            <td id="ebith2" class="side">430</td>
+            <td id="ebith3" class="side">685</td>
+            <td id="ebith4" class="side">820</td>
+        </tr>
+        <tr><td class="account">&nbsp;-{% trans "Interest Exp." %}</td>
+            <td id="interesth0" class="side">-120</td>
+            <td id="interesth1" class="side">-130</td>
+            <td id="interesth2" class="side">-70</td>
+            <td id="interesth3" class="side">-50</td>
+            <td id="interesth4" class="side">-30</td>
+        </tr>
+        <tr><td class="account">{% trans "Income Before Taxes" %}</td>
+            <td id="income_before_taxesh0" class="side">140</td>
+            <td id="income_before_taxesh1" class="side">135</td>
+            <td id="income_before_taxesh2" class="side">360</td>
+            <td id="income_before_taxesh3" class="side">635</td>
+            <td id="income_before_taxesh4" class="side">790</td>
+        </tr>
+        <tr><td class="account">&nbsp;-{% trans "Taxes" %}</td>
+            <td id="taxesh0" class="side">-25</td>
+            <td id="taxesh1" class="side">-23</td>
+            <td id="taxesh2" class="side">-30</td>
+            <td id="taxesh3" class="side">-65</td>
+            <td id="taxesh4" class="side">-85</td>
+        </tr>
+        <tr><td class="account">{% trans "Net Income" %}</td>
+            <td id="net_income_ish0" class="side">115</td>
+            <td id="net_income_ish1" class="side">112</td>
+            <td id="net_income_ish2" class="side">330</td>
+            <td id="net_income_ish3" class="side">550</td>
+            <td id="net_income_ish4" class="side">705</td>
+        </tr>
+        </tbody>
+    </table>
+  </div>
+
+<br/><br/>
+
+<script>
+
+calculate_v = function()
+{
+    let accounts02 = ['revenue', 'cofgs', 'depreciation_is', 'gross_profit', 'sales_marketing',
+                      'general_administrative', 'ebit', 'interest', 'income_before_taxes', 'taxes', 'net_income_is'];
+
+    for (let account of accounts02)
+    {
+      //alert(account)
+      for (i = 0; i<5; i++)
+      {
+        //alert("total_assets"+i.toString())
+        revenue_ = document.getElementById("revenue"+i.toString()).innerHTML
+        revenue_ = parseInt(revenue_)
+        // alert(revenue_)
+        try{
+           eval(account+"v"+i.toString()).innerHTML = Math.round(parseInt(eval(account+i.toString()).innerHTML)*10000/revenue_)/100
+            if (i < 4)
+            {
+           eval(account+"h"+(i+1).toString()).innerHTML =
+           Math.round(10000* (parseInt(eval(account+(i+1).toString()).innerHTML) -
+           parseInt(eval(account+i.toString()).innerHTML))/parseInt(eval(account+i.toString()).innerHTML))/100
+        }
+        } catch (er) {alert(er)}
+        eval(account+"h0").innerHTML = ""
+        //alert(value)
+      }
+    // t0.innerHTML = value0;
+    }
+}
+
+calculate_v()
+
+
+</script>
+
+
+{% endblock content %}

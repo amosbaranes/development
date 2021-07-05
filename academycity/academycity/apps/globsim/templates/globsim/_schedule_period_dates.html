@@ -1,0 +1,128 @@
+{% load core_tags %}
+{% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
+
+<div onchange="update_field_model(event, '{% url "core:update_field_model" %}', 'update_num_of_periods(event)')" class="row">
+
+<div class="column left_setup">
+        <table>
+        <tbody>
+        <tr><td>Instructors</td>
+            <td>
+                <select name="instructors" id="instructors" multiple size="5" type="multiple_select"
+                        app="courses" model="CourseSchedule" pkey="{{ course_schedule.id }}" field="instructors">
+                <option value='0'>--------------------</option>
+                    {% for ins in course_schedule.course.instructors.all %}
+                        {% if ins in course_schedule.instructors.all %}
+                            <option value='{{ ins.id }}' selected>{{ ins }}</option>
+                        {% else %}
+                            <option value='{{ ins.id }}' >{{ ins }}</option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
+            </td></tr>
+
+        <tr><td>Assignment Method</td>
+            <td>
+                <select name="assignment_method" id="assignment_method"
+                        app="courses" model="CourseSchedule" pkey="{{ course_schedule.id }}" field="assignment_method">
+                <option value='0'>--------------------</option>
+                    {% for i in course_schedule.ASSIGNMENT_METHOD %}
+                        {% if i.0 == course_schedule.assignment_method %}
+                            <option value='{{ i.0 }}' selected>{{ i.1 }}</option>
+                        {% else %}
+                            <option value='{{ i.0 }}' >{{ i.1 }}</option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
+            </td></tr>
+        <tr><td>Number of Periods:</td>
+            <td>
+                <input app="globsim" model="Game" pkey="{{course_schedule.target.id }}" field="number_of_periods"
+                        type="input" id="number_of_periods" name="number_of_periods"
+                       value='{{course_schedule.target.number_of_periods}}' size="2">
+            </td></tr>
+        <tr><td>Min Students Per Team</td>
+            <td><input id="min_students_per_team"
+                                   app="courses" model="CourseSchedule"
+                                   pkey="{{ course_schedule.id }}" field="min_students_per_team"
+                                   value="{{course_schedule.min_students_per_team}}" size="2" />
+            </td></tr>
+        <tr><td>Max Students Per Team</td>
+            <td><input id="max_students_per_team"
+                                   app="courses" model="CourseSchedule"
+                                   pkey="{{ course_schedule.id }}" field="max_students_per_team"
+                                   value="{{course_schedule.max_students_per_team}}" size="2" />
+            </td></tr>
+        <tr><td>Max number of teams</td>
+            <td><input id="max_number_of_teams"
+                                   app="courses" model="CourseSchedule"
+                                   pkey="{{ course_schedule.id }}" field="max_number_of_teams"
+                                   value="{{course_schedule.max_number_of_teams}}" size="2" />
+            </td></tr>
+        <tr><td>Min number of teams</td>
+            <td><input id="min_number_of_teams"
+                                   app="courses" model="CourseSchedule"
+                                   pkey="{{ course_schedule.id }}" field="min_number_of_teams"
+                                   value="{{course_schedule.min_number_of_teams}}" size="2" />
+            </td></tr>
+        <tr><td>Price</td>
+            <td>$<input id="price"
+                                   app="courses" model="CourseSchedule"
+                                   pkey="{{ course_schedule.id }}" field="price"
+                                   value="{{course_schedule.price}}" size="2" />
+            </td></tr>
+        <tr><td>Start date</td>
+            <td>
+                <input app="courses" model="CourseSchedule" pkey="{{ course_schedule.id }}" field="start_date"
+                        type="date" id="start_date" name="start_date"
+                       value='{{course_schedule.start_date|date:'Y-m-d'}}'
+                min="2020-01-01" max="2025-12-31">
+            </td></tr>
+        <tr><td>End date</td>
+            <td>
+                <input app="courses" model="CourseSchedule" pkey="{{ course_schedule.id }}" field="end_date"
+                        type="date" id="end_date" name="end_date"
+                       value='{{course_schedule.end_date|date:'Y-m-d'}}'
+                min="2020-01-01" max="2025-12-31">
+            </td></tr>
+        <tr><td>Active</td>
+            <td>
+              {% if course_schedule.active %}
+                <input app="courses" model="CourseSchedule" pkey="{{ course_schedule.id }}" field="active"
+                        type="checkbox" checked />
+              {% else %}
+                <input app="courses" model="CourseSchedule" pkey="{{ course_schedule.id }}" field="active"
+                        type="checkbox" />
+              {% endif %}
+        </td></tr>
+
+        </tbody>
+    </table>
+    </div>
+
+
+<div class="column right_setup">
+<table id="schedule_period_date" style="width:500px;">
+      <thead>
+       <th style="width:10%">Period</th>
+       <th style="width:10%" scope="col"><b><u>{% trans "Dates" %}</u></b></th>
+       <th style="width:80%"></th>
+      </thead>
+      <tbody id="schedule_period_dates_projects_">
+        {% for d in schedule_period_dates %}
+            <tr id="schedule_period_dates_{{d.period_number}}"><td style="text-align: center;">{{d.period_number}}</td>
+            <td>
+                <input app="globsim" model="SchedulePeriodDate"
+                       pkey="{{ d.id }}" field="date_time"
+                        type="date" id="date_time" name="date_time"
+                       value='{{d.date_time|date:'Y-m-d'}}'
+                min="2020-01-01" max="2025-12-31">
+            </td></tr>
+            </tr>
+
+        {% endfor %}
+      </tbody>
+</table>
+</div>
+
+</div>

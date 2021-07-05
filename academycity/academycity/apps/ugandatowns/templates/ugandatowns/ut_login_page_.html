@@ -1,0 +1,128 @@
+{% extends "ugandatowns_base.html" %}
+{% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
+{% load cms_tags %}
+
+{% block add_css %}
+    <link href="{% static 'css/ugandatowns.css' %}" rel="stylesheet">
+{% endblock add_css %}
+
+{% block content %}
+
+<style>
+body {font-family: Arial, Helvetica, sans-serif;}
+
+input {
+   margin-left: 10px;
+   width: 100px;
+}
+
+.auto_div {
+   margin-left: 10px;
+}
+</style>
+
+<br/>
+<h1>Uganda Towns Web Site</h1>
+<hr>
+<br/>
+<br/>
+
+
+<div class="row">
+  <div class="column">
+      Jhonathan<br/>
+      Jhonathan<br/>
+      Jhonathan<br/>
+      Jhonathan<br/>
+      Jhonathan<br/>
+  </div>
+  <div class="column">
+      amos<br/>
+      amos<br/>
+      amos<br/>
+      amos<br/>
+      amos<br/>
+  </div>
+  <div class="column">
+
+
+
+        <div class="auto_div" id="id01" >
+          <form action="{% url 'allauth:account_login' %}" method="post" >
+            {% csrf_token %}
+              {% if redirect_field_value %}
+              <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
+              {% endif %}
+
+                  User: {{ form.login }}<br/>
+                  password: {{ form.password }}<br/>
+                  Remember me: {{ form.remember }}<br/>
+                  <br/>
+                  <button class="badge badge-pill badge-info" type="submit">{% trans "Sign In" %}</button>
+                  <br/>
+                  <a href="{% url 'allauth:account_reset_password' %}">
+                     <span class="badge badge-pill badge-info">{% trans "Forgot Password?" %}</span>
+                  </a>
+                  <br/>
+                  <a href="#" onclick="click_signup(event)">
+                     <span id="id01_" class="badge badge-pill badge-info">{% trans "Signup" %}</span>
+                  </a>
+                  <br/>
+          </form>
+        </div>
+
+
+        <div id="id02" style="display: none">
+          <form action="{% url 'allauth:account_signup' %}" method="post">
+            {% csrf_token %}
+                  {% if redirect_field_value %}
+                  <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
+                  {% endif %}
+                    E-mail: {{form_signup.email}}<br/>
+                    username {{form_signup.username}}<br/>
+                    test: {{form_signup.test}}<br/>
+                    password1: {{form_signup.password1}}<br/>
+                    password2: {{form_signup.password2}}<br/>
+                    <br/><br/>
+                    <button class="badge badge-pill badge-info" type="submit">{% trans "Sign Up" %}</button>
+                    <button id="id02_" class="badge badge-pill badge-info" onclick="click_signup(event)">{% trans "Cancel" %}</button>
+          </form>
+        </div>
+
+
+
+  </div>
+</div>
+
+
+
+
+
+
+
+
+<br/>
+<br/>
+<br/>
+
+<span hidden="hidden" host="{{host}}" host_="{{host_}}" town="{{town}}" current_site="{{current_site}}"></span>
+
+
+<footer>
+  {% static_placeholder "UgandaTownsFooter" %}
+</footer>
+
+
+<script>
+    click_signup = function(event)
+    {
+         var id0 = event.target.getAttribute('id').split("_")[0];
+         document.getElementById(id0).style.display = 'none';
+         if (id0 == 'id01'){id0 = 'id02'} else {id0 = 'id01'}
+         document.getElementById(id0).style.display = 'block'
+    }
+</script>
+
+{% endblock content %}
+
+

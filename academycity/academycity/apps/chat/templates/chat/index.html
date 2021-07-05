@@ -1,0 +1,76 @@
+{% extends "academycity/base.html" %}
+{% load static %}
+
+
+{% block add_js %}
+    <script src="{% static 'js/reconnecting-websocket.js' %}"></script>
+{% endblock add_js %}
+
+
+{% block content %}
+<h1 id="chat_room">Chat</h1>
+<ul id="chat-items">
+</ul>
+<div class="container">
+    <input id="username" type="hidden" value="{{request.user.username}}" /><br/>
+    <input id="input_msg" type="text" value="" /><br/>
+</div>
+{% endblock %}
+
+{% block domready %}
+var loc = window.location
+var input_msg = document.getElementById("input_msg")
+var chatholder = document.getElementById("chat-items")
+var username = document.getElementById("username")
+var chat_room = document.getElementById("chat_room")
+
+var webStart = "ws://"
+if (loc.protocol == "https:")
+{webStart = "wss://ws/"}
+pathname_ = loc.pathname.substring(3, 10000)
+lung_ = loc.pathname.substring(0, 3)
+var endpoint = webStart + loc.host + lung_ + "/ws" + pathname_
+
+alert(endpoint)
+
+<!--if (loc.protocol == "https:")-->
+<!--{webStart = "wss://"}-->
+<!--var endpoint = webStart + loc.host + loc.pathname-->
+<!--console.log('endpoint', endpoint)-->
+
+var socket = new ReconnectingWebSocket(endpoint);
+
+socket.onmessage = function(e){
+ console.log("message", e)
+ var msg_ = JSON.parse(e.data)
+ chatholder.innerHTML += "<li>" + msg_.username + ": " + msg_.msg + "</li>"
+}
+
+socket.onopen = function(e){
+     s = loc.pathname.split("/")
+     s_chat_room_name = s[s.length-2]
+console.log("onopen", s_chat_room_name)
+     chat_room.innerHTML = "Chat Room - " + s_chat_room_name
+     input_msg.addEventListener("keyup", function(){
+        if (event.keyCode === 13) {  // enter, return
+            var val = this.value
+            var dic_ = {'type': 'message', 'message': val}
+            socket.send(JSON.stringify(dic_))
+            this.value = ""
+        }
+  }.bind(input_msg, event));
+}
+
+socket.onerror = function(e){
+ console.log("error", 1)
+ console.log("error", e)
+ console.log("error", 1)
+}
+
+socket.onclose = function(e){
+ console.log("close", e)
+}
+
+{% endblock %}
+
+

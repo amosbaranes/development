@@ -1,0 +1,131 @@
+{% extends "ugandatowns_base.html" %}
+{% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
+{% load cms_tags %}
+
+{% block add_css %}
+<link href="{% static 'css/ugandatowns.css' %}" rel="stylesheet" xmlns="http://www.w3.org/1999/html">
+	<link rel="stylesheet" type="text/css" href="{% static 'css/style_login_ut.css' %}">
+	<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+	<style>
+		body
+		{
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			flex-wrap: wrap;
+			min-height: 100vh;
+			background: #fbe9e7;
+			background-image: url({{company_obj.image_bg.url}});
+			background-repeat: no-repeat;
+			background-size: 100%;
+		}
+	</style>
+
+{% endblock add_css %}
+
+{% block content %}
+
+	<div class="card">
+		<div class="imgBox">
+			<img src="{{company_obj.image_login_out.url}}">
+			<img src="{{company_obj.image_login_in.url}}">
+		</div>
+		<div class="details">
+			<div class="content">
+				<div class="login-content auto_div" id="id01">
+						<form action="{% url 'allauth:account_login' %}" method="post" >
+            				{% csrf_token %}
+							  {% if redirect_field_value %}
+							  <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
+							  {% endif %}
+							<h3 class="title"><b></b>Welcome</b></h3>
+							  <div class="input-div one">
+								<div class="i">
+										  <i class="fas fa-user"></i>
+								</div>
+								<div class="div">
+										  {{ form.login }}
+								</div>
+							  </div>
+							   <div class="input-div pass">
+								  <div class="i">
+									   <i class="fas fa-lock"></i>
+								  </div>
+								  <div class="div">
+									   {{ form.password }}
+							   </div>
+							   </div>
+
+							<input type="submit" class="btn" value={% trans "Login" %}>
+
+							<a href="{% url 'allauth:account_reset_password' %}">
+								 Forgot Password?
+							</a>
+							  <a href="#" onclick="click_signup(event)">
+								 <span id="id01_">{% trans "Signup" %}</span>
+							  </a>
+						</form>
+				</div>
+
+				<div id="id02" style="display: none">
+				  		<form action="{% url 'allauth:account_signup' %}" method="post">
+						  {% csrf_token %}
+						  {% if redirect_field_value %}
+						  <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
+						  {% endif %}
+							<h3 class="title">Signup</h3>
+							   <div class="input-div one">
+								  <div class="div">
+										  {{form_signup.email}}
+								  </div>
+							   </div>
+
+							   <div class="input-div one">
+								  <div class="div">
+										  {{form_signup.username}}
+								  </div>
+							   </div>
+							   <div class="input-div one">
+								  <div class="div">
+										  {{form_signup.test}}
+								  </div>
+							   </div>
+							   <div class="input-div one">
+								  <div class="div">
+										  {{form_signup.password1}}
+								  </div>
+							   </div>
+							   <div class="div">
+										  {{form_signup.password2}}
+								  </div>
+
+							<input type="submit" class="btn" value={% trans "Sign Up" %}>
+
+
+							  <a href="#" onclick="click_signup(event)">
+								 <span id="id02_">{% trans "Signin" %}</span>
+							  </a>
+
+
+						</form>
+				</div>
+
+			</div>
+		</div>
+	</div>
+
+{% endblock content %}
+
+
+{% block add_js %}
+<script>
+    click_signup = function(event)
+    {
+         var id0 = event.target.getAttribute('id').split("_")[0];
+         document.getElementById(id0).style.display = 'none';
+         if (id0 == 'id01'){id0 = 'id02'} else {id0 = 'id01'}
+         document.getElementById(id0).style.display = 'block'
+    }
+</script>
+	<script type="text/javascript" src="{% static 'js/ugandatowns_login.js' %}"></script>
+{% endblock add_js %}

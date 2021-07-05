@@ -1,0 +1,17 @@
+{% load thumbnail %}
+
+{% for image in images %}
+  <div class="image">
+      <!-- thumbnail is not working -->
+       <a href="{{ image.get_absolute_url }}">
+          <img src="{{ image.url }}"  width="300px" />
+       </a>
+      <br/>
+            <span style="color:green; border-radius: 10px; background: #73AD21; padding: 0px 0px 0px 5px;  width: 15px; height: 15px;  ">
+        {{ forloop.counter }}
+        </span> &nbsp;
+      <a href="{{ image.get_absolute_url }}" class="title">
+        {{ image.category }}-{{ image.title }}
+      </a>
+  </div>
+{% endfor %}

@@ -1,0 +1,377 @@
+{% extends "ueconomics_base.html" %}
+
+{% block content %}
+
+    <style>
+    body {font-family: Arial;}
+
+    /* Style the tab */
+    .tab {
+      overflow: hidden;
+      border: 1px solid #ccc;
+      background-color: #f1f1f1;
+    }
+
+    /* Style the buttons inside the tab */
+    .tab button {
+      background-color: inherit;
+      float: left;
+      border: none;
+      outline: none;
+      cursor: pointer;
+      padding: 14px 16px;
+      transition: 0.3s;
+      font-size: 17px;
+    }
+
+    /* Change background color of buttons on hover */
+    .tab button:hover {
+      background-color: #ddd;
+    }
+
+    /* Create an active/current tablink class */
+    .tab button.active {
+      background-color: #ccc;
+    }
+
+    /* Style the tab content */
+    .tabcontent {
+      display: none;
+      padding: 6px 12px;
+      border: 1px solid #ccc;
+      border-top: none;
+    }
+    </style>
+
+    <style>
+    table {
+      font-family: arial, sans-serif;
+      border-collapse: collapse;
+      width: 60%;
+    }
+
+    th {
+      border: 1px solid #dddddd;
+      text-align: center;
+      padding: 8px;
+        background-color: darkblue;
+        color: white;
+    }
+
+    td {
+      border: 1px solid #dddddd;
+      padding: 8px;
+    }
+
+    .right {text-align: right;}
+
+    .left {text-align: left;}
+
+    tr:nth-child(even) {
+      background-color: #dddddd;
+    }
+
+    .table-wrapper {
+      position:relative;
+    }
+    .table-scroll {
+      height:400px;
+      overflow:auto;
+      margin-top:20px;
+    }
+    .table-wrapper table {
+      width:100%;
+    }
+</style>
+
+<div style="position: fixed;z-index:10;width:35%;height:50%;padding:2px;right:2%;top:40%;">
+    <div id="chart_">
+    </div>
+</div>
+
+<div class="container">
+    <h2>Data on Export and Import</h2>
+</div>
+
+<div>
+  <button id="btn_lines" type="button" style="color:blue" onclick="change_chart(event, type='lines')">Lines</button>
+  <button id="btn_bars" type="button" onclick="change_chart(event, type='bars')">Bars</button>
+  <button id="btn_pies" type="button" onclick="change_chart(event, type='pies')">Pies</button>
+</div>
+
+<br/>
+    <div class="tab">
+        {% for s in sources %}
+          <button id="Btn_{{ s.type }}" class="tablinks" source_type="{{ s.type }}" onclick="open_source()" >{{ s.type }}</button>
+        {% endfor %}
+    </div>
+
+    {% for source in sources %}
+        <div id="tab_{{ source.type }}" class="tabcontent" onclick="get_chart_data(event)">
+        </div>
+    {% endfor %}
+
+{% endblock %}
+
+
+{% block domready %}
+
+var mode = 'lines'
+var last_clicked_button = null
+var clicked_buttons = [document.getElementById('btn_lines')]
+
+change_chart = function(event, type='lines')
+{
+ reset_buttons();
+ clicked_buttons.push(event.target)
+ event.target.style.color = 'blue';
+ mode = type;
+ if (last_clicked_button != null)
+ {
+  var event_ = new Event("click", {bubbles: true});
+  last_clicked_button.dispatchEvent(event_)
+ }
+}
+
+reset_buttons = function()
+{
+ for (i=0; i < clicked_buttons.length; i++)
+ {
+  clicked_buttons[i].style.color = 'black';
+ }
+}
+
+
+get_pies_chart = function(x, yi, ye, title)
+{
+var data = [{
+  values: yi,
+  labels: x,
+  text: 'Import',
+  textposition: 'inside',
+  domain: {column: 0},
+  name: 'Import',
+  hoverinfo: 'lable',
+  hole: .4,
+  type: 'pie'
+},{
+  values: ye,
+  labels: x,
+  text: 'Export',
+  textposition: 'inside',
+  domain: {column: 1},
+  name: 'Export',
+  hoverinfo: 'lable',
+  hole: .4,
+  type: 'pie'
+}];
+
+var layout = {
+  title: title,
+  annotations: [
+    {
+      font: {
+        size: 20
+      },
+      showarrow: false,
+      text: 'Import',
+      x: 0.17,
+      y: 0.5
+    },
+    {
+      font: {
+        size: 20
+      },
+      showarrow: false,
+      text: 'Export',
+      x: 0.82,
+      y: 0.5
+    }
+  ],
+  height: 400,
+  width: 600,
+  showlegend: false,
+  grid: {rows: 1, columns: 2}
+};
+
+    CHART = document.getElementById('chart_');
+	Plotly.newPlot( CHART, data, layout );
+}
+
+
+get_bars_chart = function(x, yi, ye, title)
+{
+ var trace1 = {
+  x: x,
+  y: yi,
+  type: 'bar',
+  name: 'Import',
+  marker: {
+    color: 'rgb(49,130,189)',
+    opacity: 0.7,
+  }
+};
+
+var trace2 = {
+  x: x,
+  y: ye,
+  type: 'bar',
+  name: 'Export',
+  marker: {
+    color: 'rgb(204,204,204)',
+    opacity: 0.5
+  }
+};
+
+var data = [trace1, trace2];
+
+var layout = {
+  title: title,
+  xaxis: {
+    tickangle: -45
+  },
+  barmode: 'group'
+};
+
+    CHART = document.getElementById('chart_');
+	Plotly.newPlot( CHART, data, layout );
+}
+
+get_lines_chart = function(x, yi, ye, title)
+{
+    var trace1 = {
+      x: x,
+      y: yi,
+      mode: 'lines+markers',
+      marker: {
+        color: 'rgb(219, 64, 82)',
+        size: 8
+      },
+      name: 'import',
+      line: {
+        color: 'rgb(219, 64, 82)',
+        width: 1
+      }
+    };
+
+    var trace2 = {
+      x: x,
+      y: ye,
+      mode: 'lines+markers',
+      marker: {
+        color: 'rgb(55, 128, 191)',
+        size: 8
+      },
+      name: 'export',
+      line: {
+        color: 'rgb(55, 128, 191)',
+        width: 1
+      }
+    };
+
+    var data = [trace1, trace2]
+    var layout = {title: title}
+    CHART = document.getElementById('chart_');
+	Plotly.newPlot( CHART, data, layout );
+}
+
+
+run_code_insure_obj = async function(obj_id, run_code="") {
+    obj = document.getElementById(obj_id)
+    while (!obj)
+    {await resolveAfterXmiliSeconds(100);
+     obj = document.getElementById(obj_id);
+    }
+    try{eval(run_code)} catch (er) {alert(er)};
+}
+
+
+get_chart_data = async function(event)
+{
+    var elm = event.target;
+    last_clicked_button = event.target;
+    var id = elm.getAttribute("id")
+
+    await getSourceData(null, 'imports')
+    await getSourceData(null, 'exports')
+
+    var imp_id = 'imports_' + id.split('_')[1]
+    var exp_id = 'exports_' + id.split('_')[1]
+
+    await run_code_insure_obj(obj_id=imp_id)
+    await run_code_insure_obj(exp_id)
+
+    yi = []
+    ye = []
+    x = []
+    for (var i=2015; i <2020; i++)
+    {
+      evi =document.getElementById(imp_id+"_"+i).innerHTML
+      yi.push(evi)
+      eve =document.getElementById(exp_id+"_"+i).innerHTML
+      ye.push(eve)
+      x.push(i)
+    }
+
+    title = elm.innerHTML;
+    eval('get_'+mode+'_chart(x, yi, ye, title)')
+}
+
+var pages = {}
+async function getSourceData(event, source)
+{
+  var page = pages[source];
+  if( !page)
+  {
+      $.post('{% url "ueconomics:get_source_data" %}',
+        {
+          source : source
+        },
+        function(data){
+          var elm = document.getElementById("tab_"+source);
+          elm.innerHTML = data;
+            pages[source] = 1
+        });
+
+    // const result = await resolveAfterXmiliSeconds(1000);
+  }
+}
+
+async function resolveAfterXmiliSeconds(x) {
+  return new Promise(resolve => {
+    setTimeout(() => {resolve('resolved');}, x);
+  });
+}
+
+
+async function init(source)
+{
+    await getSourceData(null, source)
+    var elm_1 = document.getElementById('Btn_'+source)
+    var event_1 = new Event("click", {bubbles: true});
+    elm_1.dispatchEvent(event_1)
+}
+init('exports')
+
+open_source = function()
+{
+    var elm = event.target
+    var source = elm.getAttribute("source_type")
+
+    var i, tabcontent, tablinks;
+    tabcontent = document.getElementsByClassName("tabcontent");
+    for (i = 0; i < tabcontent.length; i++) {
+      tabcontent[i].style.display = "none";
+    }
+    tablinks = document.getElementsByClassName("tablinks");
+    for (i = 0; i < tablinks.length; i++) {
+      tablinks[i].className = tablinks[i].className.replace(" active", "");
+    }
+
+    document.getElementById("tab_"+source).style.display = "block";
+    event.currentTarget.className += " active";
+}
+
+
+
+{% endblock %}

@@ -1,0 +1,16 @@
+{% extends "academycity/base.html" %}
+{% load static %}
+{% load parler_tags %}
+
+{% block content %}
+  <div class="container-fluid">
+
+      <h2>{{ department.name }}</h2>
+      {% for course in department.department_courses.all %}
+        {{ course.name }}
+      {% endfor %}
+      <br/> Form to enter courses
+</div>
+{% endblock %}
+
+

@@ -1,0 +1,6 @@
+
+    <h1>Send message to class: "{{ course_schedule.name}}"</h1>
+    <form action="{{ request.path }}" method="post" enctype="multipart/form-data">
+      {{ form.as_p }}
+      {% csrf_token %}
+      <p><input type="submit" value="Send email"></p>

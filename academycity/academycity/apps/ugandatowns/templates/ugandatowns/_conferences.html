@@ -1,0 +1,36 @@
+{% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
+{% load cms_tags %}
+
+<br/>
+<table id="conferences">
+    <thead>
+     <th>Conference #</th>
+     <th>Name</th>
+     <th>Town Clerk</th>
+     <th>Created Date</th>
+     <th>Active</th>
+    </thead>
+    <tbody>
+    {% for c in conferences %}
+      {% if c.active %}
+         <tr>
+             <td>{{c.conference_number}}</td>
+             <td>
+                 <a id="" href="#" class="badge badge-pill badge-info"
+                   onclick="join_conference(event, conference_number={{ c.conference_number }}, conference_number={{c.conference_number}})">
+                       Join: {{c.conference_name}}
+                </a>
+             </td>
+             <td>{{c.tc_user}}</td>
+             <td>{{c.created_date}}</td>
+             <td>
+                <a id="" href="#" class="badge badge-pill badge-warning"
+                   onclick="remove_conference(event, conference_number={{ c.conference_number }})">
+                    Remove:
+                </a>
+             </td>
+         </tr>
+      {% endif %}
+    {% endfor %}
+    </tbody>
+</table>

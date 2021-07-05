@@ -1,0 +1,109 @@
+{% load core_tags %}
+{% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
+
+<div onchange="update_field_model(event, '{% url "core:update_field_model" %}')" class="row">
+    <div class="column left_setup">
+       {% for s in game.game_type.segments.all %}
+        <h3>Segment: {{s}}</h3>
+        <table style="width:300px;">
+          <thead>
+            <th style="width:10%">category</th>
+            <th style="width:10%">account</th>
+            <th style="width:10%">amount</th>
+            <th style="width:10%">min</th>
+            <th style="width:10%">Max</th>
+          </thead>
+        <tbody>
+          {% for a in s.product_attributes.all %}
+            <tr>
+                <td>{{ a.category }}</td>
+                <td>{{ a.account }}</td>
+                <td>
+                <input id="amount_{{a.id}}" app="globsim" pkey="{{a.id}}" field = "amount" size="5"
+                    model="ProductTypeAttribute" value="{{ a.amount }}" type="input" />
+                </td>
+                <td>
+                <input id="min_{{a.id}}" app="globsim" pkey="{{a.id}}" field = "min" size="5"
+                    model="ProductTypeAttribute" value="{{ a.min }}" type="input" />
+                </td>
+                <td>
+                <input id="max_{{a.id}}" app="globsim" pkey="{{a.id}}" field = "max" size="5"
+                    model="ProductTypeAttribute" value="{{ a.max }}" type="input" />
+                </td>
+            </tr>
+              {% endfor %}
+        </tbody>
+        </table>
+       {% endfor %}
+        <br/> <br/>
+        <h3>Marketing: Attributes</h3>
+        <table style="width:300px;">
+          <thead>
+            <th style="width:10%">category</th>
+            <th style="width:10%">account</th>
+            <th style="width:10%">amount</th>
+            <th style="width:10%">min</th>
+            <th style="width:10%">Max</th>
+          </thead>
+        <tbody>
+          {% for a in game.game_type.manufacturing_attributes.all %}
+            <tr>
+                <td>{{ a.category }}</td>
+                <td>{{ a.account }}</td>
+                <td>
+                <input id="amount_{{a.id}}" app="globsim" pkey="{{a.id}}" field = "amount" size="5"
+                    model="ManufacturingTypeAttribute" value="{{ a.amount }}" type="input" />
+                </td>
+                <td>
+                <input id="min_{{a.id}}" app="globsim" pkey="{{a.id}}" field = "min" size="5"
+                    model="ManufacturingTypeAttribute" value="{{ a.min }}" type="input" />
+                </td>
+                <td>
+                <input id="max_{{a.id}}" app="globsim" pkey="{{a.id}}" field = "max" size="5"
+                    model="ManufacturingTypeAttribute" value="{{ a.max }}" type="input" />
+                </td>
+            </tr>
+              {% endfor %}
+        </tbody>
+        </table>
+        <br/> <br/>
+
+        <h3>Human Resources: Attributes</h3>
+        <table style="width:300px;">
+          <thead>
+            <th style="width:10%">category</th>
+            <th style="width:10%">account</th>
+            <th style="width:10%">amount</th>
+            <th style="width:10%">min</th>
+            <th style="width:10%">Max</th>
+          </thead>
+        <tbody>
+          {% for a in game.game_type.human_resources_attributes.all %}
+            <tr>
+                <td>{{ a.category }}</td>
+                <td>{{ a.account }}</td>
+                <td>
+                <input id="amount_{{a.id}}" app="globsim" pkey="{{a.id}}" field = "amount" size="5"
+                    model="HumanResourcesTypeAttribute" value="{{ a.amount }}" type="input" />
+                </td>
+                <td>
+                <input id="min_{{a.id}}" app="globsim" pkey="{{a.id}}" field = "min" size="5"
+                    model="HumanResourcesTypeAttribute" value="{{ a.min }}" type="input" />
+                </td>
+                <td>
+                <input id="max_{{a.id}}" app="globsim" pkey="{{a.id}}" field = "max" size="5"
+                    model="HumanResourcesTypeAttribute" value="{{ a.max }}" type="input" />
+                </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+        </table>
+        <br/> <br/>
+    </div>
+
+
+    <div class="column right_setup">
+
+    </div>
+
+</div>

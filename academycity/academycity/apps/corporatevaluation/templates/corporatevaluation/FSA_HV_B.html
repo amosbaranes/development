@@ -1,0 +1,558 @@
+{% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
+
+{% block content %}
+<style>
+#plugin td.account {
+{% if LANGUAGE_CODE == "ar" %}
+  text-align: right
+{% else %}
+  text-align: left
+{% endif%}
+}
+</style>
+
+  <div id="bs_nav" style="width:80%;padding: 5px 5px 5px 5px;background-color:#80b3ff;"
+        {% if LANGUAGE_CODE == "ar" %}
+            dir="RTL" style="text-align: right;"
+        {% else %}
+            dir="LTR"
+        {% endif%} >
+        <table id="plugin" class="fsahv">
+        <thead>
+         <th colspan="6">{% trans "Balance Sheet" %}</th>
+        </thead>
+        <tbody>
+        <tr><td class="main"></td>
+            <td class="side">20X1</td>
+            <td class="side">20X2</td>
+            <td class="side">20X3</td>
+            <td class="side">20X4</td>
+            <td class="side">20X5</td>
+        </tr>
+        <tr><td style="text-align: center"><u>{% trans "Assets" %}<u/></td>
+            <td></td><td></td><td></td><td></td><td></td>
+        </tr>
+        <tr><td style="text-align: center"><u>{% trans "Current Assets" %}<u/></td>
+            <td></td><td></td><td></td><td></td><td></td>
+        </tr>
+        <tr><td class="account">{% trans "Cash" %}</td>
+            <td id="cash0" class="side">8</td>
+            <td id="cash1" class="side">18</td>
+            <td id="cash2" class="side">30</td>
+            <td id="cash3" class="side">45</td>
+            <td id="cash4" class="side">65</td>
+        </tr>
+        <tr><td class="account">{% trans "Inventory" %}</td>
+            <td id="inventory0" class="side">9</td>
+            <td id="inventory1" class="side">11</td>
+            <td id="inventory2" class="side">14</td>
+            <td id="inventory3" class="side">15</td>
+            <td id="inventory4" class="side">16</td>
+        </tr>
+        <tr><td class="account">{% trans "Account Receivables" %}</td>
+            <td id="account_receivables0" class="side">7</td>
+            <td id="account_receivables1" class="side">10</td>
+            <td id="account_receivables2" class="side">11</td>
+            <td id="account_receivables3" class="side">11</td>
+            <td id="account_receivables4" class="side">12</td>
+        </tr>
+        <tr><td class="account">{% trans "Other Current Assets" %}</td>
+            <td id="other_current_assets0" class="side">6</td>
+            <td id="other_current_assets1" class="side">7</td>
+            <td id="other_current_assets2" class="side">8</td>
+            <td id="other_current_assets3" class="side">10</td>
+            <td id="other_current_assets4" class="side">8</td>
+        </tr>
+        <tr><td class="account" style="text-align: right">Total current assets</td>
+            <td id="total_current_assets0" class="side">30</td>
+            <td id="total_current_assets1" class="side">46</td>
+            <td id="total_current_assets2" class="side">63</td>
+            <td id="total_current_assets3" class="side">81</td>
+            <td id="total_current_assets4" class="side">101</td>
+        </tr>
+        <tr><td style="text-align: center"><u>{% trans "Long Term Assets" %}<u/></td>
+            <td></td><td></td><td></td><td></td><td></td>
+        </tr>
+        <tr><td class="account">{% trans "Proporties Plants & Equipments" %}</td>
+            <td id="ppe0" class="side">400</td>
+            <td id="ppe1" class="side">420</td>
+            <td id="ppe2" class="side">380</td>
+            <td id="ppe3" class="side">470</td>
+            <td id="ppe4" class="side">500</td>
+        </tr>
+        <tr><td class="account">&nbsp;&nbsp;-{% trans "Accumulated Depreciation" %}</td>
+            <td id="accumulated_depreciation0" class="side">-40</td>
+            <td id="accumulated_depreciation1" class="side">-90</td>
+            <td id="accumulated_depreciation2" class="side">-80</td>
+            <td id="accumulated_depreciation3" class="side">-85</td>
+            <td id="accumulated_depreciation4" class="side">-120</td>
+        </tr>
+        <tr><td class="account">{% trans "Subsidiaries" %}</td>
+            <td id="subsidiaries0" class="side">300</td>
+            <td id="subsidiaries1" class="side">330</td>
+            <td id="subsidiaries2" class="side">300</td>
+            <td id="subsidiaries3" class="side">385</td>
+            <td id="subsidiaries4" class="side">380</td>
+        </tr>
+        <tr><td class="account">{% trans "Intangibles" %}</td>
+            <td id="intangibles0" class="side">120</td>
+            <td id="intangibles1" class="side">110</td>
+            <td id="intangibles2" class="side">320</td>
+            <td id="intangibles3" class="side">300</td>
+            <td id="intangibles4" class="side">280</td>
+        </tr>
+        <tr><td class="account" style="text-align: right">Total L.T.A</td>
+            <td id="total_long_term_assets0" class="side">780</td>
+            <td id="total_long_term_assets1" class="side">770</td>
+            <td id="total_long_term_assets2" class="side">920</td>
+            <td id="total_long_term_assets3" class="side">1070</td>
+            <td id="total_long_term_assets4" class="side">1040</td>
+        </tr>
+
+        <tr><td class="account" style="text-align: right">Total assets</td>
+            <td id="total_assets0" class="side">810</td>
+            <td id="total_assets1" class="side">816</td>
+            <td id="total_assets2" class="side">991</td>
+            <td id="total_assets3" class="side">1151</td>
+            <td id="total_assets4" class="side">1141</td>
+        </tr>
+
+        <tr><td style="text-align: center"><u>{% trans "Liabilities" %}<u/></td>
+            <td></td><td></td><td></td><td></td><td></td>
+        </tr>
+        <tr><td class="account">{% trans "Current Liabilities" %}</td>
+            <td id="current_liabilities0" class="side">32</td>
+            <td id="current_liabilities1" class="side">45</td>
+            <td id="current_liabilities2" class="side">55</td>
+            <td id="current_liabilities3" class="side">60</td>
+            <td id="current_liabilities4" class="side">64</td>
+        </tr>
+        <tr><td class="account">{% trans "Long Term Liabilities" %}</td>
+            <td id="long_term_liabilities0" class="side">600</td>
+            <td id="long_term_liabilities1" class="side">565</td>
+            <td id="long_term_liabilities2" class="side">400</td>
+            <td id="long_term_liabilities3" class="side">300</td>
+            <td id="long_term_liabilities4" class="side">200</td>
+        </tr>
+        <tr><td class="account" style="text-align: right">Total Liabilities</td>
+            <td id="total_liabilities0" class="side">632</td>
+            <td id="total_liabilities1" class="side">610</td>
+            <td id="total_liabilities2" class="side">455</td>
+            <td id="total_liabilities3" class="side">360</td>
+            <td id="total_liabilities4" class="side">264</td>
+        </tr>
+
+        <tr><td style="text-align: center"><u>{% trans "Equity" %}<u/></td>
+            <td></td><td></td><td></td><td></td><td></td>
+        </tr>
+        <tr><td class="account">{% trans "Common Stock" %}</td>
+            <td id="common_stock0" class="side">50</td>
+            <td id="common_stock1" class="side">65</td>
+            <td id="common_stock2" class="side">65</td>
+            <td id="common_stock3" class="side">65</td>
+            <td id="common_stock4" class="side">65</td>
+        </tr>
+        <tr><td class="account">{% trans "Retained Earning" %}</td>
+            <td id="retained_earning0" class="side">128</td>
+            <td id="retained_earning1" class="side">180</td>
+            <td id="retained_earning2" class="side">471</td>
+            <td id="retained_earning3" class="side">726</td>
+            <td id="retained_earning4" class="side">812</td>
+        </tr>
+        <tr><td class="account" style="text-align: right">Total Equity</td>
+            <td id="total_equity0" class="side">178</td>
+            <td id="total_equity1" class="side">206</td>
+            <td id="total_equity2" class="side">536</td>
+            <td id="total_equity3" class="side">791</td>
+            <td id="total_equity4" class="side">877</td>
+        </tr>
+
+        <tr><td class="account" style="text-align: right">Total Liab. + Equity</td>
+            <td id="total_liabilities_equity0" class="side">810</td>
+            <td id="total_liabilities_equity1" class="side">816</td>
+            <td id="total_liabilities_equity2" class="side">991</td>
+            <td id="total_liabilities_equity3" class="side">1151</td>
+            <td id="total_liabilities_equity4" class="side">1141</td>
+        </tr>
+        </tbody>
+    </table>
+  </div>
+  <div id="bs_nav_v" style="width:80%;padding: 5px 5px 5px 5px;background-color:#80b3ff;"
+        {% if LANGUAGE_CODE == "ar" %}
+            dir="RTL" style="text-align: right;"
+        {% else %}
+            dir="LTR"
+        {% endif%} >
+      <br/>
+      <table id="plugin" class="fsahv">
+        <thead>
+         <th colspan="6">{% trans "Balance Sheet - Verticals Analysis" %}</th>
+        </thead>
+        <tbody>
+        <tr><td class="main"></td>
+            <td class="side">20X1</td>
+            <td class="side">20X2</td>
+            <td class="side">20X3</td>
+            <td class="side">20X4</td>
+            <td class="side">20X5</td>
+        </tr>
+        <tr><td style="text-align: center"><u>{% trans "Assets" %}<u/></td>
+            <td></td><td></td><td></td><td></td><td></td>
+        </tr>
+        <tr><td style="text-align: center"><u>{% trans "Current Assets" %}<u/></td>
+            <td></td><td></td><td></td><td></td><td></td>
+        </tr>
+        <tr><td class="account">{% trans "Cash" %}</td>
+            <td id="cashv0" class="side">8</td>
+            <td id="cashv1" class="side">18</td>
+            <td id="cashv2" class="side">30</td>
+            <td id="cashv3" class="side">45</td>
+            <td id="cashv4" class="side">65</td>
+        </tr>
+        <tr><td class="account">{% trans "Inventory" %}</td>
+            <td id="inventoryv0" class="side">9</td>
+            <td id="inventoryv1" class="side">11</td>
+            <td id="inventoryv2" class="side">14</td>
+            <td id="inventoryv3" class="side">15</td>
+            <td id="inventoryv4" class="side">16</td>
+        </tr>
+        <tr><td class="account">{% trans "Account Receivables" %}</td>
+            <td id="account_receivablesv0" class="side">7</td>
+            <td id="account_receivablesv1" class="side">10</td>
+            <td id="account_receivablesv2" class="side">11</td>
+            <td id="account_receivablesv3" class="side">11</td>
+            <td id="account_receivablesv4" class="side">12</td>
+        </tr>
+        <tr><td class="account">{% trans "Other Current Assets" %}</td>
+            <td id="other_current_assetsv0" class="side">6</td>
+            <td id="other_current_assetsv1" class="side">7</td>
+            <td id="other_current_assetsv2" class="side">8</td>
+            <td id="other_current_assetsv3" class="side">10</td>
+            <td id="other_current_assetsv4" class="side">8</td>
+        </tr>
+        <tr><td class="account" style="text-align: right">Total current assets</td>
+            <td id="total_current_assetsv0" class="side">30</td>
+            <td id="total_current_assetsv1" class="side">46</td>
+            <td id="total_current_assetsv2" class="side">63</td>
+            <td id="total_current_assetsv3" class="side">81</td>
+            <td id="total_current_assetsv4" class="side">101</td>
+        </tr>
+        <tr><td style="text-align: center"><u>{% trans "Long Term Assets" %}<u/></td>
+            <td></td><td></td><td></td><td></td><td></td>
+        </tr>
+        <tr><td class="account">{% trans "Proporties Plants & Equipments" %}</td>
+            <td id="ppev0" class="side">400</td>
+            <td id="ppev1" class="side">420</td>
+            <td id="ppev2" class="side">380</td>
+            <td id="ppev3" class="side">470</td>
+            <td id="ppev4" class="side">500</td>
+        </tr>
+        <tr><td class="account">&nbsp;&nbsp;-{% trans "Accumulated Depreciation" %}</td>
+            <td id="accumulated_depreciationv0" class="side">-40</td>
+            <td id="accumulated_depreciationv1" class="side">-90</td>
+            <td id="accumulated_depreciationv2" class="side">-80</td>
+            <td id="accumulated_depreciationv3" class="side">-85</td>
+            <td id="accumulated_depreciationv4" class="side">-120</td>
+        </tr>
+        <tr><td class="account">{% trans "Subsidiaries" %}</td>
+            <td id="subsidiariesv0" class="side">300</td>
+            <td id="subsidiariesv1" class="side">330</td>
+            <td id="subsidiariesv2" class="side">300</td>
+            <td id="subsidiariesv3" class="side">385</td>
+            <td id="subsidiariesv4" class="side">380</td>
+        </tr>
+        <tr><td class="account">{% trans "Intangibles" %}</td>
+            <td id="intangiblesv0" class="side">120</td>
+            <td id="intangiblesv1" class="side">110</td>
+            <td id="intangiblesv2" class="side">320</td>
+            <td id="intangiblesv3" class="side">300</td>
+            <td id="intangiblesv4" class="side">280</td>
+        </tr>
+        <tr><td class="account" style="text-align: right">Total L.T.A</td>
+            <td id="total_long_term_assetsv0" class="side">780</td>
+            <td id="total_long_term_assetsv1" class="side">770</td>
+            <td id="total_long_term_assetsv2" class="side">920</td>
+            <td id="total_long_term_assetsv3" class="side">1070</td>
+            <td id="total_long_term_assetsv4" class="side">1040</td>
+        </tr>
+
+        <tr><td class="account" style="text-align: right">Total assets</td>
+            <td id="total_assetsv0" class="side">810</td>
+            <td id="total_assetsv1" class="side">816</td>
+            <td id="total_assetsv2" class="side">986</td>
+            <td id="total_assetsv3" class="side">1151</td>
+            <td id="total_assetsv4" class="side">1141</td>
+        </tr>
+
+        <tr><td style="text-align: center"><u>{% trans "Liabilities" %}<u/></td>
+            <td></td><td></td><td></td><td></td><td></td>
+        </tr>
+        <tr><td class="account">{% trans "Current Liabilities" %}</td>
+            <td id="current_liabilitiesv0" class="side">32</td>
+            <td id="current_liabilitiesv1" class="side">45</td>
+            <td id="current_liabilitiesv2" class="side">55</td>
+            <td id="current_liabilitiesv3" class="side">60</td>
+            <td id="current_liabilitiesv4" class="side">64</td>
+        </tr>
+        <tr><td class="account">{% trans "Long Term Liabilities" %}</td>
+            <td id="long_term_liabilitiesv0" class="side">600</td>
+            <td id="long_term_liabilitiesv1" class="side">565</td>
+            <td id="long_term_liabilitiesv2" class="side">400</td>
+            <td id="long_term_liabilitiesv3" class="side">300</td>
+            <td id="long_term_liabilitiesv4" class="side">200</td>
+        </tr>
+        <tr><td class="account" style="text-align: right">Total Liabilities</td>
+            <td id="total_liabilitiesv0" class="side">632</td>
+            <td id="total_liabilitiesv1" class="side">610</td>
+            <td id="total_liabilitiesv2" class="side">455</td>
+            <td id="total_liabilitiesv3" class="side">360</td>
+            <td id="total_liabilitiesv4" class="side">264</td>
+        </tr>
+
+        <tr><td style="text-align: center"><u>{% trans "Equity" %}<u/></td>
+            <td></td><td></td><td></td><td></td><td></td>
+        </tr>
+        <tr><td class="account">{% trans "Common Stock" %}</td>
+            <td id="common_stockv0" class="side">50</td>
+            <td id="common_stockv1" class="side">65</td>
+            <td id="common_stockv2" class="side">65</td>
+            <td id="common_stockv3" class="side">65</td>
+            <td id="common_stockv4" class="side">65</td>
+        </tr>
+        <tr><td class="account">{% trans "Retained Earning" %}</td>
+            <td id="retained_earningv0" class="side">128</td>
+            <td id="retained_earningv1" class="side">180</td>
+            <td id="retained_earningv2" class="side">471</td>
+            <td id="retained_earningv3" class="side">726</td>
+            <td id="retained_earningv4" class="side">812</td>
+        </tr>
+        <tr><td class="account" style="text-align: right">Total Equity</td>
+            <td id="total_equityv0" class="side">178</td>
+            <td id="total_equityv1" class="side">206</td>
+            <td id="total_equityv2" class="side">536</td>
+            <td id="total_equityv3" class="side">791</td>
+            <td id="total_equityv4" class="side">877</td>
+        </tr>
+
+        <tr><td class="account" style="text-align: right">Total Liab. + Equity</td>
+            <td id="total_liabilities_equityv0" class="side">810</td>
+            <td id="total_liabilities_equityv1" class="side">816</td>
+            <td id="total_liabilities_equityv2" class="side">991</td>
+            <td id="total_liabilities_equityv3" class="side">1151</td>
+            <td id="total_liabilities_equityv4" class="side">1141</td>
+        </tr>
+        </tbody>
+    </table>
+  </div>
+  <div id="bs_nav_h" style="width:80%;padding: 5px 5px 5px 5px;background-color:#80b3ff;"
+        {% if LANGUAGE_CODE == "ar" %}
+            dir="RTL" style="text-align: right;"
+        {% else %}
+            dir="LTR"
+        {% endif%} >
+      <br/>
+      <table id="plugin" class="fsahv">
+        <thead>
+         <th colspan="6">{% trans "Balance Sheet - Horizontal Analysis" %}</th>
+        </thead>
+        <tbody>
+        <tr><td class="main"></td>
+            <td class="side">20X1</td>
+            <td class="side">20X2</td>
+            <td class="side">20X3</td>
+            <td class="side">20X4</td>
+            <td class="side">20X5</td>
+        </tr>
+        <tr><td style="text-align: center"><u>{% trans "Assets" %}<u/></td>
+            <td></td><td></td><td></td><td></td><td></td>
+        </tr>
+        <tr><td style="text-align: center"><u>{% trans "Current Assets" %}<u/></td>
+            <td></td><td></td><td></td><td></td><td></td>
+        </tr>
+        <tr><td class="account">{% trans "Cash" %}</td>
+            <td id="cashh0" class="side">8</td>
+            <td id="cashh1" class="side">18</td>
+            <td id="cashh2" class="side">30</td>
+            <td id="cashh3" class="side">45</td>
+            <td id="cashh4" class="side">65</td>
+        </tr>
+        <tr><td class="account">{% trans "Inventory" %}</td>
+            <td id="inventoryh0" class="side">9</td>
+            <td id="inventoryh1" class="side">11</td>
+            <td id="inventoryh2" class="side">14</td>
+            <td id="inventoryh3" class="side">15</td>
+            <td id="inventoryh4" class="side">16</td>
+        </tr>
+        <tr><td class="account">{% trans "Account Receivables" %}</td>
+            <td id="account_receivablesh0" class="side">7</td>
+            <td id="account_receivablesh1" class="side">10</td>
+            <td id="account_receivablesh2" class="side">11</td>
+            <td id="account_receivablesh3" class="side">11</td>
+            <td id="account_receivablesh4" class="side">12</td>
+        </tr>
+        <tr><td class="account">{% trans "Other Current Assets" %}</td>
+            <td id="other_current_assetsh0" class="side">6</td>
+            <td id="other_current_assetsh1" class="side">7</td>
+            <td id="other_current_assetsh2" class="side">8</td>
+            <td id="other_current_assetsh3" class="side">10</td>
+            <td id="other_current_assetsh4" class="side">8</td>
+        </tr>
+        <tr><td class="account" style="text-align: right">Total current assets</td>
+            <td id="total_current_assetsh0" class="side">30</td>
+            <td id="total_current_assetsh1" class="side">46</td>
+            <td id="total_current_assetsh2" class="side">63</td>
+            <td id="total_current_assetsh3" class="side">81</td>
+            <td id="total_current_assetsh4" class="side">101</td>
+        </tr>
+        <tr><td style="text-align: center"><u>{% trans "Long Term Assets" %}<u/></td>
+            <td></td><td></td><td></td><td></td><td></td>
+        </tr>
+        <tr><td class="account">{% trans "Proporties Plants & Equipments" %}</td>
+            <td id="ppeh0" class="side">400</td>
+            <td id="ppeh1" class="side">420</td>
+            <td id="ppeh2" class="side">380</td>
+            <td id="ppeh3" class="side">470</td>
+            <td id="ppeh4" class="side">500</td>
+        </tr>
+        <tr><td class="account">&nbsp;&nbsp;-{% trans "Accumulated Depreciation" %}</td>
+            <td id="accumulated_depreciationh0" class="side">-40</td>
+            <td id="accumulated_depreciationh1" class="side">-90</td>
+            <td id="accumulated_depreciationh2" class="side">-80</td>
+            <td id="accumulated_depreciationh3" class="side">-85</td>
+            <td id="accumulated_depreciationh4" class="side">-120</td>
+        </tr>
+        <tr><td class="account">{% trans "Subsidiaries" %}</td>
+            <td id="subsidiariesh0" class="side">300</td>
+            <td id="subsidiariesh1" class="side">330</td>
+            <td id="subsidiariesh2" class="side">300</td>
+            <td id="subsidiariesh3" class="side">385</td>
+            <td id="subsidiariesh4" class="side">380</td>
+        </tr>
+        <tr><td class="account">{% trans "Intangibles" %}</td>
+            <td id="intangiblesh0" class="side">120</td>
+            <td id="intangiblesh1" class="side">110</td>
+            <td id="intangiblesh2" class="side">320</td>
+            <td id="intangiblesh3" class="side">300</td>
+            <td id="intangiblesh4" class="side">280</td>
+        </tr>
+        <tr><td class="account" style="text-align: right">Total L.T.A</td>
+            <td id="total_long_term_assetsh0" class="side">780</td>
+            <td id="total_long_term_assetsh1" class="side">770</td>
+            <td id="total_long_term_assetsh2" class="side">920</td>
+            <td id="total_long_term_assetsh3" class="side">1070</td>
+            <td id="total_long_term_assetsh4" class="side">1040</td>
+        </tr>
+
+        <tr><td class="account" style="text-align: right">Total assets</td>
+            <td id="total_assetsh0" class="side">810</td>
+            <td id="total_assetsh1" class="side">816</td>
+            <td id="total_assetsh2" class="side">991</td>
+            <td id="total_assetsh3" class="side">1151</td>
+            <td id="total_assetsh4" class="side">1141</td>
+        </tr>
+
+        <tr><td style="text-align: center"><u>{% trans "Liabilities" %}<u/></td>
+            <td></td><td></td><td></td><td></td><td></td>
+        </tr>
+        <tr><td class="account">{% trans "Current Liabilities" %}</td>
+            <td id="current_liabilitiesh0" class="side">32</td>
+            <td id="current_liabilitiesh1" class="side">45</td>
+            <td id="current_liabilitiesh2" class="side">55</td>
+            <td id="current_liabilitiesh3" class="side">60</td>
+            <td id="current_liabilitiesh4" class="side">64</td>
+        </tr>
+        <tr><td class="account">{% trans "Long Term Liabilities" %}</td>
+            <td id="long_term_liabilitiesh0" class="side">600</td>
+            <td id="long_term_liabilitiesh1" class="side">565</td>
+            <td id="long_term_liabilitiesh2" class="side">400</td>
+            <td id="long_term_liabilitiesh3" class="side">300</td>
+            <td id="long_term_liabilitiesh4" class="side">200</td>
+        </tr>
+        <tr><td class="account" style="text-align: right">Total Liabilities</td>
+            <td id="total_liabilitiesh0" class="side">632</td>
+            <td id="total_liabilitiesh1" class="side">610</td>
+            <td id="total_liabilitiesh2" class="side">455</td>
+            <td id="total_liabilitiesh3" class="side">360</td>
+            <td id="total_liabilitiesh4" class="side">264</td>
+        </tr>
+
+        <tr><td style="text-align: center"><u>{% trans "Equity" %}<u/></td>
+            <td></td><td></td><td></td><td></td><td></td>
+        </tr>
+        <tr><td class="account">{% trans "Common Stock" %}</td>
+            <td id="common_stockh0" class="side">50</td>
+            <td id="common_stockh1" class="side">65</td>
+            <td id="common_stockh2" class="side">65</td>
+            <td id="common_stockh3" class="side">65</td>
+            <td id="common_stockh4" class="side">65</td>
+        </tr>
+        <tr><td class="account">{% trans "Retained Earning" %}</td>
+            <td id="retained_earningh0" class="side">128</td>
+            <td id="retained_earningh1" class="side">180</td>
+            <td id="retained_earningh2" class="side">471</td>
+            <td id="retained_earningh3" class="side">726</td>
+            <td id="retained_earningh4" class="side">812</td>
+        </tr>
+        <tr><td class="account" style="text-align: right">Total Equity</td>
+            <td id="total_equityh0" class="side">178</td>
+            <td id="total_equityh1" class="side">206</td>
+            <td id="total_equityh2" class="side">536</td>
+            <td id="total_equityh3" class="side">791</td>
+            <td id="total_equityh4" class="side">877</td>
+        </tr>
+
+        <tr><td class="account" style="text-align: right">Total Liab. + Equity</td>
+            <td id="total_liabilities_equityh0" class="side">810</td>
+            <td id="total_liabilities_equityh1" class="side">816</td>
+            <td id="total_liabilities_equityh2" class="side">991</td>
+            <td id="total_liabilities_equityh3" class="side">1151</td>
+            <td id="total_liabilities_equityh4" class="side">1141</td>
+        </tr>
+        </tbody>
+    </table>
+  </div>
+
+<br/><br/>
+
+<script>
+
+calculate_v = function()
+{
+    let accounts01 = ['cash', 'inventory', 'account_receivables', 'other_current_assets', 'total_current_assets',
+                       'ppe', 'accumulated_depreciation', 'subsidiaries', 'intangibles', 'total_long_term_assets',
+                       'total_assets',
+                       'current_liabilities', 'long_term_liabilities', 'total_liabilities',
+                       'common_stock','retained_earning', 'total_equity' , 'total_liabilities_equity'
+                      ];
+    for (let account of accounts01)
+    {
+      //alert(account)
+      for (i = 0; i<5; i++)
+      {
+        //alert("total_assets"+i.toString())
+        total_assets = document.getElementById("total_assets"+i.toString()).innerHTML
+        total_assets = parseInt(total_assets)
+        //alert(total_assets)
+        try{
+           eval(account+"v"+i.toString()).innerHTML = Math.round(parseInt(eval(account+i.toString()).innerHTML)*10000/total_assets)/100
+            if (i < 4)
+            {
+           eval(account+"h"+(i+1).toString()).innerHTML =
+           Math.round(10000* (parseInt(eval(account+(i+1).toString()).innerHTML) -
+           parseInt(eval(account+i.toString()).innerHTML))/parseInt(eval(account+i.toString()).innerHTML))/100
+        }
+        } catch (er) {alert(er)}
+        eval(account+"h0").innerHTML = ""
+        //alert(value)
+      }
+    // t0.innerHTML = value0;
+    }
+}
+
+calculate_v()
+
+
+</script>
+
+
+{% endblock content %}

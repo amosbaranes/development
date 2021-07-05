@@ -1,0 +1,29 @@
+{% load core_tags staticfiles i18n cms_tags menu_tags sekizai_tags thumbnail %}
+<table id="gdistributor" pkey="{{obj.id}}">
+    <thead>
+     <th></th>
+     {% for period in periods %} <th>{{ period }}</th> {% endfor %}
+    </thead>
+    <tbody>
+    {% for account, periods_ in accounts_.items %}
+     <tr>
+         <td>{{ account }}</td>
+         {% for period in periods %}
+                 {% for period_, data in periods_.items %}
+                     {% if period_ == period %}
+                        {% if forloop.parentloop.last %}
+                             <td><input id="input_{{data.0}}" pkey="{{data.0}}" min="{{data.2}}" max="{{data.3}}"
+                                        size="6" onchange="update_field_model(event, '{% url "core:update_field_model" %}')"
+                                        app="globsim" model="GDistributorPeriodDataDetail" type_="number"
+                                        value="{{data.1}}" field = "amount" />
+                             </td>
+                        {% else %}
+                           <td>{{data.1}}</td>
+                        {% endif %}
+                    {% endif %}
+                 {% endfor %}
+         {% endfor %}
+     </tr>
+    {% endfor %}
+    </tbody>
+</table>

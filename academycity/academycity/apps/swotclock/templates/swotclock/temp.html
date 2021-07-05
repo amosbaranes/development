@@ -1,0 +1,491 @@
+
+<script>
+function init(){
+  openTab(event, 'dimondtab');
+  //Check any saved file in DB
+  checkFiles();
+}
+
+function openTab(evt, tabName) {
+  // Declare all variables
+  var i, tabcontent, tablinks;
+
+    if (tabName=="logout"){
+       window.location.href = "login.php?logout=1";
+//     var url = "https://swotclock.com/login.php?logout=1";
+//
+//     var win = window.open(url);
+//     win.focus();
+    return;
+  }
+
+  if (tabName=="manual"){
+    var url = "http://swotclock.com/swotclock_computer_program_15102020.pdf";
+    var win = window.open(url, '_blank');
+    win.focus();
+    return;
+  }
+
+  if (tabName=="howtovideos"){
+
+//     var url = "http://swotclock.com/software/help/SwotClockSoftware.html";
+//     var win = window.open(url, '_blank');
+//     win.focus();
+//     return;
+  }
+
+  if (tabName=="reporttab"){
+
+    var formid = $('#formfileid').val();
+    var url = "http://swotclock.com/app-print.php?id=" + formid;
+    var win = window.open(url, '_blank');
+    win.focus();
+    return;
+  }
+
+
+  // Get all elements with class="tabcontent" and hide them
+  tabcontent = document.getElementsByClassName("tabcontent");
+  for (i = 0; i < tabcontent.length; i++) {
+    tabcontent[i].style.display = "none";
+  }
+
+  // Get all elements with class="tablinks" and remove the class "active"
+  tablinks = document.getElementsByClassName("tablinks");
+  for (i = 0; i < tablinks.length; i++) {
+    tablinks[i].className = tablinks[i].className.replace(" active", "");
+  }
+
+  // Show the current tab, and add an "active" class to the button that opened the tab
+  document.getElementById(tabName).style.display = "block";
+  evt.currentTarget.className += " active";
+
+}
+
+function saveNewForm(){
+
+  var formname = prompt("Filename", "Enter file name");
+  var formpasw = ""; //prompt("Filepassword", "Enter file password");
+
+  $('#formaction').val('savenewdata');
+  $('#formname').val(formname);
+  $('#formpasw').val(formpasw);
+  var data = $("#swotform").serialize();
+  $.ajax({
+    type:'POST',
+    data:data,
+    url:'controllers/swotclock.json.php',
+    success:function(data) {
+      var d = JSON.parse(data);
+      alert(d['msg']);
+      //append new file and select it in the combobox
+      var opt = "<option value='" + d['data'][0] + "' selected='selected'>" + d['data'][1] + "</option>";
+      $('#filescombobox').append(opt);
+      $('#filescombobox').val(d['data'][0]);
+      $('#formfileid').val(d['data'][0]);
+    }
+  });
+}
+
+function saveForm(){
+
+//   var formname = prompt("Filename", "Enter file name");
+//   var formpasw = prompt("Filepassword", "Enter file password");
+
+//   $('#formaction').val('savenewdata');
+  if ($('#formfileid').val()==''){
+    alert("File does not exist. Select 'New & Save' button or click 'Load' button to open saved data")
+    return;
+  };
+//   if ($('#formpasw').val()==''){
+//     alert("Pasword is missing. Select 'New & Save' button or click 'Load' button to open saved data")
+//     return;
+//   };
+
+  $('#formaction').val('savedata');
+  var data = $("#swotform").serialize();
+  $.ajax({
+    type:'POST',
+    data:data,
+    url:'controllers/swotclock.json.php',
+    success:function(data) {
+      var d = JSON.parse(data);
+      alert(d['msg']);
+//       $.msgBox({title:"Save data", content: d['msg']; });
+    }
+  });
+}
+
+function loadForm(){
+
+  var formid = $('#formfileid').val();
+  $('#formaction').val('loaddata');
+  var dataToBeSent = {formaction: 'loaddata', formfileid: formid} ;
+  $.post('controllers/swotclock.json.php', dataToBeSent, function(result, textStatus) {
+  //result contains the JSON object
+      data = result['data'];
+      for (var i in data) {
+          $('input[name="'+i+'"]').val(data[i]);
+      }
+      //Update weighted internal and external factors
+      var elmsf = "";
+      var elmse = "";
+      for (i=1;i<11;i++){
+        elmsf = $('input[name="sf_b_'+i+'"]').val();
+        elmse = $('input[name="se_b_'+i+'"]').val();
+        $('input[name="wif_b_'+i+'"]').val(elmsf);
+        $('input[name="wef_b_'+i+'"]').val(elmse);
+      }
+  //textStatus contains the status: success, error, etc
+  }, "json");
+
+}
+
+
+function checkFiles(){
+  var dataToBeSent = {formaction: 'getfiles'} ;
+
+
+  $.post('controllers/swotclock.json.php', dataToBeSent, function(result, textStatus) {
+  //result contains the JSON object
+      //Clear combobox
+      var str = "<option value='---Select---'>--- Select file ---</option>";
+      $('#filescombobox').html(str);
+
+      //populate  fileselect with new data
+      data = result['data'];
+      for (var i in data) {
+          $('input[name="'+i+'"]').val(data[i]);
+          str = str + "<option value='" + data[i][0] + "'>" + data[i][1] +  "</option>";
+      }
+      $('#filescombobox').html(str);
+  //textStatus contains the status: success, error, etc
+  }, "json");
+
+}
+
+
+function deleteFile(){
+  var formid = $('#formfileid').val();
+  $('#formaction').val('deletefile');
+  var dataToBeSent = {formaction: 'deletefile', formfileid: formid} ;
+  $.post('controllers/swotclock.json.php', dataToBeSent, function(result, textStatus) {
+    //reset combobox
+    var str = "<option value='---Select---'>--- Select file ---</option>";
+    $('#filescombobox').html(str);
+
+    //populate  fileselect with new data
+    data = result['data'];
+    for (var i in data) {
+        $('input[name="'+i+'"]').val(data[i]);
+        str = str + "<option value='" + data[i][0] + "'>" + data[i][1] +  "</option>";
+    }
+    $('#filescombobox').html(str);
+
+    //Clear form
+    resetForm();
+
+  }, "json");
+}
+</script>
+</head>
+<body onload="init()">
+
+  <h1>SWOTCLOCK<sup>TM</sup></h1>
+  <footer>
+  <p>&copy; All Rights Reserved.</p>
+  </footer>
+  <span>Select file:
+  <select id="filescombobox" style="width: 300px; height: 30px" name="filescombobox" onchange="filescomboboxchange()" >
+    <option value="---Select---">--- Select file ---</option>
+  </select>
+  </span>
+  <button onClick="checkFiles()">Refresh file list</button>
+  <button onClick="saveForm()">Save current file</button>
+  <button onClick="saveNewForm()">Save as New file</button>
+  <button onClick="resetForm()">Clear data</button>
+  <button onClick="deleteFile()">Delete file</button>
+  <p><button onClick="calculateForm()" style="height:80px; width:200px">Calculate</button></p>
+<!-- Tab links -->
+<div class="tab">
+
+  <button class="tablinks" onclick="openTab(event, 'dimondtab')">SWOTCLOCK Data</button>
+  <button class="tablinks" onclick="openTab(event, 'weightedtab')">Weighted Factors Data</button>
+  <button class="tablinks" onclick="openTab(event, 'analysistab')">SWOTCLOCK Analysis</button>
+  <button class="tablinks" onclick="openTab(event, 'reporttab')">Report Analysis</button>
+  <button class="tablinks" onclick="openTab(event, 'howtovideos')">How to video</button>
+  <button class="tablinks" onclick="openTab(event, 'manual')">Manual</button>
+  <button class="tablinks" onclick="openTab(event, 'logout')">LogOut</button>
+</div>
+
+
+<form id="swotform" method="post">
+<!-- Tab content -->
+<div id="analysistab" class="tabcontent">
+<!-- Analysis Section -->
+<table><tr>
+
+<TD>
+<h1>SWOTCLOCK<sup>TM</sup> Summary</h1>
+<table style="text-align: center">
+<tr>
+<td><b>S</b></td><td><b>T</b></td><td><b>W</b></td><td><b>O</b></td>
+</tr>
+<tr>
+<td><input id="an_1" name="an_1" class="inputswotval" disabled/></td><td><input id="an_2" name="an_2" class="inputswotval" disabled/></td><td><input id="an_3" name="an_3" class="inputswotval" disabled/></td><td><input id="an_4" name="an_4" class="inputswotval" disabled/></td>
+</tr>
+</table>
+<table>
+<tr>
+<td><b>Firm Vector</b></td><td><input id="an_fv" name="an_fv" class="inputswotanalysis" disabled/></td>
+</tr>
+<tr>
+<td><b>Environment Vector</b></td><td><input id="an_ev" name="an_ev" class="inputswotanalysis" disabled/></td>
+</tr>
+<tr>
+<td><b>Leading Strategy</b></td><td><input id="an_ls" name="an_ls" class="inputswotleadingstrategy" disabled/></td>
+</tr>
+</table>
+</td>
+<td>
+
+<div id="chart-container"><canvas id="mChart" width="100" height="100" style="background-image: url(canvasclock.png);"></canvas></div>
+<script>
+
+var ctx = document.getElementById('mChart');
+var myChart = new Chart(ctx, {
+    type: 'radar',
+    data: {
+        datasets: [{
+            label: '',
+            data: [0, 0, 0, 0]
+        }],
+        labels: ['S', 'T', 'W', 'O']
+    },
+    options: {
+        scale: {
+            ticks: {
+                suggestedMin: 50,
+                suggestedMax: 100
+            }
+        }
+    }
+});
+myChart.canvas.parentNode.style.height = '250px';
+myChart.canvas.parentNode.style.width = '250px';
+
+</script>
+</TD>
+</tr></table>
+</div>
+<div id="dimondtab" class="tabcontent">
+
+  <input type="hidden" name="formaction" id="formaction" value="" />
+  <input type="hidden" name="formname" id="formname" value="" />
+  <input type="hidden" name="formpasw" id="formpasw" value="" />
+  <input type="hidden" name="formfileid" id="formfileid" value="" />
+  <!--
+  <input type="submit" name="saveform" id="saveform" value="Save form" />
+<!--
+  <input id="formaction" name="formaction" type="hidden" value="">
+-->
+<TABLE>
+<TR>
+<TD>
+
+</TD>
+</TR>
+
+<TR>
+<TD>
+  <TABLE class="tableswot">
+  <TR>
+  <td class="tdswot"></td><td></td><td></td><td colspan="6"><b>Scale</b></td><td></td><td></td><td></td>
+  </TR>
+  <TR>
+  <td></td><td></td><td></td><td colspan="3"><b>Strength</b></td><td colspan="3"><b>Weakness</b></td><td><b>Strength</b></td><td><b>Weakness</b></td><td><b>Weighted</b></td>
+  </TR>
+  <TR>
+  <td><b>Firm</b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td><b>Factor</b></td><td><b>Key Performance Indicator (KPI)</b></td><td><b>Low</b></td><td><b>Mid</b></td><td><b>High</b></td><td><b>Low</b></td><td><b>Mid</b></td><td><b>High</b></td><td><b>1-3</b></td><td><b>1-3</b></td><td><b>factor</b></td>
+  </TR>
+  <TR>
+  <td></td><td><input id="sf_b_1" name="sf_b_1" class="inputfactor" onkeyup="sf_b_change(this)" value=""/></td><td><input id="sf_m_1" name="sf_m_1" class="inputmeasure"/></td><td><input id="sf_1_1" name="sf_1_1" class="inputswotvalscale"  /></td><td><input id="sf_1_2" name="sf_1_2" class="inputswotvalscale"  /></td><td><input id="sf_1_3" name="sf_1_3" class="inputswotvalscale"  /></td><td><input id="sf_1_4" name="sf_1_4" class="inputswotvalscale"  /></td><td><input id="sf_1_5" name="sf_1_5" class="inputswotvalscale"  /></td><td><input id="sf_1_6" name="sf_1_6" class="inputswotvalscale"  /></td><td><input id="sf_st_1" name="sf_st_1" class="inputswotval" onkeyup="sfchange(this)" /></td><td><input id="sf_we_1" name="sf_we_1" class="inputswotval" onkeyup="sfchange(this)" /></td><td><input id="sf_w_1" name="sf_w_1" class="inputswotweighted" disabled /></td>
+  </TR>
+  <TR>
+  <td></td><td><input id="sf_b_2" name="sf_b_2" class="inputfactor" onkeyup="sf_b_change(this)"/></td><td><input id="sf_m_2" name="sf_m_2" class="inputmeasure"/></td><td><input id="sf_2_1" name="sf_2_1" class="inputswotvalscale" /></td><td><input id="sf_2_2" name="sf_2_2" class="inputswotvalscale" /></td><td><input id="sf_2_3" name="sf_2_3" class="inputswotvalscale" /></td><td><input id="sf_2_4" name="sf_2_4" class="inputswotvalscale" /></td><td><input id="sf_2_5" name="sf_2_5" class="inputswotvalscale" /></td><td><input id="sf_2_6" name="sf_2_6" class="inputswotvalscale" /></td><td><input id="sf_st_2" name="sf_st_2" class="inputswotval" onkeyup="sfchange(this)" /></td><td><input id="sf_we_2" name="sf_we_2" class="inputswotval" onkeyup="sfchange(this)" /></td><td><input id="sf_w_2" name="sf_w_2" class="inputswotweighted" disabled /></td>
+  </TR>
+  <TR>
+  <td></td><td><input id="sf_b_3" name="sf_b_3" class="inputfactor" onkeyup="sf_b_change(this)"/></td><td><input id="sf_m_3" name="sf_m_3" class="inputmeasure"/></td><td><input id="sf_3_1" name="sf_3_1" class="inputswotvalscale" /></td><td><input id="sf_3_2" name="sf_3_2" class="inputswotvalscale"  /></td><td><input id="sf_3_3" name="sf_3_3" class="inputswotvalscale" /></td><td><input id="sf_3_4" name="sf_3_4" class="inputswotvalscale" /></td><td><input id="sf_3_5" name="sf_3_5" class="inputswotvalscale" /></td><td><input id="sf_3_6" name="sf_3_6" class="inputswotvalscale" /></td><td><input id="sf_st_3" name="sf_st_3" class="inputswotval" onkeyup="sfchange(this)" /></td><td><input id="sf_we_3" name="sf_we_3" class="inputswotval" onkeyup="sfchange(this)" /></td><td><input id="sf_w_3" name="sf_w_3" class="inputswotweighted" disabled /></td>
+  </TR>
+  <TR>
+  <td></td><td><input id="sf_b_4" name="sf_b_4" class="inputfactor" onkeyup="sf_b_change(this)"/></td><td><input id="sf_m_4" name="sf_m_4" class="inputmeasure"/></td><td><input id="sf_4_1" name="sf_4_1" class="inputswotvalscale" /></td><td><input id="sf_4_2" name="sf_4_2" class="inputswotvalscale"  /></td><td><input id="sf_4_3" name="sf_4_3" class="inputswotvalscale" /></td><td><input id="sf_4_4" name="sf_4_4" class="inputswotvalscale" /></td><td><input id="sf_4_5" name="sf_4_5" class="inputswotvalscale" /></td><td><input id="sf_4_6" name="sf_4_6" class="inputswotvalscale" /></td><td><input id="sf_st_4" name="sf_st_4" class="inputswotval" onkeyup="sfchange(this)" /></td><td><input id="sf_we_4" name="sf_we_4" class="inputswotval" onkeyup="sfchange(this)" /></td><td><input id="sf_w_4" name="sf_w_4" class="inputswotweighted" disabled /></td>
+  </TR>
+  <TR>
+  <td></td><td><input id="sf_b_5" name="sf_b_5" class="inputfactor" onkeyup="sf_b_change(this)"/></td><td><input id="sf_m_5" name="sf_m_5" class="inputmeasure"/></td><td><input id="sf_5_1" name="sf_5_1" class="inputswotvalscale" /></td><td><input id="sf_5_2" name="sf_5_2" class="inputswotvalscale"  /></td><td><input id="sf_5_3" name="sf_5_3" class="inputswotvalscale" /></td><td><input id="sf_5_4" name="sf_5_4" class="inputswotvalscale" /></td><td><input id="sf_5_5" name="sf_5_5" class="inputswotvalscale" /></td><td><input id="sf_5_6" name="sf_5_6" class="inputswotvalscale" /></td><td><input id="sf_st_5" name="sf_st_5" class="inputswotval" onkeyup="sfchange(this)" /></td><td><input id="sf_we_5" name="sf_we_5" class="inputswotval" onkeyup="sfchange(this)" /></td><td><input id="sf_w_5" name="sf_w_5" class="inputswotweighted" disabled /></td>
+  </TR>
+  <TR>
+  <td></td><td><input id="sf_b_6" name="sf_b_6" class="inputfactor" onkeyup="sf_b_change(this)"/></td><td><input id="sf_m_6" name="sf_m_6" class="inputmeasure"/></td><td><input id="sf_6_1" name="sf_6_1" class="inputswotvalscale" /></td><td><input id="sf_6_2" name="sf_6_2" class="inputswotvalscale"  /></td><td><input id="sf_6_3" name="sf_6_3" class="inputswotvalscale" /></td><td><input id="sf_6_4" name="sf_6_4" class="inputswotvalscale" /></td><td><input id="sf_6_5" name="sf_6_5" class="inputswotvalscale" /></td><td><input id="sf_6_6" name="sf_6_6" class="inputswotvalscale" /></td><td><input id="sf_st_6" name="sf_st_6" class="inputswotval" onkeyup="sfchange(this)" /></td><td><input id="sf_we_6" name="sf_we_6" class="inputswotval" onkeyup="sfchange(this)" /></td><td><input id="sf_w_6" name="sf_w_6" class="inputswotweighted" disabled /></td>
+  </TR>
+  <TR>
+  <td></td><td><input id="sf_b_7" name="sf_b_7" class="inputfactor" onkeyup="sf_b_change(this)"/></td><td><input id="sf_m_7" name="sf_m_7" class="inputmeasure"/></td><td><input id="sf_7_1" name="sf_7_1" class="inputswotvalscale" /></td><td><input id="sf_7_2" name="sf_7_2" class="inputswotvalscale"  /></td><td><input id="sf_7_3" name="sf_7_3" class="inputswotvalscale" /></td><td><input id="sf_7_4" name="sf_7_4" class="inputswotvalscale" /></td><td><input id="sf_7_5" name="sf_7_5" class="inputswotvalscale" /></td><td><input id="sf_7_6" name="sf_7_6" class="inputswotvalscale" /></td><td><input id="sf_st_7" name="sf_st_7" class="inputswotval" onkeyup="sfchange(this)" /></td><td><input id="sf_we_7" name="sf_we_7" class="inputswotval" onkeyup="sfchange(this)" /></td><td><input id="sf_w_7" name="sf_w_7" class="inputswotweighted" disabled /></td>
+  </TR>
+  <TR>
+  <td></td><td><input id="sf_b_8" name="sf_b_8" class="inputfactor" onkeyup="sf_b_change(this)"/></td><td><input id="sf_m_8" name="sf_m_8" class="inputmeasure"/></td><td><input id="sf_8_1" name="sf_8_1" class="inputswotvalscale" /></td><td><input id="sf_8_2" name="sf_8_2" class="inputswotvalscale"  /></td><td><input id="sf_8_3" name="sf_8_3" class="inputswotvalscale" /></td><td><input id="sf_8_4" name="sf_8_4" class="inputswotvalscale" /></td><td><input id="sf_8_5" name="sf_8_5" class="inputswotvalscale" /></td><td><input id="sf_8_6" name="sf_8_6" class="inputswotvalscale" /></td><td><input id="sf_st_8" name="sf_st_8" class="inputswotval" onkeyup="sfchange(this)" /></td><td><input id="sf_we_8" name="sf_we_8" class="inputswotval" onkeyup="sfchange(this)" /></td><td><input id="sf_w_8" name="sf_w_8" class="inputswotweighted" disabled /></td>
+  </TR>
+  <TR>
+  <td></td><td><input id="sf_b_9" name="sf_b_9" class="inputfactor" onkeyup="sf_b_change(this)"/></td><td><input id="sf_m_9" name="sf_m_9" class="inputmeasure"/></td><td><input id="sf_9_1" name="sf_9_1" class="inputswotvalscale" /></td><td><input id="sf_9_2" name="sf_9_2" class="inputswotvalscale"  /></td><td><input id="sf_9_3" name="sf_9_3" class="inputswotvalscale" /></td><td><input id="sf_9_4" name="sf_9_4" class="inputswotvalscale" /></td><td><input id="sf_9_5" name="sf_9_5" class="inputswotvalscale" /></td><td><input id="sf_9_6" name="sf_9_6" class="inputswotvalscale" /></td><td><input id="sf_st_9" name="sf_st_9" class="inputswotval" onkeyup="sfchange(this)" /></td><td><input id="sf_we_9" name="sf_we_9" class="inputswotval" onkeyup="sfchange(this)" /></td><td><input id="sf_w_9" name="sf_w_9" class="inputswotweighted" disabled /></td>
+  </TR>
+  <TR>
+  <td></td><td><input id="sf_b_10" name="sf_b_10" class="inputfactor" onkeyup="sf_b_change(this)"/></td><td><input id="sf_m_10" name="sf_m_10" class="inputmeasure"/></td><td><input id="sf_10_1" name="sf_10_1" class="inputswotvalscale" /></td><td><input id="sf_10_2" name="sf_10_2" class="inputswotvalscale"  /></td><td><input id="sf_10_3" name="sf_10_3" class="inputswotvalscale" /></td><td><input id="sf_10_4" name="sf_10_4" class="inputswotvalscale" /></td><td><input id="sf_10_5" name="sf_10_5" class="inputswotvalscale" /></td><td><input id="sf_10_6" name="sf_10_6" class="inputswotvalscale" /></td><td><input id="sf_st_10" name="sf_st_10" class="inputswotval" onkeyup="sfchange(this)" /></td><td><input id="sf_we_10" name="sf_we_10" class="inputswotval" onkeyup="sfchange(this)" /></td><td><input id="sf_w_10" name="sf_w_10" class="inputswotweighted" disabled /></td>
+  </TR>
+  <TR>
+  <td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td><input id="sf_st_sum" name="sf_st_sum" class="inputswotsum" disabled /></td><td><input id="sf_we_sum" name="sf_we_sum" class="inputswotsum" disabled /></td><td><input id="sf_w_sum" name="sf_w_sum" class="inputswotsum" disabled /></td>
+  </TR>
+  </TABLE>
+<br>
+  <TABLE class="tableswot">
+  <TR>
+  <td class="tdswot"></td><td></td><td></td><td colspan="6"><b>Scale</b></td><td></td><td></td><td></td>
+  </TR>
+  <TR>
+  <td></td><td></td><td></td><td colspan="3"><b>Opportunity</b></td><td colspan="3"><b>Threat</b></td><td><b>Opportunity</b></td><td><b>Threat</b></td><td><b>Weighted</b></td>
+  </TR>
+  <TR>
+  <td><b>Environment</b></td><td><b>Factor</b></td><td><b>Key Performance Indicator (KPI)</b></td><td><b>Low</b></td><td><b>Mid</b></td><td><b>High</b></td><td><b>Low</b></td><td><b>Mid</b></td><td><b>High</b></td><td><b>1-3</b></td><td><b>1-3</b></td><td><b>factor</b></td>
+  </TR>
+  <TR>
+  <td></td><td><input id="se_b_1" name="se_b_1" class="inputfactor" onkeyup="se_b_change(this)"/></td><td><input id="se_m_1" name="se_m_1" class="inputmeasure"/></td><td><input id="se_1_1" name="se_1_1" class="inputswotvalscale"  /></td><td><input id="se_1_2" name="se_1_2" class="inputswotvalscale"  /></td><td><input id="se_1_3" name="se_1_3" class="inputswotvalscale"  /></td><td><input id="se_1_4" name="se_1_4" class="inputswotvalscale"  /></td><td><input id="se_1_5" name="se_1_5" class="inputswotvalscale"  /></td><td><input id="se_1_6" name="se_1_6" class="inputswotvalscale"  /></td><td><input id="se_op_1" name="se_op_1" class="inputswotval"  onkeyup="sechange(this)"/></td><td><input id="se_th_1" name="se_th_1" class="inputswotval" onkeyup="sechange(this)" /></td><td><input id="se_w_1" name="se_w_1" class="inputswotweighted" disabled /></td>
+  </TR>
+  <TR>
+  <td></td><td><input id="se_b_2" name="se_b_2" class="inputfactor" onkeyup="se_b_change(this)"/></td><td><input id="se_m_2" name="se_m_2" class="inputmeasure"/></td><td><input id="se_2_1" name="se_2_1" class="inputswotvalscale" /></td><td><input id="se_2_2" name="se_2_2" class="inputswotvalscale" /></td><td><input id="se_2_3" name="se_2_3" class="inputswotvalscale" /></td><td><input id="se_2_4" name="se_2_4" class="inputswotvalscale" /></td><td><input id="se_2_5" name="se_2_5" class="inputswotvalscale" /></td><td><input id="se_2_6" name="se_2_6" class="inputswotvalscale" /></td><td><input id="se_op_2" name="se_op_2" class="inputswotval"  onkeyup="sechange(this)"/></td><td><input id="se_th_2" name="se_th_2" class="inputswotval"  onkeyup="sechange(this)"/></td><td><input id="se_w_2" name="se_w_2" class="inputswotweighted" disabled /></td>
+  </TR>
+  <TR>
+  <td></td><td><input id="se_b_3" name="se_b_3" class="inputfactor" onkeyup="se_b_change(this)"/></td><td><input id="se_m_3" name="se_m_3" class="inputmeasure"/></td><td><input id="se_3_1" name="se_3_1" class="inputswotvalscale" /></td><td><input id="se_3_2" name="se_3_2" class="inputswotvalscale"  /></td><td><input id="se_3_3" name="se_3_3" class="inputswotvalscale" /></td><td><input id="se_3_4" name="se_3_4" class="inputswotvalscale" /></td><td><input id="se_3_5" name="se_3_5" class="inputswotvalscale" /></td><td><input id="se_3_6" name="se_3_6" class="inputswotvalscale" /></td><td><input id="se_op_3" name="se_op_3" class="inputswotval"  onkeyup="sechange(this)"/></td><td><input id="se_th_3" name="se_th_3" class="inputswotval" onkeyup="sechange(this)" /></td><td><input id="se_w_3" name="se_w_3" class="inputswotweighted" disabled /></td>
+  </TR>
+  <TR>
+  <td></td><td><input id="se_b_4" name="se_b_4" class="inputfactor" onkeyup="se_b_change(this)"/></td><td><input id="se_m_4" name="se_m_4" class="inputmeasure"/></td><td><input id="se_4_1" name="se_4_1" class="inputswotvalscale" /></td><td><input id="se_4_2" name="se_4_2" class="inputswotvalscale"  /></td><td><input id="se_4_3" name="se_4_3" class="inputswotvalscale" /></td><td><input id="se_4_4" name="se_4_4" class="inputswotvalscale" /></td><td><input id="se_4_5" name="se_4_5" class="inputswotvalscale" /></td><td><input id="se_4_6" name="se_4_6" class="inputswotvalscale" /></td><td><input id="se_op_4" name="se_op_4" class="inputswotval" onkeyup="sechange(this)" /></td><td><input id="se_th_4" name="se_th_4" class="inputswotval" onkeyup="sechange(this)" /></td><td><input id="se_w_4" name="se_w_4" class="inputswotweighted" disabled /></td>
+  </TR>
+  <TR>
+  <td></td><td><input id="se_b_5" name="se_b_5" class="inputfactor" onkeyup="se_b_change(this)"/></td><td><input id="se_m_5" name="se_m_5" class="inputmeasure"/></td><td><input id="se_5_1" name="se_5_1" class="inputswotvalscale" /></td><td><input id="se_5_2" name="se_5_2" class="inputswotvalscale"  /></td><td><input id="se_5_3" name="se_5_3" class="inputswotvalscale" /></td><td><input id="se_5_4" name="se_5_4" class="inputswotvalscale" /></td><td><input id="se_5_5" name="se_5_5" class="inputswotvalscale" /></td><td><input id="se_5_6" name="se_5_6" class="inputswotvalscale" /></td><td><input id="se_op_5" name="se_op_5" class="inputswotval" onkeyup="sechange(this)" /></td><td><input id="se_th_5" name="se_th_5" class="inputswotval" onkeyup="sechange(this)" /></td><td><input id="se_w_5" name="se_w_5" class="inputswotweighted" disabled /></td>
+  </TR>
+  <TR>
+  <td></td><td><input id="se_b_6" name="se_b_6" class="inputfactor" onkeyup="se_b_change(this)"/></td><td><input id="se_m_6" name="se_m_6" class="inputmeasure"/></td><td><input id="se_6_1" name="se_6_1" class="inputswotvalscale" /></td><td><input id="se_6_2" name="se_6_2" class="inputswotvalscale"  /></td><td><input id="se_6_3" name="se_6_3" class="inputswotvalscale" /></td><td><input id="se_6_4" name="se_6_4" class="inputswotvalscale" /></td><td><input id="se_6_5" name="se_6_5" class="inputswotvalscale" /></td><td><input id="se_6_6" name="se_6_6" class="inputswotvalscale" /></td><td><input id="se_op_6" name="se_op_6" class="inputswotval" onkeyup="sechange(this)" /></td><td><input id="se_th_6" name="se_th_6" class="inputswotval" onkeyup="sechange(this)" /></td><td><input id="se_w_6" name="se_w_6" class="inputswotweighted" disabled /></td>
+  </TR>
+  <TR>
+  <td></td><td><input id="se_b_7" name="se_b_7" class="inputfactor" onkeyup="se_b_change(this)"/></td><td><input id="se_m_7" name="se_m_7" class="inputmeasure"/></td><td><input id="se_7_1" name="se_7_1" class="inputswotvalscale" /></td><td><input id="se_7_2" name="se_7_2" class="inputswotvalscale"  /></td><td><input id="se_7_3" name="se_7_3" class="inputswotvalscale" /></td><td><input id="se_7_4" name="se_7_4" class="inputswotvalscale" /></td><td><input id="se_7_5" name="se_7_5" class="inputswotvalscale" /></td><td><input id="se_7_6" name="se_7_6" class="inputswotvalscale" /></td><td><input id="se_op_7" name="se_op_7" class="inputswotval" onkeyup="sechange(this)" /></td><td><input id="se_th_7" name="se_th_7" class="inputswotval" onkeyup="sechange(this)" /></td><td><input id="se_w_7" name="se_w_7" class="inputswotweighted" disabled /></td>
+  </TR>
+  <TR>
+  <td></td><td><input id="se_b_8" name="se_b_8" class="inputfactor" onkeyup="se_b_change(this)"/></td><td><input id="se_m_8" name="se_m_8" class="inputmeasure"/></td><td><input id="se_8_1" name="se_8_1" class="inputswotvalscale" /></td><td><input id="se_8_2" name="se_8_2" class="inputswotvalscale"  /></td><td><input id="se_8_3" name="se_8_3" class="inputswotvalscale" /></td><td><input id="se_8_4" name="se_8_4" class="inputswotvalscale" /></td><td><input id="se_8_5" name="se_8_5" class="inputswotvalscale" /></td><td><input id="se_8_6" name="se_8_6" class="inputswotvalscale" /></td><td><input id="se_op_8" name="se_op_8" class="inputswotval" onkeyup="sechange(this)" /></td><td><input id="se_th_8" name="se_th_8" class="inputswotval" onkeyup="sechange(this)" /></td><td><input id="se_w_8" name="se_w_8" class="inputswotweighted" disabled /></td>
+  </TR>
+  <TR>
+  <td></td><td><input id="se_b_9" name="se_b_9" class="inputfactor" onkeyup="se_b_change(this)"/></td><td><input id="se_m_9" name="se_m_9" class="inputmeasure"/></td><td><input id="se_9_1" name="se_9_1" class="inputswotvalscale" /></td><td><input id="se_9_2" name="se_9_2" class="inputswotvalscale"  /></td><td><input id="se_9_3" name="se_9_3" class="inputswotvalscale" /></td><td><input id="se_9_4" name="se_9_4" class="inputswotvalscale" /></td><td><input id="se_9_5" name="se_9_5" class="inputswotvalscale" /></td><td><input id="se_9_6" name="se_9_6" class="inputswotvalscale" /></td><td><input id="se_op_9" name="se_op_9" class="inputswotval" onkeyup="sechange(this)" /></td><td><input id="se_th_9" name="se_th_9" class="inputswotval" onkeyup="sechange(this)" /></td><td><input id="se_w_9" name="se_w_9" class="inputswotweighted" disabled /></td>
+  </TR>
+  <TR>
+  <td></td><td><input id="se_b_10" name="se_b_10" class="inputfactor" onkeyup="se_b_change(this)"/></td><td><input id="se_m_10" name="se_m_10" class="inputmeasure"/></td><td><input id="se_10_1" name="se_10_1" class="inputswotvalscale" /></td><td><input id="se_10_2" name="se_10_2" class="inputswotvalscale"  /></td><td><input id="se_10_3" name="se_10_3" class="inputswotvalscale" /></td><td><input id="se_10_4" name="se_10_4" class="inputswotvalscale" /></td><td><input id="se_10_5" name="se_10_5" class="inputswotvalscale" /></td><td><input id="se_10_6" name="se_10_6" class="inputswotvalscale" /></td><td><input id="se_op_10" name="se_op_10" class="inputswotval" onkeyup="sechange(this)" /></td><td><input id="se_th_10" name="se_th_10" class="inputswotval" onkeyup="sechange(this)" /></td><td><input id="se_w_10" name="se_w_10" class="inputswotweighted" disabled /></td>
+  </TR>
+  <TR>
+  <td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td><input id="se_op_sum" name="se_op_sum" class="inputswotsum" disabled /></td><td><input id="se_th_sum" name="se_th_sum" class="inputswotsum" disabled /></td><td><input id="se_w_sum" name="se_w_sum" class="inputswotsum" disabled /></td>
+  </TR>
+  </TABLE>
+</TD>
+
+</TR>
+</TABLE>
+</div>
+
+<!-- TAB  WEIGHTED FACTORS-->
+<div id="weightedtab" class="tabcontent">
+  <TABLE class="">
+  <TR>
+  <td><b>Internal Factor</b></td><td><input id="wif_name_1" name="wif_name_1" class="inputwifname" /></td><td><input id="wif_name_2" name="wif_name_2" class="inputwifname" /></td><td><input id="wif_name_3" name="wif_name_3" class="inputwifname"  /></td><td><input id="wif_name_4" name="wif_name_4" class="inputwifname"  /></td><td><input id="wif_name_5" name="wif_name_5" class="inputwifname"  /></td><td><input id="wif_name_6" name="wif_name_6" class="inputwifname" /></td><td><input id="wif_name_7" name="wif_name_7" class="inputwifname"  /></td><td><input id="wif_name_8" name="wif_name_8" class="inputwifname"  /></td><td><input id="wif_name_9" name="wif_name_9" class="inputwifname" /></td><td><input id="wif_name_10" name="wif_name_10" class="inputwifname"/></td><td><b>Average</b></td><td><b>SD</b></td><td><b>SD/Average</b></td>
+  </TR>
+  <td><input id="wif_b_1" name="wif_b_1" class="inputfactor" disabled /></td><td><input id="wif_1_1" name="wif_1_1" class="inputwifval" onkeyup="wifchange(this)" /></td><td><input id="wif_1_2" name="wif_1_2" class="inputwifval" onkeyup="wifchange(this)" /></td><td><input id="wif_1_3" name="wif_1_3" class="inputwifval" onkeyup="wifchange(this)" /></td><td><input id="wif_1_4" name="wif_1_4" class="inputwifval" onkeyup="wifchange(this)" /></td><td><input id="wif_1_5" name="wif_1_5" class="inputwifval" onkeyup="wifchange(this)" /></td><td><input id="wif_1_6" name="wif_1_6" class="inputwifval" onkeyup="wifchange(this)" /></td><td><input id="wif_1_7" name="wif_1_7" class="inputwifval" onkeyup="wifchange(this)" /></td><td><input id="wif_1_8" name="wif_1_8" class="inputwifval" onkeyup="wifchange(this)" /></td><td><input id="wif_1_9" name="wif_1_9" class="inputwifval" onkeyup="wifchange(this)" /></td><td><input id="wif_1_10" name="wif_1_10" class="inputwifval" onkeyup="wifchange(this)" /></td><td><input id="wif_1_avg" name="wif_1_avg" class="inputwifval" disabled /></td><td><input id="wif_1_sd" name="wif_1_sd" class="inputwifval" disabled /></td><td><input id="wif_1_sdavg" name="wif_1_sdavg" class="inputwifval" disabled /></td>
+  </TR>
+  <TR>
+  <td><input id="wif_b_2" name="wif_b_2" class="inputfactor" disabled /></td><td><input id="wif_2_1" name="wif_2_1" class="inputwifval" onkeyup="wifchange(this)" /></td><td><input id="wif_2_2" name="wif_2_2" class="inputwifval" onkeyup="wifchange(this)" /></td><td><input id="wif_2_3" name="wif_2_3" class="inputwifval" onkeyup="wifchange(this)" /></td><td><input id="wif_2_4" name="wif_2_4" class="inputwifval" onkeyup="wifchange(this)" /></td><td><input id="wif_2_5" name="wif_2_5" class="inputwifval" onkeyup="wifchange(this)" /></td><td><input id="wif_2_6" name="wif_2_6" class="inputwifval" onkeyup="wifchange(this)" /></td><td><input id="wif_2_7" name="wif_2_7" class="inputwifval" onkeyup="wifchange(this)" /></td><td><input id="wif_2_8" name="wif_2_8" class="inputwifval" onkeyup="wifchange(this)" /></td><td><input id="wif_2_9" name="wif_2_9" class="inputwifval" onkeyup="wifchange(this)" /></td><td><input id="wif_2_10" name="wif_2_10" class="inputwifval" onkeyup="wifchange(this)" /></td><td><input id="wif_2_avg" name="wif_2_avg" class="inputwifval" disabled /></td><td><input id="wif_2_sd" name="wif_2_sd" class="inputwifval" disabled /></td><td><input id="wif_2_sdavg" name="wif_2_sdavg" class="inputwifval" disabled /></td>
+  </TR>
+  <TR>
+  <td><input id="wif_b_3" name="wif_b_3" class="inputfactor" disabled /></td><td><input id="wif_3_1" name="wif_3_1" class="inputwifval" onkeyup="wifchange(this)" /></td><td><input id="wif_3_2" name="wif_3_2" class="inputwifval" onkeyup="wifchange(this)" /></td><td><input id="wif_3_3" name="wif_3_3" class="inputwifval" onkeyup="wifchange(this)" /></td><td><input id="wif_3_4" name="wif_3_4" class="inputwifval" onkeyup="wifchange(this)" /></td><td><input id="wif_3_5" name="wif_3_5" class="inputwifval" onkeyup="wifchange(this)" /></td><td><input id="wif_3_6" name="wif_3_6" class="inputwifval" onkeyup="wifchange(this)" /></td><td><input id="wif_3_7" name="wif_3_7" class="inputwifval" onkeyup="wifchange(this)" /></td><td><input id="wif_3_8" name="wif_3_8" class="inputwifval" onkeyup="wifchange(this)" /></td><td><input id="wif_3_9" name="wif_3_9" class="inputwifval" onkeyup="wifchange(this)" /></td><td><input id="wif_3_10" name="wif_3_10" class="inputwifval" onkeyup="wifchange(this)" /></td><td><input id="wif_3_avg" name="wif_3_avg" class="inputwifval" disabled /></td><td><input id="wif_3_sd" name="wif_3_sd" class="inputwifval" disabled /></td><td><input id="wif_3_sdavg" name="wif_3_sdavg" class="inputwifval" disabled /></td>
+  </TR>
+  <TR>
+  <td><input id="wif_b_4" name="wif_b_4" class="inputfactor" disabled /></td><td><input id="wif_4_1" name="wif_4_1" class="inputwifval" onkeyup="wifchange(this)" /></td><td><input id="wif_4_2" name="wif_4_2" class="inputwifval" onkeyup="wifchange(this)" /></td><td><input id="wif_4_3" name="wif_4_3" class="inputwifval" onkeyup="wifchange(this)" /></td><td><input id="wif_4_4" name="wif_4_4" class="inputwifval" onkeyup="wifchange(this)" /></td><td><input id="wif_4_5" name="wif_4_5" class="inputwifval" onkeyup="wifchange(this)" /></td><td><input id="wif_4_6" name="wif_4_6" class="inputwifval" onkeyup="wifchange(this)" /></td><td><input id="wif_4_7" name="wif_4_7" class="inputwifval" onkeyup="wifchange(this)" /></td><td><input id="wif_4_8" name="wif_4_8" class="inputwifval" onkeyup="wifchange(this)" /></td><td><input id="wif_4_9" name="wif_4_9" class="inputwifval" onkeyup="wifchange(this)" /></td><td><input id="wif_4_10" name="wif_4_10" class="inputwifval" onkeyup="wifchange(this)" /></td><td><input id="wif_4_avg" name="wif_4_avg" class="inputwifval" disabled /></td><td><input id="wif_4_sd" name="wif_4_sd" class="inputwifval" disabled /></td><td><input id="wif_4_sdavg" name="wif_4_sdavg" class="inputwifval" disabled /></td>
+  </TR>
+  <TR>
+  <td><input id="wif_b_5" name="wif_b_5" class="inputfactor" disabled /></td><td><input id="wif_5_1" name="wif_5_1" class="inputwifval" onkeyup="wifchange(this)" /></td><td><input id="wif_5_2" name="wif_5_2" class="inputwifval" onkeyup="wifchange(this)" /></td><td><input id="wif_5_3" name="wif_5_3" class="inputwifval" onkeyup="wifchange(this)" /></td><td><input id="wif_5_4" name="wif_5_4" class="inputwifval" onkeyup="wifchange(this)" /></td><td><input id="wif_5_5" name="wif_5_5" class="inputwifval" onkeyup="wifchange(this)" /></td><td><input id="wif_5_6" name="wif_5_6" class="inputwifval" onkeyup="wifchange(this)" /></td><td><input id="wif_5_7" name="wif_5_7" class="inputwifval" onkeyup="wifchange(this)" /></td><td><input id="wif_5_8" name="wif_5_8" class="inputwifval" onkeyup="wifchange(this)" /></td><td><input id="wif_5_9" name="wif_5_9" class="inputwifval" onkeyup="wifchange(this)" /></td><td><input id="wif_5_10" name="wif_5_10" class="inputwifval" onkeyup="wifchange(this)" /></td><td><input id="wif_5_avg" name="wif_5_avg" class="inputwifval" disabled /></td><td><input id="wif_5_sd" name="wif_5_sd" class="inputwifval" disabled /></td><td><input id="wif_5_sdavg" name="wif_5_sdavg" class="inputwifval" disabled /></td>
+  </TR>
+  <TR>
+  <td><input id="wif_b_6" name="wif_b_6" class="inputfactor" disabled /></td><td><input id="wif_6_1" name="wif_6_1" class="inputwifval" onkeyup="wifchange(this)" /></td><td><input id="wif_6_2" name="wif_6_2" class="inputwifval" onkeyup="wifchange(this)" /></td><td><input id="wif_6_3" name="wif_6_3" class="inputwifval" onkeyup="wifchange(this)" /></td><td><input id="wif_6_4" name="wif_6_4" class="inputwifval" onkeyup="wifchange(this)" /></td><td><input id="wif_6_5" name="wif_6_5" class="inputwifval" onkeyup="wifchange(this)" /></td><td><input id="wif_6_6" name="wif_6_6" class="inputwifval" onkeyup="wifchange(this)" /></td><td><input id="wif_6_7" name="wif_6_7" class="inputwifval" onkeyup="wifchange(this)" /></td><td><input id="wif_6_8" name="wif_6_8" class="inputwifval" onkeyup="wifchange(this)" /></td><td><input id="wif_6_9" name="wif_6_9" class="inputwifval" onkeyup="wifchange(this)" /></td><td><input id="wif_6_10" name="wif_6_10" class="inputwifval" onkeyup="wifchange(this)" /></td><td><input id="wif_6_avg" name="wif_6_avg" class="inputwifval" disabled /></td><td><input id="wif_6_sd" name="wif_6_sd" class="inputwifval" disabled /></td><td><input id="wif_6_sdavg" name="wif_6_sdavg" class="inputwifval" disabled /></td>
+  </TR>
+  <TR>
+  <td><input id="wif_b_7" name="wif_b_7" class="inputfactor" disabled /></td><td><input id="wif_7_1" name="wif_7_1" class="inputwifval" onkeyup="wifchange(this)" /></td><td><input id="wif_7_2" name="wif_7_2" class="inputwifval" onkeyup="wifchange(this)" /></td><td><input id="wif_7_3" name="wif_7_3" class="inputwifval" onkeyup="wifchange(this)" /></td><td><input id="wif_7_4" name="wif_7_4" class="inputwifval" onkeyup="wifchange(this)" /></td><td><input id="wif_7_5" name="wif_7_5" class="inputwifval" onkeyup="wifchange(this)" /></td><td><input id="wif_7_6" name="wif_7_6" class="inputwifval" onkeyup="wifchange(this)" /></td><td><input id="wif_7_7" name="wif_7_7" class="inputwifval" onkeyup="wifchange(this)" /></td><td><input id="wif_7_8" name="wif_7_8" class="inputwifval" onkeyup="wifchange(this)" /></td><td><input id="wif_7_9" name="wif_7_9" class="inputwifval" onkeyup="wifchange(this)" /></td><td><input id="wif_7_10" name="wif_7_10" class="inputwifval" onkeyup="wifchange(this)" /></td><td><input id="wif_7_avg" name="wif_7_avg" class="inputwifval" disabled /></td><td><input id="wif_7_sd" name="wif_7_sd" class="inputwifval" disabled /></td><td><input id="wif_7_sdavg" name="wif_7_sdavg" class="inputwifval" disabled /></td>
+  </TR>
+  <TR>
+  <td><input id="wif_b_8" name="wif_b_8" class="inputfactor" disabled /></td><td><input id="wif_8_1" name="wif_8_1" class="inputwifval" onkeyup="wifchange(this)" /></td><td><input id="wif_8_2" name="wif_8_2" class="inputwifval" onkeyup="wifchange(this)" /></td><td><input id="wif_8_3" name="wif_8_3" class="inputwifval" onkeyup="wifchange(this)" /></td><td><input id="wif_8_4" name="wif_8_4" class="inputwifval" onkeyup="wifchange(this)" /></td><td><input id="wif_8_5" name="wif_8_5" class="inputwifval" onkeyup="wifchange(this)" /></td><td><input id="wif_8_6" name="wif_8_6" class="inputwifval" onkeyup="wifchange(this)" /></td><td><input id="wif_8_7" name="wif_8_7" class="inputwifval" onkeyup="wifchange(this)" /></td><td><input id="wif_8_8" name="wif_8_8" class="inputwifval" onkeyup="wifchange(this)" /></td><td><input id="wif_8_9" name="wif_8_9" class="inputwifval" onkeyup="wifchange(this)" /></td><td><input id="wif_8_10" name="wif_8_10" class="inputwifval" onkeyup="wifchange(this)" /></td><td><input id="wif_8_avg" name="wif_8_avg" class="inputwifval" disabled /></td><td><input id="wif_8_sd" name="wif_8_sd" class="inputwifval" disabled /></td><td><input id="wif_8_sdavg" name="wif_8_sdavg" class="inputwifval" disabled /></td>
+  </TR>
+  <TR>
+  <td><input id="wif_b_9" name="wif_b_9" class="inputfactor" disabled /></td><td><input id="wif_9_1" name="wif_9_1" class="inputwifval" onkeyup="wifchange(this)" /></td><td><input id="wif_9_2" name="wif_9_2" class="inputwifval" onkeyup="wifchange(this)" /></td><td><input id="wif_9_3" name="wif_9_3" class="inputwifval" onkeyup="wifchange(this)" /></td><td><input id="wif_9_4" name="wif_9_4" class="inputwifval" onkeyup="wifchange(this)" /></td><td><input id="wif_9_5" name="wif_9_5" class="inputwifval" onkeyup="wifchange(this)" /></td><td><input id="wif_9_6" name="wif_9_6" class="inputwifval" onkeyup="wifchange(this)" /></td><td><input id="wif_9_7" name="wif_9_7" class="inputwifval" onkeyup="wifchange(this)" /></td><td><input id="wif_9_8" name="wif_9_8" class="inputwifval" onkeyup="wifchange(this)" /></td><td><input id="wif_9_9" name="wif_9_9" class="inputwifval" onkeyup="wifchange(this)" /></td><td><input id="wif_9_10" name="wif_9_10" class="inputwifval" onkeyup="wifchange(this)" /></td><td><input id="wif_9_avg" name="wif_9_avg" class="inputwifval" disabled /></td><td><input id="wif_9_sd" name="wif_9_sd" class="inputwifval" disabled /></td><td><input id="wif_9_sdavg" name="wif_9_sdavg" class="inputwifval" disabled /></td>
+  </TR>
+  <TR>
+  <td><input id="wif_b_10" name="wif_b_10" class="inputfactor" disabled /></td><td><input id="wif_10_1" name="wif_10_1" class="inputwifval" onkeyup="wifchange(this)" /></td><td><input id="wif_10_2" name="wif_10_2" class="inputwifval" onkeyup="wifchange(this)" /></td><td><input id="wif_10_3" name="wif_10_3" class="inputwifval" onkeyup="wifchange(this)" /></td><td><input id="wif_10_4" name="wif_10_4" class="inputwifval" onkeyup="wifchange(this)" /></td><td><input id="wif_10_5" name="wif_10_5" class="inputwifval" onkeyup="wifchange(this)" /></td><td><input id="wif_10_6" name="wif_10_6" class="inputwifval" onkeyup="wifchange(this)" /></td><td><input id="wif_10_7" name="wif_10_7" class="inputwifval" onkeyup="wifchange(this)" /></td><td><input id="wif_10_8" name="wif_10_8" class="inputwifval" onkeyup="wifchange(this)" /></td><td><input id="wif_10_9" name="wif_10_9" class="inputwifval" onkeyup="wifchange(this)" /></td><td><input id="wif_10_10" name="wif_10_10" class="inputwifval" onkeyup="wifchange(this)" /></td><td><input id="wif_10_avg" name="wif_10_avg" class="inputwifval" disabled /></td><td><input id="wif_10_sd" name="wif_10_sd" class="inputwifval" disabled /></td><td><input id="wif_10_sdavg" name="wif_10_sdavg" class="inputwifval" disabled /></td>
+  </TR>
+  <TR>
+  <td><b>TOTAL</b></td><td><input id="wif_total_1" name="wif_total_1" class="inputwiftotal" disabled /></td><td><input id="wif_total_2" name="wif_total_2" class="inputwiftotal" disabled /></td><td><input id="wif_total_3" name="wif_total_3" class="inputwiftotal" disabled /></td><td><input id="wif_total_4" name="wif_total_4" class="inputwiftotal" disabled /></td><td><input id="wif_total_5" name="wif_total_5" class="inputwiftotal" disabled /></td><td><input id="wif_total_6" name="wif_total_6" class="inputwiftotal" disabled /></td><td><input id="wif_total_7" name="wif_total_7" class="inputwiftotal" disabled /></td><td><input id="wif_total_8" name="wif_total_8" class="inputwiftotal" disabled /></td><td><input id="wif_total_9" name="wif_total_9" class="inputwiftotal" disabled /></td><td><input id="wif_total_10" name="wif_total_10" class="inputwiftotal" disabled /></td><td><input id="wif_total_avg" name="wif_total_avg" class="inputwiftotal" disabled /></td><td></td><td></td><td></td>
+  </TR>
+  </TABLE>
+<br>
+  <TABLE class="">
+  <TR>
+  <td><b>External Factor</b></td><td><input id="wef_name_1" name="wef_name_1" class="inputwifname" /></td><td><input id="wef_name_2" name="wef_name_2" class="inputwifname" /></td><td><input id="wef_name_3" name="wef_name_3" class="inputwifname"  /></td><td><input id="wef_name_4" name="wef_name_4" class="inputwifname"  /></td><td><input id="wef_name_5" name="wef_name_5" class="inputwifname"  /></td><td><input id="wef_name_6" name="wef_name_6" class="inputwifname" /></td><td><input id="wef_name_7" name="wef_name_7" class="inputwifname"  /></td><td><input id="wef_name_8" name="wef_name_8" class="inputwifname"  /></td><td><input id="wef_name_9" name="wef_name_9" class="inputwifname" /></td><td><input id="wef_name_10" name="wef_name_10" class="inputwifname"/></td><td><b>Average</b></td><td><b>SD</b></td><td><b>SD/Average</b></td>
+  </TR>
+  <td><input id="wef_b_1" name="wef_b_1" class="inputfactor" disabled /></td><td><input id="wef_1_1" name="wef_1_1" class="inputwifval" onkeyup="wefchange(this)" /></td><td><input id="wef_1_2" name="wef_1_2" class="inputwifval" onkeyup="wefchange(this)" /></td><td><input id="wef_1_3" name="wef_1_3" class="inputwifval" onkeyup="wefchange(this)" /></td><td><input id="wef_1_4" name="wef_1_4" class="inputwifval" onkeyup="wefchange(this)" /></td><td><input id="wef_1_5" name="wef_1_5" class="inputwifval" onkeyup="wefchange(this)" /></td><td><input id="wef_1_6" name="wef_1_6" class="inputwifval" onkeyup="wefchange(this)" /></td><td><input id="wef_1_7" name="wef_1_7" class="inputwifval" onkeyup="wefchange(this)" /></td><td><input id="wef_1_8" name="wef_1_8" class="inputwifval" onkeyup="wefchange(this)" /></td><td><input id="wef_1_9" name="wef_1_9" class="inputwifval" onkeyup="wefchange(this)" /></td><td><input id="wef_1_10" name="wef_1_10" class="inputwifval" onkeyup="wefchange(this)" /></td><td><input id="wef_1_avg" name="wef_1_avg" class="inputwifval" disabled /></td><td><input id="wef_1_sd" name="wef_1_sd" class="inputwifval" disabled /></td><td><input id="wef_1_sdavg" name="wef_1_sdavg" class="inputwifval" disabled /></td>
+  </TR>
+  <TR>
+  <td><input id="wef_b_2" name="wef_b_2" class="inputfactor" disabled /></td><td><input id="wef_2_1" name="wef_2_1" class="inputwifval" onkeyup="wefchange(this)" /></td><td><input id="wef_2_2" name="wef_2_2" class="inputwifval" onkeyup="wefchange(this)" /></td><td><input id="wef_2_3" name="wef_2_3" class="inputwifval" onkeyup="wefchange(this)" /></td><td><input id="wef_2_4" name="wef_2_4" class="inputwifval" onkeyup="wefchange(this)" /></td><td><input id="wef_2_5" name="wef_2_5" class="inputwifval" onkeyup="wefchange(this)" /></td><td><input id="wef_2_6" name="wef_2_6" class="inputwifval" onkeyup="wefchange(this)" /></td><td><input id="wef_2_7" name="wef_2_7" class="inputwifval" onkeyup="wefchange(this)" /></td><td><input id="wef_2_8" name="wef_2_8" class="inputwifval" onkeyup="wefchange(this)" /></td><td><input id="wef_2_9" name="wef_2_9" class="inputwifval" onkeyup="wefchange(this)" /></td><td><input id="wef_2_10" name="wef_2_10" class="inputwifval" onkeyup="wefchange(this)" /></td><td><input id="wef_2_avg" name="wef_2_avg" class="inputwifval" disabled /></td><td><input id="wef_2_sd" name="wef_2_sd" class="inputwifval" disabled /></td><td><input id="wef_2_sdavg" name="wef_2_sdavg" class="inputwifval" disabled /></td>
+  </TR>
+  <TR>
+  <td><input id="wef_b_3" name="wef_b_3" class="inputfactor" disabled /></td><td><input id="wef_3_1" name="wef_3_1" class="inputwifval" onkeyup="wefchange(this)" /></td><td><input id="wef_3_2" name="wef_3_2" class="inputwifval" onkeyup="wefchange(this)" /></td><td><input id="wef_3_3" name="wef_3_3" class="inputwifval" onkeyup="wefchange(this)" /></td><td><input id="wef_3_4" name="wef_3_4" class="inputwifval" onkeyup="wefchange(this)" /></td><td><input id="wef_3_5" name="wef_3_5" class="inputwifval" onkeyup="wefchange(this)" /></td><td><input id="wef_3_6" name="wef_3_6" class="inputwifval" onkeyup="wefchange(this)" /></td><td><input id="wef_3_7" name="wef_3_7" class="inputwifval" onkeyup="wefchange(this)" /></td><td><input id="wef_3_8" name="wef_3_8" class="inputwifval" onkeyup="wefchange(this)" /></td><td><input id="wef_3_9" name="wef_3_9" class="inputwifval" onkeyup="wefchange(this)" /></td><td><input id="wef_3_10" name="wef_3_10" class="inputwifval" onkeyup="wefchange(this)" /></td><td><input id="wef_3_avg" name="wef_3_avg" class="inputwifval" disabled /></td><td><input id="wef_3_sd" name="wef_3_sd" class="inputwifval" disabled /></td><td><input id="wef_3_sdavg" name="wef_3_sdavg" class="inputwifval" disabled /></td>
+  </TR>
+  <TR>
+  <td><input id="wef_b_4" name="wef_b_4" class="inputfactor" disabled /></td><td><input id="wef_4_1" name="wef_4_1" class="inputwifval" onkeyup="wefchange(this)" /></td><td><input id="wef_4_2" name="wef_4_2" class="inputwifval" onkeyup="wefchange(this)" /></td><td><input id="wef_4_3" name="wef_4_3" class="inputwifval" onkeyup="wefchange(this)" /></td><td><input id="wef_4_4" name="wef_4_4" class="inputwifval" onkeyup="wefchange(this)" /></td><td><input id="wef_4_5" name="wef_4_5" class="inputwifval" onkeyup="wefchange(this)" /></td><td><input id="wef_4_6" name="wef_4_6" class="inputwifval" onkeyup="wefchange(this)" /></td><td><input id="wef_4_7" name="wef_4_7" class="inputwifval" onkeyup="wefchange(this)" /></td><td><input id="wef_4_8" name="wef_4_8" class="inputwifval" onkeyup="wefchange(this)" /></td><td><input id="wef_4_9" name="wef_4_9" class="inputwifval" onkeyup="wefchange(this)" /></td><td><input id="wef_4_10" name="wef_4_10" class="inputwifval" onkeyup="wefchange(this)" /></td><td><input id="wef_4_avg" name="wef_4_avg" class="inputwifval" disabled /></td><td><input id="wef_4_sd" name="wef_4_sd" class="inputwifval" disabled /></td><td><input id="wef_4_sdavg" name="wef_4_sdavg" class="inputwifval" disabled /></td>
+  </TR>
+  <TR>
+  <td><input id="wef_b_5" name="wef_b_5" class="inputfactor" disabled /></td><td><input id="wef_5_1" name="wef_5_1" class="inputwifval" onkeyup="wefchange(this)" /></td><td><input id="wef_5_2" name="wef_5_2" class="inputwifval" onkeyup="wefchange(this)" /></td><td><input id="wef_5_3" name="wef_5_3" class="inputwifval" onkeyup="wefchange(this)" /></td><td><input id="wef_5_4" name="wef_5_4" class="inputwifval" onkeyup="wefchange(this)" /></td><td><input id="wef_5_5" name="wef_5_5" class="inputwifval" onkeyup="wefchange(this)" /></td><td><input id="wef_5_6" name="wef_5_6" class="inputwifval" onkeyup="wefchange(this)" /></td><td><input id="wef_5_7" name="wef_5_7" class="inputwifval" onkeyup="wefchange(this)" /></td><td><input id="wef_5_8" name="wef_5_8" class="inputwifval" onkeyup="wefchange(this)" /></td><td><input id="wef_5_9" name="wef_5_9" class="inputwifval" onkeyup="wefchange(this)" /></td><td><input id="wef_5_10" name="wef_5_10" class="inputwifval" onkeyup="wefchange(this)" /></td><td><input id="wef_5_avg" name="wef_5_avg" class="inputwifval" disabled /></td><td><input id="wef_5_sd" name="wef_5_sd" class="inputwifval" disabled /></td><td><input id="wef_5_sdavg" name="wef_5_sdavg" class="inputwifval" disabled /></td>
+  </TR>
+  <TR>
+  <td><input id="wef_b_6" name="wef_b_6" class="inputfactor" disabled /></td><td><input id="wef_6_1" name="wef_6_1" class="inputwifval" onkeyup="wefchange(this)" /></td><td><input id="wef_6_2" name="wef_6_2" class="inputwifval" onkeyup="wefchange(this)" /></td><td><input id="wef_6_3" name="wef_6_3" class="inputwifval" onkeyup="wefchange(this)" /></td><td><input id="wef_6_4" name="wef_6_4" class="inputwifval" onkeyup="wefchange(this)" /></td><td><input id="wef_6_5" name="wef_6_5" class="inputwifval" onkeyup="wefchange(this)" /></td><td><input id="wef_6_6" name="wef_6_6" class="inputwifval" onkeyup="wefchange(this)" /></td><td><input id="wef_6_7" name="wef_6_7" class="inputwifval" onkeyup="wefchange(this)" /></td><td><input id="wef_6_8" name="wef_6_8" class="inputwifval" onkeyup="wefchange(this)" /></td><td><input id="wef_6_9" name="wef_6_9" class="inputwifval" onkeyup="wefchange(this)" /></td><td><input id="wef_6_10" name="wef_6_10" class="inputwifval" onkeyup="wefchange(this)" /></td><td><input id="wef_6_avg" name="wef_6_avg" class="inputwifval" disabled /></td><td><input id="wef_6_sd" name="wef_6_sd" class="inputwifval" disabled /></td><td><input id="wef_6_sdavg" name="wef_6_sdavg" class="inputwifval" disabled /></td>
+  </TR>
+  <TR>
+  <td><input id="wef_b_7" name="wef_b_7" class="inputfactor" disabled /></td><td><input id="wef_7_1" name="wef_7_1" class="inputwifval" onkeyup="wefchange(this)" /></td><td><input id="wef_7_2" name="wef_7_2" class="inputwifval" onkeyup="wefchange(this)" /></td><td><input id="wef_7_3" name="wef_7_3" class="inputwifval" onkeyup="wefchange(this)" /></td><td><input id="wef_7_4" name="wef_7_4" class="inputwifval" onkeyup="wefchange(this)" /></td><td><input id="wef_7_5" name="wef_7_5" class="inputwifval" onkeyup="wefchange(this)" /></td><td><input id="wef_7_6" name="wef_7_6" class="inputwifval" onkeyup="wefchange(this)" /></td><td><input id="wef_7_7" name="wef_7_7" class="inputwifval" onkeyup="wefchange(this)" /></td><td><input id="wef_7_8" name="wef_7_8" class="inputwifval" onkeyup="wefchange(this)" /></td><td><input id="wef_7_9" name="wef_7_9" class="inputwifval" onkeyup="wefchange(this)" /></td><td><input id="wef_7_10" name="wef_7_10" class="inputwifval" onkeyup="wefchange(this)" /></td><td><input id="wef_7_avg" name="wef_7_avg" class="inputwifval" disabled /></td><td><input id="wef_7_sd" name="wef_7_sd" class="inputwifval" disabled /></td><td><input id="wef_7_sdavg" name="wef_7_sdavg" class="inputwifval" disabled /></td>
+  </TR>
+  <TR>
+  <td><input id="wef_b_8" name="wef_b_8" class="inputfactor" disabled /></td><td><input id="wef_8_1" name="wef_8_1" class="inputwifval" onkeyup="wefchange(this)" /></td><td><input id="wef_8_2" name="wef_8_2" class="inputwifval" onkeyup="wefchange(this)" /></td><td><input id="wef_8_3" name="wef_8_3" class="inputwifval" onkeyup="wefchange(this)" /></td><td><input id="wef_8_4" name="wef_8_4" class="inputwifval" onkeyup="wefchange(this)" /></td><td><input id="wef_8_5" name="wef_8_5" class="inputwifval" onkeyup="wefchange(this)" /></td><td><input id="wef_8_6" name="wef_8_6" class="inputwifval" onkeyup="wefchange(this)" /></td><td><input id="wef_8_7" name="wef_8_7" class="inputwifval" onkeyup="wefchange(this)" /></td><td><input id="wef_8_8" name="wef_8_8" class="inputwifval" onkeyup="wefchange(this)" /></td><td><input id="wef_8_9" name="wef_8_9" class="inputwifval" onkeyup="wefchange(this)" /></td><td><input id="wef_8_10" name="wef_8_10" class="inputwifval" onkeyup="wefchange(this)" /></td><td><input id="wef_8_avg" name="wef_8_avg" class="inputwifval" disabled /></td><td><input id="wef_8_sd" name="wef_8_sd" class="inputwifval" disabled /></td><td><input id="wef_8_sdavg" name="wef_8_sdavg" class="inputwifval" disabled /></td>
+  </TR>
+  <TR>
+  <td><input id="wef_b_9" name="wef_b_9" class="inputfactor" disabled /></td><td><input id="wef_9_1" name="wef_9_1" class="inputwifval" onkeyup="wefchange(this)" /></td><td><input id="wef_9_2" name="wef_9_2" class="inputwifval" onkeyup="wefchange(this)" /></td><td><input id="wef_9_3" name="wef_9_3" class="inputwifval" onkeyup="wefchange(this)" /></td><td><input id="wef_9_4" name="wef_9_4" class="inputwifval" onkeyup="wefchange(this)" /></td><td><input id="wef_9_5" name="wef_9_5" class="inputwifval" onkeyup="wefchange(this)" /></td><td><input id="wef_9_6" name="wef_9_6" class="inputwifval" onkeyup="wefchange(this)" /></td><td><input id="wef_9_7" name="wef_9_7" class="inputwifval" onkeyup="wefchange(this)" /></td><td><input id="wef_9_8" name="wef_9_8" class="inputwifval" onkeyup="wefchange(this)" /></td><td><input id="wef_9_9" name="wef_9_9" class="inputwifval" onkeyup="wefchange(this)" /></td><td><input id="wef_9_10" name="wef_9_10" class="inputwifval" onkeyup="wefchange(this)" /></td><td><input id="wef_9_avg" name="wef_9_avg" class="inputwifval" disabled /></td><td><input id="wef_9_sd" name="wef_9_sd" class="inputwifval" disabled /></td><td><input id="wef_9_sdavg" name="wef_9_sdavg" class="inputwifval" disabled /></td>
+  </TR>
+  <TR>
+  <td><input id="wef_b_10" name="wef_b_10" class="inputfactor" disabled /></td><td><input id="wef_10_1" name="wef_10_1" class="inputwifval" onkeyup="wefchange(this)" /></td><td><input id="wef_10_2" name="wef_10_2" class="inputwifval" onkeyup="wefchange(this)" /></td><td><input id="wef_10_3" name="wef_10_3" class="inputwifval" onkeyup="wefchange(this)" /></td><td><input id="wef_10_4" name="wef_10_4" class="inputwifval" onkeyup="wefchange(this)" /></td><td><input id="wef_10_5" name="wef_10_5" class="inputwifval" onkeyup="wefchange(this)" /></td><td><input id="wef_10_6" name="wef_10_6" class="inputwifval" onkeyup="wefchange(this)" /></td><td><input id="wef_10_7" name="wef_10_7" class="inputwifval" onkeyup="wefchange(this)" /></td><td><input id="wef_10_8" name="wef_10_8" class="inputwifval" onkeyup="wefchange(this)" /></td><td><input id="wef_10_9" name="wef_10_9" class="inputwifval" onkeyup="wefchange(this)" /></td><td><input id="wef_10_10" name="wef_10_10" class="inputwifval" onkeyup="wefchange(this)" /></td><td><input id="wef_10_avg" name="wef_10_avg" class="inputwifval" disabled /></td><td><input id="wef_10_sd" name="wef_10_sd" class="inputwifval" disabled /></td><td><input id="wef_10_sdavg" name="wef_10_sdavg" class="inputwifval" disabled /></td>
+  </TR>
+  <TR>
+  <td><b>TOTAL</b></td><td><input id="wef_total_1" name="wef_total_1" class="inputwiftotal" disabled /></td><td><input id="wef_total_2" name="wef_total_2" class="inputwiftotal" disabled /></td><td><input id="wef_total_3" name="wef_total_3" class="inputwiftotal" disabled /></td><td><input id="wef_total_4" name="wef_total_4" class="inputwiftotal" disabled /></td><td><input id="wef_total_5" name="wef_total_5" class="inputwiftotal" disabled /></td><td><input id="wef_total_6" name="wef_total_6" class="inputwiftotal" disabled /></td><td><input id="wef_total_7" name="wef_total_7" class="inputwiftotal" disabled /></td><td><input id="wef_total_8" name="wef_total_8" class="inputwiftotal" disabled /></td><td><input id="wef_total_9" name="wef_total_9" class="inputwiftotal" disabled /></td><td><input id="wef_total_10" name="wef_total_10" class="inputwiftotal" disabled /></td><td><input id="wef_total_avg" name="wef_total_avg" class="inputwiftotal" disabled /></td><td></td><td></td><td></td>
+  </TR>
+  </TABLE>
+</div>
+<div id="howtovideos" class="tabcontent">
+<h1>How to videos</h1>
+<table>
+<tr>
+<td>
+<h2>Load saved data file</h2>
+<iframe width="560" height="315" src="https://www.youtube.com/embed/JMMjSxOYy8s" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+</td>
+<td>
+<h2>Create new data file</h2>
+<iframe width="560" height="315" src="https://www.youtube.com/embed/pP1vlHrhBDc" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+</td>
+</tr>
+</table>
+</div>
+</form>
+</body>
+</html>

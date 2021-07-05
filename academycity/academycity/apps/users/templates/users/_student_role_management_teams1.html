@@ -1,0 +1,121 @@
+<!--{% extends "courses/course_schedule/formset_base.html" %}-->
+<!--{% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}-->
+
+<!--{% block content %}-->
+<div onclick="btnClickSub(event)">
+<h2 style="color:blue"><u>Teams for course: {{ course_schedule.course.name }}</u></h2>
+{% if assignment_method == 1%}
+<!--    {% if course_schedule.number_of_teams_left > 0 %}-->
+        <a href="#" data-new = "yes" data-pk="0" data-course_schedule_slug="{{ course_schedule.slug }}"
+           type="add_me_to_team">
+            <span class="badge badge-pill badge-primary"> Add me to new team</span>
+        </a>
+<!--    {% endif %}-->
+{% endif %}
+
+{% for team in teams %}
+ <table class="w3-table-all w3-hoverable" style="width:80%; margin-left:5px;"><thead>
+    <th>
+        {% if assignment_method == 1%}
+            {% if team.status != 'full' %}
+                    {% if my_team and my_team == team %}
+                        <a href="{% url "courses:team_edit" team.id %}">
+                                 <span class="badge badge-pill badge-info">
+                                   Edit My team: {{ team.name }}
+                                 </span>
+                         </a>
+
+                    {% else %}
+                             <a href="#" data-new = "no" data-pk="{{team.id}}" data-course_schedule_slug="{{ course_schedule.slug }}"
+                               type="add_me_to_team">
+                               {% if team.status == 'missing' %}
+                                     <span class="badge badge-pill badge-primary">
+                               {% else%}
+                                     <span class="badge badge-pill badge-success">
+                               {% endif %}
+                                Add me to:
+                                     </span>
+                             </a>
+                             {{ team.name }}
+                    {% endif %}
+
+            {% else%}
+
+                {% if my_team and my_team == team %}
+                        <a href="{% url "courses:team_edit" team.id %}">
+                                 <span class="badge badge-pill badge-info">
+                                   Edit My team: {{ team.name }}
+                                 </span>
+                         </a>
+                {% else %}
+                   {{ team.name }} is full
+                {% endif %}
+
+            {% endif %}
+        {% else %}
+            {% if my_team and my_team == team %}
+                <a href="{% url "courses:team_edit" team.id %}">
+                         <span class="badge badge-pill badge-info">
+                           Edit My team: {{ team.name }}
+                         </span>
+                 </a>
+            {% else %}
+              <span style="color:red">{{ team.name }}</span>
+            {% endif %}
+        {% endif %}
+    </th>
+    <tbody>
+      {% for u in team.users.all %}
+        <tr>
+            <td style="padding-right:50px">
+            <img src="
+            {% if u.user.academics.image %}
+            {{ u.user.academics.image.url }}
+            {% else %}
+            {% static 'users/img/no_user_image.png' %}
+            {% endif %}" width="70px" class="rounded-circle">
+                {{ u.user.get_full_name }}
+        </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+ </table>
+<hr/>
+{% endfor %}
+</div>
+
+<script>
+
+function btnClickSub(event)
+{
+  elm = event.target.parentNode
+  //alert(elm.outerHTML)
+  //alert(elm.getAttribute("data-pk"))
+  //alert(elm.getAttribute("data-course_schedule_slug"))
+  //alert(elm.getAttribute("data-new"))
+  var type = elm.getAttribute("type")
+
+  if(type=="add_me_to_team")
+  {
+    event.preventDefault();
+    $.post('{% url "courses:add_me_to_team" %}',
+    {
+    team_slug: elm.getAttribute("data-pk"),
+    cs_slug: elm.getAttribute("data-course_schedule_slug"),
+    new_team: elm.getAttribute("data-new")
+    },
+    function(data){
+    alert(data['status'])
+    }
+    );
+  }
+
+}
+</script>
+
+<!--{% endblock %}-->
+
+
+
+
+

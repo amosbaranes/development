@@ -1,0 +1,18 @@
+
+    <h2>{{ name }}</h2>
+      <table class="w3-table-all w3-hoverable" style="border: 1px solid black;">
+        <thead>
+          <tr class="w3-light-blue" style="border: 1px solid black;">
+            <th style="border: 1px solid black;">ID</th>
+          </tr>
+        </thead>
+          <tbody>
+      {% for x in table %}
+        <tr style="border: 1px solid black;">
+          <td style="padding-right:10px;width:200px" style="border: 1px solid black;">
+            <span>{{ x.id }}</span>
+          </td>
+        </tr>
+      {% endfor %}
+          </tbody>
+      </table>

@@ -1,0 +1,12 @@
+{% extends "courses/course_schedule/formset_base.html" %}
+{% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
+
+{% block content %}
+<div >
+    <b><u>Research: {{ report }}</u></b><br/>
+    <a href="{% url 'research:potential' %}">Potential</a>
+</div>
+{% endblock %}
+
+
+

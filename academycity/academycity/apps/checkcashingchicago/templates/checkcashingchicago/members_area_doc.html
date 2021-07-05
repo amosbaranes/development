@@ -1,0 +1,13 @@
+
+<ul>
+{% for category in company_obj.document_categories.all %}
+    <li>
+        {{ category }}
+        <ol>
+            {% for document in category.category_documents.all %}
+              <li><a href="{{document.file.url}}"> {{ document }}</a></li>
+            {% endfor %}
+        </ol>
+    </li>
+{% endfor %}
+</ul>

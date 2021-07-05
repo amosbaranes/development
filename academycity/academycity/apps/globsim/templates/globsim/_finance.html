@@ -1,0 +1,24 @@
+{% load core_tags %}
+{% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
+
+{% if LANGUAGE_CODE == "ar" %}
+<div dir="RTL"style="text-align: right;" class="row">
+{% else %}
+<div dir="LTR" class="row">
+{% endif%}
+  <div id="finance_nav" class="column left" style="background-color:#80b3ff;" nav_prefix="fi"
+       onclick="click_main_finance(event)">
+        <table id="finance" style="width:200px;">
+              <tbody id="finance_projects_">
+                    <tr>
+                        <td></td>
+                        <td id='fi_finances' class="pointer" type="finances" obj_id="finances">
+                          {% trans "Finances" %}
+                        </td>
+                    </tr>
+              </tbody>
+        </table>
+  </div>
+  <div id="finance_content" class="column right" style="background-color:#b3d1ff;">
+  </div>
+</div>

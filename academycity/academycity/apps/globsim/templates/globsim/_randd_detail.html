@@ -1,0 +1,81 @@
+{% load core_tags %}
+{% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
+
+<p align="center">
+<input id="input_{{obj.id}}" pkey="{{obj.id}}"
+       size="20" onchange="update_field_model(event, '{% url "core:update_field_model" %}')"
+       app="globsim"
+       model="{{ name }}"
+       value="{{obj.name}}"
+       field = "name"
+       type="input"
+       update="rd_{{obj.id}}"
+/>
+<p/>
+<table id="randd" pkey="{{obj.id}}">
+    <thead>
+    <th><u>{% trans "Project Data" %}</u></th>
+    <th><u>{% trans "Attributes" %}</u></th>
+    </thead>
+    <tbody>
+    <tr>
+        <td>
+            <table>
+                <tr><td>{% trans "Segment" %}</td><td>
+                <select name="segment" id="segment" onchange="change_segment(event, '{% url "globsim:change_segment" %}')">
+                <option value='0'>--------------------</option>
+                    {% for i in segments %}
+                        {% if i.id == obj.segment.id %}
+                            <option value='{{ i.slug }}' num='{{obj.id}}' selected>{{ i.name }}</option>
+                        {% else %}
+                            <option value='{{ i.slug }}' num='{{obj.id}}'>{{ i.name }}</option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
+
+                </td></tr>
+                <tr><td>{% trans "SCU Per Unit" %}</td>
+                    <td>
+                        <input id="input_{{obj.id}}" pkey="{{obj.id}}"
+                               size="4" onchange="update_field_model(event, '{% url "core:update_field_model" %}')"
+                               app="globsim"
+                               model="{{ name }}"
+                               value="{{obj.scu_per_unit}}"
+                               field = "scu_per_unit"
+                               type="input"
+                        />
+                    </td>
+                </tr>
+
+                <tr><td>{% trans "Prime Cost Per Unit" %}</td>
+                    <td>
+                        <input id="input_{{obj.id}}" pkey="{{obj.id}}"
+                               size="4" onchange="update_field_model(event, '{% url "core:update_field_model" %}')"
+                               app="globsim"
+                               model="{{ name }}"
+                               value="{{obj.prime_cost_per_unit}}"
+                               field = "prime_cost_per_unit"
+                               type="input"
+                        />
+                    </td></tr>
+
+                <tr><td>{% trans "Project Expenditure" %}</td>
+                    <td>
+                        <input id="input_{{obj.id}}" pkey="{{obj.id}}"
+                               size="4" onchange="update_field_model(event, '{% url "core:update_field_model" %}')"
+                               app="globsim"
+                               model="{{ name }}"
+                               value="{{obj.project_expenditure}}"
+                               field = "project_expenditure"
+                               type="input"
+                        />
+                    </td></tr>
+            </table>
+        </td>
+        <td id="randd_detail_attributes_{{obj.id}}" obj_id="{{obj.id}}"
+            obj_name="{{obj.name}}" period="{{obj.period.game.current_period}}">
+            {% include "globsim/_randd_detail_attributes.html" with obj=obj %}
+        </td>
+    </tr>
+    </tbody>
+</table>

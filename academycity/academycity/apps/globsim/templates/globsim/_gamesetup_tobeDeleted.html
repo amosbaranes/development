@@ -1,0 +1,47 @@
+{% load core_tags %}
+{% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
+
+{% if LANGUAGE_CODE == "ar" %}
+<div dir="RTL"style="text-align: right;" class="row">
+{% else %}
+<div dir="LTR" class="row">
+{% endif%}
+
+  <div id="gamesetup_nav" class="column left" style="background-color:#80b3ff;"
+           onclick="click_main_game_setup(event, '{{game.slug}}')">
+
+            <h3>Game Name: {% render_model game "name" %}</h3>
+           {% thumbnail game.image '250x136' crop subject_location=game.image.subject_location as gi %}
+            <img src="{{ gi.url }}" width="{{ gi.width }}" height="{{ gi.height }}" alt="{{ game.name }}">
+
+           <hr style="margin-top: -3px; margin-bottom: -2px" />
+           <br/>
+           {% render_placeholder game.description %}
+
+        <table id="gamesetup" style="width:200px;">
+          <tbody id="product_projects_">
+           <tr><td><a href="#" class="btn btn-small btn-info" fun="rollover"
+              style="padding:0px 5px 0px 5px;margin:0px;background-color:blue">
+              Rollover
+           </a></td></tr>
+           <tr><td><a href="#" class="btn btn-small btn-info" fun="set_zero"
+              style="padding:0px 5px 0px 5px;margin:0px;background-color:blue">
+              Set Zero
+           </a></td></tr>
+          </tbody>
+        </table>
+
+
+
+
+
+
+
+
+      </div>
+
+  <div id="gamesetup_content" class="column right" style="background-color:#b3d1ff;">
+  </div>
+
+</div>
+

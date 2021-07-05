@@ -1,0 +1,33 @@
+{% extends 'polls/base.html' %}
+
+{% block polls_content %}
+<h1>Polls</h1>
+{% if latest_poll_list %}
+    <ul>
+    <form action="{% url 'polls:vote_all' %}" method="post">
+    {% csrf_token %}
+    {% for poll in latest_poll_list %}
+        <!--
+		<li><a href="{% url 'polls:detail' poll.id %}">{{ poll.question }}</a></li>
+		-->
+
+
+        <h1>{{ poll.question }}</h1>
+
+        {% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
+
+        {% for choice in poll.choice_set.all %}
+            <input type="radio" name="choice-{{ poll.id }}" id="choice{{ forloop.counter }}" value="{{ choice.id }}" />
+            <label for="choice{{ forloop.counter }}">{{ choice.choice_text }}</label><br />
+        {% endfor %}
+    {% endfor %}
+    <input type="submit" value="Vote" />
+    </form>
+    </ul>
+{% else %}
+    <p>No polls are available.</p>
+{% endif %}
+{% endblock %}
+
+
+

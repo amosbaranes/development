@@ -1,0 +1,66 @@
+{% load core_tags static i18n cms_tags menu_tags sekizai_tags thumbnail %}
+{% trans "Product: " %}:
+
+<input id="input_{{obj.id}}" pkey="{{obj.id}}"
+       size="20" onchange="update_field_model(event, '{% url "core:update_field_model" %}')"
+       app="globsim" model="{{ name }}" value="{{obj.name}}" field = "name" type="input"
+       update="pr_{{obj.id}};rd_pr_{{obj.id}}" /><br/>
+<table id="product" pkey="{{obj.id}}" onchange="update_field_model(event, '{% url "core:update_field_model" %}')" >
+    <thead>
+     <th></th><th></th>
+     {% for period in periods %} <th>{{ period }}</th> {% endfor %}
+    </thead>
+    <tbody>
+    {% for category, accounts_ in accounts.items %}
+    {% for account, periods_ in accounts_.items %}
+     <tr>
+         <td>{{ category }}</td>
+        {% if account == "randd" %}<td>Attached R&D Proj.</td>{% else %}<td>{{ account }}</td>{% endif %}
+
+         {% for period in periods %}
+            {% if period < first_date %}
+               <td></td>
+            {% else %}
+
+                 {% for period_, data in periods_.items %}
+                     {% if period_ == period %}
+                        {% if forloop.parentloop.last %}
+                        {% if account == "randd" %}
+                           <td>
+                                <select name="input_{{data.0}}" id="input_{{data.0}}" style="width:85px;"
+                                        onchange="change_randd(event, '{% url "globsim:change_randd" %}')">
+                                            <option value='0'>--------------------</option>
+                                    {% for rd in randds %}
+                                            <option value='{{ rd.id }}' randd_pdd_id="{{data.0}}"
+                                                    randd_pdd_amount="{{data.1}}"
+                                                    num='{{obj.id}}'
+                                                      {% if rd.id == obj.randd.id %} selected {% endif %}
+                                                   >{{ rd.name }}</option>
+                                    {% endfor %}
+                                </select>
+                         </td>
+                        {% else %}
+                            {% if obj.abundant_period %}
+                              <td>0</td>
+                            {% else %}
+                              <td>
+                                 <input id="input_{{data.0}}" pkey="{{data.0}}" app="globsim" field = "amount"
+                                        model="ProductPeriodDataDetail" min="{{data.2}}" max="{{data.3}}"
+                                        size="6" value="{{data.1}}" type="input" />
+                              </td>
+                            {% endif %}
+                        {% endif %}
+                        {% else %}
+                           <td>{{data.1}}</td>
+                        {% endif %}
+                    {% endif %}
+                 {% endfor %}
+
+            {% endif %}
+
+         {% endfor %}
+     </tr>
+    {% endfor %}
+    {% endfor %}
+    </tbody>
+</table>

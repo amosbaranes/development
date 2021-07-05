@@ -1,0 +1,165 @@
+{% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
+
+{% block content %}
+
+<div class="container">
+    <span><font size="4">Parameters effecting the solution:</font></span>
+    <table>
+        <tr>
+            <td style="padding-left:10px">
+                WACC: <input id="wacc_" type="text"
+                             value="6" oninput="input_dcf(event)"
+                             style="width:40px"  />%
+            </td>
+            <td>
+                Short Term Growth: <input id="stgrowth_" type="text"
+                             value="5" oninput="input_dcf(event)"
+                             style="width:40px"  />%
+            </td>
+            <td>
+                Long Term Growth: <input id="ltgrowth_" type="text"
+                             value="2" oninput="input_dcf(event)"
+                             style="width:40px"  />%
+            </td>
+            <td style="padding-left:10px">
+                Cash Flow Year 1: </td><td><input id="cf1_" type="text"
+                                     value="1000" oninput="input_dcf(event)"
+                                     style="width:80px"  />
+            </td>
+        </tr>
+    </table>
+    <br/>
+
+    <div style="color:green">
+        <table>
+            <tr>
+                <td></td>
+                <td>0</td>
+                <td>1</td>
+                <td>2</td>
+                <td>3</td>
+                <td>4</td>
+                <td>5</td>
+                <td>6</td>
+            </tr>
+            <tr id="cf_">
+                <td>Cash Flow</td>
+                <td></td>
+                <td id="cf_1" style="text-align:right"></td>
+                <td id="cf_2" style="text-align:right"></td>
+                <td id="cf_3" style="text-align:right"></td>
+                <td id="cf_4" style="text-align:right"></td>
+                <td id="cf_5" style="text-align:right"></td>
+                <td id="cf_6" style="text-align:right"></td>
+            </tr>
+            <tr id="cf_">
+                <td>Terminal Value</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td id="tv" style="text-align:right"></td>
+                <td></td>
+            </tr>
+            <tr id="cf1_">
+                <td>Cash Flow</td>
+                <td></td>
+                <td id="cf1_1" style="text-align:right"></td>
+                <td id="cf1_2" style="text-align:right"></td>
+                <td id="cf1_3" style="text-align:right"></td>
+                <td id="cf1_4" style="text-align:right"></td>
+                <td id="cf1_5" style="text-align:right"></td>
+                <td id="cf1_6" style="text-align:right"></td>
+            </tr>
+            <tr id="df_">
+                <td>Discount Factor</td>
+                <td></td>
+                <td id="df_1" style="text-align:right"></td>
+                <td id="df_2" style="text-align:right"></td>
+                <td id="df_3" style="text-align:right"></td>
+                <td id="df_4" style="text-align:right"></td>
+                <td id="df_5" style="text-align:right"></td>
+                <td></td>
+            </tr>
+            <tr id="npv_">
+                <td>Yearly PV</td>
+                <td></td>
+                <td id="npv_1" style="text-align:right"></td>
+                <td id="npv_2" style="text-align:right"></td>
+                <td id="npv_3" style="text-align:right"></td>
+                <td id="npv_4" style="text-align:right"></td>
+                <td id="npv_5" style="text-align:right"></td>
+                <td></td>
+            </tr>
+            <tr id="tpv">
+                <td>PV</td>
+                <td id="pv" style="text-align:right"></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+        </table>
+    </div>
+
+
+<script>
+
+function input_dcf(event) {
+wacc = document.getElementById("wacc_").value/100
+stgrowth = document.getElementById("stgrowth_").value/100
+ltgrowth = document.getElementById("ltgrowth_").value/100
+cf1 = document.getElementById("cf1_").value
+//alert(cf1.value)
+// --
+r = document.getElementById("cf_")
+    //alert(r.outerHTML)
+cf_1 = document.getElementById("cf_1")
+cf_2 = document.getElementById("cf_2")
+cf_3 = document.getElementById("cf_3")
+cf_4 = document.getElementById("cf_4")
+cf_5 = document.getElementById("cf_5")
+cf_6 = document.getElementById("cf_6")
+tv = document.getElementById("tv")
+df_1 = document.getElementById("df_1")
+df_2 = document.getElementById("df_2")
+df_3 = document.getElementById("df_3")
+df_4 = document.getElementById("df_4")
+df_5 = document.getElementById("df_5")
+pv = document.getElementById("pv")
+// --
+cf_1.innerHTML = cf1
+cf_2_ = cf1 * (1+stgrowth); cf_2.innerHTML = Math.round(cf_2_)
+cf_3_ = cf_2_ * (1+stgrowth); cf_3.innerHTML = Math.round(cf_3_)
+cf_4_ = cf_3_ * (1+stgrowth); cf_4.innerHTML = Math.round(cf_4_)
+cf_5_ = cf_4_ * (1+stgrowth); cf_5.innerHTML = Math.round(cf_5_)
+cf_6_ = cf_5_ * (1+ltgrowth); cf_6.innerHTML = Math.round(cf_6_)
+tv_ = cf_6_/(wacc-ltgrowth); tv.innerHTML = Math.round(tv_)
+
+cf1_1.innerHTML = cf1
+cf1_2.innerHTML = cf_2.innerHTML
+cf1_3.innerHTML = cf_3.innerHTML
+cf1_4.innerHTML = cf_4.innerHTML
+cf1_5.innerHTML = Math.round((cf_5_ + tv_))
+df = 1/(1+wacc)
+df_1.innerHTML = Math.round(df*100)/100
+df_2.innerHTML = Math.round(df**2*100)/100
+df_3.innerHTML = Math.round(df**3*100)/100
+df_4.innerHTML = Math.round(df**4*100)/100
+df_5.innerHTML = Math.round(df**5*100)/100
+
+pv1_=Math.round(df*cf1); npv_1.innerHTML = pv1_
+pv2_= Math.round(df**2*cf_2_); npv_2.innerHTML = pv2_
+pv3_= Math.round(df**3*cf_3_); npv_3.innerHTML = pv3_
+pv4_= Math.round(df**4*cf_4_); npv_4.innerHTML = pv4_
+pv5_= Math.round(df**5*(cf_5_ + tv_)); npv_5.innerHTML = pv5_
+pv.innerHTML = pv1_+pv2_+pv3_+pv4_+pv5_
+}
+  input_dcf()
+</script>
+
+</div>
+{% endblock content %}

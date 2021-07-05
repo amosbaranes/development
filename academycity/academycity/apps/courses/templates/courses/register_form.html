@@ -1,0 +1,63 @@
+{% extends "academycity/base.html" %}
+{% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
+
+{% block content %}
+<div class="container">
+    <font size="5" color="blue">
+    <div style="padding:30px 20px 0 0;float:left;margin-left:20px;width:100%">
+        <h2><u>Register to a course</u></h2>
+        <ul style="margin:0;padding:0;">
+            {% for schedule in course_schedules.all %}
+            <li style="margin:0;list-style:none;padding:10px 14px;">
+                {% if schedule.course.image %}
+                {% thumbnail schedule.course.image '200x136' crop subject_location=schedule.image.subject_location as schedule_photo %}
+                    <img src="{{ schedule_photo.url }}" width="{{ schedule_photo.width }}" height="{{ schedule_photo.height }}" >
+                    <br/>
+                {% endif %}
+
+                {% if schedule.price > 1 %}
+                {% trans "Coupon" %}: <input type="text" for="{{ schedule.slug }}" value="" oninput="inputFunction(event, this.value)" style="width:120px"  />
+                {% endif %}
+
+                <a href={{ schedule.course.get_absolute_url }} id="{{ schedule.slug }}" class="plugin" data-coupon="" data-slug="{{ schedule.slug }}" style="display:block;">
+                    {% trans "Register to:" %} {{ schedule.name }}</a>
+            <br/>
+            </li>
+            {% empty %}
+            <h4>All courses available in this period are full.</h4>
+            {% endfor %}
+        </ul>
+    </div>
+
+    </font>
+
+    <div id="plugin" style="color:green"></div>
+
+<script>
+function inputFunction(event, val) {
+    e = event.target
+    a_id = e.getAttribute("for")
+    p = document.getElementById(a_id)
+    p.setAttribute("data-coupon", val)
+}
+</script>
+
+</div>
+{% endblock content %}
+
+{% block domready %}
+  $('a.plugin').click(function(e){
+     e.preventDefault();
+        $.post('{% url "courses:register" %}',
+          {
+              slug: $(this).data('slug'),
+              coupon: $(this).data('coupon')
+          },
+          function(data){
+                $('#plugin').empty().append(data)
+                e.target.outerHTML = ""
+          }
+        );
+
+  });
+{% endblock %}

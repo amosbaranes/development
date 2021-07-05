@@ -1,0 +1,55 @@
+{% extends "academycity/base.html" %}
+{% load static %}
+<!--
+https://drive.google.com/drive/folders/1eC8T6gW52pOc-t-osc6hZlufdFfYerVE
+https://www.youtube.com/watch?v=3PjNwqlJvjc
+https://fontawesome.com/v4.7.0/icons/#web-application
+-->
+{% block add_css %}
+<!--    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"-->
+<!--          integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">-->
+
+<link href="{% static 'css/sidenav.css' %}" rel="stylesheet">
+<link href="{% static 'css/chat.css' %}" rel="stylesheet">
+<!--<link href="{% static 'css/style2_bs.css' %}" rel='stylesheet'>-->
+<link href="{% static 'css/site.css' %}" rel='stylesheet'>
+<link href="{% static 'css/plugin.css' %}" rel="stylesheet">
+
+{% endblock add_css %}
+
+<!-- Page Content -->
+{% block content %}
+  <div class="container-fluid">
+    <div class="row d-flex d-md-block flex-nowrap wrapper">
+        {% if LANGUAGE_CODE == "ar" %}
+        <div dir="RTL" class="col-md-3 float-right col-1 pl-0 pr-0 collapse width " id="sidebar">
+        {% else %}
+        <div dir="LTR" class="col-md-3 float-left col-1 pl-0 pr-0 collapse width " id="sidebar">
+        {% endif%}
+
+        {% block sidebar_nav %}
+        {% endblock sidebar_nav %}
+        </div>
+
+        {% if LANGUAGE_CODE == "ar" %}
+        <main id="main_" dir="RTL" style="text-align: right;" class="col-md-9 float-right px-5 pl-md-2 pt-2 main mx-auto ">
+        {% else %}
+        <main id="main_" dir="LTR" class="col-md-9 float-left col px-5 pl-md-2 pt-2 main mx-auto">
+        {% endif%}
+
+        {% block sidebar_main %}
+        {% endblock sidebar_main %}
+        </main>
+    </div>
+ </div>
+{% endblock %}
+
+{% block add_js %}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js"
+            integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh"
+            crossorigin="anonymous"></script>
+  {% block add_js_sub %}
+  {% endblock add_js_sub %}
+{% endblock add_js %}
+
+

@@ -1,0 +1,85 @@
+{% extends "images_base.html" %}
+{% block title %}{{ image.title }}{% endblock %}
+{% load i18n %}
+
+{% block content %}
+<div class="container">
+  <h1>{{ image.title }}
+    <a href="{% url 'images:list' %}" ><span class="badge badge-pill badge-primary">
+      {% trans "back" %}
+    </a>
+  </h1>
+  <div style="overflow: auto;">
+     <a href="{{ image.url }}" target="_blank">
+      <img src="{{ image.url }}"  width="300" alt="{{ image.title }}" class="image-detail">
+     </a>
+
+    {% with total_likes=image.users_like.count users_like=image.users_like.all %}
+      <div class="image-info">
+        <div>
+          <span class="count">
+            <span class="total">{{ total_likes }}</span> like{{ total_likes|pluralize }}
+          </span>
+          <span class="count">
+            <span class="total_">{{ total_views }}</span> view{{ total_views|pluralize }}
+          </span>
+
+          <a href="#" data-id="{{ image.id }}" data-action="{% if request.user in users_like %}un{% endif %}like" class="like">
+            {% if request.user not in users_like %}
+              <i class='far fa-thumbs-up' style='font-size:48px;color:red'></i>
+            {% else %}
+              <i class='far fa-thumbs-down' style='font-size:48px;color:black'></i>
+            {% endif %}
+          </a>
+        </div>
+        {{ image.description|linebreaks }}
+      </div>
+  </div>
+
+  <div class="image-likes">
+    <hr/>
+    <h3>Image liked by:</h3>
+    {% for user in image.users_like.all %}
+        <img src="{{ user.academics.image.url }}"><br/>
+        {{ user.get_full_name }}<br/>
+    {% empty %}
+      Nobody likes this image yet.
+    {% endfor %}
+  </div>
+  {% endwith %}
+</div>
+{% endblock %}
+
+{% block domready %}
+  $('a.like').click(function(e){
+    e.preventDefault();
+    $.post('{% url "images:like" %}',
+      {
+        id: $(this).data('id'),
+        action: $(this).data('action')
+      },
+      function(data){
+        if (data['status'] == 'ok')
+        {
+          var previous_action = $('a.like').data('action');
+
+          // toggle data-action
+          $('a.like').data('action', previous_action == 'like' ? 'unlike' : 'like');
+          // toggle link text
+
+            if (previous_action == 'like')
+            {
+              $('a.like').empty().append('<i class=\'far fa-thumbs-down\' style=\'font-size:48px;color:black\'></i>')
+            } else
+            {
+              $('a.like').empty().append('<i class=\'far fa-thumbs-up\' style=\'font-size:48px;color:red\'></i>')
+            }
+
+          // update total likes
+          var previous_likes = parseInt($('span.count .total').text());
+          $('span.count .total').text(previous_action == 'like' ? previous_likes + 1 : previous_likes - 1);
+        }
+      }
+    );
+  });
+{% endblock %}

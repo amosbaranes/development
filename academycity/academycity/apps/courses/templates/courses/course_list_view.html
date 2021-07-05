@@ -1,0 +1,22 @@
+{% extends "academycity/base.html" %}
+{% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
+{% load parler_tags %}
+
+{% block content %}
+<div class="container">
+  <h1>{% trans "List of courses" %}</h1>
+  {% if object_list %}
+    <ul>
+    {% for course in object_list %}
+      <li><a href="{% url 'courses:course_details_view' course.slug %}">{{ course.department.name}}: {{ course.slug }} - &ldquo;{{ course.name }}&rdquo;</a></li>
+    {% endfor %}
+    </ul>
+  {% else %}
+    <p>{% trans "No articles yet in this language" %}</p>
+  {% endif %}
+    <p>
+      <a href="{% url 'admin:courses_course_add' %}?language={{ LANGUAGE_CODE }}">
+      create one</a>.
+    </p>
+</div>
+{% endblock %}

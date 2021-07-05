@@ -1,0 +1,212 @@
+{% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE }}">
+<head>
+    {% block title %}
+        <title>AcademyCity.org</title>
+    {% endblock title %}
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta name="description" content="{% page_attribute meta_description %}">
+    <meta name="author" content="">
+    <meta name="google-site-verification" content="1NKy94ZSBrapf9w9BU4mJdhW__UB__qbGWa1V2aWoUs" />
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    {% render_block "css" %}
+
+    {% block add_css_base %}
+    {% endblock add_css_base %}
+
+    {{ ALDRYN_SNAKE.render_head }}
+
+    {% block add_css %}
+    {% endblock add_css %}
+      <style>
+          .h1_hide {
+              font-size: 0;
+              width: 1px;
+              height: 1px;
+              display: inline-block;
+              overflow: hidden;
+              position: absolute!important;
+              border: 0!important;
+              padding: 0!important;
+              margin: 0!important;
+              clip: rect(1px,1px,1px,1px);
+            }
+      </style>
+  </head>
+<body id="body_base0">
+<h1 class="h1_hide">AcademyCity</h1>
+
+    {% cms_toolbar %}
+    <!-- Navigation -->
+    {% if LANGUAGE_CODE == "ar" %}
+        <nav style="height: 110px;" dir="RTL" class="navbar navbar-expand-sm navbar-white bg-light navbar-right
+    {% else %}
+        <nav style="height: 110px;" dir="LTR" class="navbar navbar-expand-sm navbar-white bg-light
+    {% endif%}
+       {% if not user.is_staff %}
+        fixed-top
+       {% endif %}
+    ">
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+                aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+<!-- position: absolute;  top: 0px;-->
+<!-- style="text-align: center; z-index: 100; "-->
+
+            <ul style="margin-top:20px; text-align: center">
+                    <a class="navbar-brand" href="/" style="top: 100px;">
+                    <img src="{% static "core/logo_wo_title.png" %}" alt="My image" height="100" width="72">
+
+<!--                        <br/>-->
+<!--                        <p style="margin-top: -15px;; color:black;font-weight:bold; font-size: 80%;font-family: Arial, Helvetica;">-->
+<!--                            Academy City</p>-->
+                    </a>
+            </ul>
+
+            {% if LANGUAGE_CODE == "ar" %}
+            <ul dir="RTL" class="navbar-nav navbar-right">
+            {% else %}
+            <ul dir="LTR" class="navbar-nav mr-auto">
+            {% endif%}
+
+            {% with dropdown=True %}
+                {% show_menu 0 100 100 100 "includes/menu.html" %}
+            {% endwith %}
+            </ul>
+
+            {% if LANGUAGE_CODE == "ar" %}
+            <ul class="nav navbar-nav navbar-right">
+            {% else %}
+            <ul class="nav navbar-nav navbar-left">
+            {% endif %}
+
+            {% language_chooser "includes/language_chooser.html" %}
+
+            {% if user.is_authenticated %}
+                <li style="font-size: 150%;">
+                <a href="{% url 'allauth:account_logout' %}">
+                     <span class="badge badge-pill badge-warning">{% trans "Logout" %}</span>
+                </a>
+                </li>
+            {% else %}
+                <li style="font-size: 150%;">
+<!--                <a href="{% url 'allauth:account_login' %}">-->
+                <span class="badge badge-pill badge-secondary" modal_id="id01"
+                onmouseover="login_signup_onmouseover(event)"
+                >{% trans "Log in" %}</span>
+<!--                </a>-->
+                </li>
+            &nbsp;
+                <li style="font-size: 150%;">
+
+<!--                <a href="{% url 'allauth:account_signup' %}">-->
+<!--                <span class="badge badge-pill badge-secondary">{% trans "Sign up" %}</span>-->
+<!--                </a>                   -->
+
+                <span class="badge badge-pill badge-secondary" modal_id="id02"
+                onmouseover="login_signup_onmouseover(event)"
+                >{% trans "Sign up" %}</span>
+
+                </li>
+        {% endif %}
+            </ul>
+    </nav>
+
+<!-- Page Content -->
+    <!--
+{% if messages %}
+  <ul class="messages">
+    {% for message in messages %}
+      <li class="{{ message.tags }}">
+        {{ message|safe }}
+          <a href="/" class="close">x</a>
+      </li>
+    {% endfor %}
+  </ul>
+{% endif %}
+-->
+{% block content0 %}
+ {% if not user.is_staff %}
+  <div style="margin-top:110px">
+  </div>
+ {% endif %}
+
+ {% block content %}
+ {% endblock %}
+{% endblock %}
+
+{% block content_code %}
+{% endblock %}
+
+<!-- /.container -->
+<!-- Footer -->
+
+<footer>
+  {% static_placeholder "Footer" %}
+<!-- /.container -->
+</footer>
+
+{% render_block "js" %}
+{{ ALDRYN_SNAKE.render_tail }}
+
+<!--    <script src="{% static 'js/jquery/3.5.1/jquery.min.js' %}"></script>-->
+    <script src="{% static 'vendor/jquery/jquery.min.js' %}"></script>
+    <script src="{% static 'js/npm/cookie/js.cookie.min.js' %}"></script>
+
+    <script src="{% static 'js/propper/2.5.3/popper.min.js' %}"></script>
+<!--    <script src="{% static 'js/bootstrap/4.3.1/bootstrap.min.js' %}"></script>-->
+    <script src="{% static 'vendor/bootstrap/js/bootstrap.min.js' %}"></script>
+
+    <script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+    <script src='https://cdn.plot.ly/plotly-latest.min.js'></script>
+
+
+    {% block base_js %}
+    {% endblock base_js %}
+
+    {% block add_js %}
+    {% endblock add_js %}
+
+<script>
+var csrftoken = Cookies.get('csrftoken');
+  function csrfSafeMethod(method) {
+    // these HTTP methods do not require CSRF protection
+    return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+  }
+  $.ajaxSetup({
+    beforeSend: function(xhr, settings) {
+      if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+        xhr.setRequestHeader("X-CSRFToken", csrftoken);
+      }
+    }
+  });
+
+  $(document).ready(function(){
+    post_ajax_create_action = function (verb_="", app_="", model_, obj_slug_=null, pkey_=null) {
+      $.post(link_create_action,
+        {
+          verb: verb_,
+          app: app_,
+          model: model_,
+          obj_slug: obj_slug_,
+          pkey: pkey_
+        },
+        function(data){
+            alert(data["status"])
+        }
+      );
+    };
+
+    {% block domready %}
+    {% endblock %}
+
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+{% extends "academycity/base_user.html" %}
+
+{% block title %}
+    <title>Update Institution</title>
+{% endblock title %}
+
+{% block content %}
+<div class="container">
+    <form method="post">{% csrf_token %}
+        {{ form.as_p }}
+        <b><input type="submit" value="Update" style="color:blue" />
+        <input type="button" value="Cancel" style="color:red"
+                  onclick="window.history.go(-1);"/></b>
+    </form>
+</div>
+{% endblock %}

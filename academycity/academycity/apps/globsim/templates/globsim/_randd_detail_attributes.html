@@ -1,0 +1,19 @@
+
+<table id="rd__attributes_{{obj.id}}">
+    {% for obj_a in obj.randd_attributes.all %}
+    <tr>
+        <td>
+            {{obj_a}} <lable style="float: right;" id="index_{{obj_a.id}}"></lable>
+        </td><td>
+            <input style="float: left;" type="range" min="1" max="100" value="{{obj_a.value}}" class="slider"
+                   id="slider_{{obj_a.id}}" onchange="slider_change(event,
+                   '{% url "globsim:update_attribute_value" %}')"
+                   num="{{obj_a.id}}" oninput="slider(event)" />
+        <tc/><td>
+            <input style="float: right;" id="input_{{obj_a.id}}" num="{{obj_a.id}}" value="{{obj_a.value}}"
+                   size="4" onchange="input(event, '{% url "globsim:update_attribute_value" %}')" />
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+

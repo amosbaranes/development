@@ -1,0 +1,337 @@
+{% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
+<style>
+div.ex1 {
+  background-color: lightblue;
+  height: 800px;
+  width: 100%;
+  overflow-y: scroll;
+}
+
+table {
+  font-family: arial, sans-serif;
+  border-collapse: collapse;
+}
+
+.th {
+  border: 2px solid black;
+  text-align: center;
+}
+
+td {
+  border: 1px solid black;
+  text-align: left;
+  padding: 1px;
+}
+
+input {
+  text-align: right;
+  width:20px;
+}
+
+thead {
+  background-color: lightpink;
+}
+
+tr:nth-child(even) {
+  background-color: lightblue;
+}
+
+</style>
+
+<br/>
+<span style="color:blue"><b><u>Enter Questions for {{ section.name }}</u></b></span>
+
+<div onclick="btn_set_test_section(event)">
+  <div class="row">
+        <div class="ex1 col-sm-6 navbar_" >
+            <br/><button onclick="add_question()">Add Qestion</button>
+            &nbsp;&nbsp;&nbsp;<button onclick="delete_question()">Delete Qestion</button>
+            <textarea id="question" pkey="-1" data-section_id="{{ section.id }}" rows="3"
+                      cols="50" autofocus onchange="question_change(event)"></textarea>
+            <br/>
+            <br/><button onclick="add_answer()">Add Answer</button>
+            <table>
+                <thead>
+                    <th class="th">{% trans "T" %}</th>
+                    <th class="th">{% trans "Answer" %}</th>
+                    <th class="th"></th>
+                </thead>
+                <tbody id="answer_table">
+                 <tr onchange="inputFunction(event)">
+                    <td><input id="correct" ppkey="-1" pkey="-1" type="checkbox" checked /></td>
+                    <td><textarea id="answer" ppkey="-1" pkey="-1" rows="3" cols="43"></textarea></td>
+                    <td></td>
+                 </tr>
+                </tbody>
+            </table><br/>
+        </div>
+
+        <div id="questions" class="ex1 col-sm-6 navbar_" style="background-color:lightcyan;" >
+              <h4 style="background-color:lightblue;">Info:</h4>
+            <table>
+                <tbody id="list_table">
+                    {% for q in questions %}
+                        <tr onclick='get_question_data(question_id={{ q.id }})' style='cursor: pointer;'>
+                            <td>{{ q.id }}</td>
+                            <td>{{ q.text }}</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+  </div>
+
+<script>
+
+
+function get_question_data(question_id)
+{
+    $.post('{% url "elearning:get_question_data" %}',
+      {
+        question_id : question_id,
+      },
+      function(data){
+          if(data['status'] == "ko")
+          {alert("Error getting question data")}
+          else
+          {
+            ppkey_ = data['ppkey']
+            q = document.getElementById("question")
+            q.value = data['question_value']
+            q.setAttribute("pkey", ppkey_)
+
+            t = document.getElementById("answer_table")
+            while (t.children.length > 1)
+            {
+             r = t.children[1];
+             t.removeChild(r)
+            }
+
+            r = t.children[0];
+            r.children[0].childNodes[0].setAttribute("checked", "checked")
+            dic = data['answers']
+            l = Object.keys(dic).length
+            z=1
+
+            for (key in dic)
+            {
+             //alert(key)
+             //alert(dic[key][0])
+             //alert(dic[key][1])
+
+             correct = r.children[0].childNodes[0]
+             answer = r.children[1].childNodes[0]
+
+             correct.setAttribute("ppkey", ppkey_)
+             answer.setAttribute("ppkey", ppkey_)
+
+             correct.setAttribute("pkey", key)
+             correct.setAttribute("checked", "checked")
+             if(dic[key][0] == false)
+             {
+              correct.removeAttribute("checked")
+             }
+             answer.setAttribute("pkey", key)
+             answer.value = dic[key][1]
+             if (z < l)
+             {
+              var c = t.children[0].cloneNode(true);
+              c.children[2].innerHTML = '<button onclick="remove_answer(event)">D</button>'
+              t.appendChild(c);
+              r = c
+              z += 1
+             }
+            }
+          }
+      }
+    );
+}
+
+
+function question_change(event)
+{
+  q = document.getElementById("question")
+  //alert(q.outerHTML)
+  //alert(q.value)
+  var ppkey = q.getAttribute("pkey")
+  // alert(ppkey)
+   // post q text and get pkey for the question
+    $.post('{% url "elearning:set_question" %}',
+      {
+        pkey : ppkey,
+        question_value: q.value,
+        section_id: q.getAttribute("data-section_id")
+      },
+      function(data){
+          if(data['status'] == "ko")
+          {alert("Error posting question")}
+          else
+          {
+           ppkey_ = data['pkey']
+           // alert(ppkey_)
+           if (ppkey != ppkey_)
+           {
+               q.setAttribute("pkey", ppkey_)
+               // --
+               t = document.getElementById("answer_table")
+               r = t.children[0];
+               correct = r.children[0].childNodes[0]
+               answer = r.children[1].childNodes[0]
+               correct.setAttribute("ppkey", ppkey_)
+               answer.setAttribute("ppkey", ppkey_)
+               //alert(correct.outerHTML)
+               //alert(answer.outerHTML)
+               // == post first empty answer --
+               pkey = data['answer_id']
+               correct.setAttribute("pkey", pkey)
+               answer.setAttribute("pkey", pkey)
+               //alert(correct.outerHTML)
+               //alert(answer.outerHTML)
+               // -- Update list --
+               tt = document.getElementById("list_table")
+               r = tt.children[0];
+               var c = r.cloneNode(true);
+               id_ = c.children[0]
+               text_ = c.children[1]
+               id_.innerHTML = ppkey_
+               text_.innerHTML = q.value
+               c.setAttribute('onclick', 'get_question_data(question_id=' + String(ppkey_) + ')')
+               tt.appendChild(c);
+           }
+          }
+      }
+    );
+}
+
+
+function delete_question()
+{
+  q = document.getElementById("question")
+  alert(q.outerHTML)
+  var pkey = q.getAttribute("pkey")
+    $.post('{% url "elearning:delete_question" %}',
+      {
+        pkey : pkey,
+      },
+      function(data){
+          alert(data['status'])
+      }
+    );
+}
+
+function add_question(){
+    q = document.getElementById("question")
+    q.value = ""
+    q.setAttribute("pkey", -1)
+    t = document.getElementById("answer_table")
+    while (t.children.length > 1)
+    {
+     r = t.children[1];
+     t.removeChild(r)
+    }
+    r = t.children[0];
+    correct = r.children[0].childNodes[0]
+    answer = r.children[1].childNodes[0]
+    answer.value = ""
+    correct.setAttribute("pkey", -1)
+    answer.setAttribute("pkey", -1)
+}
+
+function add_answer(){
+    t = document.getElementById("answer_table")
+    r = t.children[0];
+    var c = r.cloneNode(true);
+    correct = c.children[0].childNodes[0]
+    answer = c.children[1].childNodes[0]
+    dd_ = c.children[2]
+    dd_.innerHTML = "<button onclick='remove_answer(event)'>D</button>"
+    correct.removeAttribute("checked")
+    answer.value = ""
+    correct.setAttribute("pkey", -1)
+    answer.setAttribute("pkey", -1)
+    t.appendChild(c);
+    // alert("add_answer 02\n\n" + t.outerHTML + '\n\n' + 'NUMBER OF ROWS: ' + String(t.children.length))
+}
+
+function round2(x)
+{
+ return Math.round(x*100)/100
+}
+
+function remove_answer(event)
+{
+    e = event.target
+    r = e.parentNode.parentNode
+    k = r.children[0].childNodes[0]
+    pkey_ = k.getAttribute("pkey")
+    t = document.getElementById("answer_table")
+    $.post('{% url "elearning:remove_answer" %}',
+      {
+        pkey : pkey_,
+      },
+      function(data){
+          if(data['status'] == "ko")
+          {alert("Error posting question")}
+          else
+          {
+           //alert(data['status'])
+           t.removeChild(r)
+          }
+      }
+    );
+
+}
+
+function inputFunction(event) {
+ e = event.target
+ //alert(e.outerHTML)
+ id = e.getAttribute("id")
+ pkey = e.getAttribute("pkey")
+ ppkey = e.getAttribute("ppkey")
+ value = e.value
+ if (id == "correct")
+ {
+  value = e.checked
+  //alert(value)
+ }
+    $.post('{% url "elearning:set_answer" %}',
+      {
+        id_ : id,
+        pkey_ : pkey,
+        ppkey_ : ppkey,
+        value_: value
+      },
+      function(data){
+          if(data['status'] == "ko")
+          {alert("Error posting question")}
+          else
+          {
+           pkey_ = data['pkey']
+           if (pkey != pkey_)
+           {
+               r = e.parentNode.parentNode
+               correct = r.children[0].childNodes[0]
+               e.setAttribute("pkey", pkey_)
+               correct.setAttribute("pkey", pkey_)
+               //alert(correct.outerHTML)
+               //alert(e.outerHTML)
+           }
+          }
+      }
+    );
+}
+
+
+
+function btn_set_test_section(event){
+     elm = event.target;
+     // alert(elm.outerHTML);
+     //var assignment_user_id = elm.getAttribute("data-assignment_user_id");
+}
+
+</script>
+
+</div>
+
+
+
+

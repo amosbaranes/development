@@ -1,0 +1,35 @@
+{% extends "academycity/base_user.html" %}
+{% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
+
+{% block content %}
+<div  class="container">
+    <br/>
+    <hr>
+    Amos
+    <hr/>
+    {% if researches %}
+        Your research uploads:
+        <ul>
+        {% for research in researches %}
+            <li>{{research.title}}&nbsp; ---- &nbsp;<a href="{{ research.file.url }}">{{ research.file.name }}</a>&nbsp; ---- &nbsp;
+                <a href="{{ research.file_result }}"> Result</a> </li>
+        {% endfor %}
+        </ul>
+    {% else %}
+        <p>No previous researches.</p>
+    {% endif %}
+
+        <form action="{% url 'research:potential' %}" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <p>{{ form.non_field_errors }}</p>
+            <p>
+                {{ form.file.errors }}
+                {{ form.as_p }}
+            </p>
+            <p><input type="submit" value="Upload" /></p>
+        </form>
+</div>
+{% endblock %}
+
+
+

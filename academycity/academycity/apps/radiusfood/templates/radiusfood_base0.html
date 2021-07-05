@@ -1,0 +1,97 @@
+{% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"?>
+<html lang="en-US">
+<head>
+
+    {% block title %}
+        <title>Radius Food</title>
+    {% endblock title %}
+
+    {% render_block "css" %}
+
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    {% block meta %}
+    {% endblock %}
+
+    {% block add_css_base %}
+    {% endblock add_css_base %}
+
+    {{ ALDRYN_SNAKE.render_head }}
+
+    {% block add_css %}
+    {% endblock add_css %}
+
+    {% block link %}
+    {% endblock %}
+
+    {% block link_specific %}
+    {% endblock %}
+
+    {% block style %}
+    {% endblock  %}
+
+</head>
+
+      {% block body_ %}
+        <body>
+      {% endblock %}
+
+    {% cms_toolbar %}
+
+    {% block content0 %}
+    <div id="main-wrapper">
+      {% block header %}
+      {% endblock %}
+
+      {% block content %}
+      {% endblock %}
+    </div>
+    {% endblock %}
+
+    {% block content_code %}
+    {% endblock %}
+
+{% render_block "js" %}
+{{ ALDRYN_SNAKE.render_tail }}
+
+    {% block bottom %}
+    {% endblock %}
+
+    {% block footer %}
+    {% endblock %}
+
+    {% block copyright %}
+    {% endblock %}
+
+    {% block base_js %}
+    {% endblock base_js %}
+
+    {% block add_js %}
+    {% endblock add_js %}
+
+<script>
+
+var csrftoken = Cookies.get('csrftoken');
+  function csrfSafeMethod(method) {
+    // these HTTP methods do not require CSRF protection
+    return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+  }
+  $.ajaxSetup({
+    beforeSend: function(xhr, settings) {
+      if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+        xhr.setRequestHeader("X-CSRFToken", csrftoken);
+      }
+    }
+  });
+
+  $(document).ready(function(){
+
+    {% block domready %}
+    {% endblock %}
+  });
+</script>
+
+
+</body>
+</html>

@@ -1,0 +1,18 @@
+{% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
+<!--
+https://fontawesome.com/icons?d=gallery&c=editors,education,users-people&m=free
+-->
+<div class="w3-responsive">
+  <div class="row">
+    <div class="col-sm-6 navbar_" style="background-color:lavenderblush;" onclick="btnClickDepCourse(event)">
+        {% include "users/_create_table_include.html" with table=trial_balance name="trial_balance" %}
+        {% include "users/_create_table_include.html" with table=general_ledger name="General Ledger" %}
+        {% include "users/_create_table_include.html" with table=order_item name="order_item" %}
+        {% include "users/_create_table_include.html" with table=order name="order" %}
+        {% include "users/_create_table_include.html" with table=course_schedule_user name="course_schedule_user" %}
+        {% include "users/_create_table_include.html" with table=course_schedule name="course_schedule" %}
+        {% include "users/_create_table_include.html" with table=coupon name="Coupon" %}
+    </div>
+  </div>
+</div>
+

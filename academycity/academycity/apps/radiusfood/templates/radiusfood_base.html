@@ -1,0 +1,173 @@
+{% extends "radiusfood_base0.html" %}
+{% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
+
+{% block meta %}
+{% endblock %}
+
+{% block style %}
+{% endblock  %}
+
+{% block base_js %}
+	<script type='text/javascript' src="{% static 'radiusfood/jquery.js' %}" ></script>
+	<script type='text/javascript' src="{% static 'radiusfood/jquery-migrate.min.js' %}" ></script>
+	<script type='text/javascript' src="{% static 'radiusfood/bootstrap.min.js' %}" ></script>
+	<script async src="https://www.googletagmanager.com/gtag/js?id=UA-122416534-2"></script>
+	<script>
+	  window.dataLayer = window.dataLayer || [];
+	  function gtag(){dataLayer.push(arguments);}
+	  gtag('js', new Date());
+	  gtag('config', 'UA-122416534-2');
+	</script>
+	<script>
+	!function(f,b,e,v,n,t,s)
+	{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+	n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+	if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+	n.queue=[];t=b.createElement(e);t.async=!0;
+	t.src=v;s=b.getElementsByTagName(e)[0];
+	s.parentNode.insertBefore(t,s)}(window,document,'script',
+	'https://connect.facebook.net/en_US/fbevents.js');
+	 fbq('init', '233042047414041');
+	fbq('track', 'PageView');
+	</script>
+	<script>
+				document.getElementById("close-banner").addEventListener("click", function(){
+					document.getElementById("banner-notification").style.display = "none"
+	});
+			</script>
+	<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js">
+	</script><script type="text/javascript" src="{% static 'radiusfood/bootstrap.min.js' %}" ></script>
+	<script type='text/javascript'>
+	/* <![CDATA[ */
+	var wpcf7 = {"apiSettings":{"root":"https:\/\/twiga.com\/wp-json\/contact-form-7\/v1","namespace":"contact-form-7\/v1"}};
+	/* ]]> */
+	</script>
+	<script type='text/javascript' src="{% static 'radiusfood/scripts.js' %}"></script>
+	<script type='text/javascript' src="{% static 'radiusfood/wp-embed.min.js' %}" ></script>
+	<script type='text/javascript' src="{% static 'radiusfood/js_composer_front.min.js' %}" ></script>
+	<script type='text/javascript' src="{% static 'radiusfood/vc-accordion.min.js' %}"></script>
+	<script type='text/javascript' src="{% static 'radiusfood/vc-tta-autoplay.min.js' %}" ></script>
+	<script type="text/javascript">
+		jQuery(document).ready(function() {
+
+			/*const myHeaders = new Headers();
+			myHeaders.set('secret', 'twigaapps');
+
+			fetch('https://twiga-dms.appspot.com/api/v1/stats',{
+				method: 'GET',
+				headers: myHeaders,
+			})
+			.then(function(response){
+			console.log(response.status);
+			})
+			.catch(function(error) {
+				console.log(error);
+			});*/
+
+		});
+	</script>
+{% endblock base_js %}
+
+{% block link %}
+	<link rel="stylesheet" href="{% static 'radiusfood/bootstrap.min.css'%}">
+	<link href="https://fonts.googleapis.com/css?family=Poppins:400,600" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/css?family=Montserrat" rel="stylesheet">
+	<link rel="stylesheet" href="{% static 'radiusfood/css_theme.css'%}">
+	<link rel='stylesheet' id='wp-block-library-css' href="{% static 'radiusfood/style.min.css' %}" type='text/css' media='all' />
+	<link rel='stylesheet' id='contact-form-7-css' href="{% static 'radiusfood/styles.css' %}" type='text/css' media='all' />
+	<link rel='stylesheet' id='js_composer_front-css' href="{% static 'radiusfood/js_composer.min.css' %}" type='text/css' media='all' />
+	<link rel='stylesheet' id='vc_tta_style-css' href="{% static 'radiusfood/js_composer_tta.min.css' %}" type='text/css' media='all' />
+
+	<link rel="icon" href= "https://twiga.com/wp-content/uploads/2020/06/cropped-android-chrome-512x512-1-1-32x32.png" sizes="32x32" />
+	<link rel="icon" href="https://twiga.com/wp-content/uploads/2020/06/cropped-android-chrome-512x512-1-1-192x192.png" sizes="192x192" />
+	<link rel="apple-touch-icon" href="https://twiga.com/wp-content/uploads/2020/06/cropped-android-chrome-512x512-1-1-180x180.png" />
+{% endblock %}
+
+{% block header %}
+	<header>
+		<nav class="navbar navbar-expand-lg navbar-light container">
+			<a class="navbar-brand d-none d-lg-block" href="#">
+				<img src="{% static 'img/radiusfood/egglogo.png'%}" alt="Radius Logo" style="width:105px;height:105px">
+			</a>
+				<span>{{ company_obj.company_name}}</span>
+			<div class="collapse navbar-collapse" id="navbarNav">
+				<ul id="main-menu" class="navbar-nav ml-auto mt-2 mt-lg-0">
+					<li id="menu-item-209" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-209"><a href="#">Our Story11</a></li>
+					<li id="menu-item-240" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-240"><a href="#">Marketplace</a></li>
+					<li id="menu-item-206" class="d-lg-none menu-item menu-item-type-post_type menu-item-object-page menu-item-206"><a href="#">Careers</a></li>
+					<li id="menu-item-207" class="d-lg-none menu-item menu-item-type-post_type menu-item-object-page menu-item-207"><a href="#">Media Center</a></li>
+					<li id="menu-item-208" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-208"><a href="#">Contacts</a></li>
+				</ul>
+			</div>
+		</nav>
+	</header>
+{% endblock %}
+
+{% block footer %}
+	<footer class="bg-blue">
+	<div class="container">
+		<div class="row">
+			<div class="col-sm-8">
+				<p>2021 Radius Foods Limited</p>
+				<br>
+				<ul id="social-icons" class="list-inline d-none d-lg-block">
+					<li class="list-inline-item"><a target="_blank" href="">
+						<img src="{% static 'img/radiusfood/icon-twitter.svg'%}"></a></li>
+					<li class="list-inline-item"><a target="_blank" href="#">
+						<img src="{% static 'img/radiusfood/icon-facebook.svg'%}"></a></li>
+					<li class="list-inline-item"><a target="_blank" href="#">
+						<img src="{% static 'img/radiusfood/icon-linkedin.svg'%}"></a></li>
+				</ul>
+			</div>
+			<div class="col-sm-4">
+				<div class="footer-content" style="padding-bottom: 20px; text-align:center">
+					<ul id="footer-menu" class="list-unstyled d-none d-lg-block"><li id="menu-item-205" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-205"><a href="#">Our Story</a></li>
+						<li id="menu-item-241" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-241"><a href="#">Marketplace</a></li>
+						<li id="menu-item-202" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-202"><a href="#">Careers</a></li>
+						<li id="menu-item-203" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-203"><a href="#">Media Center</a></li>
+						<li id="menu-item-204" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-204"><a href="#">Contacts</a></li>
+						<li id="menu-item-594" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-594"><a href="#">Terms &#038; Conditions</a></li>
+						<li id="menu-item-593" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-privacy-policy menu-item-593"><a href="#">Privacy Policy</a></li>
+					</ul>
+					<br>
+				</div>
+			</div>
+		</div>
+	</div>
+</footer>
+{% endblock %}
+
+{% block copyright %}
+	<div id="banner-notification" style="background: white;padding: 10px 0; color: #000A56; width: 100%; position: fixed; bottom: 0; z-index: 1000; border-top: 1px solid #eee">
+		<div class="container" style="position: relative">
+			<p style="margin: 0 !important; padding: 0;">
+				<span>Designed by AcademyCity.org&copy;</span>
+			</p>
+		</div>
+	</div>
+{% endblock %}
+
+{% block bottom %}
+	<div id="bottom">
+	<div class="container-fluid">
+		<div class="row">
+			<div class="col-sm-6">
+				<a href="#">
+					<div class="text-center">
+						<h3 class="title">Our Story</h3>
+						<p>About Radius Foods</p>
+					</div>
+				</a>
+			</div>
+			<div class="col-sm-6">
+				<a href="#">
+					<div class="text-center">
+						<h3 class="title">Marketplace</h3>
+						<p>How Radius Food Works</p>
+					</div>
+				</a>
+			</div>
+		</div>
+	</div>
+</div>
+{% endblock %}

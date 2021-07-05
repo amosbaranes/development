@@ -1,0 +1,511 @@
+{% extends "academycity/base.html" %}
+{% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
+{% load core_tags %}
+
+{% block content %}
+
+<style>
+
+h5 {
+	font-family: sans-serif;
+	font-size: 34px;
+}
+
+nav > .nav.nav-tabs{
+
+  border: none;
+    color:#fff;
+    background:#272e38;
+    border-radius:0;
+
+}
+nav > div a.nav-item.nav-link,
+nav > div a.nav-item.nav-link.active
+{
+  border: none;
+    padding: 18px 25px;
+    color:#fff;
+    background:#272e38;
+    border-radius:0;
+}
+
+nav > div a.nav-item.nav-link.active:after
+ {
+  content: "";
+  position: relative;
+  bottom: -60px;
+  left: -10%;
+  border: 15px solid transparent;
+  border-top-color: #e74c3c ;
+}
+.tab-content{
+  background: #fdfdfd;
+    line-height: 25px;
+    border: 1px solid #ddd;
+    border-top:5px solid #e74c3c;
+    border-bottom:5px solid #e74c3c;
+    padding:30px 25px;
+}
+
+nav > div a.nav-item.nav-link:hover,
+nav > div a.nav-item.nav-link:focus
+{
+  border: none;
+    background: #e74c3c;
+    color:#fff;
+    border-radius:0;
+    transition:background 0.20s linear;
+}
+</style>
+
+<div class="container">
+    <table>
+        <tr>
+            <td>Industry: </td>
+            <td>
+                <select name="industries" id="industries" onChange="industries_fun(event)">
+                <option value='0'>--------------------</option>
+                <option value='1'>All Companies</option>
+                {% for i in industry %}
+                <option value='{{ i.sic_code }}'>{{ i.sic_description }}</option>
+                {% endfor %}
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <td>Company:</td>
+            <td>
+                <select name="companies" id="companies" onChange="companies_fun(event)">
+                </select>  Ticker: <span id="ticker_"></span>
+            </td>
+        </tr>
+        <tr>
+            <td>Country:</td>
+            <td>
+                <select name="countries" id="countries" onChange="countries_fun(event)">
+                    <option value='0'>--------------------</option>
+                {% for c in country %}
+                    <option value='{{ c.marginal_tax_rate }}_{{ c.long_term_rating.country_rating }}_{{ c.long_term_rating.default_spread }}'>
+                        {{ c.country }}</option>
+                {% endfor %}
+                </select>  Rating: <span id="country_rating"></span>
+                 &nbsp&nbsp Spread: <span id="country_default_spread"></span>%
+                 &nbsp&nbsp Tax rate: <span id="country_tax_rate"></span>%
+            </td>
+        </tr>
+        <tr>
+            <td>Year:</td>
+            <td>
+                <select name="valuation_year" id="valuation_year" onChange="valuation_year_fun(event)">
+                    <option value='0'>--------------------</option>
+                </select>
+            </td>
+        </tr>
+    </table>
+</div>
+
+<div class="col-xs-12 ">
+          <nav>
+            <div class="nav nav-tabs nav-fill" id="nav-tab" role="tablist">
+                <a class="nav-item nav-link active"
+                   id="nav-calculation-tab" data-toggle="tab"
+                   href="#nav-calculation"
+                   role="tab" aria-controls="nav-calculation"
+                   aria-selected="true">Calculation</a>
+
+                <a class="nav-item nav-link"
+                   id="nav-valuation-tab" data-toggle="tab"
+                   href="#nav-valuation"
+                   role="tab" aria-controls="nav-valuation"
+                   aria-selected="false">valuation</a>
+
+                <a class="nav-item nav-link"
+                   id="nav-data-tab" data-toggle="tab"
+                   href="#nav-data"
+                   role="tab" aria-controls="nav-data"
+                   aria-selected="true">data</a>
+
+            </div>
+          </nav>
+
+          <div class="tab-content py-3 px-3 px-sm-0" id="nav-tabContent">
+                <div class="tab-pane fade show active"
+                     id="nav-calculation" role="tabpanel"
+                     aria-labelledby="nav-calculation-tab">
+                    <!--  Cost of Debt    -->
+                    <span style="color:blue; font-size: 20px;">
+                        <u><b>Cost of Debt</b></u>
+                    </span><br/><br/>
+                    <div class="w3-responsive">
+                    <table class="w3-table-all w3-hoverable" style="width:25%">
+                        <tr><td>Risk Free</td><td id="cofd_rf"></td><td>%</td></tr>
+                        <tr><td>EBIT</td><td id="cofd_ebit"></td><td></td></tr>
+                        <tr><td>Interest Expense</td>
+                            <td id="cofd_interest_expense"></td></tr>
+                        <tr><td>Interest Coverage</td>
+                            <td id="cofd_interest_coverage"></td><td></td></tr>
+                        <tr><td>Estimated Bond Rating</td>
+                            <td id="cofd_estimated_bond_rating"></td><td></td></tr>
+                        <tr><td>Estimated Company Default Spread</td>
+                            <td id="cofd_estimated_company_default_spread"></td><td>%</td></tr>
+                        <tr><td>Estimated County Default Spread</td>
+                            <td id="cofd_estimated_county_default_spread"></td><td>%</td></tr>
+                        <tr><td>Estimated Cost of Debt</td>
+                            <td id="cofd_estimated_cost_of_debt"></td><td>%</td></tr>
+                    </table>
+                    </div>
+                    <br/><br/>
+
+                    <!--   Cost of Equity  -->
+                    <span style="color:blue; font-size: 20px;">
+                        <u><b>Cost of Equity</b></u>
+                    </span><br/><br/>
+                    <div class="w3-responsive">
+                      <button onclick="add_industry_beta()">Add Industry Beta</button>
+                      <table id="cost_of_equity" class="w3-table-all w3-hoverable" style="width:53%">
+                        <tr>
+                            <th style="width:8%" class="th">{% trans "Business" %}</th>
+                            <th style="width:8%" class="th">{% trans "Revenues" %}</th>
+                            <th style="width:8%" class="th">{% trans "EV/Sales" %}</th>
+                            <th style="width:13%" class="th">{% trans "Estimated Value" %}</th>
+                            <th style="width:13%" class="th">{% trans "Unlevered Beta" %}</th>
+                            <th style="width:13%" class="th">{% trans "Expected Growth" %}</th>
+                        </tr>
+                        <tr id="cofe_row" oninput="cofeFunction(event)">
+                            <td>
+                                <select name="cofe_business" id="cofe_business"
+                                        onChange="cofe_business_fun(event)">
+                                    <option value='0'>--------------------</option>
+                                {% for gi in global_industry_averages %}
+                                    <option value="{{ gi.ev_over_sales }}_{{ gi.unlevered_beta_corrected_for_cash }}_{{ gi.expected_earnings_growth_next_5_years }}">
+                                        {{ gi.industry_name }}</option>
+                                {% endfor %}
+                                </select>
+                            </td>
+                            <td><input id="cofe_revenues" type="text" style="width:150px"
+                                       onChange="cofe_revenue_fun(event)" value="100"/></td>
+                            <td><span id="cofe_ev_over_sales" style="float: right"></span></td>
+                            <td><span id="cofe_estimated_value" style="float: right"></span></td>
+                            <td><span id="cofe_unlevered_beta" style="float: right"></span></td>
+                            <td><span id="cofe_expected_growth" style="float: right"></span></td>
+                            <td><button onclick="delete_industry_beta(event)">Delete</button></td>
+                        </tr>
+                      </table>
+                      <table class="w3-table-all w3-hoverable" style="width:53%">
+                          <tr><td style="width:70%"></td><td style="width:13%">
+                              <b>Beta: <span id="cofe_beta" style="float: right"></span></b></td>
+                              <td style="width:20%">
+                                  <b>Growth: <span id="cofe_growth" style="float: right"></span></b></td>
+                          </tr>
+                      </table>
+
+                      <br/><br/>
+                      <table class="w3-table-all w3-hoverable" style="width:25%">
+                          <tr><td>Risk Free</td>  <td id="cofe_rf">0</td><td>%</td></tr>
+                          <tr><td>Unlevred Beta</td>  <td id="cofe_ub">0</td><td></td></tr>
+                          <tr><td>Beta</td><td id="cofe_b">0</td><td></td></tr>
+                          <tr><td>Mature marker risk premium</td>
+                              <td id="cofe_rp">0</td><td>%</td>
+                          </tr>
+                          <tr><td>Adj. Default Spread</td><td id="cofe_ads">0</td><td>%</td></tr>
+                          <tr><td>Volatility ratio</td><td id="cofe_vr">{{ project.volatility_ratio }}</td></tr>
+                          <tr><td>Total Country Risk</td><td id="cofe_tcr">0</td><td>%</td></tr>
+                          <tr><td>Cost of Equity</td><td id="cofe_">0</td><td>%</td></tr>
+                      </table>
+                    </div><br/><br/>
+
+                    <!--    Estimated ROIC  -->
+                    <span style="color:blue; font-size: 20px;">
+                        <u><b>Estimated ROIC</b></u>
+                    </span><br/><br/>
+                    <div class="w3-responsive">
+                      <table id="estimated_roic" class="w3-table-all w3-hoverable" style="width:60%">
+                      </table>
+                    </div><br/><br/>
+
+                    <!--   Effective tax rate   -->
+                    <span style="color:blue; font-size: 20px;">
+                        <u><b>Effective tax rate</b></u>
+                    </span><br/><br/>
+                    <div class="w3-responsive">
+                      <table id="effective_tax_rate" class="w3-table-all w3-hoverable" style="width:60%">
+                      </table>
+                    </div>
+               </div>
+                <!-- Valuation -->
+                <div class="tab-pane fade"
+                     id="nav-valuation" role="tabpanel"
+                     aria-labelledby="nav-valuation-tab">
+
+                    <span style="padding:10px; color:blue">
+                        <font size="5">Parameters effecting the solution:</font>
+                    </span>
+                    <table class="w3-table-all w3-hoverable" style="width:65%">
+                        <tr>
+                            <td style="padding-left:10px">
+                                WACC: <input id="wacc_" type="text"
+                                             value="6" oninput="input_dcf(event)"
+                                             style="width:55px"  />%
+                            </td>
+                            <td style="padding-left:10px">
+                                EBIT (<span id="valuation_year_">1</span>):
+                            </td>
+                            <td><input id="cf1_ebit" type="text" value="1000" oninput="input_dcf(event)"
+                                       style="width:80px"  />
+                            </td>
+
+
+                            <td>
+                                Short Term Growth: <input id="stgrowth_" type="text"
+                                             value="5" oninput="input_dcf(event)"
+                                             style="width:55px"  />%
+                            </td>
+                            <td>
+                                Long Term Growth: <input id="ltgrowth_" type="text"
+                                             value="2" oninput="input_dcf(event)"
+                                             style="width:55px"  />%
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="padding-left:10px">
+                                Effective tax rate: <input id="effective_tax_rate_" type="text"
+                                             value="0" oninput="input_dcf(event)"
+                                             style="width:55px"  />%
+                            </td>
+                            <td style="padding-left:10px">
+                                Marginal tax rate: <input id="marginal_tax_rate_" type="text"
+                                             value="0" oninput="input_dcf(event)"
+                                             style="width:55px"  />%
+                            </td>
+                            <td></td>
+                            <td style="padding-left:10px">
+                                ROIC (short term): <input id="roic_st_" type="text"
+                                             value="0" oninput="input_dcf(event)"
+                                             style="width:55px"  />%
+                            </td>
+                            <td style="padding-left:10px">
+                                ROIC (long term): <input id="roic_lt_" type="text"
+                                             value="0" oninput="input_dcf(event)"
+                                             style="width:55px"  />%
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>0</td>
+                            <td></td>
+                            <td></td>
+                            <td style="padding-left:10px">
+                                Re-investment rate (ST): <input id="re_investment_rate_short_term_" type="text"
+                                             value="0" oninput="input_dcf(event)"
+                                             style="width:55px"  />%
+                            </td>
+                            <td style="padding-left:10px">
+                                Re-investment rate (LT): <input id="re_investment_rate_long_term_" type="text"
+                                             value="0" oninput="input_dcf(event)"
+                                             style="width:55px"  />%
+                            </td>
+                        </tr>
+
+                    </table>
+                    <br/>
+                    <div style="color:green">
+                        <table class="w3-table-all w3-hoverable" style="width:65%">
+                            <tr id="years_row" >
+                                <td style="text-align:right"></td>
+                                <td style="text-align:right">0</td>
+                                <td style="text-align:right">1</td>
+                                <td style="text-align:right">2</td>
+                                <td style="text-align:right">3</td>
+                                <td style="text-align:right">4</td>
+                                <td style="text-align:right">5</td>
+                                <td style="text-align:right">6</td>
+                            </tr>
+                            <tr id="cf_">
+                                <td>EBIT</td>
+                                <td></td>
+                                <td id="cf_1" style="text-align:right"></td>
+                                <td id="cf_2" style="text-align:right"></td>
+                                <td id="cf_3" style="text-align:right"></td>
+                                <td id="cf_4" style="text-align:right"></td>
+                                <td id="cf_5" style="text-align:right"></td>
+                                <td id="cf_6" style="text-align:right"></td>
+                            </tr>
+                            <tr>
+                                <td>Taxes</td>
+                                <td></td>
+                                <td id="tax_1" style="text-align:right"></td>
+                                <td id="tax_2" style="text-align:right"></td>
+                                <td id="tax_3" style="text-align:right"></td>
+                                <td id="tax_4" style="text-align:right"></td>
+                                <td id="tax_5" style="text-align:right"></td>
+                                <td id="tax_6" style="text-align:right"></td>
+                            </tr>
+                            <tr>
+                                <td>Net Capital Exp.</td>
+                                <td></td>
+                                <td id="nce_1" style="text-align:right"></td>
+                                <td id="nce_2" style="text-align:right"></td>
+                                <td id="nce_3" style="text-align:right"></td>
+                                <td id="nce_4" style="text-align:right"></td>
+                                <td id="nce_5" style="text-align:right"></td>
+                                <td id="nce_6" style="text-align:right"></td>
+                            </tr>
+                            <tr>
+                                <td>Terminal Value</td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td id="tv" style="text-align:right"></td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td>Cash Flow</td>
+                                <td></td>
+                                <td id="ncf_1" style="text-align:right"></td>
+                                <td id="ncf_2" style="text-align:right"></td>
+                                <td id="ncf_3" style="text-align:right"></td>
+                                <td id="ncf_4" style="text-align:right"></td>
+                                <td id="ncf_5" style="text-align:right"></td>
+                                <td id="ncf_6" style="text-align:right"></td>
+                            </tr>
+                            <tr>
+                                <td>Discount Factor</td>
+                                <td></td>
+                                <td id="df_1" style="text-align:right"></td>
+                                <td id="df_2" style="text-align:right"></td>
+                                <td id="df_3" style="text-align:right"></td>
+                                <td id="df_4" style="text-align:right"></td>
+                                <td id="df_5" style="text-align:right"></td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td>Yearly PV</td>
+                                <td></td>
+                                <td id="npv_1" style="text-align:right"></td>
+                                <td id="npv_2" style="text-align:right"></td>
+                                <td id="npv_3" style="text-align:right"></td>
+                                <td id="npv_4" style="text-align:right"></td>
+                                <td id="npv_5" style="text-align:right"></td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td>PV</td>
+                                <td id="pv_sum" style="text-align:right"></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td>Debt</td>
+                                <td id="debt_sum" style="text-align:right"></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td>Minority</td>
+                                <td id="minority_sum" style="text-align:right"></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td>Prefered Stock</td>
+                                <td id="prefered_stock_sum" style="text-align:right"></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td>Excess Cash</td>
+                                <td id="excess_cash_sum" style="text-align:right"></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td># of Shares</td>
+                                <td id="num_of_shares_sum" style="text-align:right"></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td>IV per share</td>
+                                <td id="iv_per_share_sum" style="text-align:right"></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td>Market Price per share</td>
+                                <td id="market_price_per_share_sum" style="text-align:right"></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                        </table>
+                    </div>
+               </div>
+                <div class="tab-pane fade"
+                     id="nav-data" role="tabpanel"
+                     aria-labelledby="nav-data-tab">
+                    <div id="output_data">output_data</div>
+               </div>
+          </div>
+
+    <span id="_rf_" value="{{ project.rf }}"></span>
+    <span id="_volatility_ratio_"></span>
+    <span id="_mature_marker_risk_premium_"></span>
+</div>
+
+<script>
+
+
+
+// create list of years for valuation
+// ----------------------------------
+function create_valuation_year()
+{
+alert(126)
+
+vObj["rf"] = document.getElementById("_rf_").getAttribute("value");
+// vObj["volatility_ratio"] = {{ project.volatility_ratio }};
+// vObj["mature_marker_risk_premium"] = {{ project.mature_marker_risk_premium }};
+alert(vObj["rf"])
+}
+
+// --
+//    https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Working_with_Objects
+var vObj = new Object();
+
+alert(125)
+create_valuation_year()
+
+</script>
+{% endblock %}

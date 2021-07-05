@@ -1,0 +1,8 @@
+{% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
+
+<h2>My Actions</h2>
+<div id="action-list">
+  {% for action in my_actions %}
+    {% include "users/_my_action_detail.html"%}
+  {% endfor %}
+</div>

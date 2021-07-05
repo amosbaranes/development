@@ -1,0 +1,14 @@
+{% extends "courses/course_schedule/formset_base.html" %}
+{% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
+
+{% block content %}
+  <h2>Edit "{{ course.name }}": Course Schedule</h2>
+  <div>
+    <form action="" method="post">
+      {{ formset }}
+      {{ formset.management_form }}
+      {% csrf_token %}<br/>
+      <input type="submit" class="button" value="Save Schedules" style="color:blue">
+    </form>
+  </div>
+{% endblock %}

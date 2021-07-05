@@ -1,0 +1,16 @@
+{% extends "academycity/base.html" %}
+{% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
+{% load static %}
+{% load parler_tags %}
+
+
+{% block content %}
+<div class="container">
+  <div class="page-header">
+    <h2><u>{% trans "Edit info for course:" %}<u></h2>
+    <br/> <h3>{% render_model course "name" %}</h3>
+            <hr/>
+            {% render_placeholder course.description %}
+  </div>
+</div>
+{% endblock %}

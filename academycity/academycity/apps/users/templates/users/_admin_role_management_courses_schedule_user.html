@@ -1,0 +1,103 @@
+<div onclick="btn_course_schedule_activation(event)">
+    <h4 style="color:blue"><u>Scheduled courses and users for course: {{ course_schedule.course.name }}
+        -- Group: {{ course_schedule.name }}</u></h4>
+    <h5 style="margin-left:20px;color:green">From: {{ course_schedule.start_date }}   To: {{ course_schedule.end_date }}</h5>
+    <h5 style="margin-left:20px;color:green">Num students enrolled: {{ course_schedule.number_of_students_enrolled}}</h5>
+    <h5 style="margin-left:20px;color:green">Num students assigned: {{ course_schedule.number_of_students_assigned}}</h5>
+    <h5 style="margin-left:20px;color:green">Num of teams left: {{ course_schedule.number_of_teams_left}}</h5>
+
+  <table class="w3-table-all w3-hoverable" style="width:80%; margin-left:5px;">
+    <thead>
+      <tr class="w3-light-blue">
+          <th style="border: 1px solid black;width:2%">#</th>
+          <th style="border: 1px solid black;width:10%">Team</th>
+          <th style="border: 1px solid black;width:10%">Student Name</th>
+          <th style="border: 1px solid black;width:10%">Email</th>
+          <th style="border: 1px solid black;width:3%">Delete</th>
+          <th style="border: 1px solid black;width:10%">Status-Active?</th>
+          <th style="border: 1px solid black;width:10%">Graduated?</th>
+          <th style="border: 1px solid black;width:10%">print Cert/Diploma</th>
+      </tr>
+    </thead>
+      {% for course_course_schedule in course_schedule.course_course_schedules.all %}
+        <tr>
+            <td style="padding-right:3px">
+                <span>{{ forloop.counter }}</span>
+            </td>
+            <td>
+                    <span>{{ course_course_schedule.team.name }}</span>
+            </td>
+            <td>
+                    <span>{{ course_course_schedule.user.get_full_name }}</span>
+            </td>
+            <td>
+                <a href="#" >
+                    <span type="course_schedule_setup_user_email" data-id="{{course_course_schedule.user.id}}">
+                        {{ course_course_schedule.user.email }}
+                    </span>
+                </a>
+            </td>
+            <td>
+                <a href="#" data-slug="{{course_course_schedule.slug}}">
+                    <i class="fa fa-trash-alt" type="class_schedule_delete"></i>
+                </a>
+            </td>
+            <td>
+                <span id="{{ course_course_schedule.slug }}">
+                  {% if course_course_schedule.active %}
+                  Active
+                  {% else %}
+                  Not Active
+                  {% endif %}
+                </span> &nbsp;
+                <a href="#" data-slug="{{course_course_schedule.slug}}" type="class_schedule"
+                  data-action="{% if course_course_schedule.active %}de{% endif %}activate" >
+                  {% if course_course_schedule.active %}
+                  Deactivate
+                  {% else %}
+                  Activate
+                  {% endif %}
+                </a>
+            </td>
+
+
+            <td>
+                <span id="{{ course_course_schedule.slug }}">
+                  {% if course_course_schedule.graduated %}
+                  Graduated
+                  {% else %}
+                  Not Graduated
+                  {% endif %}
+                </span> &nbsp;
+                <a href="#" data-slug="{{course_course_schedule.slug}}" type="class_schedule_graduate"
+                  data-action="{% if not course_course_schedule.graduated %}de{% endif %}graduated" >
+                  {% if course_course_schedule.graduated %}
+                  DeGraduate
+                  {% else %}
+                  Graduate
+                  {% endif %}
+                </a>
+            </td>
+            <td>
+              {% if course_course_schedule.graduated%}
+                <a href="{{ course_course_schedule.get_diploma_url }}" target="_blank">
+                  <span class="badge badge-pill badge-primary">
+                    {% if course_schedule.certificate_number < 100 %}
+                      Show Certificate {{course_schedule.certificate_number}}<br/>
+                    {% else %}
+                      Show Diploma
+                    {% endif %}
+                  </span>
+                </a>
+              {% else %}
+                Not Graduated Yet
+              {% endif %}
+            </td>
+        </tr>
+      {% endfor %}
+  </table>
+</div>
+
+
+
+

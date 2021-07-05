@@ -1,0 +1,22 @@
+{% extends "academycity/base.html" %}
+{% block content %}
+<div class="container">
+    {% if messages %}
+    <div>
+      <strong>Messages:</strong>
+      <ul>
+        {% for message in messages %}
+        <li>{{message}}</li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+
+    {% block content_ %}
+    {% endblock %}
+
+    {% block extra_body %}
+    {% endblock %}
+</div>
+{% endblock %}
+

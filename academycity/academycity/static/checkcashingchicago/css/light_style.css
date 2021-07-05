@@ -1,0 +1,75 @@
+.collapseomatic {
+	background-image: url('/web/20180817105708im_/http://checkcashingchicago.com/wp-content/plugins/jquery-collapse-o-matic/images/arrow-down.png');
+	background-repeat: no-repeat;
+	padding: 0 0 10px 16px;
+	cursor: pointer;
+}
+.collapseomatic:focus {
+      outline: 0;
+}
+.arrowright {
+	background-position: top right;
+	padding: 0 16px 10px 0;
+}
+.noarrow {
+	background-image: none !important;
+	padding: 0 0 10px 0;
+}
+.colomat-hover {
+	text-decoration: underline;
+}
+.colomat-close {
+	background-image: url('/web/20180817105708im_/http://checkcashingchicago.com/wp-content/plugins/jquery-collapse-o-matic/images/arrow-up.png');
+}
+.colomat-swap {
+	display: none;
+}
+.collapseomatic_excerpt, .collapseomatic_content {
+	margin-top: 0px;
+	margin-left: 16px;
+	padding: 0px;
+}
+.content_collapse_wrapper {
+	position: absolute; left: -999em;
+}
+.collapseall, .expandall {
+	cursor: pointer;
+}
+.collapseall:hover, .expandall:hover, .collapseall:focus, .expandall:focus {
+	text-decoration: underline;
+}
+.maptastic {
+	position: absolute !important;
+	left: -10000px !important;
+	display:block !important;
+	max-width: 9999px;
+}
+.span_fix {
+	padding: 0 !important;
+	margin: 0 !important;
+}
+.span_fix:before, .span_fix:after {
+	content: none;
+}
+
+/*
+     FILE ARCHIVED ON 10:57:08 Aug 17, 2018 AND RETRIEVED FROM THE
+     INTERNET ARCHIVE ON 11:44:49 Jun 17, 2021.
+     JAVASCRIPT APPENDED BY WAYBACK MACHINE, COPYRIGHT INTERNET ARCHIVE.
+
+     ALL OTHER CONTENT MAY ALSO BE PROTECTED BY COPYRIGHT (17 U.S.C.
+     SECTION 108(a)(3)).
+*/
+/*
+playback timings (ms):
+  CDXLines.iter: 24.09 (3)
+  captures_list: 101.54
+  exclusion.robots: 0.425
+  PetaboxLoader3.datanode: 83.073 (5)
+  RedisCDXSource: 0.773
+  esindex: 0.016
+  load_resource: 355.37 (2)
+  PetaboxLoader3.resolve: 182.942 (2)
+  LoadShardBlock: 71.917 (3)
+  exclusion.robots.policy: 0.408
+*/

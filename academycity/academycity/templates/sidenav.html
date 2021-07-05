@@ -1,0 +1,87 @@
+{% extends "academycity/base_sidenave.html" %}
+
+{% block sidebar_nav %}
+
+            <div class="list-group border-0 card text-center text-md-left">
+                    <a href="#menu1sub1" class="list-group-item" data-toggle="collapse" aria-expanded="false" style="background-color:gray;">
+                        <i class="fa fa-list"></i>Subitem 1 </a>
+                    <div class="collapse" id="menu1sub1">
+                        <a href="/allauth/account/login" class="list-group-item" data-parent="#menu1sub1" SubSectionId="5" target="SubSectionContent">
+                            &nbsp;&nbsp;<i class="fa fa-star"></i>Subitem 1 a</a>
+                        <a href="#" class="list-group-item" data-parent="#menu1sub1" SubSectionId="6" target="SubSectionContent">
+                            &nbsp;&nbsp;<i class="fa-file-text"></i>Subitem 2 b</a>
+                    </div>
+
+                    <a href="#menu1sub2" class="list-group-item" data-toggle="collapse" aria-expanded="false" style="background-color:gray;">
+                        <i class="fa fa-list"></i>Subitem 2 </a>
+                    <div class="collapse" id="menu1sub2">
+                        <a href="#" class="list-group-item" data-parent="#menu1sub2" >&nbsp;&nbsp;<i class="fa-file-text"></i>Subitem 2.1 a</a>
+                        <a href="#" class="list-group-item" data-parent="#menu1sub2">&nbsp;&nbsp;<i class="fa-file-text"></i>Subitem 2.2 b</a>
+                    </div>
+                <a href="#" class="list-group-item d-inline-block collapsed" data-parent="#sidebar"><i class="fa fa-heart"></i> <span class="d-none d-md-inline">Item 2</span></a>
+                <a href="#" class="list-group-item d-inline-block collapsed" data-parent="#sidebar"><i class="fa fa-clock-o"></i> <span class="d-none d-md-inline">Link</span></a>
+                <a href="#" class="list-group-item d-inline-block collapsed" data-parent="#sidebar"><i class="fa fa-th"></i> <span class="d-none d-md-inline">Link</span></a>
+                <a href="#" class="list-group-item d-inline-block collapsed" data-parent="#sidebar"><i class="fa fa-gear"></i> <span class="d-none d-md-inline">Link</span></a>
+                <a href="#" class="list-group-item d-inline-block collapsed" data-parent="#sidebar"><i class="fa fa-calendar"></i> <span class="d-none d-md-inline">Link</span></a>
+                <a href="#" class="list-group-item d-inline-block collapsed" data-parent="#sidebar"><i class="fa fa-envelope"></i> <span class="d-none d-md-inline">Link</span></a>
+                <a href="#" class="list-group-item d-inline-block collapsed" data-parent="#sidebar"><i class="fa fa-bar-chart-o"></i> <span class="d-none d-md-inline">Link</span></a>
+                <a href="#" class="list-group-item d-inline-block collapsed" data-parent="#sidebar"><i class="fa fa-star"></i> <span class="d-none d-md-inline">Link</span></a>
+            </div>
+{% endblock sidebar_nav %}
+
+{% block sidebar_main %}
+            <a href="#" data-target="#sidebar" data-toggle="collapse" aria-expanded="false"><i class="fa fa-navicon fa-2x py-2 p-1"></i></a>
+            <div class="page-header">
+                <h2>Bootstrap 4 Sidebar Menu</h2>
+            </div>
+            <p class="lead">A responsive, multi-level vertical accordion.</p>
+            <hr>
+            <div class="row">
+                <div class="col-md-6">
+                    <button role="button" class="btn btn-danger" data-toggle="collapse" data-target="#demo" aria-expanded="true">
+                        horizontal collapsible
+                    </button>
+                    <div id="demo" class="width collapse show" aria-expanded="true">
+                        <div class="list-group" style="width: 400px;">
+                            <p>AmosH Cras justo odio, dapibus ac facilisis in, egestas eget quam. Donec id elit non mi porta gravida at eget metus. Nullam id dolor id nibh ultricies vehicula ut id elit.</p>
+                            <p>AmosH Cras justo odio, dapibus ac facilisis in, egestas eget quam. Donec id elit non mi porta gravida at eget metus. Nullam id dolor id nibh ultricies vehicula ut id elit.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <button role="button" class="btn btn-danger" data-toggle="collapse" data-target="#demo2" aria-expanded="true">
+                        vertical collapsible
+                    </button>
+                    <div id="demo2" class="height collapse show" aria-expanded="true">
+                        <div class="list-group" style="width: 400px;">
+                            <p>Cras justo odio, dapibus ac facilisis in, egestas eget quam. Donec id elit non mi porta gravida at eget metus. Nullam id dolor id nibh ultricies vehicula ut id elit.</p>
+                            <p>Cras justo odio, dapibus ac facilisis in, egestas eget quam. Donec id elit non mi porta gravida at eget metus. Nullam id dolor id nibh ultricies vehicula ut id elit.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <hr>
+            <div class="row">
+                <div class="col-md-6 col-sm-4 col-lg-12">
+
+            <iframe name="SubSectionContent" src="#" style="border:none;" height="100%" width="100%" ></iframe>
+
+                </div>
+            </div>
+{% endblock sidebar_main %}
+
+{% block domready %}
+
+$("[SubSectionId]").click(function(){
+
+    // alert($(this).html());
+    // alert($(this).attr("SubSectionId"));
+    sub_section_id = $(this).attr("SubSectionId");
+    // alert(sub_section_id);
+    url = "/subsection/" + sub_section_id
+
+    alert(url)
+
+  });
+
+{% endblock %}

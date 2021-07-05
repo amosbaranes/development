@@ -1,0 +1,12 @@
+{% extends "courses/courses_products_base.html" %}
+{% load static i18n %}
+
+{% block title %} {% trans  "Cart is empty" %} {% endblock %}
+
+{% block content_ %}
+  <h1>{% trans "Cart is empty" %}</h1>
+  <p>{% trans "Your cart is empty. Go to courses to register for courses:" %}
+    <a href="{% url 'courses:home' %}" class="btn btn-secondary" role="button"
+                style="margin:0px 10px 0px 10px">{% trans "Register additional course" %}</a>
+  </p>
+{% endblock %}

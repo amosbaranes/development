@@ -1,0 +1,167 @@
+{% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
+{% load core_tags %}
+
+<style>
+table {
+  font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
+  border-collapse: collapse;
+}
+
+tr:nth-child(even){background-color: #ccddff;}
+tr:hover {background-color: #e6eeff;}
+
+th {
+  text-align: center;
+  padding: 5px;
+  background-color: #4d88ff;
+  color: white;
+}
+
+td {
+  border: 1px solid #ddd;
+  padding: 3px;
+  text-align: right;
+}
+
+a { color: black }
+
+.column {
+  float: left;
+  padding: 5px;
+}
+
+.left {
+  width: 10%;
+}
+
+.middle {
+  width: 7%;
+}
+
+.pointer {cursor: pointer; text-decoration: underline;}
+
+</style>
+<br/>
+
+{% if LANGUAGE_CODE == "ar" %}
+<div id="action-list" dir="RTL"style="text-align: right;" class="row">
+{% else %}
+<div id="action-list" dir="LTR" class="row">
+{% endif%}
+
+<div class="column left" style="height:140px; overflow: scroll;">
+  <table>
+    <thead>
+    <th>Verb</th>
+    </thead>
+  {% for r in df.verb.unique %}
+  <tr><td class="pointer" style="text-align: center">
+    <a href="#" onclick="show_content_click(event)" data-page="courses_actions"
+     data-filter="'{{ r }}'" data-filter_where="a.verb" data-by="" >{{ r }}</a>
+    </td></tr>
+  {% endfor %}
+  </table>
+</div>
+
+<div class="column middle" style="height:140px; overflow: scroll;">
+  <table>
+    <thead>
+    <th>Course</th>
+    </thead>
+  {% for r in df.Course.unique %}
+  <tr><td class="pointer" style="text-align: center">
+    <a href="#" onclick="show_content_click(event)" data-page="courses_actions"
+     data-filter="{{ r }}" data-filter_where="c.id" data-by="" >{{ r }}</a>
+    </td></tr>
+  {% endfor %}
+  </table>
+</div>
+
+<div class="column middle" style="height:140px; overflow: scroll;">
+  <table>
+    <thead>
+    <th>Classes</th>
+    </thead>
+  {% for r in df.Class.unique %}
+  <tr><td class="pointer" style="text-align: center">
+    <a href="#" onclick="show_content_click(event)" data-page="courses_actions"
+     data-filter="{{ r }}" data-filter_where="cs.id" data-by="" >{{ r }}</a>
+    </td></tr>
+  {% endfor %}
+  </table>
+</div>
+
+<div class="column middle" style="height:140px; overflow: scroll;">
+  <table>
+    <thead>
+    <th>Users</th>
+    </thead>
+  {% for r in df.User.unique %}
+  <tr><td class="pointer" style="text-align: center">
+    <a href="#" onclick="show_content_click(event)" data-page="courses_actions"
+     data-filter="{{ r }}" data-filter_where="au.id" data-by="" >{{ r }}</a>
+    </td></tr>
+  {% endfor %}
+  </table>
+</div>
+</div>
+
+<div style="height:350px; overflow: scroll;width: 50%">
+    <div>
+      <table style="position: fixed;">
+        <thead>
+        <th style="width:200px">Created</th>
+        <th style="width:150px">Verb</th>
+        <th style="width:100px">SubSection</th>
+        <th style="width:70px">Section</th>
+
+        <th style="width:70px"><a href="#" onclick="show_content_click(event)" data-page="courses_actions"
+         data-filter="" data-by="c.id, s.id, ss.id" >Course</a></th>
+        <th style="width:70px"><a href="#" onclick="show_content_click(event)" data-page="courses_actions"
+         data-filter="" data-by="cs.id" >Classes</a></th>
+        <th style="width:70px"><a href="#" onclick="show_content_click(event)" data-page="courses_actions"
+         data-filter="" data-by="au.id" >User</a></th>
+        </thead>
+      </table>
+    </div>
+    <br/>
+    <div style="margin-top: 12px;border: 1px solid black;">
+      <table>
+      <tbody>
+        {% for r in df.itertuples %}
+        <tr><td style="width:200px">{{ r.created }}</td><td style="width:150px">{{ r.verb }}</td>
+            <td style="width:100px">{{ r.SubSection }}</td><td style="width:70px">{{ r.Section }}</td>
+            <td style="width:70px">{{ r.Course }}</td><td style="width:70px">{{ r.Class }}</td>
+            <td style="width:70px">{{ r.User }}</td></tr>
+        {% endfor %}
+      </tbody>
+      </table>
+    </div>
+</div>
+
+<script>
+
+  show_content_click = function(event)
+  {
+      event.preventDefault();
+      elm = event.target
+      page_ = elm.getAttribute('data-page')
+      filter_ = elm.getAttribute('data-filter')
+      filter_where_ = elm.getAttribute('data-filter_where')
+      by_ = elm.getAttribute('data-by')
+      //alert(by_)
+      $.post('{% url "users:show_content" %}',
+        {
+          page: page_,
+          filter: filter_,
+          by: by_,
+          filter_where: filter_where_
+        },
+        function(data){
+        //alert(data)
+            $('#page_content').empty().append(data)
+            closeNav();
+        }
+      );
+  }
+</script>

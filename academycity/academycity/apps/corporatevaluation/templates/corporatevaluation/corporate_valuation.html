@@ -1,0 +1,110 @@
+{% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
+
+{% block content %}
+<style>
+table {
+  font-family: arial, sans-serif;
+  border-collapse: collapse;
+}
+
+.th {
+  border: 2px solid black;
+  text-align: center;
+  padding: 8px;
+  width:70px;
+}
+
+td {
+  border: 2px solid black;
+  text-align: left;
+  padding: 2px;
+}
+
+input {
+  text-align: right;
+  width:70px;
+}
+
+thead {
+  background-color: lightpink;
+}
+
+tr:nth-child(even) {
+  background-color: lightblue;
+}
+
+</style>
+<div class="container">
+    <table id="t">
+        <thead>
+            <th class="th">{% trans "Assets" %}</th>
+            <th class="th">ROIC</th>
+            <th class="th">EBIT</th>
+            <th class="th">WACC</th>
+            <th class="th">Growth</th>
+            <th class="th" style="width:80px">Tax Rate</th>
+            <th class="th" style="width:140px">Enterprise Value</th>
+        </thead>
+         <tr id="row1" oninput="inputFunction(event)">
+            <td><input id="assets" type="text" value="{{ instance.team }}" /></td>
+            <td><input id="roic" type="text" value="15" /></td>
+            <td><input id="ebit" type="text" value="100" /></td>
+            <td><input id="wacc" type="text" value="10" /></td>
+            <td><input id="growth" type="text" value="5" /></td>
+            <td><input style="width:72px" id="tax_rate" type="text" value="25" /></td>
+            <td><input style="width:134px" id="enterprise_value" type="text" value="1000" /></td>
+         </tr>
+        <thead>
+            <th class="th">{% trans "Assets" %}</th>
+            <th class="th">ROIC</th>
+            <th class="th">EBIT</th>
+            <th class="th">WACC</th>
+            <th class="th">Growth</th>
+            <th class="th" style="width:80px">Tax Rate</th>
+            <th class="th" style="width:140px">Enterprise Value</th>
+        </thead>
+         <tr id="row1" oninput="inputFunction(event)">
+            <td><input id="assets1" type="text" value="500" /></td>
+            <td><input id="roic1" type="text" value="15" /></td>
+            <td><input id="ebit1" type="text" value="100" /></td>
+            <td><input id="wacc1" type="text" value="10" /></td>
+            <td><input id="growth1" type="text" value="5" /></td>
+            <td><input style="width:72px" id="tax_rate11" type="text" value="25" /></td>
+            <td><input style="width:134px" id="enterprise_value" type="text" value="1000" /></td>
+         </tr>
+    </table>
+<br/>
+
+
+<script>
+
+function round2(x)
+{
+ return Math.round(x*100)/100
+}
+
+function inputFunction(event) {
+ e = event.target
+ r = e.parentNode.parentNode
+ assets = r.children[0].childNodes[0]
+ roic = r.children[1].childNodes[0]
+ ebit = r.children[2].childNodes[0]
+ wacc = r.children[3].childNodes[0]
+ growth = r.children[4].childNodes[0]
+ tax_rate = r.children[5].childNodes[0]
+ enterprise_value = r.children[6].childNodes[0]
+
+ alert(assets.value + " : " + roic.value + " : " + ebit.value + " : " + wacc.value + " : " + growth.value
+  +  " : " +tax_rate.value +  " : " +
+ enterprise_value.value)
+
+ alert(e.outerHTML)
+ id = e.getAttribute("id")
+ alert(id)
+
+}
+
+</script>
+
+</div>
+{% endblock content %}

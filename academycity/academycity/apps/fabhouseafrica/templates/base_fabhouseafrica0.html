@@ -1,0 +1,500 @@
+{% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
+<!DOCTYPE html>
+<html class="no-js" lang="en-GB">
+<head>
+{% block title %}
+  <title>base</title>
+{% endblock %}
+
+{% block meta %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="p:domain_verify" content="4207c978a2c2bd81b2f1ff238b533d23" />
+    <meta property="og:site_name" content="Fab House Africa">
+    <meta property="og:description" content="Architectural and Design Finishes">
+    <meta property="og:image" content="">
+    <meta property="og:type" content="article">
+    <meta name="generator" content="Powered by Slider Revolution 5.4.8.3 - responsive, Mobile-Friendly Slider Plugin for WordPress with comfortable drag and drop interface." />
+{% endblock %}
+
+{% block meta_specific %}
+{% endblock %}
+
+{% block links %}
+    <link rel='dns-prefetch' href='//fonts.googleapis.com' />
+    <link rel='dns-prefetch' href='//s.w.org' />
+    <link rel='stylesheet' id='tp-open-sans-css'  href="{% static 'styles/fabhouseafrica/googleapis/css.css' %}" type='text/css' media='all' />
+    <link rel='stylesheet' id='tp-raleway-css' href="{% static 'styles/fabhouseafrica/googleapis/css_1.css' %}" type='text/css' media='all' />
+    <link rel='stylesheet' id='tp-droid-serif-css' href="{% static 'styles/fabhouseafrica/googleapis/css_2.css' %}" type='text/css' media='all' />
+
+    <link rel='stylesheet' id='wp-block-library-css'  href="{% static 'styles/fabhouseafrica/style.min.css' %}" type='text/css' media='all' />
+    <link rel='stylesheet' id='wp-block-library-theme-css' href="{% static 'styles/fabhouseafrica/css.css' %}" type='text/css' media='all' />
+    <link rel='stylesheet' id='essential-grid-plugin-settings-css'  href="{% static 'styles/fabhouseafrica/settings_1.css' %}" type='text/css' media='all' />
+    <link rel='stylesheet' id='tp-fontello-css' href="{% static 'styles/fabhouseafrica/fontello.css' %}" type='text/css' media='all' />
+    <link rel='stylesheet' id='rs-plugin-settings-css' href="{% static 'styles/fabhouseafrica/settings.css' %}" type='text/css' media='all' />
+    <link rel='stylesheet' id='x-stack-css' href="{% static 'styles/fabhouseafrica/ethos_2.css' %}" type='text/css' media='all' />
+    <link rel='stylesheet' id='x-woocommerce-css' href="{% static 'styles/fabhouseafrica/ethos_1.css' %}" type='text/css' media='all' />
+    <link rel='stylesheet' id='x-cranium-migration-css' href="{% static 'styles/fabhouseafrica/ethos.css' %}" type='text/css' media='all' />
+    <link rel='stylesheet' id='x-child-css' href="{% static 'styles/fabhouseafrica/style_6.5.5.css' %}" type='text/css' media='all'  />
+{% endblock %}
+
+{% block links_specific %}
+{% endblock %}
+
+
+{% block scripts %}
+    <script type='text/javascript' src="{% static 'styles/fabhouseafrica/jquery/jquery.js' %}"></script>
+    <script type='text/javascript' src="{% static 'styles/fabhouseafrica/jquery/jquery-migrate.min.js' %}"></script>
+    <script type='text/javascript' src="{% static 'styles/fabhouseafrica/jquery/jquery.esgbox.min.js' %}"></script>
+    <script type='text/javascript' src="{% static 'styles/fabhouseafrica/jquery/jquery.themepunch.tools.min.js' %}"></script>
+    <script type='text/javascript' src="{% static 'styles/fabhouseafrica/jquery/jquery.themepunch.revolution.min.js' %}"></script>
+    <script type='text/javascript' src="{% static 'styles/fabhouseafrica/jquery/cs-head.js' %}"></script>
+
+     <!-- Facebook Pixel Code -->
+    <script type='text/javascript'>
+    !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
+    n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,
+    document,'script','https://connect.facebook.net/en_US/fbevents.js');
+    </script>
+    <!-- End Facebook Pixel Code -->
+    <script type='text/javascript'>
+      fbq('init', '2578225702192042', [], {
+        "agent": "wordpress-5.1.9-1.7.25"
+    });
+    </script>
+    <script type='text/javascript'>
+      fbq('track', 'PageView', []);
+    </script>
+    <!-- End Facebook Pixel Code -->
+    <script type="text/javascript">
+        function setREVStartSize(e){
+            try{ e.c=jQuery(e.c);var i=jQuery(window).width(),t=9999,r=0,n=0,l=0,f=0,s=0,h=0;
+                if(e.responsiveLevels&&(jQuery.each(e.responsiveLevels,function(e,f){f>i&&(t=r=f,l=e),i>f&&f>r&&(r=f,n=e)}),t>r&&(l=n)),f=e.gridheight[l]||e.gridheight[0]||e.gridheight,s=e.gridwidth[l]||e.gridwidth[0]||e.gridwidth,h=i/s,h=h>1?1:h,f=Math.round(h*f),"fullscreen"==e.sliderLayout){var u=(e.c.width(),jQuery(window).height());if(void 0!=e.fullScreenOffsetContainer){var c=e.fullScreenOffsetContainer.split(",");if (c) jQuery.each(c,function(e,i){u=jQuery(i).length>0?u-jQuery(i).outerHeight(!0):u}),e.fullScreenOffset.split("%").length>1&&void 0!=e.fullScreenOffset&&e.fullScreenOffset.length>0?u-=jQuery(window).height()*parseInt(e.fullScreenOffset,0)/100:void 0!=e.fullScreenOffset&&e.fullScreenOffset.length>0&&(u-=parseInt(e.fullScreenOffset,0))}f=u}else void 0!=e.minHeight&&f<e.minHeight&&(f=e.minHeight);e.c.closest(".rev_slider_wrapper").css({height:f})
+            }catch(d){console.log("Failure at Presize of Slider:"+d)}
+        };
+    </script>
+{% endblock %}
+
+{% block scripts_specific %}
+{% endblock %}
+
+
+{% block scripts_end %}
+    <script>
+    jQuery(document).ready(function($) {
+
+    var windowObj            = $(window);
+    var body                 = $('body');
+    var bodyOffsetBottom     = windowObj.scrollBottom();             // 1
+    var bodyHeightAdjustment = body.height() - bodyOffsetBottom;     // 2
+    var bodyHeightAdjusted   = body.height() - bodyHeightAdjustment; // 3
+    var scrollTopAnchor      = $('.x-scroll-top');
+
+    function sizingUpdate(){
+      var bodyOffsetTop = windowObj.scrollTop();
+      if ( bodyOffsetTop > ( bodyHeightAdjusted * 0.75 ) ) {
+        scrollTopAnchor.addClass('in');
+      } else {
+        scrollTopAnchor.removeClass('in');
+      }
+    }
+
+    windowObj.bind('scroll', sizingUpdate).resize(sizingUpdate);
+    sizingUpdate();
+
+    scrollTopAnchor.click(function(){
+      $('html, body').animate({ scrollTop: 0 }, 850, 'xEaseInOutExpo');
+      return false;
+    });
+
+    });
+    </script>
+    <script type="text/javascript">
+    var c = document.body.className;
+    c = c.replace(/woocommerce-no-js/, 'woocommerce-js');
+    document.body.className = c;
+    </script>
+    <!-- Facebook Pixel Event Code -->
+    <script>
+      document.addEventListener(
+        'wpcf7submit',
+        function (event) {
+        fbq('track', 'Lead', {
+            "fb_integration_tracking": "contact-form-7"
+        });
+        },
+        false
+      );
+    </script>
+<!-- End Facebook Pixel Event Code -->
+
+    <script type='text/javascript' src="{% static 'styles/fabhouseafrica/js/scripts.js' %}"></script>
+
+    <script type='text/javascript' src="{% static 'styles/fabhouseafrica/js/main.js' %}"></script>
+    <script type='text/javascript' src="{% static 'styles/fabhouseafrica/js/jquery.blockUI.min.js' %}"></script>
+
+    <script type='text/javascript' src="{% static 'styles/fabhouseafrica/js/add-to-cart.min.js' %}"></script>
+    <script type='text/javascript' src="{% static 'styles/fabhouseafrica/js/js.cookie.min.js' %}"></script>
+
+    <script type='text/javascript' src="{% static 'styles/fabhouseafrica/js/woocommerce.min.js' %}"></script>
+
+    <script type='text/javascript' src="{% static 'styles/fabhouseafrica/js/cart-fragments.min.js' %}"></script>
+    <script type='text/javascript' src="{% static 'styles/fabhouseafrica/js/cs-body.js' %}"></script>
+    <script type='text/javascript' src="{% static 'styles/fabhouseafrica/js/x.js' %}"></script>
+    <script type='text/javascript' src="{% static 'styles/fabhouseafrica/js/comment-reply.min.js' %}"></script>
+    <script type='text/javascript' src="{% static 'styles/fabhouseafrica/js/wp-embed.min.js' %}"></script>
+
+{% endblock %}
+
+{% block scripts_end_specific %}
+      <link rel='stylesheet' id='themepunchboxextcss-css'  href="{% static 'styles/fabhouseafrica/esgbox.min.css' %}" type='text/css' media='all' />
+
+<script type='text/javascript' src="{% static 'styles/fabhouseafrica/js/scripts.js' %}"></script>
+
+<script type='text/javascript' src="{% static 'styles/fabhouseafrica/js/jquery.themepunch.essential.min.js' %}" ></script>
+<script>jQuery(function($){$.backstretch(["{{ background_image.url }}"], {"fade":"750"} ); });</script>
+{% endblock %}
+
+
+
+{% block noscripts %}
+	<noscript><style>.woocommerce-product-gallery{ opacity: 1 !important; }</style></noscript>
+    <!-- Facebook Pixel Code -->
+    <noscript>
+    <img height="1" width="1" style="display:none" alt="fbpx"
+    src="https://www.facebook.com/tr?id=2578225702192042&ev=PageView&noscript=1" />
+    </noscript>
+{% endblock %}
+
+{% block styles %}
+    <style type="text/css">
+    img.wp-smiley,
+    img.emoji {
+        display: inline !important;
+        border: none !important;
+        box-shadow: none !important;
+        height: 1em !important;
+        width: 1em !important;
+        margin: 0 .07em !important;
+        vertical-align: -0.1em !important;
+        background: none !important;
+        padding: 0 !important;
+    }
+    </style>
+    <style id='rs-plugin-settings-inline-css' type='text/css'>
+    #rs-demo-id {}
+    </style>
+    <style id='woocommerce-inline-inline-css' type='text/css'>
+        .woocommerce form .form-row .required { visibility: visible; }
+    </style>
+    <style type="text/css">
+        @font-face { font-family:Pirou;src:url("{% static 'styles/fabhouseafrica/others/Pirou-Regular.woff2' %}") format('woff2');}
+    </style>
+    <style id="tco-email-forms-styles" type="text/css">
+
+    .tco-subscribe-form fieldset {
+        padding: 0;
+        margin: 0;
+        border: 0;
+    }
+
+    .tco-subscribe-form {
+      position: relative;
+    }
+
+    .tco-subscribe-form h1 {
+      font-size: 1.75em;
+      margin: 0 0 0.5em;
+    }
+
+    .tco-subscribe-form label {
+      margin: 0 0 0.375em;
+      font-size: 0.85em;
+      line-height: 1;
+    }
+
+    .tco-subscribe-form label > span {
+      position: relative;
+    }
+
+    .tco-subscribe-form label .required {
+      position: absolute;
+      top: -0.1em;
+      font-size: 1.5em;
+    }
+
+    .tco-subscribe-form select,
+    .tco-subscribe-form input[type="text"],
+    .tco-subscribe-form input[type="email"] {
+      width: 100%;
+      margin-bottom: 1.25em;
+      font-size: inherit;
+    }
+
+    .tco-subscribe-form input[type="submit"] {
+      display: inline-block;
+      width: 100%;
+      margin-top: 0.25em;
+      font-size: inherit;
+    }
+
+    .tco-subscribe-form input[type="submit"]:focus {
+      outline: 0;
+    }
+
+    .tco-subscribe-form .tco-subscribe-form-alert-wrap {
+      margin-top: 1.25em;
+      font-size: inherit;
+    }
+
+    .tco-alert{
+      margin:0;border-left:4px solid #f6dca7;padding:0.915em 2.25em 1.15em 1.15em;font-size:14px;line-height:1.6;color:#c09853;background-color:#fcf8e3;border-radius:3px;
+    }
+    .tco-alert.tco-alert-block{
+      padding:0.915em 1.15em 1.15em
+    }
+    .tco-alert .h-alert{
+      margin:0 0 0.5em;padding:0;font-size:18px;letter-spacing:-0.05em;line-height:1.3;text-transform:none;color:inherit;clear:none;
+    }
+    .tco-alert .close{
+      float:right;position:relative;top:-10px;right:-26px;border:0;padding:0;font-size:18px;line-height:1;text-decoration:none;color:#c09853;background-color:transparent;background-image:none;opacity:0.4;box-shadow:none;cursor:pointer;transition:opacity 0.3s ease;-webkit-appearance:none;
+    }
+    .tco-alert .close:hover{
+      opacity:1
+    }
+    .tco-alert .close:focus{
+      outline:0
+    }
+    .tco-alert p{
+      margin-bottom:0
+    }
+    .tco-alert p+p{
+      margin-top:6px
+    }
+    .tco-alert-muted{
+      color:#999;border-color:#cfcfcf;background-color:#eee
+    }
+
+    .tco-alert-muted .close{
+      color:#999
+    }
+    .tco-alert-info{
+      color:#3a87ad;border-color:#b3d1ef;background-color:#d9edf7
+    }
+    .tco-alert-info .close{
+      color:#3a87ad
+    }
+    .tco-alert-success{
+      color:#468847;border-color:#c1dea8;background-color:#dff0d8
+    }
+    .tco-alert-success .close{
+      color:#468847
+    }
+    .tco-alert-danger{
+      color:#b94a48;border-color:#e5bdc4;background-color:#f2dede
+    }
+    .tco-alert-danger .close{
+      color:#b94a48
+    }
+    .tco-map .tco-map-inner{
+      overflow:hidden;position:relative;padding-bottom:56.25%;height:0
+    }
+    </style>
+    <style id="tco-content-dock-generated-css" type="text/css">
+
+          /*
+          // Base styles.
+          */
+          .visually-hidden {
+            overflow: hidden;
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            margin: -1px;
+            border: 0;
+            padding: 0;
+            clip: rect(0 0 0 0);
+          }
+
+          .visually-hidden.focusable:active,
+          .visually-hidden.focusable:focus {
+            clip: auto;
+            height: auto;
+            margin: 0;
+            overflow: visible;
+            position: static;
+            width: auto;
+          }
+
+          .tco-content-dock {
+            position: fixed;
+            bottom: 0;
+            ;
+            border-bottom: 0;
+            padding: 30px;
+            background-color: ;
+            z-index: 1050;
+            -webkit-transition: all 0.5s ease;
+                    transition: all 0.5s ease;
+            -webkit-transform: translate3d(0, 0, 0);
+                -ms-transform: translate3d(0, 0, 0);
+                    transform: translate3d(0, 0, 0);
+                  }
+
+
+          /*
+          // Headings.
+          */
+
+          .tco-content-dock h1,
+          .tco-content-dock h2,
+          .tco-content-dock h3,
+          .tco-content-dock h4,
+          .tco-content-dock h5,
+          .tco-content-dock h6 {
+            color:  !important;
+          }
+
+
+          /*
+          // Links.
+          */
+
+          .tco-content-dock a:not(.tco-btn):not(.tco-recent-posts a) {
+            color:  !important;
+          }
+
+          .tco-content-dock a:not(.tco-btn):not(.tco-recent-posts a):hover {
+            color:  !important;
+          }
+
+
+          /*
+          // Widget styles.
+          */
+
+          .tco-content-dock .widget {
+            text-shadow: none;
+            color:  !important;
+          }
+
+          .tco-content-dock .widget:before {
+            display: none;
+          }
+
+          .tco-content-dock .h-widget {
+            margin: 0 0 0.5em;
+            font-size: 1.65em;
+            line-height: 1.2;
+          }
+
+
+          /*
+          // Close.
+          */
+
+          .tco-close-content-dock {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 12px;
+            line-height: 1;
+            text-decoration: none;
+          }
+
+          .tco-close-content-dock span {
+            color:  !important;
+            -webkit-transition: color 0.3s ease;
+                    transition: color 0.3s ease;
+          }
+
+          .tco-close-content-dock:hover span {
+            color:  !important;
+          }
+
+          .tco-content-dock {
+            border: none;
+          }
+          a.tco-close-content-dock span[data-content]::before {
+            content: attr(data-content);
+          }
+
+          /*
+          // Responsive.
+          */
+
+          @media (matco-width: 767px) {
+            .tco-content-dock {
+              display: none;
+            }
+          }
+    </style>
+{% endblock %}
+
+{% block styles_specific %}
+{% endblock %}
+
+</head>
+
+{% block body_class %}
+{% endblock %}
+
+{% block content %}
+  <div id="x-root" class="x-root">
+    <div id="top" class="site">
+            {% block web_head %}
+            {% endblock %}
+            <div class="x-main full" role="main">
+            {% block web_body %}
+            {% endblock %}
+            </div>
+            {% block web_footer %}
+            {% endblock %}
+    </div>
+    <a class="x-scroll-top left fade" title="Back to Top">
+        <i class="x-icon-angle-up" data-x-icon-s="&#xf106;"></i>
+    </a>
+  </div> <!-- END .x-root -->
+{% endblock %}
+
+<script src="{% static 'js/npm/cookie/js.cookie.min.js' %}"></script>
+<script>
+var csrftoken = Cookies.get('csrftoken');
+  function csrfSafeMethod(method) {
+    // these HTTP methods do not require CSRF protection
+    return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+  }
+  $.ajaxSetup({
+    beforeSend: function(xhr, settings) {
+      if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+        xhr.setRequestHeader("X-CSRFToken", csrftoken);
+      }
+    }
+  });
+
+  $(document).ready(function(){
+
+    post_ajax_create_action = function (verb_="", app_="", model_, obj_slug_=null, pkey_=null) {
+      $.post(link_create_action,
+        {
+          verb: verb_,
+          app: app_,
+          model: model_,
+          obj_slug: obj_slug_,
+          pkey: pkey_
+        },
+        function(data){
+            alert(data["status"])
+        }
+      );
+    }
+
+    {% block domready %}
+    {% endblock %}
+  });
+</script>
+
+</body>
+</html>

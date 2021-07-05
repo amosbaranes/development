@@ -1,0 +1,110 @@
+{% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
+      <h4 style="color:lightblue">{% render_model sub_section "name" %}</h4>
+      <hr/>
+      {% render_placeholder sub_section.description %}
+
+      <div onclick="btn_sub_section(event)">
+
+                <h3>{{ assignment.sub_section.name }}</h3>
+
+      {% if assignment and assignment.assignment_type > 0 %}
+
+<style>
+
+ul.assignment {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background-color: #333;
+  width: 50%;
+}
+
+li.assignment {
+  float: left;
+}
+
+li.assignment a.assignment {
+  display: blue;
+  color: white;
+  text-align: center;
+  padding: 14px 16px;
+  text-decoration: none;
+}
+
+li.assignment a:hover:not(.active) {
+  background-color: #111;
+}
+
+</style>
+          <div class="module">
+            <div id="module-contents">
+              {% for content in assignment_user.contents.all %}
+                <iframe src="{% url 'courses:assignment_user_content' content.id %}" width='50%' height='115px' frameborder='0'>
+                </iframe>
+              {% empty %}
+                <p>You have not uploaded any content for this
+                        {% if assignment.assignment_type == 1 %}
+                              homework
+                        {% elif assignment.assignment_type == 2 %}
+                              assignment
+                        {% endif %}
+                    yet.</p>
+              {% endfor %}
+            </div>
+            <p>Upload content for this
+                        {% if assignment.assignment_type == 1 %}
+                              homework
+                        {% elif assignment.assignment_type == 2 %}
+                              assignment
+                        {% endif %}
+                :</p>
+            <ul class="assignment">
+              <li class="assignment"><a slink="yes" class="assignment" data-assignment_user_id = "{{ assignment_user.id }}"
+                                         href="#"
+                                         data-s_url="{% url 'courses:assignment_user_content_create' assignment_user.id 'text' %}">
+              Text</a></li>
+              <li class="assignment"><a slink="yes" class="assignment" data-assignment_user_id = "{{ assignment_user.id }}"
+                                         href="#"
+                                         data-s_url="{% url 'courses:assignment_user_content_create' assignment_user.id 'image' %}">
+              Image</a></li>
+              <li class="assignment"><a slink="yes" class="assignment" data-assignment_user_id = "{{ assignment_user.id }}"
+                                         href="#"
+                                         data-s_url="{% url 'courses:assignment_user_content_create' assignment_user.id 'video' %}">
+              Video</a></li>
+              <li class="assignment"><a slink="yes" class="assignment" data-assignment_user_id = "{{ assignment_user.id }}"
+                                         href="#"
+                                         data-s_url="{% url 'courses:assignment_user_content_create' assignment_user.id 'file' %}">
+              File</a></li>
+            </ul>
+            </div>
+      {% endif %}
+
+            <div id="assignment_output" class="assignment_output">
+            </div>
+      </div>
+
+
+
+<script>
+
+function btn_sub_section(event){
+     elm = event.target;
+     // alert(elm.outerHTML);
+     var assignment_user_id = elm.getAttribute("data-assignment_user_id");
+     var slink = elm.getAttribute("slink");
+     // alert(slink)
+
+     if (slink == "yes")
+     {
+         event.preventDefault();
+         var output = document.getElementById("assignment_output")
+         var s_url = elm.getAttribute("data-s_url");
+         // alert(s_url)
+         var ss="<iframe src='" + s_url + "' width='50%' height='500' frameborder='1'></iframe>"
+         // alert(ss)
+         output.innerHTML = ss
+     }
+}
+
+</script>
