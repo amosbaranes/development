@@ -98,7 +98,7 @@ class Course(TranslatableModel):
     instructors = models.ManyToManyField(
         settings.AUTH_USER_MODEL,
         # limit_choices_to={'groups__id__in': get_user_model().objects.filter(groups__name="instructors").values_list('id', flat=True)},
-        default=1, related_name='user_instructors')
+        related_name='user_instructors')
 
     translations = TranslatedFields(
         name=models.CharField(_('name'), blank=False, default='', db_index=True,
@@ -196,7 +196,7 @@ class CourseSchedule(models.Model):
     image = FilerImageField(blank=True, null=True, on_delete=models.SET_NULL)
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='course_schedules')
     # add choice from the course instructors
-    instructors = models.ManyToManyField(settings.AUTH_USER_MODEL, default=1, related_name='course_instructors')
+    instructors = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='course_instructors')
     # how to assign students to teams?
     assignment_method = models.IntegerField(default=1, choices=ASSIGNMENT_METHOD)
     max_students_per_team = models.IntegerField(default=3)

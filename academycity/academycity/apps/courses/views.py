@@ -20,7 +20,7 @@ from datetime import timedelta
 from django.template.loader import render_to_string
 from django.core.mail import EmailMessage
 from django.conf import settings
-import weasyprint
+# import weasyprint
 from io import BytesIO
 #
 from django.utils.translation import get_language
@@ -1146,8 +1146,8 @@ def send_email_invoice_pdf(request, order_id):
     # generate PDF
     html = render_to_string('courses/courses_invoice_pdf.html', {'order': order})
     out = BytesIO()
-    stylesheets = [weasyprint.CSS(settings.STATIC_ROOT + '/css/shop_pdf.css')]
-    weasyprint.HTML(string=html).write_pdf(out, stylesheets=stylesheets)
+    # stylesheets = [weasyprint.CSS(settings.STATIC_ROOT + '/css/shop_pdf.css')]
+    # weasyprint.HTML(string=html).write_pdf(out, stylesheets=stylesheets)
     # attach PDF file
     email.attach('order_{}.pdf'.format(order.id), out.getvalue(), 'application/pdf')
     email.send()

@@ -214,31 +214,35 @@ def team(request):
 
 
 def update_data(request):
+    # print('update_data 1')
     dic = {'status': 'ok'}
     wd = os.getcwd()
     sdata = wd + '/academycity/apps/corporatevaluation/data/'
-
     sr = sdata + 'RatingBasedOnInterestCoverage.xlsx'
     df = pd.read_excel(sr, 'Data')
     RBOIC.objects.all().delete()
     for r in dataframe_to_rows(df, index=False, header=False):
         RBOIC.objects.create(from_ic=float(r[0]),
                              to_ic=float(r[1]), rating=r[2], spread=float(r[3]))
-
+    # print('update_data 12')
     sr = sdata + 'CountryRegion.xlsx'
     df = pd.read_excel(sr, 'Data')
     CountryRegion.objects.all().delete()
     for r in dataframe_to_rows(df, index=False, header=False):
         CountryRegion.objects.create(region=r[0])
+    # print('update_data 13')
     #
     sr = sdata + 'CountryRating.xlsx'
     df = pd.read_excel(sr, 'Data')
     CountryRating.objects.all().delete()
     for r in dataframe_to_rows(df, index=False, header=False):
         CountryRating.objects.create(country_rating=r[0], default_spread=float(r[1]))
-
+    print('update_data 14')
     sr = sdata + 'Country.xlsx'
     df = pd.read_excel(sr, 'Data')
+
+    # print(df)
+
     Country.objects.all().delete()
     for r in dataframe_to_rows(df, index=False, header=False):
         # print(r)
@@ -282,6 +286,7 @@ def update_data(request):
     CompanyData.objects.all().delete()
     Industry.objects.all().delete()
     CompanyInfo.objects.all().delete()
+
     for r in dataframe_to_rows(df, index=False, header=False):
         # print(r)
         try:
@@ -315,9 +320,7 @@ def update_account(request):
 def update_data_year(request):
     sql = SQL()
     nyear = request.POST.get('nyear')
-
     # print(nyear)
-
     s_status = 'ok: ' + str(nyear)
     dic = {'status': s_status}
     if nyear == 2012:

@@ -4,7 +4,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.template.loader import render_to_string
 from django.core.mail import EmailMessage
 from django.conf import settings
-import weasyprint
+# import weasyprint
 from io import BytesIO
 #
 from ..orders.models import Order
@@ -39,8 +39,8 @@ def payment_process(request):
             # generate PDF
             html = render_to_string('orders/order/pdf.html', {'order': order})
             out = BytesIO()
-            stylesheets = [weasyprint.CSS(settings.STATIC_ROOT + '/css/shop_pdf.css')]
-            weasyprint.HTML(string=html).write_pdf(out, stylesheets=stylesheets)
+            # stylesheets = [weasyprint.CSS(settings.STATIC_ROOT + '/css/shop_pdf.css')]
+            # weasyprint.HTML(string=html).write_pdf(out, stylesheets=stylesheets)
             # attach PDF file
             email.attach('order_{}.pdf'.format(order.id), out.getvalue(), 'application/pdf')
             email.send()
