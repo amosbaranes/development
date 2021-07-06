@@ -26,6 +26,7 @@ from django.http import JsonResponse
 
 def show_sub_content(request):
     sub_page = request.POST.get('sub_page')
+
     if sub_page == "process_trial_balance":
         period_type = request.POST.get('period_type')
         update_trial_balance(period_type)
@@ -46,7 +47,6 @@ def show_sub_content(request):
         report = request.POST.get('report')
         departments = Department.objects.all().filter(translations__language_code=get_language()).order_by('order')
         return render(request, 'users/_admin_role_management_courses.html', {'departments': departments})
-
     elif sub_page == "instructor_role_management_courses":
         report = request.POST.get('report')
         ics = CourseSchedule.objects.filter(instructors=request.user).all()
