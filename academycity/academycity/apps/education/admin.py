@@ -1,5 +1,7 @@
 from django.contrib import admin
-from .models import InstitutionWeb, Course, New, Program, Subject, Person, Phrase, AdditionalTopic
+from .models import (InstitutionWeb, Course, New, Program, Subject, Person, Phrase, AdditionalTopic,
+                     MoreNewsDetail)
+from cms.admin.placeholderadmin import PlaceholderAdminMixin
 
 
 @admin.register(InstitutionWeb)
@@ -8,7 +10,7 @@ class InstitutionWebAdmin(admin.ModelAdmin):
 
 
 @admin.register(Course)
-class CourseAdmin(admin.ModelAdmin):
+class CourseAdmin(PlaceholderAdminMixin, admin.ModelAdmin):
     list_display = ('id', 'order', 'course_name', 'course_date', 'is_popular', 'is_active', )
     list_filter = ('is_active', 'is_popular', )
 
@@ -20,7 +22,7 @@ class NewAdmin(admin.ModelAdmin):
 
 
 @admin.register(Program)
-class ProgramAdmin(admin.ModelAdmin):
+class ProgramAdmin(PlaceholderAdminMixin, admin.ModelAdmin):
     list_display = ('id', 'order', 'program_title', 'program_description', 'is_popular', )
     list_filter = ('is_active', 'is_popular', )
 
@@ -45,5 +47,11 @@ class PhraseAdmin(admin.ModelAdmin):
 @admin.register(AdditionalTopic)
 class PhraseAdmin(admin.ModelAdmin):
     list_display = ('id', 'order', 'image', 'topic_description', 'is_active')
+
+
+@admin.register(MoreNewsDetail)
+class MoreNewsDetailAdmin(admin.ModelAdmin):
+    list_display = ('id', 'order', 'news_title', 'news_description', 'news_date', 'is_popular', 'is_active')
+    list_filter = ('is_active', 'is_popular', )
 
 

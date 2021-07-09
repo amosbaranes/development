@@ -1,6 +1,7 @@
 from django.db import models
 from django.urls import reverse
 from django.utils.translation import ugettext_lazy as _
+from cms.models.fields import PlaceholderField
 
 
 class InstitutionWeb(models.Model):
@@ -13,11 +14,12 @@ class InstitutionWeb(models.Model):
     order = models.IntegerField(default=1000, null=True, blank=True)
     institution_name = models.CharField(max_length=100, null=True, blank=True)
     domain_name = models.CharField(max_length=100, null=True, blank=True)
+    github_domain_name = models.CharField(max_length=100, null=True, blank=True)
     welcome_phrase = models.CharField(max_length=100, null=True, blank=True)
     institution_image = models.ImageField(upload_to='institution/', blank=True, null=True)
     logo_image = models.ImageField(upload_to='institution/', blank=True, null=True)
     footer_image = models.ImageField(upload_to='institution/', blank=True, null=True)
-
+    footer_phrase = models.CharField(max_length=100, null=True, blank=True)
     institution_short_description = models.CharField(max_length=200, null=True, blank=True)
     youtube_video_address = models.CharField(max_length=100, null=True)
 
@@ -41,11 +43,12 @@ class Course(models.Model):
     institution_web = models.ForeignKey(InstitutionWeb, on_delete=models.CASCADE, default=1, related_name='courses')
     order = models.IntegerField(default=1000, blank=True)
     course_name = models.CharField(max_length=100, null=True)
-    course_description = models.CharField(max_length=200, null=True)
     course_date = models.DateField(blank=True, null=True)
     image = models.ImageField(upload_to='courses/', blank=True, null=True)
     is_popular = models.BooleanField(default=True)
     is_active = models.BooleanField(default=True)
+    short_description = models.CharField(max_length=200, null=True)
+    description = PlaceholderField('description', related_name='education_course_description')
 
 
 class New(models.Model):
@@ -81,6 +84,7 @@ class Program(models.Model):
     program_description = models.CharField(max_length=500, null=True)
     is_popular = models.BooleanField(default=True)
     is_active = models.BooleanField(default=True)
+    description = PlaceholderField('description')
 
 
 class Subject(models.Model):
@@ -140,5 +144,25 @@ class AdditionalTopic(models.Model):
     order = models.IntegerField(default=1000, blank=True)
     image = models.ImageField(upload_to='phrase/', blank=True, null=True)
     topic_description = models.CharField(max_length=500, null=True)
+    is_active = models.BooleanField(default=True)
+
+
+class MoreNewsDetail(models.Model):
+
+    class Meta:
+        verbose_name = _('more_news_detail')
+        verbose_name_plural = _('more_news_details')
+        ordering = ['order']
+
+    institution_web = models.ForeignKey(InstitutionWeb, on_delete=models.CASCADE,  default=1, related_name=
+                                        'more_news_details')
+    order = models.IntegerField(default=1000, blank=True)
+    news_date = models.DateField(blank=True, null=True)
+    image = models.ImageField(upload_to='news_detail/', blank=True, null=True)
+    news_type = models.CharField(max_length=100, null=True)
+    news_type_description = models.CharField(max_length=100, null=True)
+    news_title = models.CharField(max_length=100, null=True)
+    news_description = models.CharField(max_length=500, null=True)
+    is_popular = models.BooleanField(default=True)
     is_active = models.BooleanField(default=True)
 

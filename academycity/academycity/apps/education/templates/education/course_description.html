@@ -1,0 +1,98 @@
+{% extends "base_education.html" %}
+{% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
+
+{% block title %}
+<title>{{ course.course_name }}</title>
+{% endblock%}
+
+{% block nav_bar %}
+<nav class="topbar " id="main-menu">
+            <div class="topbar__container">
+                <div class="topbar__brand">
+                    <button class="topbar__hamburger" data-target="main-menu" aria-label="menu" aria-expanded="false">&#8801;</button>
+                    <a href="/" style="margin-bottom:-40px ">
+                        <img src="{{ institution_obj.logo_image.url }}" width="72px" height="100px" alt="">
+                    </a>
+                </div>
+                <div class="topbar__menu">
+                    <ul class="topbar__list">
+                        <li class="topbar__item topbar__item--sibling"><a href="/en/news/">News</a></li>
+                        <li class="topbar__item topbar__item--sibling"><a href="/en/courses/">Courses</a></li>
+                        <li class="topbar__item topbar__item--sibling"><a href="/en/categories/">Categories</a></li>
+                        <li class="topbar__item topbar__item--sibling"><a href="/en/organizations/">Organizations</a></li>
+                        <li class="topbar__item topbar__item--sibling"><a href="/en/persons/">Persons</a></li>
+                        <li class="topbar__item topbar__item--sibling"><a href="/en/programs/">Programs</a></li>
+                    </ul>
+                </div>
+
+                <div class="topbar__menu topbar__menu--aside">
+                    <ul class="topbar__list topbar__list--controls">
+
+                        <li class="topbar__item topbar__item--login richie-react richie-react--user-login" data-props='{"profileUrls": {&quot;dashboard&quot;: {&quot;label&quot;: &quot;Dashboard&quot;, &quot;action&quot;: &quot;https://edx.richie.education/dashboard&quot;}, &quot;profile&quot;: {&quot;label&quot;: &quot;Profile&quot;, &quot;action&quot;: &quot;https://edx.richie.education/u/(username)&quot;}, &quot;account&quot;: {&quot;label&quot;: &quot;Account&quot;, &quot;action&quot;: &quot;https://edx.richie.education/account/settings&quot;}}}'>
+                            <div class="user-login">
+                                <button class="user-login__btn user-login__btn--sign-up">Sign up</button>
+                                <button class="user-login__btn user-login__btn--log-in">
+                                    <svg aria-hidden="true" role="img" class="icon"><use xlink:href="#icon-login"></use></svg>
+                                    Log in
+                                </button>
+                            </div>
+                        </li>
+                        <li class="topbar__item topbar__item--cta"><a href="#">Contact us</a></li>
+                    </ul>
+                    <script data-language-selector type="application/json">
+      {
+        "currentLanguage": "en",
+        "languages": {
+
+          "en": {
+            "code": "en",
+            "name": "English",
+            "url": "/en/"
+
+          },
+
+
+          "fr": {
+            "code": "fr",
+            "name": "French",
+            "url": "/fr/"
+
+          }
+
+
+        }
+      }
+      </script>
+                    <div class="richie-react richie-react--language-selector" data-props-source="[data-language-selector]">
+                        <div class="selector">
+                            <label id="downshift-0-label" for="downshift-0-toggle-button" class="offscreen">Select a language:</label>
+                            <button id="downshift-0-toggle-button" aria-haspopup="listbox" aria-expanded="false" aria-labelledby="downshift-0-label downshift-0-toggle-button" class="selector__button">English
+                                <svg role="img" class="selector__button__icon" aria-hidden="true">
+                                  <use xlink:href="#icon-chevron-down"></use>
+                                </svg>
+                            </button>
+                            <ul id="downshift-0-menu" role="listbox" aria-labelledby="downshift-0-label" tabindex="-1" class="selector__list selector__list--is-closed">
+
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+{% endblock %}
+
+{% block main_page %}
+<div class="subheader" style="margin-bottom:40px">
+    <div class="subheader__container">
+        <h1 class="subheader__title">{{ course.course_name }}</h1>
+    </div>
+</div>
+{% endblock %}
+
+{% block body_content %}
+
+<!--<h3 style="color:blue">{% render_model course "course_name" %}</h3><br>-->
+{% render_placeholder course.description %}
+
+{% endblock %}
+

@@ -4,57 +4,70 @@ from django.core.mail import EmailMessage
 from django.http import JsonResponse
 from ..webcompanies.WebCompanies import WebSiteCompany
 from django.http import JsonResponse
-from .models import Phrase, AdditionalTopic
-
-
-def institution(request, model=''):
-    try:
-        wsc = WebSiteCompany(request)
-        if wsc.is_registered_domain():
-            web_company_id = wsc.web_site_company['web_company_id']
-            web_company = WebCompanies.objects.get(id=web_company_id)
-        else:
-            web_company = WebCompanies.objects.get(id=7)
-    except Exception as ex:
-        print(ex)
-
-    if model != '':
-        s = "objs = web_company.target."+model+".all()"
-        dic_ = {'web_company': web_company}
-        exec(s, dic_)
-        objs = dic_['objs']
-    else:
-        objs = web_company.target
-    return objs
+from .models import Phrase, AdditionalTopic, Course, Program, MoreNewsDetail, Subject
 
 
 def home(request):
-    institution_ = institution(request)
-    phrases_ = Phrase.objects.all()
-    topics_ = AdditionalTopic.objects.all()
-    return render(request, 'education/home.html', {'institution_obj': institution_,
+    wsc = WebSiteCompany(request, web_company_id=7)
+    company_obj = wsc.site_company()
+    phrases_ = wsc.site_company('phrases')
+    topics_ = wsc.site_company('topics')
+    return render(request, 'education/home.html', {'institution_obj': company_obj,
                                                    'phrases': phrases_,
                                                    'topics': topics_
                                                    })
 
 
+def course_description(request, pk):
+    wsc = WebSiteCompany(request, web_company_id=7)
+    company_obj = wsc.site_company()
+    course = Course.objects.get(id=pk)
+    return render(request, 'education/course_description.html',
+                  {'course': course,
+                   'institution_obj': company_obj,
+                   })
+
+
+def program_description(request, pk):
+    wsc = WebSiteCompany(request, web_company_id=7)
+    company_obj = wsc.site_company()
+    program = Program.objects.get(id=pk)
+    return render(request, 'education/program_description.html',
+                  {'program': program,
+                   'institution_obj': company_obj,
+                   })
+
+
+def subject_description(request, pk):
+    wsc = WebSiteCompany(request, web_company_id=7)
+    company_obj = wsc.site_company()
+    subject = Subject.objects.get(id=pk)
+    return render(request, 'education/subject_description.html',
+                  {'subject': subject,
+                   'institution_obj': company_obj,
+                   })
+
+
 def get_courses(request):
-    courses = institution(request, 'courses')
+    wsc = WebSiteCompany(request, web_company_id=7)
+    courses = wsc.site_company('courses')
     rr = {}
     for course in courses:
         rr[str(course.id)] = {
                                 'course_name': course.course_name,
                                 'order': course.order,
-                                'course_description': course.course_description,
                                 'course_date': course.course_date,
                                 'is_popular': course.is_popular,
-                                'image_url': course.image.url
+                                'image_url': course.image.url,
+                                'short_description': course.short_description
                                 }
+
     return JsonResponse(rr)
 
 
 def get_news(request):
-    news = institution(request, 'news')
+    wsc = WebSiteCompany(request, web_company_id=7)
+    news = wsc.site_company('news')
     rr = {}
     for new in news:
         if new.is_active:
@@ -72,9 +85,8 @@ def get_news(request):
 
 
 def get_program(request):
-
-    programs = institution(request, 'programs')
-
+    wsc = WebSiteCompany(request, web_company_id=7)
+    programs = wsc.site_company('programs')
     rr = {}
     for program in programs:
         print('-' * 50)
@@ -89,9 +101,8 @@ def get_program(request):
 
 
 def get_subject(request):
-
-    subjects = institution(request, 'subjects')
-
+    wsc = WebSiteCompany(request, web_company_id=7)
+    subjects = wsc.site_company('subjects')
     rr = {}
     for subject in subjects:
         print('-' * 50)
@@ -105,9 +116,8 @@ def get_subject(request):
 
 
 def get_person(request):
-
-    persons = institution(request, 'persons')
-
+    wsc = WebSiteCompany(request, web_company_id=7)
+    persons = wsc.site_company('persons')
     rr = {}
     for person in persons:
         print('-' * 50)
@@ -120,3 +130,12 @@ def get_person(request):
             'image_url': person.image.url
         }
     return JsonResponse(rr)
+
+
+def news_detail(request):
+    wsc = WebSiteCompany(request, web_company_id=7)
+    company_obj = wsc.site_company()
+    news_detail_ = MoreNewsDetail.objects.all()
+    return render(request, 'education/news_detail.html', {'news_detail_': news_detail_,
+                                                          'institution_obj': company_obj,
+                                                          })
