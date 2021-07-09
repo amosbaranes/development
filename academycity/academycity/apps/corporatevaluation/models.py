@@ -13,21 +13,23 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from parler.utils.context import switch_language
 from django.utils.text import slugify
 import math
+from django.db import connection
+from cms.models.pluginmodel import CMSPlugin
 
 from ..courses.models import (CourseSchedule, CourseScheduleUser, Team)
-from cms.models.pluginmodel import CMSPlugin
+from ..core.sql import TruncateTableMixin
 
 
 # Data
 # RBOIC = RatingBasedOnInterestCavrage
-class RBOIC(models.Model):
+class RBOIC(TruncateTableMixin, models.Model):
     from_ic = models.DecimalField(max_digits=18, decimal_places=6, default=0)
     to_ic = models.DecimalField(max_digits=18, decimal_places=6, default=0)
     rating = models.CharField(max_length=100, default='')
     spread = models.DecimalField(max_digits=18, decimal_places=6, default=0.0)
 
 
-class CountryRegion(models.Model):
+class CountryRegion(TruncateTableMixin, models.Model):
     pkey_region = models.AutoField(primary_key=True)
     region = models.CharField(max_length=100, default='')
 
@@ -35,7 +37,7 @@ class CountryRegion(models.Model):
         return self.region
 
 
-class CountryRating(models.Model):
+class CountryRating(TruncateTableMixin, models.Model):
     pkey_country_rating = models.AutoField(primary_key=True, default=None)
     country_rating = models.CharField(max_length=4, default='', blank=True, null=True)
     default_spread = models.DecimalField(max_digits=18, decimal_places=6, default=1)
@@ -44,7 +46,7 @@ class CountryRating(models.Model):
         return self.country_rating + ': ' + str(self.default_spread)
 
 
-class Country(models.Model):
+class Country(TruncateTableMixin, models.Model):
     country = models.CharField(max_length=50, default='', blank=True, null=True)
     marginal_tax_rate = models.DecimalField(max_digits=18, decimal_places=6, default=1)
     long_term_rating = models.ForeignKey(CountryRating, on_delete=models.SET_NULL, null=True,
@@ -69,7 +71,7 @@ class Country(models.Model):
         return self.country
 
 
-class GlobalIndustryAverages(models.Model):
+class GlobalIndustryAverages(TruncateTableMixin, models.Model):
     industry_name = models.CharField(max_length=50, default='', blank=True, null=True)
     number_of_firms = models.PositiveIntegerField(default=1)
     unlevered_beta_corrected_for_cash = models.DecimalField(max_digits=7, decimal_places=4, default=1)
@@ -90,7 +92,7 @@ class GlobalIndustryAverages(models.Model):
         return self.industry_name
 
 
-class Industry(models.Model):
+class Industry(TruncateTableMixin, models.Model):
     class Meta:
         verbose_name = _('Industry')
         verbose_name_plural = _('Industry')
@@ -98,8 +100,11 @@ class Industry(models.Model):
     sic_code = models.SmallIntegerField(primary_key=True)
     sic_description = models.CharField(max_length=128, default='', blank=True, null=True)
 
+    def __str__(self):
+        return str(self.sic_code) + ': ' + str(self.sic_description)
 
-class CompanyInfo(models.Model):
+
+class CompanyInfo(TruncateTableMixin, models.Model):
     class Meta:
         verbose_name = _('Company Info')
         verbose_name_plural = _('Company Info')
@@ -122,7 +127,7 @@ class CompanyInfo(models.Model):
         return self.company_name
 
 
-class CompanyData(models.Model):
+class CompanyData(TruncateTableMixin, models.Model):
     class Meta:
         verbose_name = _('Company Data')
         verbose_name_plural = _('Company Data')
@@ -368,7 +373,7 @@ class CompanyData(models.Model):
         return iv_per_share
 
 
-class Project(TranslatableModel):
+class Project(TruncateTableMixin, TranslatableModel):
     STATUS = (
         (0, 'Created'),
         (5, 'Approved'),

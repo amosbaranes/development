@@ -213,92 +213,66 @@ def team(request):
     return render(request, 'corporatevaluation/team.html', {'title': title})
 
 
+def truncate_and_get_df_from_excel(table=None, file_name=None):
+    table.truncate()
+    wd = os.getcwd()
+    s_dir = wd + '/academycity/apps/corporatevaluation/data/'
+    sr = s_dir + file_name
+    df = pd.read_excel(sr, 'Data')
+    return dataframe_to_rows(df, index=False, header=False)
+
+
 def update_data(request):
     # print('update_data 1')
     dic = {'status': 'ok'}
-    wd = os.getcwd()
-    sdata = wd + '/academycity/apps/corporatevaluation/data/'
-    sr = sdata + 'RatingBasedOnInterestCoverage.xlsx'
-    df = pd.read_excel(sr, 'Data')
-    RBOIC.objects.all().delete()
-    for r in dataframe_to_rows(df, index=False, header=False):
-        RBOIC.objects.create(from_ic=float(r[0]),
-                             to_ic=float(r[1]), rating=r[2], spread=float(r[3]))
-    # print('update_data 12')
-    sr = sdata + 'CountryRegion.xlsx'
-    df = pd.read_excel(sr, 'Data')
-    CountryRegion.objects.all().delete()
-    for r in dataframe_to_rows(df, index=False, header=False):
-        CountryRegion.objects.create(region=r[0])
-    # print('update_data 13')
-    #
-    sr = sdata + 'CountryRating.xlsx'
-    df = pd.read_excel(sr, 'Data')
-    CountryRating.objects.all().delete()
-    for r in dataframe_to_rows(df, index=False, header=False):
-        CountryRating.objects.create(country_rating=r[0], default_spread=float(r[1]))
-    print('update_data 14')
-    sr = sdata + 'Country.xlsx'
-    df = pd.read_excel(sr, 'Data')
+    try:
+        for r in truncate_and_get_df_from_excel(table=RBOIC, file_name='RatingBasedOnInterestCoverage.xlsx'):
+            RBOIC.objects.create(from_ic=float(r[0]),
+                                 to_ic=float(r[1]), rating=r[2], spread=float(r[3]))
 
-    # print(df)
+        for r in truncate_and_get_df_from_excel(table=CountryRegion, file_name='CountryRegion.xlsx'):
+            CountryRegion.objects.create(region=r[0])
 
-    Country.objects.all().delete()
-    for r in dataframe_to_rows(df, index=False, header=False):
-        # print(r)
-        try:
-            cr = CountryRating.objects.filter(country_rating=r[2]).all()[0]
-            cre = CountryRegion.objects.filter(region=r[3]).all()[0]
-            Country.objects.create(country=r[0], marginal_tax_rate=float(r[1]), long_term_rating=cr, region=cre)
-        except Exception as e:
-            print(1)
-            print(e)
+        for r in truncate_and_get_df_from_excel(table=CountryRating, file_name='CountryRating.xlsx'):
+            CountryRating.objects.create(country_rating=r[0], default_spread=float(r[1]))
 
-    sr = sdata + 'GlobalIndustryAverages.xlsx'
-    df = pd.read_excel(sr, 'Data')
-    GlobalIndustryAverages.objects.all().delete()
-    for r in dataframe_to_rows(df, index=False, header=False):
-        # print(r)
-        try:
-            GlobalIndustryAverages.objects.create(industry_name=r[0],
-                                                  number_of_firms=float(r[1]),
-                                                  unlevered_beta_corrected_for_cash=r[2],
-                                                  market_d_over_e_ratio=r[3],
-                                                  market_debt_to_capital=r[4],
-                                                  effective_tax_rate=r[5],
-                                                  dividend_payout=r[6],
-                                                  net_margin=r[7],
-                                                  pre_tax_operating_margin=r[8],
-                                                  roe=r[9],
-                                                  roic=r[10],
-                                                  SalesOverCapital=r[11],
-                                                  ev_over_sales=r[12],
-                                                  revenue_growth_rateLast_5_years=r[13],
-                                                  expected_earnings_growth_next_5_years=r[14]
-                                                  )
-        except Exception as e:
-            print(3)
-            print(e)
+        for r in truncate_and_get_df_from_excel(table=Country, file_name='Country.xlsx'):
+            try:
+                cr = CountryRating.objects.filter(country_rating=r[2]).all()[0]
+                cre = CountryRegion.objects.filter(region=r[3]).all()[0]
+                Country.objects.create(country=r[0], marginal_tax_rate=float(r[1]), long_term_rating=cr, region=cre)
+            except Exception as e:
+                print(e)
 
-    sr = sdata + 'Companies.xlsx'
-    df = pd.read_excel(sr, 'Data')
+        for r in truncate_and_get_df_from_excel(table=GlobalIndustryAverages, file_name='GlobalIndustryAverages.xlsx'):
+            try:
+                GlobalIndustryAverages.objects.create(industry_name=r[0], number_of_firms=float(r[1]),
+                                                      unlevered_beta_corrected_for_cash=r[2],
+                                                      market_d_over_e_ratio=r[3], market_debt_to_capital=r[4],
+                                                      effective_tax_rate=r[5], dividend_payout=r[6], net_margin=r[7],
+                                                      pre_tax_operating_margin=r[8],
+                                                      roe=r[9], roic=r[10], SalesOverCapital=r[11], ev_over_sales=r[12],
+                                                      revenue_growth_rateLast_5_years=r[13],
+                                                      expected_earnings_growth_next_5_years=r[14]
+                                                      )
+            except Exception as e:
+                print(e)
 
-    CompanyData.objects.all().delete()
-    Industry.objects.all().delete()
-    CompanyInfo.objects.all().delete()
+        Industry.truncate()
+        CompanyInfo.truncate()
+        for r in truncate_and_get_df_from_excel(table=CompanyData, file_name='Companies.xlsx'):
+            try:
+                industry_, created = Industry.objects.get_or_create(sic_code=r[2])
+                if created:
+                    industry_.sic_description = r[3]
+                    industry_.save()
+                CompanyInfo.objects.create(ticker=r[0], cik=r[1], industry=industry_, company_name=r[4],
+                                           city=r[5], state=r[6], zip=r[7])
+            except Exception as e:
+                print(e)
 
-    for r in dataframe_to_rows(df, index=False, header=False):
-        # print(r)
-        try:
-            industry_, created = Industry.objects.get_or_create(sic_code=r[2])
-            if created:
-                industry_.sic_description=r[3]
-                industry_.save()
-            CompanyInfo.objects.create(ticker=r[0], cik=r[1], industry=industry_,
-                                       company_name=r[4], city=r[5], state=r[6], zip=r[7])
-        except Exception as e:
-            print(4)
-            print(e)
+    except Exception as exc:
+        print(exc)
 
     return JsonResponse(dic)
 

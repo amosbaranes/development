@@ -40,3 +40,9 @@ class SQL(object):
         return self.exc_sql(ssql, data, verb='select')
 
 
+class TruncateTableMixin(object):
+
+    @classmethod
+    def truncate(cls):
+        with connection.cursor() as cursor:
+            cursor.execute('TRUNCATE TABLE {} CASCADE'.format(cls._meta.db_table))

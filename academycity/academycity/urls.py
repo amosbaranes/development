@@ -44,6 +44,7 @@ urlpatterns += i18n_patterns(
     url(r'globsim/', include('academycity.apps.globsim.urls')),
     url(r'corporatevaluation/', include('academycity.apps.corporatevaluation.urls')),
     url(r'trades/', include('academycity.apps.trades.urls')),
+    url(r'trading/', include('academycity.apps.trading.urls')),
     url(r'polls/', include('academycity.apps.polls.urls')),
     url(r'research/', include('academycity.apps.research.urls')),
     path(r'search/', include('academycity.apps.search.urls')),
@@ -61,7 +62,7 @@ urlpatterns += i18n_patterns(
     url(r'^webcompanies/', include('academycity.apps.webcompanies.urls')),
 
     url(r'^openvidu/', include('academycity.apps.openvidu.urls')),
-    url(r'^swotclock/', include('academycity.apps.swotclock.urls')),
+    url(r'^swotclock/', include('academycity.apps.webapps.swotclock.urls')),
 
     url(r'^allauth/', include('allauth.urls')),
     url(r'^', include('cms.urls')),
