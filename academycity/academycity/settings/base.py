@@ -172,19 +172,22 @@ LOCAL_APPS = [
     'academycity.apps.videocall',
     'academycity.apps.drbaranes',
     'academycity.apps.ugandatowns',
-    'academycity.apps.fabhouseafrica',
     'academycity.apps.webcompanies',
     'academycity.apps.openvidu',
-    'academycity.apps.webapps.swotclock',
-    'academycity.apps.radiusfood',
-    'academycity.apps.bizland',
-    'academycity.apps.education',
     'academycity.apps.search',
-    'academycity.apps.checkcashingchicago',
+]
+
+WebApps = [
+    'academycity.apps.webapps.checkcashingchicago',
+    'academycity.apps.webapps.education',
+    'academycity.apps.webapps.fabhouseafrica',
+    'academycity.apps.webapps.bizland',
+    'academycity.apps.webapps.radiusfood',
+    'academycity.apps.webapps.swotclock',
 ]
 
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
-INSTALLED_APPS = THIRD_PARTY_APPS + LOCAL_APPS + BOOTSTRAP_APPS + DJANGO_APPS
+INSTALLED_APPS = THIRD_PARTY_APPS + LOCAL_APPS + WebApps + BOOTSTRAP_APPS + DJANGO_APPS
 
 MIDDLEWARE = [
     'django_cookies_samesite.middleware.CookiesSameSite',

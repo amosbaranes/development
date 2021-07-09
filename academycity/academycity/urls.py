@@ -53,17 +53,18 @@ urlpatterns += i18n_patterns(
     url(r'^videocall/', include('academycity.apps.videocall.urls')),
     # url(r'^drbaranes/', include('academycity.apps.drbaranes.urls')),
     url(r'^u/', include('academycity.apps.ugandatowns.urls')),
-    url(r'^f/', include('academycity.apps.fabhouseafrica.urls')),
-    url(r'r/', include('academycity.apps.radiusfood.urls')),
-    url(r'b/', include('academycity.apps.bizland.urls')),
-    url(r'e/', include('academycity.apps.education.urls')),
-    url(r'c/', include('academycity.apps.checkcashingchicago.urls')),
-
-    url(r'^webcompanies/', include('academycity.apps.webcompanies.urls')),
 
     url(r'^openvidu/', include('academycity.apps.openvidu.urls')),
+    #
+    url(r'^webcompanies/', include('academycity.apps.webcompanies.urls')),
+    #
+    url(r'c/', include('academycity.apps.webapps.checkcashingchicago.urls')),
+    url(r'e/', include('academycity.apps.webapps.education.urls')),
+    url(r'^f/', include('academycity.apps.webapps.fabhouseafrica.urls')),
+    url(r'r/', include('academycity.apps.webapps.radiusfood.urls')),
+    url(r'b/', include('academycity.apps.webapps.bizland.urls')),
     url(r'^swotclock/', include('academycity.apps.webapps.swotclock.urls')),
-
+    #
     url(r'^allauth/', include('allauth.urls')),
     url(r'^', include('cms.urls')),
 )

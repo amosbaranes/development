@@ -1,6 +1,6 @@
 from django_elasticsearch_dsl import Document
 from django_elasticsearch_dsl.registries import registry
-from ..education.models import InstitutionWeb
+# from ..education.models import InstitutionWeb
 
 
 # @registry.register_document
