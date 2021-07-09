@@ -1,0 +1,179 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" xmlns:background-image="http://www.w3.org/1999/xhtml">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="{% static 'portfolio/css/style1.css' %}">
+  <title>{{ company_obj.logo_name}}</title>
+</head>
+
+<body>
+  <!-- Header -->
+  <section id="header">
+    <div class="header container">
+      <div class="nav-bar">
+        <div class="brand">
+          <a href="#hero">
+            <h1>{{ company_obj.logo_name}}</h1>
+          </a>
+        </div>
+        <div class="nav-list">
+          <div class="hamburger">
+            <div class="bar"></div>
+          </div>
+          <ul>
+            <li><a href="#hero" data-after="Home">Home</a></li>
+            <li><a href="#services" data-after="Service">Services</a></li>
+            <li><a href="#projects" data-after="Projects">Projects</a></li>
+            <li><a href="#about" data-after="About">About</a></li>
+            <li><a href="#contact" data-after="Contact">Contact</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+  <!-- End Header -->
+
+
+  <!-- Hero Section  -->
+  <section id="hero" style="background-size: cover;">
+    <div class="hero container" style="background-image: url('{{ company_obj.main_image.url }}'); ">
+      <div>
+        <h1>{{ company_obj.portfolio_name}}<span></span></h1>
+        <a href="#projects" type="button" class="cta">Portfolio</a>
+      </div>
+    </div>
+  </section>
+  <!-- End Hero Section  -->
+
+  <!-- Service Section -->
+  <section id="services">
+    <div class="services container">
+      <div class="service-top">
+        <h1 class="section-title">{{ company_obj.service_title}}</h1>
+        <p>{{ company_obj.service_phrase}}</p>
+      </div>
+      <div class="service-bottom">
+        {% for service in services%}
+        <div class="service-item">
+          <div class="icon">
+              <img src="{{ service.image.url }}" /></div>
+          <h2>{{service.heading}}</h2>
+          <p>{{service.description}}</p>
+        </div>
+        {% endfor%}
+      </div>
+    </div>
+  </section>
+  <!-- End Service Section -->
+
+  <!-- Projects Section -->
+  <section id="projects">
+    <div class="projects container">
+      <div class="projects-header">
+        <h1 class="section-title">Recent <span>{{company_obj.project_title}}</span></h1>
+      </div>
+      <div class="all-projects">
+        {% for project in projects%}
+        <div class="project-item">
+          <div class="project-info">
+            <h1>{{project.heading}}</h1>
+            <h2>{{project.sub_heading}}</h2>
+            <p>{{project.description}}</p>
+          </div>
+          <div class="project-img">
+            <img src="{{ project.image.url }}" alt="img">
+          </div>
+        </div>
+         {% endfor%}
+
+
+    </div>
+  </section>
+  <!-- End Projects Section -->
+
+  <!-- About Section -->
+  <section id="about">
+    <div class="about container">
+      <div class="col-left">
+        <div class="about-img">
+          <img src="{{ company_obj.about_image.url }}" alt="img">
+        </div>
+      </div>
+      <div class="col-right">
+        <h1 class="section-title">About <span>{{ company_obj.about_title}}</span></h1>
+        <h2>{{ company_obj.about_subtitle}}</h2>
+        <p> {{ company_obj.about_phrase}}</p>
+        <a href="{{ company_obj.get_absolute_url }}" class="cta">{{ company_obj.about_link}}</a>
+      </div>
+    </div>
+  </section>
+  <!-- End About Section -->
+
+  <!-- Contact Section -->
+  <section id="contact">
+    <div class="contact container">
+      <div>
+        <h1 class="section-title">Contact <span>{{ company_obj.contact_title}}</span></h1>
+      </div>
+      <div class="contact-items">
+        <div class="contact-item">
+          <div class="icon"><img src="{{ company_obj.phone_image.url }}" /></div>
+          <div class="contact-info">
+            <h1>Phone</h1>
+            <h2>{{ company_obj.contact_phone1}}</h2>
+            <h2>{{ company_obj.contact_phone2}}</h2>
+          </div>
+        </div>
+        <div class="contact-item">
+          <div class="icon"><img src="{{ company_obj.email_image.url }}" /></div>
+          <div class="contact-info">
+            <h1>Email</h1>
+            <h2>{{ company_obj.contact_email1}}</h2>
+            <h2>{{ company_obj.contact_email2}}</h2>
+          </div>
+        </div>
+        <div class="contact-item">
+          <div class="icon"><img src="{{ company_obj.address_image.url }}" /></div>
+          <div class="contact-info">
+            <h1>Address</h1>
+            <h2>{{ company_obj.contact_address1}}</h2>
+            <h2>{{ company_obj.contact_address2}}</h2>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <!-- End Contact Section -->
+
+  <!-- Footer -->
+  <section id="footer">
+    <div class="footer container">
+      <div class="brand">
+        <h1>{{ company_obj.logo_name}}</h1>
+      </div>
+      <h2>{{ company_obj.footer_phrase}}</h2>
+      <div class="social-icon">
+        <div class="social-item">
+          <a href="#"><img src="{{ company_obj.facebook_image.url }}" /></a>
+        </div>
+        <div class="social-item">
+          <a href="#"><img src="{{ company_obj.instragram_image.url }}" /></a>
+        </div>
+        <div class="social-item">
+          <a href="#"><img src="{{ company_obj.twitter_image.url }}" /></a>
+        </div>
+        <div class="social-item">
+          <a href="#"><img src="{{ company_obj.Be_image.url }}" /></a>
+        </div>
+      </div>
+      <p>Copyright © {{ company_obj.copyright_year}}. {{ company_obj.copyright_phrase}}</p>
+    </div>
+  </section>
+  <!-- End Footer -->
+  <script src="{% static 'portfolio/js/app.js' %}"></script>
+</body>
+
+</html>

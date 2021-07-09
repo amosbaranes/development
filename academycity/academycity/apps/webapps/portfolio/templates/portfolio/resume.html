@@ -1,0 +1,20 @@
+{% extends "base_portfolio.html" %}
+{% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
+
+{% block title %}
+<title>{{ company_obj.portfolio_name }}</title>
+{% endblock%}
+
+{% block body_content %}
+
+<div class="container">
+
+<hr>
+<h1>{% render_model company_obj "prefix_name" %} {% render_model company_obj "first_name" %} {% render_model company_obj "last_name" %}</h1>
+<hr>
+
+<!--<h3 style="color:blue">{% render_model course "course_name" %}</h3><br>-->
+{% render_placeholder company_obj.resume %}
+
+</div>
+{% endblock %}

@@ -60,6 +60,7 @@ urlpatterns += i18n_patterns(
     #
     url(r'c/', include('academycity.apps.webapps.checkcashingchicago.urls')),
     url(r'e/', include('academycity.apps.webapps.education.urls')),
+    url(r'p/', include('academycity.apps.webapps.portfolio.urls')),
     url(r'^f/', include('academycity.apps.webapps.fabhouseafrica.urls')),
     url(r'r/', include('academycity.apps.webapps.radiusfood.urls')),
     url(r'b/', include('academycity.apps.webapps.bizland.urls')),

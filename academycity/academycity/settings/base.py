@@ -180,6 +180,7 @@ LOCAL_APPS = [
 WebApps = [
     'academycity.apps.webapps.checkcashingchicago',
     'academycity.apps.webapps.education',
+    'academycity.apps.webapps.portfolio',
     'academycity.apps.webapps.fabhouseafrica',
     'academycity.apps.webapps.bizland',
     'academycity.apps.webapps.radiusfood',
