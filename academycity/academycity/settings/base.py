@@ -298,6 +298,7 @@ LANGUAGES = (
 CMS_LANGUAGES = {
     ## Customize this
     1: [
+
         {
             'code': 'en',
             'name': _('English'),
@@ -319,6 +320,7 @@ CMS_LANGUAGES = {
             'public': True,
             'hide_untranslated': False,
         },
+
         # {
         #     'code': 'es',
         #     'name': _('Spanish'),

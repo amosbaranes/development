@@ -14,7 +14,6 @@ class InstitutionWeb(models.Model):
     order = models.IntegerField(default=1000, null=True, blank=True)
     institution_name = models.CharField(max_length=100, null=True, blank=True)
     domain_name = models.CharField(max_length=100, null=True, blank=True)
-    github_domain_name = models.CharField(max_length=100, null=True, blank=True)
     welcome_phrase = models.CharField(max_length=100, null=True, blank=True)
     institution_image = models.ImageField(upload_to='institution/', blank=True, null=True)
     logo_image = models.ImageField(upload_to='institution/', blank=True, null=True)
@@ -28,6 +27,12 @@ class InstitutionWeb(models.Model):
 
     phone = models.CharField(max_length=20, null=True, blank=True)
     email = models.CharField(max_length=40, null=True, blank=True)
+
+    facebook_link = models.CharField(max_length=100, null=True, blank=True)
+    linkedin_link = models.CharField(max_length=100, null=True, blank=True)
+    twitter_link = models.CharField(max_length=100, null=True, blank=True)
+    instagram_link = models.CharField(max_length=100, null=True, blank=True)
+    github_link = models.CharField(max_length=100, null=True, blank=True)
 
     def __str__(self):
         return self.institution_name

@@ -4,6 +4,8 @@ from django.http import JsonResponse
 from ...webcompanies.WebCompanies import WebSiteCompany
 from django.http import JsonResponse
 from .models import Phrase, AdditionalTopic, Course, Program, MoreNewsDetail, Subject
+from allauth.account.forms import LoginForm, SignupForm
+from django.urls import reverse
 
 
 def home(request):
@@ -138,3 +140,20 @@ def news_detail(request):
     return render(request, 'education/news_detail.html', {'news_detail_': news_detail_,
                                                           'institution_obj': company_obj,
                                                           })
+
+
+def login_page(request):
+    form_class = LoginForm
+    return render(request, 'education/login_page.html', {
+        'form' : form_class, 'redirect_field_name': "next",
+        'redirect_field_value': reverse('education:home')
+    })
+
+
+def signup_page(request):
+    form_signup = SignupForm
+    return render(request, 'education/signup_page.html', {
+        'form_signup': form_signup,
+        'redirect_field_name': "next",
+        'redirect_field_value': reverse('education:home')
+    })

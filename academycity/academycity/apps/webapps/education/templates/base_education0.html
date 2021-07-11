@@ -5,7 +5,7 @@
   {% block title %}<title>Title</title>{% endblock%}
   <meta name="viewport" content="width=device-width,initial-scale=1">
   {% block meta %}{% endblock %}
-  <link rel="stylesheet" type="text/css" href="{% static 'css/main.a399bc1a5519.css' %}">
+
   {% block links %} {% endblock %}
   {% render_block "css" %}
 </head>
@@ -90,6 +90,10 @@
       <path d="M32 7.075c-1.175 0.525-2.444 0.875-3.769 1.031 1.356-0.813 2.394-2.1 2.887-3.631-1.269 0.75-2.675 1.3-4.169 1.594-1.2-1.275-2.906-2.069-4.794-2.069-3.625 0-6.563 2.938-6.563 6.563 0 0.512 0.056 1.012 0.169 1.494-5.456-0.275-10.294-2.888-13.531-6.862-0.563 0.969-0.887 2.1-0.887 3.3 0 2.275 1.156 4.287 2.919 5.463-1.075-0.031-2.087-0.331-2.975-0.819 0 0.025 0 0.056 0 0.081 0 3.181 2.263 5.838 5.269 6.437-0.55 0.15-1.131 0.231-1.731 0.231-0.425 0-0.831-0.044-1.237-0.119 0.838 2.606 3.263 4.506 6.131 4.563-2.25 1.762-5.075 2.813-8.156 2.813-0.531 0-1.050-0.031-1.569-0.094 2.913 1.869 6.362 2.95 10.069 2.95 12.075 0 18.681-10.006 18.681-18.681 0-0.287-0.006-0.569-0.019-0.85 1.281-0.919 2.394-2.075 3.275-3.394z"></path>
     </symbol>
 
+    <symbol id="icon-instagram" viewBox="0 0 32 32">
+        <path class="path1" d="M18.286 16q0-1.893-1.339-3.232t-3.232-1.339-3.232 1.339-1.339 3.232 1.339 3.232 3.232 1.339 3.232-1.339 1.339-3.232zM20.75 16q0 2.929-2.054 4.982t-4.982 2.054-4.982-2.054-2.054-4.982 2.054-4.982 4.982-2.054 4.982 2.054 2.054 4.982zM22.679 8.679q0 0.679-0.482 1.161t-1.161 0.482-1.161-0.482-0.482-1.161 0.482-1.161 1.161-0.482 1.161 0.482 0.482 1.161zM13.714 4.75q-0.125 0-1.366-0.009t-1.884 0-1.723 0.054-1.839 0.179-1.277 0.33q-0.893 0.357-1.571 1.036t-1.036 1.571q-0.196 0.518-0.33 1.277t-0.179 1.839-0.054 1.723 0 1.884 0.009 1.366-0.009 1.366 0 1.884 0.054 1.723 0.179 1.839 0.33 1.277q0.357 0.893 1.036 1.571t1.571 1.036q0.518 0.196 1.277 0.33t1.839 0.179 1.723 0.054 1.884 0 1.366-0.009 1.366 0.009 1.884 0 1.723-0.054 1.839-0.179 1.277-0.33q0.893-0.357 1.571-1.036t1.036-1.571q0.196-0.518 0.33-1.277t0.179-1.839 0.054-1.723 0-1.884-0.009-1.366 0.009-1.366 0-1.884-0.054-1.723-0.179-1.839-0.33-1.277q-0.357-0.893-1.036-1.571t-1.571-1.036q-0.518-0.196-1.277-0.33t-1.839-0.179-1.723-0.054-1.884 0-1.366 0.009zM27.429 16q0 4.089-0.089 5.661-0.179 3.714-2.214 5.75t-5.75 2.214q-1.571 0.089-5.661 0.089t-5.661-0.089q-3.714-0.179-5.75-2.214t-2.214-5.75q-0.089-1.571-0.089-5.661t0.089-5.661q0.179-3.714 2.214-5.75t5.75-2.214q1.571-0.089 5.661-0.089t5.661 0.089q3.714 0.179 5.75 2.214t2.214 5.75q0.089 1.571 0.089 5.661z"></path>
+    </symbol>
+
     <svg id="icon-arrow-right" viewBox="0 0 16 16" fill="currentColor">
       <path fill-rule="evenodd" d="M10.146 4.646a.5.5 0 01.708 0l3 3a.5.5 0 010 .708l-3 3a.5.5 0 01-.708-.708L12.793 8l-2.647-2.646a.5.5 0 010-.708z" clip-rule="evenodd"/>
       <path fill-rule="evenodd" d="M2 8a.5.5 0 01.5-.5H13a.5.5 0 010 1H2.5A.5.5 0 012 8z" clip-rule="evenodd"/>
@@ -107,82 +111,13 @@
 
             {% block body_content %}
             {% endblock %}
+            {% block content_ %}
+          {% endblock %}
         </div>
     </div>
 <!--    beginning of footer -->
-    <div class="body-footer">
-                <div class="body-footer__container">
-                      <div class="body-footer__menu">
-                          <p class="body-footer__subtitle">Learn more</p>
-                          <div class="body-footer__items">
-                              <a href="//localhost:8080/en/annex/about/">About</a>
-                              <a href="//localhost:8080/en/annex/sitemap/">Sitemap</a>
-                              <a href="/styleguide/">Style guide</a>
-                              <div class="nested-item nested-item--list nested-item--0">
-                                  <div class="nested-item__content">{{institution_obj.institution_name}} community</div>
-                                  <ul class="nested-item__items">
-                                      <li><a href="https://{{institution_obj.domain_name}}" target="_blank">Website</a></li>
-                                      <li><a href="https://{{institution_obj.github_domain_name}}" target="_blank">Github</a></li>
-                                  </ul>
-                              </div>
-                          </div>
-                      </div>
-                      <div class="body-footer__brand">
-                          <a href="/">
-                              <img src="{{ institution_obj.footer_image.url }}" width="72px" height="100px" alt=""></a>
-                      </div>
-                      <div class="body-footer__insert">
-                          <p class="body-footer__title">{{institution_obj.footer_phrase}}</p>
-                          <script data-language-selector type="application/json">
-            {
-              "currentLanguage": "en",
-              "languages": {
-
-                "en": {
-                  "code": "en",
-                  "name": "English",
-                  "url": "/en/"
-
-                },
-
-
-                "fr": {
-                  "code": "fr",
-                  "name": "French",
-                  "url": "/fr/"
-
-                }
-
-
-              }
-            }
-            </script>
-                          <div class="richie-react richie-react--language-selector" data-props-source="[data-language-selector]"></div>
-
-                          <div class="body-footer__badges">
-                              <a href="https://www.facebook.com/example" class="body-footer__badge" target="_blank">
-                                  <svg role="img"><title>Facebook</title><use href="#icon-facebook" /></svg>
-                              </a>
-                              <a href="https://twitter.com/@funmooc" class="body-footer__badge" target="_blank" title="Twitter page">
-                                  <svg role="img"><title>Twitter</title><use href="#icon-twitter" /></svg>
-                              </a>
-                              <a href="https://www.linkedin.com/school/franceuniversitenumerique/" class="body-footer__badge" target="_blank" title="Linkedin">
-                                  <svg role="img"><title>Linkedin</title><use href="#icon-linkedin" /></svg>
-                              </a>
-                          </div>
-                      </div>
-                  </div>
-            </div>
-    <div class="body-mentions">
-      <div class="body-mentions__container">
-          <div class="body-mentions__poweredby">
-              <a href="https://academycity.org" target="_blank">
-                  <small>Powered by</small>
-                  <strong>Academy City</strong>
-              </a>
-          </div>
-      </div>
-  </div>
+    {% block nav_footer %}
+    {% endblock %}
 <!--    end of footer  -->
 </div>
 <!-- end of body content-->

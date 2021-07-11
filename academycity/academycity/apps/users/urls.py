@@ -2,11 +2,12 @@ from django.conf.urls import url
 from django.urls import path, include
 from .views import (show_content, show_sub_content,
                     DeleteInstitution, InstitutionsView, InstitutionView, CreateInstitution, UpdateInstitution,
-                    edit_user_profile, user_delete)
+                    edit_user_profile, user_delete, my_account)
 
 app_name = "users"
 
 urlpatterns = [
+    path('my_account', my_account, name='my_account'),
     path('show_content', show_content, name='show_content'),
     path('show_sub_content', show_sub_content, name='show_sub_content'),
     path('institutions', InstitutionsView.as_view(), name='list_institution'),

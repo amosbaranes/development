@@ -1,0 +1,91 @@
+{% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
+{% load account %}
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE }}">
+<head>
+    {% block title %}
+        <title>Login</title>
+    {% endblock title %}
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta name="description" content="{% page_attribute meta_description %}">
+    <meta name="author" content="">
+    <meta name="google-site-verification" content="1NKy94ZSBrapf9w9BU4mJdhW__UB__qbGWa1V2aWoUs" />
+
+    {% render_block "css" %}
+
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+    <link href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'vendor/font-awesome-4.7.0/css/font-awesome.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/django_cms_original.css' %}" rel="stylesheet">
+    <link href="{% static 'css/messages.css' %}" rel="stylesheet">
+    <link href="{% static 'css/general.css' %}" rel="stylesheet">
+
+    {{ ALDRYN_SNAKE.render_head }}
+
+  </head>
+<body id="body_base0">
+
+{% cms_toolbar %}
+
+    <div class="container">
+<!--      <span onclick="document.getElementById('id01').style.display='none'" class="close" title="Close Modal">&times;</span>-->
+      <img  src="{% static "core/logo_wo_title.png" %}" height="100px" width="70x" alt="AcademyCity">
+    </div>
+{% block content %}{% endblock content %}
+
+{% render_block "js" %}
+{{ ALDRYN_SNAKE.render_tail }}
+
+    <script src="{% static 'vendor/jquery/jquery.min.js' %}"></script>
+    <script src="{% static 'js/npm/cookie/js.cookie.min.js' %}"></script>
+    <script src="{% static 'js/propper/2.5.3/popper.min.js' %}"></script>
+    <script src="{% static 'vendor/bootstrap/js/bootstrap.min.js' %}"></script>
+    <script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+    <script src='https://cdn.plot.ly/plotly-latest.min.js'></script>
+
+<script>
+var csrftoken = Cookies.get('csrftoken');
+  function csrfSafeMethod(method) {
+    // these HTTP methods do not require CSRF protection
+    return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+  }
+  $.ajaxSetup({
+    beforeSend: function(xhr, settings) {
+      if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+        xhr.setRequestHeader("X-CSRFToken", csrftoken);
+      }
+    }
+  });
+
+  $(document).ready(function(){
+    post_ajax_create_action = function (verb_="", app_="", model_, obj_slug_=null, pkey_=null) {
+      $.post(link_create_action,
+        {
+          verb: verb_,
+          app: app_,
+          model: model_,
+          obj_slug: obj_slug_,
+          pkey: pkey_
+        },
+        function(data){
+            alert(data["status"])
+        }
+      );
+    };
+
+    {% block domready %}
+    {% endblock %}
+
+  });
+</script>
+</body>
+</html>
+
+
+
+
+
+

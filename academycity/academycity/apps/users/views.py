@@ -284,3 +284,7 @@ def edit_user_profile(request):
         profile_form = ProfileEditForm(instance=request.user.academics)
     return render(request, 'users/edit_user_profile.html', {'user_form': user_form, 'profile_form': profile_form})
 
+
+def my_account(request):
+    return render(request, 'user_home.html', {})
+
