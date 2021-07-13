@@ -30,12 +30,9 @@
 
 <script>
 
-function acWin(win_name="none", win_title="none", width="500", height="300", left="0", top="0", is_scroll=true)
+function acWin(win_name="none", win_title="none", width="500", height="300", left="0", top="0", is_scroll=true, win_nav_title)
 {
-
 // alert(win_name +" : " + win_title +" : " + width +" : " + height +" : " + left +" : " + top)
-
-
   this.win_name = win_name
   this.win_frame = document.createElement("div");
   this.win_frame.setAttribute("id", "win_frame_"+this.win_name);
@@ -66,13 +63,15 @@ function acWin(win_name="none", win_title="none", width="500", height="300", lef
   this.win_content = document.createElement("div");
   this.win_content.setAttribute("id", "win_content_"+this.win_name);
   //this.win_content.innerHTML = "Content."
+
+  this.style_content = "height:"+(height-this.title_height-7)+"px;width:"+width+"px"
   if(is_scroll==true)
   {
    this.style_content = "overflow: scroll;"
   }
-  "height:"+(height-this.title_height-7)+"px;width:"+width+"px"
   this.win_content.setAttribute("style", this.style_content);
   this.win_frame.appendChild(this.win_content)
+
   //--
   this.win_nav = document.createElement("div");
   this.win_nav.setAttribute("id", "win_nav_"+this.win_name);
@@ -89,7 +88,7 @@ function acWin(win_name="none", win_title="none", width="500", height="300", lef
 
   this.span = document.createElement("span");
   this.span.setAttribute("id", "span_"+this.win_name);
-  this.span.innerHTML = "&nbsp;Whiteboard"
+  this.span.innerHTML = "&nbsp;" + win_nav_title
   this.span.setAttribute("style", "position: absolute;left: 50");
   this.win_nav.appendChild(this.span)
 
@@ -127,7 +126,6 @@ function acWin(win_name="none", win_title="none", width="500", height="300", lef
   this.win_frame_title.setAttribute('pos2', 0);
   this.win_frame_title.setAttribute('pos3', 0);
   this.win_frame_title.setAttribute('pos4', 0);
-
 
   s = ''
   s += 'this.win_frame_title.addEventListener("mousedown", function(){'
@@ -171,13 +169,12 @@ function acWin(win_name="none", win_title="none", width="500", height="300", lef
   eval(s)
 }
 
-
 function Whiteboard (win_name_, win_title_, socket, chat_room_name)
 {
   this.name = win_name_.toString(); // course_schedule_id
   this.width_ = "1000"
   this.height_ = "500"
-  acWin.call(this, win_name=this.name, win_title=win_title_, width=this.width_, height=this.height_, left="100", top="100", is_scroll=false)
+  acWin.call(this, win_name=this.name, win_title=win_title_, width=this.width_, height=this.height_, left="100", top="100", is_scroll=false, win_nav_title="Whiteboard")
     this.socket = socket
     //this.colors = ['black', 'green', 'red', 'blue']
     this.color_match = {}

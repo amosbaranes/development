@@ -1,0 +1,63 @@
+{% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
+{% load core_tags %}
+
+{% if LANGUAGE_CODE == "ar" %}
+<div dir="RTL" style="text-align: right;" class="row">
+{% else %}
+<div dir="LTR" class="row">
+{% endif%}
+  <div id="{{name}}_content" class="container column right" style="background-color:#b3d1ff;">
+    <table>
+        <tr>
+            <td>{% trans "Industry" %}: </td>
+            <td>
+                <select name="industries" id="industries" style="width: 150px;" onChange="industries_fun(event)">
+                <option value='1'>{% trans "All Companies" %}</option>
+                {% for i in industry %}
+                <option value='{{ i.sic_code }}'>{{ i.sic_description }}</option>
+                {% endfor %}
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <td>{% trans "Company" %}:</td>
+            <td>
+                <select name="companies" id="companies" style="width: 150px;" onChange="companies_fun(event)">
+                <option value='0'>Choose company</option>
+                {% for c in companies %}
+                <option value='{{c.id}}'>
+                    {{c.company_name}}</option>
+                {% endfor %}
+                </select>  <span id="ticker_"></span>
+            </td>
+        </tr>
+        <tr>
+            <td>{% trans "Country" %}:</td>
+            <td>
+                <select  name="countries" id="countries" style="width: 150px;" onChange="countries_fun(event)">
+                    <option value='0'>--------------------</option>
+                {% for c in country %}
+                    <option value={{c.id}} data='{{ c.marginal_tax_rate }}_{{ c.long_term_rating.country_rating }}_{{ c.long_term_rating.default_spread }}'>
+                        {{ c.country }}</option>
+                {% endfor %}
+                </select>
+<!--                <span class="tooltiptext">-->
+                  {% trans "Rating" %}: <span id="country_rating"></span>
+                   &nbsp&nbsp {% trans "Spread" %}: <span id="country_default_spread"></span>%
+                   &nbsp&nbsp {% trans "Tax rate" %}: <span id="country_tax_rate"></span>%
+<!--                </span>-->
+            </td>
+        </tr>
+        <tr>
+            <td>Year:</td>
+            <td>
+                <select name="valuation_year" id="valuation_year" style="width: 150px;" onChange="valuation_year_fun(event)">
+                    <option value='0'>--------------------</option>
+                    <option value='2020' selected>2020</option>
+                    <option value='2019'>2019</option>
+                </select>
+            </td>
+        </tr>
+    </table>
+  </div>
+</div>

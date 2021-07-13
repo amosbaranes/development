@@ -11,6 +11,7 @@
 </head>
 <body>
      {% cms_toolbar %}
+
        <svg
   style="position: absolute; width: 0; height: 0;"
   width="0"
@@ -163,5 +164,7 @@ post_ajax_create_action = function (verb_="", app_="", model_, obj_slug_=null, p
 });
 </script>
  {% render_block "js" %}
+
+  {% static_placeholder "Footer" %}
 </body>
 </html>

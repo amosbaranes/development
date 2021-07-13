@@ -418,3 +418,15 @@ class Project(TruncateTableMixin, TranslatableModel):
 
     def __str__(self):
         return self.name
+
+
+class Valuation(TruncateTableMixin, models.Model):
+    class Meta:
+        verbose_name = _('Valuation')
+        verbose_name_plural = _('Valuations')
+        ordering = ['user', 'company_info']
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, on_delete=models.CASCADE,
+                             related_name='user_valuations')
+    company_info = models.ForeignKey(CompanyInfo, on_delete=models.CASCADE, default=None, blank=True, null=True)
+

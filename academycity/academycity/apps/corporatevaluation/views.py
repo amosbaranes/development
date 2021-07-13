@@ -291,7 +291,7 @@ def update_account(request):
     return JsonResponse(dic)
 
 
-def update_data_year(request):
+def update_data_year(request, name_, game, team_, s_url):
     sql = SQL()
     nyear = request.POST.get('nyear')
     # print(nyear)
@@ -363,4 +363,50 @@ def update_data_year(request):
 
 
     return JsonResponse(dic)
+
+
+def get_screens_data(request, name_, s_url):
+    pass
+
+
+def get_screens_inputs(request, name_, s_url):
+    print('---')
+    print(s_url)
+    print('---')
+
+    industry = Industry.objects.exclude(sic_description='0').all()
+    global_industry_averages = GlobalIndustryAverages.objects.all()
+    country = Country.objects.all()
+    companies = CompanyInfo.objects.exclude(company_name='0').all()
+    return render(request, s_url,
+                  {'name': name_,
+                   'industry': industry,
+                   'global_industry_averages': global_industry_averages,
+                   'country': country,
+                   'companies': companies,
+                   'user': request.user,
+                   })
+
+
+def get_screens(request):
+    name_ = request.POST.get('name').lower()
+    # print(name_)
+    # obj_id = request.POST.get('obj_id')  # obj_id is the game_id
+    # game = Game.objects.filter(translations__language_code=get_language()).get(id=obj_id)
+
+    # team_ = game.get_current_team(request.user)
+
+    s_url = 'corporatevaluation/simulation/_' + name_ + '.html'
+    sr = "get_screens_"+name_+"(request, name_, s_url)"
+    # print(sr)
+    #
+    #     https://python-reference.readthedocs.io/en/latest/docs/functions/eval.html
+    # >>> # this example shows how providing globals argument prevents eval from accessing real globals dictionary
+    # >>> eval("os.getcwd()", {})
+    # NameError: name 'os' is not defined
+    # >>> # that example however can be bypassed by using __import__ function inside eval
+    # >>> eval('__import__("os").getcwd()', {})
+
+    # create_action(request.user, 'globsim__get_screens__' + name_, target=game)
+    return eval(sr)
 

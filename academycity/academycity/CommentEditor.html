@@ -1,0 +1,328 @@
+<html>
+<head>
+    <style>
+
+.pencil {
+  cursor: crosshair;
+<!--  cursor: url({% static "main/pencil.png" %}) 5 5, pointer;-->
+}
+
+.button {
+  border: none;
+  color: white;
+  padding: 20px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 2px;
+  cursor: pointer;
+}
+
+.button3 {border-radius: 30%;}
+.button5 {border-radius: 50%;}
+.buttonadd {border-radius: 50%;padding: 8px;margin: 10px 20px;}
+
+
+    </style>
+    <style>
+body {font-family: Arial;}
+
+/* Style the tab */
+.tab {
+  overflow: hidden;
+  border: 1px solid #ccc;
+  background-color: #f1f1f1;
+}
+
+/* Style the buttons inside the tab */
+.tab button {
+  background-color: inherit;
+  float: left;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  padding: 14px 16px;
+  transition: 0.3s;
+  font-size: 17px;
+}
+
+/* Change background color of buttons on hover */
+.tab button:hover {
+  background-color: #ddd;
+}
+
+/* Create an active/current tablink class */
+.tab button.active {
+  background-color: #ccc;
+}
+
+/* Style the tab content */
+.tabcontent {
+  display: none;
+  padding: 6px 12px;
+  border: 1px solid #ccc;
+  border-top: none;
+}
+</style>
+</head>
+<body id="body0">
+<p>In this example, we use JavaScript to "click" on the London button, to open the tab on page load.</p>
+
+<div class="tab">
+  <button class="tablinks" onclick="openCity(event, 'London')" id="defaultOpen">London</button>
+  <button class="tablinks" onclick="openCity(event, 'Paris')">Paris</button>
+  <button class="tablinks" onclick="openCity(event, 'Tokyo')">Tokyo</button>
+</div>
+
+<div id="London" class="tabcontent">
+  <h3>London</h3>
+  <p>London is the capital city of England.</p>
+</div>
+
+<div id="Paris" class="tabcontent">
+  <h3>Paris</h3>
+  <p>Paris is the capital of France.</p>
+</div>
+
+<div id="Tokyo" class="tabcontent">
+  <h3>Tokyo</h3>
+  <p>Tokyo is the capital of Japan.</p>
+</div>
+
+<script>
+function openCity(evt, cityName) {
+  var i, tabcontent, tablinks;
+  tabcontent = document.getElementsByClassName("tabcontent");
+  for (i = 0; i < tabcontent.length; i++) {
+    tabcontent[i].style.display = "none";
+  }
+  tablinks = document.getElementsByClassName("tablinks");
+  for (i = 0; i < tablinks.length; i++) {
+    tablinks[i].className = tablinks[i].className.replace(" active", "");
+  }
+  document.getElementById(cityName).style.display = "block";
+  evt.currentTarget.className += " active";
+}
+
+// Get the element with id="defaultOpen" and click on it
+document.getElementById("defaultOpen").click();
+</script>
+
+
+
+
+
+
+
+
+
+
+<script>
+function acWin(win_name="none", win_title="none", width="500", height="300", left="0", top="0", is_scroll=true, win_nav_title)
+{
+// alert(win_name +" : " + win_title +" : " + width +" : " + height +" : " + left +" : " + top)
+  this.win_name = win_name
+  var e = document.getElementById("win_frame_"+this.win_name)
+  if (e)
+  {
+   e.remove()
+  }
+  this.win_frame = document.createElement("div");
+  this.win_frame.setAttribute("id", "win_frame_"+this.win_name);
+  this.style_frame = "position: fixed; background-color: white; z-index: 11; text-align: left;"
+  this.style_frame += "height:"+height+"px;width:"+width+"px;font-size:12pt;"
+  this.style_frame += "border:2px solid #0094ff;"
+  this.style_frame += "border-top-left-radius:35px;border-top-right-radius:35px;"
+  this.style_frame += "left:"+left+";top:"+top+";"
+  this.win_frame.setAttribute("style", this.style_frame);
+
+  this.title_height = 25
+  this.win_frame_title = document.createElement("div");
+  this.win_frame_title.setAttribute("id", "win_frame_title_"+this.win_name);
+  this.style_title = "text-align:center;display:block;padding:4px;color:#fff;margin:-1 0 0 0;height:"+this.title_height+"px;z-index:11;"
+  this.style_title += "background-color:#2196F3;color:#fff;cursor:move;font-size:12pt;border-top-left-radius:35px;border-top-right-radius:35px;"
+  this.win_frame_title.setAttribute("style", this.style_title);
+  this.win_frame_title.innerHTML = win_title
+  this.win_frame.appendChild(this.win_frame_title)
+
+  this.win_frame_ico = document.createElement("img");
+  this.win_frame_ico.setAttribute("id", "win_frame_ico_"+this.win_name);
+  this.win_frame_ico.setAttribute("src", "http://www.academycity.org/static/core/globs.jpg");
+  this.win_frame_ico.setAttribute("style", "border-radius: 10px;position: absolute;left: 30");
+  this.win_frame_ico.setAttribute("height", "20");
+  this.win_frame_ico.setAttribute("width", "20");
+  this.win_frame_title.appendChild(this.win_frame_ico)
+
+  this.win_content = document.createElement("div");
+  this.win_content.setAttribute("id", "win_content_"+this.win_name);
+  //this.win_content.innerHTML = "Content."
+
+  this.style_content = "height:"+(height-this.title_height-7)+"px;width:"+width+"px"
+  if(is_scroll==true)
+  {
+   this.style_content = "overflow: scroll;"
+  }
+  this.win_content.setAttribute("style", this.style_content);
+  this.win_frame.appendChild(this.win_content)
+
+  //--
+  this.win_nav = document.createElement("div");
+  this.win_nav.setAttribute("id", "win_nav_"+this.win_name);
+  this.style_win_nav = "position:fixed;text-align:center;width:80;display:none; left:"+left+";top:"+top+";";
+  this.win_nav.setAttribute("style", this.style_win_nav)
+
+  this.win_nav_ico = document.createElement("img");
+  this.win_nav_ico.setAttribute("id", "win_nav_ico_"+this.win_name);
+  this.win_nav_ico.setAttribute("src", "http://www.academycity.org/static/core/globs.jpg");
+  this.win_nav_ico.setAttribute("style", "border-radius: 10px;position: absolute;left: 30");
+  this.win_nav_ico.setAttribute("height", "20");
+  this.win_nav_ico.setAttribute("width", "20");
+  this.win_nav.appendChild(this.win_nav_ico)
+
+  this.span = document.createElement("span");
+  this.span.setAttribute("id", "span_"+this.win_name);
+  this.span.innerHTML = "&nbsp;" + win_nav_title
+  this.span.setAttribute("style", "position: absolute;left: 50");
+  this.win_nav.appendChild(this.span)
+
+  body_ = document.getElementById("body0")
+  body_.appendChild(this.win_frame)
+  body_.appendChild(this.win_nav)
+
+  s = ''
+  s += 'this.win_frame_ico.addEventListener("click", function(){'
+  s += '  event.preventDefault();'
+  s += '  if (x_'+this.win_name+'.style.display === "none") {'
+  s += '    x_'+this.win_name+'.style.display = "block";'
+  s += '    n_'+this.win_name+'.style.display = "none";'
+  s += '  } else {'
+  s += '    x_'+this.win_name+'.style.display = "none";'
+  s += '    n_'+this.win_name+'.style.display = "block";'
+  s += '  }'
+  s += '}.bind(elm = this.win_frame_ico, event, x_'+this.win_name+' = this.win_frame, n_'+this.win_name+' = this.win_nav));'
+  eval(s)
+
+  s = ''
+    s += 'this.win_nav_ico.addEventListener("click", function(){'
+      s += 'event.preventDefault();'
+      s += 'if (x_'+this.win_name+'.style.display==="none") {'
+      s += 'x_'+this.win_name+'.style.display="block";'
+      s += 'n_'+this.win_name+'.style.display="none";'
+      s += '} else {'
+      s += 'x_'+this.win_name+'.style.display="none";'
+      s += 'n_'+this.win_name+'.style.display="block";'
+      s += '}'
+    s += '}.bind(this.win_nav_ico, event, x_'+this.win_name+' = this.win_frame, n_'+this.win_name+' = this.win_nav));'
+  eval(s)
+
+  this.win_frame_title.setAttribute('pos1', 0);
+  this.win_frame_title.setAttribute('pos2', 0);
+  this.win_frame_title.setAttribute('pos3', 0);
+  this.win_frame_title.setAttribute('pos4', 0);
+
+  s = ''
+  s += 'this.win_frame_title.addEventListener("mousedown", function(){'
+  s += 'event.preventDefault();'
+  s += 'elm_win_frame_title_'+this.win_name+'.setAttribute("pos3", event.clientX);'
+  s += 'elm_win_frame_title_'+this.win_name+'.setAttribute("pos4", event.clientY);'
+  s += 'document.addEventListener("mouseup", my_mouse_up_'+this.win_name+' = function(){'
+  s += 'event.preventDefault();'
+  s += 'try{'
+  s += 'document.removeEventListener("mouseup", my_mouse_up_'+this.win_name+');'
+  s += 'document.removeEventListener("mousemove", my_mouse_move_'+this.win_name+');'
+  s += '} catch (err) {err.message}'
+  s += '}.bind(elm_win_frame_title_'+this.win_name+', event));'
+
+    //document.onmousemove = elementDrag;
+  s += 'document.addEventListener("mousemove", my_mouse_move_'+this.win_name+' = function(){'
+  s += 'event.preventDefault();'
+        // calculate the new cursor position:
+  s += 'pos3 = elm_win_frame_title_'+this.win_name+'.getAttribute("pos3");'
+  s += 'pos4 = elm_win_frame_title_'+this.win_name+'.getAttribute("pos4");'
+  s += 'pos1 = pos3 - event.clientX;'
+  s += 'pos2 = pos4 - event.clientY;'
+  s += 'pos3 = event.clientX;'
+  s += 'pos4 = event.clientY;'
+  s += 'elm_win_frame_title_'+this.win_name+'.setAttribute("pos3", pos3);'
+  s += 'elm_win_frame_title_'+this.win_name+'.setAttribute("pos4", pos4);'
+        // set the element's new position:
+  s += 'elm_win_frame_'+this.win_name+'.style.top = (elm_win_frame_'+this.win_name+'.offsetTop - pos2) + "px";'
+  s += 'elm_win_frame_'+this.win_name+'.style.left = (elm_win_frame_'+this.win_name+'.offsetLeft - pos1) + "px";'
+
+  s += 'elm_win_nav_'+this.win_name+'.style.top = elm_win_frame_'+this.win_name+'.style.top;'
+  s += 'elm_win_nav_'+this.win_name+'.style.left = elm_win_frame_'+this.win_name+'.style.left;'
+
+        //elm_win_frame_title.innerHTML = elm_win_frame.offsetTop + " : " + elm_win_frame.offsetLeft
+        //elm_win_frame_title.innerHTML = elm_win_nav.offsetTop + " : " + elm_win_nav.offsetLeft
+
+  s += '}.bind(elm_win_frame_title_'+this.win_name+', event, elm_win_frame_'+this.win_name+', elm_win_nav_'+this.win_name+'));'
+
+  s += '}.bind(elm_win_frame_title_'+this.win_name+' = this.win_frame_title, event, elm_win_frame_'+this.win_name
+  s += ' = this.win_frame, elm_win_nav_'+this.win_name+' = this.win_nav));'
+  eval(s)
+}
+
+
+function EditComment (win_name_, win_title_,cX ,cY)
+{
+  this.name = win_name_.toString(); // course_schedule_id
+  this.width_ = "403"
+  this.height_ = "300"
+  acWin.call(this, win_name=this.name, win_title=win_title_, width=this.width_, height=this.height_, left=cX, top=cY, is_scroll=false, win_nav_title="Edit")
+    //--
+    this.nav_tools = document.createElement("div");
+    this.nav_tools.setAttribute("id", "nav_tools"+this.name)
+    this.nav_tools_height = 30
+    this.style_nav_tools = "text-align:center;display:block;padding:4px;color:#fff;margin:-1 0 0 0;height:"+this.nav_tools_height+"px;z-index:11;"
+    this.style_nav_tools += "background-color:#F0F0F0;font-size:12pt;"
+    this.nav_tools.setAttribute("style", this.style_nav_tools);
+
+     this.save_btn = document.createElement("button");
+     this.save_btn.setAttribute("id", "nav_tools_save_btn"+this.name)
+     this.save_btn.setAttribute("type", "button")
+     this.save_btn.innerHTML = "Save";
+     this.nav_tools.appendChild(this.save_btn)
+
+  s = ''
+  s += 'this.save_btn.addEventListener("click", function(){'
+  s += '  event.preventDefault();'
+  s += '  alert(1)'
+  s += '}.bind(elm = this.win_frame_ico, event, x_'+this.win_name+' = this.win_frame, n_'+this.win_name+' = this.win_nav));'
+  eval(s)
+
+     //--
+     this.cancel_btn = document.createElement("button");
+     this.cancel_btn.setAttribute("id", "nav_tools_cancel_btn"+this.name)
+     this.cancel_btn.setAttribute("type", "button")
+     this.cancel_btn.innerHTML = "Cancel";
+     this.nav_tools.appendChild(this.cancel_btn)
+     //--
+    this.win_content.appendChild(this.nav_tools)
+    //--
+    this.content = document.createElement("div");
+    this.content.setAttribute("id", "content-" + this.name);
+     this.content_textarea = document.createElement("textarea");
+     this.content_textarea.setAttribute("id", "content-textarea-" + this.name);
+     this.content_textarea.setAttribute("cols", "48");
+     this.content_textarea.setAttribute("rows", "15");
+     this.content.appendChild(this.content_textarea);
+    this.win_content.appendChild(this.content);
+    //--
+}
+
+var page_info = {'id': 'get', 'page_name': 'test'}
+window.onclick = function (event) {
+ if (event.shiftKey) {
+  var cX = event.clientX.toString();;
+  var cY = event.clientY.toString();;
+  var comment_editor = new EditComment(win_name_="comment_editor", win_title_="Comment Editor",cX,cY)
+  }
+}
+
+
+
+</script>
+
+</body>
+</html>

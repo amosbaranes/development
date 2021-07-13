@@ -1,0 +1,92 @@
+
+    if (is_staff == 'True'){
+        for(var name in tabs_management)
+        {
+          s = "this.TabObjects[name] = new SimManagementTab(this, name, this.game_id, this.url_get_screens)"
+          eval(s)
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+SimTab.prototype.click_main = function(obj_id)
+{
+    sim_tab = this;
+    name_ = this.name.toLowerCase(); content_ = name_ + "_content"; nav_ = name_ + "_nav"
+    this.NAV = document.getElementById(nav_)
+    this.CONTENT = document.getElementById(content_)
+    contents_ = this.CONTENTObjects
+    for (d in contents_)
+    {dd = contents_[d];dd.style.display = 'none';this.get_nav(d).style.color = "black";}
+    if (obj_id != "new")
+    {
+      this.run_code_insure_obj(obj_id, "document.getElementById('"+this.NAV_PREFIX+"_"+obj_id+"').style.color = 'blue'");
+      post_ajax_create_action('globsim__change_to_item__' + name_ + '_' + obj_id)
+      doc_ = contents_[obj_id]; if(doc_){doc_.style.display = 'block'; return -1;}
+    }
+    var obj_name = ""
+    if (obj_id == "new")
+    {obj_name = prompt('Enter R&D Project name:', '');
+     if(obj_name == "" || obj_name == null) {return -1;}
+    }
+      doc_ = this.CONTENT
+      $.post(link3,
+        {
+          app: "globsim",
+          model_name: this.name,
+          obj_id: obj_id,
+          name: obj_name,
+          valuation_id: this.VALUATION_ID
+        },
+        function(data){
+            div_ = document.createElement("div")
+            div_.innerHTML = data
+            table_ = div_.getElementsByTagName("table")
+            obj_id_ = table_[0].getAttribute('pkey')
+            div_.setAttribute('id', name_ + '_obj_' + obj_id_)
+            div_.setAttribute('pkey', obj_id_)
+            doc_.appendChild(div_)
+            contents_[obj_id_] = div_
+
+            if (obj_id == "new")
+            { try{sim_tab.callback_new(div_, obj_id_)} catch (er) {alert(er)} }
+            s_obj = "document.getElementById('" + sim_tab.NAV_PREFIX + "_"+ obj_id_ + "').style.color = 'blue'"
+            sim_tab.run_code_insure_obj(obj_id_, s_obj)
+            if (name_=="randd")
+            {
+                t = document.getElementById("rd__attributes_"+obj_id_)
+                inputs_ = t.getElementsByTagName("input")
+                for (i in inputs_)
+                {
+                    if(inputs_[i].className)
+                    {
+                     if(inputs_[i].className.indexOf('slider') >= 0)
+                     {var event = new Event("change", {bubbles: true});inputs_[i].dispatchEvent(event);}
+                    }
+                }
+            }
+        });
+}
+
+SimTab.prototype.get_nav = function(obj_id) {
+    return document.getElementById(this.NAV_PREFIX + "_" + obj_id)
+}
+
+SimTab.prototype.run_code_insure_obj = function(obj_id, run_code="") {
+    obj = document.getElementById(this.NAV_PREFIX + "_" + obj_id)
+    if (!obj) {setTimeout(this.run_code_insure_obj, 1, obj_id, run_code); log(obj_id); return}
+    else { try{eval(run_code)} catch (er) {alert(er)}}
+}

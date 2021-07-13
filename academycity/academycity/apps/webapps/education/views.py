@@ -52,6 +52,10 @@ def subject_description(request, pk):
 def get_courses(request):
     wsc = WebSiteCompany(request, web_company_id=7)
     courses = wsc.site_company('courses')
+    is_admin = request.user.groups.filter(name='admins').exists()
+    if is_admin:
+        for obj in courses:
+            obj.save()
     rr = {}
     for course in courses:
         rr[str(course.id)] = {
@@ -88,6 +92,10 @@ def get_news(request):
 def get_program(request):
     wsc = WebSiteCompany(request, web_company_id=7)
     programs = wsc.site_company('programs')
+    is_admin = request.user.groups.filter(name='admins').exists()
+    if is_admin:
+        for obj in programs:
+            obj.save()
     rr = {}
     for program in programs:
         print('-' * 50)
