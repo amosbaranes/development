@@ -84,7 +84,7 @@
 {% block main_page %}
 <div class="subheader" style="margin-bottom:40px">
     <div class="subheader__container">
-        <h1 class="subheader__title">{{ program.program_title }}</h1>
+        <h1 class="subheader__title">{% render_model program "program_title" %}</h1>
     </div>
 </div>
 {% endblock %}

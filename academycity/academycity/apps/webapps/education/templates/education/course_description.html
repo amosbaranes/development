@@ -84,7 +84,7 @@
 {% block main_page %}
 <div class="subheader" style="margin-bottom:40px">
     <div class="subheader__container">
-        <h1 class="subheader__title">{{ course.course_name }}</h1>
+        <h1 class="subheader__title">{% render_model course "course_name" %}</h1>
     </div>
 </div>
 {% endblock %}

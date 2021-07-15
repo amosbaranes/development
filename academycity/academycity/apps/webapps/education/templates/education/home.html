@@ -102,7 +102,17 @@
 {% block body_content %}
     <section class="section ">
         <div class="section__row">
-            <h2 class="section__title">Popular courses</h2>
+            <h2 class="section__title">Programs</h2>
+            <div id="program_" class="section__items">
+                <div id="more_program_btn" class="button-caesura">
+                    <a href="/en/programs/">More programs</a>
+                </div>
+            </div>
+        </div>
+    </section>
+    <section class="section ">
+        <div class="section__row">
+            <h2 class="section__title">Our Courses</h2>
             <div id="courses_" class="section__items">
                 <div id="more_courses_btn" class="button-caesura">
                     <a href="/en/courses/">More courses</a>
@@ -120,16 +130,8 @@
             </div>
         </div>
     </section>
-    <section class="section ">
-        <div class="section__row">
-            <h2 class="section__title">Programs</h2>
-            <div id="program_" class="section__items">
-                <div id="more_program_btn" class="button-caesura">
-                    <a href="/en/programs/">More programs</a>
-                </div>
-            </div>
-        </div>
-    </section>
+
+<!--
     <section class="section ">
         <div class="section__row">
             <h2 class="section__title">Subjects</h2>
@@ -140,6 +142,8 @@
             </div>
         </div>
     </section>
+-->
+
     <section class="section ">
         <div class="section__row">
             <h2 class="section__title">Persons</h2>
@@ -495,8 +499,6 @@ link_program += '/'
                    return a_
                  }
 
-
-
               function get_program()
             {
                 try{
@@ -518,6 +520,8 @@ link_program += '/'
 
             get_program()
 
+//  subjects --
+// ------------
 var link_subject = "{% url 'education:subject_description' '1' %}"
 link_subject = link_subject.split('/')
 link_subject.pop()
@@ -549,12 +553,10 @@ link_subject += '/'
                     //alert(a_.outerHTML)
 
                    return a_
-                 }
+                 };
 
-
-
-              function get_subject()
-            {
+          function get_subject()
+          {
                 try{
                     $.post('{% url "education:get_subject" %}',
                       {
@@ -572,7 +574,10 @@ link_subject += '/'
                   } catch(er){alert(er)}
             }
 
-            get_subject()
+  // get_subject()
+// -- End of Subjects ---
+
+
 
           function make_person_template(persons)
           {

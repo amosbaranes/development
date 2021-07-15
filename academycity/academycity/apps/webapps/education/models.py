@@ -73,6 +73,7 @@ class New(models.Model):
     news_description = models.CharField(max_length=500, null=True)
     is_popular = models.BooleanField(default=True)
     is_active = models.BooleanField(default=True)
+    description = PlaceholderField('description', related_name='new_description')
 
 
 class Program(models.Model):
@@ -89,7 +90,23 @@ class Program(models.Model):
     program_description = models.CharField(max_length=500, null=True)
     is_popular = models.BooleanField(default=True)
     is_active = models.BooleanField(default=True)
-    description = PlaceholderField('description')
+    description = PlaceholderField('description', related_name='program_description')
+
+
+class Services(models.Model):
+
+    class Meta:
+        verbose_name = _('Service')
+        verbose_name_plural = _('Services')
+        ordering = ['order']
+
+    institution_web = models.ForeignKey(InstitutionWeb, on_delete=models.CASCADE,  default=1, related_name='services')
+    order = models.IntegerField(default=1000, blank=True)
+    image = models.ImageField(upload_to='Programs/', blank=True, null=True)
+    service_title = models.CharField(max_length=100, null=True)
+    service_description = models.CharField(max_length=500, null=True)
+    is_active = models.BooleanField(default=True)
+    description = PlaceholderField('description', related_name='service_description')
 
 
 class Subject(models.Model):
@@ -122,6 +139,7 @@ class Person(models.Model):
     persons_description = models.CharField(max_length=500, null=True)
     is_popular = models.BooleanField(default=True)
     is_active = models.BooleanField(default=True)
+    description = PlaceholderField('description', related_name='person_description')
 
 
 class Phrase(models.Model):

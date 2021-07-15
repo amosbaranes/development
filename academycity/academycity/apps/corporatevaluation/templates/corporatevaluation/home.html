@@ -59,235 +59,11 @@ body {font-family: Arial;}
     <div id="tab_titles" class="tab">
     </div>
     <div id="tab_contents">
-    </div>
-  <br/>
-</div>
 
-<span id="tabs_"
-      tabs_s="ComparableCompanies:{% trans "Comparable Companies" %},Valuation:{% trans "Valuation" %},Calculations:{% trans "Calculations" %},Data:{% trans "Data" %},Inputs:{% trans "Inputs" %}"
-tabs_m="ValuationSetup:{% trans "Valuation Setup" %},ValuationAdmin:{% trans "Valuation Admin" %}"
->
-</span>
-
-<span id="is_staff" is_staff="{{user.is_staff}}"></span>
-<div id="log_info"></div>
-
-<!--  SimTab object -->
-<script>
-function SimTab(parent, name, title, valuation_id, url_get_screens)
-{
- this.parent = parent;
- this.name = name;
- this.title = title;
- this.need_update_screen = 1;
- this.NAV = null;
- this.CONTENT = null;
- this.CONTENTObjects = {};
- this.VALUATION_ID = valuation_id
- this.is_show_first = true;
- //--
-  ed = document.createElement("div")
-  ed.setAttribute("class", "tabcontent")
-  ed.setAttribute("id", this.name)
-  //ed.innerHTML = this.name
-  this.parent.tabContents.appendChild(ed)
-  //
-  e = document.createElement("button")
-  e.setAttribute("class", "tablinks "+this.parent.ss)
-  e.setAttribute("id", "tab-"+name)
-  e.setAttribute("obj_name", name)
-  e.innerHTML = title
-
-  this.parent.tabTitles.insertBefore(e, this.parent.tabTitles.childNodes[0])
-  e.addEventListener("click", function(){
-    event.preventDefault();
-    elm = event.target; obj_name = elm.getAttribute('obj_name');
-    obj = parent.TabObjects[obj_name]
-    is_show_first = obj.is_show_first
-      obj.setScreens(valuation_id, url_get_screens, is_show_first);
-      //post_ajax_create_action('globsim__change_to_tab__' + obj.title)
-          var i, tabcontent, tablinks;
-          tabcontent = document.getElementsByClassName("tabcontent");
-          for (i = 0; i < tabcontent.length; i++) {
-            tabcontent[i].style.display = "none";
-          }
-          tablinks = document.getElementsByClassName("tablinks");
-          for (i = 0; i < tablinks.length; i++) {
-            tablinks[i].className = tablinks[i].className.replace(" active", "");
-          }
-          document.getElementById(obj_name).style.display = "block";
-          elm.className += " active";
-  }.bind(e, event, parent ));
-
- this.tabTitle = e; // document.getElementById("tab-"+this.name)
- this.tabDoc = ed; //document.getElementById(this.name)
-}
-
-SimTab.prototype.setScreens = function(valuation_id, url_get_screens, is_show_first=false) {
-   //alert('SimTab.prototype.setScreens')
-   //alert(url_get_screens)
-   //alert(valuation_id)
-   //alert(this.name)
-
-   console.log('SimTab.prototype.setScreens', valuation_id)
-   doc_ = this.tabDoc
-   sim_tab = this;
-   if (this.need_update_screen == 1)
-   {
-      $.post(url_get_screens,
-        {
-          name: this.name,
-          obj_id: valuation_id
-        },
-        function(data){
-        //alert(data)
-            doc_.innerHTML = data
-            try{
-            sim_tab.set_nav_prefix()
-            } catch (e) {alert(e)}
-        });
-      this.need_update_screen = 0;
-      //log(this.name + "--setScreens, is_show_first= "+is_show_first)
-      try{
-        if(is_show_first){folder = this.name.toLowerCase(); setTimeout(set_first_obj, 1, folder)}
-        } catch (err) {}
-   }
-}
-
-SimTab.prototype.set_nav_prefix = function() {
-    obj_name = this.name.toLowerCase()+"_nav"
-    var obj = document.getElementById(obj_name)
-    if (!obj) {setTimeout(this.set_nav_prefix, 1); return;}
-    else {this.NAV_PREFIX =  obj.getAttribute("nav_prefix") }
-}
-
-set_first_obj = function(folder, first=null, obj_name='')
-{
-    var projects = document.getElementById(folder+"_content")
-    if (!projects) {setTimeout(set_first_obj, 1, folder, first, obj_name); return;}
-    else{
-       if (obj_name != '')
-       {
-         var obj = document.getElementById(obj_name)
-         if (!obj) {setTimeout(set_first_obj, 1, folder, first, obj_name); return;}
-         else {
-          first = obj;
-          var event = new Event("click", {bubbles: true});
-          first.dispatchEvent(event);
-         }
-       } else {
-        if (!first){first = projects.children[0].children[1]}
-         var event = new Event("click", {bubbles: true});
-         first.dispatchEvent(event);
-       }
-    }
-}
-</script>
-
-<!--
-// =========== Management ==========================
-// -- SimManagementTab object --
--->
-<script>
-function SimManagementTab(parent, name, valuation_id, url_get_screens)
-{
- this.parent = parent;
- this.name = name;
- this.NAV = null;
- this.CONTENT = null;
-  //--
-  ed = document.getElementById(this.name)
-  //this.parent.tabContents.appendChild(ed)
-  ea = document.getElementById("tab-"+this.name)
-  //e = ea.parentNode
-  //this.parent.tabTitles.appendChild(e)
-  //
-  ea.addEventListener("click", function(){
-    event.preventDefault();
-    elm = event.target; obj_name = elm.getAttribute('obj_name');
-    obj = parent.TabObjects[obj_name]
-      obj.setScreens(valuation_id, url_get_screens);
-      $(this).tab('show');
-  }.bind(ea, event, parent));
- this.tabTitle = ea; // document.getElementById("tab-"+this.name)
- this.tabDoc = ed; //document.getElementById(this.name)
-//
-  name_ = this.name.toLowerCase(); content_ = name_ + "_content"; nav_ = name_ + "_nav"
-  this.NAV = document.getElementById(nav_)
-  this.CONTENT = document.getElementById(content_)
-}
-
-SimManagementTab.prototype.setScreens = function(valuation_id, url_get_screens){
-   doc_ = this.tabDoc
-}
-
-</script>
-
-<!--
-// =========== Management ==========================
-// -- SimManager --
--->
-<script>
-function SimManager(valuation_id, url_get_screens)
-{
-    this.valuation_id = valuation_id;
-    this.url_get_screens = url_get_screens
-    this.name = "Corporate Valuation"
-    this.tabTitles = document.getElementById("tab_titles")
-    this.tabContents = document.getElementById("tab_contents")
-    this.TabObjects = {}
-}
-
-SimManager.prototype.setTabs = function(tabs, tabs_management, is_staff='False') {
-    for(var name in tabs)
-    {
-      s = "this.TabObjects[name] = new SimTab(this, name, tabs[name], this.valuation_id, this.url_get_screens)"
-      eval(s)
-    }
-
-
-    //this.TabObjects["Inputs"].setScreens(this.valuation_id, this.url_get_screens)
-
-
-}
-
-// == Math ==
-function sigmoid(t) {
-    return 1/(1+Math.pow(Math.E, -t));
-}
-
-
-
-</script>
-
-<div class="col-xs-12 ">
-          <nav>
-            <div class="nav nav-tabs nav-fill" id="nav-tab" role="tablist">
-
-                <a class="nav-item nav-link"
-                   id="nav-calculation-tab" data-toggle="tab"
-                   href="#nav-calculation"
-                   role="tab" aria-controls="nav-calculation"
-                   aria-selected="true">{% trans "Calculation" %}</a>
-
-                <a class="nav-item nav-link"
-                   id="nav-valuation-tab" data-toggle="tab"
-                   href="#nav-valuation"
-                   role="tab" aria-controls="nav-valuation"
-                   aria-selected="false">{% trans "Valuation" %}</a>
-
-                <a class="nav-item nav-link"
-                   id="nav-valuation_vs_actual-tab" data-toggle="tab"
-                   href="#nav-valuation_vs_actual"
-                   role="tab" aria-controls="nav-valuation_vs_actual"
-                   onclick="valuation_vs_actual(event)" >{% trans "Valuation vs. Actual" %}</a>
-
-            </div>
-          </nav>
-          <div class="tab-content py-3 px-3 px-sm-0" id="nav-tabContent">
-                <div class="tab-pane fade"
-                     id="nav-calculation" role="tabpanel"
-                     aria-labelledby="nav-calculation-tab">
+        <div id="data" class="tabcontent">
+       </div>
+<!--  Calculation  -->
+        <div id="calculations" class="tabcontent">
                     <!--  Cost of Debt    -->
                     <span style="color:blue; font-size: 20px;">
                         <u><b>{% trans "Cost of Debt" %}</b></u>
@@ -393,104 +169,99 @@ function sigmoid(t) {
                       </table>
                     </div>
                </div>
-                <!-- Valuation -->
-                <div class="tab-pane fade"
-                     id="nav-valuation" role="tabpanel"
-                     aria-labelledby="nav-valuation-tab">
+<!-- Valuation -->
+        <div id="valuation" class="tabcontent">
+            <span style="padding:10px; color:blue">
+                <font size="5">{% trans "Parameters effecting the solution" %}:</font>
+            </span>
+            <table class="w3-table-all w3-hoverable" style="width:75%">
+                <tr>
+                    <td>WACC: </td>
+                    <td style="padding-left:5px">
+                        <input id="wacc_" type="text"
+                                     value="6" oninput="input_dcf(event)"
+                                     style="width:55px"  />%
+                    </td>
+                    <td style="padding-left:5px">
+                        EBIT (<span id="valuation_year_">1</span>):
+                    </td>
+                    <td><input id="cf1_ebit" type="text" value="1000" oninput="input_dcf(event)"
+                               style="width:80px"  />
+                    </td>
+                    <td>Short Term Growth:</td>
+                    <td>
+                        <input id="stgrowth_" type="text"
+                                     value="5" oninput="input_dcf(event)"
+                                     style="width:55px"  />%
+                    </td>
+                    <td>Long Term Growth:</td>
+                    <td>
+                        <input id="ltgrowth_" type="text"
+                                     value="2" oninput="input_dcf(event)"
+                                     style="width:55px"  />%
+                    </td>
+                </tr>
+                <tr>
+                    <td>Effective tax rate: </td>
+                    <td style="padding-left:5px">
+                        <input id="effective_tax_rate_" type="text"
+                                     value="0" oninput="input_dcf(event)"
+                                     style="width:55px"  />%
+                    </td>
+                    <td>Marginal tax rate:</td>
+                    <td style="padding-left:5px">
+                        <input id="marginal_tax_rate_" type="text"
+                                     value="0" oninput="input_dcf(event)"
+                                     style="width:55px"  />%
+                    </td>
+                    <td>ROIC (short term):</td>
+                    <td style="padding-left:5px">
+                        <input id="roic_st_" type="text"
+                                     value="0" oninput="input_dcf(event)"
+                                     style="width:55px"  />%
+                    </td>
+                    <td>ROIC (long term):</td>
+                    <td style="padding-left:5px">
+                        <input id="roic_lt_" type="text"
+                                     value="0" oninput="input_dcf(event)"
+                                     style="width:55px"  />%
+                    </td>
+                </tr>
+                <tr>
+                    <td>Duration of S.T. period</td>
+                    <td style="padding-left:5px">
+                        <input id="duration_of_st_period_" type="text"
+                                     value="5" oninput="input_dcf(event)"
+                                     style="width:55px"  />
+                    </td>
+                    <td></td>
+                    <td></td>
+                    <td>Re-investment rate (ST):</td>
+                    <td style="padding-left:5px">
+                        <input id="re_investment_rate_short_term_" type="text"
+                                     value="0" oninput="input_dcf(event)"
+                                     style="width:55px"  />%
+                    </td>
+                    <td>Re-investment rate (LT):</td>
+                    <td style="padding-left:5px">
+                        <input id="re_investment_rate_long_term_" type="text"
+                                     value="0" oninput="input_dcf(event)"
+                                     style="width:55px"  />%
+                    </td>
+                </tr>
 
-                    <span style="padding:10px; color:blue">
-                        <font size="5">{% trans "Parameters effecting the solution" %}:</font>
-                    </span>
-                    <table class="w3-table-all w3-hoverable" style="width:75%">
-                        <tr>
-                            <td>WACC: </td>
-                            <td style="padding-left:5px">
-                                <input id="wacc_" type="text"
-                                             value="6" oninput="input_dcf(event)"
-                                             style="width:55px"  />%
-                            </td>
-                            <td style="padding-left:5px">
-                                EBIT (<span id="valuation_year_">1</span>):
-                            </td>
-                            <td><input id="cf1_ebit" type="text" value="1000" oninput="input_dcf(event)"
-                                       style="width:80px"  />
-                            </td>
-                            <td>Short Term Growth:</td>
-                            <td>
-                                <input id="stgrowth_" type="text"
-                                             value="5" oninput="input_dcf(event)"
-                                             style="width:55px"  />%
-                            </td>
-                            <td>Long Term Growth:</td>
-                            <td>
-                                <input id="ltgrowth_" type="text"
-                                             value="2" oninput="input_dcf(event)"
-                                             style="width:55px"  />%
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>Effective tax rate: </td>
-                            <td style="padding-left:5px">
-                                <input id="effective_tax_rate_" type="text"
-                                             value="0" oninput="input_dcf(event)"
-                                             style="width:55px"  />%
-                            </td>
-                            <td>Marginal tax rate:</td>
-                            <td style="padding-left:5px">
-                                <input id="marginal_tax_rate_" type="text"
-                                             value="0" oninput="input_dcf(event)"
-                                             style="width:55px"  />%
-                            </td>
-                            <td>ROIC (short term):</td>
-                            <td style="padding-left:5px">
-                                <input id="roic_st_" type="text"
-                                             value="0" oninput="input_dcf(event)"
-                                             style="width:55px"  />%
-                            </td>
-                            <td>ROIC (long term):</td>
-                            <td style="padding-left:5px">
-                                <input id="roic_lt_" type="text"
-                                             value="0" oninput="input_dcf(event)"
-                                             style="width:55px"  />%
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>Duration of S.T. period</td>
-                            <td style="padding-left:5px">
-                                <input id="duration_of_st_period_" type="text"
-                                             value="5" oninput="input_dcf(event)"
-                                             style="width:55px"  />
-                            </td>
-                            <td></td>
-                            <td></td>
-                            <td>Re-investment rate (ST):</td>
-                            <td style="padding-left:5px">
-                                <input id="re_investment_rate_short_term_" type="text"
-                                             value="0" oninput="input_dcf(event)"
-                                             style="width:55px"  />%
-                            </td>
-                            <td>Re-investment rate (LT):</td>
-                            <td style="padding-left:5px">
-                                <input id="re_investment_rate_long_term_" type="text"
-                                             value="0" oninput="input_dcf(event)"
-                                             style="width:55px"  />%
-                            </td>
-                        </tr>
+            </table>
+            <br/>
 
-                    </table>
-                    <br/>
-
-                    <div style="color:green">
-                        <table id="dcf_framework" class="w3-table-all w3-hoverable" style="width:65%">
-
-                        </table>
-                    </div>
-                    <br/>
-                  <div id="simulation" style="height:400px; width:550px">
+            <div style="color:green">
+                <table id="dcf_framework" class="w3-table-all w3-hoverable" style="width:65%">
+                </table>
+            </div>
+            <br/>
+            <div id="simulation" style="height:400px; width:550px">
                   <span class="cursor badge badge-pill badge-info" onclick="simulate('all')">
                       {% trans "Simulate" %}
                   </span>
-
                   {% trans "Range" %}: <input id="simulation_range" type="text" value="0.1" style="width:45px"/>
                   {% trans "Skew" %}: <input id="simulation_skew" type="text" value="1" style="width:45px"/>
                   {% trans "# Randomization" %}: <input id="simulation_number_of_randomization" type="text" value="100000" style="width:70px"/>
@@ -530,16 +301,25 @@ function sigmoid(t) {
                           <td><div id="simulation_chart_etr" style="height:300px; width:300px"></div></td>
                       </tr>
                   </table>
-              </div>
-               </div>
+            </div>
+        </div>
 
-                <div class="tab-pane fade"
-                     id="nav-valuation_vs_actual" role="tabpanel"
-                     aria-labelledby="nav-valuation_vs_actual-tab">
-                    <div id="valuation_vs_actual">Valuation vs. Actual</div>
-               </div>
-          </div>
+        <div id="comparablecompanies" class="tabcontent">
+            <div id="valuation_vs_actual">Valuation vs. Actual</div>
+       </div>
+
+    </div>
+  <br/>
 </div>
+
+<span id="tabs_"
+      tabs_s="comparablecompanies:{% trans "Comparable Companies" %};local,valuation:{% trans "Valuation" %};local,calculations:{% trans "Calculations" %};local,data:{% trans "Data" %};local,Inputs:{% trans "Inputs" %};pull_screen"
+tabs_m="ValuationSetup:{% trans "Valuation Setup" %},ValuationAdmin:{% trans "Valuation Admin" %}"
+>
+</span>
+
+<span id="is_staff" is_staff="{{user.is_staff}}"></span>
+<div id="log_info"></div>
 
 <!-- corporate valuation -->
 <script>
@@ -1318,6 +1098,203 @@ set_framework()
 
 // ================================================
 
+
+//SimTab object -->
+function SimTab(parent, name, title, valuation_id, url_get_screens, screen_update)
+{
+ this.screen_update = screen_update
+ this.parent = parent;
+ this.name = name;
+ this.title = title;
+ this.need_update_screen = 1;
+ this.NAV = null;
+ this.CONTENT = null;
+ this.CONTENTObjects = {};
+ this.VALUATION_ID = valuation_id
+ this.is_show_first = true;
+ //--
+  alert(this.name)
+  if (this.screen_update == 'pull_screen')
+  {
+      ed = document.createElement("div")
+      ed.setAttribute("class", "tabcontent")
+      ed.setAttribute("id", this.name)
+      this.parent.tabContents.appendChild(ed)
+  } else
+  {
+  try{
+     ed = document.getElementById(this.name);
+     } catch (er) {alert(er)}
+  }
+
+  alert(ed.outerHTML)
+
+  //
+  e = document.createElement("button")
+  e.setAttribute("class", "tablinks "+this.parent.ss)
+  e.setAttribute("id", "tab-"+name)
+  e.setAttribute("obj_name", name)
+  e.innerHTML = title
+
+  this.parent.tabTitles.insertBefore(e, this.parent.tabTitles.childNodes[0])
+  e.addEventListener("click", function(){
+        event.preventDefault();
+        elm = event.target; obj_name = elm.getAttribute('obj_name');
+        obj = parent.TabObjects[obj_name]
+        is_show_first = obj.is_show_first
+         if(obj.screen_update == 'pulled_screen')
+         {
+          obj.setScreens(valuation_id, url_get_screens, is_show_first);
+         }
+
+              //post_ajax_create_action('globsim__change_to_tab__' + obj.title)
+              var i, tabcontent, tablinks;
+              tabcontent = document.getElementsByClassName("tabcontent");
+              for (i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].style.display = "none";
+              }
+              tablinks = document.getElementsByClassName("tablinks");
+              for (i = 0; i < tablinks.length; i++) {
+                tablinks[i].className = tablinks[i].className.replace(" active", "");
+              }
+              document.getElementById(obj_name).style.display = "block";
+              elm.className += " active";
+  }.bind(e, event, parent ));
+
+ this.tabTitle = e; // document.getElementById("tab-"+this.name)
+ this.tabDoc = ed; //document.getElementById(this.name)
+}
+
+SimTab.prototype.setScreens = function(valuation_id, url_get_screens, is_show_first=false) {
+   //alert('SimTab.prototype.setScreens')
+   //alert(url_get_screens)
+   //alert(valuation_id)
+   //alert(this.name)
+
+   console.log('SimTab.prototype.setScreens', valuation_id)
+   doc_ = this.tabDoc
+   sim_tab = this;
+   if (this.need_update_screen == 1)
+   {
+      $.post(url_get_screens,
+        {
+          name: this.name,
+          obj_id: valuation_id
+        },
+        function(data){
+        //alert(data)
+            doc_.innerHTML = data
+            try{
+            sim_tab.set_nav_prefix()
+            } catch (e) {alert(e)}
+        });
+      this.need_update_screen = 0;
+      //log(this.name + "--setScreens, is_show_first= "+is_show_first)
+      try{
+        if(is_show_first){folder = this.name.toLowerCase(); setTimeout(set_first_obj, 1, folder)}
+        } catch (err) {}
+   }
+}
+
+SimTab.prototype.set_nav_prefix = function() {
+    obj_name = this.name.toLowerCase()+"_nav"
+    var obj = document.getElementById(obj_name)
+    if (!obj) {setTimeout(this.set_nav_prefix, 1); return;}
+    else {this.NAV_PREFIX =  obj.getAttribute("nav_prefix") }
+}
+
+set_first_obj = function(folder, first=null, obj_name='')
+{
+    var projects = document.getElementById(folder+"_content")
+    if (!projects) {setTimeout(set_first_obj, 1, folder, first, obj_name); return;}
+    else{
+       if (obj_name != '')
+       {
+         var obj = document.getElementById(obj_name)
+         if (!obj) {setTimeout(set_first_obj, 1, folder, first, obj_name); return;}
+         else {
+          first = obj;
+          var event = new Event("click", {bubbles: true});
+          first.dispatchEvent(event);
+         }
+       } else {
+        if (!first){first = projects.children[0].children[1]}
+         var event = new Event("click", {bubbles: true});
+         first.dispatchEvent(event);
+       }
+    }
+}
+
+// =========== Management ==========================
+// -- SimManagementTab object --
+function SimManagementTab(parent, name, valuation_id, url_get_screens)
+{
+ this.parent = parent;
+ this.name = name;
+ this.NAV = null;
+ this.CONTENT = null;
+  //--
+  ed = document.getElementById(this.name)
+  //this.parent.tabContents.appendChild(ed)
+  ea = document.getElementById("tab-"+this.name)
+  //e = ea.parentNode
+  //this.parent.tabTitles.appendChild(e)
+  //
+  ea.addEventListener("click", function(){
+    event.preventDefault();
+    elm = event.target; obj_name = elm.getAttribute('obj_name');
+    obj = parent.TabObjects[obj_name]
+      obj.setScreens(valuation_id, url_get_screens);
+      $(this).tab('show');
+  }.bind(ea, event, parent));
+ this.tabTitle = ea; // document.getElementById("tab-"+this.name)
+ this.tabDoc = ed; //document.getElementById(this.name)
+//
+  name_ = this.name.toLowerCase(); content_ = name_ + "_content"; nav_ = name_ + "_nav"
+  this.NAV = document.getElementById(nav_)
+  this.CONTENT = document.getElementById(content_)
+}
+
+SimManagementTab.prototype.setScreens = function(valuation_id, url_get_screens){
+   doc_ = this.tabDoc
+}
+
+// =========== Management ==========================
+// -- SimManager --
+function SimManager(valuation_id, url_get_screens)
+{
+    this.valuation_id = valuation_id;
+    this.url_get_screens = url_get_screens
+    this.name = "Corporate Valuation"
+    this.tabTitles = document.getElementById("tab_titles")
+    this.tabContents = document.getElementById("tab_contents")
+    this.TabObjects = {}
+}
+
+SimManager.prototype.setTabs = function(tabs, tabs_management, is_staff='False') {
+    for(var name in tabs)
+    {
+    //alert(name)
+    //alert(tabs[name])
+    //alert(tabs[name][0])
+    //alert(tabs[name][1])
+
+      s = "this.TabObjects[name] = new SimTab(this, name, tabs[name][0], this.valuation_id, this.url_get_screens, tabs[name][1])"
+      eval(s)
+    }
+
+
+    //this.TabObjects["Inputs"].setScreens(this.valuation_id, this.url_get_screens)
+
+
+}
+
+// == Math ==
+function sigmoid(t) {
+    return 1/(1+Math.pow(Math.E, -t));
+}
+
+// ------------------------------------------------
 var url_get_screens='{% url "corporatevaluation:get_screens" %}'
 
 var tabs_ = document.getElementById("tabs_");
@@ -1327,10 +1304,11 @@ tans_all = tabs_s.split(",")
 tans_all_m = tabs_m.split(",")
 
 var tabs = {};
-for (const property in tans_all) {
+for (var property in tans_all) {
   ss = tans_all[property]
   ss_ = ss.split(":")
-  tabs[ss_[0]] = ss_[1]
+  ss__ = ss_[1].split(";")
+  tabs[ss_[0]] = [ss__[0], ss__[1]]
 }
 
 var tabs_management = {};

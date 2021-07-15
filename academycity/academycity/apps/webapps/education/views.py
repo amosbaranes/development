@@ -165,3 +165,7 @@ def signup_page(request):
         'redirect_field_name': "next",
         'redirect_field_value': reverse('education:home')
     })
+
+
+def noa(request):
+    return render(request, 'education/Noa.html', {})
