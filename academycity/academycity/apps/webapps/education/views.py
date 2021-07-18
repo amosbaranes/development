@@ -1,10 +1,8 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.core.mail import EmailMessage
-from django.http import JsonResponse
 from ...webcompanies.WebCompanies import WebSiteCompany
 from django.http import JsonResponse
 from .models import Phrase, AdditionalTopic, Course, Program, MoreNewsDetail, Subject
-from allauth.account.forms import LoginForm, SignupForm
 from django.urls import reverse
 
 
@@ -13,6 +11,7 @@ def home(request):
     company_obj = wsc.site_company()
     phrases_ = wsc.site_company('phrases')
     topics_ = wsc.site_company('topics')
+
     return render(request, 'education/home.html', {'institution_obj': company_obj,
                                                    'phrases': phrases_,
                                                    'topics': topics_
@@ -59,9 +58,9 @@ def get_courses(request):
     rr = {}
     for course in courses:
         rr[str(course.id)] = {
-                                'course_name': course.course_name,
+                                'name': course.name,
                                 'order': course.order,
-                                'course_date': course.course_date,
+                                'date': course.date,
                                 'is_popular': course.is_popular,
                                 'image_url': course.image.url,
                                 'short_description': course.short_description
@@ -100,9 +99,9 @@ def get_program(request):
     for program in programs:
         print('-' * 50)
         rr[str(program.id)] = {
-            'program_title': program.program_title,
+            'name': program.name,
             'order': program.order,
-            'program_description': program.program_description,
+            'short_description': program.short_description,
             'is_popular': program.is_popular,
             'image_url': program.image.url
         }
@@ -148,23 +147,6 @@ def news_detail(request):
     return render(request, 'education/news_detail.html', {'news_detail_': news_detail_,
                                                           'institution_obj': company_obj,
                                                           })
-
-
-def login_page(request):
-    form_class = LoginForm
-    return render(request, 'education/login_page.html', {
-        'form' : form_class, 'redirect_field_name': "next",
-        'redirect_field_value': reverse('education:home')
-    })
-
-
-def signup_page(request):
-    form_signup = SignupForm
-    return render(request, 'education/signup_page.html', {
-        'form_signup': form_signup,
-        'redirect_field_name': "next",
-        'redirect_field_value': reverse('education:home')
-    })
 
 
 def noa(request):

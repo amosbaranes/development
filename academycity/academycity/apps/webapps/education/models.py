@@ -2,6 +2,7 @@ from django.db import models
 from django.urls import reverse
 from django.utils.translation import ugettext_lazy as _
 from cms.models.fields import PlaceholderField
+from ...courses.models import Course
 
 
 class InstitutionWeb(models.Model):
@@ -18,6 +19,7 @@ class InstitutionWeb(models.Model):
     institution_image = models.ImageField(upload_to='institution/', blank=True, null=True)
     logo_image = models.ImageField(upload_to='institution/', blank=True, null=True)
     footer_image = models.ImageField(upload_to='institution/', blank=True, null=True)
+    contact_us_image = models.ImageField(upload_to='institution/', blank=True, null=True)
     footer_phrase = models.CharField(max_length=100, null=True, blank=True)
     institution_short_description = models.CharField(max_length=200, null=True, blank=True)
     youtube_video_address = models.CharField(max_length=100, null=True)
@@ -38,6 +40,19 @@ class InstitutionWeb(models.Model):
         return self.institution_name
 
 
+class ReceivedMessages(models.Model):
+    class Meta:
+        verbose_name = _('received_message')
+        verbose_name_plural = _('received_messages')
+
+    institution_web = models.ForeignKey(InstitutionWeb, on_delete=models.CASCADE, default=1,
+                                        related_name='received_messages')
+    name = models.CharField(max_length=100, default='', blank=True)
+    email = models.CharField(max_length=100, default='', blank=True)
+    subject = models.CharField(max_length=100, default='', blank=True)
+    message = models.CharField(max_length=2000, default='', blank=True)
+
+
 class Course(models.Model):
 
     class Meta:
@@ -46,14 +61,19 @@ class Course(models.Model):
         ordering = ['order']
 
     institution_web = models.ForeignKey(InstitutionWeb, on_delete=models.CASCADE, default=1, related_name='courses')
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, default=21, related_name='course_courses')
     order = models.IntegerField(default=1000, blank=True)
-    course_name = models.CharField(max_length=100, null=True)
-    course_date = models.DateField(blank=True, null=True)
+    name = models.CharField(max_length=100, null=True)
+    date = models.DateField(blank=True, null=True)
     image = models.ImageField(upload_to='courses/', blank=True, null=True)
     is_popular = models.BooleanField(default=True)
     is_active = models.BooleanField(default=True)
     short_description = models.CharField(max_length=200, null=True)
     description = PlaceholderField('description', related_name='education_course_description')
+    name_text_color = models.CharField(max_length=10, default='#090909',null=True)
+    name_gradient_deg = models.IntegerField(default=285, blank=True)
+    gradient_color_1 = models.CharField(max_length=10, default='#969696',null=True)
+    gradient_color_2 = models.CharField(max_length=10, default='#dfdfdf',null=True)
 
 
 class New(models.Model):
@@ -86,12 +106,15 @@ class Program(models.Model):
     institution_web = models.ForeignKey(InstitutionWeb, on_delete=models.CASCADE,  default=1, related_name='programs')
     order = models.IntegerField(default=1000, blank=True)
     image = models.ImageField(upload_to='Programs/', blank=True, null=True)
-    program_title = models.CharField(max_length=100, null=True)
-    program_description = models.CharField(max_length=500, null=True)
+    name = models.CharField(max_length=100, null=True)
+    short_description = models.CharField(max_length=500, null=True)
     is_popular = models.BooleanField(default=True)
     is_active = models.BooleanField(default=True)
     description = PlaceholderField('description', related_name='program_description')
-
+    name_text_color = models.CharField(max_length=10, default='#090909',null=True)
+    name_gradient_deg = models.IntegerField(default=285, blank=True)
+    gradient_color_1 = models.CharField(max_length=10, default='#969696',null=True)
+    gradient_color_2 = models.CharField(max_length=10, default='#dfdfdf',null=True)
 
 class Services(models.Model):
 

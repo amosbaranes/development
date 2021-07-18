@@ -1,0 +1,43 @@
+{% extends "academycity/base_user.html" %}
+{% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
+{% load core_tags %}
+{% block title %}
+    <title>Edit User Profile</title>
+{% endblock title %}
+
+<!-- SideNav slide-out button -->
+<!-- https://mdbootstrap.com/snippets/jquery/mdbootstrap/670810 -->
+{% block add_css %}
+     <link href="{% static 'css/user_home.css' %}" rel="stylesheet">
+{% endblock add_css %}
+
+{% block nav_bar %}
+     {% include 'education/includes/description_page.html' %}
+{% endblock %}
+
+{% block body_content %}
+<br/><br/>
+<div class="container">
+    {% if messages %}
+    <div>
+      <strong>Messages:</strong>
+      <ul>
+        {% for message in messages %}
+        <li>{{message}}</li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+    <br/><br/>
+    <form action="." method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <table>
+        {{ user_form.as_table }}
+        {{ profile_form.as_table }}
+        </table>
+        <b><input type="submit" value="Update" style="color:blue" />
+        <input type="button" value="Cancel" style="color:red"
+                  onclick="window.history.go(-1);"/></b>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,223 @@
+{% extends "academycity/base_user.html" %}
+{% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
+{% load core_tags %}
+{% block title %}
+    <title>Login</title>
+{% endblock title %}
+
+<!-- SideNav slide-out button -->
+<!-- https://mdbootstrap.com/snippets/jquery/mdbootstrap/670810 -->
+{% block add_css %}
+     <link href="{% static 'css/user_home.css' %}" rel="stylesheet">
+{% endblock add_css %}
+
+{% block nav_bar %}
+     {% include 'education/includes/description_page.html' %}
+{% endblock %}
+
+{% block body_content %}
+<style>
+.flip-container {
+	perspective: 1000;
+}
+.flipper {
+  padding: 30px;
+  width: 350px;
+  height:425px;
+  position: relative;
+    background: #f5f5f5;
+    -webkit-border-radius: 20px;
+    -moz-border-radius: 20px;
+    border-radius: 20px;
+
+	transition: 0.6s;
+	transform-style: preserve-3d;
+}
+
+.front, .back {
+  /*background-color: rgba(0,0,0,.3);*/
+  position: absolute;
+    padding:10px 30px;
+  top: 0;
+  left: 0;
+  right: 0;
+
+	backface-visibility: hidden;
+}
+
+.front{
+	z-index: 2;
+	/* for firefox 31 */
+	transform: rotateY(0deg);
+}
+
+.back{
+    transform: rotateY(180deg);
+}
+.flip{
+		transform: rotateY(180deg);
+}
+input{
+    width:100%;
+    margin-bottom:15px;
+    height:40px;
+    box-sizing: border-box;
+    padding:10px;
+}
+
+.submit_btn {
+    width:100%;
+    margin-bottom:15px;
+    height:40px;
+    box-sizing: border-box;
+    padding:10px;
+}
+
+.title{
+  text-align: center;
+}
+.flipbutton{
+    color:#4096ee;
+    text-decoration:none;
+    text-align:left !important;
+}
+
+
+
+/* Alignment styles */
+
+body, html {
+  height: 100%;
+}
+
+body {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+
+    background: #092756;
+    background: -moz-radial-gradient(0% 100%, ellipse cover, rgba(104,128,138,.4) 10%,rgba(138,114,76,0) 40%),-moz-linear-gradient(top, rgba(57,173,219,.25) 0%, rgba(42,60,87,.4) 100%), -moz-linear-gradient(-45deg, #670d10 0%, #092756 100%);
+    background: -webkit-radial-gradient(0% 100%, ellipse cover, rgba(104,128,138,.4) 10%,rgba(138,114,76,0) 40%), -webkit-linear-gradient(top, rgba(57,173,219,.25) 0%,rgba(42,60,87,.4) 100%), -webkit-linear-gradient(-45deg, #670d10 0%,#092756 100%);
+    background: -o-radial-gradient(0% 100%, ellipse cover, rgba(104,128,138,.4) 10%,rgba(138,114,76,0) 40%), -o-linear-gradient(top, rgba(57,173,219,.25) 0%,rgba(42,60,87,.4) 100%), -o-linear-gradient(-45deg, #670d10 0%,#092756 100%);
+    background: -ms-radial-gradient(0% 100%, ellipse cover, rgba(104,128,138,.4) 10%,rgba(138,114,76,0) 40%), -ms-linear-gradient(top, rgba(57,173,219,.25) 0%,rgba(42,60,87,.4) 100%), -ms-linear-gradient(-45deg, #670d10 0%,#092756 100%);
+    background: -webkit-radial-gradient(0% 100%, ellipse cover, rgba(104,128,138,.4) 10%,rgba(138,114,76,0) 40%), linear-gradient(to bottom, rgba(57,173,219,.25) 0%,rgba(42,60,87,.4) 100%), linear-gradient(135deg, #670d10 0%,#092756 100%);
+}
+
+</style>
+<br/>
+    <div style="display: flex;justify-content: center;color:red">
+      <strong>
+      <ul>
+        {% if messages %}
+            {% for message in messages %}
+            <li>{{message}}</li>
+            {% endfor %}
+        {% endif %}
+
+        {% if error_message != '' %}
+            <li>{{error_message}}</li>
+        {% endif %}
+      </ul>
+      </strong>
+    </div>
+
+
+<br/>
+
+<div class="flip-container" style="display: flex;justify-content: center;">
+    <div class="flipper" id="flipper">
+        <div class="front">
+            <h1 class="title">Login</h1>
+                <form action="{% url 'users:login' %}" method="post">
+                    {% csrf_token %}
+                      {% if redirect_field_value %}
+                      <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
+                      {% endif %}
+                    <table>
+                            <tr>
+                                <td>{{ form_login.username.label_tag }}</td>
+                                <td>{{ form_login.username }}</td>
+                            </tr>
+                            <tr>
+                                <td>{% if form_login.username.help_text %}
+                                    <p class="help">{{ form_login.username.help_text|safe }}</p>
+                                    {% endif %}</td>
+                            </tr>
+                            <tr>
+                                <td>{{ form_login.password.label_tag }}</td>
+                                <td>{{ form_login.password }}</td>
+                            </tr>
+                    </table>
+                          <p>
+                              <button class="submit_btn" type="submit">{% trans "Sign In" %}</button>
+                          </p>
+                         <p>
+                              <a href="{% url 'allauth:account_reset_password' %}">
+                                 <span style="font-size: 125%">{% trans "Forgot Password?" %}</span>
+                              </a>
+                         </p>
+              </form>
+              <a class="flipbutton" id="loginButton" href="#">Create my account →</a>
+        </div>
+
+        <div class="back">
+            <h1 class="title">Register</h1>
+
+              <form action="{% url 'users:signup' %}" method="post">
+                {% csrf_token %}
+                      {% if redirect_field_value %}
+                      <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
+                      {% endif %}
+
+                    <table>
+                            <tr>
+                                <td><label for="id_test">Enter 1:</label></td>
+                                <td><input type="text" name="test" maxlength="150" autofocus="" required="" id="id_test"></td>
+                            </tr>
+                            <tr>
+                                <td>{{ form_signup.username.label_tag }}</td>
+                                <td>{{ form_signup.username }}</td>
+                            </tr>
+                            <tr>
+                                <td>{{ form_signup.email.label_tag }}</td>
+                                <td>{{ form_signup.email }}</td>
+                            </tr>
+                            <tr>
+                                <td>{{ form_signup.password1.label_tag }}</td>
+                                <td>{{ form_signup.password1 }}</td>
+                            </tr>
+                            <tr>
+                                <td>{{ form_signup.password2.label_tag }}</td>
+                                <td>{{ form_signup.password2 }}</td>
+                            </tr>
+                    </table>
+
+                          <p>
+                              <button class="submit_btn" type="submit">{% trans "Sign Up" %}</button>
+                          </p>
+              </form>
+            <a class="flipbutton" id="registerButton" href="#">Login to my account →</a>
+        </div>
+    </div>
+</div>
+<br/>
+<br/>
+
+<script>
+var loginButton = document.getElementById("loginButton");
+var registerButton = document.getElementById("registerButton");
+
+loginButton.onclick = function(){
+	document.querySelector("#flipper").classList.toggle("flip");
+}
+
+registerButton.onclick = function(){
+	document.querySelector("#flipper").classList.toggle("flip");
+}
+</script>
+
+
+
+
+{% endblock %}

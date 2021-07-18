@@ -90,13 +90,13 @@
 
             {% if user.is_authenticated %}
                 <li style="font-size: 150%;">
-                <a href="{% url 'allauth:account_logout' %}">
+                <a href="{% url 'users:logout' %}">
                      <span class="badge badge-pill badge-warning">{% trans "Logout" %}</span>
                 </a>
                 </li>
             {% else %}
                 <li style="font-size: 150%;">
-<!--                <a href="{% url 'allauth:account_login' %}">-->
+<!--                <a href="{% url 'users:login' %}">-->
                 <span class="badge badge-pill badge-secondary" modal_id="id01"
                 onmouseover="login_signup_onmouseover(event)"
                 >{% trans "Log in" %}</span>
@@ -105,7 +105,7 @@
             &nbsp;
                 <li style="font-size: 150%;">
 
-<!--                <a href="{% url 'allauth:account_signup' %}">-->
+<!--                <a href="{% url 'users:signup' %}">-->
 <!--                <span class="badge badge-pill badge-secondary">{% trans "Sign up" %}</span>-->
 <!--                </a>                   -->
 

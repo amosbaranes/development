@@ -7,10 +7,12 @@ from ..core.utils import log_debug
 
 class WebSiteCompany(object):
     def __init__(self, request, domain=None, web_company_id=None):
-        # print('-1'*20)
+        print('-1 '*20)
+        print('WebSiteCompany--'*3)
+        print('-1'*20)
         self.web_company_id = -1
         if domain:
-            # print('-2'*20)
+            print('-domain '*5)
             try:
                 # log_debug('WebSiteCompany domain: ' + domain)
                 web_company_ = WebCompanies.objects.get(domain=domain)
@@ -22,23 +24,19 @@ class WebSiteCompany(object):
                 request.session[settings.WEB_SITE_COMPANY_ID] = {'domain': domain, 'web_company_id': self.web_company_id,
                                                                  'app_label': app_label_}
             except Exception as ex:
-                # print('-20'*20)
+                print('-domain ex'*5)
                 request.session[settings.WEB_SITE_COMPANY_ID] = None
 
-        # print(11)
         self.web_site_company = request.session[settings.WEB_SITE_COMPANY_ID]
-        # print(settings.WEB_SITE_COMPANY_ID)
 
-        # print(self.is_registered_domain())
-        # print(web_company_id)
-
-        if not self.is_registered_domain() and web_company_id:
-            # print('-3' * 20)
-            # print(web_company_id)
+        if self.is_registered_domain():
+            self.web_company_id = self.web_site_company['web_company_id']
+        elif web_company_id:
             self.web_company_id = web_company_id
 
-        # print('-4' * 20)
-        # print('-4' * 20)
+        print('WebSiteCompany-web_company_id')
+        print(web_company_id)
+        print('-' * 20)
 
     def is_registered_domain(self):
         return self.web_site_company is not None
@@ -61,17 +59,18 @@ class WebSiteCompany(object):
 
     def site_company(self, model=''):
         try:
-            if self.is_registered_domain():
-                self.web_company_id = self.web_site_company['web_company_id']
             web_company = WebCompanies.objects.get(id=self.web_company_id)
+            # print('site_company - web_company')
+            # print(web_company)
+
+            if model != '':
+                s = "objs = web_company.target."+model+".filter(is_active=True).all()"
+                dic_ = {'web_company': web_company}
+                exec(s, dic_)
+                objs = dic_['objs']
+            else:
+                objs = web_company.target
+
         except Exception as ex:
             print(ex)
-
-        if model != '':
-            s = "objs = web_company.target."+model+".filter(is_active=True).all()"
-            dic_ = {'web_company': web_company}
-            exec(s, dic_)
-            objs = dic_['objs']
-        else:
-            objs = web_company.target
         return objs

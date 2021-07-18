@@ -2,12 +2,19 @@ from django.conf import settings
 from django.shortcuts import render, get_object_or_404, redirect
 from django.views.generic import ListView, DetailView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
+
+from django.contrib.auth.forms import PasswordChangeForm
+from django.contrib.auth import update_session_auth_hash
+from django.contrib.auth.views import (PasswordResetView, PasswordResetDoneView,
+                                       PasswordResetConfirmView, PasswordResetCompleteView)
+
 from django.utils.translation import ugettext_lazy as _
 from django.urls import reverse, reverse_lazy
 from .models import (Institution, Profile,)
+from ..webapps.education.models import ReceivedMessages
 from ..courses.models import (Department, GeneralLedger, TrialBalance, Order,
                               OrderItem, CourseSchedule, CourseScheduleUser)
-from .forms import (ProfileEditForm, UserEditForm)
+from .forms import (ProfileEditForm, UserEditForm, RegistrationForm)
 from ..actions.models import Action
 from ..courses.models import (CourseScheduleUser, Order, TrialBalance,
                               Course, Section, SubSection)
@@ -17,11 +24,20 @@ from django.db.models import Q
 
 import pandas as pd
 from ..core.sql import SQL
+from ..core.email import email_message
 from ..courses.models import Coupon, CourseScheduleUser
 from ..core.sql import SQL
 from ..core.filesystem import FS
 from django.contrib.auth import get_user_model
 from django.http import JsonResponse
+from django.contrib.auth.models import User
+from ..webcompanies.WebCompanies import WebSiteCompany
+from django.contrib.auth.views import LogoutView
+from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth import login, authenticate, logout
+from django.contrib import messages
+# from allauth.account.forms import SignupForm
+from django.core.mail import EmailMessage
 
 
 def show_sub_content(request):
@@ -241,6 +257,7 @@ class DeleteInstitution(DeleteView):
     success_url = reverse_lazy('users:list_institution')
     #Institution_confirm_delete.html
 
+
 def user_delete(request):
     id = request.POST.get('id')
     print('---------')
@@ -254,6 +271,15 @@ def user_delete(request):
         count = 0
         rr = {'status': 'ko'}
     return JsonResponse(rr)
+
+
+def view_profile(request, pk=None):
+    if pk:
+        user = User.objects.get(pk=pk)
+    else:
+        user = request.user
+    args = {'user': user}
+    return render(request, 'users/authentication/profile.html', args)
 
 
 # See https://stackoverflow.com/questions/2216974/django-modelform-for-many-to-many-fields
@@ -270,6 +296,7 @@ def create_profile(sender, **kwargs):
 
 
 def edit_user_profile(request):
+    company_obj = WebSiteCompany(request, web_company_id=7).site_company()
     profile = Profile.objects.filter(user=request.user)
     if not profile:
         profile = Profile.objects.create(user=request.user)
@@ -282,9 +309,187 @@ def edit_user_profile(request):
     else:
         user_form = UserEditForm(instance=request.user)
         profile_form = ProfileEditForm(instance=request.user.academics)
-    return render(request, 'users/edit_user_profile.html', {'user_form': user_form, 'profile_form': profile_form})
+    return render(request, 'users/authentication/edit_user_profile.html', {'user_form': user_form,
+                                                                           'profile_form': profile_form,
+                                                                           'institution_obj': company_obj})
 
 
 def my_account(request):
-    return render(request, 'user_home.html', {})
+    company_obj = WebSiteCompany(request, web_company_id=7).site_company()
+    return render(request, 'user_home.html', {'institution_obj': company_obj})
 
+
+def login_page(request):
+    company_obj = WebSiteCompany(request, web_company_id=7).site_company()
+    if request.method == "POST":
+        form_login = AuthenticationForm(request, data=request.POST)
+        if form_login.is_valid():
+            username = form_login.cleaned_data.get('username')
+            password = form_login.cleaned_data.get('password')
+            user = authenticate(username=username, password=password)
+            if user is not None:
+                login(request, user)
+                messages.info(request, f"You are now logged in as {username}.")
+                return redirect("education:home")
+            else:
+                messages.error(request, "Invalid username or password.")
+        else:
+            messages.error(request, "Invalid username or password.")
+
+    return signup_login_form(request, error_message='')
+
+
+def signup_login_form(request, error_message=''):
+    company_obj = WebSiteCompany(request, web_company_id=7).site_company()
+    form_login = AuthenticationForm()
+    form_signup = RegistrationForm()
+    arg = {'form_login': form_login, 'form_signup': form_signup,
+           'redirect_field_name': "next", 'redirect_field_value': reverse('education:home'),
+           'error_message': error_message, 'institution_obj': company_obj
+           }
+    return render(request, 'users/authentication/login_page.html', arg)
+
+
+def signup_page(request):
+    if request.method == 'POST':
+        form = RegistrationForm(request.POST)
+        test = request.POST['test']
+        try:
+            if int(test) != 1:
+                return signup_login_form(request, error_message='You must enter test number')
+        except Exception as ex:
+            return signup_login_form(request, error_message='You must enter test number')
+
+        if form.is_valid():
+            cd = form.cleaned_data
+            s_email = cd['email']
+            try:
+                user_ = User.objects.get(email=s_email)
+                if user_:
+                    return signup_login_form(request, error_message='This email already registered.')
+            except Exception as ex:
+                return signup_login_form(request, error_message='You must enter test number')
+
+            email_message(s_email, subject='registeration', body='Your registration was completed.')
+            form.save()
+            wsc = WebSiteCompany(request, web_company_id=7)
+            if wsc.is_registered_domain():
+                # print('wsc.is_registered_domain():wsc.is_registered_domain()')
+                return wsc.get_redirect_link()
+            else:
+                # print('-----3333----')
+                # print(request.POST['next'])
+                # print('-----3333----')
+                return redirect(request.POST['next'])
+    else:
+        return signup_login_form(request, error_message='')   #'must enter test number'
+
+    #
+    # if request.method == 'POST':
+    #     form = SignupForm(request.POST)
+    #     if form.is_valid():
+    #         cd = form.cleaned_data
+    #         print('-----')
+    #         print(cd)
+    #         print('-----')
+    #         semail = cd['email']
+    #
+    #         # email_message(semail, 'register')
+    #         form.save(request)
+    #         wsc = WebSiteCompany(request, web_company_id=7)
+    #         if wsc.is_registered_domain():
+    #             print('wsc.is_registered_domain():wsc.is_registered_domain()')
+    #             return wsc.get_redirect_link()
+    # else:
+    #     print('11111---111')
+    #     form_signup = SignupForm
+    #     print('form_signup')
+    #     print(form_signup)
+    #     print(reverse('education:home'))
+    #     print('End 11111---111')
+    #
+    # return render(request, 'education/signup_page.html', {
+    #     'form_signup': form_signup,
+    #     'redirect_field_name': "next",
+    #     'redirect_field_value': reverse('education:home')
+    # })
+
+
+def logout_request(request):
+    logout(request)
+    messages.info(request, "You have successfully logged out.")
+    return redirect("partners:home")
+
+#
+# class Logout(LogoutView):
+#     template_name = 'users/authentication/logout.html'
+#     # next_page = reverse('education:home')
+
+
+def change_password(request):
+    company_obj = WebSiteCompany(request, web_company_id=7).site_company()
+    if request.method == 'POST':
+        form = PasswordChangeForm(data=request.POST, user=request.user)
+        if form.is_valid():
+            form.save()
+            update_session_auth_hash(request, form.user)
+            return redirect(reverse('education:home'))
+        else:
+            return redirect(reverse('users:change_password'))
+    else:
+        form = PasswordChangeForm(user=request.user)
+
+        args = {'form': form, 'institution_obj': company_obj}
+        return render(request, 'users/authentication/change_password.html', args)
+
+
+class MyPasswordResetView(PasswordResetView):
+    # form_class = PasswordResetForm
+    template_name = 'users/authentication/reset_password.html'
+    success_url = reverse_lazy('users:password_reset_done')
+    # subject_template_name = 'accounts/emails/password-reset-subject.txt'
+    email_template_name = 'users/authentication/reset_password_email.html'
+
+
+class MyPasswordResetDoneView(PasswordResetDoneView):
+    # form_class = PasswordResetForm
+    template_name = 'users/authentication/reset_password_done.html'
+
+
+class MyPasswordResetConfirmView(PasswordResetConfirmView):
+    # form_class = PasswordResetForm
+    template_name = 'users/authentication/reset_password_confirm.html'
+    success_url = reverse_lazy('users:password_reset_complete')
+
+
+class MyPasswordResetCompleteView(PasswordResetCompleteView):
+    template_name = 'users/authentication/reset_password_complete.html'
+
+
+def contact_us(request):
+    wsc = WebSiteCompany(request, web_company_id=7)
+    company_obj = wsc.site_company()
+    return_message = ''
+    if request.method == 'POST':
+        contact_us_name = request.POST.get('name')
+        contact_us_email = request.POST.get('email')
+        contact_us_subject = request.POST.get('subject')
+        contact_us_message = request.POST.get('message')
+        if contact_us_subject == '' or contact_us_message == '':
+            return_message = 'Must enter subject and a message!'
+        else:
+            try:
+                ReceivedMessages.objects.create(institution_web=company_obj, name=contact_us_name,
+                                                email=contact_us_email,
+                                                subject=contact_us_subject,
+                                                message=contact_us_message)
+                contact_us_message = 'message received from ' + contact_us_name + ' \nEmail:' + contact_us_email + ' \nMessage:\n' + contact_us_message
+                email = EmailMessage(contact_us_subject, contact_us_message, contact_us_email, [company_obj.email])
+                email.send()
+                return_message = 'Your message was received.\n\nThank you.'
+            except Exception as ee:
+                print(ee)
+                return_message = 'Error in sending your message.\n\nPlease try again.'
+
+    return render(request, 'users/contact_us/contact_us.html', {'institution_obj': company_obj,
+                                                                'return_message': return_message})

@@ -4,7 +4,7 @@
 <html lang="{{ LANGUAGE_CODE }}">
 <head>
     {% block title %}
-        <title>Login</title>
+        <title>Base Authentication</title>
     {% endblock title %}
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -23,17 +23,40 @@
     <link href="{% static 'css/messages.css' %}" rel="stylesheet">
     <link href="{% static 'css/general.css' %}" rel="stylesheet">
 
+    {% block add_css_base %}
+    {% endblock add_css_base %}
+
     {{ ALDRYN_SNAKE.render_head }}
 
+    {% block add_css %}
+    {% endblock add_css %}
+      <style>
+          .h1_hide {
+              font-size: 0;
+              width: 1px;
+              height: 1px;
+              display: inline-block;
+              overflow: hidden;
+              position: absolute!important;
+              border: 0!important;
+              padding: 0!important;
+              margin: 0!important;
+              clip: rect(1px,1px,1px,1px);
+            }
+      </style>
   </head>
 <body id="body_base0">
+<h1 class="h1_hide">AcademyCity</h1>
 
 {% cms_toolbar %}
-
+<!--
     <div class="container">
-<!--      <span onclick="document.getElementById('id01').style.display='none'" class="close" title="Close Modal">&times;</span>-->
+         <span onclick="document.getElementById('id01').style.display='none'" class="close" title="Close Modal">&times;</span>
       <img  src="{% static "core/logo_wo_title.png" %}" height="100px" width="70x" alt="AcademyCity">
     </div>
+-->
+
+
 {% block content %}{% endblock content %}
 
 {% render_block "js" %}

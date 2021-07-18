@@ -3,13 +3,53 @@
 <html lang="en">
 <head>
   {% block title %}<title>Title</title>{% endblock%}
-  <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="description" content="{% page_attribute meta_description %}">
+    <meta name="robots" content="index,follow,all">
+    <meta name="msapplication-TileColor" content="#eceff1">
+    <meta name="theme-color" content="#ffffff">
+      <meta name="google-site-verification" content="1NKy94ZSBrapf9w9BU4mJdhW__UB__qbGWa1V2aWoUs" />
+  {% render_block "css" %}
+
   {% block meta %}{% endblock %}
+  {% block add_meta %}{% endblock %}
+
+  <link rel="stylesheet" type="text/css" href="{% static 'css/main.a399bc1a5519.css' %}">
+  <link rel="apple-touch-icon" sizes="120x120" href="{% static 'images/apple-touch-icon.e3f5be308427.png' %}">
+  <link rel="icon" type="image/png" sizes="32x32" href="{% static 'images/favicon-32x32.b0adf6b91841.png' %}">
+  <link rel="icon" type="image/png" sizes="16x16" href="{% static 'images/favicon-16x16.bd459d491a1e.png' %}">
+  <link rel="manifest" href="{% static 'images/site.57775445aa3a.webmanifest' %}">
+  <link rel="mask-icon" href="{% static 'images/safari-pinned-tab.00983a824cb5.svg' %}" color="#f72c30">
+  <link rel="shortcut icon" href="{% static 'images/favicon.bc906d84c4a9.ico' %}">
 
   {% block links %} {% endblock %}
-  {% render_block "css" %}
+  {% block add_links %} {% endblock %}
+
+    {% block add_css_base %}{% endblock add_css_base %}
+
+    {{ ALDRYN_SNAKE.render_head }}
+
+    {% block add_css %}{% endblock add_css %}
+
+      <style>
+          .h1_hide {
+              font-size: 0;
+              width: 1px;
+              height: 1px;
+              display: inline-block;
+              overflow: hidden;
+              position: absolute!important;
+              border: 0!important;
+              padding: 0!important;
+              margin: 0!important;
+              clip: rect(1px,1px,1px,1px);
+            }
+      </style>
 </head>
-<body>
+<body id="body_base0">
+     <h1 class="h1_hide">AcademyCity</h1>
      {% cms_toolbar %}
 
        <svg
@@ -103,8 +143,11 @@
 </svg>
 
 <div id="modal-exclude">
+<!--    beginning of top nav -->
     {% block nav_bar %}
     {% endblock %}
+<!--    end of top nav  -->
+
     <div class="body-content">
         <div class="homepage">
             {% block main_page %}
@@ -112,18 +155,20 @@
 
             {% block body_content %}
             {% endblock %}
+
             {% block content_ %}
-          {% endblock %}
+            {% endblock %}
         </div>
     </div>
 <!--    beginning of footer -->
-    {% block nav_footer %}
-    {% endblock %}
+    {% block nav_footer %}{% endblock %}
 <!--    end of footer  -->
 </div>
 <!-- end of body content-->
- {% block js %}
- {% endblock %}
+
+     {% block base_js %}{% endblock %}
+     {% block js %}{% endblock %}
+     {% block add_js %}{% endblock add_js %}
 
 <p id="demo"></p>
 <script src="{% static 'vendor/jquery/jquery.min.js' %}"></script>
@@ -165,6 +210,6 @@ post_ajax_create_action = function (verb_="", app_="", model_, obj_slug_=null, p
 </script>
  {% render_block "js" %}
 
-  {% static_placeholder "Footer" %}
+{% static_placeholder "Footer" %}
 </body>
 </html>

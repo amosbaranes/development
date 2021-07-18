@@ -1,0 +1,49 @@
+{% extends "academycity/base_user.html" %}
+{% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
+{% load core_tags %}
+{% block title %}
+<title>Profile</title>
+{% endblock title %}
+
+<!-- SideNav slide-out button -->
+<!-- https://mdbootstrap.com/snippets/jquery/mdbootstrap/670810 -->
+{% block add_css %}
+     <link href="{% static 'css/user_home.css' %}" rel="stylesheet">
+{% endblock add_css %}
+
+{% block nav_bar %}
+     {% include 'education/includes/description_page.html' %}
+{% endblock %}
+
+{% block body_content %}
+<br/><br/>
+<div class="container">
+    {% if messages %}
+    <div>
+      <strong>Messages:</strong>
+      <ul>
+        {% for message in messages %}
+        <li>{{message}}</li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+
+    <br/><br/>
+    <h1>Profile</h1>
+    <p>Username: {{ user }}</p>
+    <p>First name: {{ user.first_name }}</p>
+    <p>Last name: {{ user.last_name }}</p>
+    <p>Email: {{ user.email }}</p>
+    <p>Description: {{ user.userprofile.description }}</p>
+    <p>Phone: {{ user.userprofile.phone }}</p>
+    <p>City: {{ user.userprofile.city }}</p>
+    <p>Country: {{ user.userprofile.country }}</p>
+    <p>Website: {{ user.userprofile.website }}</p>
+    <p>Institution: {{ user.userprofile.institution }}</p>
+    {% if user.userprofile.image %}
+    <img src="{{ user.userprofile.image.url }}" width="240">
+    {% endif %}
+
+</div>
+{% endblock %}

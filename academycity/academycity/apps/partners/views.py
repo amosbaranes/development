@@ -29,9 +29,9 @@ def home(request):
     town = None
     host_ = None
 
-    # print('host_0')
-    # print(host_)
-    # print('host_0')
+    print('host_0')
+    print(host_)
+    print('host_0')
 
     if len(host_s) > 2:
         host_ = host_s[1]
@@ -41,14 +41,15 @@ def home(request):
         host_ = host_s[0]
     # log_debug('partners host_: ' + host_)
 
-    # print('host_')
-    # print(host_)
-    # print('host_')
+    print('host_')
+    print(host_)
+    print('host_')
 
     try:
         log_debug('try1: ' + host_)
         wsc = WebSiteCompany(request, host_)
         if wsc.is_registered_domain():
+            print('wsc.is_registered_domain():wsc.is_registered_domain()')
             return wsc.get_redirect_link()
     except Exception as ex:
         log_debug('exception Partners:home error: ' + str(ex))

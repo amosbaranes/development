@@ -11,7 +11,7 @@ class InstitutionWebAdmin(admin.ModelAdmin):
 
 @admin.register(Course)
 class CourseAdmin(PlaceholderAdminMixin, admin.ModelAdmin):
-    list_display = ('id', 'order', 'course_name', 'course_date', 'is_popular', 'is_active', )
+    list_display = ('id', 'order', 'name', 'date', 'is_popular', 'is_active', )
     list_filter = ('is_active', 'is_popular', )
 
 
@@ -23,7 +23,7 @@ class NewAdmin(admin.ModelAdmin):
 
 @admin.register(Program)
 class ProgramAdmin(PlaceholderAdminMixin, admin.ModelAdmin):
-    list_display = ('id', 'order', 'program_title', 'program_description', 'is_popular', )
+    list_display = ('id', 'order', 'name', 'short_description', 'is_popular', )
     list_filter = ('is_active', 'is_popular', )
 
 

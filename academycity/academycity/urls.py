@@ -31,7 +31,8 @@ urlpatterns += i18n_patterns(
 
     # url(r'partners/', include('academycity.apps.partners.urls')),
     # url(r'courses/', include('academycity.apps.courses.urls')),
-    # url(r'users/', include('academycity.apps.users.urls')),
+
+    url(r'users/', include('academycity.apps.users.urls')),
 
     # re_path(r'^ckeditor/', include('ckeditor_uploader.urls')),
     path('ckeditor/', include('ckeditor_uploader.urls')),  # < here

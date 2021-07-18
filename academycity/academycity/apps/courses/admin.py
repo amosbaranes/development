@@ -49,7 +49,7 @@ class SectionTabular(TranslatableTabularInline):
 
 # ---
 class CourseAdmin(TranslatableAdmin, PlaceholderAdminMixin, admin.ModelAdmin):
-    list_display = ('language_column', 'name', 'department', 'active',)
+    list_display = ('language_column', 'id', 'name', 'department', 'active',)
     fieldsets = (
         (None, {
             'fields': (

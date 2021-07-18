@@ -4,11 +4,15 @@
 
 <!-- SideNav slide-out button -->
 <!-- https://mdbootstrap.com/snippets/jquery/mdbootstrap/670810 -->
-    {% block add_css %}
+{% block add_css %}
         <link href="{% static 'css/user_home.css' %}" rel="stylesheet">
-    {% endblock add_css %}
+{% endblock add_css %}
 
-{% block content %}
+{% block nav_bar %}
+          {% include 'education/includes/description_page.html' %}
+{% endblock %}
+
+{% block body_content %}
 <div>
     <div id="mySidenav" class="sidenav" style="width:300px">
         <div class="logo-wrapper sn-ad-avatar-wrapper">
@@ -54,7 +58,7 @@
         <div class="dropdown-container">
             <a class="w3-button w3-block w3-left-align" href="{% url 'users:edit_user_profile' %}">{% trans "Edit Profile" %}</a>
             <a class="w3-button w3-block w3-left-align"
-               href="{% url 'allauth:account_change_password' %}">{% trans "Change Password" %}</a>
+               href="{% url 'users:change_password' %}">{% trans "Change Password" %}</a>
         </div>
 
         <a href="#" class="show_content" data-page="my_actions">My Actions</a>
@@ -102,6 +106,7 @@ for (i = 0; i < dropdown.length; i++) {
 
 </script>
 {% endblock add_js %}
+
 
 {% block domready %}
   $('a.show_content').click(function(e){

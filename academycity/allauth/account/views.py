@@ -1,3 +1,4 @@
+from django.shortcuts import render
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.sites.shortcuts import get_current_site
@@ -40,6 +41,25 @@ from .utils import (
 )
 
 from academycity.apps.actions.utils import create_action
+
+#
+
+import logging
+from functools import update_wrapper
+
+from django.core.exceptions import ImproperlyConfigured
+from django.http import (
+    HttpResponse, HttpResponseGone, HttpResponseNotAllowed,
+)
+from django.template.response import TemplateResponse
+from django.urls import reverse
+from django.utils.decorators import classonlymethod
+
+logger = logging.getLogger('django.request')
+
+
+#
+
 
 INTERNAL_RESET_URL_KEY = "set-password"
 INTERNAL_RESET_SESSION_KEY = "_password_reset_key"
@@ -157,9 +177,6 @@ class LoginView(RedirectAuthenticatedUserMixin,
         ret = (get_next_redirect_url(
             self.request,
             self.redirect_field_name) or self.success_url)
-
-        print(ret)
-
         return ret
 
     def get_context_data(self, **kwargs):
@@ -208,16 +225,20 @@ class CloseableSignupMixin(object):
 
 class SignupView(RedirectAuthenticatedUserMixin, CloseableSignupMixin,
                  AjaxCapableProcessFormViewMixin, FormView):
+
     template_name = "account/signup." + app_settings.TEMPLATE_EXTENSION
+
     form_class = SignupForm
     redirect_field_name = "next"
     success_url = None
 
     @sensitive_post_parameters_m
     def dispatch(self, request, *args, **kwargs):
+        print('SignupView - dispatch')
         return super(SignupView, self).dispatch(request, *args, **kwargs)
 
     def get_form_class(self):
+        print('SignupView - get_form_class')
         return get_form_class(app_settings.FORMS, 'signup', self.form_class)
 
     def get_success_url(self):
@@ -636,7 +657,7 @@ password_set = login_required(PasswordSetView.as_view())
 class PasswordResetView(AjaxCapableProcessFormViewMixin, FormView):
     template_name = "account/password_reset." + app_settings.TEMPLATE_EXTENSION
     form_class = ResetPasswordForm
-    success_url = reverse_lazy("allauth:account_reset_password_done")
+    success_url = reverse_lazy("partners:home")
     redirect_field_name = "next"
 
     def get_form_class(self):

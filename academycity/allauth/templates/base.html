@@ -1,22 +1,18 @@
-{% extends "base_authentication.html" %}
-{% block content %}
-<div class="container">
-    {% if messages %}
-    <div>
-      <strong>Messages:</strong>
-      <ul>
-        {% for message in messages %}
-        <li>{{message}}</li>
-        {% endfor %}
-      </ul>
-    </div>
-    {% endif %}
+{% extends "academycity/base_user.html" %}
+{% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
+{% load core_tags %}
+{% block title %}
+    <title>Password reset complete</title>
+{% endblock title %}
 
-    {% block content_ %}
-    {% endblock %}
+<!-- SideNav slide-out button -->
+<!-- https://mdbootstrap.com/snippets/jquery/mdbootstrap/670810 -->
+{% block add_css %}
+     <link href="{% static 'css/user_home.css' %}" rel="stylesheet">
+{% endblock add_css %}
 
-    {% block extra_body %}
-    {% endblock %}
-</div>
+{% block nav_bar %}
+     {% include 'education/includes/description_page.html' %}
 {% endblock %}
+
 

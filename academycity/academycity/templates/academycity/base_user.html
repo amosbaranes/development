@@ -1,34 +1,20 @@
-{% extends "academycity/base0.html" %}
+{% extends "base_education0.html" %}
 {% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
 
-    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
-
-    <!-- Bootstrap core CSS -->
-<!-- To be deleted
-    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" >
--->
-    <!-- https://fontawesome.com/download -->
-      <!-- # ???????? -->
     {% block add_css_base %}
         <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
         <link href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
-<!--
-        <link href="{% static 'vendor/font-awesome-4.7.0/css/font-awesome.min.css' %}" rel="stylesheet">
--->
         <link href="{% static 'css/django_cms_original.css' %}" rel="stylesheet">
         <link href="{% static 'css/messages.css' %}" rel="stylesheet">
-
-  <!-- Font Awesome -->
-  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.2/css/all.css">
-  <!-- Bootstrap core CSS
-  <link href="css/bootstrap.min.css" rel="stylesheet">
-   -->
-  <!-- Material Design Bootstrap -->
-  <link href="css/mdb.min.css" rel="stylesheet">
-  <!-- Your custom styles (optional) -->
-  <link href="css/style_mdb.css" rel="stylesheet">
-
-
+              <!-- Font Awesome -->
+        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.2/css/all.css">
+        <!-- Bootstrap core CSS
+        <link href="css/bootstrap.min.css" rel="stylesheet">
+        -->
+        <!-- Material Design Bootstrap -->
+        <link href="css/mdb.min.css" rel="stylesheet">
+        <!-- Your custom styles (optional) -->
+        <link href="css/style_mdb.css" rel="stylesheet">
     {% endblock add_css_base %}
 
     {% render_block "css" %}
@@ -38,30 +24,26 @@
     {% endblock add_css %}
 
 <!-- body -->
-{% block base_js %}
-  <!-- Bootstrap core JavaScript -->
-  <!-- https://getbootstrap.com/docs/4.0/getting-started/contents/  -->
-  <script src="{% static 'vendor/jquery/jquery.min.js' %}"></script>
-  <script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
-  <!-- not sure about the next line -->
-  <script src="{% static 'vendor/bootstrap/js/bootstrap.min.js' %}"></script>
-  <!-- -->
 
+
+{% block base_js %}
+  <script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+  <script src="{% static 'vendor/bootstrap/js/bootstrap.min.js' %}"></script>
   <!-- MDB core JavaScript -->
   <script type="text/javascript" src="{% static 'js/popper.min.js' %}"></script>
   <script type="text/javascript" src="{% static 'js/js/mdb.min.js' %}"></script>
-
-    <!-- jQuery (necessary for Bootstrap's JavaScript plugins)
-         This come with the installation of bootstrap django-cms-->
-    <!-- Include all compiled plugins (below), or include individual files as needed -->
 {% endblock base_js %}
 
 {% render_block "js" %}
+
 {{ ALDRYN_SNAKE.render_tail }}
 
-{% block add_js %}
-{% endblock add_js %}
+{% block js %}{% endblock js %}
+{% block add_js %}{% endblock add_js %}
 
 <!--
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 -->
+
+
+
