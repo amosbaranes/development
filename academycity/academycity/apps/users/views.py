@@ -320,7 +320,12 @@ def my_account(request):
 
 
 def login_page(request):
-    company_obj = WebSiteCompany(request, web_company_id=7).site_company()
+    try:
+        test = request.POST['test']
+        return signup_page(request)
+    except Exception as ex:
+        pass
+        # print('' + str(ex))
     if request.method == "POST":
         form_login = AuthenticationForm(request, data=request.POST)
         if form_login.is_valid():
@@ -335,14 +340,18 @@ def login_page(request):
                 messages.error(request, "Invalid username or password.")
         else:
             messages.error(request, "Invalid username or password.")
-
     return signup_login_form(request, error_message='')
 
 
 def signup_login_form(request, error_message=''):
+    # print('-99999-')
+    # print('error_message')
+    # print(error_message)
+
     company_obj = WebSiteCompany(request, web_company_id=7).site_company()
     form_login = AuthenticationForm()
     form_signup = RegistrationForm()
+
     arg = {'form_login': form_login, 'form_signup': form_signup,
            'redirect_field_name': "next", 'redirect_field_value': reverse('education:home'),
            'error_message': error_message, 'institution_obj': company_obj
@@ -351,68 +360,70 @@ def signup_login_form(request, error_message=''):
 
 
 def signup_page(request):
+    # print('-2222222222-')
+    # print('-2222222222-')
     if request.method == 'POST':
         form = RegistrationForm(request.POST)
         test = request.POST['test']
+
+        # print(test)
+        # print(test)
+        # print(test)
+
         try:
             if int(test) != 1:
                 return signup_login_form(request, error_message='You must enter test number')
         except Exception as ex:
             return signup_login_form(request, error_message='You must enter test number')
 
+        # print('333333333')
+
         if form.is_valid():
+            # print('333333333000000000000000')
             cd = form.cleaned_data
             s_email = cd['email']
+            # print('s_email 1')
+            # print(s_email)
             try:
                 user_ = User.objects.get(email=s_email)
+                # print('3333333336666666666')
                 if user_:
+                    # print('333333333777777777')
                     return signup_login_form(request, error_message='This email already registered.')
             except Exception as ex:
-                return signup_login_form(request, error_message='You must enter test number')
+                pass
+                # print('error 3')
+                # print(ex)
 
-            email_message(s_email, subject='registeration', body='Your registration was completed.')
-            form.save()
+            # print('s_email2')
+            # print(s_email)
+            try:
+                email_message(s_email, subject='registeration', body='Your registration was completed.')
+            except Exception as ex:
+                pass
+                # print('error1:')
+                # print(ex)
+
+            # print('33333333311111111111')
+            try:
+                form.save()
+            except Exception as ex:
+                pass
+                # print('error2:')
+                # print(ex)
+            # print('33333333322222222222')
+
             wsc = WebSiteCompany(request, web_company_id=7)
             if wsc.is_registered_domain():
                 # print('wsc.is_registered_domain():wsc.is_registered_domain()')
                 return wsc.get_redirect_link()
             else:
-                # print('-----3333----')
-                # print(request.POST['next'])
-                # print('-----3333----')
-                return redirect(request.POST['next'])
+                # print('-----333344444444444444----')
+                # print(reverse('education:home'))
+                # print('-----333344444444444444----')
+                return redirect(reverse('education:home'))
     else:
         return signup_login_form(request, error_message='')   #'must enter test number'
-
-    #
-    # if request.method == 'POST':
-    #     form = SignupForm(request.POST)
-    #     if form.is_valid():
-    #         cd = form.cleaned_data
-    #         print('-----')
-    #         print(cd)
-    #         print('-----')
-    #         semail = cd['email']
-    #
-    #         # email_message(semail, 'register')
-    #         form.save(request)
-    #         wsc = WebSiteCompany(request, web_company_id=7)
-    #         if wsc.is_registered_domain():
-    #             print('wsc.is_registered_domain():wsc.is_registered_domain()')
-    #             return wsc.get_redirect_link()
-    # else:
-    #     print('11111---111')
-    #     form_signup = SignupForm
-    #     print('form_signup')
-    #     print(form_signup)
-    #     print(reverse('education:home'))
-    #     print('End 11111---111')
-    #
-    # return render(request, 'education/signup_page.html', {
-    #     'form_signup': form_signup,
-    #     'redirect_field_name': "next",
-    #     'redirect_field_value': reverse('education:home')
-    # })
 
 
 def logout_request(request):

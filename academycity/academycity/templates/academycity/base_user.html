@@ -20,8 +20,6 @@
     {% render_block "css" %}
     {{ ALDRYN_SNAKE.render_head }}
 
-    {% block add_css %}
-    {% endblock add_css %}
 
 <!-- body -->
 
@@ -34,12 +32,6 @@
   <script type="text/javascript" src="{% static 'js/js/mdb.min.js' %}"></script>
 {% endblock base_js %}
 
-{% render_block "js" %}
-
-{{ ALDRYN_SNAKE.render_tail }}
-
-{% block js %}{% endblock js %}
-{% block add_js %}{% endblock add_js %}
 
 <!--
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>

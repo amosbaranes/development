@@ -1,5 +1,5 @@
 from django.conf.urls import url
-from django.urls import path, include
+from django.urls import path
 from .views import (show_content, show_sub_content,
                     DeleteInstitution, InstitutionsView, InstitutionView, CreateInstitution, UpdateInstitution,
                     edit_user_profile, user_delete, my_account,

@@ -164,7 +164,7 @@ body {
         <div class="back">
             <h1 class="title">Register</h1>
 
-              <form action="{% url 'users:signup' %}" method="post">
+              <form action="{% url 'users:login' %}" method="post">
                 {% csrf_token %}
                       {% if redirect_field_value %}
                       <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />

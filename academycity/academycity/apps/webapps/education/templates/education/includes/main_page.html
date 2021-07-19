@@ -33,13 +33,9 @@
                     {% else %}
                         <li class="topbar__item topbar__item--login richie-react richie-react--user-login" >
                             <div class="user-login">
-                                <a href="{% url 'users:signup' %}" class="user-login__btn user-login__btn--sign-up">
-                                    {% trans "Sign up" %}
-                                </a>
-
                                 <a href="{% url 'users:login' %}" class="user-login__btn user-login__btn--log-in">
                                     <svg aria-hidden="true" role="img" class="icon"><use xlink:href="#icon-login"></use></svg>
-                                    {% trans "Log in" %}
+                                    {% trans "Log in/Sign up" %}
                                 </a>
                             </div>
                         </li>

@@ -7,12 +7,12 @@ from ..core.utils import log_debug
 
 class WebSiteCompany(object):
     def __init__(self, request, domain=None, web_company_id=None):
-        print('-1 '*20)
-        print('WebSiteCompany--'*3)
-        print('-1'*20)
+        # print('-1 '*20)
+        # print('WebSiteCompany--'*3)
+        # print('-1'*20)
         self.web_company_id = -1
         if domain:
-            print('-domain '*5)
+            # print('-domain '*5)
             try:
                 # log_debug('WebSiteCompany domain: ' + domain)
                 web_company_ = WebCompanies.objects.get(domain=domain)
@@ -24,7 +24,7 @@ class WebSiteCompany(object):
                 request.session[settings.WEB_SITE_COMPANY_ID] = {'domain': domain, 'web_company_id': self.web_company_id,
                                                                  'app_label': app_label_}
             except Exception as ex:
-                print('-domain ex'*5)
+                # print('-domain ex'*5)
                 request.session[settings.WEB_SITE_COMPANY_ID] = None
 
         self.web_site_company = request.session[settings.WEB_SITE_COMPANY_ID]
@@ -34,9 +34,9 @@ class WebSiteCompany(object):
         elif web_company_id:
             self.web_company_id = web_company_id
 
-        print('WebSiteCompany-web_company_id')
-        print(web_company_id)
-        print('-' * 20)
+        # print('WebSiteCompany-web_company_id')
+        # print(web_company_id)
+        # print('-' * 20)
 
     def is_registered_domain(self):
         return self.web_site_company is not None
