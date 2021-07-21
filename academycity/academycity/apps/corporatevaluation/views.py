@@ -13,17 +13,21 @@ from django.utils.translation import get_language
 from .models import (RBOIC, CountryRegion, CountryRating, Country, GlobalIndustryAverages,
                      Industry ,CompanyInfo, CompanyData, Project)
 from ..core.sql import SQL
+from ..webcompanies.WebCompanies import WebSiteCompany
 
 
 # Fix game_id.  should use project_id
 def home(request, obj_id):
+    wsc = WebSiteCompany(request, web_company_id=7)
+    company_obj = wsc.site_company()
     industry = Industry.objects.exclude(sic_description='0').all()
     global_industry_averages = GlobalIndustryAverages.objects.all()
     project = Project.objects.filter(translations__language_code=get_language()).get(id=obj_id)
     country = Country.objects.all()
     companies = CompanyInfo.objects.exclude(company_name='0').all()
     return render(request, 'corporatevaluation/home.html',
-                  {'industry': industry,
+                  {'institution_obj': company_obj,
+                   'industry': industry,
                    'global_industry_averages': global_industry_averages,
                    'project': project,
                    'country': country,
@@ -398,6 +402,7 @@ def get_screens(request):
 
     s_url = 'corporatevaluation/simulation/_' + name_ + '.html'
     sr = "get_screens_"+name_+"(request, name_, s_url)"
+
     # print(sr)
     #
     #     https://python-reference.readthedocs.io/en/latest/docs/functions/eval.html

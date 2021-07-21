@@ -295,7 +295,7 @@ def create_profile(sender, **kwargs):
             profile.save()
 
 
-def edit_user_profile(request):
+def edit_user_profile_new(request):
     company_obj = WebSiteCompany(request, web_company_id=7).site_company()
     profile = Profile.objects.filter(user=request.user)
     if not profile:
@@ -306,6 +306,7 @@ def edit_user_profile(request):
         if user_form.is_valid() and profile_form.is_valid():
             user_form.save()
             profile_form.save()
+            return redirect("education:home")
     else:
         user_form = UserEditForm(instance=request.user)
         profile_form = ProfileEditForm(instance=request.user.academics)
@@ -360,58 +361,37 @@ def signup_login_form(request, error_message=''):
 
 
 def signup_page(request):
-    # print('-2222222222-')
-    # print('-2222222222-')
     if request.method == 'POST':
         form = RegistrationForm(request.POST)
         test = request.POST['test']
-
-        # print(test)
-        # print(test)
-        # print(test)
-
         try:
             if int(test) != 1:
                 return signup_login_form(request, error_message='You must enter test number')
         except Exception as ex:
             return signup_login_form(request, error_message='You must enter test number')
-
-        # print('333333333')
-
         if form.is_valid():
-            # print('333333333000000000000000')
             cd = form.cleaned_data
             s_email = cd['email']
-            # print('s_email 1')
-            # print(s_email)
             try:
                 user_ = User.objects.get(email=s_email)
-                # print('3333333336666666666')
                 if user_:
-                    # print('333333333777777777')
                     return signup_login_form(request, error_message='This email already registered.')
             except Exception as ex:
                 pass
                 # print('error 3')
                 # print(ex)
 
-            # print('s_email2')
-            # print(s_email)
-            try:
-                email_message(s_email, subject='registeration', body='Your registration was completed.')
-            except Exception as ex:
-                pass
-                # print('error1:')
-                # print(ex)
-
-            # print('33333333311111111111')
             try:
                 form.save()
             except Exception as ex:
                 pass
                 # print('error2:')
-                # print(ex)
-            # print('33333333322222222222')
+                return signup_login_form(request, error_message=str(ex))
+
+            try:
+                email_message(s_email, subject='registeration', body='Your registration was completed.')
+            except Exception as ex:
+                pass
 
             wsc = WebSiteCompany(request, web_company_id=7)
             if wsc.is_registered_domain():
@@ -421,7 +401,7 @@ def signup_page(request):
                 # print('-----333344444444444444----')
                 # print(reverse('education:home'))
                 # print('-----333344444444444444----')
-                return redirect(reverse('education:home'))
+                return redirect(reverse('users:login'))
     else:
         return signup_login_form(request, error_message='')   #'must enter test number'
 

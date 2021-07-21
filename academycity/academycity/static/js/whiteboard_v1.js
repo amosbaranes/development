@@ -301,7 +301,6 @@ function openvidu(my_name_, win_name_, win_title_, socket, chat_room_name, is_in
 openvidu.prototype = Object.create(acWin.prototype)
 
 
-
 function Video(my_name_, win_name_, win_title_, socket, chat_room_name, is_instructor, use_id)
 {
     this.my_name = my_name_
