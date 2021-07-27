@@ -67,6 +67,29 @@ def show_sub_content(request):
         report = request.POST.get('report')
         ics = CourseSchedule.objects.filter(instructors=request.user).all()
         print(ics)
+        #
+        user_courses_schedule = request.user.course_schedule_users.all()
+        user_courses = []
+        user_courses_ = {}
+        for scu in user_courses_schedule:
+            if scu.course_schedule.active:
+                # print('-'*10)
+                # print(scu.course_schedule.active)
+                # print(scu.course_schedule.name)
+                # print('-'*10)
+                user_courses.append(scu.course_schedule.course)
+                if scu.course_schedule.course.link_app:
+                    user_courses_[scu.course_schedule.course.name] = scu.course_schedule.get_simulation_url()
+
+        return render(request, 'users/_instructor_role_management_courses.html', {'course_schedules': ics,
+                                                                                  'user_courses': user_courses,
+                                                                                  'user_courses_': user_courses_
+                                                                                  })
+
+
+
+
+
         return render(request, 'users/_instructor_role_management_courses.html', {'course_schedules': ics})
     elif sub_page == "student_role_management_courses":
         report = request.POST.get('report')

@@ -55,6 +55,40 @@ body {font-family: Arial;}
   border-top: none;
 }
 </style>
+<style>
+
+.value {
+ width:110px;
+ padding-right:5px;
+ text-align: right;
+}
+
+.account {
+  padding-left:10px; padding-right:5px;
+  text-align: left;
+}
+
+data {
+  font-family: Arial, Helvetica, sans-serif;
+  border-collapse: collapse;
+}
+
+.data td {
+  text-align: left;
+  border: 2px solid #ddd;
+}
+
+.data th {
+  text-align: center;
+  padding-top: 7px;
+  padding-bottom: 7px;
+  background-color: blue;
+  color: white;
+  border: 1px solid #ddd;
+}
+.data tr:nth-child(even){background-color: lightblue}
+
+</style>
 <div>
     <!-- Location for tabs.  The management tabs has to be entered manually  -->
     <div id="tab_titles" class="tab">
@@ -65,308 +99,13 @@ body {font-family: Arial;}
 {% else %}
 <div dir="LTR" class="row">
 {% endif%}
-  <div id="inputs" class="container tabcontent" style="background-color:#b3d1ff;">
-    <table>
-        <tr>
-            <td>{% trans "Industry" %}: </td>
-            <td>
-                <select name="industries" id="industries" style="width: 150px;" onChange="industries_fun(event)">
-                <option value='1'>{% trans "All Companies" %}</option>
-                {% for i in industry %}
-                <option value='{{ i.sic_code }}'>{{ i.sic_description }}</option>
-                {% endfor %}
-                </select>
-            </td>
-        </tr>
-        <tr>
-            <td>{% trans "Company" %}:</td>
-            <td>
-                <select name="companies" id="companies" style="width: 150px;" onChange="companies_fun(event)">
-                <option value='0'>Choose company</option>
-                {% for c in companies %}
-                <option value='{{c.id}}'>
-                    {{c.company_name}}</option>
-                {% endfor %}
-                </select>  <span id="ticker_"></span>
-            </td>
-        </tr>
-        <tr>
-            <td>{% trans "Country" %}:</td>
-            <td>
-                <select  name="countries" id="countries" style="width: 150px;" onChange="countries_fun(event)">
-                    <option value='0'>--------------------</option>
-                {% for c in country %}
-                    <option value={{c.id}} data='{{ c.marginal_tax_rate }}_{{ c.long_term_rating.country_rating }}_{{ c.long_term_rating.default_spread }}'>
-                        {{ c.country }}</option>
-                {% endfor %}
-                </select>
-<!--                <span class="tooltiptext">-->
-                  {% trans "Rating" %}: <span id="country_rating"></span>
-                   &nbsp&nbsp {% trans "Spread" %}: <span id="country_default_spread"></span>%
-                   &nbsp&nbsp {% trans "Tax rate" %}: <span id="country_tax_rate"></span>%
-<!--                </span>-->
-            </td>
-        </tr>
-        <tr>
-            <td>Year:</td>
-            <td>
-                <select name="valuation_year" id="valuation_year" style="width: 150px;" onChange="valuation_year_fun(event)">
-                    <option value='0'>--------------------</option>
-                </select>
-            </td>
-        </tr>
-    </table>
-  </div>
-
-       <div id="data" class="tabcontent">
-       </div>
-<!--  Calculation  -->
-        <div id="calculations" class="tabcontent">
-                    <!--  Cost of Debt    -->
-                    <span style="color:blue; font-size: 20px;">
-                        <u><b>{% trans "Cost of Debt" %}</b></u>
-                    </span><br/><br/>
-                    <div class="w3-responsive">
-                    <table class="w3-table-all w3-hoverable" style="width:25%">
-                        <tr><td>{% trans "Risk Free" %}</td><td id="cofd_rf"></td><td>%</td></tr>
-                        <tr><td>EBIT</td><td id="cofd_ebit"></td><td></td></tr>
-                        <tr><td>{% trans "Interest Expense" %}</td>
-                            <td id="cofd_interest_expense"></td></tr>
-                        <tr><td>{% trans "Interest Coverage" %}</td>
-                            <td id="cofd_interest_coverage"></td><td></td></tr>
-                        <tr><td>{% trans "Estimated Bond Rating" %}</td>
-                            <td id="cofd_estimated_bond_rating"></td><td></td></tr>
-                        <tr><td>{% trans "Estimated Company Default Spread" %}</td>
-                            <td id="cofd_estimated_company_default_spread"></td><td>%</td></tr>
-                        <tr><td>{% trans "Estimated County Default Spread" %}</td>
-                            <td id="cofd_estimated_county_default_spread"></td><td>%</td></tr>
-                        <tr><td>{% trans "Estimated Cost of Debt" %}</td>
-                            <td id="cofd_estimated_cost_of_debt"></td><td>%</td></tr>
-                    </table>
-                    </div>
-                    <br/><br/>
-
-                    <!--   Cost of Equity  -->
-                    <span style="color:blue; font-size: 20px;">
-                        <u><b>{% trans "Growth and Cost of Equity" %}</b></u>
-                    </span><br/><br/>
-                    <div class="w3-responsive">
-                      <button onclick="add_industry_beta()">{% trans "Add Industry Beta" %}</button>
-                      <table id="cost_of_equity" class="w3-table-all w3-hoverable" style="width:53%">
-                        <tr>
-                            <th style="width:8%" class="th">{% trans "Business" %}</th>
-                            <th style="width:8%" class="th">{% trans "Revenues" %}</th>
-                            <th style="width:8%" class="th">{% trans "EV/Sales" %}</th>
-                            <th style="width:13%" class="th">{% trans "Estimated Value" %}</th>
-                            <th style="width:13%" class="th">{% trans "Unlevered Beta" %}</th>
-                            <th style="width:13%" class="th">{% trans "Expected Growth" %}</th>
-                        </tr>
-                        <tr id="cofe_row" oninput="cofeFunction(event)">
-                            <td>
-                                <select name="cofe_business" id="cofe_business"
-                                        onChange="cofe_business_fun(event)">
-                                    <option value='0'>--------------------</option>
-                                {% for gi in global_industry_averages %}
-                                    <option value="{{ gi.ev_over_sales }}_{{ gi.unlevered_beta_corrected_for_cash }}_{{ gi.expected_earnings_growth_next_5_years }}">
-                                        {{ gi.industry_name }}</option>
-                                {% endfor %}
-                                </select>
-                            </td>
-                            <td><input id="cofe_revenues" type="text" style="width:150px"
-                                       onchange="cofe_revenue_fun(event)" value="100"/></td>
-                            <td><span id="cofe_ev_over_sales" style="float: right"></span></td>
-                            <td><span id="cofe_estimated_value" style="float: right"></span></td>
-                            <td><span id="cofe_unlevered_beta" style="float: right"></span></td>
-                            <td><span id="cofe_expected_growth" style="float: right"></span></td>
-                            <td><button onclick="delete_industry_beta(event)">{% trans "Delete" %}</button></td>
-                        </tr>
-                      </table>
-                      <table class="w3-table-all w3-hoverable" style="width:53%">
-                          <tr><td style="width:70%"></td><td style="width:13%">
-                              <b>Beta: <span id="cofe_beta" style="float: right"></span></b></td>
-                              <td style="width:20%">
-                                  <b>{% trans "Growth" %}: <span id="cofe_growth" style="float: right"></span></b></td>
-                          </tr>
-                      </table>
-
-                      <br/><br/>
-                      <table class="w3-table-all w3-hoverable" style="width:25%">
-                          <tr><td>{% trans "Risk Free" %}</td>  <td id="cofe_rf">0</td><td>%</td></tr>
-                          <tr><td>{% trans "Unlevred Beta" %}</td>  <td id="cofe_ub">0</td><td></td></tr>
-                          <tr><td>{% trans "Beta" %}</td><td id="cofe_b">0</td><td></td></tr>
-                          <tr><td>{% trans "Mature marker risk premium" %}</td>
-                              <td id="cofe_rp">0</td><td>%</td>
-                          </tr>
-                          <tr><td>{% trans "Adj. Default Spread" %}</td><td id="cofe_ads">0</td><td>%</td></tr>
-                          <tr><td>{% trans "Volatility ratio" %}</td><td id="cofe_vr">{{ project.volatility_ratio }}</td></tr>
-                          <tr><td>{% trans "Total Country Risk" %}</td><td id="cofe_tcr">0</td><td>%</td></tr>
-                          <tr><td>{% trans "Cost of Equity" %}</td><td id="cofe_">0</td><td>%</td></tr>
-                      </table>
-                    </div><br/><br/>
-
-                    <!--    Estimated ROIC  -->
-                    <span style="color:blue; font-size: 20px;">
-                        <u><b>{% trans "Estimated ROIC" %}</b></u>
-                    </span><br/>
-                    <span style="color:blue; font-size: 20px;"># of Periods for estimation:</span>
-                        <input id="roic_effective_tax_rate_periods" type="text"
-                               value="5" oninput="calculate_all()"
-                                             style="width:55px"  />
-                    <div class="w3-responsive">
-
-                      <table id="estimated_roic" class="w3-table-all w3-hoverable" style="width:60%">
-                      </table>
-                    </div><br/><br/>
-
-                    <!--   Effective tax rate   -->
-                    <span style="color:blue; font-size: 20px;">
-                        <u><b>{% trans "Effective tax rate" %}</b></u>
-                    </span><br/><br/>
-                    <div class="w3-responsive">
-                      <table id="effective_tax_rate" class="w3-table-all w3-hoverable" style="width:60%">
-                      </table>
-                    </div>
-        </div>
-<!-- Valuation -->
-        <div id="valuation" class="tabcontent">
-            <span style="padding:10px; color:blue">
-                <font size="5">{% trans "Parameters effecting the solution" %}:</font>
-            </span>
-            <table class="w3-table-all w3-hoverable" style="width:75%">
-                <tr>
-                    <td>WACC: </td>
-                    <td style="padding-left:5px">
-                        <input id="wacc_" type="text"
-                                     value="6" oninput="input_dcf(event)"
-                                     style="width:55px"  />%
-                    </td>
-                    <td style="padding-left:5px">
-                        EBIT (<span id="valuation_year_">1</span>):
-                    </td>
-                    <td><input id="cf1_ebit" type="text" value="1000" oninput="input_dcf(event)"
-                               style="width:80px"  />
-                    </td>
-                    <td>Short Term Growth:</td>
-                    <td>
-                        <input id="stgrowth_" type="text"
-                                     value="5" oninput="input_dcf(event)"
-                                     style="width:55px"  />%
-                    </td>
-                    <td>Long Term Growth:</td>
-                    <td>
-                        <input id="ltgrowth_" type="text"
-                                     value="2" oninput="input_dcf(event)"
-                                     style="width:55px"  />%
-                    </td>
-                </tr>
-                <tr>
-                    <td>Effective tax rate: </td>
-                    <td style="padding-left:5px">
-                        <input id="effective_tax_rate_" type="text"
-                                     value="0" oninput="input_dcf(event)"
-                                     style="width:55px"  />%
-                    </td>
-                    <td>Marginal tax rate:</td>
-                    <td style="padding-left:5px">
-                        <input id="marginal_tax_rate_" type="text"
-                                     value="0" oninput="input_dcf(event)"
-                                     style="width:55px"  />%
-                    </td>
-                    <td>ROIC (short term):</td>
-                    <td style="padding-left:5px">
-                        <input id="roic_st_" type="text"
-                                     value="0" oninput="input_dcf(event)"
-                                     style="width:55px"  />%
-                    </td>
-                    <td>ROIC (long term):</td>
-                    <td style="padding-left:5px">
-                        <input id="roic_lt_" type="text"
-                                     value="0" oninput="input_dcf(event)"
-                                     style="width:55px"  />%
-                    </td>
-                </tr>
-                <tr>
-                    <td>Duration of S.T. period</td>
-                    <td style="padding-left:5px">
-                        <input id="duration_of_st_period_" type="text"
-                                     value="5" oninput="input_dcf(event)"
-                                     style="width:55px"  />
-                    </td>
-                    <td></td>
-                    <td></td>
-                    <td>Re-investment rate (ST):</td>
-                    <td style="padding-left:5px">
-                        <input id="re_investment_rate_short_term_" type="text"
-                                     value="0" oninput="input_dcf(event)"
-                                     style="width:55px"  />%
-                    </td>
-                    <td>Re-investment rate (LT):</td>
-                    <td style="padding-left:5px">
-                        <input id="re_investment_rate_long_term_" type="text"
-                                     value="0" oninput="input_dcf(event)"
-                                     style="width:55px"  />%
-                    </td>
-                </tr>
-
-            </table>
-            <br/>
-
-            <div style="color:green">
-                <table id="dcf_framework" class="w3-table-all w3-hoverable" style="width:65%">
-                </table>
-            </div>
-            <br/>
-            <div id="simulation" style="height:400px; width:550px">
-                  <span class="cursor badge badge-pill badge-info" onclick="simulate('all')">
-                      {% trans "Simulate" %}
-                  </span>
-                  {% trans "Range" %}: <input id="simulation_range" type="text" value="0.1" style="width:45px"/>
-                  {% trans "Skew" %}: <input id="simulation_skew" type="text" value="1" style="width:45px"/>
-                  {% trans "# Randomization" %}: <input id="simulation_number_of_randomization" type="text" value="100000" style="width:70px"/>
-                  <div id="simulation_chart_all"></div>
-                  <table>
-                      <tr>
-                          <td style="text-align:center">
-                              <span class="cursor badge badge-pill badge-info"
-                                    onclick="simulate('wacc')" >WACC</span>
-                          </td>
-                          <td style="text-align:center">
-                              <span class="cursor badge badge-pill badge-info"
-                                    onclick="simulate('stgrowth')">{% trans "Short Term Growth" %}</span></td>
-                          <td style="text-align:center">
-                              <span class="cursor badge badge-pill badge-info"
-                                    onclick="simulate('ltgrowth')">{% trans "Long Term Growth" %}</span></td>
-                      </tr>
-                      <tr>
-                          <td><div id="simulation_chart_wacc" style="height:300px; width:300px"></div></td>
-                          <td><div id="simulation_chart_stgrowth" style="height:300px; width:300px"></div></td>
-                          <td><div id="simulation_chart_ltgrowth" style="height:300px; width:300px"></div></td>
-                      </tr>
-                      <tr>
-                          <td style="text-align:center">
-                              <span class="cursor badge badge-pill badge-info"
-                                    onclick="simulate('ebit')">EBIT</span></td>
-                          <td style="text-align:center">
-                              <span class="cursor badge badge-pill badge-info"
-                                    onclick="simulate('mtr')">{% trans "Marginal tax rate" %}</span></td>
-                          <td style="text-align:center">
-                              <span class="cursor badge badge-pill badge-info"
-                                    onclick="simulate('etr')">{% trans "Effective tax rate" %}</span></td>
-                      </tr>
-                      <tr>
-                          <td><div id="simulation_chart_ebit" style="height:300px; width:300px"></div></td>
-                          <td><div id="simulation_chart_mtr" style="height:300px; width:300px"></div></td>
-                          <td><div id="simulation_chart_etr" style="height:300px; width:300px"></div></td>
-                      </tr>
-                  </table>
-            </div>
-        </div>
-
-        <div id="comparablecompanies" class="tabcontent">
-            <div id="valuation_vs_actual">Valuation vs. Actual</div>
-       </div>
-
-        {%if user.is_staff %}
+          {% include 'corporatevaluation/simulation/includes/_inputs.html' %}
+          {% include 'corporatevaluation/simulation/includes/_data.html' %}
+          {% include 'corporatevaluation/simulation/includes/_calculations.html' %}
+          {% include 'corporatevaluation/simulation/includes/_valuation.html' %}
+          {% include 'corporatevaluation/simulation/includes/_comparablecompanies.html' %}
+        {%if user.is_staff or request.user|has_group:"instructors"%}
+          {% include 'corporatevaluation/simulation/includes/valuationtodo.html' %}
           {% include 'corporatevaluation/simulation/includes/valuationadmin.html' %}
           {% include 'corporatevaluation/simulation/includes/valuationsetup.html' %}
         {% endif %}
@@ -376,704 +115,16 @@ body {font-family: Arial;}
 
 <span id="tabs_"
       tabs_s="comparablecompanies:{% trans "Comparable Companies" %};local,valuation:{% trans "Valuation" %};local,calculations:{% trans "Calculations" %};local,data:{% trans "Data" %};local,inputs:{% trans "Inputs" %};local"
-tabs_m="valuationsetup:{% trans "Valuation Setup" %};pull_screen,valuationadmin:{% trans "Valuation Admin" %};pull_screen"
+tabs_m="valuationsetup:{% trans "Valuation Setup" %};pull_screen,valuationadmin:{% trans "Valuation Admin" %};pull_screen,valuationtodo:{% trans "To do list" %};pull_screen"
 >
 </span>
 
-<span id="is_staff" is_staff="{{user.is_staff}}"></span>
+<span id="is_staff" is_staff="{{user.is_staff}}" is_instructor="{{user|has_group:'instructors'}}"></span>
 <div id="log_info"></div>
 
 <!-- corporate valuation -->
 <script>
 
-// set framework
-// Pick Industry
-// -------------
-
-function set_row(table, row_num, firs_title, id_name)
-{
-  short_number_of_years = vObj["short_number_of_years"]
-  var row = table.insertRow(row_num);
-  var cell = row.insertCell(0);
-  cell.innerHTML = firs_title;
-  cell.setAttribute("style", "text-align:left")
-  for (i = 1; i<short_number_of_years+3; i++)
-  {
-    j=i-1
-    var cell = row.insertCell(i);
-    cell.setAttribute("style", "text-align:right")
-    cell.setAttribute("id", id_name+j)
-  }
-  return row
-}
-
-function set_row_summary(table, row_num, firs_title, id_name_second)
-{
-  short_number_of_years = vObj["short_number_of_years"]
-  var row = table.insertRow(row_num);
-  var cell = row.insertCell(0);
-  cell.innerHTML = firs_title;
-  cell.setAttribute("style", "text-align:left")
-  var cell = row.insertCell(1);
-  cell.setAttribute("id", id_name_second)
-  cell.setAttribute("style", "text-align:right")
-  for (i = 2; i<short_number_of_years+3; i++)
-  {
-    var cell = row.insertCell(i);
-    cell.setAttribute("style", "text-align:right")
-  }
-  //
-}
-
-function set_framework()
-{
-  short_number_of_years = vObj["short_number_of_years"]
-  year0 = 1*vObj["valuation_year"]-1
-  var table = document.getElementById("dcf_framework");
-  table.innerHTML = ""
-  //
-  row = set_row(table=table, row_num=0, firs_title="Year", id_name="year_")
-  row.setAttribute("id", "years_row")
-  //
-  row = set_row(table=table, row_num=1, firs_title="EBIT", id_name="cf_")
-  row.setAttribute("id", "cf_")
-  //
-  set_row(table=table, row_num=2, firs_title="Taxes", id_name="tax_")
-  set_row(table=table, row_num=3, firs_title="Net Capital Exp.", id_name="nce_")
-  //
-  var row = table.insertRow(4);
-  var cell = row.insertCell(0);
-  cell.innerHTML = "Terminal Value";
-  cell.setAttribute("style", "text-align:left")
-  for (i = 1; i<short_number_of_years+3; i++)
-  {
-    j=i-1
-    var cell = row.insertCell(i);
-    cell.setAttribute("style", "text-align:right")
-    if(i == short_number_of_years+1)
-    {
-     cell.setAttribute("id", "tv")
-    }
-  }
-  //
-  set_row(table=table, row_num=5, firs_title="Cash Flow", id_name="ncf_")
-  set_row(table=table, row_num=6, firs_title="Discount Factor", id_name="df_")
-  set_row(table=table, row_num=7, firs_title="Yearly PV", id_name="npv_")
-  set_row_summary(table=table, row_num=8, firs_title="PV", id_name_second="pv_sum")
-  //
-  set_row_summary(table=table, row_num=9, firs_title="Debt", id_name_second="debt_sum")
-  set_row_summary(table=table, row_num=10, firs_title="Minority", id_name_second="minority_sum")
-  set_row_summary(table=table, row_num=11, firs_title="Prefered Stock", id_name_second="prefered_stock_sum")
-  set_row_summary(table=table, row_num=12, firs_title="Excess Cash", id_name_second="excess_cash_sum")
-  set_row_summary(table=table, row_num=13, firs_title="# of Shares", id_name_second="num_of_shares_sum")
-  set_row_summary(table=table, row_num=14, firs_title="IV per share", id_name_second="iv_per_share_sum")
-  set_row_summary(table=table, row_num=15, firs_title="Market Price per share", id_name_second="market_price_per_share_sum")
-}
-
-
-// update data
-function input_valuation(event)
-{
- e = event.target
- // alert(e.outerHTML)
- year_ = e.getAttribute("year")
- account_ = e.getAttribute("account")
- amount_= e.value
- ticker_ = vObj["ticker"]
- $.post('{% url "corporatevaluation:update_account" %}',
-      {
-        year: year_,
-        account: account_,
-        ticker: ticker_,
-        amount: amount_,
-      },
-      function(data){
-        alert('data updated to: ' + data['result'])
-      }
-    );
-}
-
-// Valuation
-// ----------
-function input_dcf(event)
-{
-  vObj["short_number_of_years"] = 1*document.getElementById("duration_of_st_period_").value
-  short_number_of_years = vObj["short_number_of_years"]
-  set_framework()
-  valuation_year = 1*vObj["valuation_year"]  - 1
-  years_row = document.getElementById("years_row")
-  for(i = 1; i < (short_number_of_years + 3); i++)
-  {
-   years_row.children[i].innerHTML = valuation_year + i
-   if (i == short_number_of_years + 2)
-   {
-    years_row.children[i].innerHTML = "SS"
-   }
-  }
-  stgrowth = document.getElementById("stgrowth_").value/100
-  ltgrowth = document.getElementById("ltgrowth_").value/100
-  wacc = document.getElementById("wacc_").value/100
-  df = 1/(1+wacc)
-  etr = document.getElementById("effective_tax_rate_").value/100
-  mtr = document.getElementById("marginal_tax_rate_").value/100
-  cf_0_ = document.getElementById("cf1_ebit").value;
-
-  // in thousands
-  document.getElementById('roic_lt_').value = Math.round(100*document.getElementById("wacc_").value)/100
-
-  roic_st = document.getElementById('roic_st_').value/100
-  roic_lt = wacc
-  document.getElementById('re_investment_rate_short_term_').value = Math.round(100*100*stgrowth/roic_st)/100
-  document.getElementById('re_investment_rate_long_term_').value = Math.round(100*100*ltgrowth/roic_lt)/100
-  rir_st = document.getElementById("re_investment_rate_short_term_").value/100
-  rir_lt = document.getElementById("re_investment_rate_long_term_").value/100
-  // --
-  document.getElementById("cf_0").innerHTML = cf_0_
-  for (i = 1; i < short_number_of_years+2 ; i++)
-  {
-   j = i-1
-   if(i<short_number_of_years+1)
-   {eval("cf_"+i+"_ = cf_"+j+"_ * (1+stgrowth); document.getElementById('cf_"+i+"').innerHTML = Math.round(cf_"+i+"_)");
-    eval("document.getElementById('tax_"+i+"').innerHTML = Math.round(cf_"+i+"_*etr)");
-    eval("document.getElementById('nce_"+i+"').innerHTML = Math.round(cf_"+i+"_*(1-etr)*rir_st)")}
-   else
-   {eval("cf_"+i+"_ = cf_"+j+"_ * (1+ltgrowth); document.getElementById('cf_"+i+"').innerHTML = Math.round(cf_"+i+"_)");
-    eval("document.getElementById('tax_"+i+"').innerHTML = Math.round(cf_"+i+"_*mtr)");
-    eval("document.getElementById('nce_"+i+"').innerHTML = Math.round(cf_"+i+"_*(1-mtr)*rir_lt)")}
-  }
-  i-=1
-  //
-  tv = document.getElementById("tv")
-  eval("tv_ = cf_"+i+"_*(1-mtr)*(1-rir_lt)/(wacc-ltgrowth)");
-  tv.innerHTML = Math.round(tv_)
-  //
-  for (i = 1; i < short_number_of_years+1 ; i++)
-  {
-   if(i<short_number_of_years)
-   {eval("document.getElementById('ncf_"+i+"').innerHTML = Math.round(cf_"+i+"_*(1-etr)*(1-rir_st))");
-    eval("npv_"+i+".innerHTML = Math.round(df**"+i+"*cf_"+i+"_*(1-etr)*(1-rir_st))")}
-   else
-   {eval("document.getElementById('ncf_"+i+"').innerHTML = Math.round(cf_"+i+"_*(1-etr)*(1-rir_st))+Math.round(tv_)");
-    eval("npv_"+i+".innerHTML = Math.round(df**"+i+"*(cf_"+i+"_*(1-etr)*(1-rir_st)+tv_))")}
-   eval("document.getElementById('df_"+i+"').innerHTML = Math.round(df**"+i+"*100)/100")
-  }
-
-  pv = 0
-  //pv += 1*npv_1.innerHTML+1*npv_2.innerHTML+1*npv_3.innerHTML+1*npv_4.innerHTML+1*npv_5.innerHTML
-  for (i = 1; i < short_number_of_years + 1; i++)
-  {
-   eval("pv += 1*npv_"+i+".innerHTML")
-  }
-  document.getElementById("pv_sum").innerHTML = pv
-  ltd = document.getElementById('noncurrent_liabilities_'+vObj["valuation_year"]).value/1000
-  document.getElementById("debt_sum").innerHTML = Math.round(ltd)
-
-  mi = document.getElementById('equity_attributable_to_oncontrolling_interest_'+vObj["valuation_year"]).value/1000
-  document.getElementById("minority_sum").innerHTML = Math.round(mi)
-
-  ps = document.getElementById('preferred_stock_'+vObj["valuation_year"]).value/1000
-  document.getElementById("prefered_stock_sum").innerHTML = Math.round(ps)
-
-  ec = 0
-  document.getElementById("excess_cash_sum").innerHTML = ec
-
-  ns = document.getElementById('number_of_shares_'+vObj["valuation_year"]).value
-  document.getElementById("num_of_shares_sum").innerHTML = ns
-  document.getElementById("iv_per_share_sum").innerHTML = Math.round(100*1000*(pv-ltd-mi-ps+ec)/ns)/100
-
-  pps = document.getElementById('share_price_'+vObj["valuation_year"]).value
-  document.getElementById("market_price_per_share_sum").innerHTML = Math.round(100*pps)/100
-}
-
-// Normal Distribution With Min, Max, Skew
-// https://stackoverflow.com/questions/25582882/javascript-math-random-normal-distribution-gaussian-bell-curve
-function randn_bm(min, max, skew) {
-    let u = 0, v = 0;
-    while(u === 0) u = Math.random(); //Converting [0,1) to (0,1)
-    while(v === 0) v = Math.random();
-    let num = Math.sqrt( -2.0 * Math.log( u ) ) * Math.cos( 2.0 * Math.PI * v );
-
-    num = num / 10.0 + 0.5; // Translate to 0 -> 1
-    if (num > 1 || num < 0) num = randn_bm(min, max, skew); // resample between 0 and 1 if out of range
-    num = Math.pow(num, skew); // Skew
-    num *= max - min; // Stretch to fill range
-    num += min; // offset to min
-    return num;
-}
-
-function randomize(Obj, range, skew, param)
-{
- sObj = new Object();
- for (x in Obj) {
-  if (param == 'all')
-  {sObj[x] = randn_bm((1-range)*Obj[x], (1+range)*Obj[x], skew)}
-  else
-  {
-   if(x == param)
-   {sObj[x] = randn_bm((1-range)*Obj[x], (1+range)*Obj[x], skew)}
-   else
-   {sObj[x] = randn_bm(Obj[x], Obj[x], 1)}
-  }
- }
- return sObj
-}
-
-function get_iv(sObj)
-{
- sObj["df"] = 1/(1+sObj["wacc"])
- sObj["pv"] = 0
- for (j=1; j < sObj["short_number_of_years"]+1; j++)
- {
-    if(j < sObj["short_number_of_years"]+1)
-    {
-     cfj = sObj["ebit"] * (1 + sObj["stgrowth"]) ** j
-     fcfj = cfj*(1-sObj["etr"])*(1-sObj["rir_st"])
-     sObj["pv"] += fcfj*sObj["df"]**j
-    }
-    if(j == sObj["short_number_of_years"])
-    {
-      cfj = sObj["ebit"] * (1 + sObj["stgrowth"]) ** sObj["short_number_of_years"]
-      cfj_ss = cfj * (1 + sObj["ltgrowth"])*(1-sObj["mtr"])*(1-sObj["rir_lt"])
-      tv_ = cfj_ss*sObj["df"]**j /(sObj["wacc"] - sObj["ltgrowth"])
-      sObj["pv"] += tv_
-    }
- }
- iv_per_share = Math.round(100*1000*(sObj["pv"] -sObj["ltd"]-sObj["mi"]-sObj["ps"]+ sObj["ec"] )/sObj["ns"])/100
- return iv_per_share
-}
-
-// https://plot.ly/javascript/
-function getObj()
-{
- Obj = new Object();
- // ---
- Obj["ebit"] = 1*document.getElementById("cf1_ebit").value ;
- Obj["stgrowth"] = document.getElementById("stgrowth_").value/100
- Obj["ltgrowth"] = document.getElementById("ltgrowth_").value/100
- Obj["wacc"] = document.getElementById("wacc_").value/100
- Obj["mtr"] = document.getElementById("marginal_tax_rate_").value/100
- Obj["rir_lt"] = document.getElementById("re_investment_rate_long_term_").value/100
- // ---
- Obj["etr"] = document.getElementById("effective_tax_rate_").value/100
- Obj["rir_st"] = document.getElementById("re_investment_rate_short_term_").value/100
- //
- Obj["ltd"] = 1*document.getElementById("debt_sum").innerHTML
- Obj["mi"] = 1*document.getElementById("minority_sum").innerHTML
- Obj["ps"] = 1*document.getElementById("prefered_stock_sum").innerHTML
- Obj["ec"] = 1*document.getElementById("excess_cash_sum").innerHTML
- Obj["ns"] = document.getElementById('number_of_shares_'+vObj["valuation_year"]).value
- //
- return Obj
-}
-
-function simulate(param)
-{
- Obj = getObj()
- range = 1*document.getElementById("simulation_range").value
- skew = 1*document.getElementById("simulation_skew").value
- number_of_randomization = 1*document.getElementById("simulation_number_of_randomization").value
- //
- var pps = [];
- for (i = 1; i <= number_of_randomization; i++)
- {
-  sObj = randomize(Obj, range, skew, param)
-  sObj["short_number_of_years"] = vObj["short_number_of_years"]
-  //
-  pps[i] = get_iv(sObj)
- }
- //
- var trace = {
-     x: pps,
-     type: 'histogram',
-     marker: {color: 'blue',},
-   };
- var data = [trace];
- Plotly.newPlot('simulation_chart_'+param, data);
-}
-
-//  wacc stgrowth ltgrowth
-
-// cost of equity
-function cofe_revenue_fun(event)
-{
-    e = event.target
-    r = e.parentNode.parentNode
-    revenue_v = r.children[1].childNodes[0].value
-    evs_v = r.children[2].childNodes[0].innerHTML
-    ev = r.children[3].childNodes[0]
-    ev.innerHTML = Math.round(evs_v*revenue_v)
-    calculate_all()
-}
-
-function cofe_business_fun(event)
-{
-    e = event.target
-    gi = e.options[e.selectedIndex]
-    value = e.options[e.selectedIndex].value
-    s = value.split("_")
-    var evs_v = s[0];
-    var b_v = s[1];
-    var g_v = (1+1*s[2])**(1/5)-1;
-    r = gi.parentNode.parentNode.parentNode
-    revenue = r.children[1].children[0].value
-    evs = r.children[2].children[0]
-    evs.innerHTML = Math.round(100*evs_v)/100
-    ev = r.children[3].children[0]
-    ev.innerHTML = Math.round(evs_v*revenue)
-    bv = r.children[4].children[0]
-    bv.innerHTML = Math.round(100*b_v)/100
-    bg = r.children[5].children[0]
-    bg.innerHTML = Math.round(10000*g_v)/10000
-    calculate_all()
-}
-
-
-// set cost of equity
-// -- for button to add new beta row --
-function add_industry_beta()
-{
-    t = document.getElementById("cost_of_equity")
-    r = document.getElementById("cofe_row")
-    var c = r.cloneNode(true);
-    t.appendChild(c);
-    var c = r.cloneNode(true);
-    t.appendChild(cln);
-    calculate_all()
-}
-
-// -- for button to delete new beta row --
-function delete_industry_beta(event)
-{
- t = event.target
- r = t.parentNode.parentNode
- r.parentNode.removeChild(r);
- calculate_all()
-}
-
-function set_cofe()
-{
-    rows = document.getElementById('cost_of_equity').rows
-    t_evs = 0; tb = 0; tg = 0;
-    for (r = 1; r < rows.length; r++)
-    {
-      evs = 1*rows.item(r).children[3].children[0].innerHTML
-      b = 1*rows.item(r).children[4].children[0].innerHTML
-      g = 1*rows.item(r).children[5].children[0].innerHTML
-      tb += evs*b
-      tg += evs*g
-      t_evs += evs
-    }
-    document.getElementById('cofe_beta').innerHTML = Math.round(100*tb/t_evs)/100
-
-    document.getElementById('cofe_rf').innerHTML = Math.round(100*vObj["rf"]*100)/100;
-    document.getElementById('cofe_ub').innerHTML = Math.round(100*tb/t_evs)/100
-
-    document.getElementById('cofe_growth').innerHTML = Math.round(10000*tg/t_evs)/10000
-    vObj["stgrowth"] = Math.round(10000*100*tg/t_evs)/10000
-    document.getElementById("stgrowth_").value = Math.round(vObj["stgrowth"]*100)/100
-
-    tax_rate = vObj["itr"]
-    ub = Math.round(10000*tb/t_evs)/10000
-    d = document.getElementById('noncurrent_liabilities_'+vObj["valuation_year"]).value
-    e = document.getElementById('stockholders_equity_'+vObj["valuation_year"]).value
-
-    vObj["book_value_debt"] = d
-    vObj["book_value_equity"] = e
-    d_over_e = d/e
-    b = ub*(1+(1-(vObj["country_tax_rate"]/100))*d_over_e)
-    document.getElementById('cofe_b').innerHTML = Math.round(100*b)/100
-
-    rf = vObj["rf"]*100
-    rp = vObj["mature_marker_risk_premium"]*100
-    document.getElementById('cofe_rp').innerHTML = rp
-    vr = vObj["volatility_ratio"]
-    ads = vObj["country_default_spread"]
-    document.getElementById('cofe_ads').innerHTML =  Math.round(100*ads)/100
-    tcr = ads*vr
-
-    document.getElementById('cofe_tcr').innerHTML = Math.round(100*tcr)/100
-    cofe_ = rf + b*(rp + tcr)
-    document.getElementById('cofe_').innerHTML = Math.round(100*cofe_)/100
-    vObj["cofe"] = Math.round(100*cofe_)/100
-    set_wacc()
-}
-
-// ---
-// vObj["cofd"]
-function set_cost_of_debt()
-{
-  cd = vObj["cd"]
-  document.getElementById("cofd_rf").innerHTML=Math.round(100*vObj["rf"]*100)/100
-  ve = cd[vObj["valuation_year"]]["ebit"][0]
-  document.getElementById("cofd_ebit").innerHTML=ve
-  vi = cd[vObj["valuation_year"]]["interest_expense"][0]
-  document.getElementById("cofd_interest_expense").innerHTML=vi
-  icr_ = ve/vi
-
-  if(vi < 1)
-  {
-   document.getElementById("cofd_interest_coverage").innerHTML = "<span class='tooltip_'>Infinity<span class='tooltiptext'>Check the Interest Expense in the data section</span></span>"
-  }
-  else
-  {
-   document.getElementById("cofd_interest_coverage").innerHTML=Math.round(100*icr_)/100
-  }
-
-    $.post('{% url "corporatevaluation:get_interest_coverage_ratio" %}',
-      {
-        icr: icr_,
-      },
-      function(data){
-      rating = data['rating']
-      spread = data['spread']*100
-      document.getElementById("cofd_estimated_bond_rating").innerHTML=rating
-      document.getElementById("cofd_estimated_company_default_spread").innerHTML=Math.round(100*spread)/100
-      document.getElementById("cofd_estimated_county_default_spread").innerHTML=Math.round(100*vObj["country_default_spread"])/100
-      cofd = 100*vObj["rf"]+1*spread+1*vObj["country_default_spread"]
-      vObj["cofd"] = cofd
-      document.getElementById("cofd_estimated_cost_of_debt").innerHTML=Math.round(100*cofd)/100
-      set_wacc()
-      })
-
-}
-
-function set_wacc()
-{
-    d = 1*vObj["book_value_debt"]
-    e = 1*vObj["book_value_equity"]
-    v = d+e
-    vObj["wacc"] = (d/v)*vObj["cofd"]*(1-1*vObj["country_tax_rate"]/100) + (e/v)*vObj["cofe"]
-    document.getElementById("wacc_").value = Math.round(100*vObj["wacc"])/100
-    //--
-    vObj["roic_lt"] = vObj["wacc"]
-    document.getElementById('roic_lt_').value = Math.round(100*vObj["roic_lt"])/100
-    document.getElementById('re_investment_rate_short_term_').value = Math.round(100*100*vObj["stgrowth"]/vObj["roic_st"])/100
-
-    // need to complete data pull of long term growth: vObj["ltgrowth"] to be GDP growth
-    vObj["ltgrowth"] = 0.02
-    // document.getElementById('re_investment_rate_long_term_').value = Math.round(100*100*vObj["ltgrowth"]/vObj["roic_lt"])/100
-}
-
-// --- ROIC and taxes --
-// vObj["roic"]
-// vObj["itr"]
-function set_roic_efective_tax_rate(y, cd)
-{
-//alert('set_roic_efective_tax_rate 1')
- // --- Roic -----
- // --------------
- year = "<thead><th class='th'>Year</th>"
- oiat = "<tr><td>Operating Income After Tax</td>"
- ltd = "<tr><td>LT Liabilities (Non-Current)</td>"
- ltdc = "<tr><td>Long Term Debt (current)</td>"
- tltd = "<tr><td>Long-term Liabilities</td>"
- she = "<tr><td>Stockholders Equity</td>"
- ta = "<tr><td>Total Assets</td>"
- noiat = 0; nltd= 0; nltdc = 0; ntltd = 0; nshe = 0; nta=0
- // --
- roic_effective_tax_rate_periods_ = document.getElementById('roic_effective_tax_rate_periods').value
- valuation_year_ = parseInt(vObj["valuation_year"])
- nn_ = valuation_year_ - roic_effective_tax_rate_periods_ + 1
- for( yy = nn_; yy <=valuation_year_; yy++)
- {
-  year += "<td>" + yy + "</td>"
-  oiat += "<td style='text-align:right'>" + (cd[yy]["ebit"][0]-cd[yy]["income_taxes"][0]) + "</td>"
-  noiat += (cd[yy]["ebit"][0]-cd[yy]["income_taxes"][0])
-  ltd += "<td style='text-align:right'>" + cd[yy]["long_term_debt_noncurrent"][0] + "</td>"
-  nltd += cd[yy]["long_term_debt_noncurrent"][0]
-
-  ltdc += "<td style='text-align:right'><u>" + (cd[yy]["noncurrent_liabilities"][0]-cd[yy]["long_term_debt_noncurrent"][0]) + "</u></td>"
-  nltdc += (cd[yy]["noncurrent_liabilities"][0]-cd[yy]["long_term_debt_noncurrent"][0])
-
-  tltd += "<td style='text-align:right'>" + cd[yy]["noncurrent_liabilities"][0] + "</td>";
-  ntltd += cd[yy]["noncurrent_liabilities"][0]
-
-  she += "<td style='text-align:right'><u>" + cd[yy]["stockholders_equity"][0] + "</u></td>"
-  nshe += cd[yy]["stockholders_equity"][0]
-  nta_ = 1*cd[yy]["stockholders_equity"][0]+1*cd[yy]["noncurrent_liabilities"][0]
-  ta += "<td style='text-align:right'><u>" + nta_ + "</u></td>"
-  nta += nta_
- }
-
- year += "<td>Total</th></thead>"
- oiat += "<td style='text-align:right'>"+noiat+"</td></tr>"
- ltd += "<td style='text-align:right'>"+nltd+"</td></tr>"
- ltdc += "<td style='text-align:right'><u>"+nltdc+"</u></td></tr>"
- tltd += "<td style='text-align:right'>"+ntltd+"</td></tr>"
- she += "<td style='text-align:right'><u>"+nshe+"</u></td></tr>"
- ta += "<td style='text-align:right'><u>"+nta+"</u></td></tr>"
-
- roic_st = Math.round(10000*noiat/(ntltd + nshe))/100
- vObj["roic_st"] = roic_st
- std = "";  for(i = 0; i < roic_effective_tax_rate_periods_ ; i++){ std += "<td></td>" }
- st = year + oiat + ltd + ltdc + tltd + she + ta + "<tr>"+std +"<td style='text-align:right'>ROIC</td><td id='calc_roic' style='text-align:right'>"+roic_st+"%</td></tr>"
-  document.getElementById('estimated_roic').innerHTML = st
- document.getElementById('roic_st_').value = roic_st
- // ----------  effective_tax_rate  ------
- year = "<tr><td>Year</td>"
- it = "<tr><td>Actual Taxes</td>"
- ebit = "<tr><td>Operating Income</td>"
- nit = 0; nebit= 0;
- for( yy = nn_; yy <=valuation_year_; yy++)
- {
-  year += "<td>" + yy + "</td>"
-  it += "<td style='text-align:right'>" + cd[yy]["income_taxes"][0] + "</td>";
-  nit += cd[yy]["income_taxes"][0]
-
-  ebit += "<td style='text-align:right'>" + cd[yy]["ebit"][0] + "</td>"
-  nebit += cd[yy]["ebit"][0]
- }
- year += "<td>Total</td></tr>"
- it += "<td style='text-align:right'>"+nit+"</td></tr>"
- ebit += "<td style='text-align:right'>"+nebit+"</td></tr>"
- itr = Math.round(10000*nit/nebit)/100
- vObj["itr"] = itr
- std = "";  for(i = 0; i < roic_effective_tax_rate_periods_ ; i++){ std += "<td></td>" }
- st = year + it + ebit + std + "<td style='text-align:right'>Actual Tax Rate</td><td id='calc_itr' style='text-align:right'>"+itr+"%</td></tr>"
- document.getElementById('effective_tax_rate').innerHTML = st
- document.getElementById('effective_tax_rate_').value = itr
-}
-
-// ------
-function calculate_all()
-{
-//alert('calculate_all 1')
-  set_cost_of_debt()
-  set_roic_efective_tax_rate(vObj["valuation_year"], vObj["cd"])
-  set_cofe()
-  //--
-  document.getElementById("valuation_year_").innerHTML = vObj["valuation_year"]
-  document.getElementById("cf1_ebit").value = Math.round(vObj["cd"][vObj["valuation_year"]]["ebit"][0]/1000)
-  //--
-  input_dcf()
-}
-
-function valuation_year_fun(event)
-{
-  //alert('valuation_year_fun 1')
-  e = event.target
-  value = e.options[e.selectedIndex].value
-  vObj["valuation_year"] = value
-  calculate_all()
-}
-
-// pick a country
-// vObj["country_tax_rate"] = s[0]*100
-// vObj["country_rating"] = s[1]
-// vObj["country_default_spread"] = s[2]*100
-
-function countries_fun(event)
-{
-//alert('countries_fun 1')
-  e = event.target
-  eo = e.options[e.selectedIndex]
-  value = eo.getAttribute('data')
-  var s = value.split("_");
-  marginal_tax_rate = s[0];
-  //--
-  vObj["country_tax_rate"] = s[0]*100
-  vObj["country_rating"] = s[1]
-  vObj["country_default_spread"] = s[2]*100
-  //--
-  document.getElementById('country_rating').innerHTML = vObj["country_rating"]
-  document.getElementById('country_default_spread').innerHTML = Math.round(100*vObj["country_default_spread"])/100
-  document.getElementById('country_tax_rate').innerHTML = Math.round(100*vObj["country_tax_rate"])/100
-  document.getElementById('cofe_ads').innerHTML = Math.round(100*vObj["country_default_spread"])/100
-  document.getElementById('marginal_tax_rate_').value = Math.round(100*vObj["country_tax_rate"])/100
-  calculate_all()
-}
-
-// Pick a company
-// --------------
-function get_account(sk, y, cd)
-{
-  return "<td style='padding-left:5px'><input id='"+sk+"_" + y + "' account='"+sk+"' year='" + y + "' type='text' value='" + cd[y][sk][0] + "' onchange='input_valuation(event)' style='width:110px'></td>"
-}
-
-//      vObj["cd"] = cd
-//      vObj["ticker"] = data['ticker']
-function companies_fun(event)
-{
-    e = event.target
-    id_ = e.options[e.selectedIndex].value
-    $.post('{% url "corporatevaluation:get_company_detail" %}',
-      {
-        id: id_,
-      },
-      function(data){
-        cd = data['company_data']
-        vObj["cd"] = cd
-        vObj["ticker"] = data['ticker']
-        document.getElementById('ticker_').innerHTML = data['ticker']
-        vObj["sic_code"] = data['sic_code']
-        vObj["sic_description"] = data['sic_description']
-        document.getElementById('industries').value = data['sic_code'];
-        document.getElementById('countries').value = data['country_id']
-          var event = new Event("change", {bubbles: true});
-          document.getElementById('countries').dispatchEvent(event);
-        sy = "<tr><td style='padding-left:5px'>Account</td>"
-        z = 0
-        for (y in cd)
-        {
-         z += 1
-         if(z==1)
-         {
-          for (a in cd[y])
-          {
-          s = a + "= \"<tr><td style='padding-left:5px; padding-right:5px'>"+cd[y][a][1]+"</td>\""; eval(s)}
-         }
-         sy += "<td style='padding-left:5px'>"+y+"</td>"
-         for (a in cd[y])
-         {
-          s = a + "+= get_account('"+a+"', y, cd)"; eval(s)
-         }
-        }
-        st = "<table>"+sy+"</tr>"
-        ss = ""
-        for (a in cd[y])
-        {
-          ss += "st+=" + a + " + '</tr>'; "
-        }
-        eval(ss)
-        st += "</table>"
-        sm.TabObjects["data"].tabDoc.innerHTML = st
-      }
-    );
-    calculate_all()
-}
-
-
-function valuation_vs_actual(event)
-{
-
-alert(22)
-
-
- if(vObj["sic_code"] != vObj["valuation_actual_sic_code"])
- {
-
-alert(vObj["sic_code"])
-alert(vObj["valuation_actual_sic_code"])
-
-    sic_code_ = vObj["sic_code"]
-    year_ = vObj["valuation_year"]
-
-    alert(year_)
-
-    $.post('{% url "corporatevaluation:get_companies_valuation_actual" %}',
-      {
-        sic_code: sic_code_,
-        year: year_,
-      },
-      function(data){
-      alert(data)
-        sm.TabObjects["ComparableCompanies"].tabDoc.innerHTML = data;
-      }
-    )
- }
-}
-
-// --
 //    https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Working_with_Objects
 var vObj = new Object();
 vObj["rf"] = {{ project.rf }};
@@ -1085,66 +136,22 @@ set_framework()
 
 </script>
 
-
 <script>
-function industries_fun_(value)
+
+function ValuationObject(parent)
 {
-  var sic_code_ = value;
-  vObj["sic_code"] = value;
-    $.post('{% url "corporatevaluation:get_industry_detail" %}',
-      {
-        sic_code: sic_code_,
-      },
-      function(data){
-        var output = document.getElementById("companies")
-        output.innerHTML = '';
-        var ss = data["status"]
-        arr = ss.split("[+]")
-        //alert(arr[1])
-        for ( kk in arr)
-        {
-        //alert(arr[kk])
-        ar = arr[kk].split(";")
-        //alert(ar[0])
-        //alert(ar[1])
-            var option = document.createElement("option");
-            //alert(option.outerHTML)
-            option.text = ar[1];
-            option.value = ar[0];
-            //alert(option.outerHTML)
-            output.add(option);
-            }
-        //alert(output.outerHTML)
-      }
-    );
+    this.parent = parent
 }
 
-function industries_fun(event)
+ValuationObject.prototype.setTabs = function()
 {
-  e = event.target
-  value = e.options[e.selectedIndex].value
-  industries_fun_(value)
+
 }
 
-// create list of years for valuation
-// ----------------------------------
-function create_valuation_year()
-{
-    var output = document.getElementById("valuation_year")
-    this_year = new Date().getFullYear();
-    this_year -= 1
-    vObj["valuation_year"] = this_year
-    var option = document.createElement("option");
-    for(var i = this_year; i > 2016 ; i--)
-    {
-        var option = document.createElement("option");
-        option.text = i;
-        option.value = i;
-        output.add(option);
-    }
-    output.value = this_year
-    vObj["short_number_of_years"] = 1*document.getElementById("duration_of_st_period_").value
-}
+</script>
+
+<!-- basic functions-->
+<script>
 create_valuation_year()
 </script>
 
@@ -1345,29 +352,47 @@ SimManagementTab.prototype.setScreens = function(valuation_id, url_get_screens){
 
 // =========== Tabs management ==========================
 // -- SimManager --
-function SimManager(valuation_id, url_get_screens)
+function SimManager(valuation_id)
 {
+    this.is_staff = document.getElementById("is_staff").getAttribute("is_staff");
+    this.is_instructor = document.getElementById("is_staff").getAttribute("is_instructor");
     this.valuation_id = valuation_id;
-    this.url_get_screens = url_get_screens
-    this.name = "Corporate Valuation"
-    this.tabTitles = document.getElementById("tab_titles")
-    this.tabContents = document.getElementById("tab_contents")
-    this.TabObjects = {}
+    this.url_get_screens = '{% url "corporatevaluation:get_screens" %}';
+    this.name = "Corporate Valuation";
+    this.tabTitles = document.getElementById("tab_titles");
+    this.tabContents = document.getElementById("tab_contents");
+    this.TabObjects = {};
+    this.setTabs();
+    try{
+      var event = new Event("click", {bubbles: true});
+      this.TabObjects["inputs"].tabTitle.dispatchEvent(event);
+    } catch (err) {alert(err)}
+    this.vObj = new ValuationObject(this);
+
 }
 
-SimManager.prototype.setTabs = function(tabs, tabs_management, is_staff='False') {
-    if (is_staff == 'True'){
+SimManager.prototype.setTabs = function() {
+    var tabs_ = document.getElementById("tabs_");
+    var tabs_s = tabs_.getAttribute("tabs_s");
+    var tans_all = tabs_s.split(",");
+    var tabs_m = tabs_.getAttribute("tabs_m");
+    var tans_all_m = tabs_m.split(",");
+    var tabs_management = {};
+    for (const property in tans_all_m) {
+      var ss = tans_all_m[property]; var ss_ = ss.split(":"); var ss__ = ss_[1].split(";");
+      tabs_management[ss_[0]] = [ss__[0], ss__[1]];
+    }
+    var tabs = {};
+    for (var property in tans_all) {
+      ss = tans_all[property]; ss_ = ss.split(":"); ss__ = ss_[1].split(";")
+      tabs[ss_[0]] = [ss__[0], ss__[1]]
+    }
+    if (this.is_staff == 'True' || this.is_instructor == 'True'){
       for(var name in tabs_management)
-      {
-        s = "this.TabObjects[name] = new SimManagementTab(this, name, '"+tabs_management[name][0]+"', this.valuation_id, this.url_get_screens, '"+tabs_management[name][1]+"')"
-        eval(s)
-      }
+      { s = "this.TabObjects[name] = new SimManagementTab(this, name, '"+tabs_management[name][0]+"', this.valuation_id, this.url_get_screens, '"+tabs_management[name][1]+"')" ;eval(s) }
     }
     for(var name in tabs)
-    {
-      s = "this.TabObjects[name] = new SimTab(this, name, tabs[name][0], this.valuation_id, this.url_get_screens, tabs[name][1])"
-      eval(s)
-    }
+    {s = "this.TabObjects[name] = new SimTab(this, name, tabs[name][0], this.valuation_id, this.url_get_screens, tabs[name][1])" ; eval(s)}
 }
 
 // == Math ==
@@ -1376,37 +401,7 @@ function sigmoid(t) {
 }
 
 // ------------------------------------------------
-var url_get_screens='{% url "corporatevaluation:get_screens" %}'
-
-var tabs_ = document.getElementById("tabs_");
-tabs_s = tabs_.getAttribute("tabs_s")
-tabs_m = tabs_.getAttribute("tabs_m")
-tans_all = tabs_s.split(",")
-tans_all_m = tabs_m.split(",")
-
-var tabs = {};
-for (var property in tans_all) {
-  ss = tans_all[property]
-  ss_ = ss.split(":")
-  ss__ = ss_[1].split(";")
-  tabs[ss_[0]] = [ss__[0], ss__[1]]
-}
-
-var tabs_management = {};
-for (const property in tans_all_m) {
-  ss = tans_all_m[property]
-  ss_ = ss.split(":")
-  ss__ = ss_[1].split(";")
-  tabs_management[ss_[0]] = [ss__[0], ss__[1]]
-}
-
-var is_staff = document.getElementById("is_staff").getAttribute("is_staff");
-sm = new SimManager(valuation_id=0, url_get_screens)
-sm.setTabs(tabs, tabs_management, is_staff)
-
-try{
-  var event = new Event("click", {bubbles: true});
-  sm.TabObjects["inputs"].tabTitle.dispatchEvent(event);
-} catch (err) {alert(err)}
+sm = new SimManager(valuation_id=0)
+// ------------------------------------------------
 
 {% endblock %}

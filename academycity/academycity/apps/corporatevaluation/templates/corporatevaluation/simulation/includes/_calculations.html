@@ -1,0 +1,285 @@
+{% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
+{% load core_tags %}
+
+<div id="calculations" class="tabcontent" style="padding-left:20px;width:100%">
+    <!--  Cost of Debt    -->
+    <span style="color:blue; font-size: 20px;">
+        <u><b>{% trans "Cost of Debt" %}</b></u>
+    </span><br/>
+    <div>
+    <table class="data" style="width:30%">
+        <thead><tr><th>Parameter</th><th>Value</th><th></th></tr></thead>
+        <tr><td class="account">{% trans "Risk Free" %}</td><td id="cofd_rf" style="text-align:right;"></td><td>%</td></tr>
+        <tr><td class="account">EBIT</td><td id="cofd_ebit" style="text-align:right;"></td><td></td></tr>
+        <tr><td class="account">{% trans "Interest Expense" %}</td>
+            <td id="cofd_interest_expense" style="text-align:right;"></td></tr>
+        <tr><td class="account">{% trans "Interest Coverage" %}</td>
+            <td id="cofd_interest_coverage" style="text-align:right;"></td><td></td></tr>
+        <tr><td class="account">{% trans "Estimated Bond Rating" %}</td>
+            <td id="cofd_estimated_bond_rating" style="text-align:right;"></td><td></td></tr>
+        <tr><td class="account">{% trans "Estimated Company Default Spread" %}</td>
+            <td id="cofd_estimated_company_default_spread" style="text-align:right;"></td><td>%</td></tr>
+        <tr><td class="account">{% trans "Estimated County Default Spread" %}</td>
+            <td id="cofd_estimated_county_default_spread" style="text-align:right;"></td><td>%</td></tr>
+        <tr><td class="account">{% trans "Estimated Cost of Debt" %}</td>
+            <td id="cofd_estimated_cost_of_debt" style="text-align:right;"></td><td>%</td></tr>
+    </table>
+    </div>
+    <br/><br/>
+      <!--  Cost of Equity  -->
+    <div>
+      <span style="color:blue; font-size: 20px;">
+         <u><b>{% trans "Cost of Equity" %}</b></u>
+      </span>
+      <br/>
+      <table class="data" style="width:25%">
+          <thead><tr><th>Parameter</th><th>Value</th><th></th></tr></thead>
+          <tr><td class="account">{% trans "Risk Free" %}</td>
+              <td id="cofe_rf" style="text-align:right;">0</td><td>%</td></tr>
+          <tr><td class="account">{% trans "Unlevred Beta" %}</td>
+              <td id="cofe_ub" style="text-align:right;">0</td><td></td></tr>
+          <tr><td class="account">{% trans "Beta" %}</td>
+              <td id="cofe_b" style="text-align:right;">0</td><td></td></tr>
+          <tr><td class="account">{% trans "Mature marker risk premium" %}</td>
+              <td id="cofe_rp" style="text-align:right;">0</td><td>%</td>
+          </tr>
+          <tr><td class="account">{% trans "Adj. Default Spread" %}</td>
+              <td id="cofe_ads" style="text-align:right;">0</td><td>%</td></tr>
+          <tr><td class="account">{% trans "Volatility ratio" %}</td>
+              <td id="cofe_vr" style="text-align:right;">{{ project.volatility_ratio }}</td></tr>
+          <tr><td class="account">{% trans "Total Country Risk" %}</td>
+              <td id="cofe_tcr" style="text-align:right;">0</td><td>%</td></tr>
+          <tr><td class="account">{% trans "Cost of Equity" %}</td>
+              <td id="cofe_" style="text-align:right;">0</td><td>%</td></tr>
+      </table>
+    </div>
+    <br/><br/>
+
+    <!--    Estimated ROIC  -->
+    <span style="color:blue; font-size: 20px;">
+        <u><b>{% trans "Estimated ROIC" %}</b></u>
+    </span><br/>
+    <span style="color:blue; font-size: 20px;"># of Periods for estimation:</span>
+    <input id="roic_effective_tax_rate_periods" type="text" value="5" oninput="calculate_all()" style="width:55px"/>
+    <div>
+      <table class="data" id="estimated_roic" class="w3-table-all w3-hoverable" style="width:60%">
+      </table>
+    </div><br/><br/>
+
+    <!--   Effective tax rate   -->
+    <span style="color:blue; font-size: 20px;">
+        <u><b>{% trans "Effective tax rate" %}</b></u>
+    </span><br/>
+    <div>
+      <table class="data" id="effective_tax_rate" class="w3-table-all w3-hoverable" style="width:60%">
+      </table>
+    </div>
+    <br/><br/><br/><br/>
+</div>
+
+<!-- WACC -->
+<script>
+function set_wacc()
+{
+    d = 1*vObj["book_value_debt"]
+    e = 1*vObj["book_value_equity"]
+    v = d+e
+    vObj["wacc"] = (d/v)*vObj["cofd"]*(1-1*vObj["country_tax_rate"]/100) + (e/v)*vObj["cofe"]
+    document.getElementById("wacc_").value = Math.round(100*vObj["wacc"])/100
+    //--
+    vObj["roic_lt"] = vObj["wacc"]
+    document.getElementById('roic_lt_').value = Math.round(100*vObj["roic_lt"])/100
+    document.getElementById('re_investment_rate_short_term_').value = Math.round(100*100*vObj["stgrowth"]/vObj["roic_st"])/100
+
+    // need to complete data pull of long term growth: vObj["ltgrowth"] to be GDP growth
+    vObj["ltgrowth"] = 0.02
+    // document.getElementById('re_investment_rate_long_term_').value = Math.round(100*100*vObj["ltgrowth"]/vObj["roic_lt"])/100
+}
+</script>
+
+<!-- set cofe -->
+<script>
+function set_cofe()
+{
+    rows = document.getElementById('cost_of_equity').rows
+    t_evs = 0; tb = 0; tg = 0;
+    for (r = 1; r < rows.length; r++)
+    {
+      evs = 1*rows.item(r).children[3].children[0].innerHTML
+      b = 1*rows.item(r).children[4].children[0].innerHTML
+      g = 1*rows.item(r).children[5].children[0].innerHTML
+      tb += evs*b
+      tg += evs*g
+      t_evs += evs
+    }
+    document.getElementById('cofe_beta').innerHTML = Math.round(100*tb/t_evs)/100;
+    document.getElementById('cofe_rf').innerHTML = Math.round(100*vObj["rf"]*100)/100;
+    document.getElementById('cofe_ub').innerHTML = Math.round(100*tb/t_evs)/100;
+
+    document.getElementById('cofe_growth').innerHTML = Math.round(10000*tg/t_evs)/10000;
+    vObj["stgrowth"] = Math.round(10000*100*tg/t_evs)/10000;
+    document.getElementById("stgrowth_").value = Math.round(vObj["stgrowth"]*100)/100;
+    tax_rate = vObj["itr"];
+    ub = Math.round(10000*tb/t_evs)/10000
+    d = removeCommas(document.getElementById('noncurrent_liabilities_'+vObj["valuation_year"]).value)
+    e = removeCommas(document.getElementById('stockholders_equity_'+vObj["valuation_year"]).value)
+    vObj["book_value_debt"] = d
+    vObj["book_value_equity"] = e
+    d_over_e = d/e
+    b = ub*(1+(1-(vObj["country_tax_rate"]/100))*d_over_e)
+    document.getElementById('cofe_b').innerHTML = Math.round(100*b)/100
+
+    rf = vObj["rf"]*100
+    rp = vObj["mature_marker_risk_premium"]*100
+    document.getElementById('cofe_rp').innerHTML = rp
+    vr = vObj["volatility_ratio"]
+    ads = vObj["country_default_spread"]
+    document.getElementById('cofe_ads').innerHTML =  Math.round(100*ads)/100
+    tcr = ads*vr
+
+    document.getElementById('cofe_tcr').innerHTML = Math.round(100*tcr)/100
+    cofe_ = rf + b*(rp + tcr)
+    document.getElementById('cofe_').innerHTML = Math.round(100*cofe_)/100
+    vObj["cofe"] = Math.round(100*cofe_)/100
+    set_wacc()
+}
+
+</script>
+
+<!-- Cost of Debt -->
+<script>
+// ---
+// vObj["cofd"]
+function set_cost_of_debt()
+{
+  cd = vObj["cd"]
+  document.getElementById("cofd_rf").innerHTML=Math.round(100*vObj["rf"]*100)/100
+  ve = cd[vObj["valuation_year"]]["ebit"][0]
+  document.getElementById("cofd_ebit").innerHTML=toCommas(ve)
+  vi = cd[vObj["valuation_year"]]["interest_expense"][0]
+  document.getElementById("cofd_interest_expense").innerHTML=toCommas(vi)
+  icr_ = ve/vi
+
+  if(vi < 1)
+  {
+   document.getElementById("cofd_interest_coverage").innerHTML = "<span class='tooltip_'>Infinity<span class='tooltiptext'>Check the Interest Expense in the data section</span></span>"
+  }
+  else
+  {
+   document.getElementById("cofd_interest_coverage").innerHTML=Math.round(100*icr_)/100
+  }
+
+    $.post('{% url "corporatevaluation:get_interest_coverage_ratio" %}',
+      {
+        icr: icr_,
+      },
+      function(data){
+      rating = data['rating']
+      spread = data['spread']*100
+      document.getElementById("cofd_estimated_bond_rating").innerHTML=rating
+      document.getElementById("cofd_estimated_company_default_spread").innerHTML=Math.round(100*spread)/100
+      document.getElementById("cofd_estimated_county_default_spread").innerHTML=Math.round(100*vObj["country_default_spread"])/100
+      cofd = 100*vObj["rf"]+1*spread+1*vObj["country_default_spread"]
+      vObj["cofd"] = cofd
+      document.getElementById("cofd_estimated_cost_of_debt").innerHTML=Math.round(100*cofd)/100
+      set_wacc()
+      })
+}
+
+</script>
+
+<!--ROIC and taxes-->
+<script>
+// vObj["roic"]
+// vObj["itr"]
+function set_roic_efective_tax_rate(y, cd)
+{
+ // --- Roic -----
+ // --------------
+ year = "<thead><th>Year</th>"
+ oiat = "<tr><td class='account'>Operating Income After Tax</td>"
+ ltd = "<tr><td class='account'>LT Liabilities (Non-Current)</td>"
+ ltdc = "<tr><td class='account'>Long Term Debt (current)</td>"
+ tltd = "<tr><td class='account'>Long-term Liabilities</td>"
+ she = "<tr><td class='account'>Stockholders Equity</td>"
+ ta = "<tr><td class='account'>Total Assets</td>"
+ noiat = 0; nltd= 0; nltdc = 0; ntltd = 0; nshe = 0; nta=0
+ // --
+ roic_effective_tax_rate_periods_ = document.getElementById('roic_effective_tax_rate_periods').value
+ valuation_year_ = parseInt(vObj["valuation_year"])
+ nn_ = valuation_year_ - roic_effective_tax_rate_periods_ + 1
+ for( yy = nn_; yy <=valuation_year_; yy++)
+ {
+  year += "<th>" + yy + "</th>"
+  oiat += "<td style='text-align:right'>" + (cd[yy]["ebit"][0]-cd[yy]["income_taxes"][0]) + "</td>"
+  noiat += (cd[yy]["ebit"][0]-cd[yy]["income_taxes"][0])
+  ltd += "<td style='text-align:right'>" + cd[yy]["long_term_debt_noncurrent"][0] + "</td>"
+  nltd += cd[yy]["long_term_debt_noncurrent"][0]
+
+  ltdc += "<td style='text-align:right'><u>" + (cd[yy]["noncurrent_liabilities"][0]-cd[yy]["long_term_debt_noncurrent"][0]) + "</u></td>"
+  nltdc += (cd[yy]["noncurrent_liabilities"][0]-cd[yy]["long_term_debt_noncurrent"][0])
+
+  tltd += "<td style='text-align:right'>" + cd[yy]["noncurrent_liabilities"][0] + "</td>";
+  ntltd += cd[yy]["noncurrent_liabilities"][0]
+
+  she += "<td style='text-align:right'><u>" + cd[yy]["stockholders_equity"][0] + "</u></td>"
+  nshe += cd[yy]["stockholders_equity"][0]
+  nta_ = 1*cd[yy]["stockholders_equity"][0]+1*cd[yy]["noncurrent_liabilities"][0]
+  ta += "<td style='text-align:right'><u>" + nta_ + "</u></td>"
+  nta += nta_
+ }
+
+ year += "<th>Total</th></thead>"
+ oiat += "<td style='text-align:right'>"+noiat+"</td></tr>"
+ ltd += "<td style='text-align:right'>"+nltd+"</td></tr>"
+ ltdc += "<td style='text-align:right'><u>"+nltdc+"</u></td></tr>"
+ tltd += "<td style='text-align:right'>"+ntltd+"</td></tr>"
+ she += "<td style='text-align:right'><u>"+nshe+"</u></td></tr>"
+ ta += "<td style='text-align:right'><u>"+nta+"</u></td></tr>"
+
+ roic_st = Math.round(10000*noiat/(ntltd + nshe))/100
+ vObj["roic_st"] = roic_st
+ st = year + oiat + ltd + ltdc + tltd + she + ta + "<tr><td style='text-align:right' colspan='"+(1+1*roic_effective_tax_rate_periods_)+"'>ROIC</td><td id='calc_roic' style='text-align:right'>"+roic_st+"%</td></tr>"
+  document.getElementById('estimated_roic').innerHTML = st
+ document.getElementById('roic_st_').value = roic_st
+
+ // ----------  effective_tax_rate  ------
+ year = "<tr><th>Year</td>"
+ it = "<tr><td class='account'>Actual Taxes</td>"
+ ebit = "<tr><td class='account'>Operating Income</td>"
+ nit = 0; nebit= 0;
+ for( yy = nn_; yy <=valuation_year_; yy++)
+ {
+  year += "<th>" + yy + "</th>"
+  it += "<td style='text-align:right'>" + cd[yy]["income_taxes"][0] + "</td>";
+  nit += cd[yy]["income_taxes"][0]
+
+  ebit += "<td style='text-align:right'>" + cd[yy]["ebit"][0] + "</td>"
+  nebit += cd[yy]["ebit"][0]
+ }
+ year += "<th>Total</th></tr>"
+ it += "<td style='text-align:right'>"+nit+"</td></tr>"
+ ebit += "<td style='text-align:right'>"+nebit+"</td></tr>"
+ itr = Math.round(10000*nit/nebit)/100
+ vObj["itr"] = itr
+ st = year + it + ebit + "<td style='text-align:right' colspan='"+(1+1*roic_effective_tax_rate_periods_)+"'>Actual Tax Rate</td><td id='calc_itr' style='text-align:right'>"+itr+"%</td></tr>"
+ document.getElementById('effective_tax_rate').innerHTML = st
+ document.getElementById('effective_tax_rate_').value = itr
+}
+</script>
+
+<!-- calculate all -->
+<script>
+function calculate_all()
+{
+//alert('calculate_all 1')
+  set_cost_of_debt()
+  set_roic_efective_tax_rate(vObj["valuation_year"], vObj["cd"])
+  set_cofe()
+  //--
+  document.getElementById("valuation_year_").innerHTML = vObj["valuation_year"]
+  document.getElementById("cf1_ebit").value = Math.round(vObj["cd"][vObj["valuation_year"]]["ebit"][0]/1000)
+  //--
+  input_dcf()
+}
+</script>

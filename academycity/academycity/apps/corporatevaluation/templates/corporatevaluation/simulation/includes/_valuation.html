@@ -1,0 +1,291 @@
+{% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
+{% load core_tags %}
+
+<div id="valuation" class="tabcontent" style="padding-left:20px;width:100%">
+    <span style="padding:10px; color:blue">
+        <font size="5">{% trans "Parameters effecting the valuation" %}:</font>
+    </span>
+    <table class="data" style="width:80%">
+        <tr>
+            <td>WACC: </td>
+            <td style="padding-left:5px">
+                <input id="wacc_" type="text"
+                             value="6" oninput="input_dcf(event)"
+                             style="width:55px"  />%
+            </td>
+            <td style="padding-left:5px">
+                EBIT (<span id="valuation_year_">1</span>):
+            </td>
+            <td><input id="cf1_ebit" type="text" value="1000" oninput="input_dcf(event)"
+                       style="width:80px"  />
+            </td>
+            <td>Short Term Growth:</td>
+            <td>
+                <input id="stgrowth_" type="text"
+                             value="5" oninput="input_dcf(event)"
+                             style="width:55px"  />%
+            </td>
+            <td>Long Term Growth:</td>
+            <td>
+                <input id="ltgrowth_" type="text"
+                             value="2" oninput="input_dcf(event)"
+                             style="width:55px"  />%
+            </td>
+        </tr>
+        <tr>
+            <td>Effective tax rate: </td>
+            <td style="padding-left:5px">
+                <input id="effective_tax_rate_" type="text"
+                             value="0" oninput="input_dcf(event)"
+                             style="width:55px"  />%
+            </td>
+            <td>Marginal tax rate:</td>
+            <td style="padding-left:5px">
+                <input id="marginal_tax_rate_" type="text"
+                             value="0" oninput="input_dcf(event)"
+                             style="width:55px"  />%
+            </td>
+            <td>ROIC (short term):</td>
+            <td style="padding-left:5px">
+                <input id="roic_st_" type="text"
+                             value="0" oninput="input_dcf(event)"
+                             style="width:55px"  />%
+            </td>
+            <td>ROIC (long term):</td>
+            <td style="padding-left:5px">
+                <input id="roic_lt_" type="text"
+                             value="0" oninput="input_dcf(event)"
+                             style="width:55px"  />%
+            </td>
+        </tr>
+        <tr>
+            <td>Duration of S.T. period</td>
+            <td style="padding-left:5px">
+                <input id="duration_of_st_period_" type="text"
+                             value="5" oninput="input_dcf(event)"
+                             style="width:55px"  />
+            </td>
+            <td></td>
+            <td></td>
+            <td>Re-investment rate (ST):</td>
+            <td style="padding-left:5px">
+                <input id="re_investment_rate_short_term_" type="text"
+                             value="0" oninput="input_dcf(event)"
+                             style="width:55px"  />%
+            </td>
+            <td>Re-investment rate (LT):</td>
+            <td style="padding-left:5px">
+                <input id="re_investment_rate_long_term_" type="text"
+                             value="0" oninput="input_dcf(event)"
+                             style="width:55px"  />%
+            </td>
+        </tr>
+    </table>
+    <br/>
+
+    <div>
+        <table id="dcf_framework" class="data" style="width:65%">
+        </table>
+    </div>
+    <br/><br/>
+   {% include 'corporatevaluation/simulation/includes/_simulation.html' %}
+    <br/><br/><br/><br/>
+</div>
+
+<!-- set framework -->
+<script>
+function set_row(table, row_num, firs_title, id_name, style='', detail_style='')
+{
+  short_number_of_years = vObj["short_number_of_years"]
+  var row = table.insertRow(row_num);
+  var cell = row.insertCell(0);
+  cell.innerHTML = firs_title;
+  if(style=='')
+  {
+   cell.setAttribute("style", "text-align:left")
+  } else {cell.setAttribute("style", style)}
+  for (i = 1; i<short_number_of_years+3; i++)
+  {
+    j=i-1
+    var cell = row.insertCell(i);
+      if(detail_style=='')
+      {
+       cell.setAttribute("style", "text-align:left")
+      } else {cell.setAttribute("style", detail_style)}
+    cell.setAttribute("id", id_name+j)
+  }
+  return row
+}
+
+function set_row_summary(table, row_num, firs_title, id_name_second, style='')
+{
+  short_number_of_years = vObj["short_number_of_years"]
+  var row = table.insertRow(row_num);
+  var cell = row.insertCell(0);
+  cell.innerHTML = firs_title;
+  if(style=='')
+  {
+   cell.setAttribute("style", "text-align:left")
+  } else {cell.setAttribute("style", style)}
+
+  var cell = row.insertCell(1);
+  cell.setAttribute("id", id_name_second)
+  cell.setAttribute("style", "text-align:right")
+  for (i = 2; i<short_number_of_years+3; i++)
+  {
+    var cell = row.insertCell(i);
+    cell.setAttribute("style", "text-align:right")
+  }
+  //
+}
+
+function set_framework()
+{
+  short_number_of_years = vObj["short_number_of_years"]
+  year0 = 1*vObj["valuation_year"]-1
+  var table = document.getElementById("dcf_framework");
+  table.innerHTML = ""
+  //
+  var s_style='text-align:center;padding-top:7px;padding-bottom:7px;background-color:blue;color:white;border:1px solid #ddd;'
+  row = set_row(table=table, row_num=0, firs_title="Year", id_name="year_", style=s_style, detail_style=s_style)
+  row.setAttribute("id", "years_row")
+  //
+  var style_account = 'padding-left:10px;padding-right:5px;text-align:left;'
+  var style_num = 'padding-left:10px;padding-right:5px;text-align:right;'
+  row = set_row(table=table, row_num=1, firs_title="EBIT", id_name="cf_", style=style_account, detail_style=style_num)
+  row.setAttribute("id", "cf_")
+  //
+  set_row(table=table, row_num=2, firs_title="Taxes", id_name="tax_", style=style_account, detail_style=style_num)
+  set_row(table=table, row_num=3, firs_title="Net Capital Exp.", id_name="nce_", style=style_account, detail_style=style_num)
+  //
+  var row = table.insertRow(4);
+  var cell = row.insertCell(0);
+  cell.innerHTML = "Terminal Value";
+  cell.setAttribute("style", style_account)
+  for (i = 1; i<short_number_of_years+3; i++)
+  {
+    j=i-1
+    var cell = row.insertCell(i);
+    cell.setAttribute("style", "text-align:right;padding-right:5px;")
+    if(i == short_number_of_years+1)
+    {
+     cell.setAttribute("id", "tv")
+    }
+  }
+  //
+  set_row(table=table, row_num=5, firs_title="Cash Flow", id_name="ncf_", style=style_account, detail_style=style_num)
+  set_row(table=table, row_num=6, firs_title="Discount Factor", id_name="df_", style=style_account, detail_style=style_num)
+  set_row(table=table, row_num=7, firs_title="Yearly PV", id_name="npv_", style=style_account, detail_style=style_num)
+  set_row_summary(table=table, row_num=8, firs_title="PV", id_name_second="pv_sum", style=style_account)
+  //
+  set_row_summary(table=table, row_num=9, firs_title="Debt", id_name_second="debt_sum", style=style_account)
+  set_row_summary(table=table, row_num=10, firs_title="Minority", id_name_second="minority_sum", style=style_account)
+  set_row_summary(table=table, row_num=11, firs_title="Prefered Stock", id_name_second="prefered_stock_sum", style=style_account)
+  set_row_summary(table=table, row_num=12, firs_title="Excess Cash", id_name_second="excess_cash_sum", style=style_account)
+  set_row_summary(table=table, row_num=13, firs_title="# of Shares", id_name_second="num_of_shares_sum", style=style_account)
+  set_row_summary(table=table, row_num=14, firs_title="IV per share", id_name_second="iv_per_share_sum", style=style_account)
+  set_row_summary(table=table, row_num=15, firs_title="Market Price per share", id_name_second="market_price_per_share_sum", style=style_account)
+}
+</script>
+
+<!-- Valuation -->
+<script>
+
+// Valuation
+// ----------
+function input_dcf(event)
+{
+  vObj["short_number_of_years"] = 1*document.getElementById("duration_of_st_period_").value
+  short_number_of_years = vObj["short_number_of_years"]
+  set_framework()
+  valuation_year = 1*vObj["valuation_year"]  - 1
+  years_row = document.getElementById("years_row")
+  for(i = 1; i < (short_number_of_years + 3); i++)
+  {
+   years_row.children[i].innerHTML = valuation_year + i
+   if (i == short_number_of_years + 2)
+   {
+    years_row.children[i].innerHTML = "SS"
+   }
+  }
+  stgrowth = document.getElementById("stgrowth_").value/100
+  ltgrowth = document.getElementById("ltgrowth_").value/100
+  wacc = document.getElementById("wacc_").value/100
+  df = 1/(1+wacc)
+
+  etr = document.getElementById("effective_tax_rate_").value/100
+  mtr = document.getElementById("marginal_tax_rate_").value/100
+  cf_0_ = document.getElementById("cf1_ebit").value;
+
+  // in thousands
+  document.getElementById('roic_lt_').value = Math.round(100*document.getElementById("wacc_").value)/100
+
+  roic_st = document.getElementById('roic_st_').value/100
+  roic_lt = wacc
+
+  document.getElementById('re_investment_rate_short_term_').value = Math.round(100*100*stgrowth/roic_st)/100
+  document.getElementById('re_investment_rate_long_term_').value = Math.round(100*100*ltgrowth/roic_lt)/100
+  rir_st = document.getElementById("re_investment_rate_short_term_").value/100
+  rir_lt = document.getElementById("re_investment_rate_long_term_").value/100
+
+  // --
+  document.getElementById("cf_0").innerHTML = toCommas(cf_0_)
+  for (i = 1; i < short_number_of_years+2 ; i++)
+  {
+   j = i-1
+   if(i<short_number_of_years+1)
+   {eval("cf_"+i+"_ = cf_"+j+"_ * (1+stgrowth); document.getElementById('cf_"+i+"').innerHTML = toCommas(Math.round(cf_"+i+"_))");
+    eval("document.getElementById('tax_"+i+"').innerHTML = toCommas(Math.round(cf_"+i+"_*etr))");
+    eval("document.getElementById('nce_"+i+"').innerHTML = toCommas(Math.round(cf_"+i+"_*(1-etr)*rir_st))")}
+   else
+   {eval("cf_"+i+"_ = cf_"+j+"_ * (1+ltgrowth); document.getElementById('cf_"+i+"').innerHTML = toCommas(Math.round(cf_"+i+"_))");
+    eval("document.getElementById('tax_"+i+"').innerHTML = toCommas(Math.round(cf_"+i+"_*mtr))");
+    eval("document.getElementById('nce_"+i+"').innerHTML = toCommas(Math.round(cf_"+i+"_*(1-mtr)*rir_lt))")}
+  }
+  i-=1
+
+  //
+  tv = document.getElementById("tv")
+  eval("tv_ = cf_"+i+"_*(1-mtr)*(1-rir_lt)/(wacc-ltgrowth)");
+  tv.innerHTML = toCommas(Math.round(tv_))
+  //
+  for (i = 1; i < short_number_of_years+1 ; i++)
+  {
+   if(i<short_number_of_years)
+   {eval("document.getElementById('ncf_"+i+"').innerHTML = toCommas(Math.round(cf_"+i+"_*(1-etr)*(1-rir_st)))");
+    eval("npv_"+i+".innerHTML = toCommas(Math.round(df**"+i+"*cf_"+i+"_*(1-etr)*(1-rir_st)))")}
+   else
+   {eval("document.getElementById('ncf_"+i+"').innerHTML = toCommas(Math.round(cf_"+i+"_*(1-etr)*(1-rir_st))+Math.round(tv_))");
+    eval("npv_"+i+".innerHTML = toCommas(Math.round(df**"+i+"*(cf_"+i+"_*(1-etr)*(1-rir_st)+tv_)))")}
+   eval("document.getElementById('df_"+i+"').innerHTML = toCommas(Math.round(df**"+i+"*100)/100)")
+  }
+
+  pv = 0
+  //pv += 1*npv_1.innerHTML+1*npv_2.innerHTML+1*npv_3.innerHTML+1*npv_4.innerHTML+1*npv_5.innerHTML
+  for (i = 1; i < short_number_of_years + 1; i++)
+  {
+   eval("pv += 1*removeCommas(npv_"+i+".innerHTML)")
+  }
+  document.getElementById("pv_sum").innerHTML = toCommas(pv)
+
+  ltd = removeCommas(document.getElementById('noncurrent_liabilities_'+vObj["valuation_year"]).value)/1000
+  document.getElementById("debt_sum").innerHTML = toCommas(Math.round(ltd))
+
+  mi = removeCommas(document.getElementById('equity_attributable_to_oncontrolling_interest_'+vObj["valuation_year"]).value)/1000
+  document.getElementById("minority_sum").innerHTML = toCommas(Math.round(mi))
+
+  ps = removeCommas(document.getElementById('preferred_stock_'+vObj["valuation_year"]).value)/1000
+  document.getElementById("prefered_stock_sum").innerHTML = toCommas(Math.round(ps))
+
+  ec = 0
+  document.getElementById("excess_cash_sum").innerHTML = ec
+
+  ns = removeCommas(document.getElementById('number_of_shares_'+vObj["valuation_year"]).value)
+  document.getElementById("num_of_shares_sum").innerHTML = toCommas(ns)
+
+  document.getElementById("iv_per_share_sum").innerHTML = toCommas(Math.round(100*1000*(pv-ltd-mi-ps+ec)/ns)/100)
+
+  pps = removeCommas(document.getElementById('share_price_'+vObj["valuation_year"]).value)
+  document.getElementById("market_price_per_share_sum").innerHTML = toCommas(Math.round(100*pps)/100)
+}
+</script>

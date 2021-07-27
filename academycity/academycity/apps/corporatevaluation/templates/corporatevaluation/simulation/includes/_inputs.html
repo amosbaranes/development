@@ -1,0 +1,281 @@
+{% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
+{% load core_tags %}
+<div id="inputs" class="container tabcontent" style="background-color:#b3d1ff;">
+    <div>
+    <table>
+        <tr>
+            <td>{% trans "Industry" %}: </td>
+            <td>
+                <select name="industries" id="industries" style="width: 150px;" onChange="industries_fun(event)">
+                <option value='1'>{% trans "All Companies" %}</option>
+                {% for i in industry %}
+                <option value='{{ i.sic_code }}'>{{ i.sic_description }}</option>
+                {% endfor %}
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <td>{% trans "Company" %}:</td>
+            <td>
+                <select name="companies" id="companies" style="width: 150px;" onChange="companies_fun(event)">
+                <option value='0'>Choose company</option>
+                {% for c in companies %}
+                <option value='{{c.id}}'>{{c.company_name}}</option>
+                {% endfor %}
+                </select>  <span id="ticker_"></span>
+            </td>
+        </tr>
+        <tr>
+            <td>{% trans "Country" %}:</td>
+            <td>
+                <select  name="countries" id="countries" style="width: 150px;" onChange="countries_fun(event)">
+                    <option value='0'>--------------------</option>
+                {% for c in country %}
+                    <option value={{c.id}} data='{{ c.marginal_tax_rate }}_{{ c.long_term_rating.country_rating }}_{{ c.long_term_rating.default_spread }}'>
+                        {{ c.country }}</option>
+                {% endfor %}
+                </select>
+<!--                <span class="tooltiptext">-->
+                  {% trans "Rating" %}: <span id="country_rating"></span>
+                   &nbsp&nbsp {% trans "Spread" %}: <span id="country_default_spread"></span>%
+                   &nbsp&nbsp {% trans "Tax rate" %}: <span id="country_tax_rate"></span>%
+<!--                </span>-->
+            </td>
+        </tr>
+        <tr>
+            <td>Year:</td>
+            <td>
+                <select name="valuation_year" id="valuation_year" style="width: 150px;" onChange="valuation_year_fun(event)">
+                    <option value='0'>--------------------</option>
+                </select>
+            </td>
+        </tr>
+    </table>
+    </div>
+    <br/>
+    <div>
+
+      <!--  Beta by industries  -->
+      <button onclick="add_industry_beta()">{% trans "Add Industry Beta" %}</button>
+      <table id="cost_of_equity" class="w3-table-all w3-hoverable" style="width:53%">
+        <tr>
+            <th style="width:8%" class="th">{% trans "Business" %}</th>
+            <th style="width:8%" class="th">{% trans "Revenues" %}</th>
+            <th style="width:8%" class="th">{% trans "EV/Sales" %}</th>
+            <th style="width:13%" class="th">{% trans "Estimated Value" %}</th>
+            <th style="width:13%" class="th">{% trans "Unlevered Beta" %}</th>
+            <th style="width:13%" class="th">{% trans "Expected Growth" %}</th>
+        </tr>
+        <tr id="cofe_row" oninput="cofeFunction(event)">
+            <td>
+                <select name="cofe_business" id="cofe_business"
+                        onChange="cofe_business_fun(event)">
+                    <option value='0'>--------------------</option>
+                {% for gi in global_industry_averages %}
+                    <option value="{{ gi.ev_over_sales }}_{{ gi.unlevered_beta_corrected_for_cash }}_{{ gi.expected_earnings_growth_next_5_years }}">
+                        {{ gi.industry_name }}</option>
+                {% endfor %}
+                </select>
+            </td>
+            <td><input id="cofe_revenues" type="text" style="width:150px"
+                       onchange="cofe_revenue_fun(event)" value="100"/></td>
+            <td><span id="cofe_ev_over_sales" style="float: right"></span></td>
+            <td><span id="cofe_estimated_value" style="float: right"></span></td>
+            <td><span id="cofe_unlevered_beta" style="float: right"></span></td>
+            <td><span id="cofe_expected_growth" style="float: right"></span></td>
+            <td><button onclick="delete_industry_beta(event)">{% trans "Delete" %}</button></td>
+        </tr>
+      </table>
+
+      <table style="width:30%">
+          <tr>
+              <td>
+              <b>Beta: <span id="cofe_beta" style="float: right"></span></b>
+              </td>
+          </tr>
+          <tr>
+              <td>
+                  <b>{% trans "Growth" %}: <span id="cofe_growth" style="float: right"></span></b>
+              </td>
+          </tr>
+      </table>
+    </div>
+</div>
+
+<!-- Beta -->
+<script>
+function add_industry_beta()
+{
+    t = document.getElementById("cost_of_equity")
+    r = document.getElementById("cofe_row")
+    var c = r.cloneNode(true);
+    t.appendChild(c);
+    var c = r.cloneNode(true);
+    t.appendChild(cln);
+    calculate_all()
+}
+
+// -- for button to delete new beta row --
+function delete_industry_beta(event)
+{
+ t = event.target
+ r = t.parentNode.parentNode
+ r.parentNode.removeChild(r);
+ calculate_all()
+}
+
+function cofe_revenue_fun(event)
+{
+    e = event.target
+    r = e.parentNode.parentNode
+    revenue_v = r.children[1].childNodes[0].value
+    evs_v = r.children[2].childNodes[0].innerHTML
+    ev = r.children[3].childNodes[0]
+    ev.innerHTML = Math.round(evs_v*revenue_v)
+    calculate_all()
+}
+
+function cofe_business_fun(event)
+{
+    e = event.target
+    gi = e.options[e.selectedIndex]
+    value = e.options[e.selectedIndex].value
+    s = value.split("_")
+    var evs_v = s[0];
+    var b_v = s[1];
+    var g_v = (1+1*s[2])**(1/5)-1;
+    r = gi.parentNode.parentNode.parentNode
+    revenue = r.children[1].children[0].value
+    evs = r.children[2].children[0]
+    evs.innerHTML = Math.round(100*evs_v)/100
+    ev = r.children[3].children[0]
+    ev.innerHTML = Math.round(evs_v*revenue)
+    bv = r.children[4].children[0]
+    bv.innerHTML = Math.round(100*b_v)/100
+    bg = r.children[5].children[0]
+    bg.innerHTML = Math.round(10000*g_v)/10000
+    calculate_all()
+}
+</script>
+
+<!-- Input -->
+<script>
+function valuation_year_fun(event)
+{
+  //alert('valuation_year_fun 1')
+  e = event.target
+  value = e.options[e.selectedIndex].value
+  vObj["valuation_year"] = value
+  calculate_all()
+}
+
+// pick a country
+// vObj["country_tax_rate"] = s[0]*100
+// vObj["country_rating"] = s[1]
+// vObj["country_default_spread"] = s[2]*100
+
+function countries_fun(event)
+{
+  //alert('countries_fun 1')
+  e = event.target
+  eo = e.options[e.selectedIndex]
+  value = eo.getAttribute('data')
+  var s = value.split("_");
+  marginal_tax_rate = s[0];
+  //--
+  vObj["country_tax_rate"] = s[0]*100
+  vObj["country_rating"] = s[1]
+  vObj["country_default_spread"] = s[2]*100
+  //--
+  document.getElementById('country_rating').innerHTML = vObj["country_rating"]
+  document.getElementById('country_default_spread').innerHTML = Math.round(100*vObj["country_default_spread"])/100
+  document.getElementById('country_tax_rate').innerHTML = Math.round(100*vObj["country_tax_rate"])/100
+  document.getElementById('cofe_ads').innerHTML = Math.round(100*vObj["country_default_spread"])/100
+  document.getElementById('marginal_tax_rate_').value = Math.round(100*vObj["country_tax_rate"])/100
+  calculate_all()
+}
+
+
+function companies_fun(event)
+{
+    e = event.target
+    id_ = e.options[e.selectedIndex].value
+    $.post('{% url "corporatevaluation:get_company_detail" %}',
+      {
+        id: id_,
+      },
+      function(data){
+            set_data(data);
+            vObj["ticker"] = data['ticker'];
+            vObj["sic_code"] = data['sic_code'];
+            vObj["sic_description"] = data['sic_description'];
+            document.getElementById('ticker_').innerHTML = data['ticker'];
+            document.getElementById('industries').value = data['sic_code'];
+            document.getElementById('countries').value = data['country_id'];
+            var event = new Event("change", {bubbles: true});
+            document.getElementById('countries').dispatchEvent(event);
+            valuation_vs_actual();
+      }
+    );
+    calculate_all()
+}
+
+function industries_fun_(value)
+{
+  var sic_code_ = value;
+  vObj["sic_code"] = value;
+    $.post('{% url "corporatevaluation:get_industry_detail" %}',
+      {
+        sic_code: sic_code_,
+      },
+      function(data){
+        var output = document.getElementById("companies")
+        output.innerHTML = '';
+        var ss = data["status"]
+        arr = ss.split("[+]")
+        //alert(arr[1])
+        for ( kk in arr)
+        {
+        //alert(arr[kk])
+        ar = arr[kk].split(";")
+        //alert(ar[0])
+        //alert(ar[1])
+            var option = document.createElement("option");
+            //alert(option.outerHTML)
+            option.text = ar[1];
+            option.value = ar[0];
+            //alert(option.outerHTML)
+            output.add(option);
+            }
+        //alert(output.outerHTML)
+      }
+    );
+}
+
+function industries_fun(event)
+{
+  e = event.target
+  value = e.options[e.selectedIndex].value
+  industries_fun_(value)
+}
+
+// create list of years for valuation
+// ----------------------------------
+function create_valuation_year()
+{
+    var output = document.getElementById("valuation_year")
+    this_year = new Date().getFullYear();
+    this_year -= 1
+    vObj["valuation_year"] = this_year
+    var option = document.createElement("option");
+    for(var i = this_year; i > 2016 ; i--)
+    {
+        var option = document.createElement("option");
+        option.text = i;
+        option.value = i;
+        output.add(option);
+    }
+    output.value = this_year
+    vObj["short_number_of_years"] = 1*document.getElementById("duration_of_st_period_").value
+}
+</script>

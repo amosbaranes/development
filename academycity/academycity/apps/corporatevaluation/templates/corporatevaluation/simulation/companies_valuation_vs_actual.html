@@ -1,0 +1,63 @@
+{% block content %}
+
+<style>
+.br {border: 1px solid black;
+     text-align: center;
+     padding-left: 2px;
+     padding-right: 2px;}
+</style>
+<table id="allcv" class="data">
+    <thead>
+    <tr>
+        <th>Company Name</th>
+        <th>Ticker</th>
+        <th><span class="tooltip_">Rf<span class='tooltiptext'>Risk Free</span></span></th>
+        <th><span class="tooltip_">CRP<span class='tooltiptext'>Company Risk Premium</span></span></th>
+        <th><span class="tooltip_">CS<span class='tooltiptext'>Country Spread</span></span></th>
+        <th><span class="tooltip_">Rd<span class='tooltiptext'>Cost of Debt</span></span></th>
+        <th><span class="tooltip_">ULB<span class='tooltiptext'>Unleveraged Beta</span></span></th>
+        <th><span class="tooltip_">MTR<span class='tooltiptext'>Marginal Country Tax Rate</span></span></th>
+        <th><span class="tooltip_">D/E<span class='tooltiptext'>Debt over Equity</span></span></th>
+        <th><span class="tooltip_">LB<span class='tooltiptext'>Leverged Beta</span></span></th>
+        <th><span class="tooltip_">CDS<span class='tooltiptext'>Company Default Spread</span></span></th>
+        <th><span class="tooltip_">RP<span class='tooltiptext'>Risk Premium</span></span></th>
+        <th><span class="tooltip_">E(Re)<span class='tooltiptext'>Cost of Equity</span></span></th>
+        <th><span class="tooltip_">WACC<span class='tooltiptext'>Weighted Average Cost of Capital</span></span></th>
+        <th><span class="tooltip_">ETR<span class='tooltiptext'>Effective Tax Rate</span></span></th>
+        <th><span class="tooltip_">STROIC<span class='tooltiptext'>Short Term ROIC</span></span></th>
+        <th><span class="tooltip_">LTROIC<span class='tooltiptext'>Long Term ROIC</span></span></th>
+        <th><span class="tooltip_">LTGR<span class='tooltiptext'>Long Term Growth Rate</span></span></th>
+
+        <th><span class="tooltip_">NPV(m)<span class='tooltiptext'>Net Present Value(mil)</span></span></th>
+        <th><span class="tooltip_">IV<span class='tooltiptext'>Intrinsic value per Share</span></span></th>
+        <th><span class="tooltip_">SP<span class='tooltiptext'>Share Price</span></span></th>
+    </tr>
+    </thead>
+    <tbody>
+ {% for c in companies %}
+    <tr>
+        <td class='account'>{{c.company.company_name}}</td>
+        <td class="br">{{c.company.ticker}}</td>
+        <td class="br">{{c.rf|floatformat:4}}</td>
+        <td class="br">{{c.company_default_spread|floatformat:4}}</td>
+        <td class="br">{{c.country_spread|floatformat:4}}</td>
+        <td class="br">{{c.cost_of_debt|floatformat:4}}</td>
+        <td class="br">{{c.unleveraged_beta|floatformat:4}}</td>
+        <td class="br">{{c.country_tax_rate|floatformat:4}}</td>
+        <td class="br">{{c.d_over_e|floatformat:4}}</td>
+        <td class="br">{{c.leveraged_beta|floatformat:4}}</td>
+        <td class="br">{{c.company_default_spread|floatformat:4}}</td>
+        <td class="br">{{c.mature_marker_risk_premium|floatformat:4}}</td>
+        <td class="br">{{c.cost_of_equity|floatformat:4}}</td>
+        <td class="br">{{c.wacc|floatformat:4}}</td>
+        <td class="br">{{c.effective_tax_rate_based_on_n_years|floatformat:4}}</td>
+        <td class="br">{{c.short_term_roic_based_on_n_years|floatformat:4}}</td>
+        <td class="br">{{c.long_term_roic|floatformat:4}}</td>
+        <td class="br">{{c.long_term_growth|floatformat:4}}</td>
+        <td class="br">{{c.pvm|floatformat:0}}</td>
+        <td class="br">{{c.iv_per_share|floatformat:2}}</td>
+        <td class="br">{{c.share_price|floatformat:2}}</td>
+    </tr>
+ {% endfor %}
+    </tbody></table><br/><br/><br/><br/><br/><br/>
+{% endblock %}

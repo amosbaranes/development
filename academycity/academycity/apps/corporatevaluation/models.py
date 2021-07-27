@@ -430,3 +430,22 @@ class Valuation(TruncateTableMixin, models.Model):
                              related_name='user_valuations')
     company_info = models.ForeignKey(CompanyInfo, on_delete=models.CASCADE, default=None, blank=True, null=True)
 
+
+class ToDoList(TruncateTableMixin, models.Model):
+    class Meta:
+        verbose_name = _('todolist')
+        verbose_name_plural = _('todolist')
+        ordering = ['-priority']
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, on_delete=models.CASCADE,
+                             related_name='user_todolists')
+    created = models.DateField(auto_now_add=True)
+    updated = models.DateField(auto_now=True)
+    subject = models.CharField(max_length=150, null=False)
+    description = models.CharField(max_length=1000, null=False)
+    priority = models.PositiveSmallIntegerField(default=0)
+    is_active = models.BooleanField(default=True)
+
+    def __str__(self):
+        return self.subject
+

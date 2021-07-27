@@ -11,7 +11,7 @@ from django.db import connection
 from django.utils.translation import get_language
 # --
 from .models import (RBOIC, CountryRegion, CountryRating, Country, GlobalIndustryAverages,
-                     Industry ,CompanyInfo, CompanyData, Project)
+                     Industry ,CompanyInfo, CompanyData, Project, ToDoList)
 from ..core.sql import SQL
 from ..webcompanies.WebCompanies import WebSiteCompany
 
@@ -25,6 +25,7 @@ def home(request, obj_id):
     project = Project.objects.filter(translations__language_code=get_language()).get(id=obj_id)
     country = Country.objects.all()
     companies = CompanyInfo.objects.exclude(company_name='0').all()
+    todolist = ToDoList.objects.filter(is_active=True).all()
     return render(request, 'corporatevaluation/home.html',
                   {'institution_obj': company_obj,
                    'industry': industry,
@@ -32,6 +33,7 @@ def home(request, obj_id):
                    'project': project,
                    'country': country,
                    'companies': companies,
+                   'todolist': todolist,
                    })
 
 
@@ -55,7 +57,7 @@ def get_companies_valuation_actual(request):
     # q = cs.values('iv_per_share')
     # df = pd.DataFrame.from_records(q)
 
-    return render(request, 'corporatevaluation/companies_valuation_vs_actual.html',
+    return render(request, 'corporatevaluation/simulation/companies_valuation_vs_actual.html',
                   {'industry': i,
                    'companies': companies_
                    })
@@ -180,7 +182,7 @@ def get_company_detail(request):
               # Return on Assets
               # 'return_on_assets': (round(100*(cd.ebit)/cd.interest_expense)/100, 'Return on Assets'),
 
-              'return_on_equity': (_return_on_equity, 'Return On Equity'),
+              'return_on_equity': (_return_on_equity, 'Income On Equity'),
 
               'eps': (_eps, 'EPS'),
               'p_over_e_ratio': (set_default(cd.p_over_e_ratio), 'P/E'),
@@ -229,6 +231,9 @@ def truncate_and_get_df_from_excel(table=None, file_name=None):
 def update_data(request):
     # print('update_data 1')
     dic = {'status': 'ok'}
+
+    # print(1)
+
     try:
         for r in truncate_and_get_df_from_excel(table=RBOIC, file_name='RatingBasedOnInterestCoverage.xlsx'):
             RBOIC.objects.create(from_ic=float(r[0]),
@@ -278,6 +283,8 @@ def update_data(request):
     except Exception as exc:
         print(exc)
 
+    # print(1000)
+
     return JsonResponse(dic)
 
 
@@ -295,7 +302,10 @@ def update_account(request):
     return JsonResponse(dic)
 
 
-def update_data_year(request, name_, game, team_, s_url):
+def update_data_year(request):
+    # print('-1'*50)
+    # print(1111)
+    # print('-1'*50)
     sql = SQL()
     nyear = request.POST.get('nyear')
     # print(nyear)
@@ -312,6 +322,10 @@ def update_data_year(request, name_, game, team_, s_url):
         count = sql.exc_sql(ssql, data)
         # print(count)
 
+    # print('-1'*50)
+    # print(22222)
+    # print('-1'*50)
+
     wd = os.getcwd()
     sdata = wd + '/academycity/apps/corporatevaluation/data/'
     sr = sdata + str(nyear) + '.xlsx'
@@ -325,6 +339,12 @@ def update_data_year(request, name_, game, team_, s_url):
     # print(df)
 
     # nnn_ = 0
+
+
+    # print('-1'*50)
+    # print(333333)
+    # print('-1'*50)
+
     for r in dataframe_to_rows(df, index=False, header=False):
         try:
             c_ = CompanyInfo.objects.filter(ticker=r[0]).all()[0]
@@ -358,13 +378,15 @@ def update_data_year(request, name_, game, team_, s_url):
                                        stockholders_equity=round(r[26], 0)
                                        )
         except Exception as e:
+            # print('-1' * 50)
+            # print(e)
+            # print('-1' * 50)
             dic = {'status': 'ko5'}
             # if nnn_ < 10:
             #     print(5)
             #     print(r)
             #     print(e)
             #     nnn_ += 1
-
 
     return JsonResponse(dic)
 
@@ -374,9 +396,9 @@ def get_screens_data(request, name_, s_url):
 
 
 def get_screens_inputs(request, name_, s_url):
-    print('---')
-    print(s_url)
-    print('---')
+    # print('---')
+    # print(s_url)
+    # print('---')
 
     industry = Industry.objects.exclude(sic_description='0').all()
     global_industry_averages = GlobalIndustryAverages.objects.all()

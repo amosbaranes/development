@@ -23,6 +23,7 @@
   <link rel="manifest" href="{% static 'images/site.57775445aa3a.webmanifest' %}">
   <link rel="mask-icon" href="{% static 'images/safari-pinned-tab.00983a824cb5.svg' %}" color="#f72c30">
   <link rel="shortcut icon" href="{% static 'images/favicon.bc906d84c4a9.ico' %}">
+  <link href="{% static 'css/general.css' %}" rel="stylesheet">
 
   {% block links %} {% endblock %}
   {% block add_links %} {% endblock %}
@@ -172,6 +173,7 @@
 <p id="demo"></p>
 <script src="{% static 'vendor/jquery/jquery.min.js' %}"></script>
 <script src="{% static 'js/npm/cookie/js.cookie.min.js' %}"></script>
+<script src='https://cdn.plot.ly/plotly-latest.min.js'></script>
 <script>
 
 var csrftoken = Cookies.get('csrftoken');

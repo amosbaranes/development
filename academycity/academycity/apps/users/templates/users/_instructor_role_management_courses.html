@@ -1,4 +1,6 @@
 {% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
+{% load core_tags %}
+
 <!--
 https://fontawesome.com/icons?d=gallery&c=editors,education,users-people&m=free
 -->
@@ -26,7 +28,7 @@ tr {
 
 </style>
 
-<h3 style="margin-left:5px; color:blue">Edit scheduled courses for: {{ course.name }}</h3>
+<h3 style="margin-left:5px; color:blue">Edit scheduled courses: </h3>
 
 <table class="w3-table-all w3-hoverable" style="width:95%; margin-left:5px;">
     <thead>
@@ -49,9 +51,25 @@ tr {
     {% for course_schedule in course_schedules %}
     <tr>
         <td style="border: 1px solid black;">
-            <a href="{% url 'courses:course_detail_instructor' course_schedule.course.slug course_schedule.slug %}" >
+            <a href="{% url 'courses:course_detail_instructor' course_schedule.course.slug course_schedule.slug %}"
+             target="_blank">
                 {{ course_schedule.name }}
             </a>
+              {% if course_schedule.course.link_app %}
+                <a href="{{ user_courses_|get_value_from_dict:course_schedule.course.name }}"
+                   style="float:right" target="_blank">
+                    <span class='tooltip_' style="height: 30px;
+                      text-align: center;
+                      padding-top: 4px;
+                      width: 30px;
+                      background-color: darkblue;
+                      color: white;
+                      border-radius: 50%;
+                      display: inline-block;">
+                         S
+                    </span>
+                </a><br/>
+              {% endif %}
         </td>
 
 <!--        <td style="border: 1px solid black; text-align: center;"><a href="{% url 'courses:course_schedule_edit' course_schedule.id %}">-->

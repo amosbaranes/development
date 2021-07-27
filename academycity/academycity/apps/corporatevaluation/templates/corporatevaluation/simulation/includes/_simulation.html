@@ -1,0 +1,159 @@
+{% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
+{% load core_tags %}
+
+<div id="simulation">
+    <h1>Simulation</h1>
+  <span class="cursor badge badge-pill badge-info" onclick="simulate('all')">
+      {% trans "Simulate" %}
+  </span>
+  {% trans "Range" %}: <input id="simulation_range" type="text" value="0.1" style="width:45px"/>
+  {% trans "Skew" %}: <input id="simulation_skew" type="text" value="1" style="width:45px"/>
+  {% trans "# Randomization" %}: <input id="simulation_number_of_randomization" type="text" value="100000" style="width:70px"/>
+  <div id="simulation_chart_all"></div>
+  <table>
+      <tr>
+          <td style="text-align:center">
+              <span class="cursor badge badge-pill badge-info"
+                    onclick="simulate('wacc')" >WACC</span>
+          </td>
+          <td style="text-align:center">
+              <span class="cursor badge badge-pill badge-info"
+                    onclick="simulate('stgrowth')">{% trans "Short Term Growth" %}</span></td>
+          <td style="text-align:center">
+              <span class="cursor badge badge-pill badge-info"
+                    onclick="simulate('ltgrowth')">{% trans "Long Term Growth" %}</span></td>
+      </tr>
+      <tr>
+          <td><div id="simulation_chart_wacc" style="height:300px; width:300px"></div></td>
+          <td><div id="simulation_chart_stgrowth" style="height:300px; width:300px"></div></td>
+          <td><div id="simulation_chart_ltgrowth" style="height:300px; width:300px"></div></td>
+      </tr>
+      <tr>
+          <td style="text-align:center">
+              <span class="cursor badge badge-pill badge-info"
+                    onclick="simulate('ebit')">EBIT</span></td>
+          <td style="text-align:center">
+              <span class="cursor badge badge-pill badge-info"
+                    onclick="simulate('mtr')">{% trans "Marginal tax rate" %}</span></td>
+          <td style="text-align:center">
+              <span class="cursor badge badge-pill badge-info"
+                    onclick="simulate('etr')">{% trans "Effective tax rate" %}</span></td>
+      </tr>
+      <tr>
+          <td><div id="simulation_chart_ebit" style="height:300px; width:300px"></div></td>
+          <td><div id="simulation_chart_mtr" style="height:300px; width:300px"></div></td>
+          <td><div id="simulation_chart_etr" style="height:300px; width:300px"></div></td>
+      </tr>
+  </table>
+</div>
+
+<script>
+
+// Normal Distribution With Min, Max, Skew
+// https://stackoverflow.com/questions/25582882/javascript-math-random-normal-distribution-gaussian-bell-curve
+function randn_bm(min, max, skew) {
+    let u = 0, v = 0;
+    while(u === 0) u = Math.random(); //Converting [0,1) to (0,1)
+    while(v === 0) v = Math.random();
+    let num = Math.sqrt( -2.0 * Math.log( u ) ) * Math.cos( 2.0 * Math.PI * v );
+
+    num = num / 10.0 + 0.5; // Translate to 0 -> 1
+    if (num > 1 || num < 0) num = randn_bm(min, max, skew); // resample between 0 and 1 if out of range
+    num = Math.pow(num, skew); // Skew
+    num *= max - min; // Stretch to fill range
+    num += min; // offset to min
+    return num;
+}
+
+function randomize(Obj, range, skew, param)
+{
+ sObj = new Object();
+ for (x in Obj) {
+  if (param == 'all')
+  {sObj[x] = randn_bm((1-range)*Obj[x], (1+range)*Obj[x], skew)}
+  else
+  {
+   if(x == param)
+   {sObj[x] = randn_bm((1-range)*Obj[x], (1+range)*Obj[x], skew)}
+   else
+   {sObj[x] = randn_bm(Obj[x], Obj[x], 1)}
+  }
+ }
+ return sObj
+}
+
+function get_iv(sObj)
+{
+ sObj["df"] = 1/(1+sObj["wacc"])
+ sObj["pv"] = 0
+ for (j=1; j < sObj["short_number_of_years"]+1; j++)
+ {
+    if(j < sObj["short_number_of_years"]+1)
+    {
+     cfj = sObj["ebit"] * (1 + sObj["stgrowth"]) ** j
+     fcfj = cfj*(1-sObj["etr"])*(1-sObj["rir_st"])
+     sObj["pv"] += fcfj*sObj["df"]**j
+    }
+    if(j == sObj["short_number_of_years"])
+    {
+      cfj = sObj["ebit"] * (1 + sObj["stgrowth"]) ** sObj["short_number_of_years"]
+      cfj_ss = cfj * (1 + sObj["ltgrowth"])*(1-sObj["mtr"])*(1-sObj["rir_lt"])
+      tv_ = cfj_ss*sObj["df"]**j /(sObj["wacc"] - sObj["ltgrowth"])
+      sObj["pv"] += tv_
+    }
+ }
+ iv_per_share = Math.round(100*1000*(sObj["pv"] -sObj["ltd"]-sObj["mi"]-sObj["ps"]+ sObj["ec"] )/sObj["ns"])/100
+ return iv_per_share
+}
+
+// https://plot.ly/javascript/
+function getObj()
+{
+ Obj = new Object();
+ // ---
+ Obj["ebit"] = 1*removeCommas(document.getElementById("cf1_ebit").value) ;
+ Obj["stgrowth"] = document.getElementById("stgrowth_").value/100
+ Obj["ltgrowth"] = document.getElementById("ltgrowth_").value/100
+ Obj["wacc"] = document.getElementById("wacc_").value/100
+ Obj["mtr"] = document.getElementById("marginal_tax_rate_").value/100
+ Obj["rir_lt"] = document.getElementById("re_investment_rate_long_term_").value/100
+ // ---
+ Obj["etr"] = document.getElementById("effective_tax_rate_").value/100
+ Obj["rir_st"] = document.getElementById("re_investment_rate_short_term_").value/100
+ //
+ Obj["ltd"] = 1*removeCommas(document.getElementById("debt_sum").innerHTML)
+ Obj["mi"] = 1*removeCommas(document.getElementById("minority_sum").innerHTML)
+ Obj["ps"] = 1*removeCommas(document.getElementById("prefered_stock_sum").innerHTML)
+ Obj["ec"] = 1*removeCommas(document.getElementById("excess_cash_sum").innerHTML)
+ Obj["ns"] = 1*removeCommas(document.getElementById('number_of_shares_'+vObj["valuation_year"]).value)
+ //
+ return Obj
+}
+
+function simulate(param)
+{
+ Obj = getObj()
+ range = 1*document.getElementById("simulation_range").value
+ skew = 1*document.getElementById("simulation_skew").value
+ number_of_randomization = 1*document.getElementById("simulation_number_of_randomization").value
+ //
+ var pps = [];
+ for (i = 1; i <= number_of_randomization; i++)
+ {
+  sObj = randomize(Obj, range, skew, param)
+  sObj["short_number_of_years"] = vObj["short_number_of_years"]
+  //
+  pps[i] = get_iv(sObj)
+ }
+ //
+ var trace = {
+     x: pps,
+     type: 'histogram',
+     marker: {color: 'blue',},
+   };
+ var data = [trace];
+try{
+ Plotly.newPlot('simulation_chart_'+param, data);
+ } catch (err) {alert(err)}
+}
+</script>

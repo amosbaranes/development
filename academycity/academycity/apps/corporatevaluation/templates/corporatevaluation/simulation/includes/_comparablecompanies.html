@@ -1,0 +1,27 @@
+{% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
+{% load core_tags %}
+
+<div id="comparablecompanies" class="tabcontent">
+    <div id="valuation_vs_actual">Valuation vs. Actual</div>
+</div>
+
+<!-- valuation vs actual -->
+<script>
+function valuation_vs_actual()
+{
+ if(vObj["sic_code"] != vObj["valuation_actual_sic_code"])
+ {
+    sic_code_ = vObj["sic_code"]
+    year_ = vObj["valuation_year"]
+    $.post('{% url "corporatevaluation:get_companies_valuation_actual" %}',
+      {
+        sic_code: sic_code_,
+        year: year_,
+      },
+      function(data){
+        sm.TabObjects["comparablecompanies"].tabDoc.innerHTML = data ;
+      }
+    )
+ }
+}
+</script>
