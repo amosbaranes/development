@@ -47,64 +47,92 @@
 
 
 {% block body_content %}
-    <section class="section " data-ajax-id="section_programs">
+ <!--     program section-->
+    <section class="section ">
         <div class="section__row">
-            <h2 class="section__title">Programs</h2>
+            <h2 class="section__title">{{ institution_obj.programs_title }}</h2>
             <div id="program_" class="section__items">
                 <div id="more_program_btn" class="button-caesura">
-                    <a href="/en/programs/">More programs</a>
+<!--                   <a href="/en/programs/">More {{ institution_obj.programs_title }}</a>-->
                 </div>
             </div>
         </div>
     </section>
-    <section class="section " id="section_courses">
+<!--     end of program section-->
+
+<!--     course section-->
+    <section class="section ">
         <div class="section__row">
-            <h2 class="section__title">Our Courses</h2>
+            <h2 class="section__title">{{ institution_obj.courses_title }}</h2>
             <div id="courses_" class="section__items">
                 <div id="more_courses_btn" class="button-caesura">
-                    <a href="/en/courses/">More courses</a>
+<!--                    <a href="/en/courses/">More {{ institution_obj.courses_title }}</a>-->
                 </div>
             </div>
         </div>
     </section>
+<!--     end of course section-->
+
+<!--      service section-->
     <section class="section ">
         <div class="section__row">
-            <h2 class="section__title">Last news</h2>
+            <h2 class="section__title">{{ institution_obj.services_title }}</h2>
+            <div id="service_" class="section__items">
+                <div id="more_service_btn" class="button-caesura">
+<!--                    <a href="/en/Services/">More Services</a>-->
+                </div>
+            </div>
+        </div>
+    </section>
+<!--      end of service section-->
+
+<!--      news section   -->
+    <section class="section ">
+        <div class="section__row">
+            <h2 class="section__title">{{ institution_obj.new_title }}</h2>
             <div id="news_" class="section__items">
                 <div id="more_news_btn" class="button-caesura">
-                    <a href="{% url 'education:news_detail' %}">More news</a>
+<!--                    <a href="{% url 'education:news_detail' %}">More {{ institution_obj.new_title }}</a>-->
                 </div>
             </div>
         </div>
     </section>
+<!--      end of news section-->
 
-<!--
+<!--       subject section-->
+         <!--
     <section class="section ">
         <div class="section__row">
-            <h2 class="section__title">Subjects</h2>
+            <h2 class="section__title">{{ institution_obj.subjects_title }}</h2>
             <div id="subject_" class="section__items">
                 <div id="more_subject_btn" class="button-caesura">
-                    <a href="/en/categories/">More subjects</a>
+                    <a href="/en/categories/">More {{ institution_obj.subjects_title }}</a>
                 </div>
             </div>
         </div>
     </section>
 -->
+<!--       end of subject section -->
 
+<!--       persons section-->
     <section class="section ">
         <div class="section__row">
-            <h2 class="section__title">Persons</h2>
+            <h2 class="section__title">{{ institution_obj.person_title }}</h2>
             <div id="person_" class="section__items">
                 <div id="more_person_btn" class="button-caesura">
-                    <a href="/en/persons/">More persons</a>
+                    <a href="/en/persons/">More {{ institution_obj.person_title }}</a>
                 </div>
             </div>
         </div>
 
 
     </section>
+<!--       end of persons section-->
+
+<!--       persons phrase section-->
     <section class="section ">
         <div class="section__row">
+            <h2 class="section__title">{{ institution_obj.person_phrase_title }}</h2>
             <div class="section__items">
                 {% for phrase in phrases %}
                 <div class="glimpse-quote">
@@ -123,8 +151,12 @@
             </div>
         </div>
     </section>
+<!--       end of persons phrase section-->
+
+<!--       other section -->
     <section class="section ">
         <div class="section__row">
+             <h2 class="section__title">{{ institution_obj.other_title }}</h2>
             <div class="section__items">
                  {% for topic in topics %}
              <div class="glimpse-card_square">
@@ -142,6 +174,7 @@
         </div>
 
     </section>
+<!--       end of other section-->
 {% endblock %}
 
 
@@ -217,6 +250,8 @@
   {% endblock %}
 
   {% block domready %}
+
+// -------beginning of course template -------
 
 var link_course = "{% url 'education:course_description' '1' %}"
 link_course = link_course.split('/')
@@ -333,6 +368,9 @@ return sortable
 
             get_courses()
 
+// -------end of course template -------
+
+// -------beginning of news template -------
 
         function make_news_template(news)
                  {
@@ -406,6 +444,9 @@ return sortable
 
             get_news()
 
+// -------end of news template -------
+
+// -------beginning of program template -------
 
 var link_program = "{% url 'education:program_description' '1' %}"
 link_program = link_program.split('/')
@@ -467,8 +508,10 @@ link_program += '/'
 
             get_program()
 
-//  subjects --
-// ------------
+// -------end of program template -------
+
+// -------beginning of subject template -------
+
 var link_subject = "{% url 'education:subject_description' '1' %}"
 link_subject = link_subject.split('/')
 link_subject.pop()
@@ -496,7 +539,7 @@ link_subject += '/'
                     var h3_ = document.createElement("h3")
                     div_.appendChild(h3_)
                     h3_.setAttribute("class", "category-glimpse__title")
-                    h3_.innerHTML= subjects['subject_name'];
+                    h3_.innerHTML= subjects['name'];
                     //alert(a_.outerHTML)
 
                    return a_
@@ -522,9 +565,10 @@ link_subject += '/'
             }
 
   // get_subject()
-// -- End of Subjects ---
 
+// -------end of subject template -------
 
+// -------beginning of person template -------
 
           function make_person_template(persons)
           {
@@ -595,5 +639,72 @@ link_subject += '/'
             }
 
             get_person()
+
+// -------end of person template -------
+
+// -------beginning of service template -------
+
+         var link_service = "{% url 'education:service_description' '1' %}"
+link_service = link_service.split('/')
+link_service.pop()
+link_service.pop()
+link_service = link_service.join('/')
+link_service += '/'
+
+                  function make_service_template(services)
+                {
+
+                    var a_ = document.createElement("a")
+                    a_.setAttribute("href", link_service + k)
+                    a_.setAttribute("target", '_blank');
+                    a_.setAttribute("class", "program-glimpse program-glimpse--link")
+                    var div_ = document.createElement("div")
+                    a_.appendChild(div_)
+                    div_.setAttribute("class", "program-glimpse__media")
+                    img_ = document.createElement("img")
+                    div_.appendChild(img_)
+                    img_.setAttribute("src", services['image_url'])
+                    img_.setAttribute("srcset", services['image_url'] + " 300w")
+                    img_.setAttribute("sizes", "300px")
+                    img_.setAttribute("alt" , "")
+                    var div_1 = document.createElement("div")
+                    a_.appendChild(div_1)
+                    div_1.setAttribute("class", "program-glimpse__content")
+                    var div_2 = document.createElement("div")
+                    div_1.appendChild(div_2)
+                    div_2.setAttribute("class", "program-glimpse__wrapper")
+                    var p_ = document.createElement("p")
+                    div_2.appendChild(p_)
+                    p_.setAttribute("class", "program-glimpse__title")
+                    p_.innerHTML=services['name'];
+                    var p_1 = document.createElement("p")
+                    div_2.appendChild(p_1)
+                    p_1.innerHTML=services['short_description'];
+
+                   return a_
+                 }
+
+              function get_service()
+            {
+                try{
+                    $.post('{% url "education:get_service" %}',
+                      {
+                      },
+                      function(data){
+                        var service_elm = document.getElementById("service_")
+                        var more_service_btn = document.getElementById("more_service_btn")
+                        for (k in data)
+                        {
+                            services_elm = make_service_template(data[k])
+                            //alert(services_elm.outerHTML)
+                            service_elm.insertBefore(services_elm, more_service_btn)
+                        }
+                      });
+                  } catch(er){alert(er)}
+            }
+
+            get_service()
+
+// ------- end of service template --------
 
 {% endblock %}

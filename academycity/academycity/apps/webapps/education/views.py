@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect
 from django.core.mail import EmailMessage
 from ...webcompanies.WebCompanies import WebSiteCompany
 from django.http import JsonResponse
-from .models import Phrase, AdditionalTopic, Course, Program, MoreNewsDetail, Subject
+from .models import Phrase, AdditionalTopic, Course, Program, MoreNewsDetail, Subject, Services
 from django.urls import reverse
 
 
@@ -115,7 +115,7 @@ def get_subject(request):
     for subject in subjects:
         print('-' * 50)
         rr[str(subject.id)] = {
-            'subject_name': subject.subject_name,
+            'name': subject.name,
             'order': subject.order,
             'is_popular': subject.is_popular,
             'image_url': subject.image.url
@@ -147,6 +147,34 @@ def news_detail(request):
     return render(request, 'education/news_detail.html', {'news_detail_': news_detail_,
                                                           'institution_obj': company_obj,
                                                           })
+
+
+def service_description(request, pk):
+    wsc = WebSiteCompany(request, web_company_id=7)
+    company_obj = wsc.site_company()
+    service = Services.objects.get(id=pk)
+    return render(request, 'education/service_description.html',
+                  {'service': service,
+                   'institution_obj': company_obj,
+                   })
+
+
+def get_service(request):
+    wsc = WebSiteCompany(request, web_company_id=7)
+    services = wsc.site_company('services')
+    is_admin = request.user.groups.filter(name='admins').exists()
+    if is_admin:
+        for obj in services:
+            obj.save()
+    rr = {}
+    for service in services:
+        rr[str(service.id)] = {
+            'name': service.name,
+            'order': service.order,
+            'short_description': service.short_description,
+            'image_url': service.image.url
+        }
+    return JsonResponse(rr)
 
 
 def noa(request):

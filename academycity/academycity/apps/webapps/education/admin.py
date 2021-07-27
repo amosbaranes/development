@@ -1,6 +1,6 @@
 from django.contrib import admin
 from .models import (InstitutionWeb, Course, New, Program, Subject, Person, Phrase, AdditionalTopic,
-                     MoreNewsDetail)
+                     MoreNewsDetail, Services)
 from cms.admin.placeholderadmin import PlaceholderAdminMixin
 
 
@@ -55,3 +55,7 @@ class MoreNewsDetailAdmin(admin.ModelAdmin):
     list_filter = ('is_active', 'is_popular', )
 
 
+@admin.register(Services)
+class ServicesAdmin(PlaceholderAdminMixin, admin.ModelAdmin):
+    list_display = ('id', 'order', 'name', 'short_description',)
+    list_filter = ('is_active',)
