@@ -30,6 +30,14 @@ class InstitutionWeb(models.Model):
     phone = models.CharField(max_length=20, null=True, blank=True)
     email = models.CharField(max_length=40, null=True, blank=True)
 
+    programs_title = models.CharField(max_length=100, null=True, blank=True)
+    courses_title = models.CharField(max_length=100, null=True, blank=True)
+    services_title = models.CharField(max_length=100, null=True, blank=True)
+    new_title = models.CharField(max_length=100, null=True, blank=True)
+    person_title = models.CharField(max_length=100, null=True, blank=True)
+    person_phrase_title = models.CharField(max_length=100, null=True, blank=True)
+    other_title = models.CharField(max_length=100, null=True, blank=True)
+
     facebook_link = models.CharField(max_length=100, null=True, blank=True)
     linkedin_link = models.CharField(max_length=100, null=True, blank=True)
     twitter_link = models.CharField(max_length=100, null=True, blank=True)
@@ -116,6 +124,7 @@ class Program(models.Model):
     gradient_color_1 = models.CharField(max_length=10, default='#969696',null=True)
     gradient_color_2 = models.CharField(max_length=10, default='#dfdfdf',null=True)
 
+
 class Services(models.Model):
 
     class Meta:
@@ -126,10 +135,14 @@ class Services(models.Model):
     institution_web = models.ForeignKey(InstitutionWeb, on_delete=models.CASCADE,  default=1, related_name='services')
     order = models.IntegerField(default=1000, blank=True)
     image = models.ImageField(upload_to='Programs/', blank=True, null=True)
-    service_title = models.CharField(max_length=100, null=True)
-    service_description = models.CharField(max_length=500, null=True)
+    name = models.CharField(max_length=100, null=True)
+    short_description = models.CharField(max_length=500, null=True)
     is_active = models.BooleanField(default=True)
     description = PlaceholderField('description', related_name='service_description')
+    name_text_color = models.CharField(max_length=10, default='#090909', null=True)
+    name_gradient_deg = models.IntegerField(default=285, blank=True)
+    gradient_color_1 = models.CharField(max_length=10, default='#969696', null=True)
+    gradient_color_2 = models.CharField(max_length=10, default='#dfdfdf', null=True)
 
 
 class Subject(models.Model):
@@ -145,6 +158,11 @@ class Subject(models.Model):
     subject_name = models.CharField(max_length=100, null=True)
     is_popular = models.BooleanField(default=True)
     is_active = models.BooleanField(default=True)
+    description = PlaceholderField('description', related_name='subject_description')
+    name_text_color = models.CharField(max_length=10, default='#090909', null=True)
+    name_gradient_deg = models.IntegerField(default=285, blank=True)
+    gradient_color_1 = models.CharField(max_length=10, default='#969696', null=True)
+    gradient_color_2 = models.CharField(max_length=10, default='#dfdfdf', null=True)
 
 
 class Person(models.Model):
