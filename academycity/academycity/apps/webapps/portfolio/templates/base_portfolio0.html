@@ -2,16 +2,18 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  {% block title %}<title>Title</title>{% endblock%}
-  <meta name="viewport" content="width=device-width,initial-scale=1">
+  {% block title %}{{ company_obj.logo_name}}{% endblock%}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="{% static 'portfolio/css/style1.css' %}">
   {% block meta %}{% endblock %}
   {% block links %} {% endblock %}
   {% block add_css_base %} {% endblock add_css_base %}
   {% render_block "css" %}
 </head>
-<body>
-    {% cms_toolbar %}
 
+<body id="body0">
+    {% cms_toolbar %}
     {% block nav_bar %}
     {% endblock %}
 
@@ -21,14 +23,12 @@
     {% block body_content %}
     {% endblock %}
 
+    {% block nav_footer %}
+    {% endblock %}
+
 <!-- end of body content-->
  {% block js %}
  {% endblock %}
-
-    <script src="{% static 'js/propper/2.5.3/popper.min.js' %}"></script>
-    <script src="{% static 'vendor/bootstrap/js/bootstrap.min.js' %}"></script>
-    <script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
-    <script src='https://cdn.plot.ly/plotly-latest.min.js'></script>
 
 <p id="demo"></p>
 <script src="{% static 'vendor/jquery/jquery.min.js' %}"></script>

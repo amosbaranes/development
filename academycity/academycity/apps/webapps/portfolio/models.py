@@ -15,8 +15,6 @@ class PortfolioWeb(models.Model):
     first_name = models.CharField(max_length=100, null=True, blank=True)
     last_name = models.CharField(max_length=100, null=True, blank=True)
     domain_name = models.CharField(max_length=100, null=True, blank=True)
-    welcome_phrase1 = models.CharField(max_length=100, null=True, blank=True)
-    welcome_phrase2 = models.CharField(max_length=100, null=True, blank=True)
     main_image = models.ImageField(upload_to='portfolio/', blank=True, null=True)
     logo_name = models.CharField(max_length=100, null=True, blank=True)
     footer_phrase = models.CharField(max_length=100, null=True, blank=True)
