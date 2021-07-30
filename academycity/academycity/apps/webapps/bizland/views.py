@@ -12,6 +12,12 @@ def home(request):
     return render(request, 'bizland/home.html', {'company_obj': company_obj})
 
 
+def test(request, pk):
+    wsc = WebSiteCompany(request, web_company_id=pk)
+    company_obj = wsc.site_company(model='', web_company_id=pk)
+    return render(request, 'portfolio/home.html', {'company_obj': company_obj})
+
+
 def post_contact_us(request):
     contact_id = request.POST.get('contact_id')
     contact_us_name = request.POST.get('contact_us_name')

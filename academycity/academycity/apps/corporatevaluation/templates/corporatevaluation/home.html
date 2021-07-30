@@ -106,6 +106,7 @@ data {
           {% include 'corporatevaluation/simulation/includes/_comparablecompanies.html' %}
         {%if user.is_staff or request.user|has_group:"instructors"%}
           {% include 'corporatevaluation/simulation/includes/valuationtodo.html' %}
+          {% include 'corporatevaluation/simulation/includes/valuationmethodology.html' %}
           {% include 'corporatevaluation/simulation/includes/valuationadmin.html' %}
           {% include 'corporatevaluation/simulation/includes/valuationsetup.html' %}
         {% endif %}
@@ -115,7 +116,7 @@ data {
 
 <span id="tabs_"
       tabs_s="comparablecompanies:{% trans "Comparable Companies" %};local,valuation:{% trans "Valuation" %};local,calculations:{% trans "Calculations" %};local,data:{% trans "Data" %};local,inputs:{% trans "Inputs" %};local"
-tabs_m="valuationsetup:{% trans "Valuation Setup" %};pull_screen,valuationadmin:{% trans "Valuation Admin" %};pull_screen,valuationtodo:{% trans "To do list" %};pull_screen"
+tabs_m="valuationsetup:{% trans "Valuation Setup" %};pull_screen,valuationadmin:{% trans "Valuation Admin" %};pull_screen,valuationmethodology:{% trans "Methodology" %};pull_screen,valuationtodo:{% trans "To do list" %};pull_screen"
 >
 </span>
 

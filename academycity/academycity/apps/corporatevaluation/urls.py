@@ -1,7 +1,7 @@
 from django.urls import path
 from .views import (home, get_companies_valuation_actual, wacc_ebit_roic, team, update_data, update_data_year,
                     update_account, get_industry_detail, get_company_detail, get_interest_coverage_ratio,
-                    get_screens)
+                    get_screens, update_todo, delete_todo)
 
 app_name = "corporatevaluation"
 
@@ -18,4 +18,7 @@ urlpatterns = [
     path('get_interest_coverage_ratio/', get_interest_coverage_ratio, name='get_interest_coverage_ratio'),
 
     path('get_screens/', get_screens, name='get_screens'),
+    path('update_todo/', update_todo, name='update_todo'),
+    path('delete_todo/', delete_todo, name='delete_todo'),
+
 ]

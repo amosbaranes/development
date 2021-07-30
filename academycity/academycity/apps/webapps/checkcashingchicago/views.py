@@ -22,6 +22,19 @@ def home(request):
                                                              })
 
 
+def test(request, pk):
+    wsc = WebSiteCompany(request, web_company_id=pk)
+    company_obj = wsc.site_company(model='', web_company_id=pk)
+    locations = wsc.site_company(model='locations', web_company_id=pk)
+    currencies = Currency.objects.all()
+    partners = Partner.objects.all()
+    return render(request, 'portfolio/home.html', {'company_obj': company_obj,
+                                                   'currencies': currencies,
+                                                   'locations': locations,
+                                                   'partners': partners,
+                                                   })
+
+
 def location_detail(request, slug):
     wsc = WebSiteCompany(request, web_company_id=8)
     company_obj = wsc.site_company()
@@ -72,27 +85,6 @@ def post_password(request):
         return JsonResponse(rr)
 
     return render(request, 'checkcashingchicago/members_area_doc.html', {'company_obj': company_obj})
-
-
-# not used we should delete it
-def get_location(request):
-    # locations = check_cashing(request, 'locations')
-    rr = {}
-    # print(locations)
-    # for location in locations:
-    #     print(location.image)
-    #     rr[str(location.id)] = {
-    #                             'location_heading': location.location_heading,
-    #                             'order': location.order,
-    #                             'image_url': location.image.url,
-    #                             'location_info': location.location_info,
-    #                             'data_ajax_id': location.data_ajax_id,
-    #                             'grid_loop': location.grid_loop,
-    #                             'grid_parity': location.grid_parity,
-    #                             'south_suburbs_sort': location.south_suburbs_sort
-    #                             }
-
-    return JsonResponse(rr)
 
 
 def post_contact_us(request):

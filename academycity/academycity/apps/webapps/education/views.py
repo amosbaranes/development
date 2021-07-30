@@ -135,7 +135,9 @@ def get_person(request):
             'persons_description': person.persons_description,
             'order': person.order,
             'is_popular': person.is_popular,
-            'image_url': person.image.url
+            'image_url': person.image.url,
+            'cv_type': person.cv_type,
+            'cv_number': person.cv_number
         }
     return JsonResponse(rr)
 
@@ -176,6 +178,3 @@ def get_service(request):
         }
     return JsonResponse(rr)
 
-
-def noa(request):
-    return render(request, 'education/Noa.html', {})

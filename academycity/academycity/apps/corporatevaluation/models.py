@@ -435,7 +435,7 @@ class ToDoList(TruncateTableMixin, models.Model):
     class Meta:
         verbose_name = _('todolist')
         verbose_name_plural = _('todolist')
-        ordering = ['-priority']
+        ordering = ['-is_active', '-priority']
 
     user = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, on_delete=models.CASCADE,
                              related_name='user_todolists')

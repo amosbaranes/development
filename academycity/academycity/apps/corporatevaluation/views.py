@@ -25,7 +25,7 @@ def home(request, obj_id):
     project = Project.objects.filter(translations__language_code=get_language()).get(id=obj_id)
     country = Country.objects.all()
     companies = CompanyInfo.objects.exclude(company_name='0').all()
-    todolist = ToDoList.objects.filter(is_active=True).all()
+    todolist = ToDoList.objects.filter().all()
     return render(request, 'corporatevaluation/home.html',
                   {'institution_obj': company_obj,
                    'industry': industry,
@@ -285,6 +285,43 @@ def update_data(request):
 
     # print(1000)
 
+    return JsonResponse(dic)
+
+
+def delete_todo(request):
+    pky_ = request.POST.get('pky')
+    ToDoList.objects.filter(id=pky_).delete()
+    dic = {'record': pky_}
+    return JsonResponse(dic)
+
+
+def update_todo(request):
+    dic = {'status': 'ok'}
+    id_ = request.POST.get('id')
+    value_ = request.POST.get('value')
+    print(value_)
+
+    if value_ == "false":
+        value_ = False
+    elif value_ == "true":
+        value_ = True
+    pky_ = request.POST.get('pky')
+
+    try:
+        if pky_ == '':
+            c = ToDoList.objects.create()
+        else:
+            c = ToDoList.objects.get(id=pky_)
+    except Exception as ex:
+        print(ex)
+
+    setattr(c, id_, value_)
+    c.save()
+
+    print('getattr(c, id)')
+    print(getattr(c, "id"))
+
+    dic["result"] = getattr(c, "id")
     return JsonResponse(dic)
 
 

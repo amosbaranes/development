@@ -5,8 +5,10 @@
   {% block title %}{{ company_obj.logo_name}}{% endblock%}
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="{% static 'portfolio/css/style1.css' %}">
+  <link href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
+  <link href="{% static 'css/django_cms_original.css' %}" rel="stylesheet">
   {% block meta %}{% endblock %}
+  {% block links_base %} {% endblock %}
   {% block links %} {% endblock %}
   {% block add_css_base %} {% endblock add_css_base %}
   {% render_block "css" %}

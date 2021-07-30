@@ -181,6 +181,8 @@ class Person(models.Model):
     is_popular = models.BooleanField(default=True)
     is_active = models.BooleanField(default=True)
     description = PlaceholderField('description', related_name='person_description')
+    cv_type = models.CharField(max_length=15, null=True, default='')
+    cv_number = models.SmallIntegerField(default=1)
 
 
 class Phrase(models.Model):

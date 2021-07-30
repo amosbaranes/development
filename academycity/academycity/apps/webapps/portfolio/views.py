@@ -14,8 +14,18 @@ def home(request):
                                                    })
 
 
+def test(request, pk):
+    wsc = WebSiteCompany(request, web_company_id=pk)
+    company_obj = wsc.site_company(model='', web_company_id=pk)
+    services = wsc.site_company(model='services', web_company_id=pk)
+    projects = wsc.site_company(model='projects', web_company_id=pk)
+    return render(request, 'portfolio/home.html', {'company_obj': company_obj,
+                                                   'services': services,
+                                                   'projects': projects,
+                                                   })
+
+
 def resume(request, pk):
-    wsc = WebSiteCompany(request, web_company_id=9)
-    company_obj = wsc.site_company()
+    company_obj = PortfolioWeb.objects.get(id=pk)
     return render(request, 'portfolio/resume.html',
                   {'company_obj': company_obj})

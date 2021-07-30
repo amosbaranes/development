@@ -13,6 +13,8 @@ class WebSiteCompany(object):
         self.web_company_id = -1
         if domain:
             # print('-domain '*5)
+            # print(domain)
+            # print('-domain '*5)
             try:
                 # log_debug('WebSiteCompany domain: ' + domain)
                 web_company_ = WebCompanies.objects.get(domain=domain)
@@ -25,7 +27,9 @@ class WebSiteCompany(object):
                                                                  'app_label': app_label_}
             except Exception as ex:
                 # print('-domain ex'*5)
-                request.session[settings.WEB_SITE_COMPANY_ID] = None
+                # print(ex)
+                # print('-domain ex'*5)
+                request.session[settings.WEB_SITE_COMPANY_ID] = {'domain': 'null'}
 
         self.web_site_company = request.session[settings.WEB_SITE_COMPANY_ID]
 
@@ -39,27 +43,44 @@ class WebSiteCompany(object):
         # print('-' * 20)
 
     def is_registered_domain(self):
-        return self.web_site_company is not None
+
+        # print('self.web_site_company')
+        # print(self.web_site_company)
+        # print('self.web_site_company')
+        # print(self.web_site_company['domain'] != 'null')
+
+        return self.web_site_company['domain'] != 'null'
 
     def get_redirect_link(self):
         return HttpResponseRedirect(reverse(self.web_site_company['app_label'] + ':home'))
 
     def add(self, request, key, value):
+        # print('add')
+        # print('add')
+        # print('add')
         if self.is_registered_domain():
             self.web_site_company[key] = value
         else:
+            # print('add else')
             if not request.session[settings.WEB_SITE_COMPANY_ID]:
                 request.session[settings.WEB_SITE_COMPANY_ID] = {key: value}
             else:
-                request.session[settings.WEB_SITE_COMPANY_ID]['key'] = value
+                # print('add else else')
+                # print(request.session[settings.WEB_SITE_COMPANY_ID])
+                request.session[settings.WEB_SITE_COMPANY_ID][key] = value
+                # print('request.session[settings.WEB_SITE_COMPANY_ID]')
+                # print(request.session[settings.WEB_SITE_COMPANY_ID])
         request.modified = True
 
     def get(self, key):
         return self.web_site_company[key]
 
-    def site_company(self, model=''):
+    def site_company(self, model='', web_company_id=None):
         try:
-            web_company = WebCompanies.objects.get(id=self.web_company_id)
+            if web_company_id:
+                web_company = WebCompanies.objects.get(id=web_company_id)
+            else:
+                web_company = WebCompanies.objects.get(id=self.web_company_id)
             # print('site_company - web_company')
             # print(web_company)
 

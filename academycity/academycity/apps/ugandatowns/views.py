@@ -17,7 +17,8 @@ def index(request, town_slug=None):
     if town_slug:
         town_ = get_object_or_404(Towns, slug=town_slug)
     else:
-        wsc = WebSiteCompany(request)
+        # print('--- rrr ---')
+        wsc = WebSiteCompany(request, web_company_id=4)
         country_id = wsc.get("country_id")
         town_ = Towns.objects.filter(country__id=country_id).all()[0]
     return menu_town__(request, town_, item_=None)
@@ -26,6 +27,10 @@ def index(request, town_slug=None):
 # Need to remove this function
 # was replaced by home function
 def ut_login_page(request):
+    # print('ut_login_page')
+    # print(ut_login_page)
+    # print('ut_login_page')
+
     wsc = WebSiteCompany(request)
     if wsc.is_registered_domain():
         web_company_id = wsc.web_site_company['web_company_id']
@@ -34,6 +39,11 @@ def ut_login_page(request):
         web_company = WebCompanies.objects.get(id=4)
     country = web_company.target
     wsc.add('country_id', country.id)
+
+    # print('ut_login_page   wsc.web_site_company')
+    # print(wsc.web_site_company)
+    # print('ut_login_page   wsc.web_site_company')
+
     country = Countries.objects.get(id=country.id)
 
     form_class = LoginForm
@@ -47,7 +57,8 @@ def ut_login_page(request):
 
 
 def home(request):
-    wsc = WebSiteCompany(request)
+    # print('u h')
+    wsc = WebSiteCompany(request, web_company_id=4)
     if wsc.is_registered_domain():
         web_company_id = wsc.web_site_company['web_company_id']
         web_company = WebCompanies.objects.get(id=web_company_id)
@@ -55,6 +66,11 @@ def home(request):
         web_company = WebCompanies.objects.get(id=4)
     country = web_company.target
     wsc.add(request, 'country_id', country.id)
+
+    # print('home wsc.web_site_company')
+    # print(wsc.web_site_company)
+    # print('home wsc.web_site_company')
+
     country = Countries.objects.get(id=country.id)
 
     form_class = LoginForm

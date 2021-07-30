@@ -1,20 +1,81 @@
 {% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
 
-<div id="valuationtodo" class="container tabcontent">
-    <button>Add Task</button>
-<table class="data">
+<div id="valuationtodo" class="container tabcontent" >
+    <button onclick="add_task(event)">Add Task</button>
+<table id="tasks" class="data" onchange="input_valuation_todo(event)">
     <thead>
         <tr>
             <th>Priority</th><th>subject</th><th>description</th><th>is_active</th>
         </tr>
     </thead>
 {% for todo in todolist %}
-        <tr>
-            <td><input value="{{todo.priority}}" size="4" /></td>
-            <td><textarea rows="3" cols="40">{{todo.subject}}</textarea></td>
-            <td><textarea rows="3" cols="80">{{todo.description}}</textarea></td>
-            <td><input type="checkbox" checked="{{todo.is_active}}" /></td>
+        <tr id="task_{{forloop.counter}}" pky="{{todo.id}}">
+            <td><input id="priority" value="{{todo.priority}}" size="4" /></td>
+            <td><textarea id="subject" rows="3" cols="40">{{todo.subject}}</textarea></td>
+            <td><textarea id="description" rows="3" cols="80">{{todo.description}}</textarea></td>
+            <td><input id="is_active" type="checkbox"
+                       {% if todo.is_active%}
+                       checked
+                       {%endif%} /></td>
+            <td><button onclick="delete_todo(event)">{% trans "Delete" %}</button></td>
         </tr>
 {% endfor %}
 </table>
+    <br/><br/><br/><br/><br/>
 </div>
+
+<script>
+function add_task(event)
+{
+    t = document.getElementById("tasks")
+    r = document.getElementById("task_1")
+    var c = r.cloneNode(true);
+    c.setAttribute("pky", "")
+    e = c.cells[0].childNodes[0]; e.setAttribute("value", "")
+    e = c.cells[1].childNodes[0]; e.innerHTML = ""
+    e = c.cells[2].childNodes[0]; e.innerHTML = ""
+    e = c.cells[3].childNodes[0]; e.setAttribute("checked", "True")
+    t.appendChild(c);
+}
+
+function delete_todo(event)
+{
+ t = event.target
+ r = t.parentNode.parentNode
+ r.parentNode.removeChild(r);
+ pky_ = r.getAttribute("pky")
+
+ $.post('{% url "corporatevaluation:delete_todo" %}',
+      {
+        pky: pky_,
+      },
+      function(data){
+        alert('Recorde deleted: ' + data['record'])
+     }
+ );
+}
+
+function input_valuation_todo(event)
+{
+ e = event.target
+ var id_ = e.getAttribute("id")
+ if (id_ == 'priority' ){ var value_ = e.value }
+ else if (id_ == 'is_active') {value_ = e.checked} else
+ {value_ = e.value}
+ et = e.parentNode.parentNode
+ pky_ = et.getAttribute("pky")
+ $.post('{% url "corporatevaluation:update_todo" %}',
+      {
+        id: id_,
+        value: value_,
+        pky: pky_,
+      },
+      function(data){
+        //alert('data updated to: ' + data['result'])
+        et.setAttribute("pky", data['result'])
+     }
+ );
+
+}
+
+</script>

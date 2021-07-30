@@ -14,6 +14,13 @@ def home(request):
     return render(request, 'fabhouseafrica/home.html', {'company_obj': company_obj, 'home_obj': home_obj})
 
 
+def test(request, pk):
+    wsc = WebSiteCompany(request, web_company_id=pk)
+    company_obj = wsc.site_company(model='', web_company_id=pk)
+    home_obj = company_obj.home
+    return render(request, 'fabhouseafrica/home.html', {'company_obj': company_obj, 'home_obj': home_obj})
+
+
 def catalog(request):
     wsc = WebSiteCompany(request, web_company_id=1)
     company_obj = wsc.site_company()
