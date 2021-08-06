@@ -17,12 +17,12 @@
                 <div class="hero-intro__body">
                     <div class="hero-intro__content">
                         <h1 class="hero-intro__title">
-                            <strong>{{institution_obj.institution_name}}</strong>
+                            <strong style="color:{{institution_obj.institute_name_color}}">{{institution_obj.institution_name}}</strong>
                         </h1>
-                        <p>{{institution_obj.welcome_phrase}}</p>
+                        <p style="color:{{institution_obj.introduction_phrase_color}}">{{institution_obj.welcome_phrase}}</p>
                     </div>
                     <div class="hero-intro__search">
-                        <p class="hero-intro__search-title">Search in our courses</p>
+                        <p class="hero-intro__search-title">{{institution_obj.searching_title}}</p>
                         <div class="richie-react richie-react--root-search-suggest-field" data-props='{"courseSearchPageUrl": "/en/courses/"}'>
                             <div role="combobox" aria-haspopup="listbox" aria-owns="react-autowhatever-1" aria-expanded="false" class="react-autosuggest__container">
                             <div class="search-input">
@@ -38,7 +38,7 @@
                                 </div>
                             </div>
                         </div>
-                        <a class="hero-intro__cta" href="/en/courses/">Explore our catalog</a>
+                        <a class="hero-intro__cta" href="/en/courses/">{{institution_obj.search_explore_catalog_title}}</a>
                     </div>
                 </div>
             </div>

@@ -17,6 +17,12 @@ class InstitutionWeb(models.Model):
     domain_name = models.CharField(max_length=100, null=True, blank=True)
     welcome_phrase = models.CharField(max_length=100, null=True, blank=True)
     institution_image = models.ImageField(upload_to='institution/', blank=True, null=True)
+
+    institute_name_color = models.CharField(max_length=100, default='black', null=True, blank=True)
+    introduction_phrase_color = models.CharField(max_length=100, default='black', null=True, blank=True)
+    searching_title = models.CharField(max_length=100, null=True, blank=True)
+    search_explore_catalog_title = models.CharField(max_length=100, null=True, blank=True)
+
     logo_image = models.ImageField(upload_to='institution/', blank=True, null=True)
     footer_image = models.ImageField(upload_to='institution/', blank=True, null=True)
     contact_us_image = models.ImageField(upload_to='institution/', blank=True, null=True)

@@ -1,0 +1,15 @@
+{% extends "base_portfolio0.html" %}
+{% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
+
+{% block title %}
+<title>{{ company_obj.portfolio_name }}</title>
+{% endblock%}
+
+
+{% block body_content %}
+
+{% render_placeholder company_obj.resume %}
+
+{% static_placeholder "Footer" %}
+
+{% endblock %}

@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from ...webcompanies.WebCompanies import WebSiteCompany
-from .models import PortfolioWeb
+from .models import PortfolioWeb, Service
 
 
 def home(request):
@@ -29,3 +29,10 @@ def resume(request, pk):
     company_obj = PortfolioWeb.objects.get(id=pk)
     return render(request, 'portfolio/resume.html',
                   {'company_obj': company_obj})
+
+
+def service(request, pk):
+    company_obj = PortfolioWeb.objects.get(id=pk)
+    services = Service.objects.all()
+    return render(request, 'portfolio/service.html',
+                  {'company_obj': company_obj, 'services': services})
