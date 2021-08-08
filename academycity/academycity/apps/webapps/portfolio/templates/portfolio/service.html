@@ -2,13 +2,13 @@
 {% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
 
 {% block title %}
-<title>{{ company_obj.portfolio_name }}</title>
+<title>{{ service.heading }}</title>
 {% endblock%}
 
 
 {% block body_content %}
 
-{% render_placeholder company_obj.resume %}
+{% render_placeholder service.full_description %}
 
 {% static_placeholder "Footer" %}
 

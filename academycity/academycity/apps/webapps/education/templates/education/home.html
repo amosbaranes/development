@@ -92,7 +92,7 @@
             <h2 class="section__title">{{ institution_obj.new_title }}</h2>
             <div id="news_" class="section__items">
                 <div id="more_news_btn" class="button-caesura">
-<!--                    <a href="{% url 'education:news_detail' %}">More {{ institution_obj.new_title }}</a>-->
+                   <a href="{% url 'education:news_detail' %}">More {{ institution_obj.new_title }}</a>
                 </div>
             </div>
         </div>
@@ -160,6 +160,9 @@
             <div class="section__items">
                  {% for topic in topics %}
              <div class="glimpse-card_square">
+
+                 <a href="https://{{topic.is_link}}" target="_blank">
+
                     <div class="glimpse-card_square__media">
                         <img src="{{topic.image.url }}"
                          srcset="{{topic.image.url }} 300w, 600w" sizes="300px" alt="">
@@ -167,12 +170,12 @@
                     <div class="glimpse-card_square__wrapper">
                         <h3 class="glimpse-card_square__title">{{topic.topic_description}}</h3>
                     </div>
-                </div>
+                 </a>
 
+             </div>
                 {% endfor %}
             </div>
         </div>
-
     </section>
 <!--       end of other section-->
 {% endblock %}
@@ -343,9 +346,6 @@ link_course += '/'
 return sortable
 }
 
-
-
-
             function get_courses()
             {
                 try{
@@ -359,7 +359,7 @@ return sortable
                         for (k in data)
                         {
                             course_elm = make_course_template(data[k][0], data[k][1])
-                            //alert(courses_elm.outerHTML)
+                            //alert(courses_elm.innerHTML)
                             courses_elm.insertBefore(course_elm, more_courses_btn)
                         }
                       });
@@ -372,10 +372,18 @@ return sortable
 
 // -------beginning of news template -------
 
+var link_news = "{% url 'education:news_description' '1' %}"
+link_news = link_news.split('/')
+link_news.pop()
+link_news.pop()
+link_news = link_news.join('/')
+link_news += '/'
+
         function make_news_template(news)
                  {
                     var a_ = document.createElement("a")
-                    a_.setAttribute("href", "/en/news/triple-buffered-value-added-attitude/")
+                    a_.setAttribute("href", link_news + k)
+                    a_.setAttribute("target", '_blank');
                     a_.setAttribute("class", "blogpost-glimpse")
                     var p_ = document.createElement("p")
                     a_.appendChild(p_)
@@ -647,7 +655,7 @@ link_subject += '/'
 
 // -------beginning of service template -------
 
-         var link_service = "{% url 'education:service_description' '1' %}"
+var link_service = "{% url 'education:service_description' '1' %}"
 link_service = link_service.split('/')
 link_service.pop()
 link_service.pop()

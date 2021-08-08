@@ -32,7 +32,15 @@ def resume(request, pk):
 
 
 def service(request, pk):
-    company_obj = PortfolioWeb.objects.get(id=pk)
-    services = Service.objects.all()
+    wsc = WebSiteCompany(request, web_company_id=9)
+    company_obj = wsc.site_company()
+
+    is_admin = request.user.groups.filter(name='admins').exists()
+    if is_admin:
+        services = Service.objects.all()
+        for obj in services:
+            obj.save()
+
+    service_ = Service.objects.get(id=pk)
     return render(request, 'portfolio/service.html',
-                  {'company_obj': company_obj, 'services': services})
+                  {'company_obj': company_obj, 'service': service_})
