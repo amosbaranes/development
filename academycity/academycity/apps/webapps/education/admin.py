@@ -46,7 +46,7 @@ class PhraseAdmin(admin.ModelAdmin):
 
 @admin.register(AdditionalTopic)
 class PhraseAdmin(admin.ModelAdmin):
-    list_display = ('id', 'order', 'image', 'topic_description', 'is_active')
+    list_display = ('id', 'order', 'image', 'topic_description', 'is_link', 'is_active')
 
 
 @admin.register(MoreNewsDetail)

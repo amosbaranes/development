@@ -17,6 +17,12 @@ class InstitutionWeb(models.Model):
     domain_name = models.CharField(max_length=100, null=True, blank=True)
     welcome_phrase = models.CharField(max_length=100, null=True, blank=True)
     institution_image = models.ImageField(upload_to='institution/', blank=True, null=True)
+
+    institute_name_color = models.CharField(max_length=100, default='black', null=True, blank=True)
+    introduction_phrase_color = models.CharField(max_length=100, default='black', null=True, blank=True)
+    searching_title = models.CharField(max_length=100, null=True, blank=True)
+    search_explore_catalog_title = models.CharField(max_length=100, null=True, blank=True)
+
     logo_image = models.ImageField(upload_to='institution/', blank=True, null=True)
     footer_image = models.ImageField(upload_to='institution/', blank=True, null=True)
     contact_us_image = models.ImageField(upload_to='institution/', blank=True, null=True)
@@ -101,7 +107,12 @@ class New(models.Model):
     news_description = models.CharField(max_length=500, null=True)
     is_popular = models.BooleanField(default=True)
     is_active = models.BooleanField(default=True)
+    is_link = models.CharField(max_length=300, null=True, blank=True)
     description = PlaceholderField('description', related_name='new_description')
+    name_text_color = models.CharField(max_length=10, default='#090909', null=True)
+    name_gradient_deg = models.IntegerField(default=285, blank=True)
+    gradient_color_1 = models.CharField(max_length=10, default='#969696', null=True)
+    gradient_color_2 = models.CharField(max_length=10, default='#dfdfdf', null=True)
 
 
 class Program(models.Model):
@@ -211,6 +222,7 @@ class AdditionalTopic(models.Model):
     image = models.ImageField(upload_to='phrase/', blank=True, null=True)
     topic_description = models.CharField(max_length=500, null=True)
     is_active = models.BooleanField(default=True)
+    is_link = models.CharField(max_length=300, null=True, blank=True)
 
 
 class MoreNewsDetail(models.Model):

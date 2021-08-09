@@ -27,7 +27,7 @@
         <h1 class="section-title">About <span>{% render_model company_obj "about_title" %}</span></h1>
         <h2>{% render_model company_obj "about_subtitle" %}</h2>
         <p> {% render_model company_obj "about_phrase" %}</p>
-        <a href="{{ company_obj.get_absolute_url }}" class="cta" target=""_blake>{{ company_obj.about_link}}</a>
+        <a href="{{ company_obj.get_absolute_url }}" class="cta" target="_blank">{{ company_obj.about_link}}</a>
       </div>
     </div>
   </section>
@@ -43,10 +43,13 @@
       <div class="service-bottom">
         {% for service in services%}
         <div class="service-item">
+          <a href="{% url 'portfolio:service' service.id %}" target="_blank">
           <div class="icon">
-              <img src="{{ service.image.url }}" /></div>
+              <img src="{{ service.image.url }}" />
+          </div>
           <h2>{{service.heading}}</h2>
           <p>{{service.description}}</p>
+          </a>
         </div>
         {% endfor%}
       </div>

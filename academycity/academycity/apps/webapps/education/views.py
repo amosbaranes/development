@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect
 from django.core.mail import EmailMessage
 from ...webcompanies.WebCompanies import WebSiteCompany
 from django.http import JsonResponse
-from .models import Phrase, AdditionalTopic, Course, Program, MoreNewsDetail, Subject, Services
+from .models import Phrase, AdditionalTopic, Course, Program, MoreNewsDetail, Subject, Services, New
 from django.urls import reverse
 
 
@@ -157,6 +157,16 @@ def service_description(request, pk):
     service = Services.objects.get(id=pk)
     return render(request, 'education/service_description.html',
                   {'service': service,
+                   'institution_obj': company_obj,
+                   })
+
+
+def news_description(request, pk):
+    wsc = WebSiteCompany(request, web_company_id=7)
+    company_obj = wsc.site_company()
+    news = New.objects.get(id=pk)
+    return render(request, 'education/news_description.html',
+                  {'news': news,
                    'institution_obj': company_obj,
                    })
 

@@ -9,7 +9,7 @@ class PortfolioWebAdmin(PlaceholderAdminMixin, admin.ModelAdmin):
 
 
 @admin.register(Service)
-class ServiceAdmin(admin.ModelAdmin):
+class ServiceAdmin(PlaceholderAdminMixin, admin.ModelAdmin):
     list_display = ('id', 'order', 'description', 'heading',)
 
 

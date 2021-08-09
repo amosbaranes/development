@@ -1,0 +1,45 @@
+{% extends "base_education.html" %}
+{% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
+
+{% block title %}
+<title>{{ news.news_title }}</title>
+{% endblock%}
+
+{% block add_css %}
+
+<style>
+.subheader__container{color:#090909;background:linear-gradient(
+{{news.name_gradient_deg}}deg,
+{{news.gradient_color_1}} 3%,
+{{news.gradient_color_2}} 98%);padding:1rem .5rem}
+
+.subheader__container svg:not(.no-scheme-fill){fill:#090909}
+.subheader__container h1,.subheader__container .h1{color:{{news.name_text_color}}}
+.subheader__container h2,.subheader__container .h2{color:{{news.name_text_color}}}
+.subheader__container h3,.subheader__container .h3{color:{{news.name_text_color}}}
+.subheader__container h4,.subheader__container .h4{color:{{news.name_text_color}}}
+.subheader__container h5,.subheader__container .h5{color:{{news.name_text_color}}}
+.subheader__container h6,.subheader__container .h6{color:{{news.name_text_color}}}
+</style>
+
+{% endblock add_css %}
+
+
+{% block nav_bar %}
+          {% include 'education/includes/description_page.html' %}
+{% endblock %}
+
+{% block main_page %}
+<div class="subheader" style="margin-bottom:40px">
+    <div class="subheader__container">
+        <h1 class="subheader__title">{% render_model news "news_title" %}</h1>
+    </div>
+</div>
+{% endblock %}
+
+{% block body_content %}
+
+{% render_placeholder news.description %}
+
+{% endblock %}
+

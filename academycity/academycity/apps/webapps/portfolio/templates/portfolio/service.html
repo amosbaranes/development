@@ -1,0 +1,15 @@
+{% extends "base_portfolio0.html" %}
+{% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
+
+{% block title %}
+<title>{{ service.heading }}</title>
+{% endblock%}
+
+
+{% block body_content %}
+
+{% render_placeholder service.full_description %}
+
+{% static_placeholder "Footer" %}
+
+{% endblock %}

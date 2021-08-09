@@ -2,9 +2,9 @@
 {% load static %}
 {% load thumbnail %}
 
-  {% block title %}
-  <title>Education</title>
-  {% endblock%}
+{% block title %}
+<title>Education</title>
+{% endblock%}
 
 {% block meta %}
 {% endblock %}
@@ -12,61 +12,61 @@
 {% block links %}
 {% endblock %}
 
-  {% block body_content %} {% endblock %}
-    {% block content_ %}{% endblock %}
+{% block body_content %} {% endblock %}
+{% block content_ %}{% endblock %}
 
-    {% block nav_footer %}
-    <div class="body-footer">
-                <div class="body-footer__container">
-                      <div class="body-footer__menu">
-                          <p class="body-footer__subtitle">Learn more</p>
-                          <div class="body-footer__items">
-                              <a href="//localhost:8080/en/annex/about/">About</a>
-                              <a href="//localhost:8080/en/annex/sitemap/">Sitemap</a>
-                              <a href="/styleguide/">Style guide</a>
-                              <div class="nested-item nested-item--list nested-item--0">
-                                  <div class="nested-item__content">{{institution_obj.institution_name}} community</div>
-                                  <ul class="nested-item__items">
-                                      <li><a href="https://{{institution_obj.github_link}}" target="_blank">Github</a></li>
-                                  </ul>
-                              </div>
-                          </div>
-                      </div>
-                      <div class="body-footer__brand">
-                          <a href="/">
-                              <img src="{{ institution_obj.footer_image.url }}" width="72px" height="100px" alt=""></a>
-                      </div>
-
-                      <div class="body-footer__insert">
-                          <p class="body-footer__title">{{institution_obj.footer_phrase}}</p>
-                          <div class="richie-react richie-react--language-selector" data-props-source="[data-language-selector]"></div>
-                          <div class="body-footer__badges">
-
-                              <a href="https://{{institution_obj.facebook_link}}" class="body-footer__badge" target="_blank">
-                                  <svg role="img"><title>Facebook</title><use href="#icon-facebook" /></svg>
-                              </a>
-                              <a href="https://{{institution_obj.twitter_link}}" class="body-footer__badge" target="_blank" title="Twitter page">
-                                  <svg role="img"><title>Twitter</title><use href="#icon-twitter" /></svg>
-                              </a>
-                              <a href="https://{{institution_obj.linkedin_link}}" class="body-footer__badge" target="_blank" title="Linkedin">
-                                  <svg role="img"><title>Linkedin</title><use href="#icon-linkedin" /></svg>
-                              </a>
-                              <a href="https://{{institution_obj.instagram_link}}" class="body-footer__badge" target="_blank" title="Instagram">
-                                  <svg role="img"><title>Instagram</title><use href="#icon-instagram" /></svg>
-                              </a>
-
-                          </div>
-                      </div>
-                  </div>
+{% block nav_footer %}
+<div class="body-footer">
+    <!--body-footer__brand-->
+    <div class="" style="margin-left:120px">
+        <a href="/">
+            <img src="{{ institution_obj.footer_image.url }}" width="72px" height="80px" alt="">
+        </a>
+    </div>
+    <div class="body-footer__container">
+        <div class="body-footer__menu">
+            <p class="body-footer__subtitle">Learn more</p>
+            <div class="body-footer__items">
+                <a href="//localhost:8080/en/annex/about/">About</a>
+                <a href="//localhost:8080/en/annex/sitemap/">Sitemap</a>
+                <a href="/styleguide/">Style guide</a>
+                <div class="nested-item nested-item--list nested-item--0">
+                    <div class="nested-item__content">{{institution_obj.institution_name}} community</div>
+                    <ul class="nested-item__items">
+                        <li><a href="https://{{institution_obj.github_link}}" target="_blank">Github</a></li>
+                    </ul>
+                </div>
             </div>
-    <div class="body-mentions">
-      <div class="body-mentions__container">
-          <div class="body-mentions__poweredby">
-              <a href="https://academycity.org" target="_blank">
-                  <small>Powered by</small>
-                  <strong>Academy City</strong>
-              </a>
-          </div>
+        </div>
+        <div class="body-footer__insert">
+            <p class="body-footer__title">{{institution_obj.footer_phrase}}</p>
+            <div class="richie-react richie-react--language-selector" data-props-source="[data-language-selector]"></div>
+            <div class="body-footer__badges">
+                <a href="https://{{institution_obj.facebook_link}}" class="body-footer__badge" target="_blank">
+                    <svg role="img"><title>Facebook</title><use href="#icon-facebook" /></svg>
+                </a>
+                <a href="https://{{institution_obj.twitter_link}}" class="body-footer__badge" target="_blank" title="Twitter page">
+                    <svg role="img"><title>Twitter</title><use href="#icon-twitter" /></svg>
+                </a>
+                <a href="https://{{institution_obj.linkedin_link}}" class="body-footer__badge" target="_blank" title="Linkedin">
+                    <svg role="img"><title>Linkedin</title><use href="#icon-linkedin" /></svg>
+                </a>
+                <a href="https://{{institution_obj.instagram_link}}" class="body-footer__badge" target="_blank" title="Instagram">
+                    <svg role="img"><title>Instagram</title><use href="#icon-instagram" /></svg>
+                </a>
+
+            </div>
+        </div>
+    </div>
+</div>
+<div class="body-mentions">
+  <div class="body-mentions__container">
+      <div class="body-mentions__poweredby">
+          <a href="https://academycity.org" target="_blank">
+              <small>Powered by</small>
+              <strong>Academy City</strong>
+          </a>
       </div>
   </div>
-    {% endblock %}
+</div>
+{% endblock %}

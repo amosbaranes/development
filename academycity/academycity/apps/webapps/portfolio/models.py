@@ -80,6 +80,7 @@ class Service(models.Model):
     heading = models.CharField(max_length=100, null=True)
     description = models.CharField(max_length=100, null=True)
     is_active = models.BooleanField(default=True)
+    full_description = PlaceholderField('full_description')
 
 
 class Project(models.Model):
