@@ -1,0 +1,263 @@
+{% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
+
+<div id="sec" class="container tabcontent">
+<script type="text/javascript" src="{% static 'sec_interactive/js/jquery-1.4.3.min.js' %}"></script>
+<link rel="stylesheet" type="text/css" href="{% static 'sec_interactive/css/interactive.css' %}" />
+<link rel="stylesheet" type="text/css" href="{% static 'sec_interactive/css/report.css' %}" />
+<link rel="stylesheet" type="text/css" href="{% static 'sec_interactive/css/print.css' %}" media="print" />
+<link rel="stylesheet" type="text/css" href="{% static 'sec_interactive/css/xbrlViewerStyle.css' %}" />
+<style type="text/css">li.octave {border-top: 1px solid black;}</style>
+<!--[if lt IE 8]>
+<style type="text/css">
+li.accordion a {display:inline-block;}
+li.accordion a {display:block;}
+</style>
+<![endif]-->
+<script type="text/javascript" language="javascript">
+var InstanceReportXslt = "/include/InstanceReport.xslt";
+
+function loadXSLDoc(url) {
+    var doc;
+    var jqxhr=$.ajax({type: "GET",
+    url: url,
+    async: false});
+
+    // code for IE
+    if (window.ActiveXObject || "ActiveXObject" in window) {
+        doc = new ActiveXObject("Msxml2.FreeThreadedDOMDocument.3.0");
+        doc.loadXML(jqxhr.responseText);
+    }
+
+    // code for other browsers
+    else if (document.implementation && document.implementation.createDocument) {
+        doc=document.implementation.createDocument("","",null);
+        doc.async=true;
+        doc = jqxhr.responseXML.documentElement;
+    }
+    return doc;
+}
+
+function fixSrcAttr(src) {
+    var url_path = "/Archives/edgar/data/320193/000032019320000096/";
+    var uri = src.substr(0,5);
+    // No change is needed if the 'src' attribute contains an embedded image
+    if (uri == 'data:') {
+        return src;
+    }
+    // Absolute URL on EDGAR website is unchanged
+    var idx = src.lastIndexOf('https://s3.amazonaws.com/archives.sec.gov/edgar/data/')
+    if (idx > -1) {
+        return src;
+    } // For all other URLs use only basename component
+    var idx = src.lastIndexOf('/');
+    if (idx > -1) {
+        src = src.substring(idx+1,src.length);
+    }
+    return url_path + src;
+}
+
+function getReport(url, xsl_url) {
+// alert('getReport: ' + url + ' ' + xsl_url)
+if (xsl_url == null) { xsl_url = InstanceReportXslt; }
+var ext = url.substring(url.lastIndexOf('.')+1, url.length);
+    if (ext == 'htm') {
+      $.post("{% url 'corporatevaluation:get_r' %}",
+        {
+          url_r: url,
+        },
+        function(data){
+            data = data['html']
+
+            var idx = data.indexOf('<TEXT>');
+            if (idx > -1) {
+            data = data.substring(idx+6,data.length);
+            idx = data.indexOf('</TEXT>');
+                if ( idx > -1) {
+                data = data.substring(0,idx);
+                }
+            }
+            jQuery('#reportDiv').append(data)
+            .find('img').attr('src', function(i, val) { return fixSrcAttr(val);}).end();
+        });
+    } else {
+
+    alert(url)
+
+    $.ajax({
+        type: "GET",
+        url: url,
+        dataType: "text",
+        async: false,
+        success: function(data) {
+            data = data.replace(/^\s+|\s+$/g, ''); // leading or trailing whitespace causes problems
+            var path="/" + url.substring(1, url.lastIndexOf('/')+1);
+            // code for IE
+            if (window.ActiveXObject || "ActiveXObject" in window) {
+                xsl_doc = loadXSLDoc(xsl_url)
+                var xslt = new ActiveXObject("Msxml2.XSLTemplate.3.0");
+                xslt.stylesheet = xsl_doc;
+                var xslproc = xslt.createProcessor();
+                var doc = new ActiveXObject("Msxml2.FreeThreadedDOMDocument.3.0");
+                doc.loadXML(data);
+                xslproc.input = doc;
+                xslproc.addParameter("source", path );
+                xslproc.addParameter("asPage", "true" );
+                xslproc.transform();
+                // Find all images and prepend the base URL to the src attribute
+                jQuery('#reportDiv').append(jQuery(xslproc.output)
+                .find('img')
+                .attr('src', function(i, val) {
+                return fixSrcAttr(val);
+                }).end());
+            }
+            // code for other browsers
+            else if (document.implementation && document.implementation.createDocument) {
+                xsltProcessor=new XSLTProcessor();
+                xsltProcessor.importStylesheet(loadXSLDoc(xsl_url));
+                xsltProcessor.setParameter(null,"source",path);
+                xsltProcessor.setParameter(null,"asPage","true");
+                parser = new DOMParser();
+                xmlDoc = parser.parseFromString(data, "text/xml");
+                var rpt = xsltProcessor.transformToFragment(xmlDoc, document);
+                document.getElementById("reportDiv").appendChild(rpt);
+                FixNotesForGeckoWebkit( document.getElementById( 'reportDiv' ) );
+                // Find all images and prepend the base URL to the src attribute
+                jQuery('#reportDiv').find('img')
+                .attr('src', function(i, val) {
+                return fixSrcAttr(val);
+                });
+            } else {
+                alert('Your browser cannot handle this script');
+            }
+        }
+    });
+  }
+}
+
+
+function clearReportDiv() {
+// code for IE
+    if (window.ActiveXObject || "ActiveXObject" in window) {
+        document.getElementById("reportDiv").innerHTML='';
+    }
+    else if (document.implementation && document.implementation.createDocument) {
+        x = document.getElementById("reportDiv").childNodes;
+        for (i=x.length-1;i>-1;i--) {
+            node = document.getElementById("reportDiv").childNodes[i];
+            if (node) {document.getElementById("reportDiv").removeChild(node);}
+        }
+    }
+}
+
+function loadReport(idx) {
+    if (window.XMLHttpRequest || window.ActiveXObject || "ActiveXObject" in window) {
+        clearReportDiv();
+        xsl_url = null;
+        if (idx == last_r) {
+            highlightAllMenuItems();
+            jQuery.ajaxSetup({async:false});
+            for (var i=1; i<=last_r; i++) {
+                if (i < last_r) {
+                    rr = vObj["xbrl_data"][vObj["filing_year"]]["r_link"]+String(i)+".htm"
+                    getReport(rr, xsl_url);
+                    var li = document.getElementById('r'+idx);
+                    if (li) { li.parentNode.style.display='block';}
+                } else { break;}
+            }
+        } else
+        {
+            rr = vObj["xbrl_data"][vObj["filing_year"]]["r_link"]+String(idx)+".htm"
+            getReport(rr, xsl_url);
+            var li = document.getElementById('r'+idx);
+            if (li) {li.parentNode.style.display='block'; }
+        }
+        window.scrollTo(0,0);
+    } else { alert('Your browser cannot handle this script');}
+}
+
+function get_sec(url) {
+      var elm = document.getElementById('navigation_table')
+      elm.innerHTML = 'In Process Downloading Data.   Please wait';
+      $.post("{% url 'corporatevaluation:get_sec' %}",
+        {
+          url: url,
+        },
+        function(data){
+            data = data['table']
+            last_r = data['last_r']
+            // alert(last_r)
+
+            //alert(elm.outerHTML)
+            //elm.innerHTML = '';
+            elm.innerHTML = data
+            accMenu()
+        });
+}
+
+function highlight(link) {
+    var parent = document.getElementById( 'menu' );
+    var links = parent.getElementsByTagName( 'a' );
+
+    for (var i = 0; i < links.length; i++){
+            if (links[i].className == 'xbrlviewer') {
+            if (links[i] == link) {
+            link.style.background = "#C1CDCD";
+            } else {
+                links[i].style.background = "#F5F5EB";
+            }
+        }
+    }
+}
+
+//the parameter 'div' represents <div id="reportDiv">
+function FixNotesForGeckoWebkit( div ){
+    //textContent is only found in "other" browsers
+    //if it exists, search it for our table - there should only be one
+    if( div.textContent ){
+        var tables = div.getElementsByTagName( 'table' );
+        if( tables.length ){
+            //loop through the tables
+            for( var t = 0; t < tables.length; t++ ){
+                var cells = tables[t].getElementsByTagName( 'td' );
+                //loop through the cells, checking for class="text" which indicates some kind of text content - this includes HTML for notes
+                for( var i = 0; i < cells.length; i++ ){
+                    var curCell = cells[ i ];
+                    if( curCell.className == 'text' ){
+                        //<td class="text" found - now check if this HTML had already been rendered - if so, we should not attempt to render it again
+                        var nodes = curCell.getElementsByTagName( '*' );
+                        if( nodes.length <= 1 ){
+                            //no "nodes" found so perform a secondary check that we have text which resembles HTML
+                            nodes = curCell.textContent.match( /<\/?[a-zA-Z]{1}\w*[^>]*>/g );
+                            if( nodes && nodes.length ){
+                                //this text does resemble HTML, use the textContent as HTML and that will convert the text to HTML content.
+                                curCell.innerHTML = curCell.textContent;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+</script>
+
+<div id="navigation_table">
+</div>
+
+<script src="{% static 'vendor/jquery/jquery.min.js' %}"></script>
+<script src="{% static 'js/npm/cookie/js.cookie.min.js' %}"></script>
+<script src='https://cdn.plot.ly/plotly-latest.min.js'></script>
+<script>
+var Show={};Show.LastAR=null,Show.showAR=function(a,r,w){if(Show.LastAR)Show.hideAR();var e=a;while(e&&e.nodeName!='TABLE')e=e.nextSibling;if(!e||e.nodeName!='TABLE'){var ref=((window)?w.document:document).getElementById(r);if(ref){e=ref.cloneNode(!0);
+e.removeAttribute('id');a.parentNode.appendChild(e)}}
+if(e)e.style.display='block';Show.LastAR=e};Show.hideAR=function(){Show.LastAR.style.display='none'};Show.toggleNext=function(a){var e=a;while(e.nodeName!='DIV')e=e.nextSibling;if(!e.style){}else if(!e.style.display){}else{var d,p_;if(e.style.display=='none'){d='block';p='-'}else{d='none';p='+'}
+e.style.display=d;if(a.textContent){a.textContent=p+a.textContent.substring(1)}else{a.innerText=p+a.innerText.substring(1)}}}
+
+function accMenu(){$('#menu ul').hide();$('#menu li a').click(function(){$(this).next().slideToggle('normal')});$('#menu li ul li a.xbrlviewer').first().css('background-color','#C1CDCD');$('#menu_cat0').trigger('click')}
+function unHighlightAllMenuItems()
+{$('#menu li ul li a.xbrlviewer').css('background-color','#F5F5EB')}
+function highlightAllMenuItems()
+{$('#menu li ul li a.xbrlviewer').css('background-color','#C1CDCD')}
+</script>
+</div>

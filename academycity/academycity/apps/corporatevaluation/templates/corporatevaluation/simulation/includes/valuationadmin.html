@@ -1,5 +1,28 @@
 {% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
 
 <div id="valuationadmin" class="tabcontent">
-admin
+    <button onclick="admin_setup(event)" fun="set_sic_code">Load SIC Codes from SEC</button>
+    <br/>
+    <br/>
+    <div id="result_message"></div>
 </div>
+
+<script>
+
+
+function admin_setup(event)
+{
+ e = event.target
+ fun_ = e.getAttribute("fun")
+ message_div = document.getElementById("result_message")
+ message_div.innerHTML = 'In process .. '
+ $.post('{% url "corporatevaluation:admin_setup" %}',
+      {
+        fun: fun_,
+      },
+      function(data){
+        message_div.innerHTML = 'Process done with status: ' + data['status']
+      }
+    );
+}
+</script>

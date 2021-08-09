@@ -14,6 +14,11 @@ from .models import (RBOIC, CountryRegion, CountryRating, Country, GlobalIndustr
                      Industry ,CompanyInfo, CompanyData, Project, ToDoList)
 from ..core.sql import SQL
 from ..webcompanies.WebCompanies import WebSiteCompany
+from .xbrl_obj import AcademyCityXBRL
+import datetime
+import requests
+from bs4 import BeautifulSoup
+import re
 
 
 # Fix game_id.  should use project_id
@@ -48,10 +53,10 @@ def get_companies_valuation_actual(request):
         # print(i)
         companies_ = CompanyData.objects.filter(year=year, company__industry_id=i).select_related('company').all()
 
-    for c in companies_:
-        print('----')
-        print(c.company.company_name, c.iv_per_share)
-        print('----')
+    # for c in companies_:
+    #     print('----')
+    #     print(c.company.company_name, c.iv_per_share)
+    #     print('----')
 
 
     # q = cs.values('iv_per_share')
@@ -288,6 +293,56 @@ def update_data(request):
     return JsonResponse(dic)
 
 
+def get_data_ticker(request):
+    ticker_ = request.POST.get('ticker')
+    accounting_principle_ = request.POST.get('accounting_principle')
+    # accounting_principle_ = 'us-gaap'
+    accounts_ = {'bs': {'stockholdersequity'}, 'is': {'revenuefromcontractwithcustomerexcludingassessedtax'}}
+    acx = AcademyCityXBRL()
+    data = acx.get_data_for_cik(cik=ticker_, type='10-K', accounting_principle=accounting_principle_, accounts=accounts_)
+    return JsonResponse(data)
+
+
+def set_sic_code(request):
+    acx = AcademyCityXBRL()
+    acx.get_industries_sic_code()
+
+
+def admin_setup(request):
+    try:
+        fun_ = request.POST.get('fun')
+        eval(fun_+'(request)')
+        return JsonResponse({'status': 'ok'})
+    except Exception as ex:
+        return JsonResponse({'status': 'error: '+str(ex)})
+
+
+# XBRL
+def get_accounts(request):
+    cik_ = 'aapl'  # '0000320193' # '0000051143'
+    type_ = '10-K'
+    accounting_principle_ = 'us-gaap'
+    accounts_ = {'bs': {'stockholdersequity'}, 'is': {'revenuefromcontractwithcustomerexcludingassessedtax'}}
+    acx = AcademyCityXBRL()
+
+    # data = acx.get_data_for_cik(cik=cik_, type=type_, accounting_principle=accounting_principle_, accounts=accounts_)
+    #
+    # sp_tickers = acx.get_sp500()
+    # print(sp_tickers)
+
+    # all_companies = acx.get_all_companies()
+    # print(all_companies)
+
+    # accounts = acx.get_value(accounts_=accounts)
+    # print('acx.get_value()')
+    # print(accounts)
+    # print('acx.get_value()')
+
+    data = acx.get_industries()
+
+    return JsonResponse(data)
+
+
 def delete_todo(request):
     pky_ = request.POST.get('pky')
     ToDoList.objects.filter(id=pky_).delete()
@@ -299,7 +354,7 @@ def update_todo(request):
     dic = {'status': 'ok'}
     id_ = request.POST.get('id')
     value_ = request.POST.get('value')
-    print(value_)
+    # print(value_)
 
     if value_ == "false":
         value_ = False
@@ -318,8 +373,8 @@ def update_todo(request):
     setattr(c, id_, value_)
     c.save()
 
-    print('getattr(c, id)')
-    print(getattr(c, "id"))
+    # print('getattr(c, id)')
+    # print(getattr(c, "id"))
 
     dic["result"] = getattr(c, "id")
     return JsonResponse(dic)
@@ -473,4 +528,64 @@ def get_screens(request):
 
     # create_action(request.user, 'globsim__get_screens__' + name_, target=game)
     return eval(sr)
+
+
+# SEC
+def sec(request):
+    # cik = '320193'
+    # accession_number = '000032019320000096'
+    # u = 'https://www.sec.gov/cgi-bin/viewer?action=view&cik='+cik+'&accession_number='+accession_number+'&xbrl_type=v#'
+    #
+    # headers = {'User-Agent': 'amos@drbaranes.com'}
+    # edgar_resp = requests.get(u, headers=headers)
+    # edgar_str = edgar_resp.text
+    #
+    # # print(edgar_str)
+    #
+    # m = re.search('new Array\((.+?)\)', edgar_str)
+    # if m:
+    #     last_r = m.group(1)
+    # # print(last_r)
+    #
+    # soup = BeautifulSoup(edgar_str, 'html.parser')
+    # table = str(soup.find('table'))
+    # # print(table)
+
+    return render(request, 'corporatevaluation/sec/sec.html', {})
+
+
+def get_sec(request):
+    # cik = request.POST.get('cik')
+    # accession_number = request.POST.get('accession_number')
+    # cik = '320193'
+    # accession_number = '000032019320000096'
+    # u = 'https://www.sec.gov/cgi-bin/viewer?action=view&cik='+cik+'&accession_number='+accession_number+'&xbrl_type=v#'
+
+    u = request.POST.get('url')
+
+    # print('u')
+    # print(u)
+    # print('u')
+
+    headers = {'User-Agent': 'amos@drbaranes.com'}
+    edgar_resp = requests.get(u, headers=headers)
+    edgar_str = edgar_resp.text
+    m = re.search('new Array\((.+?)\)', edgar_str)
+    if m:
+        last_r = m.group(1)
+
+    soup = BeautifulSoup(edgar_str, 'html.parser')
+    table = soup.find('table')
+    # print(table)
+    return JsonResponse({'table': str(table), 'last_r': last_r})
+
+
+def get_r(request):
+    url_r = request.POST.get('url_r')
+    # url = 'https://www.sec.gov'+url_r
+
+    headers = {'User-Agent': 'amos@drbaranes.com'}
+    edgar_resp = requests.get(url_r, headers=headers)
+    dic = {'html': edgar_resp.text}
+    return JsonResponse(dic)
 

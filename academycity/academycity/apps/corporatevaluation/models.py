@@ -449,3 +449,71 @@ class ToDoList(TruncateTableMixin, models.Model):
     def __str__(self):
         return self.subject
 
+
+class XBRLMainIndustryInfo(TruncateTableMixin, models.Model):
+    class Meta:
+        verbose_name = _('XBRLMainIndustry')
+        verbose_name_plural = _('XBRLMainIndustries')
+        ordering = ['sic_code']
+    sic_code = models.PositiveSmallIntegerField(primary_key=True)
+    sic_description = models.CharField(max_length=128, default='', blank=True, null=True)
+
+    def __str__(self):
+        return str(self.sic_code) + ': ' + str(self.sic_description)
+
+
+class XBRLIndustryInfo(TruncateTableMixin, models.Model):
+    class Meta:
+        verbose_name = _('XBRLIndustry')
+        verbose_name_plural = _('XBRLIndustries')
+        ordering = ['sic_code']
+    #
+    sic_code = models.PositiveSmallIntegerField(primary_key=True)
+    main_sic = models.ForeignKey(XBRLMainIndustryInfo, on_delete=models.CASCADE, default=None, blank=True, null=True)
+    sic_description = models.CharField(max_length=128, default='', blank=True, null=True)
+
+    def __str__(self):
+        return str(self.sic_code) + ': ' + str(self.sic_description)
+
+#
+# class XBRLCompanyInfo(TruncateTableMixin, models.Model):
+#     class Meta:
+#         verbose_name = _('Company Info')
+#         verbose_name_plural = _('Company Info')
+#         ordering = ['company_name']
+#     #
+#     industry = models.ForeignKey(XBRLIndustryInfo, on_delete=models.CASCADE, default=None, blank=True, null=True)
+#     ticker = models.CharField(max_length=10, null=False)
+#     cik = models.CharField(max_length=10, null=True)
+#     company_name = models.CharField(max_length=128, default='', blank=True, null=True)
+#     #
+#     city = models.CharField(max_length=50, null=True)
+#     state = models.CharField(max_length=50, null=True)
+#     zip = models.CharField(max_length=10, null=True)
+#
+#     def __str__(self):
+#         return self.company_name
+#
+#
+# class XBRLValuationAccounts(TruncateTableMixin, models.Model):
+#     class Meta:
+#         verbose_name = _('XBRLValuationAccount')
+#         verbose_name_plural = _('XBRLValuationAccounts')
+#         ordering = ['statement', 'order', 'account']
+#     #
+#     order = models.PositiveSmallIntegerField(default=0)
+#     statement = models.CharField(max_length=250, null=True)
+#     account = models.CharField(max_length=250, null=True)
+#
+#
+# class XBRLValuationAccountsMatch(TruncateTableMixin, models.Model):
+#     class Meta:
+#         verbose_name = _('XBRLValuationAccount')
+#         verbose_name_plural = _('XBRLValuationAccounts')
+#         ordering = ['company', 'account']
+#     #
+#     company = models.ForeignKey(XBRLCompanyInfo, on_delete=models.CASCADE, default=None, blank=True, null=True)
+#     account = models.ForeignKey(XBRLValuationAccounts, on_delete=models.CASCADE, default=None, blank=True, null=True)
+#     match_account = models.CharField(max_length=250, null=True)
+#     accounting_standard = models.CharField(max_length=250, default="us-gaap")
+#

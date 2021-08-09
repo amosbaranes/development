@@ -205,7 +205,8 @@ function companies_fun(event)
         id: id_,
       },
       function(data){
-            set_data(data);
+
+            set_data(data); // in data tab
             vObj["ticker"] = data['ticker'];
             vObj["sic_code"] = data['sic_code'];
             vObj["sic_description"] = data['sic_description'];
@@ -214,10 +215,11 @@ function companies_fun(event)
             document.getElementById('countries').value = data['country_id'];
             var event = new Event("change", {bubbles: true});
             document.getElementById('countries').dispatchEvent(event);
+            get_data_ticker();  // in setup tab
             valuation_vs_actual();
       }
     );
-    calculate_all()
+    calculate_all();
 }
 
 function industries_fun_(value)

@@ -147,3 +147,10 @@ mesa==0.8.9
 #
 braintree
 channels
+#
+beautifulsoup4
+#
+yfinance
+xlsxwriter
+#
+

@@ -2,7 +2,8 @@ from __future__ import unicode_literals
 from django.contrib import admin
 from django.utils.translation import ugettext_lazy as _
 from .models import (Project, RBOIC, CountryRegion, CountryRating, Industry,
-                     Country, GlobalIndustryAverages, CompanyInfo, CompanyData, ToDoList)
+                     Country, GlobalIndustryAverages, CompanyInfo, CompanyData, ToDoList,
+                     XBRLMainIndustryInfo, XBRLIndustryInfo)
 
 # -*- coding: utf-8 -*-
 
@@ -82,4 +83,15 @@ class CompanyInfoAdmin(admin.ModelAdmin):
 class CompanyDataAdmin(admin.ModelAdmin):
     list_display = ('company', 'year', )
     list_filter = ('year', )
+
+
+@admin.register(XBRLMainIndustryInfo)
+class XBRLMainIndustryInfoAdmin(admin.ModelAdmin):
+    list_display = ('sic_code', 'sic_description')
+
+
+@admin.register(XBRLIndustryInfo)
+class XBRLIndustryInfoAdmin(admin.ModelAdmin):
+    list_display = ('sic_code', 'main_sic', 'sic_description')
+    list_filter = ('main_sic',)
 

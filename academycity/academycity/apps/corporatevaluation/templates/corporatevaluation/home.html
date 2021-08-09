@@ -101,6 +101,8 @@ data {
 {% endif%}
           {% include 'corporatevaluation/simulation/includes/_inputs.html' %}
           {% include 'corporatevaluation/simulation/includes/_data.html' %}
+          {% include 'corporatevaluation/simulation/includes/_xbrl_data.html' %}
+          {% include 'corporatevaluation/simulation/includes/_sec.html' %}
           {% include 'corporatevaluation/simulation/includes/_calculations.html' %}
           {% include 'corporatevaluation/simulation/includes/_valuation.html' %}
           {% include 'corporatevaluation/simulation/includes/_comparablecompanies.html' %}
@@ -115,10 +117,12 @@ data {
 </div>
 
 <span id="tabs_"
-      tabs_s="comparablecompanies:{% trans "Comparable Companies" %};local,valuation:{% trans "Valuation" %};local,calculations:{% trans "Calculations" %};local,data:{% trans "Data" %};local,inputs:{% trans "Inputs" %};local"
+      tabs_s="comparablecompanies:{% trans "Comparable Companies" %};local,valuation:{% trans "Valuation" %};local,calculations:{% trans "Calculations" %};local,sec:{% trans "SEC" %};local,data:{% trans "Data" %};local,inputs:{% trans "Inputs" %};local"
 tabs_m="valuationsetup:{% trans "Valuation Setup" %};pull_screen,valuationadmin:{% trans "Valuation Admin" %};pull_screen,valuationmethodology:{% trans "Methodology" %};pull_screen,valuationtodo:{% trans "To do list" %};pull_screen"
 >
 </span>
+
+<!--        xbrl_data:{% trans "XBRLData" %};local,  -->
 
 <span id="is_staff" is_staff="{{user.is_staff}}" is_instructor="{{user|has_group:'instructors'}}"></span>
 <div id="log_info"></div>
@@ -134,6 +138,7 @@ vObj["mature_marker_risk_premium"] = {{ project.mature_marker_risk_premium }};
 vObj["valuation_actual_sic_code"] = -1
 
 set_framework()
+var last_r = 2
 
 </script>
 
@@ -369,7 +374,6 @@ function SimManager(valuation_id)
       this.TabObjects["inputs"].tabTitle.dispatchEvent(event);
     } catch (err) {alert(err)}
     this.vObj = new ValuationObject(this);
-
 }
 
 SimManager.prototype.setTabs = function() {

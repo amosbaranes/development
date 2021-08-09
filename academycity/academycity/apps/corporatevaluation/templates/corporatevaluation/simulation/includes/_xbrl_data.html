@@ -1,7 +1,7 @@
 {% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
 {% load core_tags %}
 
-<div id="data" class="tabcontent data">
+<div id="xbrl_data" class="tabcontent data">
 </div>
 
 <!--  pull data  -->
@@ -11,12 +11,12 @@
 function toCommas(value) {return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");}
 function removeCommas(value) {return value.replace(/,/g, '')}
 
-function get_account(sk, y, cd)
+function xbrl_get_account(sk, y, cd)
 {
   return "<td><input class='value' id='"+sk+"_" + y + "' account='"+sk+"' year='" + y + "' type='text' value='" + toCommas(cd[y][sk][0]) + "' onchange='input_valuation(event)'></td>"
 }
 
-function set_data(data)
+function xbrl_set_data(data)
 {
     cd = data['company_data'];
     vObj["cd"] = cd;
@@ -32,10 +32,10 @@ function set_data(data)
         s = a + "= \"<tr><td class='account'>"+cd[y][a][1]+"</td>\""; eval(s);
       }
      }
-     sy += "<th><a id='xbrl_data_"+y+"' href='#' onclick='get_xbrl_view(event)'>"+y+"</th>"
+     sy += "<th><a id='xbrl_data_"+y+"' href='#' target='_blank'>"+y+"</th>"
      for (a in cd[y])
      {
-       s = a + "+= get_account('"+a+"', y, cd)"; eval(s);
+       s = a + "+= xbrl_get_account('"+a+"', y, cd)"; eval(s);
      }
     }
     st = "<table id='data'>"+sy+"</tr></thead>"
@@ -51,19 +51,8 @@ function set_data(data)
     sm.TabObjects["data"].tabDoc.innerHTML = st
 }
 
-
-function get_xbrl_view(event)
-{
- e = event.target // this object is updated from the input tab
- //alert(e.outerHTML)
- sm.TabObjects["sec"].tabTitle.innerHTML = "FS XBRL(SEC): " + e.innerHTML
- var url = e.getAttribute("view_link")
- get_sec(url)  // in the sec tab
-}
-
-
 // update data
-function input_valuation(event)
+function xbrl_input_valuation(event)
 {
  e = event.target
  // alert(e.outerHTML)
