@@ -78,9 +78,13 @@ class Service(models.Model):
     order = models.IntegerField(default=1000, blank=True)
     image = models.ImageField(upload_to='services/', blank=True, null=True)
     heading = models.CharField(max_length=100, null=True)
-    description = models.CharField(max_length=100, null=True)
+    description = models.CharField(max_length=500, null=True)
     is_active = models.BooleanField(default=True)
     full_description = PlaceholderField('full_description')
+    name_text_color = models.CharField(max_length=30, default='#090909', null=True)
+    name_gradient_deg = models.IntegerField(default=285, blank=True)
+    gradient_color_1 = models.CharField(max_length=30, default='#969696', null=True)
+    gradient_color_2 = models.CharField(max_length=30, default='#dfdfdf', null=True)
 
 
 class Project(models.Model):
@@ -94,5 +98,5 @@ class Project(models.Model):
     image = models.ImageField(upload_to='projects/', blank=True, null=True)
     heading = models.CharField(max_length=100, null=True)
     sub_heading = models.CharField(max_length=100, null=True)
-    description = models.CharField(max_length=100, null=True)
+    description = models.CharField(max_length=500, null=True)
     is_active = models.BooleanField(default=True)

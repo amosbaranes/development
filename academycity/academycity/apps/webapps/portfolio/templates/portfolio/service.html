@@ -5,8 +5,55 @@
 <title>{{ service.heading }}</title>
 {% endblock%}
 
+{% block add_css %}
+<style>
+.subheader{color:#fff;background:#726c74}
+.subheader svg:not(.no-scheme-fill){fill:#fff}
+.subheader h1,
+.subheader .h1{color:#fff}
+.subheader h2,.subheader .h2{color:#fff}
+.subheader h3,.subheader .h3{color:#fff}
+.subheader h4,.subheader .h4{color:#fff}
+.subheader h5,.subheader .h5{color:#fff}
+.subheader h6,.subheader .h6{color:#fff}@media(min-width: 992px){.subheader__container{padding:1.5rem .1rem}}
+.subheader__title{width:100%;padding-right:10px;padding-left:10px;margin-right:auto;margin-left:auto;flex-grow:1;flex-shrink:0;flex-basis:100%;max-width:100%;padding-left:0;padding-right:0}
+@media(min-width: 576px){
+.subheader__title{max-width:540px}}@media(min-width: 768px){
+.subheader__title{max-width:720px}}@media(min-width: 992px){
+.subheader__title{max-width:960px}}@media(min-width: 1200px){
+.subheader__title{max-width:1140px}}@media(min-width: 1900px){
+.subheader__title{max-width:1240px}}@media(max-width: 1199.98px){
+.subheader__title{padding-left:0;padding-right:0;text-align:center}}
+
+
+.subheader__container{color:#090909;background:linear-gradient(
+{{service.name_gradient_deg}}deg,
+{{service.gradient_color_1}} 3%,
+{{service.gradient_color_2}} 98%);padding:1rem .5rem}
+
+.subheader__container svg:not(.no-scheme-fill){fill:#090909}
+.subheader__container h1,.subheader__container .h1{color:{{service.name_text_color}}}
+.subheader__container h2,.subheader__container .h2{color:{{service.name_text_color}}}
+.subheader__container h3,.subheader__container .h3{color:{{service.name_text_color}}}
+.subheader__container h4,.subheader__container .h4{color:{{service.name_text_color}}}
+.subheader__container h5,.subheader__container .h5{color:{{service.name_text_color}}}
+.subheader__container h6,.subheader__container .h6{color:{{service.name_text_color}}}
+</style>
+{% endblock add_css %}
+
+
+{% block main_page %}
+<div class="subheader">
+    <div class="subheader__container">
+        <h1 class="subheader__title">{% render_model service "heading" %}</h1>
+    </div>
+</div>
+<br>
+<br>
+{% endblock%}
 
 {% block body_content %}
+
 
 {% render_placeholder service.full_description %}
 
