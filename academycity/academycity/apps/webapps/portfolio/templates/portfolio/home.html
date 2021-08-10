@@ -45,7 +45,7 @@
         <div class="service-item">
           <a href="{% url 'portfolio:service' service.id %}" target="_blank">
           <div class="icon">
-              <img src="{{ service.image.url }}" />
+              <img style="border-radius:100%" src="{{ service.image.url }}" />
           </div>
           <h2>{{service.heading}}</h2>
           <p>{{service.description}}</p>

@@ -11,16 +11,18 @@
   {% block links_base %} {% endblock %}
   {% block links %} {% endblock %}
   {% block add_css_base %} {% endblock add_css_base %}
+  {% block add_css %}{% endblock add_css %}
   {% render_block "css" %}
 </head>
 
 <body id="body0">
     {% cms_toolbar %}
+
     {% block nav_bar %}
     {% endblock %}
 
     {% block main_page %}
-    {% endblock %}
+     {% endblock %}
 
     {% block body_content %}
     {% endblock %}

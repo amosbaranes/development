@@ -160,9 +160,7 @@
             <div class="section__items">
                  {% for topic in topics %}
              <div class="glimpse-card_square">
-
-                 <a href="https://{{topic.is_link}}" target="_blank">
-
+                 <a {% if topic.is_link %} href="https://{{topic.is_link}}" target="_blank" {% endif %}>
                     <div class="glimpse-card_square__media">
                         <img src="{{topic.image.url }}"
                          srcset="{{topic.image.url }} 300w, 600w" sizes="300px" alt="">

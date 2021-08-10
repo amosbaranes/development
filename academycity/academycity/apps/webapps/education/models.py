@@ -84,10 +84,10 @@ class Course(models.Model):
     is_active = models.BooleanField(default=True)
     short_description = models.CharField(max_length=200, null=True)
     description = PlaceholderField('description', related_name='education_course_description')
-    name_text_color = models.CharField(max_length=10, default='#090909',null=True)
+    name_text_color = models.CharField(max_length=30, default='#090909',null=True)
     name_gradient_deg = models.IntegerField(default=285, blank=True)
-    gradient_color_1 = models.CharField(max_length=10, default='#969696',null=True)
-    gradient_color_2 = models.CharField(max_length=10, default='#dfdfdf',null=True)
+    gradient_color_1 = models.CharField(max_length=30, default='#969696',null=True)
+    gradient_color_2 = models.CharField(max_length=30, default='#dfdfdf',null=True)
 
 
 class New(models.Model):
@@ -109,10 +109,10 @@ class New(models.Model):
     is_active = models.BooleanField(default=True)
     is_link = models.CharField(max_length=300, null=True, blank=True)
     description = PlaceholderField('description', related_name='new_description')
-    name_text_color = models.CharField(max_length=10, default='#090909', null=True)
+    name_text_color = models.CharField(max_length=30, default='#090909', null=True)
     name_gradient_deg = models.IntegerField(default=285, blank=True)
-    gradient_color_1 = models.CharField(max_length=10, default='#969696', null=True)
-    gradient_color_2 = models.CharField(max_length=10, default='#dfdfdf', null=True)
+    gradient_color_1 = models.CharField(max_length=30, default='#969696', null=True)
+    gradient_color_2 = models.CharField(max_length=30, default='#dfdfdf', null=True)
 
 
 class Program(models.Model):
@@ -130,10 +130,10 @@ class Program(models.Model):
     is_popular = models.BooleanField(default=True)
     is_active = models.BooleanField(default=True)
     description = PlaceholderField('description', related_name='program_description')
-    name_text_color = models.CharField(max_length=10, default='#090909',null=True)
+    name_text_color = models.CharField(max_length=30, default='#090909',null=True)
     name_gradient_deg = models.IntegerField(default=285, blank=True)
-    gradient_color_1 = models.CharField(max_length=10, default='#969696',null=True)
-    gradient_color_2 = models.CharField(max_length=10, default='#dfdfdf',null=True)
+    gradient_color_1 = models.CharField(max_length=30, default='#969696',null=True)
+    gradient_color_2 = models.CharField(max_length=30, default='#dfdfdf',null=True)
 
 
 class Services(models.Model):
@@ -150,10 +150,10 @@ class Services(models.Model):
     short_description = models.CharField(max_length=500, null=True)
     is_active = models.BooleanField(default=True)
     description = PlaceholderField('description', related_name='service_description')
-    name_text_color = models.CharField(max_length=10, default='#090909', null=True)
+    name_text_color = models.CharField(max_length=30, default='#090909', null=True)
     name_gradient_deg = models.IntegerField(default=285, blank=True)
-    gradient_color_1 = models.CharField(max_length=10, default='#969696', null=True)
-    gradient_color_2 = models.CharField(max_length=10, default='#dfdfdf', null=True)
+    gradient_color_1 = models.CharField(max_length=30, default='#969696', null=True)
+    gradient_color_2 = models.CharField(max_length=30, default='#dfdfdf', null=True)
 
 
 class Subject(models.Model):
@@ -170,10 +170,10 @@ class Subject(models.Model):
     is_popular = models.BooleanField(default=True)
     is_active = models.BooleanField(default=True)
     description = PlaceholderField('description', related_name='subject_description')
-    name_text_color = models.CharField(max_length=10, default='#090909', null=True)
+    name_text_color = models.CharField(max_length=30, default='#090909', null=True)
     name_gradient_deg = models.IntegerField(default=285, blank=True)
-    gradient_color_1 = models.CharField(max_length=10, default='#969696', null=True)
-    gradient_color_2 = models.CharField(max_length=10, default='#dfdfdf', null=True)
+    gradient_color_1 = models.CharField(max_length=30, default='#969696', null=True)
+    gradient_color_2 = models.CharField(max_length=30, default='#dfdfdf', null=True)
 
 
 class Person(models.Model):
