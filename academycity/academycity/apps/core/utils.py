@@ -32,6 +32,10 @@ def log_debug(value):
     Debug.objects.create(value=value)
 
 
+def clear_log_debug():
+    Debug.truncate()
+
+
 def is_role(user, role):
     return user.groups.filter(name=role).exists()
 

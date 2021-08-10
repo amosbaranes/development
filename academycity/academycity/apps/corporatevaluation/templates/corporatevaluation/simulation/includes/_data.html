@@ -58,9 +58,9 @@ function get_xbrl_view(event)
  //alert(e.outerHTML)
  sm.TabObjects["sec"].tabTitle.innerHTML = "FS XBRL(SEC): " + e.innerHTML
  var url = e.getAttribute("view_link")
- get_sec(url)  // in the sec tab
+ vObj["filing_year"] = e.getAttribute("filing_year")
+ get_sec(url) // in sec tab
 }
-
 
 // update data
 function input_valuation(event)

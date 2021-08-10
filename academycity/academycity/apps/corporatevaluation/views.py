@@ -19,6 +19,7 @@ import datetime
 import requests
 from bs4 import BeautifulSoup
 import re
+from ..core.utils import log_debug, clear_log_debug
 
 
 # Fix game_id.  should use project_id
@@ -43,6 +44,7 @@ def home(request, obj_id):
 
 
 def get_companies_valuation_actual(request):
+    clear_log_debug()
     sic_code=request.POST.get('sic_code')
     year=request.POST.get('year')
     i = None
@@ -294,12 +296,21 @@ def update_data(request):
 
 
 def get_data_ticker(request):
+    # log_debug("in get_data_ticker 1")
     ticker_ = request.POST.get('ticker')
     accounting_principle_ = request.POST.get('accounting_principle')
+
+    # log_debug("ticker: " + ticker_)
+    # log_debug("accounting_principle: " + accounting_principle_)
+
     # accounting_principle_ = 'us-gaap'
     accounts_ = {'bs': {'stockholdersequity'}, 'is': {'revenuefromcontractwithcustomerexcludingassessedtax'}}
+
+    # log_debug("before AcademyCityXBRL() 1")
     acx = AcademyCityXBRL()
+    # log_debug("after AcademyCityXBRL() 2")
     data = acx.get_data_for_cik(cik=ticker_, type='10-K', accounting_principle=accounting_principle_, accounts=accounts_)
+    # log_debug("after acx.get_data_for_cik 3")
     return JsonResponse(data)
 
 
@@ -573,10 +584,10 @@ def get_sec(request):
     m = re.search('new Array\((.+?)\)', edgar_str)
     if m:
         last_r = m.group(1)
-
     soup = BeautifulSoup(edgar_str, 'html.parser')
     table = soup.find('table')
-    # print(table)
+    table.find('tr').decompose()
+    table.find('img').decompose()
     return JsonResponse({'table': str(table), 'last_r': last_r})
 
 

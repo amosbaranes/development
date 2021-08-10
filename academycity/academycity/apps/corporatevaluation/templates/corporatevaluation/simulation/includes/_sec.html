@@ -133,18 +133,49 @@ var ext = url.substring(url.lastIndexOf('.')+1, url.length);
     });
   }
 }
-
-
-function clearReportDiv() {
-// code for IE
-    if (window.ActiveXObject || "ActiveXObject" in window) {
-        document.getElementById("reportDiv").innerHTML='';
+// Start sec
+function get_sec(url) {
+    console.log("get_sec: ", url)
+    var data = vObj["sec_company_data"][vObj["ticker"]][vObj["filing_year"]]
+    if (data)
+    {
+      console.log("get_sec 1: ", 'data already downloaded')
+      process_get_sec(data)
+    } else
+    {
+        $.post("{% url 'corporatevaluation:get_sec' %}",
+            {
+              url: url,
+            },
+            function(data){
+                console.log("get_sec 2: ", 'data not yet downloaded')
+                vObj["sec_company_data"][vObj["ticker"]][vObj["filing_year"]] = data
+                process_get_sec(data)
+        });
     }
-    else if (document.implementation && document.implementation.createDocument) {
-        x = document.getElementById("reportDiv").childNodes;
-        for (i=x.length-1;i>-1;i--) {
-            node = document.getElementById("reportDiv").childNodes[i];
-            if (node) {document.getElementById("reportDiv").removeChild(node);}
+}
+
+function process_get_sec(data)
+{
+    //alert('process_get_sec')
+    var elm = document.getElementById('navigation_table')
+    elm.innerHTML = 'In Process Downloading Data.   Please wait';
+    var evt = new Event("click", {bubbles: true});sm.TabObjects["sec"].tabTitle.dispatchEvent(evt);
+    elm.innerHTML = data['table']
+    accMenu()  // in the sec tab
+}
+
+function highlight(link) {
+    var parent = document.getElementById( 'menu' );
+    var links = parent.getElementsByTagName( 'a' );
+
+    for (var i = 0; i < links.length; i++){
+            if (links[i].className == 'xbrlviewer') {
+            if (links[i] == link) {
+            link.style.background = "#C1CDCD";
+            } else {
+                links[i].style.background = "#F5F5EB";
+            }
         }
     }
 }
@@ -153,6 +184,7 @@ function loadReport(idx) {
     if (window.XMLHttpRequest || window.ActiveXObject || "ActiveXObject" in window) {
         clearReportDiv();
         xsl_url = null;
+        var last_r = vObj["sec_company_data"][vObj["ticker"]][vObj["filing_year"]]['last_r']
         if (idx == last_r) {
             highlightAllMenuItems();
             jQuery.ajaxSetup({async:false});
@@ -175,39 +207,24 @@ function loadReport(idx) {
     } else { alert('Your browser cannot handle this script');}
 }
 
-function get_sec(url) {
-      var elm = document.getElementById('navigation_table')
-      elm.innerHTML = 'In Process Downloading Data.   Please wait';
-      $.post("{% url 'corporatevaluation:get_sec' %}",
-        {
-          url: url,
-        },
-        function(data){
-            data = data['table']
-            last_r = data['last_r']
-            // alert(last_r)
+// end sec
 
-            //alert(elm.outerHTML)
-            //elm.innerHTML = '';
-            elm.innerHTML = data
-            accMenu()
-        });
-}
-
-function highlight(link) {
-    var parent = document.getElementById( 'menu' );
-    var links = parent.getElementsByTagName( 'a' );
-
-    for (var i = 0; i < links.length; i++){
-            if (links[i].className == 'xbrlviewer') {
-            if (links[i] == link) {
-            link.style.background = "#C1CDCD";
-            } else {
-                links[i].style.background = "#F5F5EB";
-            }
+function clearReportDiv() {
+// code for IE
+    if (window.ActiveXObject || "ActiveXObject" in window) {
+        document.getElementById("reportDiv").innerHTML='';
+    }
+    else if (document.implementation && document.implementation.createDocument) {
+        x = document.getElementById("reportDiv").childNodes;
+        for (i=x.length-1;i>-1;i--) {
+            node = document.getElementById("reportDiv").childNodes[i];
+            if (node) {document.getElementById("reportDiv").removeChild(node);}
         }
     }
 }
+
+
+
 
 //the parameter 'div' represents <div id="reportDiv">
 function FixNotesForGeckoWebkit( div ){

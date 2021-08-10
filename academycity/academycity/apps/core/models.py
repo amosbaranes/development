@@ -1,6 +1,7 @@
 from django.db import models
 from django.db import connection
 from .fields import OrderField
+from .sql import TruncateTableMixin
 
 
 class ModifyModel(object):
@@ -47,7 +48,7 @@ class Numbers(models.Model):
         return str(self.source) + str(self.number)
 
 
-class Debug(models.Model):
+class Debug(TruncateTableMixin, models.Model):
     value = models.CharField(max_length=512)
 
     def __str__(self):
