@@ -17,7 +17,7 @@ class CourseAdmin(PlaceholderAdminMixin, admin.ModelAdmin):
 
 @admin.register(New)
 class NewAdmin(admin.ModelAdmin):
-    list_display = ('id', 'order', 'news_title', 'news_description', 'news_date', 'is_popular', 'is_active')
+    list_display = ('id', 'order', 'news_title', 'news_description', 'is_links', 'news_date', 'is_popular', 'is_active')
     list_filter = ('is_active', 'is_popular', )
 
 
@@ -45,8 +45,8 @@ class PhraseAdmin(admin.ModelAdmin):
 
 
 @admin.register(AdditionalTopic)
-class PhraseAdmin(admin.ModelAdmin):
-    list_display = ('id', 'order', 'image', 'topic_description', 'is_link', 'is_active')
+class AdditionalTopicAdmin(PlaceholderAdminMixin, admin.ModelAdmin):
+    list_display = ('id', 'order', 'is_links', 'topic_name', 'is_active')
 
 
 @admin.register(MoreNewsDetail)

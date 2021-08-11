@@ -160,13 +160,13 @@
             <div class="section__items">
                  {% for topic in topics %}
              <div class="glimpse-card_square">
-                 <a {% if topic.is_link %} href="https://{{topic.is_link}}" target="_blank" {% endif %}>
+                 <a {% if topic.is_links %} href="{% url 'education:additional_topics' topic.id %}" target="_blank" {% endif %}>
                     <div class="glimpse-card_square__media">
                         <img src="{{topic.image.url }}"
                          srcset="{{topic.image.url }} 300w, 600w" sizes="300px" alt="">
                     </div>
                     <div class="glimpse-card_square__wrapper">
-                        <h3 class="glimpse-card_square__title">{{topic.topic_description}}</h3>
+                        <h3 class="glimpse-card_square__title">{{topic.topic_name}}</h3>
                     </div>
                  </a>
 
@@ -380,7 +380,11 @@ link_news += '/'
         function make_news_template(news)
                  {
                     var a_ = document.createElement("a")
-                    a_.setAttribute("href", link_news + k)
+alert(news.is_links)
+        if([news.is_links] == 'true' )
+{
+        a_.setAttribute("href", link_news + k)
+}
                     a_.setAttribute("target", '_blank');
                     a_.setAttribute("class", "blogpost-glimpse")
                     var p_ = document.createElement("p")

@@ -83,6 +83,7 @@ def get_news(request):
                 'news_type_description': new.news_type_description,
                 'news_date': new.news_date,
                 'is_popular': new.is_popular,
+                'is_links': new.is_links,
                 'image_url': new.image.url
             }
     return JsonResponse(rr)
@@ -157,6 +158,23 @@ def service_description(request, pk):
     service = Services.objects.get(id=pk)
     return render(request, 'education/service_description.html',
                   {'service': service,
+                   'institution_obj': company_obj,
+                   })
+
+
+def additional_topics(request, pk):
+    wsc = WebSiteCompany(request, web_company_id=7)
+    company_obj = wsc.site_company()
+
+    is_admin = request.user.groups.filter(name='admins').exists()
+    if is_admin:
+        topics = AdditionalTopic.objects.all()
+        for obj in topics:
+            obj.save()
+
+    topics = AdditionalTopic.objects.get(id=pk)
+    return render(request, 'education/additional_topics.html',
+                  {'topics': topics,
                    'institution_obj': company_obj,
                    })
 
