@@ -13,6 +13,9 @@ li.accordion a {display:inline-block;}
 li.accordion a {display:block;}
 </style>
 <![endif]-->
+
+
+
 <script type="text/javascript" language="javascript">
 var InstanceReportXslt = "/include/InstanceReport.xslt";
 
@@ -56,6 +59,82 @@ function fixSrcAttr(src) {
     return url_path + src;
 }
 
+function add_accounts_editor(replace=0)
+{
+   var elm = document.getElementsByClassName("report")[0]
+   elms = elm.getElementsByTagName("tr")
+   for (let e of elms)
+   {
+      if(e.children[0].tagName.toLowerCase() == "th")
+      {
+          //alert(e.children[0].outerHTML)
+          if(e.children[0].getAttribute("class") == "tl")
+          {
+                var s = e.children[0].children[0].children[0].innerHTML.toLowerCase()
+                if( (s.search("INCOME".toLowerCase()) > 0) || (s.search("OPERATIONS".toLowerCase()) > 0) || (s.search("FLOWS".toLowerCase()) > 0))
+                {
+                 type_='2'
+                } else if (s.search("BALANCE".toLowerCase()) > 0)
+                {
+                  type_='1'
+                } else
+                {
+                  type_ = "-1"
+                }
+                var select_accounts = get_select_accounts(vObj["reporting_year"], vObj["ticker"], type=type_)
+            if(replace==0)
+            {
+                var td = document.createElement("td")
+                td.innerHTML = '<button onclick="save_industry_default(event)">Save as Industry Default</button>'
+                e.appendChild(td)
+            }
+         }
+      } else
+      {
+            var td = document.createElement("td")
+            td.innerHTML = select_accounts
+            if(replace==1)
+            {
+             e.removeChild(e.lastElementChild)
+            }
+            e.appendChild(td)
+            var a = e.children[0].children[0]
+            onclick_ = a.getAttribute("onclick")
+            l = onclick_.split("'")
+            l=l[1]
+            l=l.split("_")
+            var os = td.children[0].children;
+            var i;
+            for (i = 0; i < os.length; i++) {
+               ma = os[i].getAttribute("ma");
+               if (ma == l[2]) {
+                    td.children[0].value = os[i].getAttribute("value");
+                    select_accounts = td.children[0].cloneNode(true);
+                    select_accounts.children[i].setAttribute("hidden", "hidden")
+                    select_accounts = select_accounts.outerHTML
+                    break;
+               }
+            }
+      }
+   }
+}
+
+function save_industry_default(event)
+{
+
+ alert("save")
+
+      $.post("{% url 'corporatevaluation:save_industry_default' %}",
+        {
+          ticker: vObj["ticker"],
+          year: vObj["reporting_year"],
+          sic: vObj["sic_code"]
+        },
+        function(data){
+            alert(data['status'])
+        });
+}
+
 function getReport(url, xsl_url) {
 // alert('getReport: ' + url + ' ' + xsl_url)
 if (xsl_url == null) { xsl_url = InstanceReportXslt; }
@@ -67,7 +146,6 @@ var ext = url.substring(url.lastIndexOf('.')+1, url.length);
         },
         function(data){
             data = data['html']
-
             var idx = data.indexOf('<TEXT>');
             if (idx > -1) {
             data = data.substring(idx+6,data.length);
@@ -78,6 +156,7 @@ var ext = url.substring(url.lastIndexOf('.')+1, url.length);
             }
             jQuery('#reportDiv').append(data)
             .find('img').attr('src', function(i, val) { return fixSrcAttr(val);}).end();
+            add_accounts_editor()
         });
     } else {
 
@@ -133,9 +212,12 @@ var ext = url.substring(url.lastIndexOf('.')+1, url.length);
     });
   }
 }
+
 // Start sec
 function get_sec(url) {
     console.log("get_sec: ", url)
+    var elm = document.getElementById('navigation_table')
+    elm.innerHTML = 'In Process Downloading Data.   Please wait';
     var data = vObj["sec_company_data"][vObj["ticker"]][vObj["filing_year"]]
     if (data)
     {
@@ -259,12 +341,14 @@ function FixNotesForGeckoWebkit( div ){
 
 </script>
 
-<div id="navigation_table">
-</div>
+<div id="valuationsetup_xbrl_data"></div>
+<div id="navigation_table"></div>
 
 <script src="{% static 'vendor/jquery/jquery.min.js' %}"></script>
 <script src="{% static 'js/npm/cookie/js.cookie.min.js' %}"></script>
 <script src='https://cdn.plot.ly/plotly-latest.min.js'></script>
+
+
 <script>
 var Show={};Show.LastAR=null,Show.showAR=function(a,r,w){if(Show.LastAR)Show.hideAR();var e=a;while(e&&e.nodeName!='TABLE')e=e.nextSibling;if(!e||e.nodeName!='TABLE'){var ref=((window)?w.document:document).getElementById(r);if(ref){e=ref.cloneNode(!0);
 e.removeAttribute('id');a.parentNode.appendChild(e)}}
@@ -277,4 +361,33 @@ function unHighlightAllMenuItems()
 function highlightAllMenuItems()
 {$('#menu li ul li a.xbrlviewer').css('background-color','#C1CDCD')}
 </script>
+<script>
+    function onchange_account(event)
+    {
+      var elm = event.target
+      var elmp = elm.parentNode.parentNode
+      var a = elmp.children[0].children[0]
+      onclick_ = a.getAttribute("onclick")
+      l = onclick_.split("'")
+      l=l[1]
+      l=l.split("_")
+      $.post("{% url 'corporatevaluation:onchange_account' %}",
+        {
+          accounting_standard: l[1],
+          match_account: l[2],
+          account_id: elm.value,
+          ticker: vObj["ticker"],
+          year: vObj["reporting_year"],
+          sic: vObj["sic_code"]
+        },
+        function(data){
+            if (data['status'] == "ok")
+            {
+              vObj["sec_company_data"][vObj["ticker"]]['company_info']['data'][vObj["reporting_year"]]['matching_accounts']=data['matching_accounts']
+              add_accounts_editor(replace=1)
+            }
+        });
+    }
+</script>
+
 </div>

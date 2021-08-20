@@ -20,7 +20,7 @@ function set_data(data)
 {
     cd = data['company_data'];
     vObj["cd"] = cd;
-    sy = "<thead><tr><th>Account</th>"
+    sy = "<thead><tr id='fs_years_data'><th>Account</th>"
     z = 0
     for (y in cd)
     {
@@ -54,11 +54,48 @@ function set_data(data)
 
 function get_xbrl_view(event)
 {
- e = event.target // this object is updated from the input tab
+    e = event.target // this object is updated from the input tab
+    //alert(e.outerHTML)
+    y = e.innerHTML
+    p1 = document.getElementById("fs_years_data")
+    p2 = document.getElementById("fs_years_data_sec")
+    p3 = document.getElementById("fs_years_xbrl_data")
+    m_ = 1+Math.max(p1.childElementCount, p2.childElementCount, p3.childElementCount)
+    for(let i = 0; i < m_ ; i++)
+    {
+        try
+        {
+            if (p1.childNodes[i].childNodes[0].innerHTML == y)
+            {p1.childNodes[i].childNodes[0].setAttribute("style", "color:green")} else
+            {p1.childNodes[i].childNodes[0].setAttribute("style", "color:white")}
+
+        } catch(err){}
+        try
+        {
+            if (p2.childNodes[i].childNodes[0].innerHTML == y)
+            {p2.childNodes[i].childNodes[0].setAttribute("style", "color:green")} else
+            {p2.childNodes[i].childNodes[0].setAttribute("style", "color:blue")}
+
+        } catch(err){}
+        try
+        {
+            if (p3.childNodes[i].childNodes[0].innerHTML == y)
+            {p3.childNodes[i].childNodes[0].setAttribute("style", "color:green")} else
+            {p3.childNodes[i].childNodes[0].setAttribute("style", "color:white")}
+
+        } catch(err){}
+    }
  //alert(e.outerHTML)
- sm.TabObjects["sec"].tabTitle.innerHTML = "FS XBRL(SEC): " + e.innerHTML
+ sm.TabObjects["sec"].tabTitle.innerHTML = "XBRL: " + e.innerHTML
  var url = e.getAttribute("view_link")
  vObj["filing_year"] = e.getAttribute("filing_year")
+ vObj["reporting_year"] = e.innerHTML
+
+ // the following line was moved - to be deleted
+ // vObj['select_accounts'] = get_select_accounts(vObj["reporting_year"], vObj["ticker"])
+
+ // alert(vObj['select_accounts'])
+
  get_sec(url) // in sec tab
 }
 

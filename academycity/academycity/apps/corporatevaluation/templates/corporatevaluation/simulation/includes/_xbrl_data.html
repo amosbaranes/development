@@ -5,6 +5,16 @@
 </div>
 
 <!--  pull data  -->
+<style>
+.duration_account
+{
+ color: red;
+}
+.instant_account
+{
+ color: blue;
+}
+</style>
 <script>
 // Pick a company
 // --------------
@@ -16,39 +26,91 @@ function xbrl_get_account(sk, y, cd)
   return "<td><input class='value' id='"+sk+"_" + y + "' account='"+sk+"' year='" + y + "' type='text' value='" + toCommas(cd[y][sk][0]) + "' onchange='input_valuation(event)'></td>"
 }
 
-function xbrl_set_data(data)
+
+function get_select_accounts(year='2020', ticker='', type='1')
 {
-    cd = data['company_data'];
-    vObj["cd"] = cd;
-    sy = "<thead><tr><th>Account</th>"
-    z = 0
-    for (y in cd)
-    {
-     z += 1;
-     if(z==1)
+   //var s = vObj["sec_company_data"][ticker]['company_info']['data'][year]['select_accounts']
+   //if(s) {return s}
+
+   var data = vObj["sec_company_data"][ticker]['company_info']['data'][year]['matching_accounts']
+   var s = "<select onchange='onchange_account(event)'><option value='-1'>------------</option>"
+   for (var key in data){
+     if (type == "-1" || data[key][3]==type)
      {
-      for (a in cd[y])
+         s += "<option value='" + data[key][2] + "' ma='"+data[key][1]+"'"
+           if(data[key][3]=="2"){
+            s+=" class='duration_account' "
+           } else
+           {
+            s+=" class='instant_account' "
+           }
+         s += ">" + data[key][0] + "</option>"
+     }
+   }
+   s += "</select>"
+    //  alert(s)
+   vObj["sec_company_data"][ticker]['company_info']['data'][year]['select_accounts'] = s
+   return s;
+}
+
+
+function xbrl_set_data()
+{
+     // need to change to_year as a function of today.
+
+    var from_year = 2012
+    var to_year = 2021
+    var cd = vObj["xbrl_data"]
+    ss = {}
+    s_title = "<thead><tr id='fs_years_xbrl_data'><th>Accounts</th>"
+    for ( var y = from_year; y < to_year; y++) {
+       s_title += "<th><a id='sec_xbrl_data_"+y+"' href='#' onclick='get_xbrl_view(event)'>"+String(y)+"</a></th>"
+    }
+    // alert(s_title)
+
+
+    var s_ = ""
+    var matching_data2020 = cd['2020']['matching_accounts']
+    for (var key in matching_data2020)
+    {
+      s_ += "("+key+"-"+matching_data2020[key][0]+"-"+matching_data2020[key][2] + ") : "
+      ss[key] = "<td>" +matching_data2020[key][0]+ "</td>"
+      for ( var y = from_year; y < to_year; y++) {
+
+      for(let z in cd)
       {
-        s = a + "= \"<tr><td class='account'>"+cd[y][a][1]+"</td>\""; eval(s);
+        if (cd[z]['dei']['documentfiscalyearfocus'] == y.toString())
+        {
+          y_data = vObj["xbrl_data"][z]
+          break;
+        }
       }
-     }
-     sy += "<th><a id='xbrl_data_"+y+"' href='#' target='_blank'>"+y+"</th>"
-     for (a in cd[y])
-     {
-       s = a + "+= xbrl_get_account('"+a+"', y, cd)"; eval(s);
-     }
+            var matching_data = y_data['matching_accounts']
+            nn = ""
+            if(matching_data[key])
+            {
+            //alert(matching_data[key])
+            //alert(matching_data[key][1])
+
+            // alert(y_data['year_data'])
+              nn = y_data['year_data'][matching_data[key][1].toLowerCase()]
+            }
+            ss[key] += "<td>" + nn + "</td>"
+            //alert(ss[key])
+      }
     }
-    st = "<table id='data'>"+sy+"</tr></thead>"
-    ss = ""
-    for (a in cd[y])
+
+    //alert(s_)
+
+    ss_ = ""
+    for( var k in ss)
     {
-      ss += "st+=" + a + " + '</tr>'; "
+      ss_ += "<tr>" +ss[k]+ "</tr>"
     }
-    eval(ss)
-    st += "</table><br/><br/><br/><br/><br/>";
-    s_yf_http = "https:\/\/finance.yahoo.com\/quote\/" + data['ticker'] + "\/financials?p=" + data['ticker']
-    st='<div><a id="fy_link" href="'+ s_yf_http +'" target="_blank"> Yahoo Finance</a></div><br/>'+st;
-    sm.TabObjects["data"].tabDoc.innerHTML = st
+    //alert(ss_)
+    s = "<table>" + s_title + "</tr></thead>" + ss_ + "</tbody></table>"
+    sm.TabObjects["xbrl_data"].tabDoc.innerHTML = s
+    var evt = new Event("click", {bubbles: true});sm.TabObjects["xbrl_data"].tabTitle.dispatchEvent(evt);
 }
 
 // update data

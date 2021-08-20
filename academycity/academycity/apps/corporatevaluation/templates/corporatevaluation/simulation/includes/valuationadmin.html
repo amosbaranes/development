@@ -3,9 +3,19 @@
 <div id="valuationadmin" class="tabcontent">
     <button onclick="admin_setup(event)" fun="set_sic_code">Load SIC Codes from SEC</button>
     <br/>
+    <button onclick="admin_setup(event)" fun="get_all_companies">Get All Companies</button>
+    <br/>
+    <br/>
+    <button onclick="xbrl_set_data()" >Create data Table</button>
+    <br/>
+    <br/>
+    <button onclick="generate_select_accounts('2020', 'AAPL')" >generate_select_accounts - 2020</button>
+    <br/>
     <br/>
     <div id="result_message"></div>
 </div>
+
+
 
 <script>
 

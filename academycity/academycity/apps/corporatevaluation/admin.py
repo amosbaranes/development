@@ -3,7 +3,8 @@ from django.contrib import admin
 from django.utils.translation import ugettext_lazy as _
 from .models import (Project, RBOIC, CountryRegion, CountryRating, Industry,
                      Country, GlobalIndustryAverages, CompanyInfo, CompanyData, ToDoList,
-                     XBRLMainIndustryInfo, XBRLIndustryInfo)
+                     XBRLMainIndustryInfo, XBRLIndustryInfo, XBRLCompanyInfoInProcess, XBRLValuationAccounts,
+                     XBRLCompanyInfo, XBRLValuationAccountsMatch)
 
 # -*- coding: utf-8 -*-
 
@@ -77,6 +78,7 @@ class IndustryAdmin(admin.ModelAdmin):
 @admin.register(CompanyInfo)
 class CompanyInfoAdmin(admin.ModelAdmin):
     list_display = ('company_name', 'ticker', 'cik', 'industry', )
+    list_filter = ('industry', )
 
 
 @admin.register(CompanyData)
@@ -94,4 +96,28 @@ class XBRLMainIndustryInfoAdmin(admin.ModelAdmin):
 class XBRLIndustryInfoAdmin(admin.ModelAdmin):
     list_display = ('sic_code', 'main_sic', 'sic_description')
     list_filter = ('main_sic',)
+
+
+@admin.register(XBRLCompanyInfoInProcess)
+class XBRLCompanyInfoInProcessAdmin(admin.ModelAdmin):
+    list_display = ('id', 'exchange', 'ticker', 'company_name', 'company_letter')
+    list_filter = ('exchange', 'company_letter')
+
+
+@admin.register(XBRLValuationAccounts)
+class XBRLValuationAccountsAdmin(admin.ModelAdmin):
+    list_display = ('id', 'order', 'account', 'type')
+    list_filter = ('type',)
+
+
+@admin.register(XBRLValuationAccountsMatch)
+class XBRLValuationAccountsMatchAdmin(admin.ModelAdmin):
+    list_display = ('id', 'company', 'year', 'account', 'match_account', 'accounting_standard')
+    list_filter = ('company', 'year')
+
+
+@admin.register(XBRLCompanyInfo)
+class XBRLCompanyInfoAdmin(admin.ModelAdmin):
+    list_display = ('id', 'exchange', 'ticker', 'cik', 'company_name', 'company_letter')
+    list_filter = ('exchange', 'company_letter')
 

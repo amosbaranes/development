@@ -11,7 +11,9 @@ from django.db import connection
 from django.utils.translation import get_language
 # --
 from .models import (RBOIC, CountryRegion, CountryRating, Country, GlobalIndustryAverages,
-                     Industry ,CompanyInfo, CompanyData, Project, ToDoList)
+                     Industry ,CompanyInfo, CompanyData, Project, ToDoList,
+                     XBRLValuationAccounts, XBRLValuationAccountsMatch, XBRLCompanyInfo)
+
 from ..core.sql import SQL
 from ..webcompanies.WebCompanies import WebSiteCompany
 from .xbrl_obj import AcademyCityXBRL
@@ -295,28 +297,16 @@ def update_data(request):
     return JsonResponse(dic)
 
 
-def get_data_ticker(request):
-    # log_debug("in get_data_ticker 1")
-    ticker_ = request.POST.get('ticker')
-    accounting_principle_ = request.POST.get('accounting_principle')
-
-    # log_debug("ticker: " + ticker_)
-    # log_debug("accounting_principle: " + accounting_principle_)
-
-    # accounting_principle_ = 'us-gaap'
-    accounts_ = {'bs': {'stockholdersequity'}, 'is': {'revenuefromcontractwithcustomerexcludingassessedtax'}}
-
-    # log_debug("before AcademyCityXBRL() 1")
-    acx = AcademyCityXBRL()
-    # log_debug("after AcademyCityXBRL() 2")
-    data = acx.get_data_for_cik(cik=ticker_, type='10-K', accounting_principle=accounting_principle_, accounts=accounts_)
-    # log_debug("after acx.get_data_for_cik 3")
-    return JsonResponse(data)
-
-
+# Admin
+# load sic numbers from the SEC
 def set_sic_code(request):
     acx = AcademyCityXBRL()
-    acx.get_industries_sic_code()
+    acx.set_sic_code()
+
+
+def get_all_companies(request):
+    acx = AcademyCityXBRL()
+    acx.get_all_companies()
 
 
 def admin_setup(request):
@@ -326,6 +316,7 @@ def admin_setup(request):
         return JsonResponse({'status': 'ok'})
     except Exception as ex:
         return JsonResponse({'status': 'error: '+str(ex)})
+# End Admin
 
 
 # XBRL
@@ -349,7 +340,7 @@ def get_accounts(request):
     # print(accounts)
     # print('acx.get_value()')
 
-    data = acx.get_industries()
+    # data = acx.get_industries()
 
     return JsonResponse(data)
 
@@ -594,9 +585,120 @@ def get_sec(request):
 def get_r(request):
     url_r = request.POST.get('url_r')
     # url = 'https://www.sec.gov'+url_r
-
     headers = {'User-Agent': 'amos@drbaranes.com'}
     edgar_resp = requests.get(url_r, headers=headers)
+    # print(edgar_resp.text)
     dic = {'html': edgar_resp.text}
     return JsonResponse(dic)
 
+
+def get_data_ticker(request):
+    # log_debug("in get_data_ticker 1")
+    ticker_ = request.POST.get('ticker')
+
+    # remove the following line
+    accounting_standard_ = request.POST.get('accounting_principle')
+    #
+
+    # log_debug("ticker: " + ticker_)
+    # log_debug("accounting_principle: " + accounting_principle_)
+
+    accounting_principle_ = 'us-gaap'
+    # accounts_ = {'instant': [], 'flow': []}
+    # for a in XBRLValuationAccountsMatch.objects.all():
+    #     if a.account.type == 1:
+    #         accounts_['instant'].append(a.match_account.lower())
+    #     else:
+    #         accounts_['flow'].append(a.match_account.lower())
+    #     accounting_standard_ = a.accounting_standard
+
+    # print('accounts_')
+    # print(accounts_)
+    # print('accounts_')
+    # accounts_ = {'instant': {'stockholdersequity'}, 'flow': {'revenuefromcontractwithcustomerexcludingassessedtax'}}
+
+    # log_debug("before AcademyCityXBRL() 1")
+    acx = AcademyCityXBRL()
+    # log_debug("after AcademyCityXBRL() 2")
+    data = acx.get_data_for_cik(cik=ticker_, type='10-K', accounting_standard=accounting_standard_)
+    # log_debug("after acx.get_data_for_cik 3")
+    return JsonResponse(data)
+
+
+# Data processing
+def get_matching_accounts(request):
+    ticker_ = request.POST.get('ticker')
+    year_ = request.POST.get('year')
+    sic_ = request.POST.get('sic')
+    acx = AcademyCityXBRL()
+    return JsonResponse(acx.get_matching_accounts(ticker=ticker_, year=year_, sic=sic_))
+
+
+def onchange_account(request):
+    accounting_standard_ = request.POST.get('accounting_standard')
+    match_account_ = request.POST.get('match_account')
+    account_id = request.POST.get('account_id')
+    ticker = request.POST.get('ticker')
+    year_ = request.POST.get('year')
+    sic_ = request.POST.get('sic')
+    company_ = XBRLCompanyInfo.objects.get(ticker=ticker)
+
+    # print('account_id')
+    # print(account_id)
+    if account_id != "-1":
+        # print('account_id')
+        account_ = XBRLValuationAccounts.objects.get(id=account_id)
+        # print('account_')
+        # print(account_)
+        # print('account_')
+
+    try:
+        # print('-1'*10)
+        # print('match_account_')
+        # print(company_)
+        # print(year_)
+        # print(match_account_)
+        # print(accounting_standard_)
+        # print('match_account_')
+
+        account_to_delete = XBRLValuationAccountsMatch.objects.get(year=year_, company=company_,
+                                                                   match_account=match_account_,
+                                                                   accounting_standard=accounting_standard_)
+        account_to_delete.delete()
+
+        # print('-11'*10)
+    except Exception as ex:
+        pass
+        # print("error 101: " + str(ex))
+    try:
+        # print('-2'*10)
+        i, created = XBRLValuationAccountsMatch.objects.get_or_create(year=year_, company=company_, account=account_,
+                                                                      match_account=match_account_,
+                                                                      accounting_standard=accounting_standard_)
+
+        # print('-21'*10)
+        # print(i)
+        # print('-22'*10)
+        # print(created)
+        #
+        # print('-23'*10)
+
+        acx = AcademyCityXBRL()
+        matching_accounts, accounts = acx.get_matching_accounts(ticker=ticker, year=int(year_), sic=sic_)
+        dic = {'status': 'ok', 'matching_accounts': matching_accounts}
+        return JsonResponse(dic)
+
+    except Exception as ex:
+        # print("error 102: " + str(ex))
+        dic = {'status': 'not ok'}
+
+    return JsonResponse(dic)
+
+
+def save_industry_default(request):
+    ticker_ = request.POST.get('ticker')
+    year_ = request.POST.get('year')
+    sic_ = request.POST.get('sic')
+    acx = AcademyCityXBRL()
+    dic = acx.save_industry_default(year=int(year_), ticker=ticker_, sic=sic_)
+    return JsonResponse(dic)

@@ -101,6 +101,7 @@ data {
 {% endif%}
           {% include 'corporatevaluation/simulation/includes/_inputs.html' %}
           {% include 'corporatevaluation/simulation/includes/_data.html' %}
+          {% include 'corporatevaluation/simulation/includes/_fsa.html' %}
           {% include 'corporatevaluation/simulation/includes/_xbrl_data.html' %}
           {% include 'corporatevaluation/simulation/includes/_sec.html' %}
           {% include 'corporatevaluation/simulation/includes/_calculations.html' %}
@@ -117,10 +118,9 @@ data {
 </div>
 
 <span id="tabs_"
-      tabs_s="comparablecompanies:{% trans "Comparable Companies" %};local,valuation:{% trans "Valuation" %};local,calculations:{% trans "Calculations" %};local,sec:{% trans "SEC" %};local,data:{% trans "Data" %};local,inputs:{% trans "Inputs" %};local"
+      tabs_s="comparablecompanies:{% trans "Comparable Companies" %};local,valuation:{% trans "Valuation" %};local,calculations:{% trans "Calculations" %};local,fsa:{% trans "FSA" %};local,sec:{% trans "SEC" %};local,xbrl_data:{% trans "XBRL Data" %};local,data:{% trans "Data" %};local,inputs:{% trans "Inputs" %};local"
 tabs_m="valuationsetup:{% trans "Valuation Setup" %};pull_screen,valuationadmin:{% trans "Valuation Admin" %};pull_screen,valuationmethodology:{% trans "Methodology" %};pull_screen,valuationtodo:{% trans "To do list" %};pull_screen"
->
-</span>
+></span>
 
 <!--        xbrl_data:{% trans "XBRLData" %};local,  -->
 
@@ -179,6 +179,7 @@ function SimTab(parent, name, title, valuation_id, url_get_screens, screen_updat
  this.CONTENT = null;
  this.CONTENTObjects = {};
  this.is_show_first = true;
+ this.callback_functions = []
  //--
    // alert(this.name)
   if (this.screen_update == 'pull_screen')
@@ -214,6 +215,9 @@ function SimTab(parent, name, title, valuation_id, url_get_screens, screen_updat
          {
           obj.setScreens(valuation_id, url_get_screens, is_show_first);
          }
+         // --
+          obj.title_click(obj)
+         // --
               //post_ajax_create_action('globsim__change_to_tab__' + obj.title)
               var i, tabcontent, tablinks;
               tabcontent = document.getElementsByClassName("tabcontent");
@@ -261,6 +265,19 @@ SimTab.prototype.setScreens = function(valuation_id, url_get_screens, is_show_fi
         if(is_show_first){folder = this.name.toLowerCase(); setTimeout(set_first_obj, 1, folder)}
         } catch (err) {}
    }
+}
+
+SimTab.prototype.add_title_click_call_function = function(fun) {
+   this.callback_functions.push(fun)
+}
+
+SimTab.prototype.title_click = function() {
+        for (k in this.callback_functions)
+        {
+            try{
+             eval(this.callback_functions[k]+"(this)")
+            } catch(err){alert(err)}
+        }
 }
 
 SimTab.prototype.set_nav_prefix = function() {
@@ -376,6 +393,7 @@ function SimManager(valuation_id)
     this.vObj = new ValuationObject(this);
 }
 
+
 SimManager.prototype.setTabs = function() {
     var tabs_ = document.getElementById("tabs_");
     var tabs_s = tabs_.getAttribute("tabs_s");
@@ -398,6 +416,15 @@ SimManager.prototype.setTabs = function() {
     }
     for(var name in tabs)
     {s = "this.TabObjects[name] = new SimTab(this, name, tabs[name][0], this.valuation_id, this.url_get_screens, tabs[name][1])" ; eval(s)}
+
+    // --
+    this.setTitleCallFunction()
+    // --
+}
+
+//-- Add callback for click event of title folder
+SimManager.prototype.setTitleCallFunction = function() {
+        this.TabObjects["comparablecompanies"].add_title_click_call_function("valuation_vs_actual")
 }
 
 // == Math ==

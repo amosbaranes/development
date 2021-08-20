@@ -198,7 +198,7 @@ function countries_fun(event)
 
 function companies_fun(event)
 {
-    var evt = new Event("click", {bubbles: true});sm.TabObjects["data"].tabTitle.dispatchEvent(evt);
+    //var evt = new Event("click", {bubbles: true});sm.TabObjects["data"].tabTitle.dispatchEvent(evt);
     //
     e = event.target
     id_ = e.options[e.selectedIndex].value
@@ -220,9 +220,9 @@ function companies_fun(event)
                 var event = new Event("change", {bubbles: true});
                 document.getElementById('countries').dispatchEvent(event);
                 console.log("companies_fun: ", "before get_data_ticker")
+
                 get_data_ticker();  // in valuationsetup tab see moved below
         });
-
 }
 
 function industries_fun_(value)
@@ -294,38 +294,56 @@ function process_get_data_ticker(data)
     var d = document.getElementById('valuationsetup_xbrl_data')
     console.log("get_data_ticker: ", "in post get_data_ticker 1")
     vObj["company_info"] = data['company_info'];
+    if (!data['data'])
+    {alert("There is no data for this company."); return;}
     vObj["xbrl_data"] = data['data'];
     //alert(vObj["xbrl_data"]['2020']['dei']['entityregistrantname'])
-    s = '<table><tr>'
-    sv = '<tr>'
+
+   // -- in _xbrl_data
+      xbrl_set_data()
+   // --
+    sv = '<table><tr id="fs_years_data_sec">'
     console.log("get_data_ticker: ", "in post get_data_ticker 2")
     for (y in vObj["xbrl_data"])
     {
          console.log("get_data_ticker year: ", "in post get_data_ticker 20: ", y)
-         //alert(y)
-         ry = vObj["xbrl_data"][y]['dei']['documentfiscalyearfocus']
-         //alert(ry)
-         s += '<th>' + ry + '</th>'
-         sv += '<td><a href="'+ vObj["xbrl_data"][y]['view_link'] + '" target="_blank">View: ' + ry + '</a></td>'
+         var ry = vObj["xbrl_data"][y]['dei']['documentfiscalyearfocus']
+         if(!ry){ry=''}
+         sv += '<td><a href="#" onclick="get_xbrl_view(event)" '
+         var y_view_link = vObj["xbrl_data"][y]['view_link']
+         if(y_view_link){ sv += 'view_link="'+ y_view_link + '" '}
+         else{ sv += 'view_link="" ' }
+         var y_r_link = vObj["xbrl_data"][y]['r_link']
+         if(y_r_link) { sv += 'r_link="' + y_r_link + '" '} else{sv += 'r_link="" '}
+         sv += 'filing_year="' + y + '" style="color:blue">' + ry + '</a></td>'
          try{
              var t = document.getElementById("xbrl_data_"+ry)
+             var tx = document.getElementById("sec_xbrl_data_"+ry)
+
+
              //alert(t.outerHTML)
              t.setAttribute("view_link", vObj["xbrl_data"][y]['view_link'])
+             tx.setAttribute("view_link", vObj["xbrl_data"][y]['view_link'])
              t.setAttribute("r_link", vObj["xbrl_data"][y]['r_link'])
+             tx.setAttribute("r_link", vObj["xbrl_data"][y]['r_link'])
              t.setAttribute("filing_year", y)
+             tx.setAttribute("filing_year", y)
              t.setAttribute("style", "color:white")
+             tx.setAttribute("style", "color:white")
              //alert(t.outerHTML)
             } catch (er) {
                 console.log("get_data_ticker: ", "in post error get_data_ticker 100: ", y, er)
          }
      }
-     s += '</tr>' + sv + '</tr></table>'
-         //alert(s)
+
+        sv += '</tr></table>'
         console.log("get_data_ticker: ", "in post get_data_ticker 10")
-        d.innerHTML = s
+        d.innerHTML = sv
         console.log("get_data_ticker: ", "in post get_data_ticker 11")
         //alert(d.outerHTML)
+
 }
+
 
 function get_data_ticker()
 {
