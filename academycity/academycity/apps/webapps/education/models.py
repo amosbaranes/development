@@ -107,12 +107,12 @@ class New(models.Model):
     news_description = models.CharField(max_length=500, null=True)
     is_popular = models.BooleanField(default=True)
     is_active = models.BooleanField(default=True)
-    is_link = models.CharField(max_length=300, null=True, blank=True)
     description = PlaceholderField('description', related_name='new_description')
     name_text_color = models.CharField(max_length=30, default='#090909', null=True)
     name_gradient_deg = models.IntegerField(default=285, blank=True)
     gradient_color_1 = models.CharField(max_length=30, default='#969696', null=True)
     gradient_color_2 = models.CharField(max_length=30, default='#dfdfdf', null=True)
+    is_links = models.BooleanField(default=True)
 
 
 class Program(models.Model):
@@ -220,9 +220,10 @@ class AdditionalTopic(models.Model):
     institution_web = models.ForeignKey(InstitutionWeb, on_delete=models.CASCADE, default=1, related_name='topics')
     order = models.IntegerField(default=1000, blank=True)
     image = models.ImageField(upload_to='phrase/', blank=True, null=True)
-    topic_description = models.CharField(max_length=500, null=True)
+    topic_name = models.CharField(max_length=50, blank=True, null=True)
     is_active = models.BooleanField(default=True)
-    is_link = models.CharField(max_length=300, null=True, blank=True)
+    is_links = models.BooleanField(default=True)
+    description = PlaceholderField('description', related_name='topic_description')
 
 
 class MoreNewsDetail(models.Model):
