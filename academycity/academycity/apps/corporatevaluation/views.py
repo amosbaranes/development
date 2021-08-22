@@ -11,8 +11,10 @@ from django.db import connection
 from django.utils.translation import get_language
 # --
 from .models import (RBOIC, CountryRegion, CountryRating, Country, GlobalIndustryAverages,
-                     Industry ,CompanyInfo, CompanyData, Project, ToDoList,
-                     XBRLValuationAccounts, XBRLValuationAccountsMatch, XBRLCompanyInfo)
+                     CompanyData, Project, ToDoList,
+                     XBRLValuationAccounts, XBRLValuationAccountsMatch,
+                     XBRLIndustryInfo, Industry,
+                     XBRLCompanyInfo, CompanyInfo)
 
 from ..core.sql import SQL
 from ..webcompanies.WebCompanies import WebSiteCompany
@@ -22,17 +24,19 @@ import requests
 from bs4 import BeautifulSoup
 import re
 from ..core.utils import log_debug, clear_log_debug
+from django.db.models import Count
 
 
 # Fix game_id.  should use project_id
 def home(request, obj_id):
     wsc = WebSiteCompany(request, web_company_id=7)
     company_obj = wsc.site_company()
-    industry = Industry.objects.exclude(sic_description='0').all()
+
+    industry = XBRLIndustryInfo.objects.exclude(sic_description='0').all()
     global_industry_averages = GlobalIndustryAverages.objects.all()
     project = Project.objects.filter(translations__language_code=get_language()).get(id=obj_id)
     country = Country.objects.all()
-    companies = CompanyInfo.objects.exclude(company_name='0').all()
+    companies = XBRLCompanyInfo.objects.exclude(company_name='0').all()
     todolist = ToDoList.objects.filter().all()
     return render(request, 'corporatevaluation/home.html',
                   {'institution_obj': company_obj,
@@ -93,12 +97,14 @@ def get_interest_coverage_ratio(request):
 def get_industry_detail(request):
     sic_code=request.POST.get('sic_code')
     if int(sic_code) == 1:
-        cs = CompanyInfo.objects.exclude(company_name='0').all()
+        # cs = CompanyInfo.objects.exclude(company_name='0').all()
+        cs = XBRLCompanyInfo.objects.exclude(company_name='0').all()
     else:
-        i = Industry.objects.get(sic_code=sic_code)
+        # i = Industry.objects.get(sic_code=sic_code)
+        i = XBRLIndustryInfo.objects.get(sic_code=sic_code)
         # print(i)
-        cs = CompanyInfo.objects.filter(industry=i).all()
-
+        # cs = CompanyInfo.objects.filter(industry=i).all()
+        cs = XBRLCompanyInfo.objects.filter(industry=i).all()
     ss = "0;-------"
     for c in cs:
         ss += "[+]" + str(c.id) + ";" + c.company_name
@@ -114,107 +120,119 @@ def set_default(v):
     return v
 
 
+# Should be removed
 def get_company_detail(request):
     sid = request.POST.get('id')
-    c = CompanyInfo.objects.get(id=sid)
+    xc = XBRLCompanyInfo.objects.get(id=sid)
     lll = {}
-    for cd in c.company_data.all():
+    try:
+        c = CompanyInfo.objects.get(ticker=xc.ticker)
+        for cd in c.company_data.all():
 
-        try:
-            _return_on_equity = round(100 * (cd.number_of_shares * cd.share_price / cd.p_over_e_ratio)) / 100
-        except Exception as e:
-            _return_on_equity = 0
+            try:
+                _return_on_equity = round(100 * (cd.number_of_shares * cd.share_price / cd.p_over_e_ratio)) / 100
+            except Exception as e:
+                _return_on_equity = 0
 
-        try:
-            _eps = round(100 * cd.share_price / cd.p_over_e_ratio) / 100
-        except Exception as e:
-            _eps = 0
+            try:
+                _eps = round(100 * cd.share_price / cd.p_over_e_ratio) / 100
+            except Exception as e:
+                _eps = 0
 
-        try:
-            _debt_to_total_equity = round(100 * cd.total_long_term_debt / cd.stockholders_equity) / 100
-        except Exception as e:
-            _debt_to_total_equity = 0
+            try:
+                _debt_to_total_equity = round(100 * cd.total_long_term_debt / cd.stockholders_equity) / 100
+            except Exception as e:
+                _debt_to_total_equity = 0
 
-        try:
-            _book_value_ratio = round(100 * cd.stockholders_equity / cd.number_of_shares) / 100
-        except Exception as e:
-            _book_value_ratio = 0
+            try:
+                _book_value_ratio = round(100 * cd.stockholders_equity / cd.number_of_shares) / 100
+            except Exception as e:
+                _book_value_ratio = 0
 
-        try:
-            _times_interest_earned = round(100 * cd.ebit / cd.interest_expense) / 100
-        except Exception as e:
-            _times_interest_earned = 0
+            try:
+                _times_interest_earned = round(100 * cd.ebit / cd.interest_expense) / 100
+            except Exception as e:
+                _times_interest_earned = 0
 
-        try:
-            _net_profit_on_sales = round(100 * (cd.ebit - cd.income_taxes - cd.interest_expense) / cd.revenue) / 100
-        except Exception as e:
-            _net_profit_on_sales = 0
+            try:
+                _net_profit_on_sales = round(100 * (cd.ebit - cd.income_taxes - cd.interest_expense) / cd.revenue) / 100
+            except Exception as e:
+                _net_profit_on_sales = 0
 
-        ll = {
-              # Balance Sheet
-              # Current Assets
-              'cash_cash_equivalents': (set_default(cd.cash_cash_equivalents), 'Cash & Equivalents'),
-              'goodwill': (set_default(cd.goodwill), 'Goodwill'),
-              'intangible_assets_net': (set_default(cd.intangible_assets_net), 'Intangible Assets(net)'),
-              # Debt
-              'noncurrent_liabilities': (set_default(cd.noncurrent_liabilities), 'Long-term Liabilities'),
-              'long_term_debt_noncurrent': (set_default(cd.long_term_debt_noncurrent), 'LT Liabilities (Non-Current)'),
-              'total_long_term_debt': (set_default(cd.total_long_term_debt), 'Total long term debt'),
-              # Equity
-              'equity_attributable_to_oncontrolling_interest': (set_default(cd.equity_attributable_to_oncontrolling_interest), 'Minority Interest'),
-              'preferred_stock': (set_default(cd.preferred_stock), 'Preferred Stocks'),
-              'stockholders_equity': (set_default(cd.stockholders_equity), 'Stockholders Equity'),
-              # Income Statement
-              'revenue': (set_default(cd.revenue), 'Revenues'),
-              'ebit': (set_default(cd.ebit), 'EBIT'),
+            ll = {
+                # Balance Sheet
+                # Current Assets
+                'cash_cash_equivalents': (set_default(cd.cash_cash_equivalents), 'Cash & Equivalents'),
+                'goodwill': (set_default(cd.goodwill), 'Goodwill'),
+                'intangible_assets_net': (set_default(cd.intangible_assets_net), 'Intangible Assets(net)'),
+                # Debt
+                'noncurrent_liabilities': (set_default(cd.noncurrent_liabilities), 'Long-term Liabilities'),
+                'long_term_debt_noncurrent': (
+                set_default(cd.long_term_debt_noncurrent), 'LT Liabilities (Non-Current)'),
+                'total_long_term_debt': (set_default(cd.total_long_term_debt), 'Total long term debt'),
+                # Equity
+                'equity_attributable_to_oncontrolling_interest': (
+                set_default(cd.equity_attributable_to_oncontrolling_interest), 'Minority Interest'),
+                'preferred_stock': (set_default(cd.preferred_stock), 'Preferred Stocks'),
+                'stockholders_equity': (set_default(cd.stockholders_equity), 'Stockholders Equity'),
+                # Income Statement
+                'revenue': (set_default(cd.revenue), 'Revenues'),
+                'ebit': (set_default(cd.ebit), 'EBIT'),
 
-              'ebitda': (set_default(cd.ebitda), 'EBITDA'),
-              'interest_expense': (set_default(cd.interest_expense), 'Interest Expense'),
-              'income_taxes': (set_default(cd.income_taxes), 'Income Taxes'),
+                'ebitda': (set_default(cd.ebitda), 'EBITDA'),
+                'interest_expense': (set_default(cd.interest_expense), 'Interest Expense'),
+                'income_taxes': (set_default(cd.income_taxes), 'Income Taxes'),
 
+                # Other Information
+                'share_price': (set_default(cd.share_price), 'Share Price'),
+                'market_value_equity': (set_default(cd.market_value_equity), 'MV of Equity'),
+                'enterprise_value': (set_default(cd.enterprise_value), 'Enterprise Value'),
+                'number_of_shares': (set_default(cd.number_of_shares), '# of Shares'),
+                # Ratios
+                # -------------
+                # current ratio
+                # > quick ratio
+                # > Debt to Total Assets
+                'times_interest_earned': (_times_interest_earned, 'Times Interest Earned'),
+                # > Account Receivable
+                # > Inventory
+                'net_profit_on_sales': (_net_profit_on_sales, 'Net Profit on Sales'),
+                # Gross Profit Margin
+                # Return on Assets
+                # 'return_on_assets': (round(100*(cd.ebit)/cd.interest_expense)/100, 'Return on Assets'),
 
-              # Other Information
-              'share_price': (set_default(cd.share_price), 'Share Price'),
-              'market_value_equity': (set_default(cd.market_value_equity), 'MV of Equity'),
-              'enterprise_value': (set_default(cd.enterprise_value), 'Enterprise Value'),
-              'number_of_shares': (set_default(cd.number_of_shares), '# of Shares'),
-              # Ratios
-              # -------------
-              # current ratio
-              #> quick ratio
-              #> Debt to Total Assets
-              'times_interest_earned': (_times_interest_earned, 'Times Interest Earned'),
-              #> Account Receivable
-              #> Inventory
-              'net_profit_on_sales': (_net_profit_on_sales, 'Net Profit on Sales'),
-              # Gross Profit Margin
-              # Return on Assets
-              # 'return_on_assets': (round(100*(cd.ebit)/cd.interest_expense)/100, 'Return on Assets'),
+                'return_on_equity': (_return_on_equity, 'Income On Equity'),
 
-              'return_on_equity': (_return_on_equity, 'Income On Equity'),
-
-              'eps': (_eps, 'EPS'),
-              'p_over_e_ratio': (set_default(cd.p_over_e_ratio), 'P/E'),
-              #> Dividend Rate/Yield
-              #> Dividend Payout
-              'book_value_ratio': (_book_value_ratio, 'Book Value Ratio'),
-              #
-              'p_over_s_ratio': (set_default(cd.p_over_s_ratio), 'P/S'),
-              'p_over_b_ratio': (set_default(cd.p_over_b_ratio), 'P/B'),
-              'p_over_cash_flow_ratio': (set_default(cd.p_over_cash_flow_ratio), 'P/CF'),
-              'p_over_ebitda_ratio': (set_default(cd.p_over_ebitda_ratio), 'P/EBITDA'),
-              'debt_to_total_equity': (_debt_to_total_equity, 'Debt to Total Equity'),
-              'interest_coverage_ratio': (set_default(cd.interest_coverage_ratio_calculated), 'Interest Coverage Ratio'),
-              'effective_tax_rate': (set_default(cd.effective_tax_rate), 'Effective Tax Rate'),
-              'ev_over_revenue': (set_default(cd.ev_over_revenue), 'EV Over Revenue')
-        }
-        # print(cd.year)
-        lll[cd.year] = ll
-    # print(lll)
+                'eps': (_eps, 'EPS'),
+                'p_over_e_ratio': (set_default(cd.p_over_e_ratio), 'P/E'),
+                # > Dividend Rate/Yield
+                # > Dividend Payout
+                'book_value_ratio': (_book_value_ratio, 'Book Value Ratio'),
+                #
+                'p_over_s_ratio': (set_default(cd.p_over_s_ratio), 'P/S'),
+                'p_over_b_ratio': (set_default(cd.p_over_b_ratio), 'P/B'),
+                'p_over_cash_flow_ratio': (set_default(cd.p_over_cash_flow_ratio), 'P/CF'),
+                'p_over_ebitda_ratio': (set_default(cd.p_over_ebitda_ratio), 'P/EBITDA'),
+                'debt_to_total_equity': (_debt_to_total_equity, 'Debt to Total Equity'),
+                'interest_coverage_ratio': (
+                set_default(cd.interest_coverage_ratio_calculated), 'Interest Coverage Ratio'),
+                'effective_tax_rate': (set_default(cd.effective_tax_rate), 'Effective Tax Rate'),
+                'ev_over_revenue': (set_default(cd.ev_over_revenue), 'EV Over Revenue')
+            }
+            # print(cd.year)
+            lll[cd.year] = ll
+        # print(lll)
+    except Exception as ex:
+        pass
 
     country_id = Country.objects.get(country='United States').id
-    data = {'ticker': c.ticker, 'sic_code': c.industry.sic_code, 'country_id': country_id,
-            'sic_description': c.industry.sic_description, 'company_data': lll}
+    data = {'ticker': xc.ticker, 'sic_code': xc.industry.sic_code, 'country_id': country_id,
+            'sic_description': xc.industry.sic_description, 'company_data': lll}
+
+
+    # country_id = Country.objects.get(country='United States').id
+    # data = {'ticker': c.ticker, 'sic_code': c.industry.sic_code, 'country_id': country_id,
+    #         'sic_description': c.industry.sic_description, 'company_data': lll}
     return JsonResponse(data)
 
 
@@ -592,6 +610,16 @@ def get_r(request):
     return JsonResponse(dic)
 
 
+def clean_data_for_all_companies(request):
+    acx = AcademyCityXBRL()
+    return JsonResponse(acx.clean_data_for_all_companies())
+
+
+def copy_processed_companies(request):
+    acx = AcademyCityXBRL()
+    return JsonResponse(acx.copy_processed_companies())
+
+
 def get_data_ticker(request):
     # log_debug("in get_data_ticker 1")
     ticker_ = request.POST.get('ticker')
@@ -635,13 +663,17 @@ def get_matching_accounts(request):
 
 
 def onchange_account(request):
+    # print('-1'*20)
     accounting_standard_ = request.POST.get('accounting_standard')
     match_account_ = request.POST.get('match_account')
     account_id = request.POST.get('account_id')
     ticker = request.POST.get('ticker')
     year_ = request.POST.get('year')
     sic_ = request.POST.get('sic')
+    # print('-2'*20)
     company_ = XBRLCompanyInfo.objects.get(ticker=ticker)
+    # print(company_)
+    # print('-13'*20)
 
     # print('account_id')
     # print(account_id)
@@ -680,7 +712,6 @@ def onchange_account(request):
         # print(i)
         # print('-22'*10)
         # print(created)
-        #
         # print('-23'*10)
 
         acx = AcademyCityXBRL()
@@ -701,4 +732,17 @@ def save_industry_default(request):
     sic_ = request.POST.get('sic')
     acx = AcademyCityXBRL()
     dic = acx.save_industry_default(year=int(year_), ticker=ticker_, sic=sic_)
+    return JsonResponse(dic)
+
+
+def get_duplications_tickers(request):
+    dic = {'status': 'ok'}
+    for q in XBRLCompanyInfo.objects.values('ticker').annotate(count=Count('id')).values('ticker').order_by().filter(count__gt=1):
+        print(q)
+        try:
+            c = XBRLCompanyInfo.objects.get((Q(exchange='nasdaq') | Q(exchange='amex')) & Q(ticker=q['ticker']))
+        except Exception as ex:
+            c = XBRLCompanyInfo.objects.get(Q(exchange='amex') & Q(ticker=q['ticker']))
+        print(c)
+        c.delete()
     return JsonResponse(dic)

@@ -120,6 +120,8 @@ data {
 <span id="tabs_"
       tabs_s="comparablecompanies:{% trans "Comparable Companies" %};local,valuation:{% trans "Valuation" %};local,calculations:{% trans "Calculations" %};local,fsa:{% trans "FSA" %};local,sec:{% trans "SEC" %};local,xbrl_data:{% trans "XBRL Data" %};local,data:{% trans "Data" %};local,inputs:{% trans "Inputs" %};local"
 tabs_m="valuationsetup:{% trans "Valuation Setup" %};pull_screen,valuationadmin:{% trans "Valuation Admin" %};pull_screen,valuationmethodology:{% trans "Methodology" %};pull_screen,valuationtodo:{% trans "To do list" %};pull_screen"
+        accounting_equality="[[11990, 12990, 12999], [13990, 14990, 14999], [14999, 15990, 12999]]"
+        accounts_structure="{'11990': {'star_other': [11100, 11800], 'total':0}, '12990': {'star_other': [12500, 12900], 'total':0}, '13990': {'star_other': [13100, 13200], 'total':0},'14990': {'star_other': [14100, 14200], 'total':0},'15990': {'star_other': [15000, 15500], 'total':0}}"
 ></span>
 
 <!--        xbrl_data:{% trans "XBRLData" %};local,  -->
@@ -397,6 +399,12 @@ function SimManager(valuation_id)
 SimManager.prototype.setTabs = function() {
     var tabs_ = document.getElementById("tabs_");
     var tabs_s = tabs_.getAttribute("tabs_s");
+    eval('this.accounting_equality =' + tabs_.getAttribute("accounting_equality"))
+    eval('this.accounts_structure =' + tabs_.getAttribute("accounts_structure"))
+
+        //alert(this.accounts_structure['11990']['star_other'])
+        //alert(this.accounts_structure['11990']['total'])
+
     var tans_all = tabs_s.split(",");
     var tabs_m = tabs_.getAttribute("tabs_m");
     var tans_all_m = tabs_m.split(",");

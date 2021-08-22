@@ -18,7 +18,6 @@
 <script>
 // Pick a company
 // --------------
-function toCommas(value) {return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");}
 function removeCommas(value) {return value.replace(/,/g, '')}
 
 function xbrl_get_account(sk, y, cd)
@@ -54,20 +53,104 @@ function get_select_accounts(year='2020', ticker='', type='1')
 }
 
 
+function balance_accounts()
+{
+     // need to change to_year as a function of today.
+  // accounting_equality
+  var cd = JSON.parse(JSON.stringify(vObj["xbrl_data"]));
+  var from_year = 2012;
+  var to_year = 2021;
+  ys = ""; zn = 0; zz = "";
+
+    for(let z in cd)
+    {
+       z_ = cd[z]['dei']['documentfiscalyearfocus']
+       if (zn != 0) { zz = ", " }; ys += zz + z_; zn += 1;
+    }
+    eval('z_max = Math.max('+ ys + ')');  eval('z_min = Math.min('+ ys + ')');
+    from_year = Math.max(z_min, from_year) ; to_year = z_max+1;
+
+
+  var matching_data2020 = cd['2020']['matching_accounts']
+  for ( var y = from_year; y < to_year; y++) {
+        for(let z in cd)
+        {
+          if (cd[z]['dei']['documentfiscalyearfocus'] == y.toString())
+          {
+            y_data = vObj["xbrl_data"][z]
+            break;
+          }
+        }
+
+          for( k in sm.accounts_structure)
+          {
+           sm.accounts_structure[k]['total'] = 0
+          }
+
+          var matching_data = y_data['matching_accounts'];
+          for (var key in matching_data2020)
+          {
+            nn = 0
+            try {
+             nn_ = y_data['year_data'][matching_data[key][1].toLowerCase()]
+             if(!isNaN(nn_)){nn = Number(nn_)}
+            } catch (er) {}
+
+                    for (k in sm.accounts_structure)
+                    {
+                      var l = sm.accounts_structure[k]['star_other']
+                      if (Number(key) < Number(k) && Number(key) >= Number(l[0]) && Number(key) != Number(l[1]) )
+                      {
+                        sm.accounts_structure[k]['total'] += nn
+                      }
+                    }
+          }
+
+          for( k in sm.accounts_structure)
+          {
+             var l = sm.accounts_structure[k]['star_other']
+                var id=y.toString()+"_"+l[1].toString()
+                  nn = 0
+                  try {
+                        nn_ = y_data['year_data'][matching_data[k][1].toLowerCase()]
+                        if(!isNaN(nn_)){nn = Number(nn_)}
+                        if (nn == 0)
+                        {
+                          continue;
+                        }
+                        t = sm.accounts_structure[k]['total']
+                       // alert(t)
+                        u = nn - t
+                        elm = document.getElementById(id)
+                        elm.innerHTML = toCommas(u)
+                        elm.setAttribute("style", elm.getAttribute("style") + ";color:red;")
+                  } catch (er) {}
+          }
+  }
+}
+
+
 function xbrl_set_data()
 {
      // need to change to_year as a function of today.
+    var from_year = 2012;
+    var to_year = 2021;
+    var cd = vObj["xbrl_data"];
+    ys = ""; zn = 0; zz = "";
+    for(let z in cd)
+    {
+       z_ = cd[z]['dei']['documentfiscalyearfocus']
+       if (zn != 0) { zz = ", " }; ys += zz + z_; zn += 1;
+    }
+    eval('z_max = Math.max('+ ys + ')');  eval('z_min = Math.min('+ ys + ')');
+    from_year = Math.max(z_min, from_year) ; to_year = z_max+1;
 
-    var from_year = 2012
-    var to_year = 2021
-    var cd = vObj["xbrl_data"]
     ss = {}
     s_title = "<thead><tr id='fs_years_xbrl_data'><th>Accounts</th>"
     for ( var y = from_year; y < to_year; y++) {
        s_title += "<th><a id='sec_xbrl_data_"+y+"' href='#' onclick='get_xbrl_view(event)'>"+String(y)+"</a></th>"
     }
     // alert(s_title)
-
 
     var s_ = ""
     var matching_data2020 = cd['2020']['matching_accounts']
@@ -77,14 +160,14 @@ function xbrl_set_data()
       ss[key] = "<td>" +matching_data2020[key][0]+ "</td>"
       for ( var y = from_year; y < to_year; y++) {
 
-      for(let z in cd)
-      {
-        if (cd[z]['dei']['documentfiscalyearfocus'] == y.toString())
-        {
-          y_data = vObj["xbrl_data"][z]
-          break;
-        }
-      }
+          for(let z in cd)
+          {
+            if (cd[z]['dei']['documentfiscalyearfocus'] == y.toString())
+            {
+              y_data = vObj["xbrl_data"][z]
+              break;
+            }
+          }
             var matching_data = y_data['matching_accounts']
             nn = ""
             if(matching_data[key])
@@ -92,16 +175,16 @@ function xbrl_set_data()
             //alert(matching_data[key])
             //alert(matching_data[key][1])
 
-            // alert(y_data['year_data'])
+             //alert(y_data['year_data'])
+
               nn = y_data['year_data'][matching_data[key][1].toLowerCase()]
             }
-            ss[key] += "<td>" + nn + "</td>"
+            ss[key] += "<td id='"+y.toString()+"_"+key.toString()+"' style='padding-right:5px;text-align: right;'>" + toCommas(nn) + "</td>"
             //alert(ss[key])
       }
     }
 
     //alert(s_)
-
     ss_ = ""
     for( var k in ss)
     {

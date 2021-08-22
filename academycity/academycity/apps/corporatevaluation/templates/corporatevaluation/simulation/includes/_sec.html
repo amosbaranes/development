@@ -71,10 +71,11 @@ function add_accounts_editor(replace=0)
           if(e.children[0].getAttribute("class") == "tl")
           {
                 var s = e.children[0].children[0].children[0].innerHTML.toLowerCase()
-                if( (s.search("INCOME".toLowerCase()) > 0) || (s.search("OPERATIONS".toLowerCase()) > 0) || (s.search("FLOWS".toLowerCase()) > 0))
+                if( (s.search("INCOME".toLowerCase()) > 0) || (s.search("OPERATIONS".toLowerCase()) > 0) )
+                // || (s.search("FLOWS".toLowerCase()) > 0)
                 {
                  type_='2'
-                } else if (s.search("BALANCE".toLowerCase()) > 0)
+                } else if ( (s.search("BALANCE".toLowerCase()) > 0) || (s.search("Position".toLowerCase()) > 0) )
                 {
                   type_='1'
                 } else
@@ -82,22 +83,32 @@ function add_accounts_editor(replace=0)
                   type_ = "-1"
                 }
                 var select_accounts = get_select_accounts(vObj["reporting_year"], vObj["ticker"], type=type_)
+                // function in _xbrl_data.html
             if(replace==0)
             {
                 var td = document.createElement("td")
+                td.setAttribute("style", "text-align: center");
                 td.innerHTML = '<button onclick="save_industry_default(event)">Save as Industry Default</button>'
                 e.appendChild(td)
             }
          }
       } else
       {
-            var td = document.createElement("td")
-            td.innerHTML = select_accounts
             if(replace==1)
             {
              e.removeChild(e.lastElementChild)
             }
-            e.appendChild(td)
+            var td = document.createElement("td")
+            e.appendChild(td);
+
+            s_ = e.firstElementChild.firstElementChild.getAttribute("onclick")
+            if(s_.search("Abstract") > 0 )
+            {
+              td.innerHTML = "<span></span>" ;
+              continue ;
+            }
+
+            td.innerHTML = select_accounts
             var a = e.children[0].children[0]
             onclick_ = a.getAttribute("onclick")
             l = onclick_.split("'")

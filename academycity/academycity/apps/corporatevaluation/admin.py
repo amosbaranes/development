@@ -7,7 +7,6 @@ from .models import (Project, RBOIC, CountryRegion, CountryRating, Industry,
                      XBRLCompanyInfo, XBRLValuationAccountsMatch)
 
 # -*- coding: utf-8 -*-
-
 from cms.admin.placeholderadmin import PlaceholderAdminMixin
 from parler.admin import TranslatableAdmin, TranslatableStackedInline, TranslatableTabularInline
 
@@ -100,8 +99,9 @@ class XBRLIndustryInfoAdmin(admin.ModelAdmin):
 
 @admin.register(XBRLCompanyInfoInProcess)
 class XBRLCompanyInfoInProcessAdmin(admin.ModelAdmin):
-    list_display = ('id', 'exchange', 'ticker', 'company_name', 'company_letter')
-    list_filter = ('exchange', 'company_letter')
+    list_display = ('id', 'exchange', 'ticker', 'sic', 'company_name', 'company_letter', 'is_error')
+    list_filter = ('exchange', 'is_error', 'company_letter')
+    search_fields = ('ticker', )
 
 
 @admin.register(XBRLValuationAccounts)
@@ -120,4 +120,5 @@ class XBRLValuationAccountsMatchAdmin(admin.ModelAdmin):
 class XBRLCompanyInfoAdmin(admin.ModelAdmin):
     list_display = ('id', 'exchange', 'ticker', 'cik', 'company_name', 'company_letter')
     list_filter = ('exchange', 'company_letter')
+    search_fields = ('ticker', )
 

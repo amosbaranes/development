@@ -2,6 +2,12 @@
 {% load core_tags %}
 <div id="inputs" class="container tabcontent" style="background-color:#b3d1ff;">
     <div>
+<!--
+    <input id="company" value="" oninput="companies_on_input(event)" />
+        <br/>
+    <select id="companies_list" size="2">
+    </select>
+-->
     <table>
         <tr>
             <td>{% trans "Industry" %}: </td>
@@ -22,7 +28,7 @@
                 {% for c in companies %}
                 <option value='{{c.id}}'>{{c.company_name}}</option>
                 {% endfor %}
-                </select>  <span id="ticker_"></span>
+                </select>  <span id="ticker_"></span>Ticker: <input id="search_ticker" value="" style="width:70px">
             </td>
         </tr>
         <tr>
@@ -101,7 +107,6 @@
       </table>
     </div>
 </div>
-
 <!-- Beta -->
 <script>
 function add_industry_beta()
@@ -157,9 +162,16 @@ function cofe_business_fun(event)
     calculate_all()
 }
 </script>
-
 <!-- Input -->
 <script>
+
+function companies_on_input(event)
+{
+  e = event.target
+  var x = e.value;
+}
+
+
 function valuation_year_fun(event)
 {
   //alert('valuation_year_fun 1')
@@ -208,20 +220,20 @@ function companies_fun(event)
             id: id_,
           },
           function(data){
-                //alert(data)
                 vObj["sec_company_data"][id_] = data
-                set_data(data); // in data tab
+                try{ set_data(data);} catch(err){sm.TabObjects["data"].tabDoc.innerHTML = "We did not collect data from FinDynamic"}  // in data tab
                 vObj["ticker"] = data['ticker'];
                 vObj["sic_code"] = data['sic_code'];
                 vObj["sic_description"] = data['sic_description'];
-                document.getElementById('ticker_').innerHTML = data['ticker'];
+                //document.getElementById('ticker_').innerHTML = data['ticker'];
+                document.getElementById('search_ticker').value = "";
+                document.getElementById('search_ticker').value = data['ticker'];
                 document.getElementById('industries').value = data['sic_code'];
                 document.getElementById('countries').value = data['country_id'];
                 var event = new Event("change", {bubbles: true});
                 document.getElementById('countries').dispatchEvent(event);
                 console.log("companies_fun: ", "before get_data_ticker")
-
-                get_data_ticker();  // in valuationsetup tab see moved below
+                get_data_ticker();  // see below
         });
 }
 
@@ -298,7 +310,6 @@ function process_get_data_ticker(data)
     {alert("There is no data for this company."); return;}
     vObj["xbrl_data"] = data['data'];
     //alert(vObj["xbrl_data"]['2020']['dei']['entityregistrantname'])
-
    // -- in _xbrl_data
       xbrl_set_data()
    // --
@@ -318,21 +329,23 @@ function process_get_data_ticker(data)
          sv += 'filing_year="' + y + '" style="color:blue">' + ry + '</a></td>'
          try{
              var t = document.getElementById("xbrl_data_"+ry)
-             var tx = document.getElementById("sec_xbrl_data_"+ry)
-
-
-             //alert(t.outerHTML)
              t.setAttribute("view_link", vObj["xbrl_data"][y]['view_link'])
-             tx.setAttribute("view_link", vObj["xbrl_data"][y]['view_link'])
              t.setAttribute("r_link", vObj["xbrl_data"][y]['r_link'])
-             tx.setAttribute("r_link", vObj["xbrl_data"][y]['r_link'])
              t.setAttribute("filing_year", y)
-             tx.setAttribute("filing_year", y)
              t.setAttribute("style", "color:white")
-             tx.setAttribute("style", "color:white")
              //alert(t.outerHTML)
             } catch (er) {
                 console.log("get_data_ticker: ", "in post error get_data_ticker 100: ", y, er)
+         }
+         try{
+             var tx = document.getElementById("sec_xbrl_data_"+ry)
+             tx.setAttribute("view_link", vObj["xbrl_data"][y]['view_link'])
+             tx.setAttribute("r_link", vObj["xbrl_data"][y]['r_link'])
+             tx.setAttribute("filing_year", y)
+             tx.setAttribute("style", "color:white")
+             //alert(t.outerHTML)
+            } catch (er) {
+                console.log("get_data_ticker: ", "in post error get_data_ticker 200: ", y, er)
          }
      }
 

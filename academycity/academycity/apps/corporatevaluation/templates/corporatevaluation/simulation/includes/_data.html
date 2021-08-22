@@ -8,7 +8,11 @@
 <script>
 // Pick a company
 // --------------
-function toCommas(value) {return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");}
+function toCommas(value) {
+value_ = value;
+try{ value_ = value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");} catch(er){}
+return value_;
+}
 function removeCommas(value) {return value.replace(/,/g, '')}
 
 function get_account(sk, y, cd)
@@ -32,6 +36,7 @@ function set_data(data)
         s = a + "= \"<tr><td class='account'>"+cd[y][a][1]+"</td>\""; eval(s);
       }
      }
+     // get_xbrl_view is in this tab
      sy += "<th><a id='xbrl_data_"+y+"' href='#' onclick='get_xbrl_view(event)'>"+y+"</th>"
      for (a in cd[y])
      {
@@ -56,20 +61,30 @@ function get_xbrl_view(event)
 {
     e = event.target // this object is updated from the input tab
     //alert(e.outerHTML)
+
     y = e.innerHTML
-    p1 = document.getElementById("fs_years_data")
+    try{
+        p1_childElementCount = 0
+        p1 = document.getElementById("fs_years_data")
+        p1_childElementCount = p1.childElementCount
+    } catch (er) {}
     p2 = document.getElementById("fs_years_data_sec")
     p3 = document.getElementById("fs_years_xbrl_data")
-    m_ = 1+Math.max(p1.childElementCount, p2.childElementCount, p3.childElementCount)
+    m_ = 1+Math.max(p1_childElementCount, p2.childElementCount, p3.childElementCount)
+    try {
+        for(let i = 0; i < m_ ; i++)
+        {
+            try
+            {
+                if (p1.childNodes[i].childNodes[0].innerHTML == y)
+                {p1.childNodes[i].childNodes[0].setAttribute("style", "color:green")} else
+                {p1.childNodes[i].childNodes[0].setAttribute("style", "color:white")}
+
+            } catch(err){}
+        }
+    } catch(err1){}
     for(let i = 0; i < m_ ; i++)
     {
-        try
-        {
-            if (p1.childNodes[i].childNodes[0].innerHTML == y)
-            {p1.childNodes[i].childNodes[0].setAttribute("style", "color:green")} else
-            {p1.childNodes[i].childNodes[0].setAttribute("style", "color:white")}
-
-        } catch(err){}
         try
         {
             if (p2.childNodes[i].childNodes[0].innerHTML == y)
@@ -86,16 +101,16 @@ function get_xbrl_view(event)
         } catch(err){}
     }
  //alert(e.outerHTML)
+
  sm.TabObjects["sec"].tabTitle.innerHTML = "XBRL: " + e.innerHTML
  var url = e.getAttribute("view_link")
+
  vObj["filing_year"] = e.getAttribute("filing_year")
  vObj["reporting_year"] = e.innerHTML
 
  // the following line was moved - to be deleted
  // vObj['select_accounts'] = get_select_accounts(vObj["reporting_year"], vObj["ticker"])
-
  // alert(vObj['select_accounts'])
-
  get_sec(url) // in sec tab
 }
 

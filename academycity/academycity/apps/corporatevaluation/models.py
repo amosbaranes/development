@@ -92,6 +92,7 @@ class GlobalIndustryAverages(TruncateTableMixin, models.Model):
         return self.industry_name
 
 
+# To Be deleted
 class Industry(TruncateTableMixin, models.Model):
     class Meta:
         verbose_name = _('Industry')
@@ -467,7 +468,7 @@ class XBRLIndustryInfo(TruncateTableMixin, models.Model):
     class Meta:
         verbose_name = _('XBRLIndustry')
         verbose_name_plural = _('XBRLIndustries')
-        ordering = ['sic_code']
+        ordering = ['sic_description']
     #
     sic_code = models.PositiveSmallIntegerField(primary_key=True)
     main_sic = models.ForeignKey(XBRLMainIndustryInfo, on_delete=models.CASCADE, default=None, blank=True, null=True)
@@ -487,6 +488,9 @@ class XBRLCompanyInfoInProcess(TruncateTableMixin, models.Model):
     company_name = models.CharField(max_length=128, default='', blank=True, null=True)
     ticker = models.CharField(max_length=10, null=False)
     company_letter = models.CharField(max_length=1, default='')
+
+    cik = models.CharField(max_length=10, null=True)
+    sic = models.PositiveSmallIntegerField(default=0)
     is_error = models.BooleanField(default=False)
     message = models.CharField(max_length=500, null=True)
 
@@ -523,7 +527,7 @@ class XBRLValuationAccounts(TruncateTableMixin, models.Model):
     #
     order = models.PositiveSmallIntegerField(default=0)
     account = models.CharField(max_length=250, null=True)
-    type = models.SmallIntegerField(default=1)   # 1 balance sheet 2 income statement
+    type = models.SmallIntegerField(default=1)   # 1 balance sheet 2 income statement -1 all
 
     def __str__(self):
         return self.account
@@ -547,7 +551,8 @@ class XBRLValuationAccountsMatch(TruncateTableMixin, models.Model):
         ordering = ['company', 'account']
     #
     year = models.PositiveSmallIntegerField(default=0)
-    company = models.ForeignKey(XBRLCompanyInfo, on_delete=models.CASCADE, default=None, blank=True, null=True)
+    company = models.ForeignKey(XBRLCompanyInfo, on_delete=models.CASCADE, default=None, blank=True, null=True,
+                                related_name='xbrl_valuation_accounts_match')
     account = models.ForeignKey(XBRLValuationAccounts, on_delete=models.CASCADE, default=None, blank=True, null=True)
     match_account = models.CharField(max_length=250, null=True)
     accounting_standard = models.CharField(max_length=250, default="us-gaap")

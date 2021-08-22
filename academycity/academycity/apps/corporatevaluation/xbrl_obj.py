@@ -115,7 +115,7 @@ class AcademyCityXBRL(object):
         # need to add send message on no data
         if len(dic_data) == 0:
             print("Couldn't find the document link")
-            sys.exit()
+            return dic_company_info
 
         # Obtain HTML for document page
         acc = {'flow': [], 'instant': []}
@@ -300,10 +300,12 @@ class AcademyCityXBRL(object):
                 end_date = tag.text.split('-')
                 start_date = startdate.text.split('-')
                 start_date = start_date[0]+'-'+start_date[1]
+
                 start_date_should = str((int(end_date[0])-1))+'-'+end_date[1]
                 start_date1_should = end_date[0]+'-01'
-
                 start_date2_should = str((int(end_date[0])-1))+'-'+self.insure_two_digit_month_day(str((int(end_date[1])+1)))
+                start_date3_should = str((int(end_date[0])-1))+'-'+self.insure_two_digit_month_day(str((int(end_date[1])-1)))
+
                 # print('-6'*10)
                 # print('end_date')
                 # print(end_date)
@@ -316,7 +318,7 @@ class AcademyCityXBRL(object):
                 # print('=6'*10)
 
                 if (not segment) and (identifier.text == entitycentralindexkey) \
-                        and (start_date == start_date_should or start_date == start_date1_should or start_date == start_date2_should):
+                        and (start_date == start_date_should or start_date == start_date1_should or start_date == start_date2_should or start_date == start_date3_should):
                     flow_context_id = context['id']
 
             except Exception as ex:
@@ -390,75 +392,151 @@ class AcademyCityXBRL(object):
 
         return dic_data_year
 
-    def update_zero_company(self, sic):
-        pass
-
-    def get_select_accounts_to_be_deleted(self, ticker, year):
-        # print(year)
-        # company_ = XBRLCompanyInfo.objects.filter(ticker=ticker)
-
-        matches = XBRLValuationAccountsMatch.objects.filter(Q(year=0) |
-                                                            (Q(year__in=[2020, year]) & Q(company__ticker=ticker))).all()
-
-        dic_matches = {}
-        for m in matches:
-            if m.year == 0:
-                dic_matches[m.account.id] = m.match_account
-
-        # print('dic_matches 1')
-        # print(dic_matches)
-        # print('dic_matches 10')
-
-        for m in matches:
-            if m.year == 2020:
-                dic_matches[m.account.id] = m.match_account
-
-        # print('dic_matches 2')
-        # print(dic_matches)
-        # print('dic_matches 20')
-
-        for m in matches:
-            if m.year == year:
-                dic_matches[m.account.id] = m.match_account
-
-        # print('dic_matches 3')
-        # print(dic_matches)
-        # print('dic_matches 30')
-
-        # year = models.PositiveSmallIntegerField(default=0)
-        # accounting_standard = models.CharField(max_length=250, default="us-gaap")
-        matches_for_report = {}
-        accounts_ = XBRLValuationAccounts.objects.all()
-        s_ = "<select onchange='onchange_account(event)'><option value='-1'>------------</option>"
-        for a in accounts_:
+    def save_industry_default(self, year, ticker, sic):
+        dic = {'status': 'ok'}
+        if year == self.xbrl_base_year:
+            print('-1'*20)
+            industry = XBRLIndustryInfo.objects.get(sic_code=sic)
+            c, created = XBRLCompanyInfo.objects.get_or_create(industry=industry, company_name=sic, ticker=sic, cik=sic)
             try:
-                if a.id in dic_matches:
-                    ma_ = dic_matches[a.id]
-                else:
-                    ma_ = ""
-                matches_for_report[a.id] = [a.account]
-                s_ += "<option value='" + str(a.id) + "' ma='"+ma_+"'>" + a.account + "</option>"
+                print('-2'*20)
+                zero_company = XBRLValuationAccountsMatch.objects.filter(company__ticker=ticker).all()
+                zero_company.update(company=c, year=0)
             except Exception as ex:
-                print('ex')
-                print(str(ex))
-                print('ex')
-        s_ += "</select>"
-
-        # print(5)
-        # print(s_)
-        # print(6)
-
-        return s_, matches_for_report
+                print('-3'*20)
+                print(ex)
+                dic = {'status': 'ko'}
+        else:
+            dic = {'status': 'You can update only data of year 2020.'}
+        return dic
 
     def get_sp500(self):
         sp500_url = 'https://en.wikipedia.org/wiki/List_of_S%26P_500_companies'
         self.sp_tickers = list(pd.read_html(sp500_url)[0]['Symbol'].values)
         return sp_tickers
 
+    # # #
+
+    def clean_data_for_all_companies(self):
+        companies_ = XBRLCompanyInfoInProcess.objects.all()
+        for company in companies_:
+            ticker = company.ticker
+            type = '10-k'
+            accounting_standard = 'us-gaap'
+            try:
+                #
+                headers = {'User-Agent': 'amos@drbaranes.com'}
+                base_url = "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK={}&type={}"  # &dateb={}"
+                url = base_url.format(ticker, type)
+                #
+                # print('-'*100)
+                # print(url)
+                # print('-'*100)
+                #
+                edgar_resp = requests.get(url, headers=headers)
+                edgar_str = edgar_resp.text
+                #
+                cik0 = ''
+                cik_re = re.compile(r'.*CIK=(\d{10}).*')
+                results = cik_re.findall(edgar_str)
+                if len(results):
+                    results[0] = int(re.sub('\.[0]*', '.', results[0]))
+                    cik0 = str(results[0])
+                # print('-1'*10)
+                # print(cik0)
+                # print('-1'*10)
+                #
+                sic0 = ''
+                cik_re = re.compile(r'.*SIC=(\d{4}).*')
+                results = cik_re.findall(edgar_str)
+                if len(results):
+                    results[0] = int(re.sub('\.[0]*', '.', results[0]))
+                    sic0 = int(results[0])
+
+                # print('-1'*10)
+                # print(sic0)
+                # print('-1'*10)
+
+                company.cik = cik0
+                company.sic = sic0
+                company.save()
+            except Exception as ex:
+                # print('error 1: '+str(ex))
+                company.is_error = True
+                company.message = "Can not get CIK or SIC: " + str(ex)
+                company.cik = ''
+                company.sic = 0
+                company.save()
+                continue
+
+            # print('-2'*10)
+            #
+            # Find the document links
+            soup = BeautifulSoup(edgar_str, 'html.parser')
+            table_tag = soup.find('table', class_='tableFile2')
+            try:
+                # print('-3'*10)
+                rows = table_tag.find_all('tr')
+                # print('-4'*10)
+
+            except Exception as ex:
+                # print('-5'*10)
+                # print(str(ex))
+
+                company.message = "there are no data rows: " + str(ex)
+                # print('-51'*10)
+                try:
+                    company.save()
+                except Exception as exc:
+                    pass
+                    # print('-52'*10)
+                    # print(str(exc))
+                # print('-6'*10)
+                continue
+
+            dic_data = {}
+            for row in rows:
+                try:
+                    cells = row.find_all('td')
+                    if len(cells) > 3:
+                        # print(cells[3].text)
+                        # for filing_year in range(2019, 2020):
+                        for filing_year in range(self.xbrl_start_year, today_year+1):
+                            if str(filing_year) in cells[3].text:
+                                dic_data[filing_year] = {'href': 'https://www.sec.gov' + cells[1].a['href']}
+                except Exception as ex:
+                    pass
+                    # print(ex)
+
+            # print('-8'*10)
+
+            # need to add send message on no data
+            if len(dic_data) == 0:
+                company.message = "there are no data."
+                company.save()
+                continue
+
+            # print(cik0)
+            # print('--9--'*5)
+            company.save()
+            # print('--10--'*5)
+        return {'status': 'ok'}
+
+    def copy_processed_companies(self):
+        companies_ = XBRLCompanyInfoInProcess.objects.filter(is_error=False).all()
+        for c in companies_:
+            try:
+                print(c.ticker)
+                i_ = XBRLIndustryInfo.objects.get(sic_code=c.sic)
+                XBRLCompanyInfo.objects.get_or_create(industry=i_, exchange=c.exchange, company_name=c.company_name,
+                                                      ticker=c.ticker, company_letter=c.company_letter, cik=c.cik)
+            except Exception as exc:
+                print(str(exc))
+
     def get_all_companies(self):
         exchanges = {
-            # 'nyse': 'nyse/newyorkstockexchange',
-            # 'nasdaq': 'nasdaq/nasdaq',
+            'nyse': 'nyse/newyorkstockexchange',
+            'nasdaq': 'nasdaq/nasdaq',
             'amex': 'amex/americanstockexchange'}
 
         # writer = pd.ExcelWriter(self.EXCEL_PATH+'/all_companies.xlsx', engine='xlsxwriter')
@@ -573,22 +651,6 @@ class AcademyCityXBRL(object):
             XBRLIndustryInfo.objects.get_or_create(sic_code=sic_code_, main_sic=main_sic_,
                                                    sic_description=sic_description_)
         return {'status': 'ok'}
+    # # #
 
-    def save_industry_default(self, year, ticker, sic):
-        dic = {'status': 'ok'}
-        if year == self.xbrl_base_year:
-            print('-1'*20)
-            industry = XBRLIndustryInfo.objects.get(sic_code=sic)
-            c, created = XBRLCompanyInfo.objects.get_or_create(industry=industry, company_name=sic, ticker=sic, cik=sic)
-            try:
-                print('-2'*20)
-                zero_company = XBRLValuationAccountsMatch.objects.filter(company__ticker=ticker).all()
-                zero_company.update(company=c, year=0)
-            except Exception as ex:
-                print('-3'*20)
-                print(ex)
-                dic = {'status': 'ko'}
-        else:
-            dic = {'status': 'You can update only data of year 2020.'}
-        return dic
 
