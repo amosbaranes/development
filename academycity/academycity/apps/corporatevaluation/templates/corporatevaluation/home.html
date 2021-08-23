@@ -120,11 +120,13 @@ data {
 <span id="tabs_"
       tabs_s="comparablecompanies:{% trans "Comparable Companies" %};local,valuation:{% trans "Valuation" %};local,calculations:{% trans "Calculations" %};local,fsa:{% trans "FSA" %};local,sec:{% trans "SEC" %};local,xbrl_data:{% trans "XBRL Data" %};local,data:{% trans "Data" %};local,inputs:{% trans "Inputs" %};local"
 tabs_m="valuationsetup:{% trans "Valuation Setup" %};pull_screen,valuationadmin:{% trans "Valuation Admin" %};pull_screen,valuationmethodology:{% trans "Methodology" %};pull_screen,valuationtodo:{% trans "To do list" %};pull_screen"
-        accounting_equality="[[11990, 12990, 12999], [13990, 14990, 14999], [14999, 15990, 12999]]"
         accounts_structure="{'11990': {'star_other': [11100, 11800], 'total':0}, '12990': {'star_other': [12500, 12900], 'total':0}, '13990': {'star_other': [13100, 13200], 'total':0},'14990': {'star_other': [14100, 14200], 'total':0},'15990': {'star_other': [15000, 15500], 'total':0}}"
-></span>
+ accounting_equality="{'12999' :{'1': {'account': '11990', 'data': 0}, '2': {'account': '12990', 'data': 0}, '3': {'account': '12999', 'data': 0}}, '129990': {'1': {'account': '14999', 'data': 0}, '2': {'account': '15990', 'data': 0}, '3': {'account': '12999', 'data': 0}}, '14999': {'1': {'account': '13990', 'data': 0}, '2': {'account': '14990', 'data': 0}, '3': {'account': '14999', 'data': 0}}}"
+        ></span>
 
-<!--        xbrl_data:{% trans "XBRLData" %};local,  -->
+<!--        xbrl_data:{% trans "XBRLData" %};local,
+                   accounting_equality="[[11990, 12990, 12999], [13990, 14990, 14999], [14999, 15990, 12999]]"
+                   -->
 
 <span id="is_staff" is_staff="{{user.is_staff}}" is_instructor="{{user|has_group:'instructors'}}"></span>
 <div id="log_info"></div>
@@ -402,6 +404,7 @@ SimManager.prototype.setTabs = function() {
     eval('this.accounting_equality =' + tabs_.getAttribute("accounting_equality"))
     eval('this.accounts_structure =' + tabs_.getAttribute("accounts_structure"))
 
+        //alert(this.accounting_equality)
         //alert(this.accounts_structure['11990']['star_other'])
         //alert(this.accounts_structure['11990']['total'])
 

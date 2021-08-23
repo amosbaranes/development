@@ -400,7 +400,7 @@ class AcademyCityXBRL(object):
             c, created = XBRLCompanyInfo.objects.get_or_create(industry=industry, company_name=sic, ticker=sic, cik=sic)
             try:
                 print('-2'*20)
-                zero_company = XBRLValuationAccountsMatch.objects.filter(company__ticker=ticker).all()
+                zero_company = XBRLValuationAccountsMatch.objects.filter(Q(company__ticker=ticker) & Q(year=year)).all()
                 zero_company.update(company=c, year=0)
             except Exception as ex:
                 print('-3'*20)

@@ -55,21 +55,100 @@ function get_select_accounts(year='2020', ticker='', type='1')
 
 function balance_accounts()
 {
-     // need to change to_year as a function of today.
-  // accounting_equality
-  var cd = JSON.parse(JSON.stringify(vObj["xbrl_data"]));
-  var from_year = 2012;
-  var to_year = 2021;
-  ys = ""; zn = 0; zz = "";
-
+    var cd = JSON.parse(JSON.stringify(vObj["xbrl_data"]));
+    var from_year = 2012;
+    var to_year = 2021;
+    ys = ""; zn = 0; zz = "";
     for(let z in cd)
     {
-       z_ = cd[z]['dei']['documentfiscalyearfocus']
-       if (zn != 0) { zz = ", " }; ys += zz + z_; zn += 1;
+     z_ = cd[z]['dei']['documentfiscalyearfocus']
+     if (zn != 0) { zz = ", " }; ys += zz + z_; zn += 1;
     }
     eval('z_max = Math.max('+ ys + ')');  eval('z_min = Math.min('+ ys + ')');
     from_year = Math.max(z_min, from_year) ; to_year = z_max+1;
+    var matching_data2020 = cd['2020']['matching_accounts']
+    for ( var y = from_year; y < to_year; y++)
+    {
+            for(let z in cd)
+            {
+                if (cd[z]['dei']['documentfiscalyearfocus'] == y.toString()) {y_data = vObj["xbrl_data"][z]; break;}
+            }
+            var matching_data = y_data['matching_accounts'];
+            var matching_data = y_data['matching_accounts'];
+            for (k in sm.accounting_equality)
+            {
+                var num = 0; nums = []
+                for (k1 in sm.accounting_equality[k])
+                {
+                      var key = sm.accounting_equality[k][k1]['account']
+                      //
+                      nn = 0
+                      try {
+                            nn_ = y_data['year_data'][matching_data[key][1].toLowerCase()]
+                            //alert('nn_  1')
+                            //alert(nn_)
+                            if(!isNaN(nn_)){nn = Number(nn_)}
+                      } catch (er) {}
+                      //
+                      if (nn > 0)
+                      {
+                       num += 1;
+                       nums.push(k1)
+                      }
+                      sm.accounting_equality[k][k1]['data'] = nn
+                }
+               // alert('num')
+              //  alert(num)
+               // alert('nums')
+              //  alert(nums)
 
+                if (num == 2)
+                {
+                  if (nums.includes("3"))
+                  {
+                    nums = nums.filter(item => item !== '3')
+                    nn_ = (3-Number(nums[0])).toString()
+                    sm.accounting_equality[k][nn_]['data'] = Number(sm.accounting_equality[k]['3']['data']) - Number(sm.accounting_equality[k][nums[0].toString()]['data'])
+
+                    var account_order = sm.accounting_equality[k][nn_]['account']
+                    var id=y.toString()+"_"+account_order.toString()
+                        elm = document.getElementById(id)
+                        elm.innerHTML = toCommas(sm.accounting_equality[k][nn_]['data'])
+                        elm.setAttribute("style", elm.getAttribute("style") + ";color:red;")
+
+                     y_data['year_data'][matching_data[account_order.toString()][1].toLowerCase()] = sm.accounting_equality[k][nn_]['data']
+
+
+                    //alert(sm.accounting_equality[k][nn_]['data'])
+                  } else
+                  {
+                    sm.accounting_equality[k]['3']['data'] = Number(sm.accounting_equality[k]['2']['data']) + Number(sm.accounting_equality[k]['1']['data'])
+                    var account_order = sm.accounting_equality[k]['3']['account']
+                    var id=y.toString()+"_"+account_order.toString()
+                        elm = document.getElementById(id)
+                        elm.innerHTML = toCommas(sm.accounting_equality[k]['3']['data'])
+                        elm.setAttribute("style", elm.getAttribute("style") + ";color:red;")
+
+                     y_data['year_data'][matching_data[account_order.toString()][1].toLowerCase()] = sm.accounting_equality[k][nn_]['data']
+
+                  }
+                }
+            }
+    }
+
+
+    var cd = JSON.parse(JSON.stringify(vObj["xbrl_data"]));
+    // need to change to_year as a function of today.
+    var from_year = 2012;
+    var to_year = 2021;
+    ys = ""; zn = 0; zz = "";
+    for(let z in cd)
+    {
+     z_ = cd[z]['dei']['documentfiscalyearfocus']
+     if (zn != 0) { zz = ", " }; ys += zz + z_; zn += 1;
+    }
+    eval('z_max = Math.max('+ ys + ')');  eval('z_min = Math.min('+ ys + ')');
+    from_year = Math.max(z_min, from_year) ; to_year = z_max+1;
 
   var matching_data2020 = cd['2020']['matching_accounts']
   for ( var y = from_year; y < to_year; y++) {
