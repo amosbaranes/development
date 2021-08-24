@@ -55,7 +55,8 @@ function get_select_accounts(year='2020', ticker='', type='1')
 
 function balance_accounts()
 {
-    var cd = JSON.parse(JSON.stringify(vObj["xbrl_data"]));
+    //var cd = JSON.parse(JSON.stringify(vObj["xbrl_data"]));
+    var cd = vObj["xbrl_data"];
     var from_year = 2012;
     var to_year = 2021;
     ys = ""; zn = 0; zz = "";
@@ -67,6 +68,7 @@ function balance_accounts()
     eval('z_max = Math.max('+ ys + ')');  eval('z_min = Math.min('+ ys + ')');
     from_year = Math.max(z_min, from_year) ; to_year = z_max+1;
     var matching_data2020 = cd['2020']['matching_accounts']
+
     for ( var y = from_year; y < to_year; y++)
     {
             for(let z in cd)
@@ -74,7 +76,7 @@ function balance_accounts()
                 if (cd[z]['dei']['documentfiscalyearfocus'] == y.toString()) {y_data = vObj["xbrl_data"][z]; break;}
             }
             var matching_data = y_data['matching_accounts'];
-            var matching_data = y_data['matching_accounts'];
+
             for (k in sm.accounting_equality)
             {
                 var num = 0; nums = []
@@ -84,10 +86,10 @@ function balance_accounts()
                       //
                       nn = 0
                       try {
-                            nn_ = y_data['year_data'][matching_data[key][1].toLowerCase()]
-                            //alert('nn_  1')
-                            //alert(nn_)
-                            if(!isNaN(nn_)){nn = Number(nn_)}
+                           if (matching_data[key][1].toLowerCase() != '')
+                           { nn_ = y_data['year_data'][matching_data[key][1].toLowerCase()]
+                             if(!isNaN(nn_)){nn = Number(nn_)}
+                           }
                       } catch (er) {}
                       //
                       if (nn > 0)
@@ -97,10 +99,10 @@ function balance_accounts()
                       }
                       sm.accounting_equality[k][k1]['data'] = nn
                 }
-               // alert('num')
-              //  alert(num)
-               // alert('nums')
-              //  alert(nums)
+                    //alert('num')
+                    //alert(num)
+                    //alert('nums')
+                    //alert(nums)
 
                 if (num == 2)
                 {
@@ -115,6 +117,8 @@ function balance_accounts()
                         elm = document.getElementById(id)
                         elm.innerHTML = toCommas(sm.accounting_equality[k][nn_]['data'])
                         elm.setAttribute("style", elm.getAttribute("style") + ";color:red;")
+
+                    matching_data[account_order.toString()][1] = account_order.toString()
 
                      y_data['year_data'][matching_data[account_order.toString()][1].toLowerCase()] = sm.accounting_equality[k][nn_]['data']
 
@@ -134,65 +138,72 @@ function balance_accounts()
                   }
                 }
             }
-    }
+
+// return ;
 
 
-    var cd = JSON.parse(JSON.stringify(vObj["xbrl_data"]));
-    // need to change to_year as a function of today.
-    var from_year = 2012;
-    var to_year = 2021;
-    ys = ""; zn = 0; zz = "";
-    for(let z in cd)
-    {
-     z_ = cd[z]['dei']['documentfiscalyearfocus']
-     if (zn != 0) { zz = ", " }; ys += zz + z_; zn += 1;
-    }
-    eval('z_max = Math.max('+ ys + ')');  eval('z_min = Math.min('+ ys + ')');
-    from_year = Math.max(z_min, from_year) ; to_year = z_max+1;
+            for(h in sm.accounts_structure)
+            {
+              sm.accounts_structure[h]['total'] = 0
+            }
 
-  var matching_data2020 = cd['2020']['matching_accounts']
-  for ( var y = from_year; y < to_year; y++) {
-        for(let z in cd)
-        {
-          if (cd[z]['dei']['documentfiscalyearfocus'] == y.toString())
-          {
-            y_data = vObj["xbrl_data"][z]
-            break;
-          }
-        }
+            for (var key in matching_data2020)
+            {
+                nn = 0;
+                try {
+                   if (matching_data[key][1].toLowerCase() != '')
+                   { nn_ = y_data['year_data'][matching_data[key][1].toLowerCase()]
+                     if(!isNaN(nn_)){nn = Number(nn_)}
+                   }
+                } catch (er) {}
 
-          for( k in sm.accounts_structure)
-          {
-           sm.accounts_structure[k]['total'] = 0
-          }
+                for (k in sm.accounts_structure)
+                {
+                  var l = sm.accounts_structure[k]['star_other']
+                  if (Number(key) < Number(k) && Number(key) >= Number(l[0]) && Number(key) != Number(l[1]) )
+                  {
 
-          var matching_data = y_data['matching_accounts'];
-          for (var key in matching_data2020)
-          {
-            nn = 0
-            try {
-             nn_ = y_data['year_data'][matching_data[key][1].toLowerCase()]
-             if(!isNaN(nn_)){nn = Number(nn_)}
-            } catch (er) {}
 
-                    for (k in sm.accounts_structure)
-                    {
-                      var l = sm.accounts_structure[k]['star_other']
-                      if (Number(key) < Number(k) && Number(key) >= Number(l[0]) && Number(key) != Number(l[1]) )
-                      {
-                        sm.accounts_structure[k]['total'] += nn
-                      }
-                    }
-          }
+                    sm.accounts_structure[k]['total'] += nn
 
-          for( k in sm.accounts_structure)
-          {
-             var l = sm.accounts_structure[k]['star_other']
+           // if (y == 2012 && k == '12990')
+          //  {
+          //    alert(nn)
+          //    alert(sm.accounts_structure['12990']['total'])
+          //  }
+
+
+                  }
+                }
+            }
+
+
+
+            for( k in sm.accounts_structure)
+            {
+                var l = sm.accounts_structure[k]['star_other']
                 var id=y.toString()+"_"+l[1].toString()
-                  nn = 0
-                  try {
-                        nn_ = y_data['year_data'][matching_data[k][1].toLowerCase()]
-                        if(!isNaN(nn_)){nn = Number(nn_)}
+                nn = 0
+                try {
+
+
+                       if (matching_data[k][1].toLowerCase() != '')
+                       { nn_ = y_data['year_data'][matching_data[k][1].toLowerCase()]
+                         if(!isNaN(nn_)){nn = Number(nn_)}
+                       }
+
+
+
+            //if (y == 2012 && k == '12990')
+            //{
+           //  alert(k)
+           //   alert(matching_data[k][1].toLowerCase())
+           //  alert(sm.accounts_structure[k]['total'])
+           //   alert(nn)
+           // }
+
+
+
                         if (nn == 0)
                         {
                           continue;
@@ -203,8 +214,8 @@ function balance_accounts()
                         elm = document.getElementById(id)
                         elm.innerHTML = toCommas(u)
                         elm.setAttribute("style", elm.getAttribute("style") + ";color:red;")
-                  } catch (er) {}
-          }
+                } catch (er) {}
+           }
   }
 }
 
