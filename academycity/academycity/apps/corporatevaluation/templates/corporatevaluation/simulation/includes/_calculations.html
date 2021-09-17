@@ -2,79 +2,101 @@
 {% load core_tags %}
 
 <div id="calculations" class="tabcontent" style="padding-left:20px;width:100%">
-    <!--  Cost of Debt    -->
-    <span style="color:blue; font-size: 20px;">
-        <u><b>{% trans "Cost of Debt" %}</b></u>
-    </span><br/>
-    <div>
-    <table class="data" style="width:30%">
-        <thead><tr><th>Parameter</th><th>Value</th><th></th></tr></thead>
-        <tr><td class="account">{% trans "Risk Free" %}</td><td id="cofd_rf" style="text-align:right;"></td><td>%</td></tr>
-        <tr><td class="account">EBIT</td><td id="cofd_ebit" style="text-align:right;"></td><td></td></tr>
-        <tr><td class="account">{% trans "Interest Expense" %}</td>
-            <td id="cofd_interest_expense" style="text-align:right;"></td></tr>
-        <tr><td class="account">{% trans "Interest Coverage" %}</td>
-            <td id="cofd_interest_coverage" style="text-align:right;"></td><td></td></tr>
-        <tr><td class="account">{% trans "Estimated Bond Rating" %}</td>
-            <td id="cofd_estimated_bond_rating" style="text-align:right;"></td><td></td></tr>
-        <tr><td class="account">{% trans "Estimated Company Default Spread" %}</td>
-            <td id="cofd_estimated_company_default_spread" style="text-align:right;"></td><td>%</td></tr>
-        <tr><td class="account">{% trans "Estimated County Default Spread" %}</td>
-            <td id="cofd_estimated_county_default_spread" style="text-align:right;"></td><td>%</td></tr>
-        <tr><td class="account">{% trans "Estimated Cost of Debt" %}</td>
-            <td id="cofd_estimated_cost_of_debt" style="text-align:right;"></td><td>%</td></tr>
-    </table>
-    </div>
-    <br/><br/>
-      <!--  Cost of Equity  -->
-    <div>
-      <span style="color:blue; font-size: 20px;">
-         <u><b>{% trans "Cost of Equity" %}</b></u>
-      </span>
-      <br/>
-      <table class="data" style="width:25%">
-          <thead><tr><th>Parameter</th><th>Value</th><th></th></tr></thead>
-          <tr><td class="account">{% trans "Risk Free" %}</td>
-              <td id="cofe_rf" style="text-align:right;">0</td><td>%</td></tr>
-          <tr><td class="account">{% trans "Unlevred Beta" %}</td>
-              <td id="cofe_ub" style="text-align:right;">0</td><td></td></tr>
-          <tr><td class="account">{% trans "Beta" %}</td>
-              <td id="cofe_b" style="text-align:right;">0</td><td></td></tr>
-          <tr><td class="account">{% trans "Mature marker risk premium" %}</td>
-              <td id="cofe_rp" style="text-align:right;">0</td><td>%</td>
-          </tr>
-          <tr><td class="account">{% trans "Adj. Default Spread" %}</td>
-              <td id="cofe_ads" style="text-align:right;">0</td><td>%</td></tr>
-          <tr><td class="account">{% trans "Volatility ratio" %}</td>
-              <td id="cofe_vr" style="text-align:right;">{{ project.volatility_ratio }}</td></tr>
-          <tr><td class="account">{% trans "Total Country Risk" %}</td>
-              <td id="cofe_tcr" style="text-align:right;">0</td><td>%</td></tr>
-          <tr><td class="account">{% trans "Cost of Equity" %}</td>
-              <td id="cofe_" style="text-align:right;">0</td><td>%</td></tr>
-      </table>
-    </div>
-    <br/><br/>
 
-    <!--    Estimated ROIC  -->
-    <span style="color:blue; font-size: 20px;">
-        <u><b>{% trans "Estimated ROIC" %}</b></u>
-    </span><br/>
-    <span style="color:blue; font-size: 20px;"># of Periods for estimation:</span>
-    <input id="roic_effective_tax_rate_periods" type="text" value="5" oninput="calculate_all()" style="width:55px"/>
-    <div>
-      <table class="data" id="estimated_roic" class="w3-table-all w3-hoverable" style="width:60%">
-      </table>
-    </div><br/><br/>
-
-    <!--   Effective tax rate   -->
-    <span style="color:blue; font-size: 20px;">
-        <u><b>{% trans "Effective tax rate" %}</b></u>
-    </span><br/>
-    <div>
-      <table class="data" id="effective_tax_rate" class="w3-table-all w3-hoverable" style="width:60%">
-      </table>
+  <!-- Nav pills -->
+  <ul class="nav nav-pills" role="tablist">
+    <li class="nav-item"><a id="calc_cost_of_debt" class="nav-link" data-toggle="pill" href="#tab_cost_of_debt">Cost of Debt</a></li>
+    <li class="nav-item"><a id="calc_cost_of_equity" class="nav-link" data-toggle="pill" href="#tab_cost_of_equity">Cost of Equity</a></li>
+    <li class="nav-item"><a id="calc_estimated_roic" class="nav-link" data-toggle="pill" href="#tab_estimated_roic">Estimated ROIC</a></li>
+    <li class="nav-item"><a id="calc_effective_tax_rate" class="nav-link" data-toggle="pill" href="#tab_effective_tax_rate">Effective tax rate</a></li>
+    <li class="nav-item"><a id="calc_risk_premium" class="nav-link" data-toggle="pill" href="#tab_risk_premium">Risk Premium</a></li>
+  </ul>
+  <!-- Tab panes -->
+  <div class="tab-content">
+    <div id="tab_cost_of_debt" class="container tab-pane">
+            <!--  Cost of Debt
+            <span style="color:blue; font-size: 20px;">
+                <u><b>{% trans "Cost of Debt" %}</b></u>
+            </span><br/>
+            -->
+            <table class="data" style="width:30%">
+                <thead><tr><th>Parameter</th><th>Value</th><th></th></tr></thead>
+                <tr><td class="account">{% trans "Risk Free" %}</td><td id="cofd_rf" style="text-align:right;"></td><td>%</td></tr>
+                <tr><td class="account">EBIT</td><td id="cofd_ebit" style="text-align:right;"></td><td></td></tr>
+                <tr><td class="account">{% trans "Interest Expense" %}</td>
+                    <td id="cofd_interest_expense" style="text-align:right;"></td></tr>
+                <tr><td class="account">{% trans "Interest Coverage" %}</td>
+                    <td id="cofd_interest_coverage" style="text-align:right;"></td><td></td></tr>
+                <tr><td class="account">{% trans "Estimated Bond Rating" %}</td>
+                    <td id="cofd_estimated_bond_rating" style="text-align:right;"></td><td></td></tr>
+                <tr><td class="account">{% trans "Estimated Company Default Spread" %}</td>
+                    <td id="cofd_estimated_company_default_spread" style="text-align:right;"></td><td>%</td></tr>
+                <tr><td class="account">{% trans "Estimated County Default Spread" %}</td>
+                    <td id="cofd_estimated_county_default_spread" style="text-align:right;"></td><td>%</td></tr>
+                <tr><td class="account">{% trans "Estimated Cost of Debt" %}</td>
+                    <td id="cofd_estimated_cost_of_debt" style="text-align:right;"></td><td>%</td></tr>
+            </table>
     </div>
-    <br/><br/><br/><br/>
+
+    <div id="tab_cost_of_equity" class="container tab-pane">
+              <!--  Cost of Equity
+              <span style="color:blue; font-size: 20px;">
+                 <u><b>{% trans "Cost of Equity" %}</b></u>
+              </span>
+              <br/>
+              -->
+              <table class="data" style="width:25%">
+                  <thead><tr><th>Parameter</th><th>Value</th><th></th></tr></thead>
+                  <tr><td class="account">{% trans "Risk Free" %}</td>
+                      <td id="cofe_rf" style="text-align:right;">0</td><td>%</td></tr>
+                  <tr><td class="account">{% trans "Unlevred Beta" %}</td>
+                      <td id="cofe_ub" style="text-align:right;">0</td><td></td></tr>
+                  <tr><td class="account">{% trans "Beta" %}</td>
+                      <td id="cofe_b" style="text-align:right;">0</td><td></td></tr>
+                  <tr><td class="account">{% trans "Mature marker risk premium" %}</td>
+                      <td id="cofe_rp" style="text-align:right;">0</td><td>%</td>
+                  </tr>
+                  <tr><td class="account">{% trans "Adj. Default Spread" %}</td>
+                      <td id="cofe_ads" style="text-align:right;">0</td><td>%</td></tr>
+                  <tr><td class="account">{% trans "Volatility ratio" %}</td>
+                      <td id="cofe_vr" style="text-align:right;">{{ project.volatility_ratio }}</td></tr>
+                  <tr><td class="account">{% trans "Total Country Risk" %}</td>
+                      <td id="cofe_tcr" style="text-align:right;">0</td><td>%</td></tr>
+                  <tr><td class="account">{% trans "Cost of Equity" %}</td>
+                      <td id="cofe_" style="text-align:right;">0</td><td>%</td></tr>
+              </table>
+    </div>
+
+    <div id="tab_estimated_roic" class="container tab-pane">
+            <!--    Estimated ROIC
+            <span style="color:blue; font-size: 20px;">
+                <u><b>{% trans "Estimated ROIC" %}</b></u>
+            </span><br/>
+             -->
+            <span style="color:blue; font-size: 20px;"># of Periods for estimation:</span>
+            <input id="roic_effective_tax_rate_periods" type="text" value="5" oninput="on_change_num_of_estimation_periods(event)" style="width:55px"/>
+            <table class="data" id="estimated_roic" class="w3-table-all w3-hoverable" style="width:100%">
+             </table>
+    </div>
+
+    <div id="tab_effective_tax_rate" class="container tab-pane">
+        <!--   Effective tax rate
+        <span style="color:blue; font-size: 20px;">
+            <u><b>{% trans "Effective tax rate" %}</b></u>
+        </span><br/>
+        -->
+            <span style="color:blue; font-size: 20px;"># of Periods for estimation:</span>
+            <input id="roic_effective_tax_rate_periods_" type="text" value="5" oninput="on_change_num_of_estimation_periods(event)" style="width:55px"/>
+          <table class="data" id="effective_tax_rate" class="w3-table-all w3-hoverable" style="width:100%">
+          </table>
+    </div>
+
+    <div id="tab_risk_premium" class="container tab-pane">
+        Risk Premium
+    </div>
+
+  </div>
+<br/><br/><br/><br/>
 </div>
 
 <!-- WACC -->
@@ -190,13 +212,21 @@ function set_cost_of_debt()
 
 <!--ROIC and taxes-->
 <script>
+
+function on_change_num_of_estimation_periods(event)
+{
+ document.getElementById('roic_effective_tax_rate_periods').value = event.target.value
+ document.getElementById('roic_effective_tax_rate_periods_').value = event.target.value
+ calculate_all()
+}
+
 // vObj["roic"]
 // vObj["itr"]
 function set_roic_efective_tax_rate(y, cd)
 {
  // --- Roic -----
  // --------------
- year = "<thead><th>Year</th>"
+ year = "<thead><th>Account</th>"
  oiat = "<tr><td class='account'>Operating Income After Tax</td>"
  ltd = "<tr><td class='account'>LT Liabilities (Non-Current)</td>"
  ltdc = "<tr><td class='account'>Long Term Debt (current)</td>"
@@ -244,25 +274,29 @@ function set_roic_efective_tax_rate(y, cd)
  document.getElementById('roic_st_').value = roic_st
 
  // ----------  effective_tax_rate  ------
- year = "<tr><th>Year</td>"
+ year = "<tr><th>Account</td>"
  it = "<tr><td class='account'>Actual Taxes</td>"
- ebit = "<tr><td class='account'>Operating Income</td>"
- nit = 0; nebit= 0;
+ ibt = "<tr><td class='account'>Income Before Taxes</td>"
+ nit = 0; nibt= 0;
  for( yy = nn_; yy <=valuation_year_; yy++)
  {
-  year += "<th>" + yy + "</th>"
-  it += "<td style='text-align:right'>" + cd[yy]["income_taxes"][0] + "</td>";
-  nit += cd[yy]["income_taxes"][0]
+  var income_tax = Number(removeCommas(document.getElementById(yy + "_20970").innerHTML));
+  var income = Number(removeCommas(document.getElementById(yy + "_20999").innerHTML));
+  var income_before_tax = Math.round(100*(income + income_tax))/100;
 
-  ebit += "<td style='text-align:right'>" + cd[yy]["ebit"][0] + "</td>"
-  nebit += cd[yy]["ebit"][0]
+  year += "<th>" + yy + "</th>"
+  it += "<td style='text-align:right'>" + document.getElementById(yy + "_20970").innerHTML + "</td>";
+  nit += income_tax;
+
+  ibt += "<td style='text-align:right'>" + toCommas(income_before_tax.toString()) + "</td>"
+  nibt += income_before_tax
  }
  year += "<th>Total</th></tr>"
- it += "<td style='text-align:right'>"+nit+"</td></tr>"
- ebit += "<td style='text-align:right'>"+nebit+"</td></tr>"
- itr = Math.round(10000*nit/nebit)/100
+ it += "<td style='text-align:right'>"+toCommas(nit.toString())+"</td></tr>"
+ ibt += "<td style='text-align:right'>"+toCommas(nibt.toString())+"</td></tr>"
+ itr = Math.round(10000*nit/nibt)/100
  vObj["itr"] = itr
- st = year + it + ebit + "<td style='text-align:right' colspan='"+(1+1*roic_effective_tax_rate_periods_)+"'>Actual Tax Rate</td><td id='calc_itr' style='text-align:right'>"+itr+"%</td></tr>"
+ st = year + it + ibt + "<td style='text-align:right' colspan='"+(1+1*roic_effective_tax_rate_periods_)+"'>Actual Tax Rate</td><td id='calc_itr' style='text-align:right'>"+itr+"%</td></tr>"
  document.getElementById('effective_tax_rate').innerHTML = st
  document.getElementById('effective_tax_rate_').value = itr
 }
@@ -282,4 +316,75 @@ function calculate_all()
   //--
   input_dcf()
 }
+</script>
+
+<!-- get_risk_premium -->
+<script>
+
+function set_active_tab_()
+{
+  var evt = new Event("click", {bubbles: true});
+  document.getElementById("calc_cost_of_debt").dispatchEvent(evt);
+  // --
+  if (vObj["risk_premium_downloaded"] == 0)
+  {
+    get_risk_premium() ; vObj["risk_premium_downloaded"] = 1;
+  }
+  // --
+}
+
+function get_risk_premium()
+{
+    this_year = new Date().getFullYear();
+    year50_ = this_year - 50;
+    year10_ = this_year - 10;
+     $.post('{% url "corporatevaluation:get_risk_premium" %}',
+      {
+        year50: year50_,
+        year10: year10_,
+      },
+      function(data){
+            var s = "<tr><th></th>"
+            var ss = "<tr><td></td>"
+            nz_ = 0
+            for (var k in data)
+            {
+              s += "<th colspan='2'>" + k +"</th>"
+              nzz_ = 0
+              for (var y in data[k])
+              {
+                  if (nz_ < 3)
+                  {
+                     eval("s_"+y+" = '<td>"+y+"-"+(this_year-1).toString()+"</td>'"); nz_ += 1;
+                     eval("s_s_"+y+" = '<td style=\"padding-right:5px;text-align: center;\">Std</td>'");
+                  }
+                  //alert('eval("s_s_"+y)')
+                  //alert(eval("s_s_"+y))
+
+                  for (var t in data[k][y])
+                  {
+                      if (nzz_ < 2)
+                      {
+                       ss += "<td>"+t+"</td>"; nzz_ += 1
+                      }
+                    eval("s_"+y+" += '<td style=\"padding-right:5px;text-align: center;\">" + data[k][y][t]['value'] + "</td>'")
+                    eval("s_s_"+y+" += '<td style=\"padding-right:5px;text-align: center;\">" + data[k][y][t]['std'] + "</td>'");
+                    //alert(eval("s_"+y))
+                    //alert(eval("s_s_"+y))
+
+                  }
+              }
+            }
+             ss += "</tr>"
+             s += "</tr>" + ss
+              for (var y in data[k])
+              {
+                    eval('s += "<tr>" + s_' + y + ' + "</tr>"')
+                    eval('s += "<tr>" + s_s_' + y + ' + "</tr>"')
+              }
+
+            document.getElementById("tab_risk_premium").innerHTML = "<table class='data'>" + s + "</table>"
+      });
+}
+
 </script>

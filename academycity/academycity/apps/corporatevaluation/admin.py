@@ -4,7 +4,9 @@ from django.utils.translation import ugettext_lazy as _
 from .models import (Project, RBOIC, CountryRegion, CountryRating, Industry,
                      Country, GlobalIndustryAverages, CompanyInfo, CompanyData, ToDoList,
                      XBRLMainIndustryInfo, XBRLIndustryInfo, XBRLCompanyInfoInProcess, XBRLValuationAccounts,
-                     XBRLCompanyInfo, XBRLValuationAccountsMatch)
+                     XBRLCompanyInfo, XBRLValuationAccountsMatch, XBRLValuationStatementsAccounts,
+                     XBRLRegion, XBRLCountry, XBRLCountryYearData,
+                     XBRLHistoricalReturnsSP, XBRLSPMoodys)
 
 # -*- coding: utf-8 -*-
 from cms.admin.placeholderadmin import PlaceholderAdminMixin
@@ -106,8 +108,13 @@ class XBRLCompanyInfoInProcessAdmin(admin.ModelAdmin):
 
 @admin.register(XBRLValuationAccounts)
 class XBRLValuationAccountsAdmin(admin.ModelAdmin):
-    list_display = ('id', 'order', 'account', 'type')
-    list_filter = ('type',)
+    list_display = ('id', 'order', 'account', 'type', 'statement', 'scale')
+    list_filter = ('type', 'statement')
+
+
+@admin.register(XBRLValuationStatementsAccounts)
+class XBRLValuationStatementsAccountsAdmin(admin.ModelAdmin):
+    list_display = ('id', 'order', 'statement')
 
 
 @admin.register(XBRLValuationAccountsMatch)
@@ -121,4 +128,51 @@ class XBRLCompanyInfoAdmin(admin.ModelAdmin):
     list_display = ('id', 'exchange', 'ticker', 'cik', 'company_name', 'company_letter')
     list_filter = ('exchange', 'company_letter')
     search_fields = ('ticker', )
+
+
+@admin.register(XBRLRegion)
+class XBRLRegionAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name', 'full_name', 'updated_adamodar')
+    list_filter = ('updated_adamodar', )
+
+
+@admin.register(XBRLCountry)
+class XBRLCountryAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name', 'region', 'updated_adamodar')
+    list_filter = ('region', 'updated_adamodar')
+    search_fields = ('name', )
+
+
+@admin.register(XBRLCountryYearData)
+class XBRLCountryYearDataAdmin(admin.ModelAdmin):
+    list_display = ('id', 'country', 'year'
+                    , 'sp_rating'
+                    , 'moodys_rate_completed_by_sp'
+                    , 'cds'
+                    , 'excess_cds_spread_over_us_cds'
+                    , 'rating_based_default_spread'
+                    , 'composite_risk_rating'
+                    , 'tax_rate'
+                    , 'gdp'
+                    # , 'moodys_rating'
+                    )
+    list_filter = ('country', 'year',)
+    search_fields = ('country', )
+
+
+@admin.register(XBRLHistoricalReturnsSP)
+class XBRLHistoricalReturnsSPAdmin(admin.ModelAdmin):
+    list_display = ('id', 'year', 'tb3ms', 'stock_tbill_return', 'stock_tbonds_return', 'stock_baa_return',
+                    'risk_premium',
+                    'return_on_sp500_real', 'return_on_tbond_real', 'tb3ms_rate_real', 'return_on_bbb_real',
+                    'return_on_sp500', 'tb3ms_rate', 'return_on_tbond', 'return_on_bbb', 'aaa_rate',
+                    'return_on_aaa', 'bbb_rate', 'tb10y', 'dividends', 'sp500', 'dividend_yield',
+                    'return_on_real_estate', 'home_prices', 'cpi')
+    list_filter = ('year',)
+
+
+@admin.register(XBRLSPMoodys)
+class XBRLSPMoodysAdmin(admin.ModelAdmin):
+    list_display = ('id', 'year', 'sp', 'moodys', 'default_spread')
+    list_filter = ('year',)
 

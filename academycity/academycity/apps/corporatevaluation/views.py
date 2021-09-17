@@ -15,6 +15,7 @@ from .models import (RBOIC, CountryRegion, CountryRating, Country, GlobalIndustr
                      XBRLValuationAccounts, XBRLValuationAccountsMatch,
                      XBRLIndustryInfo, Industry,
                      XBRLCompanyInfo, CompanyInfo)
+# --
 
 from ..core.sql import SQL
 from ..webcompanies.WebCompanies import WebSiteCompany
@@ -25,6 +26,7 @@ from bs4 import BeautifulSoup
 import re
 from ..core.utils import log_debug, clear_log_debug
 from django.db.models import Count
+from ..core.templatetags.core_tags import has_group
 
 
 # Fix game_id.  should use project_id
@@ -36,7 +38,12 @@ def home(request, obj_id):
     global_industry_averages = GlobalIndustryAverages.objects.all()
     project = Project.objects.filter(translations__language_code=get_language()).get(id=obj_id)
     country = Country.objects.all()
-    companies = XBRLCompanyInfo.objects.exclude(company_name='0').all()
+
+    companies = XBRLCompanyInfo.objects.filter(ticker__gte='9')
+    if not has_group(request.user, "admins"):
+        companies = companies.filter(is_active=True)
+    companies = companies.all()
+
     todolist = ToDoList.objects.filter().all()
     return render(request, 'corporatevaluation/home.html',
                   {'institution_obj': company_obj,
@@ -96,15 +103,16 @@ def get_interest_coverage_ratio(request):
 
 def get_industry_detail(request):
     sic_code=request.POST.get('sic_code')
-    if int(sic_code) == 1:
-        # cs = CompanyInfo.objects.exclude(company_name='0').all()
-        cs = XBRLCompanyInfo.objects.exclude(company_name='0').all()
-    else:
+
+    cs = XBRLCompanyInfo.objects.filter(ticker__gte='9')
+    if int(sic_code) != 1:
         # i = Industry.objects.get(sic_code=sic_code)
         i = XBRLIndustryInfo.objects.get(sic_code=sic_code)
-        # print(i)
-        # cs = CompanyInfo.objects.filter(industry=i).all()
-        cs = XBRLCompanyInfo.objects.filter(industry=i).all()
+        cs = cs.filter(industry=i)
+
+    if not has_group(request.user, "admins"):
+        cs = cs.filter(is_active=True)
+    cs = cs.all()
     ss = "0;-------"
     for c in cs:
         ss += "[+]" + str(c.id) + ";" + c.company_name
@@ -119,12 +127,138 @@ def set_default(v):
         pass
     return v
 
+    #
+    #
+    #
+    # try:
+    #     c = CompanyInfo.objects.get(ticker=xc.ticker)
+    #     for cd in c.company_data.all():
+    #
+    #         try:
+    #             _return_on_equity = round(100 * (cd.number_of_shares * cd.share_price / cd.p_over_e_ratio)) / 100
+    #         except Exception as e:
+    #             _return_on_equity = 0
+    #
+    #         try:
+    #             _eps = round(100 * cd.share_price / cd.p_over_e_ratio) / 100
+    #         except Exception as e:
+    #             _eps = 0
+    #
+    #         try:
+    #             _debt_to_total_equity = round(100 * cd.total_long_term_debt / cd.stockholders_equity) / 100
+    #         except Exception as e:
+    #             _debt_to_total_equity = 0
+    #
+    #         try:
+    #             _book_value_ratio = round(100 * cd.stockholders_equity / cd.number_of_shares) / 100
+    #         except Exception as e:
+    #             _book_value_ratio = 0
+    #
+    #         try:
+    #             _times_interest_earned = round(100 * cd.ebit / cd.interest_expense) / 100
+    #         except Exception as e:
+    #             _times_interest_earned = 0
+    #
+    #         try:
+    #             _net_profit_on_sales = round(100 * (cd.ebit - cd.income_taxes - cd.interest_expense) / cd.revenue) / 100
+    #         except Exception as e:
+    #             _net_profit_on_sales = 0
+    #
+    #         ll = {
+    #             # Balance Sheet
+    #             # Current Assets
+    #             'cash_cash_equivalents': (set_default(cd.cash_cash_equivalents), 'Cash & Equivalents'),
+    #             'goodwill': (set_default(cd.goodwill), 'Goodwill'),
+    #             'intangible_assets_net': (set_default(cd.intangible_assets_net), 'Intangible Assets(net)'),
+    #             # Debt
+    #             'noncurrent_liabilities': (set_default(cd.noncurrent_liabilities), 'Long-term Liabilities'),
+    #             'long_term_debt_noncurrent': (
+    #             set_default(cd.long_term_debt_noncurrent), 'LT Liabilities (Non-Current)'),
+    #             'total_long_term_debt': (set_default(cd.total_long_term_debt), 'Total long term debt'),
+    #             # Equity
+    #             'equity_attributable_to_oncontrolling_interest': (
+    #             set_default(cd.equity_attributable_to_oncontrolling_interest), 'Minority Interest'),
+    #             'preferred_stock': (set_default(cd.preferred_stock), 'Preferred Stocks'),
+    #             'stockholders_equity': (set_default(cd.stockholders_equity), 'Stockholders Equity'),
+    #             # Income Statement
+    #             'revenue': (set_default(cd.revenue), 'Revenues'),
+    #             'ebit': (set_default(cd.ebit), 'EBIT'),
+    #
+    #             'ebitda': (set_default(cd.ebitda), 'EBITDA'),
+    #             'interest_expense': (set_default(cd.interest_expense), 'Interest Expense'),
+    #             'income_taxes': (set_default(cd.income_taxes), 'Income Taxes'),
+    #
+    #             # Other Information
+    #             'share_price': (set_default(cd.share_price), 'Share Price'),
+    #             'market_value_equity': (set_default(cd.market_value_equity), 'MV of Equity'),
+    #             'enterprise_value': (set_default(cd.enterprise_value), 'Enterprise Value'),
+    #             'number_of_shares': (set_default(cd.number_of_shares), '# of Shares'),
+    #             # Ratios
+    #             # -------------
+    #             # current ratio
+    #             # > quick ratio
+    #             # > Debt to Total Assets
+    #             'times_interest_earned': (_times_interest_earned, 'Times Interest Earned'),
+    #             # > Account Receivable
+    #             # > Inventory
+    #             'net_profit_on_sales': (_net_profit_on_sales, 'Net Profit on Sales'),
+    #             # Gross Profit Margin
+    #             # Return on Assets
+    #             # 'return_on_assets': (round(100*(cd.ebit)/cd.interest_expense)/100, 'Return on Assets'),
+    #
+    #             'return_on_equity': (_return_on_equity, 'Income On Equity'),
+    #
+    #             'eps': (_eps, 'EPS'),
+    #             'p_over_e_ratio': (set_default(cd.p_over_e_ratio), 'P/E'),
+    #             # > Dividend Rate/Yield
+    #             # > Dividend Payout
+    #             'book_value_ratio': (_book_value_ratio, 'Book Value Ratio'),
+    #             #
+    #             'p_over_s_ratio': (set_default(cd.p_over_s_ratio), 'P/S'),
+    #             'p_over_b_ratio': (set_default(cd.p_over_b_ratio), 'P/B'),
+    #             'p_over_cash_flow_ratio': (set_default(cd.p_over_cash_flow_ratio), 'P/CF'),
+    #             'p_over_ebitda_ratio': (set_default(cd.p_over_ebitda_ratio), 'P/EBITDA'),
+    #             'debt_to_total_equity': (_debt_to_total_equity, 'Debt to Total Equity'),
+    #             'interest_coverage_ratio': (
+    #             set_default(cd.interest_coverage_ratio_calculated), 'Interest Coverage Ratio'),
+    #             'effective_tax_rate': (set_default(cd.effective_tax_rate), 'Effective Tax Rate'),
+    #             'ev_over_revenue': (set_default(cd.ev_over_revenue), 'EV Over Revenue')
+    #         }
+    #         # print(cd.year)
+    #         lll[cd.year] = ll
+    #         country_id = 0
+    #         sic_code_ = 0
+    #         sic_description_ = ''
+    #         country_id = Country.objects.get(country='United States').id
+    #         print(country_id)
+    #
+    #         sic_code_ = xc.industry.sic_code
+    #         print(sic_code_)
+    #         sic_description_ = xc.industry.sic_description
+    #     # print(lll)
+    # except Exception as ex:
+    #     print('ex')
+    #     print(ex)
+    #
+    # data = {'ticker': xc.ticker, 'sic_code': sic_code_, 'country_id': country_id,
+    #         'sic_description': sic_description_, 'company_data': lll}
+    #
+    # # country_id = Country.objects.get(country='United States').id
+    # # data = {'ticker': c.ticker, 'sic_code': c.industry.sic_code, 'country_id': country_id,
+    # #         'sic_description': c.industry.sic_description, 'company_data': lll}
+    # return JsonResponse(data)
+
 
 # Should be removed
 def get_company_detail(request):
+    lll = {}
+
     sid = request.POST.get('id')
     xc = XBRLCompanyInfo.objects.get(id=sid)
-    lll = {}
+    country_id = Country.objects.get(country='United States').id
+    data = {'ticker': xc.ticker, 'sic_code': xc.industry.sic_code, 'country_id': country_id,
+            'sic_description': xc.industry.sic_description, 'company_data': lll}
+
     try:
         c = CompanyInfo.objects.get(ticker=xc.ticker)
         for cd in c.company_data.all():
@@ -221,14 +355,11 @@ def get_company_detail(request):
             }
             # print(cd.year)
             lll[cd.year] = ll
+            data['company_data'] = lll
         # print(lll)
     except Exception as ex:
-        pass
-
-    country_id = Country.objects.get(country='United States').id
-    data = {'ticker': xc.ticker, 'sic_code': xc.industry.sic_code, 'country_id': country_id,
-            'sic_description': xc.industry.sic_description, 'company_data': lll}
-
+        print('ex')
+        print(ex)
 
     # country_id = Country.objects.get(country='United States').id
     # data = {'ticker': c.ticker, 'sic_code': c.industry.sic_code, 'country_id': country_id,
@@ -334,6 +465,35 @@ def admin_setup(request):
         return JsonResponse({'status': 'ok'})
     except Exception as ex:
         return JsonResponse({'status': 'error: '+str(ex)})
+
+
+def load_tax_rates_by_country_year(request):
+    try:
+        acx = AcademyCityXBRL()
+        acx.load_tax_rates_by_country_year()
+        return JsonResponse({'status': 'ok'})
+    except Exception as ex:
+        return JsonResponse({'status': 'error: '+str(ex)})
+
+
+def load_sp_returns(request):
+    try:
+        acx = AcademyCityXBRL()
+        acx.load_sp_returns()
+        return JsonResponse({'status': 'ok'})
+    except Exception as ex:
+        return JsonResponse({'status': 'error: '+str(ex)})
+
+
+def load_country_premium(request):
+    try:
+        # print('load_country_premium(request)')
+        acx = AcademyCityXBRL()
+        acx.load_country_premium()
+        return JsonResponse({'status': 'ok'})
+    except Exception as ex:
+        return JsonResponse({'status': 'error: '+str(ex)})
+
 # End Admin
 
 
@@ -615,41 +775,37 @@ def clean_data_for_all_companies(request):
     return JsonResponse(acx.clean_data_for_all_companies())
 
 
+def create_company_by_ticker(request):
+    ticker = request.POST.get('ticker')
+    # print('-1-'*10)
+    # print(ticker)
+    # print('-1-'*10)
+
+    acx = AcademyCityXBRL()
+    response = acx.create_company_by_ticker(ticker)
+
+    return JsonResponse(response)
+
+
 def copy_processed_companies(request):
     acx = AcademyCityXBRL()
     return JsonResponse(acx.copy_processed_companies())
 
 
 def get_data_ticker(request):
-    # log_debug("in get_data_ticker 1")
     ticker_ = request.POST.get('ticker')
-
-    # remove the following line
-    accounting_standard_ = request.POST.get('accounting_principle')
-    #
-
-    # log_debug("ticker: " + ticker_)
-    # log_debug("accounting_principle: " + accounting_principle_)
-
-    accounting_principle_ = 'us-gaap'
-    # accounts_ = {'instant': [], 'flow': []}
-    # for a in XBRLValuationAccountsMatch.objects.all():
-    #     if a.account.type == 1:
-    #         accounts_['instant'].append(a.match_account.lower())
-    #     else:
-    #         accounts_['flow'].append(a.match_account.lower())
-    #     accounting_standard_ = a.accounting_standard
-
-    # print('accounts_')
-    # print(accounts_)
-    # print('accounts_')
-    # accounts_ = {'instant': {'stockholdersequity'}, 'flow': {'revenuefromcontractwithcustomerexcludingassessedtax'}}
-
-    # log_debug("before AcademyCityXBRL() 1")
     acx = AcademyCityXBRL()
-    # log_debug("after AcademyCityXBRL() 2")
-    data = acx.get_data_for_cik(cik=ticker_, type='10-K', accounting_standard=accounting_standard_)
-    # log_debug("after acx.get_data_for_cik 3")
+    data = acx.get_data_for_cik(cik=ticker_, type='10-K')
+    request.session['cv_statements'] = data['statements']
+    return JsonResponse(data)
+
+
+# Valuation
+def get_risk_premium(request):
+    year50 = request.POST.get('year50')
+    year10 = request.POST.get('year10')
+    acx = AcademyCityXBRL()
+    data = acx.get_risk_premium(year10=year10, year50=year50)
     return JsonResponse(data)
 
 
@@ -666,7 +822,7 @@ def onchange_account(request):
     # print('-1'*20)
     accounting_standard_ = request.POST.get('accounting_standard')
     match_account_ = request.POST.get('match_account')
-    account_id = request.POST.get('account_id')
+    account_order = request.POST.get('account_order')
     ticker = request.POST.get('ticker')
     year_ = request.POST.get('year')
     sic_ = request.POST.get('sic')
@@ -675,11 +831,11 @@ def onchange_account(request):
     # print(company_)
     # print('-13'*20)
 
-    # print('account_id')
-    # print(account_id)
-    if account_id != "-1":
+    # print('account_order')
+    # print(account_order)
+    if account_order != "-1":
         # print('account_id')
-        account_ = XBRLValuationAccounts.objects.get(id=account_id)
+        account_ = XBRLValuationAccounts.objects.get(order=account_order)
         # print('account_')
         # print(account_)
         # print('account_')
@@ -707,7 +863,6 @@ def onchange_account(request):
         i, created = XBRLValuationAccountsMatch.objects.get_or_create(year=year_, company=company_, account=account_,
                                                                       match_account=match_account_,
                                                                       accounting_standard=accounting_standard_)
-
         # print('-21'*10)
         # print(i)
         # print('-22'*10)
@@ -715,8 +870,15 @@ def onchange_account(request):
         # print('-23'*10)
 
         acx = AcademyCityXBRL()
-        matching_accounts, accounts = acx.get_matching_accounts(ticker=ticker, year=int(year_), sic=sic_)
+        matching_accounts, accounts, used_accounting_standards = \
+            acx.get_matching_accounts(ticker=ticker, year=int(year_), sic=sic_,
+                                      statements=request.session['cv_statements'])
+
         dic = {'status': 'ok', 'matching_accounts': matching_accounts}
+
+        # print('dic matching_accounts')
+        # print(dic)
+        # print('dic matching_accounts')
         return JsonResponse(dic)
 
     except Exception as ex:
@@ -746,3 +908,4 @@ def get_duplications_tickers(request):
         print(c)
         c.delete()
     return JsonResponse(dic)
+

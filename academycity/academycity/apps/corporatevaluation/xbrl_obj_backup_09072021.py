@@ -17,7 +17,7 @@ from django.db.models import Avg
 from .models import (XBRLMainIndustryInfo, XBRLIndustryInfo, XBRLCompanyInfoInProcess,
                      XBRLCompanyInfo, XBRLValuationStatementsAccounts, XBRLValuationAccounts, XBRLValuationAccountsMatch,
                      XBRLRegion, XBRLCountry, XBRLCountryYearData,
-                     XBRLHistoricalReturnsSP, XBRLSPMoodys)
+                     XBRLHistoricalReturnsSP)
 
 # cik = '0000051143'
 # type = '10-K'
@@ -59,18 +59,7 @@ class AcademyCityXBRL(object):
         try:
             l_years = [1928, year50, year10]
             for y in l_years:
-
-                # print(y)
-                # for rp in XBRLHistoricalReturnsSP.objects.filter(year__gte=y).all():
-                #     try:
-                #         print(rp)
-                #         print(rp.return_on_sp500, rp.tb3ms_rate, rp.return_on_tbond)
-                #     except Exception as ex:
-                #         print(ex)
-                #
-                # print(2222222)
                 ll = [[rp.return_on_sp500, rp.tb3ms_rate, rp.return_on_tbond] for rp in XBRLHistoricalReturnsSP.objects.filter(year__gte=y).all()]
-
                 df = pd.DataFrame(ll)
                 df.columns = ['M', 'TB', 'B']
                 df['M_TB'] = df['M'] - df['TB']
@@ -105,7 +94,7 @@ class AcademyCityXBRL(object):
                 dic['Geometric'][y]['Stocks-TBills']['std'] = ''
                 dic['Geometric'][y]['Stocks-TBonds']['std'] = ''
 
-            # print(dic)
+            print(dic)
         except Exception as ex:
             print(ex)
         return dic
@@ -137,9 +126,9 @@ class AcademyCityXBRL(object):
 
         dic_company_info['company_info']['10k_url'] = url
         #
-        # print('-'*100)
-        # print(url)
-        # print('-'*100)
+        print('-'*100)
+        print(url)
+        print('-'*100)
         #
         # print("Current Time 1 =", datetime.datetime.now().strftime("%H:%M:%S"))
         edgar_resp = requests.get(url, headers=headers, timeout=30)
@@ -175,8 +164,7 @@ class AcademyCityXBRL(object):
             try:
                 cells = row.find_all('td')
                 if len(cells) > 3:
-                    if cells[0].text.lower() != type.lower():
-                        continue
+                    # print(cells[3].text)
                     # for filing_year in range(2019, 2020):
                     for filing_year in range(self.xbrl_start_year, self.today_year+1):
                         if str(filing_year) in cells[3].text:
@@ -192,12 +180,6 @@ class AcademyCityXBRL(object):
 
         # Obtain HTML for document page
         statements = {}
-        for statement in XBRLValuationStatementsAccounts.objects.all():
-            statements[statement.order] = {'name': statement.statement, 'accounts': {}}
-            for a in statement.xbrl_valuation_statements.all():
-                statements[statement.order]['accounts'][a.order] = [a.account, a.type, a.scale]
-        #
-        # print(statements)
         #
         dic_data_list = []
         for key, value in dic_data.items():
@@ -217,13 +199,12 @@ class AcademyCityXBRL(object):
 
         results = []
         # print("Current Time Before ThreadPoolExecutor =", datetime.datetime.now().strftime("%H:%M:%S"))
-
         with ThreadPoolExecutor(max_workers=len(dic_data)) as pool:
             results = pool.map(self.get_data_for_years, dic_data_list)
         # print("Current Time After ThreadPoolExecutor =", datetime.datetime.now().strftime("%H:%M:%S"))
         for r in results:
             dic_data[r[0]] = r[1]
-            # statements = r[4]
+            statements = r[4]
 
         # print("Current Time After process result ThreadPoolExecutor =", datetime.datetime.now().strftime("%H:%M:%S"))
 
@@ -233,10 +214,71 @@ class AcademyCityXBRL(object):
         dic_company_info['statements'] = statements
 
         # print('-16' * 10)
-        # print(dic_company_info)
+        print(dic_company_info)
         # print('-16' * 10)
 
         return dic_company_info
+
+    def get_matching_accounts(self, ticker, year, sic):
+        try:
+            if year <= self.xbrl_base_year:
+                years = sorted(range(year, self.xbrl_base_year+1), reverse=True)
+            else:
+                years = range(self.xbrl_base_year, year+1)
+        except Exception as ex:
+            print(ex)
+
+        matches = XBRLValuationAccountsMatch.objects.filter((Q(year=0) & Q(company__industry__sic_code=sic)) |
+                                                            (Q(year__in=years) & Q(company__ticker=ticker))).all()
+        used_accounting_standards = []
+        dic_matches = {}
+        for m in matches:
+            if m.year == 0:
+                dic_matches[m.account.id] = [m.match_account, m.accounting_standard]
+                if m.accounting_standard not in used_accounting_standards:
+                    used_accounting_standards.append(m.accounting_standard)
+
+        # print('dic_matches 1')
+        # print(dic_matches)
+        # print('dic_matches 10')
+        for y in years:
+            for m in matches:
+                if m.year == y:
+                    dic_matches[m.account.id] = [m.match_account, m.accounting_standard]
+                    if m.accounting_standard not in used_accounting_standards:
+                        used_accounting_standards.append(m.accounting_standard)
+
+        matches_for_report = {}
+        accounts_ = {'instant': [], 'flow': [], 'statements': {}}
+        for statement in XBRLValuationStatementsAccounts.objects.all():
+            accounts_['statements'][statement.order] = {'name': statement.statement, 'values': {}}
+            for a in statement.xbrl_valuation_statements.all():
+        # accounts__ = XBRLValuationAccounts.objects.order_by("order").all()
+        # for a in accounts__:
+            # print(str(a.id)+"--"+str(a.order)+"--"+a.account )
+                try:
+                    if a.id in dic_matches:
+                        ma_, ma_std = dic_matches[a.id][0], dic_matches[a.id][1]
+                    else:
+                        ma_, ma_std = "", ""
+                    # matches_for_report[a.order] = [a.account, ma_, a.id, a.type, ma_std, a.scale]
+                    matches_for_report[a.order] = [a.account, ma_, a.id, a.type, ma_std]
+
+                    if a.type == 1:
+                        accounts_['instant'].append((ma_.lower(), a.scale))
+                    else:
+                        accounts_['flow'].append((ma_.lower(), a.scale))
+
+                    if a.statement.order & a.statement.order == 2:
+                        accounts_['statements']['income_statement'][a.order] = a.account
+                    elif a.statement.order & a.statement.order == 1:
+                        accounts_['statements']['balance_sheet'][a.order] = a.account
+
+                except Exception as ex:
+                    print('ex 111')
+                    print(str(ex))
+                    print('ex')
+        return matches_for_report, accounts_, used_accounting_standards
 
     def insure_two_digit_month_day(self, s):
         if len(s) == 1:
@@ -248,6 +290,7 @@ class AcademyCityXBRL(object):
         # dic_data_year[3] = ticker
         # dic_data_year[0] = year
         # dic_data_year[2] = sic
+        dic_data_year[1]['dei'] = {}
 
         # print('-30'*10)
         # print(str(dic_data_year[0]) + dic_data_year[1]['href'])
@@ -274,34 +317,30 @@ class AcademyCityXBRL(object):
         # print(dic_data_year[1]['href'])
         # print('-1-'*10)
 
-        try:
-            rows = table_tag.find_all('tr')
+        rows = table_tag.find_all('tr')
 
-            for row in rows:
-                cells = row.find_all('td')
-                if len(cells) > 3:
-                    if 'INS' in cells[3].text or 'XML' in cells[3].text:
-                        #
-                        # print(cells[3].text)
-                        #
-                        xbrl_link = cells[2].a['href']
+        for row in rows:
+            cells = row.find_all('td')
+            if len(cells) > 3:
+                if 'INS' in cells[3].text or 'XML' in cells[3].text:
+                    #
+                    # print(cells[3].text)
+                    #
+                    xbrl_link = cells[2].a['href']
 
-            dic_data_year[1]['xbrl_link'] = 'https://www.sec.gov' + xbrl_link
-            accession_number = xbrl_link.split('/')
-            # print('-1'*10)
-            # print(accession_number)
-            # print('-1'*10)
+        dic_data_year[1]['xbrl_link'] = 'https://www.sec.gov' + xbrl_link
+        accession_number = xbrl_link.split('/')
+        # print('-1'*10)
+        # print(accession_number)
+        # print('-1'*10)
 
-            view_link = 'https://www.sec.gov/cgi-bin/viewer?action=view&cik='
-            view_link += accession_number[4]+'&accession_number='+accession_number[5]+'&xbrl_type=v#'
+        view_link = 'https://www.sec.gov/cgi-bin/viewer?action=view&cik='
+        view_link += accession_number[4]+'&accession_number='+accession_number[5]+'&xbrl_type=v#'
 
-            r_link = "https://www.sec.gov/Archives/edgar/data/"+accession_number[4]+"/"+accession_number[5]+"/R"
+        r_link = "https://www.sec.gov/Archives/edgar/data/"+accession_number[4]+"/"+accession_number[5]+"/R"
 
-            dic_data_year[1]['r_link'] = r_link
-            dic_data_year[1]['view_link'] = view_link
-        except Exception as ex:
-            return dic_data_year
-
+        dic_data_year[1]['r_link'] = r_link
+        dic_data_year[1]['view_link'] = view_link
         try:
             # print("Current Time 3 =", datetime.datetime.now().strftime("%H:%M:%S"))
             xbrl_resp = requests.get(dic_data_year[1]['xbrl_link'], headers=headers, timeout=30)
@@ -315,7 +354,6 @@ class AcademyCityXBRL(object):
         soup = BeautifulSoup(xbrl_str, 'lxml')
         # print("Current Time 33 =", datetime.datetime.now().strftime("%H:%M:%S"))
 
-        dic_data_year[1]['dei'] = {}
         for tag in soup.find_all(re.compile("dei:")):
             name_ = tag.name.split(":")
             dic_data_year[1]['dei'][name_[1]] = tag.text
@@ -376,7 +414,6 @@ class AcademyCityXBRL(object):
 
         # print('-flow'*20)
         # print(flow_context_id)
-        # print(documentperiodenddate)
         # print('-flow'*20)
 
         # print('=bs'*50)
@@ -405,11 +442,16 @@ class AcademyCityXBRL(object):
         # print('-instant'*10)
 
         matching_accounts, accounts_, used_accounting_standards = \
-            self.get_matching_accounts(dic_data_year[3], int(dic_data_year[1]['dei']['documentfiscalyearfocus']),
-                                       dic_data_year[2], dic_data_year[4])
-
+            self.get_matching_accounts(dic_data_year[3], int(dic_data_year[1]['dei']['documentfiscalyearfocus']), dic_data_year[2])
         dic_data_year[1]['matching_accounts'] = matching_accounts
+
         year_data = {}
+
+        # print('-2'*200)
+        # print(accounts_['instant'])
+        # print('-2'*200)
+        # print(accounts_['flow'])
+        # print('-2'*200)
 
         # print("Current Time 6 =", datetime.datetime.now().strftime("%H:%M:%S"))
         for std in used_accounting_standards:
@@ -417,94 +459,53 @@ class AcademyCityXBRL(object):
             for tag in tag_list:
                 name_ = tag.name.split(":")
                 try:
-                    if name_[1] in accounts_['instant'] and tag['contextref'] == instant_context_id:
-                        order = accounts_['instant'][name_[1]][0]
-                        scale = accounts_['instant'][name_[1]][1]
-                        if scale == 1:
-                            year_data[order] = tag.text
-                        else:
-                            year_data[order] = int(tag.text)/scale
+                    # if name_[1] in accounts_['instant'] and tag['contextref'] == instant_context_id:
+                    #     print(name_[1])
+                    #     print(accounts_['instant'])
 
-                    if name_[1] in accounts_['flow'] and tag['contextref'] == flow_context_id:
-                        order = accounts_['flow'][name_[1]][0]
-                        scale = accounts_['flow'][name_[1]][1]
-                        if scale == 1:
-                            year_data[order] = tag.text
-                        else:
-                            year_data[order] = int(tag.text)/scale
+                    # CashCashEquivalentsRestrictedCashAndRestrictedCashEquivalentsIncludingDisposalGroupAndDiscontinuedOperations
+                    # if 'CashCashEquivalentsRestrictedCashAndRestrictedCashEquivalentsIncludingDisposalGroupAndDiscontinuedOperations'.lower() == name_[1].lower():
+                    #     print('-1-'*20)
+                    #     print(name_[1])
+                    #     print(instant_context_id)
+                    #     print(flow_context_id)
+
+                    if (name_[1] in accounts_['instant'] and tag['contextref'] == instant_context_id) or \
+                            (name_[1] in accounts_['flow'] and tag['contextref'] == flow_context_id):
+
+                        year_data[name_[1]] = tag.text/matching_accounts
+
+                    # if dic_data_year[0] == 2012:
+                    #     print(name_[1])
+                    #     # print(tag.text)
 
                 except Exception as ex:
-                    pass
-                    # print("Error: year=" + str(dic_data_year[0]) + "   dic=" + dic_data_year[1]['href'] + "   " + str(ex) + tag.text)
+                    print("Error: " + str(dic_data_year[0]) + "   " + dic_data_year[1]['href'] + "   " + str(ex))
+
+                # try:
+                #     if tag['contextref'] == instant_context_id and name_[1] not in dic_data_year[4]['instant']:
+                #         dic_data_year[4]['instant'].append(name_[1])
+                #     elif tag['contextref'] == flow_context_id and name_[1] not in dic_data_year[4]['flow']:
+                #         dic_data_year[4]['flow'].append(name_[1])
+                # except Exception as ex:
+                #     pass
+
+                # print(ex)
 
         dic_data_year[1]['year_data'] = year_data
+        dic_data_year[4] = accounts_['statements']
+
+        # print('year_data')
+        # print(accounts)
+        # print(("-"+str(year))*5)
+        # print(year_data)
+        # print(("-"+str(year))*5)
+        # print('acc--'*10)
+        # print(acc)
+
         # print("Current Time End get data = " + str(dic_data_year[0]), datetime.datetime.now().strftime("%H:%M:%S"))
+
         return dic_data_year
-
-    def get_matching_accounts(self, ticker, year, sic, statements):
-        try:
-            if year <= self.xbrl_base_year:
-                years = sorted(range(year, self.xbrl_base_year+1), reverse=True)
-            else:
-                years = range(self.xbrl_base_year, year+1)
-        except Exception as ex:
-            print(ex)
-
-        matches = XBRLValuationAccountsMatch.objects.filter((Q(year=0) & Q(company__industry__sic_code=sic)) |
-                                                            (Q(year__in=years) & Q(company__ticker=ticker))).all()
-        used_accounting_standards = []
-        dic_matches = {}
-        for m in matches:
-            if m.year == 0:
-                dic_matches[m.account.order] = [m.match_account, m.accounting_standard]
-                if m.accounting_standard not in used_accounting_standards:
-                    used_accounting_standards.append(m.accounting_standard)
-        for y in years:
-            for m in matches:
-                if m.year == y:
-                    dic_matches[m.account.order] = [m.match_account, m.accounting_standard]
-                    if m.accounting_standard not in used_accounting_standards:
-                        used_accounting_standards.append(m.accounting_standard)
-
-        # print('dic_matches')
-        # print(dic_matches)
-        # print('dic_matches')
-
-        matching_accounts = {}
-        accounts_ = {'instant': {}, 'flow': {}}
-
-        for st_ in statements:
-            for a_order in statements[st_]['accounts']:
-                # statements[st_]['accounts'][a_order] = [a.account, a.type, a.scale]
-                # dic_matches[a_order] = [m.match_account, m.accounting_standard]
-
-                # print(a_order)
-                # if int(a_order) in dic_matches:
-                #     print('in')
-                # else:
-                #     print('not')
-                # print('str')
-                # print(dic_matches)
-                # if str(a_order) in dic_matches:
-                #     print('in')
-                # else:
-                #     print('not')
-                # print('str')
-
-                if int(a_order) in dic_matches:
-                    ma_, ma_std = dic_matches[a_order][0].lower(), dic_matches[a_order][1].lower()
-                else:
-                    ma_, ma_std = "", ""
-
-                # print(ma_)
-
-                if ma_ != '':
-                    if statements[st_]['accounts'][a_order][1] == 1:
-                        accounts_['instant'][ma_] = (a_order, statements[st_]['accounts'][a_order][2])
-                    else:
-                        accounts_['flow'][ma_] = (a_order, statements[st_]['accounts'][a_order][2])
-                matching_accounts[a_order] = [ma_, ma_std]
-        return matching_accounts, accounts_, used_accounting_standards
 
     def save_industry_default(self, year, ticker, sic):
         dic = {'status': 'ok'}
@@ -940,210 +941,4 @@ class AcademyCityXBRL(object):
                 print('ex')
                 print(ex)
                 print('ex')
-
-    def load_country_premium(self):
-        # print('in object load_country_premium(request)')
-        match = {'Czech Republic': 'Czechia',
-                 'Moldova': 'Republic of Moldova',
-                 'United Kingdom': 'United Kingdom of Great Britain and NorthernIreland',
-                 'Jersey (States of)': 'Jersey',
-                 'Guernsey (States of)': 'Guernsey',
-                 'Bolivia': 'Bolivia(Plurinational State of)',
-                 "Côte d'Ivoire": "Cote d'Ivoire",
-                 'Democratic Republic of Congo': 'Democratic Republic of the Congo',
-                 'Congo (Democratic Republic of)': 'Democratic Republic of the Congo',
-                 'Korea': 'Republic of Korea',
-                 'Bolivia(Plurinational State of)': 'Bolivia (Plurinational State of)',
-                 'United Kingdom of Great Britain and NorthernIreland': 'United Kingdom of Great Britain and Northern Ireland'}
-        file = "ctrypremJuly21"
-        df = self.load_excel_data(file, sheet_name="Data1")
-        # print(df[100:])
-        name_list = [x for x in df['name'].unique() if str(x) != 'nan']
-        # print(name_list)
-
-        # for r in df:
-        #     print(df[r])
-
-        for r in name_list:
-            # print(r)
-            # print(df.loc[df['name'] == r])
-            # print("------")
-            z = 0
-            for i, c in df.loc[df['name'] == r].iterrows():
-                if z == 0:
-                    # print(c['name'])
-                    try:
-                        region, created = XBRLRegion.objects.get_or_create(name=c['name'])
-                        region.full_name = c['Region']
-                        if created:
-                            region.updated_adamodar = True
-                        region.save()
-                    except Exception as ex:
-                        print('Errot 10: '+ str(ex))
-                    z = 1
-                try:
-                    if c['Country'] in match:
-                        s_country = match[c['Country']]
-                    else:
-                        s_country = c['Country']
-                    # print('='*20)
-                    # print(s_country)
-                    # if c['Country'] == 'Czech Republic':
-                    #     s_country = 'Czechia'
-                    # elif c['Country'] == 'Moldova':
-                    #     s_country = 'Republic of Moldova'
-                    # elif c['Country'] == 'United Kingdom':
-                    #     s_country = 'United Kingdom of Great Britain and NorthernIreland'
-                    # elif c['Country'] == 'Jersey (States of)':
-                    #     s_country = 'Jersey'
-                    # elif c['Country'] == 'Guernsey (States of)':
-                    #     s_country = 'Guernsey'
-                    # elif c['Country'] == 'Bolivia':
-                    #     s_country = 'Bolivia(Plurinational State of)'
-                    # elif c['Country'] == "Côte d'Ivoire":
-                    #     s_country = "Cote d'Ivoire"
-                    # elif c['Country'] == "Democratic Republic of Congo":
-                    #     s_country = "Democratic Republic of the Congo"
-                    # elif c['Country'] == "Congo (Democratic Republic of)":
-                    #     s_country = "Democratic Republic of the Congo"
-                    # elif c['Country'] == "Korea":
-                    #     s_country = "Republic of Korea"
-                    # elif c['Country'] == "Bolivia(Plurinational State of)":
-                    #     s_country = "Bolivia (Plurinational State of)"
-                    # else:
-                    #     s_country = c['Country']
-
-                    if not XBRLCountry.objects.filter(name=s_country).all().count() > 0:
-                        XBRLCountry.objects.create(region=region, name=s_country, updated_adamodar=True)
-                        # print('created')
-                        # print(c['Country'])
-                    else:
-                        country = XBRLCountry.objects.filter(name=s_country).all()[0]
-                        country.region = region
-                        country.updated_adamodar = True
-                        country.save()
-                        # print('updated')
-                        # print(c['Country'])
-                except Exception as ex:
-                    print('Error 100: ' + str(ex))
-        # try:
-        #     XBRLCountryYearData.objects.all().update(sp_rating='', moodys_rating='')
-        # except Exception as ex:
-        #     print(ex)
-
-        # print('--SP Moodys')
-        for i, c in df.iterrows():
-            s_country_ = 'Country1'
-            if c[s_country_] in match:
-                s_country = match[c[s_country_]]
-            else:
-                s_country = c[s_country_]
-            # print('-'*50)
-            # print(s_country)
-            # print(c)
-            try:
-                country = XBRLCountry.objects.filter(name=s_country).all()[0]
-                data, created = XBRLCountryYearData.objects.get_or_create(country=country, year=2020)
-                if str(c['sp_rating_2020']) == 'nan':
-                    s_sp = ''
-                else:
-                    s_sp = c['sp_rating_2020']
-                data.sp_rating = s_sp
-                # print(s_country + "                  " + str(c['Moodys_rating_2020']))
-
-                if str(c['Moodys_rating_2020']) == 'nan':
-                    s_moodys = ''
-                else:
-                    s_moodys = c['Moodys_rating_2020']
-                data.moodys_rating = s_moodys
-
-                data.tax_rate = c['tax_rate_2020']
-                data.save()
-                # print(data)
-            except Exception as ex:
-                pass
-                # print("Error 229: "+str(ex))
-                # print(s_country)
-                # print(c)
-                # print("Error 229: "+str(ex))
-
-        # print('--composite_risk_rating_7_21 --')
-        for i, c in df.iterrows():
-            s_country_ = 'Country2'
-            if c[s_country_] in match:
-                s_country = match[c[s_country_]]
-            else:
-                s_country = c[s_country_]
-            # print(s_country)
-            # print(c)
-
-            try:
-                country = XBRLCountry.objects.filter(name=s_country).all()[0]
-                data, created = XBRLCountryYearData.objects.get_or_create(country=country, year=2020)
-                data.composite_risk_rating = c['composite_risk_rating_7_21']
-                data.save()
-                # print(data)
-            except Exception as ex:
-                pass
-                # print("Error 230: "+str(ex))
-                # print(s_country)
-                # print("Error 230: "+str(ex))
-
-        # print('-- CDS_07_01_20211 --')
-        for i, c in df.iterrows():
-            s_country_ = 'Country3'
-            if c[s_country_] in match:
-                s_country = match[c[s_country_]]
-            else:
-                s_country = c[s_country_]
-            # print(s_country)
-            # print(c)
-            try:
-                data, created = XBRLCountryYearData.objects.get_or_create(country=country, year=2020)
-
-                # need to consider this.  Since three country with missing data turned to 0.
-                if str(c['CDS_01_01_2021']) == 'nan':
-                    s_ = 0
-                else:
-                    s_ = 100*c['CDS_01_01_2021']
-                data.cds = s_
-                data.save()
-                # print(data)
-            except Exception as ex:
-                pass
-                # print("Error 231: "+str(ex))
-                # print(s_country)
-                # print("Error 231: "+str(ex))
-
-        # print('-- SPMoodys 1--')
-        for i, c in df.iterrows():
-            try:
-                # print('-'*50)
-                # print(c['SP'])
-                # print(c['Moodys'])
-                # print(c['sp_moodys_year'])
-
-                if str(c['sp_moodys_year']) != 'nan':
-                    # print('-'*50)
-                    # print(c['sp_moodys_year'])
-                    d, created = XBRLSPMoodys.objects.get_or_create(year=c['sp_moodys_year'], sp=c['SP'], moodys=c['Moodys'])
-                    # print(d)
-            except Exception as ex:
-                pass
-                # print("Error 232: "+str(ex))
-                # print(c['sp_moodys_year'])
-                # print("Error 232: "+str(ex))
-
-        # print('-- SPMoodys 2--')
-        for i, c in df.iterrows():
-            try:
-                if str(c['Rating']) != 'nan':
-                    d = XBRLSPMoodys.objects.get(year=int(c['rating_year']), moodys=c['Rating'])
-                    dd = round(c['Default_Spread_1_1_2021']/100, 2)
-                    d.default_spread = dd
-                    d.save()
-            except Exception as ex:
-                pass
-                # print("Error 233: "+str(ex))
-
-        # print('Done')
+#

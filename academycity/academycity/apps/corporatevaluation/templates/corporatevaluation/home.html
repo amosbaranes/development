@@ -4,6 +4,17 @@
 
 {% block title %}<title>Corporate Valuation</title>{% endblock title %}
 
+{% block links %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-KyZXEAg3QhqLMpG8r+8fhAXLRk2vvoC2f3B09zVXn8CA5QIVfZOJ3BCsw2P0p/We" crossorigin="anonymous">
+{% endblock %}
+
+{% block add_js %}
+ <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js"
+         integrity="sha384-U1DAWAznBHeqEIlVSCgzq+c9gqGAJn5c/t99JyeKa9xxaYpSvHU5awsuZVVFIhvj" crossorigin="anonymous"></script>
+{% endblock add_js %}
+
+
 {% block add_css %}
     <link href="{% static 'css/simulation_style.css' %}" rel="stylesheet">
     <link href="{% static 'css/globsim.css' %}" rel="stylesheet">
@@ -95,10 +106,10 @@ data {
     </div>
     <div id="tab_contents">
         {% if LANGUAGE_CODE == "ar" %}
-<div dir="RTL" style="text-align: right;" class="row">
-{% else %}
-<div dir="LTR" class="row">
-{% endif%}
+            <div dir="RTL" style="text-align: right;" class="row">
+            {% else %}
+            <div dir="LTR" class="row">
+        {% endif%}
           {% include 'corporatevaluation/simulation/includes/_inputs.html' %}
           {% include 'corporatevaluation/simulation/includes/_data.html' %}
           {% include 'corporatevaluation/simulation/includes/_fsa.html' %}
@@ -116,12 +127,14 @@ data {
     </div>
   <br/>
 </div>
+<!-- home -->
 
 <span id="tabs_"
-      tabs_s="comparablecompanies:{% trans "Comparable Companies" %};local,valuation:{% trans "Valuation" %};local,calculations:{% trans "Calculations" %};local,fsa:{% trans "FSA" %};local,sec:{% trans "SEC" %};local,xbrl_data:{% trans "XBRL Data" %};local,data:{% trans "Data" %};local,inputs:{% trans "Inputs" %};local"
-tabs_m="valuationsetup:{% trans "Valuation Setup" %};pull_screen,valuationadmin:{% trans "Valuation Admin" %};pull_screen,valuationmethodology:{% trans "Methodology" %};pull_screen,valuationtodo:{% trans "To do list" %};pull_screen"
+      tabs_s="sec:{% trans "SEC" %};local,xbrl_data:{% trans "XBRL Data" %};local,data:{% trans "Data" %};local,comparablecompanies:{% trans "Comparable Companies" %};local,calculations:{% trans "Supporting Schedules" %};local,fsa:{% trans "Financial Statements Analysis" %};local,valuation:{% trans "Valuation" %};local,inputs:{% trans "Inputs" %};local"
+tabs_m="valuationsetup:{% trans "Setup" %};pull_screen,valuationadmin:{% trans "Admin" %};pull_screen,valuationmethodology:{% trans "Methodology" %};pull_screen,valuationtodo:{% trans "To do list" %};pull_screen"
         accounts_structure="{'11990': {'star_other': [11100, 11800], 'total':0}, '12990': {'star_other': [12500, 12900], 'total':0}, '13990': {'star_other': [13100, 13200], 'total':0},'14990': {'star_other': [14100, 14200], 'total':0},'15990': {'star_other': [15000, 15500], 'total':0}}"
- accounting_equality="{'12999' :{'1': {'account': '11990', 'data': 0}, '2': {'account': '12990', 'data': 0}, '3': {'account': '12999', 'data': 0}}, '129990': {'1': {'account': '14999', 'data': 0}, '2': {'account': '15990', 'data': 0}, '3': {'account': '12999', 'data': 0}}, '14999': {'1': {'account': '13990', 'data': 0}, '2': {'account': '14990', 'data': 0}, '3': {'account': '14999', 'data': 0}}}"
+ accounting_equality="{'12998' :{'1': {'account': '11990', 'data': 0}, '2': {'account': '12990', 'data': 0}, '3': {'account': '12999', 'data': 0}}, '12999': {'1': {'account': '14999', 'data': 0}, '2': {'account': '15990', 'data': 0}, '3': {'account': '12999', 'data': 0}}, '14999': {'1': {'account': '13990', 'data': 0}, '2': {'account': '14990', 'data': 0}, '3': {'account': '14999', 'data': 0}}, '20100': {'1': {'account': '20200', 'data': 0}, '2': {'account': '20300', 'data': 0}, '3': {'account': '20100', 'data': 0}}, '20800': {'1': {'account': '20850', 'data': 0}, '2': {'account': '20900', 'data': 0}, '3': {'account': '20800', 'data': 0}}}"
+
         ></span>
 
 <!--        xbrl_data:{% trans "XBRLData" %};local,
@@ -140,7 +153,17 @@ vObj["rf"] = {{ project.rf }};
 vObj["volatility_ratio"] = {{ project.volatility_ratio }};
 vObj["mature_marker_risk_premium"] = {{ project.mature_marker_risk_premium }};
 vObj["valuation_actual_sic_code"] = -1
+// --
 vObj["sec_company_data"] = {}
+vObj["company_info"] = {};
+vObj["xbrl_data"] = {};
+vObj["xbrl_statements"] = {};
+vObj["filing_year"] = 0;
+vObj["reporting_year"] = 0;
+vObj["select_accounts_type"] = "-1";
+vObj["select_accounts"] = "";
+// --
+vObj["risk_premium_downloaded"] = 0
 
 set_framework()
 
@@ -401,7 +424,9 @@ function SimManager(valuation_id)
 SimManager.prototype.setTabs = function() {
     var tabs_ = document.getElementById("tabs_");
     var tabs_s = tabs_.getAttribute("tabs_s");
+
     eval('this.accounting_equality =' + tabs_.getAttribute("accounting_equality"))
+
     eval('this.accounts_structure =' + tabs_.getAttribute("accounts_structure"))
 
         //alert(this.accounting_equality)
@@ -435,7 +460,8 @@ SimManager.prototype.setTabs = function() {
 
 //-- Add callback for click event of title folder
 SimManager.prototype.setTitleCallFunction = function() {
-        this.TabObjects["comparablecompanies"].add_title_click_call_function("valuation_vs_actual")
+        this.TabObjects["comparablecompanies"].add_title_click_call_function("valuation_vs_actual");
+        this.TabObjects["calculations"].add_title_click_call_function("set_active_tab_");
 }
 
 // == Math ==

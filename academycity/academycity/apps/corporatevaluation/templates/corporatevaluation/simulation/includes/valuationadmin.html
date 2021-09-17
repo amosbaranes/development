@@ -1,48 +1,96 @@
 {% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
 
 <div id="valuationadmin" class="tabcontent">
-    <button onclick="admin_setup(event)" fun="set_sic_code">Load SIC Codes from SEC</button>
-    <br/>
-    <a href="https://en.wikipedia.org/wiki/Standard_Industrial_Classification" targte="_blank">
-        https://en.wikipedia.org/wiki/Standard_Industrial_Classificatio
-    </a>
-    <br/>
-    <a href="https://www.sec.gov/corpfin/division-of-corporation-finance-standard-industrial-classification-sic-code-list" targte="_blank">
-        https://www.sec.gov/corpfin/division-of-corporation-finance-standard-industrial-classification-sic-code-list
-    </a>
-    <br/>
-    <hr/>
-    <button onclick="admin_setup(event)" fun="get_all_companies">Get All Companies</button>
-    <br/>
-    <a href="https://www.advfn.com/nyse/newyorkstockexchange.asp?companies=A" targte="_blank">
-        Using the link: https://www.advfn.com/nyse/newyorkstockexchange.asp?companies=A    with all letters A-Z
-    </a>
-    <br/>
-    <hr/>
-    <button onclick="admin_setup(event)" fun="clean_data_for_all_companies">Clean data for all companies</button>
-    <br/>
-    <hr/>
-    <button onclick="admin_setup(event)" fun="copy_processed_companies">Copy processed companies</button><br/>
-    Copy data from the processing table to the company table
-    <br/>
-    <hr/>
-    <button onclick="admin_setup(event)" fun="get_duplications_tickers">get_duplications_tickers</button><br/>
-    Remove duplicate companies that trade in more than one exchange.
-    <br/>
-    <hr/>
-    <button onclick="balance_accounts()" >balance_accounts()</button>
+    <table>
+        <tr>
+            <td>
+                <button onclick="admin_setup(event)" fun="set_sic_code" style="width: 250px;">Load SIC Codes from SEC</button>
+                <br/>
+                <a href="https://en.wikipedia.org/wiki/Standard_Industrial_Classification" targte="_blank">
+                    https://en.wikipedia.org/wiki/Standard_Industrial_Classificatio
+                </a>
+                <br/>
+                <a href="https://www.sec.gov/corpfin/division-of-corporation-finance-standard-industrial-classification-sic-code-list" targte="_blank">
+                    https://www.sec.gov/corpfin/division-of-corporation-finance-standard-industrial-classification-sic-code-list
+                </a>
+            </td>
+        <tr/>
+        <tr>
+            <td>
+                <button onclick="admin_setup(event)" fun="get_all_companies" style="width: 250px;">Get All Companies</button>
+                <br/>
+                <a href="https://www.advfn.com/nyse/newyorkstockexchange.asp?companies=A" targte="_blank">
+                    Using the link: https://www.advfn.com/nyse/newyorkstockexchange.asp?companies=A    with all letters A-Z
+                </a>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <button onclick="admin_setup(event)" fun="clean_data_for_all_companies" style="width: 250px;">Clean data for all companies</button>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <button onclick="admin_setup(event)" fun="copy_processed_companies" style="width: 250px;">Copy processed companies</button><br/>
+                Copy data from the processing table to the company table
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <button onclick="admin_setup(event)" fun="get_duplications_tickers" style="width: 250px;">get_duplications_tickers</button><br/>
+                Remove duplicate companies that trade in more than one exchange.
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <button onclick="admin_setup(event)" fun="load_tax_rates_by_country_year" style="width: 250px;">Load Tax Rates By Country and Year</button>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <button onclick="admin_setup(event)" fun="load_sp_returns" style="width: 250px;">Load S&P 500 Returns</button>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <button onclick="get_risk_premium()" style="width: 250px;">Get Risk Premium</button>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <button onclick="admin_setup(event)" fun="load_country_premium" style="width: 250px;">load_country_premium</button>
+            </td>
+        </tr>
 
+    </table>
 
 <!--
+        <tr>
+            <td>
+                <button onclick="calculate_all()" style="width: 250px;">calculate_all()</button>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <button onclick="v_analysis()" style="width: 250px;">V Analysis</button>
+            </td>
+        </tr>
+    in the xbrl_data tab
+    <button onclick="balance_accounts()" >balance_accounts()</button>
+    <br/>
+    <hr/>
+   in the fsa tab
+    <button onclick="ratio_analysis()" >ratio_analysis()</button>
+
     <button onclick="xbrl_set_data()" >Create data Table</button>
     <br/>
     <br/>
 
     <button onclick="generate_select_accounts('2020', 'AAPL')" >generate_select_accounts - 2020</button>
-    -->
+-->
     <br/>
     <br/>
-    <div id="result_message"></div>
+    <div id="result_message"></div><br/><br/><br/>
 
 </div>
 
@@ -50,14 +98,12 @@
 
 function admin_setup(event)
 {
- e = event.target
- fun_ = e.getAttribute("fun")
- var ss = prompt("are you sure you want to run function: " + fun_ + "\nType Yes to run", 'No')
- if(ss == '' || ss == 'No')
- { return;}
-
+ e = event.target; fun_ = e.getAttribute("fun");
+ //var ss = prompt("are you sure you want to run function: " + fun_ + "\nType Yes to run", 'No')
+ //if(ss == '' || ss == 'No') { return;}
  message_div = document.getElementById("result_message")
  message_div.innerHTML = 'In process .. '
+
  $.post('{% url "corporatevaluation:admin_setup" %}',
       {
         fun: fun_,

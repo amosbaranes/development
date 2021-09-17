@@ -4,7 +4,9 @@
 <div id="xbrl_data" class="tabcontent data">
 </div>
 
+<!-- xbrl_data -->
 <!--  pull data  -->
+
 <style>
 .duration_account
 {
@@ -15,6 +17,7 @@
  color: blue;
 }
 </style>
+
 <script>
 // Pick a company
 // --------------
@@ -25,30 +28,48 @@ function xbrl_get_account(sk, y, cd)
   return "<td><input class='value' id='"+sk+"_" + y + "' account='"+sk+"' year='" + y + "' type='text' value='" + toCommas(cd[y][sk][0]) + "' onchange='input_valuation(event)'></td>"
 }
 
+function get_account_properties(account_order)
+{     for (let key in vObj["xbrl_statements"])
+     {
+            for (k in vObj["xbrl_statements"][key]['accounts'])
+           {
+                 if (account_order == k)
+                 {
+                   return vObj["xbrl_statements"][key]['accounts'][k]
+                 }
+           }
+     }
+}
 
 function get_select_accounts(year='2020', ticker='', type='1')
 {
    //var s = vObj["sec_company_data"][ticker]['company_info']['data'][year]['select_accounts']
    //if(s) {return s}
+   //var data = vObj["sec_company_data"][ticker]['company_info']['data'][year]['matching_accounts']
 
-   var data = vObj["sec_company_data"][ticker]['company_info']['data'][year]['matching_accounts']
+   var data = vObj["xbrl_data"][year]['matching_accounts']
+   // onchange_account is in _sec file
    var s = "<select onchange='onchange_account(event)'><option value='-1'>------------</option>"
    for (var key in data){
-     if (type == "-1" || data[key][3]==type)
+     account_properties = get_account_properties(key)
+
+     //print(account_properties)
+
+     if (type == "-1" || account_properties[1]==type)
      {
-         s += "<option value='" + data[key][2] + "' ma='"+data[key][1]+"'"
-           if(data[key][3]=="2"){
+         s += "<option value='" + key + "' ma='"+data[key][0].toLowerCase()+"'"
+           if(account_properties[1]=="2"){
             s+=" class='duration_account' "
            } else
            {
             s+=" class='instant_account' "
            }
-         s += ">" + data[key][0] + "</option>"
+         s += ">" + account_properties[0] + "</option>"
      }
    }
    s += "</select>"
-    //  alert(s)
-   vObj["sec_company_data"][ticker]['company_info']['data'][year]['select_accounts'] = s
+   vObj["xbrl_data"][year]['select_accounts'] = s
+   //alert(s)
    return s;
 }
 
@@ -62,23 +83,27 @@ function balance_accounts()
     ys = ""; zn = 0; zz = "";
     for(let z in cd)
     {
-     z_ = cd[z]['dei']['documentfiscalyearfocus']
-     if (zn != 0) { zz = ", " }; ys += zz + z_; zn += 1;
+     try{
+          z_ = cd[z]['dei']['documentfiscalyearfocus']
+          if (zn != 0) { zz = ", " }; ys += zz + z_; zn += 1;
+        } catch (er){}
     }
     eval('z_max = Math.max('+ ys + ')');  eval('z_min = Math.min('+ ys + ')');
     from_year = Math.max(z_min, from_year) ; to_year = z_max+1;
-    var matching_data2020 = cd['2020']['matching_accounts']
 
     for ( var y = from_year; y < to_year; y++)
     {
             for(let z in cd)
             {
-                if (cd[z]['dei']['documentfiscalyearfocus'] == y.toString()) {y_data = vObj["xbrl_data"][z]; break;}
+              try{if (cd[z]['dei']['documentfiscalyearfocus'] == y.toString()) {y_data = vObj["xbrl_data"][z]; break;}
+              } catch (er){ y_data = -1 }
             }
-            var matching_data = y_data['matching_accounts'];
+            if (y_data == -1) {continue;}
 
+            var matching_data = y_data['matching_accounts'];
             for (k in sm.accounting_equality)
             {
+                //if(y == 2020){ alert('-k-');alert(k);}
                 var num = 0; nums = []
                 for (k1 in sm.accounting_equality[k])
                 {
@@ -86,43 +111,56 @@ function balance_accounts()
                       //
                       nn = 0
                       try {
-                           if (matching_data[key][1].toLowerCase() != '')
-                           { nn_ = y_data['year_data'][matching_data[key][1].toLowerCase()]
+                           if (matching_data[key][0].toLowerCase() != '')
+                           { nn_ = y_data['year_data'][key];
+                                 //if(y == 2020){if (k == '20800' || k == 20800){alert('-1-');alert(k1);alert(nn_);}}
                              if(!isNaN(nn_)){nn = Number(nn_)}
                            }
                       } catch (er) {}
                       //
-                      if (nn > 0)
+                      if (nn != 0)
                       {
                        num += 1;
-                       nums.push(k1)
+                       nums.push(k1);
                       }
+                       //if(y == 2020){if (k == '14999' || k == 14999){ alert('-2-');alert(k1);alert(nn);}}
                       sm.accounting_equality[k][k1]['data'] = nn
                 }
                     //alert('num')
                     //alert(num)
                     //alert('nums')
                     //alert(nums)
-
+                      //if(y == 2020){if (k == '14999' || k == 14999){ alert('-3-');alert(num); alert(nums);}}
                 if (num == 2)
                 {
                   if (nums.includes("3"))
                   {
                     nums = nums.filter(item => item !== '3')
                     nn_ = (3-Number(nums[0])).toString()
+
+                      //if(y == 2020){if (k == '14999' || k == 14999){ alert('-40-'); alert(sm.accounting_equality[k]['3']['data']);}}
+                      //if(y == 2020){if (k == '14999' || k == 14999){ alert('-41-'); alert(sm.accounting_equality[k][nums[0].toString()]['data']);}}
+
                     sm.accounting_equality[k][nn_]['data'] = Number(sm.accounting_equality[k]['3']['data']) - Number(sm.accounting_equality[k][nums[0].toString()]['data'])
 
+                      //if(y == 2020){if (k == '14999' || k == 14999){ alert('-42-'); alert(sm.accounting_equality[k][nn_]['data']);}}
+
                     var account_order = sm.accounting_equality[k][nn_]['account']
+
+                      //if(y == 2020){if (k == '14999' || k == 14999){ alert('-43-'); alert(account_order);}}
+
                     var id=y.toString()+"_"+account_order.toString()
                         elm = document.getElementById(id)
                         elm.innerHTML = toCommas(sm.accounting_equality[k][nn_]['data'])
                         elm.setAttribute("style", elm.getAttribute("style") + ";color:red;")
 
-                    matching_data[account_order.toString()][1] = account_order.toString()
+try{
+                    matching_data[account_order] = [String(account_order), 'us-gaap']
 
-                     y_data['year_data'][matching_data[account_order.toString()][1].toLowerCase()] = sm.accounting_equality[k][nn_]['data']
+} catch (er) {alert(er)}
+                    y_data['year_data'][account_order] = sm.accounting_equality[k][nn_]['data']
 
-
+                    //if(y == 2020){if (k == '14999' || k == 14999){ alert('-4-');alert(sm.accounting_equality[k][nn_]['data']);}}
                     //alert(sm.accounting_equality[k][nn_]['data'])
                   } else
                   {
@@ -132,27 +170,25 @@ function balance_accounts()
                         elm = document.getElementById(id)
                         elm.innerHTML = toCommas(sm.accounting_equality[k]['3']['data'])
                         elm.setAttribute("style", elm.getAttribute("style") + ";color:red;")
-
-                     y_data['year_data'][matching_data[account_order.toString()][1].toLowerCase()] = sm.accounting_equality[k][nn_]['data']
-
+                    matching_data[account_order] = [str(account_order), 'us-gaap']
+                    y_data['year_data'][account_order] = sm.accounting_equality[k]['3']['data']
                   }
                 }
             }
 
 // return ;
 
-
             for(h in sm.accounts_structure)
             {
               sm.accounts_structure[h]['total'] = 0
             }
 
-            for (var key in matching_data2020)
+            for (var key in matching_data)
             {
                 nn = 0;
                 try {
-                   if (matching_data[key][1].toLowerCase() != '')
-                   { nn_ = y_data['year_data'][matching_data[key][1].toLowerCase()]
+                   if (matching_data[key][0].toLowerCase() != '')
+                   { nn_ = y_data['year_data'][key]
                      if(!isNaN(nn_)){nn = Number(nn_)}
                    }
                 } catch (er) {}
@@ -162,38 +198,25 @@ function balance_accounts()
                   var l = sm.accounts_structure[k]['star_other']
                   if (Number(key) < Number(k) && Number(key) >= Number(l[0]) && Number(key) != Number(l[1]) )
                   {
-
-
                     sm.accounts_structure[k]['total'] += nn
-
-           // if (y == 2012 && k == '12990')
-          //  {
-          //    alert(nn)
-          //    alert(sm.accounts_structure['12990']['total'])
-          //  }
-
-
+                       // if (y == 2012 && k == '12990')
+                      //  {
+                      //    alert(nn)
+                      //    alert(sm.accounts_structure['12990']['total'])
+                      //  }
                   }
                 }
             }
-
-
-
             for( k in sm.accounts_structure)
             {
                 var l = sm.accounts_structure[k]['star_other']
                 var id=y.toString()+"_"+l[1].toString()
                 nn = 0
                 try {
-
-
-                       if (matching_data[k][1].toLowerCase() != '')
-                       { nn_ = y_data['year_data'][matching_data[k][1].toLowerCase()]
+                       if (matching_data[k][0].toLowerCase() != '')
+                       { nn_ = y_data['year_data'][k]
                          if(!isNaN(nn_)){nn = Number(nn_)}
                        }
-
-
-
             //if (y == 2012 && k == '12990')
             //{
            //  alert(k)
@@ -201,87 +224,91 @@ function balance_accounts()
            //  alert(sm.accounts_structure[k]['total'])
            //   alert(nn)
            // }
-
-
-
                         if (nn == 0)
                         {
                           continue;
                         }
-                        t = sm.accounts_structure[k]['total']
-                       // alert(t)
-                        u = nn - t
-                        elm = document.getElementById(id)
-                        elm.innerHTML = toCommas(u)
-                        elm.setAttribute("style", elm.getAttribute("style") + ";color:red;")
+                        t = sm.accounts_structure[k]['total'];
+                        u = nn - t;
+                        elm = document.getElementById(id);
+                        elm.innerHTML = toCommas(u);
+                        elm.setAttribute("style", elm.getAttribute("style") + ";color:red;");
                 } catch (er) {}
            }
+            for (var key in matching_data)
+            {
+                var id=y.toString()+"_"+key.toString()
+                var elm = document.getElementById(id)
+                if (elm.innerHTML == "undefined")
+                {
+                  elm.innerHTML = "";
+                }
+            }
   }
 }
 
 
 function xbrl_set_data()
 {
-     // need to change to_year as a function of today.
     var from_year = 2012;
-    var to_year = 2021;
+    var to_year = new Date().getFullYear();
     var cd = vObj["xbrl_data"];
     ys = ""; zn = 0; zz = "";
     for(let z in cd)
     {
-       z_ = cd[z]['dei']['documentfiscalyearfocus']
-       if (zn != 0) { zz = ", " }; ys += zz + z_; zn += 1;
+       try {
+         z_ = cd[z]['dei']['documentfiscalyearfocus']
+         if (zn != 0) { zz = ", " };
+         ys += zz + z_; zn += 1;
+       } catch (err) {
+           // alert ('err');
+       }
     }
     eval('z_max = Math.max('+ ys + ')');  eval('z_min = Math.min('+ ys + ')');
     from_year = Math.max(z_min, from_year) ; to_year = z_max+1;
-
+    // alert(from_year); alert(to_year);
     ss = {}
     s_title = "<thead><tr id='fs_years_xbrl_data'><th>Accounts</th>"
     for ( var y = from_year; y < to_year; y++) {
+       // get_xbrl_view in
        s_title += "<th><a id='sec_xbrl_data_"+y+"' href='#' onclick='get_xbrl_view(event)'>"+String(y)+"</a></th>"
     }
-    // alert(s_title)
-
-    var s_ = ""
-    var matching_data2020 = cd['2020']['matching_accounts']
-    for (var key in matching_data2020)
+    // alert(s_title);
+    for (var key_statement in vObj["xbrl_statements"])
     {
-      s_ += "("+key+"-"+matching_data2020[key][0]+"-"+matching_data2020[key][2] + ") : "
-      ss[key] = "<td>" +matching_data2020[key][0]+ "</td>"
-      for ( var y = from_year; y < to_year; y++) {
-
-          for(let z in cd)
-          {
-            if (cd[z]['dei']['documentfiscalyearfocus'] == y.toString())
-            {
-              y_data = vObj["xbrl_data"][z]
-              break;
-            }
-          }
-            var matching_data = y_data['matching_accounts']
-            nn = ""
-            if(matching_data[key])
-            {
-            //alert(matching_data[key])
-            //alert(matching_data[key][1])
-
-             //alert(y_data['year_data'])
-
-              nn = y_data['year_data'][matching_data[key][1].toLowerCase()]
-            }
-            ss[key] += "<td id='"+y.toString()+"_"+key.toString()+"' style='padding-right:5px;text-align: right;'>" + toCommas(nn) + "</td>"
-            //alert(ss[key])
-      }
+        for (var key in vObj["xbrl_statements"][key_statement]['accounts'])
+        {
+           acc_ = vObj["xbrl_statements"][key_statement]['accounts'][key]
+           ss[key] = "<td>" +acc_[0]+ "</td>"
+           for ( var y = from_year; y < to_year; y++) {
+               for(let z in cd)
+               {
+                 try {
+                         if (cd[z]['dei']['documentfiscalyearfocus'] == y.toString())
+                         {
+                           y_data = vObj["xbrl_data"][z]
+                           break;
+                         }
+                         else
+                         {
+                           y_data = -1;
+                         }
+                 } catch (er) { //alert(er);
+                  y_data = -1; }
+               }
+               if (y_data == -1) { nn = '' } else { nn = y_data['year_data'][key] }
+               ss[key] += "<td id='"+y.toString()+"_"+key.toString()+"' style='padding-right:5px;text-align: right;'>" + toCommas(nn) + "</td>"
+           }
+        }
     }
-
-    //alert(s_)
     ss_ = ""
     for( var k in ss)
     {
       ss_ += "<tr>" +ss[k]+ "</tr>"
     }
     //alert(ss_)
-    s = "<table>" + s_title + "</tr></thead>" + ss_ + "</tbody></table>"
+    s = "<table>" + s_title + "</tr></thead>" + ss_ + "</tbody></table><br/><br/><br/>"
+    //alert(s)
     sm.TabObjects["xbrl_data"].tabDoc.innerHTML = s
     var evt = new Event("click", {bubbles: true});sm.TabObjects["xbrl_data"].tabTitle.dispatchEvent(evt);
 }
@@ -309,3 +336,4 @@ function xbrl_input_valuation(event)
     );
 }
 </script>
+

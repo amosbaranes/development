@@ -18,6 +18,7 @@ from cms.models.pluginmodel import CMSPlugin
 
 from ..courses.models import (CourseSchedule, CourseScheduleUser, Team)
 from ..core.sql import TruncateTableMixin
+import decimal
 
 
 # Data
@@ -510,13 +511,115 @@ class XBRLCompanyInfo(TruncateTableMixin, models.Model):
     ticker = models.CharField(max_length=10, null=False)
     company_letter = models.CharField(max_length=1, default='')
     cik = models.CharField(max_length=10, null=True)
+    is_active = models.BooleanField(default=False)
     #
-    city = models.CharField(max_length=50, default="", null=True)
-    state = models.CharField(max_length=50, default="", null=True)
-    zip = models.CharField(max_length=10, default="", null=True)
+    city = models.CharField(max_length=50, default="", blank=True)
+    state = models.CharField(max_length=50, default="", blank=True)
+    zip = models.CharField(max_length=10, default="", blank=True)
 
     def __str__(self):
         return self.company_name
+
+
+class XBRLRegion(TruncateTableMixin, models.Model):
+    class Meta:
+        verbose_name = _('XBRL Region')
+        verbose_name_plural = _('XBRL Regions')
+        ordering = ['name']
+    #
+    name = models.CharField(max_length=128, default='', blank=True, null=True)
+    full_name = models.CharField(max_length=128, default='', blank=True, null=True)
+    updated_adamodar = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.name
+
+
+class XBRLCountry(TruncateTableMixin, models.Model):
+    class Meta:
+        verbose_name = _('XBRL Country')
+        verbose_name_plural = _('XBRL Countries')
+        ordering = ['name']
+    #
+    region = models.ForeignKey(XBRLRegion, on_delete=models.CASCADE, default=None, blank=True, null=True)
+    name = models.CharField(max_length=128, default='', blank=True, null=True)
+    updated_adamodar = models.BooleanField(default=False)
+    #
+    iso_2 = models.CharField(max_length=2, default='')
+    iso_3 = models.CharField(max_length=3, default='')
+    oecd = models.BooleanField(default=False)
+    eu27 = models.BooleanField(default=False)
+    gseven = models.BooleanField(default=False)
+    gtwenty = models.BooleanField(default=False)
+    brics = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.name
+
+
+class XBRLCountryYearData(TruncateTableMixin, models.Model):
+    class Meta:
+        verbose_name = _('XBRL Country Yea rData')
+        verbose_name_plural = _('XBRL Countries Year Data')
+        ordering = ['country', 'year']
+    #
+    country = models.ForeignKey(XBRLCountry, on_delete=models.CASCADE, default=None, blank=True, null=True)
+    year = models.PositiveSmallIntegerField(default=0)
+    tax_rate = models.DecimalField(max_digits=4, decimal_places=2, blank=True, null=True)
+    gdp = models.DecimalField(max_digits=12, decimal_places=5, blank=True, null=True)
+    sp_rating = models.CharField(max_length=250, default='')
+    moodys_rating = models.CharField(max_length=20, default='')
+    composite_risk_rating = models.DecimalField(max_digits=4, decimal_places=2, blank=True, null=True)
+    cds = models.DecimalField(max_digits=6, decimal_places=2, blank=True, null=True)
+
+    @property
+    def moodys_rate_completed_by_sp(self):
+        # print(self.country)
+        if str(self.moodys_rating) == '':
+            sp_ = XBRLSPMoodys.objects.get(year=self.year, sp=self.sp_rating).sp
+            # print(sp_)
+        else:
+            sp_ = str(self.moodys_rating)
+        return sp_
+
+    @property
+    def excess_cds_spread_over_us_cds(self):
+        try:
+            country = XBRLCountry.objects.get(name='United States')
+            us_cds = XBRLCountryYearData.objects.get(country=country, year=self.year).cds
+            this_cds = XBRLCountryYearData.objects.get(country=self.country, year=self.year).cds
+            d = this_cds - us_cds
+            if d <= 0:
+                d = 0
+        except Exception as ex:
+            d = None
+        return d
+
+    @property
+    def rating_based_default_spread(self):
+        # print(self.country)
+        try:
+            ds_ = XBRLSPMoodys.objects.get(year=self.year, moodys=self.moodys_rate_completed_by_sp).default_spread
+        except Exception as ex:
+            ds_ = None
+        return ds_
+
+    def __str__(self):
+        return str(self.country)
+        # + " : " + str(self.year) + " : " + str(self.tax_rate)
+
+
+class XBRLValuationStatementsAccounts(TruncateTableMixin, models.Model):
+    class Meta:
+        verbose_name = _('XBRLValuationStatementsAccount')
+        verbose_name_plural = _('XBRLValuationStatementsAccounts')
+        ordering = ['order']
+    #
+    order = models.PositiveSmallIntegerField(default=0)
+    statement = models.CharField(max_length=250, default='Income Statement')
+
+    def __str__(self):
+        return str(self.statement)
 
 
 class XBRLValuationAccounts(TruncateTableMixin, models.Model):
@@ -528,20 +631,12 @@ class XBRLValuationAccounts(TruncateTableMixin, models.Model):
     order = models.PositiveSmallIntegerField(default=0)
     account = models.CharField(max_length=250, null=True)
     type = models.SmallIntegerField(default=1)   # 1 balance sheet 2 income statement -1 all
+    statement = models.ForeignKey(XBRLValuationStatementsAccounts, on_delete=models.CASCADE, default=None, blank=True,
+                                  null=True, related_name='xbrl_valuation_statements')
+    scale = models.PositiveIntegerField(default=1000000)
 
     def __str__(self):
         return self.account
-
-
-# class XBRLValuationStatementsAccounts(TruncateTableMixin, models.Model):
-#     class Meta:
-#         verbose_name = _('XBRLValuationAccount')
-#         verbose_name_plural = _('XBRLValuationAccounts')
-#         ordering = ['statement', 'order', 'account']
-#     #
-#     order = models.PositiveSmallIntegerField(default=0)
-#     statement = models.CharField(max_length=250, null=True)
-#     account = models.ForeignKey(XBRLValuationAccounts, on_delete=models.CASCADE, default=None, blank=True, null=True)
 
 
 class XBRLValuationAccountsMatch(TruncateTableMixin, models.Model):
@@ -557,3 +652,200 @@ class XBRLValuationAccountsMatch(TruncateTableMixin, models.Model):
     match_account = models.CharField(max_length=250, null=True)
     accounting_standard = models.CharField(max_length=250, default="us-gaap")
 
+
+class XBRLHistoricalReturnsSP(TruncateTableMixin, models.Model):
+    class Meta:
+        verbose_name = _('XBRLHistoricalReturnsSP')
+        verbose_name_plural = _('XBRLHistoricalReturnsSP')
+        ordering = ['-year']
+    #
+    year = models.PositiveSmallIntegerField(default=0)
+    aaa = models.DecimalField(max_digits=8, decimal_places=4, default=None, blank=True, null=True)
+    bbb = models.DecimalField(max_digits=8, decimal_places=4, default=None, blank=True, null=True)
+    tb3ms = models.DecimalField(max_digits=8, decimal_places=4, default=None, blank=True, null=True)
+    tb10y = models.DecimalField(max_digits=8, decimal_places=4, default=None, blank=True, null=True)
+    sp500 = models.DecimalField(max_digits=8, decimal_places=2, default=None, blank=True, null=True)
+    dividend_yield = models.DecimalField(max_digits=8, decimal_places=4, default=None, blank=True, null=True)
+    return_on_real_estate = models.DecimalField(max_digits=8, decimal_places=4, default=None, blank=True, null=True)
+    home_prices = models.DecimalField(max_digits=8, decimal_places=2, default=None, blank=True, null=True)
+    cpi = models.DecimalField(max_digits=8, decimal_places=4, default=None, blank=True, null=True)
+    risk_premium = models.DecimalField(max_digits=8, decimal_places=4, default=None, blank=True, null=True)
+
+    @property
+    def aaa_rate(self):
+        return round(100*self.aaa)/10000
+
+    @property
+    def bbb_rate(self):
+        return round(100*self.bbb)/10000
+
+    @property
+    def tb3ms_rate(self):
+        try:
+            r = round(100*self.tb3ms)/10000
+        except Exception as ex:
+            r = None
+        return r
+
+    @property
+    def cpi_rate(self):
+        try:
+            r = round(100*self.cpi)/10000
+        except Exception as ex:
+            r = None
+        return r
+
+    @property
+    def tb3ms_rate_real(self):
+        try:
+            nr = 1 + self.tb3ms_rate
+            ni = 1 + float(self.cpi_rate)
+            rr = nr/ni - 1
+        except Exception as ex:
+            rr = None
+            return rr
+        return round(10000*rr)/10000
+
+    @property
+    def return_on_tbond(self):
+        try:
+            r0 = float(XBRLHistoricalReturnsSP.objects.get(year=int(self.year)-1).tb10y)
+            r1 = float(self.tb10y)
+            r = ((r0*(1-(1+r1)**(-10))/r1+1/(1+r1)**10)-1)+r0
+        except Exception as ex:
+            r = None
+            return r
+        return round(10000*r)/10000
+
+        # return self.long_term_rating.default_spread
+
+    @property
+    def return_on_tbond_real(self):
+        try:
+            nr = 1 + self.return_on_tbond
+            ni = 1 + float(self.cpi_rate)
+            rr = nr/ni - 1
+        except Exception as ex:
+            rr = None
+            return rr
+        return round(10000*rr)/10000
+
+    @property
+    def dividends(self):
+        try:
+            d = self.sp500 * self.dividend_yield
+        except Exception as ex:
+            d = None
+        return d
+
+    @property
+    def return_on_aaa(self):
+        try:
+            r0 = float(XBRLHistoricalReturnsSP.objects.get(year=int(self.year)-1).aaa_rate)
+            r1 = float(self.aaa_rate)
+            r = ((r0*(1-(1+r1)**(-10))/r1+1/(1+r1)**10)-1)+r0
+        except Exception as ex:
+            r = None
+            return r
+        return round(10000*r)/10000
+
+    @property
+    def return_on_bbb(self):
+        try:
+            r0 = float(XBRLHistoricalReturnsSP.objects.get(year=int(self.year)-1).bbb_rate)
+            r1 = float(self.bbb_rate)
+            r = ((r0*(1-(1+r1)**(-10))/r1+1/(1+r1)**10)-1)+r0
+        except Exception as ex:
+            r = None
+            return r
+        return round(10000*r)/10000
+
+    @property
+    def return_on_bbb_real(self):
+        try:
+            nr = 1 + self.return_on_bbb
+            ni = 1 + float(self.cpi_rate)
+            rr = nr/ni - 1
+        except Exception as ex:
+            rr = None
+            return rr
+        return round(10000*rr)/10000
+
+    @property
+    def return_on_sp500(self):
+        try:
+            sp0 = float(XBRLHistoricalReturnsSP.objects.get(year=int(self.year)-1).sp500)
+            sp1 = float(self.sp500)
+            div = float(self.dividends)
+            r = (sp1-sp0+div)/sp0
+        except Exception as ex:
+            r = None
+            return r
+        return round(10000*r)/10000
+
+    @property
+    def return_on_sp500_real(self):
+        try:
+            nr = 1 + self.return_on_sp500
+            ni = 1 + float(self.cpi_rate)
+            rr = nr/ni - 1
+        except Exception as ex:
+            rr = None
+            return rr
+        return round(10000*rr)/10000
+
+    @property
+    def stock_tbill_return(self):
+        try:
+            r = float(self.return_on_sp500) - float(self.tb3ms_rate)
+        except Exception as ex:
+            r = None
+            return r
+        return round(10000*r)/10000
+
+    @property
+    def stock_tbonds_return(self):
+        try:
+            r = float(self.return_on_sp500) - float(self.return_on_tbond)
+        except Exception as ex:
+            r = None
+            return r
+        return round(10000*r)/10000
+
+    @property
+    def stock_baa_return(self):
+        try:
+            r = float(self.return_on_sp500) - float(self.return_on_bbb)
+        except Exception as ex:
+            r = None
+            return r
+        return round(10000*r)/10000
+
+    def __str__(self):
+        return str(self.year) + " = " + str(self.aaa)
+
+
+class XBRLSPMoodys(TruncateTableMixin, models.Model):
+    class Meta:
+        verbose_name = _('XBRLSPMoodys')
+        verbose_name_plural = _('XBRLSPMoodys')
+        ordering = ['-year']
+    #
+    year = models.PositiveSmallIntegerField(default=0)
+    sp = models.CharField(max_length=10, default='Income Statement')
+    moodys = models.CharField(max_length=10, default='Income Statement')
+    default_spread = models.DecimalField(max_digits=4, decimal_places=2, blank=True, null=True)
+
+    def __str__(self):
+        return str(self.sp) + " = " + str(self.moodys) + " : " + str(self.default_spread)
+
+#
+# # https://www.moodys.com/researchandratings/market-segment/sovereign-supranational/-/005005?tb=2&sbk=issr_name&sbo=1
+# class XBRLCountryPremium(TruncateTableMixin, models.Model):
+#     class Meta:
+#         verbose_name = _('XBRLCountryPremium')
+#         verbose_name_plural = _('XBRLCountryPremium')
+#         ordering = ['company', 'account']
+#
+#     country = models.ForeignKey(XBRLCountry, on_delete=models.CASCADE, default=None, blank=True, null=True)
+#

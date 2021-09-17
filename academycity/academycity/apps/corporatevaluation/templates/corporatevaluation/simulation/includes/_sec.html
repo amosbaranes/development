@@ -1,20 +1,23 @@
 {% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
 
 <div id="sec" class="container tabcontent">
+
 <script type="text/javascript" src="{% static 'sec_interactive/js/jquery-1.4.3.min.js' %}"></script>
 <link rel="stylesheet" type="text/css" href="{% static 'sec_interactive/css/interactive.css' %}" />
 <link rel="stylesheet" type="text/css" href="{% static 'sec_interactive/css/report.css' %}" />
 <link rel="stylesheet" type="text/css" href="{% static 'sec_interactive/css/print.css' %}" media="print" />
 <link rel="stylesheet" type="text/css" href="{% static 'sec_interactive/css/xbrlViewerStyle.css' %}" />
 <style type="text/css">li.octave {border-top: 1px solid black;}</style>
-<!--[if lt IE 8]>
+<!--
+[if lt IE 8]>
 <style type="text/css">
 li.accordion a {display:inline-block;}
 li.accordion a {display:block;}
 </style>
-<![endif]-->
+<![endif]
+-->
 
-
+<!-- sec -->
 
 <script type="text/javascript" language="javascript">
 var InstanceReportXslt = "/include/InstanceReport.xslt";
@@ -71,7 +74,7 @@ function add_accounts_editor(replace=0)
           if(e.children[0].getAttribute("class") == "tl")
           {
                 var s = e.children[0].children[0].children[0].innerHTML.toLowerCase()
-                if( (s.search("INCOME".toLowerCase()) > 0) || (s.search("OPERATIONS".toLowerCase()) > 0) )
+                if( (s.search("INCOME".toLowerCase()) > 0) || (s.search("OPERATIONS".toLowerCase()) > 0) || (s.search("EARN".toLowerCase()) > 0) )
                 // || (s.search("FLOWS".toLowerCase()) > 0)
                 {
                  type_='2'
@@ -82,15 +85,17 @@ function add_accounts_editor(replace=0)
                 {
                   type_ = "-1"
                 }
-                var select_accounts = get_select_accounts(vObj["reporting_year"], vObj["ticker"], type=type_)
-                // function in _xbrl_data.html
-            if(replace==0)
-            {
-                var td = document.createElement("td")
-                td.setAttribute("style", "text-align: center");
-                td.innerHTML = '<button onclick="save_industry_default(event)">Save as Industry Default</button>'
-                e.appendChild(td)
-            }
+                   vObj["select_accounts_type"] = type_
+                   // -- in _xbrl_data tab
+                   vObj["select_accounts"] = get_select_accounts(vObj["reporting_year"], vObj["ticker"], type=type_)
+               if(replace==0)
+               {
+                 var td = document.createElement("td")
+                 td.setAttribute("style", "text-align: center");
+                 // function save_industry_default is in this tab
+                 td.innerHTML = '<button onclick="save_industry_default(event)">Save as Industry Default</button>'
+                 e.appendChild(td)
+               }
          }
       } else
       {
@@ -108,7 +113,7 @@ function add_accounts_editor(replace=0)
               continue ;
             }
 
-            td.innerHTML = select_accounts
+            td.innerHTML = vObj["select_accounts"]
             var a = e.children[0].children[0]
             onclick_ = a.getAttribute("onclick")
             l = onclick_.split("'")
@@ -117,7 +122,10 @@ function add_accounts_editor(replace=0)
             var os = td.children[0].children;
             var i;
             for (i = 0; i < os.length; i++) {
+
                ma = os[i].getAttribute("ma");
+               try{ma = ma.toLowerCase(); l[2] = l[2].toLowerCase()}
+               catch (er) {}
                if (ma == l[2]) {
                     td.children[0].value = os[i].getAttribute("value");
                     select_accounts = td.children[0].cloneNode(true);
@@ -386,7 +394,7 @@ function highlightAllMenuItems()
         {
           accounting_standard: l[1],
           match_account: l[2],
-          account_id: elm.value,
+          account_order: elm.value,
           ticker: vObj["ticker"],
           year: vObj["reporting_year"],
           sic: vObj["sic_code"]
@@ -394,11 +402,15 @@ function highlightAllMenuItems()
         function(data){
             if (data['status'] == "ok")
             {
-              vObj["sec_company_data"][vObj["ticker"]]['company_info']['data'][vObj["reporting_year"]]['matching_accounts']=data['matching_accounts']
+              vObj["xbrl_data"][vObj["reporting_year"]]['matching_accounts']=data['matching_accounts']
+              //alert(vObj["xbrl_data"][vObj["reporting_year"]]['matching_accounts'])
+              // -- in _xbrl_data tab
+              vObj["select_accounts"] = get_select_accounts(vObj["reporting_year"], vObj["ticker"], type=vObj["select_accounts_type"])
+              //alert(vObj["select_accounts"])
               add_accounts_editor(replace=1)
             }
         });
     }
 </script>
 
-</div>
+</div><br/><br/>

@@ -17,18 +17,18 @@
                 {% for i in industry %}
                 <option value='{{ i.sic_code }}'>{{ i.sic_description }}</option>
                 {% endfor %}
-                </select>
+                </select> Sic Code: <span id="sic_code_"></span>
             </td>
         </tr>
         <tr>
             <td>{% trans "Company" %}:</td>
             <td>
                 <select name="companies" id="companies" style="width: 150px;" onChange="companies_fun(event)">
-                <option value='0'>Choose company</option>
+                <option value='0' ticker="">Choose company</option>
                 {% for c in companies %}
-                <option value='{{c.id}}'>{{c.company_name}}</option>
+                <option value='{{c.id}}' ticker="{{c.ticker}}">{{c.company_name}}</option>
                 {% endfor %}
-                </select>  <span id="ticker_"></span>Ticker: <input id="search_ticker" value="" style="width:70px">
+                </select> <span id="ticker_">Ticker: </span><input id="search_ticker" value="" style="width:70px" onchange="ticker_onchange(event)">
             </td>
         </tr>
         <tr>
@@ -107,6 +107,8 @@
       </table>
     </div>
 </div>
+<!-- Input -->
+
 <!-- Beta -->
 <script>
 function add_industry_beta()
@@ -162,8 +164,60 @@ function cofe_business_fun(event)
     calculate_all()
 }
 </script>
-<!-- Input -->
 <script>
+
+function ticker_onchange(event)
+{
+  search_ticker = event.target.value
+  // alert(search_ticker)
+  elm = document.getElementById("companies")
+  value_ = -1
+
+  for (var i = 0; i < elm.children.length; i++)
+  {
+   e = elm.children[i]
+   ticker_ = e.getAttribute("ticker")
+   if(search_ticker.toLowerCase() == ticker_.toLowerCase())
+   {
+    value_ = e.getAttribute("value")
+   }
+  }
+
+  if (value_ == -1)
+  {
+
+    alert("We do not provide data for this company.");  return;
+
+    $.post('{% url "corporatevaluation:create_company_by_ticker" %}',
+          {
+            ticker: search_ticker.toUpperCase(),
+          },
+          function(data){
+
+         // alert(data['status']);
+         // alert(data['id']);
+         // alert(data['company_name']);
+
+            var option = document.createElement("option");
+            //alert(option.outerHTML)
+            option.text = data['company_name'];
+            option.value = data['id'];
+            option.ticker = search_ticker.toUpperCase();
+
+            //alert(option.outerHTML)
+            elm.add(option);
+            value_ = data['id']
+            elm = document.getElementById("companies")
+            elm.value = value_;
+            var evt = new Event("change", {bubbles: true});elm.dispatchEvent(evt);
+        });
+  } else
+  {
+    elm.value = value_;
+    var evt = new Event("change", {bubbles: true});elm.dispatchEvent(evt);
+  }
+}
+
 
 function companies_on_input(event)
 {
@@ -221,19 +275,26 @@ function companies_fun(event)
           },
           function(data){
                 vObj["sec_company_data"][id_] = data
-                try{ set_data(data);} catch(err){sm.TabObjects["data"].tabDoc.innerHTML = "We did not collect data from FinDynamic"}  // in data tab
+                try{ set_data(data);}
+                catch(err){sm.TabObjects["data"].tabDoc.innerHTML = "We did not collect data from FinDynamic. Downloading data from SEC."}  // in data tab
+
                 vObj["ticker"] = data['ticker'];
                 vObj["sic_code"] = data['sic_code'];
                 vObj["sic_description"] = data['sic_description'];
+
                 //document.getElementById('ticker_').innerHTML = data['ticker'];
+
                 document.getElementById('search_ticker').value = "";
                 document.getElementById('search_ticker').value = data['ticker'];
+                document.getElementById('sic_code_').innerHTML = data['sic_code'];
                 document.getElementById('industries').value = data['sic_code'];
                 document.getElementById('countries').value = data['country_id'];
                 var event = new Event("change", {bubbles: true});
                 document.getElementById('countries').dispatchEvent(event);
                 console.log("companies_fun: ", "before get_data_ticker")
                 get_data_ticker();  // see below
+
+                console.log("companies_fun: ", "222")
         });
 }
 
@@ -305,10 +366,14 @@ function process_get_data_ticker(data)
 {
     var d = document.getElementById('valuationsetup_xbrl_data')
     console.log("get_data_ticker: ", "in post get_data_ticker 1")
+
     vObj["company_info"] = data['company_info'];
     if (!data['data'])
     {alert("There is no data for this company."); return;}
+
     vObj["xbrl_data"] = data['data'];
+    vObj["xbrl_statements"] = data['statements']
+
     //alert(vObj["xbrl_data"]['2020']['dei']['entityregistrantname'])
    // -- in _xbrl_data
       xbrl_set_data()
@@ -318,14 +383,29 @@ function process_get_data_ticker(data)
     for (y in vObj["xbrl_data"])
     {
          console.log("get_data_ticker year: ", "in post get_data_ticker 20: ", y)
-         var ry = vObj["xbrl_data"][y]['dei']['documentfiscalyearfocus']
-         if(!ry){ry=''}
+         try{var ry = vObj["xbrl_data"][y]['dei']['documentfiscalyearfocus'];} catch(er){var ry=''}
+
+         console.log("process_get_data_ticker: ", "in post get_data_ticker 22", y)
+
+         //if(!ry){ry=''}
+         // get_xbrl_view is in
          sv += '<td><a href="#" onclick="get_xbrl_view(event)" '
-         var y_view_link = vObj["xbrl_data"][y]['view_link']
-         if(y_view_link){ sv += 'view_link="'+ y_view_link + '" '}
-         else{ sv += 'view_link="" ' }
-         var y_r_link = vObj["xbrl_data"][y]['r_link']
-         if(y_r_link) { sv += 'r_link="' + y_r_link + '" '} else{sv += 'r_link="" '}
+         try{
+            var y_view_link = vObj["xbrl_data"][y]['view_link'];
+            sv += 'view_link="'+ y_view_link + '" ';
+           } catch (er){sv += 'view_link="" ';}
+         //if(y_view_link){ sv += 'view_link="'+ y_view_link + '" '}
+         //else{ sv += 'view_link="" ' }
+
+         console.log("process_get_data_ticker: ", "in post get_data_ticker 24", y)
+
+         try{ var y_r_link = vObj["xbrl_data"][y]['r_link']; sv += 'r_link="' + y_r_link + '" ';}
+         catch(er){sv += 'r_link="" ';}
+
+         console.log("process_get_data_ticker: ", "in post get_data_ticker 26", y)
+
+         // if(y_r_link) { sv += 'r_link="' + y_r_link + '" '} else{sv += 'r_link="" '}
+
          sv += 'filing_year="' + y + '" style="color:blue">' + ry + '</a></td>'
          try{
              var t = document.getElementById("xbrl_data_"+ry)
@@ -337,6 +417,8 @@ function process_get_data_ticker(data)
             } catch (er) {
                 console.log("get_data_ticker: ", "in post error get_data_ticker 100: ", y, er)
          }
+         console.log("process_get_data_ticker: ", "in post get_data_ticker 28", y)
+
          try{
              var tx = document.getElementById("sec_xbrl_data_"+ry)
              tx.setAttribute("view_link", vObj["xbrl_data"][y]['view_link'])
@@ -348,15 +430,23 @@ function process_get_data_ticker(data)
                 console.log("get_data_ticker: ", "in post error get_data_ticker 200: ", y, er)
          }
      }
+    console.log("process_get_data_ticker: ", "in post get_data_ticker 50")
 
         sv += '</tr></table>'
-        console.log("get_data_ticker: ", "in post get_data_ticker 10")
+    console.log("process_get_data_ticker: ", "in post get_data_ticker 52")
         d.innerHTML = sv
-        console.log("get_data_ticker: ", "in post get_data_ticker 11")
+    console.log("process_get_data_ticker: ", "in post get_data_ticker 54")
         //alert(d.outerHTML)
 
-    // --
+
+    // -- in xbrl_data tab --
     balance_accounts()
+    console.log("process_get_data_ticker: ", "in post get_data_ticker 56")
+    // -- in fsa tab --
+    ratio_analysis()
+    console.log("process_get_data_ticker: ", "in post get_data_ticker 58")
+    // --
+    calculate_all()
     // --
 }
 
@@ -380,7 +470,7 @@ function get_data_ticker()
             vObj["sec_company_data"][ticker_]['company_info'] = data
       });
  }
- console.log("get_data_ticker: ", "After post get_data_ticker")
+    console.log("get_data_ticker: ", "in post get_data_ticker 55")
 }
 
 </script>
