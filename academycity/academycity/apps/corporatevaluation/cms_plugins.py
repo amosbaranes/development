@@ -66,3 +66,4 @@ class EquityEnterpriseValuationPlugin(CMSPluginBase):
     render_template = "corporatevaluation/equity_enterprise_valuation.html"  # template to render the plugin with
     name = _("EquityEnterpriseValuation")  # Name of the plugin
     cache = False
+

@@ -20,6 +20,8 @@ from ..courses.models import (CourseSchedule, CourseScheduleUser, Team)
 from ..core.sql import TruncateTableMixin
 import decimal
 
+from django.db.models.functions import Coalesce
+
 
 # Data
 # RBOIC = RatingBasedOnInterestCavrage
@@ -393,6 +395,8 @@ class Project(TruncateTableMixin, TranslatableModel):
     created = models.DateField(auto_now_add=True)
     updated = models.DateField(auto_now=True)
     status = models.IntegerField(default=0, choices=STATUS)
+    year = models.PositiveSmallIntegerField(default=2020)
+    quarter = models.PositiveSmallIntegerField(default=4)
     #
     course_schedule = models.OneToOneField(CourseSchedule, on_delete=models.CASCADE, null=True, related_name='project')
     description = PlaceholderField('project_description')
@@ -401,6 +405,8 @@ class Project(TruncateTableMixin, TranslatableModel):
     mature_marker_risk_premium = models.DecimalField(max_digits=8, decimal_places=4, default=0.0525)
     volatility_ratio = models.DecimalField(max_digits=8, decimal_places=4, default=1.50)
     rf = models.DecimalField(max_digits=8, decimal_places=4, default=0.02)
+    #
+    dic_data = models.JSONField(null=True)
     #
 
     translations = TranslatedFields(
@@ -513,12 +519,37 @@ class XBRLCompanyInfo(TruncateTableMixin, models.Model):
     cik = models.CharField(max_length=10, null=True)
     is_active = models.BooleanField(default=False)
     #
+    financial_data = models.JSONField(null=True)
+    #
     city = models.CharField(max_length=50, default="", blank=True)
     state = models.CharField(max_length=50, default="", blank=True)
     zip = models.CharField(max_length=10, default="", blank=True)
 
     def __str__(self):
-        return self.company_name
+        return str(self.company_name) + " : " + str(self.ticker)
+
+
+class XBRLValuationCompanyUser(TruncateTableMixin, models.Model):
+    class Meta:
+        verbose_name = _('XBRL Company Info')
+        verbose_name_plural = _('XBRL Companies Info')
+        ordering = ['company', 'user']
+    #
+    company = models.ForeignKey(XBRLCompanyInfo, on_delete=models.CASCADE, default=None, blank=True, null=True,
+                                related_name='valuation_companies')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, on_delete=models.CASCADE,
+                             related_name='valuation_users')
+    analysis = PlaceholderField('course_ schedule_description')
+    #
+
+    def __str__(self):
+        return self.user.name + " " + self.company
+
+# https://docs.djangoproject.com/en/3.2/topics/db/managers/
+class XBRLRegionQuerySet(models.QuerySet):
+    def averages(self):
+        return self.filter(countries__country_data__year=XBRLCountryYearData.project.year)\
+            .annotate(num_countries=Coalesce(models.Avg("countries__country_data__tax_rate"), 0))
 
 
 class XBRLRegion(TruncateTableMixin, models.Model):
@@ -531,6 +562,9 @@ class XBRLRegion(TruncateTableMixin, models.Model):
     full_name = models.CharField(max_length=128, default='', blank=True, null=True)
     updated_adamodar = models.BooleanField(default=False)
 
+    objects = models.Manager()  # The default manager.
+    region_objects = XBRLRegionQuerySet.as_manager()  # The project manager.
+
     def __str__(self):
         return self.name
 
@@ -541,7 +575,8 @@ class XBRLCountry(TruncateTableMixin, models.Model):
         verbose_name_plural = _('XBRL Countries')
         ordering = ['name']
     #
-    region = models.ForeignKey(XBRLRegion, on_delete=models.CASCADE, default=None, blank=True, null=True)
+    region = models.ForeignKey(XBRLRegion, on_delete=models.CASCADE, default=None, blank=True, null=True,
+                               related_name='countries')
     name = models.CharField(max_length=128, default='', blank=True, null=True)
     updated_adamodar = models.BooleanField(default=False)
     #
@@ -557,14 +592,24 @@ class XBRLCountry(TruncateTableMixin, models.Model):
         return self.name
 
 
+class XBRLCountryYearDataProject(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(year=self.model.project.year)
+
+
 class XBRLCountryYearData(TruncateTableMixin, models.Model):
+    project = None
+
     class Meta:
         verbose_name = _('XBRL Country Yea rData')
         verbose_name_plural = _('XBRL Countries Year Data')
         ordering = ['country', 'year']
-    #
-    country = models.ForeignKey(XBRLCountry, on_delete=models.CASCADE, default=None, blank=True, null=True)
+
+    # The following are dimensions
+    country = models.ForeignKey(XBRLCountry, on_delete=models.CASCADE, default=None, blank=True, null=True,
+                                related_name='country_data')
     year = models.PositiveSmallIntegerField(default=0)
+    # The followings are measures
     tax_rate = models.DecimalField(max_digits=4, decimal_places=2, blank=True, null=True)
     gdp = models.DecimalField(max_digits=12, decimal_places=5, blank=True, null=True)
     sp_rating = models.CharField(max_length=250, default='')
@@ -572,16 +617,79 @@ class XBRLCountryYearData(TruncateTableMixin, models.Model):
     composite_risk_rating = models.DecimalField(max_digits=4, decimal_places=2, blank=True, null=True)
     cds = models.DecimalField(max_digits=6, decimal_places=2, blank=True, null=True)
 
+    # Managers
+    objects = models.Manager()  # The default manager.
+    project_objects = XBRLCountryYearDataProject()  # The project manager.
+
+    # Properties
     @property
     def moodys_rate_completed_by_sp(self):
         # print(self.country)
         if str(self.moodys_rating) == '':
-            sp_ = XBRLSPMoodys.objects.get(year=self.year, sp=self.sp_rating).sp
+            try:
+                sp_ = XBRLSPMoodys.objects.get(year=self.year, sp=self.sp_rating).sp
+            except Exception as ex:
+                # print(self.sp_rating)
+                # print(self.year)
+                # print(ex)
+                sp_ = 'kk'
             # print(sp_)
         else:
             sp_ = str(self.moodys_rating)
         return sp_
 
+    # rating
+    @property
+    def rating_based_default_spread(self):
+        # print(self.country)
+        try:
+            ds_ = XBRLSPMoodys.objects.get(year=self.year, moodys=self.moodys_rate_completed_by_sp).default_spread
+        except Exception as ex1:
+            # print('error 100 ' + str(ex1))
+            try:
+                # print(self.country)
+                # print(self.composite_risk_rating)
+
+                ds_ = XBRLSPMoodys.objects.filter(year=self.year, score_from__lte=self.composite_risk_rating,
+                                                  score_to__gte=self.composite_risk_rating).all()[0]
+                # print('ds_1111')
+                # print(ds_)
+                ds_ = ds_.default_spread
+                # print('ds_2222')
+                # print(ds_)
+
+            except Exception as ex:
+                # print('error200 ' + str(ex))
+                ds_ = None
+        return ds_
+
+    @property
+    def country_risk_premium_rating(self):
+        if self.project:
+            try:
+                ds_ = round(100*float(self.rating_based_default_spread) * float(self.project.volatility_ratio))/100
+            except Exception as ex:
+                ds_ = 0
+        else:
+            ds_ = None
+        return ds_
+
+    @property
+    def total_equity_risk_premium_rating(self):
+        try:
+            if self.project:
+                try:
+                    ds_ = round(100*float(self.country_risk_premium_rating) + float(self.project.mature_marker_risk_premium))/100
+                except Exception as ex:
+                    ds_ = 0
+            else:
+                ds_ = None
+            return ds_
+        except Exception as ex:
+            ds = None
+        return ds
+
+    # cds
     @property
     def excess_cds_spread_over_us_cds(self):
         try:
@@ -596,13 +704,34 @@ class XBRLCountryYearData(TruncateTableMixin, models.Model):
         return d
 
     @property
-    def rating_based_default_spread(self):
-        # print(self.country)
+    def country_risk_cds(self):
         try:
-            ds_ = XBRLSPMoodys.objects.get(year=self.year, moodys=self.moodys_rate_completed_by_sp).default_spread
+            if self.project:
+                try:
+                    ds_ = round(100*float(self.excess_cds_spread_over_us_cds) * float(self.project.volatility_ratio))/100
+                except Exception as ex:
+                    ds_ = 0
+            else:
+                ds_ = None
+            return ds_
         except Exception as ex:
-            ds_ = None
-        return ds_
+            ds = None
+        return ds
+
+    @property
+    def total_equity_risk_premium_cds(self):
+        try:
+            if self.project:
+                try:
+                    ds_ = round(100*float(self.country_risk_cds) + float(self.project.mature_marker_risk_premium))/100
+                except Exception as ex:
+                    ds_ = 0
+            else:
+                ds_ = None
+            return ds_
+        except Exception as ex:
+            ds = None
+        return ds
 
     def __str__(self):
         return str(self.country)
@@ -643,7 +772,7 @@ class XBRLValuationAccountsMatch(TruncateTableMixin, models.Model):
     class Meta:
         verbose_name = _('XBRLValuationAccountMatch')
         verbose_name_plural = _('XBRLValuationAccountsMatch')
-        ordering = ['company', 'account']
+        ordering = ['company']
     #
     year = models.PositiveSmallIntegerField(default=0)
     company = models.ForeignKey(XBRLCompanyInfo, on_delete=models.CASCADE, default=None, blank=True, null=True,
@@ -832,12 +961,15 @@ class XBRLSPMoodys(TruncateTableMixin, models.Model):
         ordering = ['-year']
     #
     year = models.PositiveSmallIntegerField(default=0)
-    sp = models.CharField(max_length=10, default='Income Statement')
-    moodys = models.CharField(max_length=10, default='Income Statement')
+    sp = models.CharField(max_length=10, default='')
+    moodys = models.CharField(max_length=10, default='')
     default_spread = models.DecimalField(max_digits=4, decimal_places=2, blank=True, null=True)
+    score_from = models.DecimalField(max_digits=4, decimal_places=2, blank=True, null=True, default=0)
+    score_to = models.DecimalField(max_digits=4, decimal_places=2, blank=True, null=True, default=0)
 
     def __str__(self):
-        return str(self.sp) + " = " + str(self.moodys) + " : " + str(self.default_spread)
+        return str(self.sp) + " = " + str(self.moodys) + " default_spread: " + str(self.default_spread) + \
+               " score_from: " + str(self.score_from) + " score_to: " + str(self.score_to)
 
 #
 # # https://www.moodys.com/researchandratings/market-segment/sovereign-supranational/-/005005?tb=2&sbk=issr_name&sbo=1

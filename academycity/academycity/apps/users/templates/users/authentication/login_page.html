@@ -148,6 +148,12 @@ body {
                                 <td>{{ form_login.password.label_tag }}</td>
                                 <td>{{ form_login.password }}</td>
                             </tr>
+<!--
+                            <tr>
+                                <td>{{ form_login.captcha.label_tag }}</td>
+                                <td>{{ form_login.captcha }}</td>
+                            </tr>
+                            -->
                     </table>
                           <p>
                               <button class="submit_btn" type="submit">{% trans "Sign In" %}</button>
@@ -171,6 +177,12 @@ body {
                       {% endif %}
 
                     <table>
+<!--
+                            <tr>
+                                <td>{{ form_login.captcha.label_tag }}</td>
+                                <td>{{ form_login.captcha }}</td>
+                            </tr>
+                             -->
                             <tr>
                                 <td><label for="id_test">Enter 1:</label></td>
                                 <td><input type="text" name="test" maxlength="150" autofocus="" required="" id="id_test"></td>

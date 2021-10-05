@@ -121,18 +121,23 @@ function add_accounts_editor(replace=0)
             l=l.split("_")
             var os = td.children[0].children;
             var i;
+
+            try{l[2] = l[2].toLowerCase();} catch (er) {}
+
             for (i = 0; i < os.length; i++) {
 
                ma = os[i].getAttribute("ma");
-               try{ma = ma.toLowerCase(); l[2] = l[2].toLowerCase()}
-               catch (er) {}
-               if (ma == l[2]) {
-                    td.children[0].value = os[i].getAttribute("value");
-                    select_accounts = td.children[0].cloneNode(true);
-                    select_accounts.children[i].setAttribute("hidden", "hidden")
-                    select_accounts = select_accounts.outerHTML
-                    break;
-               }
+               try{ma = ma.toLowerCase();} catch (er) {}
+               try
+               {
+                       if (ma == l[2]) {
+                            td.children[0].value = os[i].getAttribute("value");
+                            vObj["select_accounts"] = td.children[0].cloneNode(true);
+                            vObj["select_accounts"].children[i].setAttribute("hidden", "hidden")
+                            vObj["select_accounts"] = vObj["select_accounts"].outerHTML
+                            break;
+                       }
+               } catch(er){}
             }
       }
    }
@@ -381,15 +386,18 @@ function highlightAllMenuItems()
 {$('#menu li ul li a.xbrlviewer').css('background-color','#C1CDCD')}
 </script>
 <script>
+
     function onchange_account(event)
     {
       var elm = event.target
+      var previous = elm.getAttribute("previous")
       var elmp = elm.parentNode.parentNode
       var a = elmp.children[0].children[0]
       onclick_ = a.getAttribute("onclick")
       l = onclick_.split("'")
       l=l[1]
       l=l.split("_")
+
       $.post("{% url 'corporatevaluation:onchange_account' %}",
         {
           accounting_standard: l[1],

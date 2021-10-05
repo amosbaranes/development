@@ -13,11 +13,18 @@ from django.db.models import Q
 from concurrent.futures import ThreadPoolExecutor
 import xml.etree.ElementTree as ET
 from six.moves import urllib
+import xlrd
+import numpy as np
+import statistics
+from django.utils.translation import get_language
+from ..core.utils import log_debug, clear_log_debug
+
 from django.db.models import Avg
 from .models import (XBRLMainIndustryInfo, XBRLIndustryInfo, XBRLCompanyInfoInProcess,
                      XBRLCompanyInfo, XBRLValuationStatementsAccounts, XBRLValuationAccounts, XBRLValuationAccountsMatch,
                      XBRLRegion, XBRLCountry, XBRLCountryYearData,
-                     XBRLHistoricalReturnsSP, XBRLSPMoodys)
+                     XBRLHistoricalReturnsSP, XBRLSPMoodys, Project,
+                     XBRLRegion)
 
 # cik = '0000051143'
 # type = '10-K'
@@ -26,6 +33,9 @@ from .models import (XBRLMainIndustryInfo, XBRLIndustryInfo, XBRLCompanyInfoInPr
 
 class AcademyCityXBRL(object):
     def __init__(self):
+        # Should remove it later on
+        clear_log_debug()
+        #
         self.PROJECT_ROOT_DIR = os.path.join(settings.WEB_DIR, "data", "corporatevaluation")
         os.makedirs(self.PROJECT_ROOT_DIR, exist_ok=True)
 
@@ -52,14 +62,22 @@ class AcademyCityXBRL(object):
         self.xbrl_base_year = 2020
         self.xbrl_start_year = 2012
         self.today_year = datetime.datetime.now().year
+        log_debug("AcademyCityXBRL was created")
 
     # Valuation Functions
-    def get_risk_premium(self, year10=1928, year50=1928):
+    def get_risk_premium(self, year10=1928, year50=1928, cv_project_id=None, is_update='no'):
+        log_debug("Start get_risk_premium.")
+        base_year = 1928
+        project = Project.objects.filter(translations__language_code=get_language()).get(id=int(cv_project_id))
+        # print(is_update)
+        if is_update != 'yes':
+            if project.dic_data:
+                return project.dic_data
         dic = {'Arithmetic': {}, 'Geometric': {}}
         try:
-            l_years = [1928, year50, year10]
+            # l_years = [base_year, year50, year10]
+            l_years = range(base_year, datetime.datetime.now().year)
             for y in l_years:
-
                 # print(y)
                 # for rp in XBRLHistoricalReturnsSP.objects.filter(year__gte=y).all():
                 #     try:
@@ -69,12 +87,21 @@ class AcademyCityXBRL(object):
                 #         print(ex)
                 #
                 # print(2222222)
-                ll = [[rp.return_on_sp500, rp.tb3ms_rate, rp.return_on_tbond] for rp in XBRLHistoricalReturnsSP.objects.filter(year__gte=y).all()]
 
+                log_debug('Start process year : ' + str(y))
+                ll = [[rp.return_on_sp500, rp.tb3ms_rate, rp.return_on_tbond] for rp in XBRLHistoricalReturnsSP.objects.filter(year__gte=y).all()]
                 df = pd.DataFrame(ll)
                 df.columns = ['M', 'TB', 'B']
                 df['M_TB'] = df['M'] - df['TB']
                 df['M_B'] = df['M'] - df['B']
+
+                llb = [[rp.return_on_sp500, rp.tb3ms_rate, rp.return_on_tbond] for rp in XBRLHistoricalReturnsSP.objects.filter(year__lte=y).filter(year__gte=base_year).all()]
+                dfb = pd.DataFrame(llb)
+                dfb.columns = ['M', 'TB', 'B']
+                dfb['M_TB'] = dfb['M'] - dfb['TB']
+                dfb['M_B'] = dfb['M'] - dfb['B']
+                log_debug('process year : ' + str(y) + " ll done")
+
                 # print(df)
                 # print(df.mean())
                 # print(df.std())
@@ -87,9 +114,30 @@ class AcademyCityXBRL(object):
                 dic['Geometric'][y]['Stocks-TBonds'] = {}
 
                 dic['Arithmetic'][y]['Stocks-TBills']['value'] = round(10000*df.mean()['M_TB'])/10000
-                dic['Arithmetic'][y]['Stocks-TBills']['std'] = round(10000*df.std()['M_TB']/((df.shape[0]+1)**(1/2)))/10000
                 dic['Arithmetic'][y]['Stocks-TBonds']['value'] = round(10000*df.mean()['M_B'])/10000
-                dic['Arithmetic'][y]['Stocks-TBonds']['std'] = round(10000*df.std()['M_B']/((df.shape[0]+1)**(1/2)))/10000
+
+                yrp = XBRLHistoricalReturnsSP.objects.get(year=y)
+
+                log_debug('process year : ' + str(y) + " yrp done")
+
+                dic['Arithmetic'][y]['Stocks-TBonds']['sp500'] = yrp.return_on_sp500
+                dic['Arithmetic'][y]['Stocks-TBonds']['tb3ms'] = yrp.tb3ms_rate
+                dic['Arithmetic'][y]['Stocks-TBonds']['tbond'] = yrp.return_on_tbond
+                dic['Arithmetic'][y]['Stocks-TBonds']['m_b_median'] = round(10000*df.median()['M_B'])/10000
+                #
+                dic['Arithmetic'][y]['Stocks-TBonds']['b_value'] = round(10000*dfb.mean()['M_B'])/10000
+                dic['Arithmetic'][y]['Stocks-TBonds']['b_m_b_median'] = round(10000*dfb.median()['M_B'])/10000
+                #
+                log_debug('process year : ' + str(y) + " calculation 1 done")
+
+                try:
+                    dic['Arithmetic'][y]['Stocks-TBills']['std'] = round(10000*df.std()['M_TB']/((df.shape[0]+1)**(1/2)))/10000
+                    dic['Arithmetic'][y]['Stocks-TBonds']['std'] = round(10000*df.std()['M_B']/((df.shape[0]+1)**(1/2)))/10000
+
+                    dic['Arithmetic'][y]['Stocks-TBonds']['b_std'] = round(10000*dfb.std()['M_B']/((dfb.shape[0]+1)**(1/2)))/10000
+                    log_debug('process year : ' + str(y) + " std calculation 2 done")
+                except Exception as exx:
+                    log_debug('Error 10 : ' + " " + str(y) + " " + str(exx))
                 gm = 1
                 gtb = 1
                 gb = 1
@@ -100,19 +148,46 @@ class AcademyCityXBRL(object):
                 gm = gm**(1/df.shape[0]) - 1
                 gtb = gtb**(1/df.shape[0]) - 1
                 gb = gb**(1/df.shape[0]) - 1
+
                 dic['Geometric'][y]['Stocks-TBills']['value'] = round(10000*(gm - gtb))/10000
                 dic['Geometric'][y]['Stocks-TBonds']['value'] = round(10000*(gm - gb))/10000
                 dic['Geometric'][y]['Stocks-TBills']['std'] = ''
                 dic['Geometric'][y]['Stocks-TBonds']['std'] = ''
 
+                try:
+                    bgm = 1
+                    bgtb = 1
+                    bgb = 1
+                    for i, r in dfb.iterrows():
+                        bgm *= (1+r['M'])
+                        # bgtb *= (1+r['TB'])
+                        bgb *= (1+r['B'])
+                    bgm = bgm**(1/dfb.shape[0]) - 1
+                    # bgtb = bgtb**(1/dfb.shape[0]) - 1
+                    bgb = bgb**(1/dfb.shape[0]) - 1
+                    dic['Geometric'][y]['Stocks-TBonds']['b_value'] = round(10000*(bgm - bgb))/10000
+                except Exception as ex:
+                    print('ex')
+                    print(ex)
+                    print('ex')
+
+                log_debug('End process year : ' + str(y))
+
+            # Damodarad uses geometric:  dic['Geometric'][1928]['Stocks-TBonds']['value']
+            project.mature_marker_risk_premium = dic['Arithmetic'][1928]['Stocks-TBonds']['value']
+            project.dic_data = dic
+            project.save()
             # print(dic)
+
         except Exception as ex:
-            print(ex)
+            log_debug('Error 10 : ' + " " + str(ex))
+
+        log_debug("End get_risk_premium.")
         return dic
 
     # Assisting functions
-    def download_excel_file(self, url, file):
-        path = os.path.join(self.EXCEL_PATH, file + ".xlsx")
+    def download_excel_file(self, url, file, ext='xlsx'):
+        path = os.path.join(self.EXCEL_PATH, file + "." + ext)
         if not os.path.isfile(path):
             urllib.request.urlretrieve(url, path)
         return path
@@ -126,7 +201,20 @@ class AcademyCityXBRL(object):
         return self.DATA
 
     # I use ticker as cik
-    def get_data_for_cik(self, cik, type='10-k'):
+    def get_data_for_cik(self, cik, type='10-k', is_update='no'):
+        log_debug("Start get_data_for_cik.")
+        company = XBRLCompanyInfo.objects.get(ticker=cik)
+        # print(company.financial_data)
+        if is_update != 'yes':
+            if company.financial_data:
+                # print('company.financial_data')
+                # for r in XBRLRegion.region_objects.averages():
+                #     print(r.name)
+                #     print(r.num_countries)
+
+                # print(company.financial_data)
+                return company.financial_data
+
         dic_company_info = {'company_info': {'ticker': cik,
                                              'type': type,
                                              }
@@ -218,12 +306,15 @@ class AcademyCityXBRL(object):
         results = []
         # print("Current Time Before ThreadPoolExecutor =", datetime.datetime.now().strftime("%H:%M:%S"))
 
+        log_debug("Start ThreadPoolExecutor.")
         with ThreadPoolExecutor(max_workers=len(dic_data)) as pool:
             results = pool.map(self.get_data_for_years, dic_data_list)
         # print("Current Time After ThreadPoolExecutor =", datetime.datetime.now().strftime("%H:%M:%S"))
+        log_debug("End ThreadPoolExecutor.")
         for r in results:
             dic_data[r[0]] = r[1]
             # statements = r[4]
+        log_debug("End collect data from ThreadPoolExecutor.")
 
         # print("Current Time After process result ThreadPoolExecutor =", datetime.datetime.now().strftime("%H:%M:%S"))
 
@@ -235,7 +326,9 @@ class AcademyCityXBRL(object):
         # print('-16' * 10)
         # print(dic_company_info)
         # print('-16' * 10)
-
+        company.financial_data = dic_company_info
+        company.save()
+        log_debug("End get_data_for_cik.")
         return dic_company_info
 
     def insure_two_digit_month_day(self, s):
@@ -346,11 +439,13 @@ class AcademyCityXBRL(object):
                     identifier = context.find('identifier')
                     segment = context.find('segment')
                     startdate = context.find('startdate')
+
                 end_date = tag.text.split('-')
                 start_date = startdate.text.split('-')
                 start_date = start_date[0]+'-'+start_date[1]
 
                 start_date_should = str((int(end_date[0])-1))+'-'+end_date[1]
+                start_date0_should = str((int(end_date[0])-2))+'-12'
                 start_date1_should = end_date[0]+'-01'
                 start_date2_should = str((int(end_date[0])-1))+'-'+self.insure_two_digit_month_day(str((int(end_date[1])+1)))
                 start_date3_should = str((int(end_date[0])-1))+'-'+self.insure_two_digit_month_day(str((int(end_date[1])-1)))
@@ -360,14 +455,16 @@ class AcademyCityXBRL(object):
                 # print(end_date)
                 # print('end_date')
                 # print(start_date_should)
+                # print(start_date0_should)
                 # print(start_date1_should)
                 # print(start_date2_should)
+                # print(start_date3_should)
                 # print(start_date)
                 # print('=5'*10)
                 # print('=6'*10)
 
                 if (not segment) and (identifier.text == entitycentralindexkey) \
-                        and (start_date == start_date_should or start_date == start_date1_should or start_date == start_date2_should or start_date == start_date3_should):
+                        and (start_date == start_date_should or start_date == start_date1_should or start_date == start_date2_should or start_date == start_date3_should or start_date == start_date0_should):
                     flow_context_id = context['id']
 
             except Exception as ex:
@@ -477,7 +574,6 @@ class AcademyCityXBRL(object):
             for a_order in statements[st_]['accounts']:
                 # statements[st_]['accounts'][a_order] = [a.account, a.type, a.scale]
                 # dic_matches[a_order] = [m.match_account, m.accounting_standard]
-
                 # print(a_order)
                 # if int(a_order) in dic_matches:
                 #     print('in')
@@ -491,12 +587,15 @@ class AcademyCityXBRL(object):
                 #     print('not')
                 # print('str')
 
-                if int(a_order) in dic_matches:
-                    ma_, ma_std = dic_matches[a_order][0].lower(), dic_matches[a_order][1].lower()
-                else:
-                    ma_, ma_std = "", ""
-
-                # print(ma_)
+                try:
+                    if int(a_order) in dic_matches:
+                        ma_, ma_std = dic_matches[int(a_order)][0].lower(), dic_matches[int(a_order)][1].lower()
+                    else:
+                        ma_, ma_std = "", ""
+                except Exception as ex:
+                    pass
+                    # print('ex')
+                    # print(ex)
 
                 if ma_ != '':
                     if statements[st_]['accounts'][a_order][1] == 1:
@@ -509,11 +608,11 @@ class AcademyCityXBRL(object):
     def save_industry_default(self, year, ticker, sic):
         dic = {'status': 'ok'}
         if year == self.xbrl_base_year:
-            print('-1'*20)
+            # print('-1'*20)
             industry = XBRLIndustryInfo.objects.get(sic_code=sic)
             c, created = XBRLCompanyInfo.objects.get_or_create(industry=industry, company_name=sic, ticker=sic, cik=sic)
             try:
-                print('-2'*20)
+                # print('-2'*20)
                 # zero_company = XBRLValuationAccountsMatch.objects.filter(Q(company__ticker=ticker) & Q(year=year)).all()
                 # zero_company.update(company=c, year=0)
                 for m in XBRLValuationAccountsMatch.objects.filter(Q(company__ticker=ticker) & Q(year=year)).all():
@@ -723,12 +822,14 @@ class AcademyCityXBRL(object):
         companies_ = XBRLCompanyInfoInProcess.objects.filter(is_error=False).all()
         for c in companies_:
             try:
-                print(c.ticker)
+                # print(c.ticker)
                 i_ = XBRLIndustryInfo.objects.get(sic_code=c.sic)
                 XBRLCompanyInfo.objects.get_or_create(industry=i_, exchange=c.exchange, company_name=c.company_name,
                                                       ticker=c.ticker, company_letter=c.company_letter, cik=c.cik)
             except Exception as exc:
                 print(str(exc))
+        dic = {'status': 'ok'}
+        return dic
 
     def get_all_companies(self):
         exchanges = {
@@ -740,7 +841,7 @@ class AcademyCityXBRL(object):
         n = 0
         companies = None
         for exchange in exchanges:
-            print(exchange)
+            # print(exchange)
             url = 'https://www.advfn.com/'+exchanges[exchange]+'.asp?companies='
             df = self.get_companies_for_exchange(exchange=exchange, exchange_url=url)
             if n == 0:
@@ -755,13 +856,18 @@ class AcademyCityXBRL(object):
             XBRLCompanyInfoInProcess.truncate()
         except Exception as ex:
             print("Error 1:  " + str(ex))
+
+        # print('done collecting data on companies')
+
         try:
             # print(companies)
             for i, c in companies.iterrows():
                 # print(c)
                 # print(c['exchange'])
                 # print(c['name'])
-                print(c['ticker'])
+
+                # print(c['ticker'])
+
                 # print(c['letter'])
                 a, created = XBRLCompanyInfoInProcess.objects.get_or_create(exchange=c['exchange'],
                                                                             company_name=c['name'],
@@ -770,11 +876,14 @@ class AcademyCityXBRL(object):
         except Exception as ex:
             print("Error 2:  " + str(ex))
 
+        # print('done loading data to XBRLCompanyInfoInProcess')
+
         # self.companies.reset_index(drop=True, inplace=True)
         # self.companies.to_excel(writer, sheet_name='all')
         # writer.save()
 
-        return self.companies
+        dic = {'status': 'ok'}
+        return dic
 
     def get_companies_for_exchange(self, exchange, exchange_url):
         companies = pd.DataFrame(columns=['exchange', 'name', 'ticker', 'letter'])
@@ -851,14 +960,24 @@ class AcademyCityXBRL(object):
     # # #
 
     def load_tax_rates_by_country_year(self):
+        log_debug("Start load_tax_rates_by_country_year.")
         url = "https://files.taxfoundation.org/20210125115215/1980-2020-Corporate-Tax-Rates-Around-the-World.csv.xlsx"
         file = "world_taxes"
         self.download_excel_file(url, file)
         df = self.load_excel_data(file)
 
         XBRLCountryYearData.truncate()
+        XBRLCountry.truncate()
+        XBRLRegion.truncate()
+        log_debug("tables XBRLCountryYearData, XBRLCountry, XBRLRegion were cleaned.")
+
         for i, r in df.iterrows():
-            region, c = XBRLRegion.objects.get_or_create(name=r['continent'])
+            try:
+                region, c = XBRLRegion.objects.get_or_create(name=r['continent'])
+                # log_debug('created region: ' + str(r['continent']))
+            except Exception as ex:
+                log_debug("Error 1 creating region: " + str(r['continent']) + " " + str(ex))
+
             oecd = True if int(r['oecd']) > 0 else False
             eu27 = True if int(r['eu27']) > 0 else False
             gseven = True if int(r['gseven']) > 0 else False
@@ -869,8 +988,9 @@ class AcademyCityXBRL(object):
                 country, c = XBRLCountry.objects.get_or_create(region=region, name=r['country'], iso_2=r['iso_2'],
                                                                iso_3=r['iso_3'], oecd=oecd, gseven=gseven, eu27=eu27,
                                                                gtwenty=gtwenty, brics=brics)
+                # log_debug("Created country: " + str(r['continent']) + " " + str(r['country']))
             except Exception as ex:
-                print('Error 1: ' + ex)
+                log_debug("Error 1 get country: " + str(r['continent']) + " " + str(r['country']) + " " + str(ex))
 
             d, c = XBRLCountryYearData.objects.get_or_create(country=country, year=int(r['year']))
 
@@ -882,10 +1002,266 @@ class AcademyCityXBRL(object):
 
             try:
                 d.save()
+                log_debug("Done: " + str(r['continent']) + " " + str(r['country']) + " " + str(r['year']))
+            except Exception as ex:
+                log_debug("Error 2 save country: " + str(r['continent']) + " " + str(r['country']) + " " + str(r['year']) + " " + str(ex))
+
+        dic = {'status': 'ok'}
+        log_debug("End load_tax_rates_by_country_year.")
+        return dic
+
+    def load_country_premium(self, request):
+        log_debug("Start load_country_premium.")
+        # print('in object load_country_premium(request)')
+        match = {'Czech Republic': 'Czechia',
+                 'Moldova': 'Republic of Moldova',
+                 'United Kingdom': 'United Kingdom of Great Britain and Northern Ireland',
+                 'Jersey (States of)': 'Jersey',
+                 'Guernsey (States of)': 'Guernsey',
+                 'Bolivia': 'Bolivia (Plurinational State of)',
+                 "Côte d'Ivoire": "Cote d'Ivoire",
+                 'Democratic Republic of Congo': 'Democratic Republic of the Congo',
+                 'Congo (Democratic Republic of)': 'Democratic Republic of the Congo',
+                 'Korea': 'Republic of Korea',
+                 'Bolivia(Plurinational State of)': 'Bolivia (Plurinational State of)',
+                 'United Kingdom of Great Britain and NorthernIreland': 'United Kingdom of Great Britain and Northern Ireland'}
+        file = "ctrypremJuly21"
+        df = self.load_excel_data(file, sheet_name="Data1")
+        # load country and regions
+        name_list = [x for x in df['name'].unique() if str(x) != 'nan']
+        for r in name_list:
+            # print(r)
+            # print(df.loc[df['name'] == r])
+            # print("------")
+            z = 0
+            for i, c in df.loc[df['name'] == r].iterrows():
+                if z == 0:
+                    # print(c['name'])
+                    try:
+                        region, created = XBRLRegion.objects.get_or_create(name=c['name'])
+                        region.full_name = c['Region']
+                        if created:
+                            region.updated_adamodar = True
+                        region.save()
+                        # log_debug("load_country_premium : updated " + str(c['name']))
+                    except Exception as ex:
+                        log_debug("Error load_country_premium 10: " + str(c['name']) + " " + str(ex))
+                    z = 1
+                try:
+                    if c['Country'] in match:
+                        s_country = match[c['Country']]
+                    else:
+                        s_country = c['Country']
+
+                    if not XBRLCountry.objects.filter(name=s_country).all().count() > 0:
+                        XBRLCountry.objects.create(region=region, name=s_country, updated_adamodar=True)
+                        # print('created')
+                        # print(c['Country'])
+                    else:
+                        country = XBRLCountry.objects.filter(name=s_country).all()[0]
+                        country.region = region
+                        country.updated_adamodar = True
+                        country.save()
+                        # print('updated')
+                        # print(c['Country'])
+                        # log_debug("load_country_premium : updated country " + str(c['name']) + " " + c['Country'])
+                except Exception as ex:
+                    log_debug("Error load_country_premium 100: " + str(ex))
+        # print('--SP Moodys and tax rates for 2020')
+        # log_debug('--SP Moodys and tax rates for 2020')
+        for i, c in df.iterrows():
+            s_country_ = 'Country1'
+            if c[s_country_] in match:
+                s_country = match[c[s_country_]]
+            else:
+                s_country = c[s_country_]
+            try:
+                if not s_country:
+                    break
+                country = XBRLCountry.objects.filter(name=s_country).all()[0]
+                data, created = XBRLCountryYearData.objects.get_or_create(country=country, year=2020)
+                if str(c['sp_rating_2020']) == 'nan':
+                    s_sp = ''
+                else:
+                    s_sp = c['sp_rating_2020']
+                data.sp_rating = s_sp
+                # print(s_country + "                  " + str(c['Moodys_rating_2020']))
+
+                if str(c['Moodys_rating_2020']) == 'nan':
+                    s_moodys = ''
+                else:
+                    s_moodys = c['Moodys_rating_2020']
+                data.moodys_rating = s_moodys
+
+                data.tax_rate = c['tax_rate_2020']
+                data.save()
+                # print(data)
+                # log_debug("data added for: " + s_country)
+            except Exception as ex:
+                print('Error 222: for ' + str(ex))
+                log_debug("Error load_country_premium 101: " + s_country + " " + str(ex))
+        # log_debug('-- End SP Moodys and tax rates for 2020')
+
+        # print('--composite_risk_rating_7_21 --')
+        # log_debug('--composite_risk_rating_7_21 --')
+
+        for i, c in df.iterrows():
+            s_country_ = 'Country2'
+            if c[s_country_] in match:
+                s_country = match[c[s_country_]]
+            else:
+                s_country = c[s_country_]
+            # print(c)
+
+            s_country = str(s_country)
+            if s_country == 'nan':
+                break
+            try:
+                country, created = XBRLCountry.objects.get_or_create(name=s_country)
+                data, created = XBRLCountryYearData.objects.get_or_create(country=country, year=2020)
+                data.composite_risk_rating = c['composite_risk_rating_7_21']
+                data.save()
+                # print(data)
+                # log_debug("composite_risk_rating_7_21 data added for: " + s_country)
             except Exception as ex:
                 print(ex)
+                log_debug("Error load_country_premium 102: " + s_country + " " + str(ex))
+
+        # print('-- CDS_07_01_20211 --')
+        # log_debug('-- CDS_07_01_20211 --')
+        for i, c in df.iterrows():
+            s_country_ = 'Country3'
+            if c[s_country_] in match:
+                s_country = match[c[s_country_]]
+            else:
+                s_country = c[s_country_]
+            # print(s_country)
+            # print(c)
+            s_country = str(s_country)
+            if s_country == 'nan':
+                break
+
+            try:
+                country = XBRLCountry.objects.filter(name=s_country).all()[0]
+                data, created = XBRLCountryYearData.objects.get_or_create(country=country, year=2020)
+
+                # need to consider this.  Since three country with missing data turned to 0.
+                if str(c['CDS_01_01_2021']) == 'nan':
+                    s_ = 0
+                else:
+                    s_ = 100*c['CDS_01_01_2021']
+                data.cds = s_
+                data.save()
+                # print(data.cds)
+                # log_debug("CDS_07_01_20211 data added for: " + s_country)
+            except Exception as ex:
+                log_debug("Error load_country_premium 102: " + s_country + " " + str(ex))
+
+        # print('-- SPMoodys 1--')
+        # log_debug('-- SPMoodys 1--')
+        XBRLSPMoodys.truncate()
+        for i, c in df.iterrows():
+            try:
+                if str(c['sp_moodys_year']) != 'nan':
+                    d, created = XBRLSPMoodys.objects.get_or_create(year=c['sp_moodys_year'], sp=c['SP'], moodys=c['Moodys'])
+            except Exception as ex:
+                pass
+
+        # print('-- SPMoodys 2--')
+        # log_debug('-- SPMoodys 2--')
+        for i, c in df.iterrows():
+            try:
+                if str(c['Rating']) != 'nan':
+                    d, created = XBRLSPMoodys.objects.get_or_create(year=int(c['rating_year']), moodys=c['Rating'])
+                    dd = round(c['Default_Spread_1_1_2021']/100, 2)
+                    d.default_spread = dd
+                    d_from = round(100*c['score_from'], 2)/100
+                    d_to = round(100*c['score_to'], 2)/100
+                    d.score_from = d_from
+                    d.score_to = d_to
+                    d.save()
+                    # log_debug("CDS_07_01_20211 data added for: " + str(c['rating_year']) + " " + str(c['Rating']))
+            except Exception as ex:
+                log_debug("Error load_country_premium 104: " + str(c['Rating']) + str(ex))
+
+        today = datetime.date.today()
+        today = datetime.date(today.year, today.month, today.day)
+        today_5 = str(datetime.date(today.year - 5, today.month, today.day))
+        today = str(today)
+        # print(today)
+        # print(today_5)
+        s_baml = "https://fred.stlouisfed.org/graph/fredgraph.xls?bgcolor=%23e1e9f0&chart_type=line&drp=0&fo=open%20sans&graph_bgcolor=%23ffffff&height=450&mode=fred&recession_bars=on&txtcolor=%23444444&ts=12&tts=12&width=1168&nt=0&thu=0&trc=0&show_legend=yes&show_axis_titles=yes&show_tooltip=yes&id=BAMLEMPBPUBSICRPIEY&scale=left&cosd="+today_5+"&coed="+today+"&line_color=%234572a7&link_values=false&line_style=solid&mark_type=none&mw=3&lw=2&ost=-99999&oet=99999&mma=0&fml=a&fq=Daily&fam=avg&fgst=lin&fgsnd=2020-02-01&line_index=1&transformation=lin&vintage_date=2021-09-17&revision_date=2021-09-17&nd=1998-12-31"
+        s_bmi = "http://www.spglobal.com/spdji/en/idsexport/file.xls?hostIdentifier=48190c8c-42c4-46af-8d1a-0cd5db894797&redesignExport=true&languageId=1&selectedModule=PerformanceGraphView&selectedSubModule=Graph&yearFlag=fiveYearFlag&indexId=5457901"
+        path_baml = self.download_excel_file(s_baml, "baml", ext='xls')
+        path_bmi = self.download_excel_file(s_bmi, "bmi", ext='xls')
+        try:
+            wb_baml = xlrd.open_workbook(path_baml)
+            wb_bmi = xlrd.open_workbook(path_bmi)
+        except Exception as ex:
+            print(ex)
+
+        # log_debug('-- Downloaded baml bmi --')
+        sh_bmi = wb_bmi.sheet_by_index(0)
+        data_bmi = []
+        z = 0
+        for cur_row in range(0, sh_bmi.nrows):
+            cell = sh_bmi.cell(cur_row, 0)
+            # print(cell.value)
+            try:
+                if 'Effective date' in cell.value:
+                    z = 1
+                    continue
+            except Exception as ex:
+                pass
+            if cell.value == '':
+                z = 0
+            if z == 1:
+                data_bmi.append(sh_bmi.cell(cur_row, 1).value)
+        # print('data_bmi')
+        # print(data_bmi)
+        data_bmi = [x2/x1-1 for (x1, x2) in zip(data_bmi, data_bmi[1:])]
+        std_bmi = statistics.pstdev(data_bmi)*(260**0.5)
+        # log_debug('-- Processed file bmi --')
+        sh_baml = wb_baml.sheet_by_index(0)
+        data_baml = []
+        z = 0
+        for cur_row in range(0, sh_baml.nrows):
+            cell = sh_baml.cell(cur_row, 0)
+            # print(cell.value)
+            try:
+                if 'observation' in cell.value:
+                    z = 1
+                    continue
+            except Exception as ex:
+                pass
+            if cell.value == '':
+                z = 0
+            if z == 1:
+                data_baml.append(sh_baml.cell(cur_row, 1).value)
+        data_baml = [x for x in data_baml if x is not None]
+        k1 = 0
+        for i in range(len(data_baml)):
+            if data_baml[i] == 0:
+                data_baml[i] = k1
+            k1 = data_baml[i]
+        std_baml = statistics.pstdev(data_baml)
+        mean_baml = statistics.mean(data_baml)
+        cv = std_baml/mean_baml
+        volatility_ratio = std_bmi/cv
+
+        # log_debug('-- Processed file baml --')
+
+        # ll = [volatility_ratio, std_bmi, cv, std_baml, mean_baml]
+        # print(ll)
+        project = Project.objects.filter(translations__language_code=get_language()).get(id=int(request.session['cv_project_id']))
+        project.volatility_ratio = volatility_ratio
+        project.save()
+        dic = {'status': 'ok', 'volatility_ratio': volatility_ratio}
+        log_debug("End load_country_premium.")
+        return dic
 
     def load_sp_returns(self):
+        log_debug("Start load_sp_returns.")
         # https://github.com/7astro7/full_fred
         file = 'histretSP'
         df = self.load_excel_data(file, 'Data')
@@ -894,6 +1270,9 @@ class AcademyCityXBRL(object):
         bbbi = 1
         n = 0
         XBRLHistoricalReturnsSP.truncate()
+        log_debug("XBRLHistoricalReturnsSP.truncate() done.")
+        # print(df)
+
         for i, r in df.iterrows():
             try:
                 year_data, c = XBRLHistoricalReturnsSP.objects.get_or_create(year=int(r['year']))
@@ -916,234 +1295,34 @@ class AcademyCityXBRL(object):
                 if not pd.isna(r['CPI']):
                     year_data.cpi = r['CPI']
             except Exception as ex:
-                print('Error 1: ' + ex)
+                print('ex')
+                print(ex)
+                print('ex')
+                log_debug('Error 1 create year_data: ' + str(r['year']) + " " + ex)
 
             try:
                 year_data.save()
-                # print(int(year_data.year))
                 if int(year_data.year) >= 1928:
                     spi = spi * (1 + year_data.return_on_sp500)
                     bbbi = bbbi * (1 + year_data.return_on_tbond)
                     n += 1
-                    # print(spi)
-                    # print(bbbi)
-                    # print(n)
                     spi_ = spi ** (1 / n)
                     bbbi_ = bbbi ** (1 / n)
-                    # print(spi_)
-                    # print(bbbi_)
                     r = spi_ - bbbi_
-                    # print(r)
                     year_data.risk_premium = round(10000 * r) / 10000
                 year_data.save()
             except Exception as ex:
-                print('ex')
-                print(ex)
-                print('ex')
+                log_debug('Error 2 year_data.save(): ' + str(r['year']) + " " + ex)
+        dic = {'status': 'ok'}
+        log_debug("End load_sp_returns.")
+        return dic
 
-    def load_country_premium(self):
-        # print('in object load_country_premium(request)')
-        match = {'Czech Republic': 'Czechia',
-                 'Moldova': 'Republic of Moldova',
-                 'United Kingdom': 'United Kingdom of Great Britain and NorthernIreland',
-                 'Jersey (States of)': 'Jersey',
-                 'Guernsey (States of)': 'Guernsey',
-                 'Bolivia': 'Bolivia(Plurinational State of)',
-                 "Côte d'Ivoire": "Cote d'Ivoire",
-                 'Democratic Republic of Congo': 'Democratic Republic of the Congo',
-                 'Congo (Democratic Republic of)': 'Democratic Republic of the Congo',
-                 'Korea': 'Republic of Korea',
-                 'Bolivia(Plurinational State of)': 'Bolivia (Plurinational State of)',
-                 'United Kingdom of Great Britain and NorthernIreland': 'United Kingdom of Great Britain and Northern Ireland'}
-        file = "ctrypremJuly21"
-        df = self.load_excel_data(file, sheet_name="Data1")
-        # print(df[100:])
-        name_list = [x for x in df['name'].unique() if str(x) != 'nan']
-        # print(name_list)
+    # general purpose functions for testing
+    def test(self):
+        dic = {'status': 'ok'}
+        return dic
 
-        # for r in df:
-        #     print(df[r])
-
-        for r in name_list:
-            # print(r)
-            # print(df.loc[df['name'] == r])
-            # print("------")
-            z = 0
-            for i, c in df.loc[df['name'] == r].iterrows():
-                if z == 0:
-                    # print(c['name'])
-                    try:
-                        region, created = XBRLRegion.objects.get_or_create(name=c['name'])
-                        region.full_name = c['Region']
-                        if created:
-                            region.updated_adamodar = True
-                        region.save()
-                    except Exception as ex:
-                        print('Errot 10: '+ str(ex))
-                    z = 1
-                try:
-                    if c['Country'] in match:
-                        s_country = match[c['Country']]
-                    else:
-                        s_country = c['Country']
-                    # print('='*20)
-                    # print(s_country)
-                    # if c['Country'] == 'Czech Republic':
-                    #     s_country = 'Czechia'
-                    # elif c['Country'] == 'Moldova':
-                    #     s_country = 'Republic of Moldova'
-                    # elif c['Country'] == 'United Kingdom':
-                    #     s_country = 'United Kingdom of Great Britain and NorthernIreland'
-                    # elif c['Country'] == 'Jersey (States of)':
-                    #     s_country = 'Jersey'
-                    # elif c['Country'] == 'Guernsey (States of)':
-                    #     s_country = 'Guernsey'
-                    # elif c['Country'] == 'Bolivia':
-                    #     s_country = 'Bolivia(Plurinational State of)'
-                    # elif c['Country'] == "Côte d'Ivoire":
-                    #     s_country = "Cote d'Ivoire"
-                    # elif c['Country'] == "Democratic Republic of Congo":
-                    #     s_country = "Democratic Republic of the Congo"
-                    # elif c['Country'] == "Congo (Democratic Republic of)":
-                    #     s_country = "Democratic Republic of the Congo"
-                    # elif c['Country'] == "Korea":
-                    #     s_country = "Republic of Korea"
-                    # elif c['Country'] == "Bolivia(Plurinational State of)":
-                    #     s_country = "Bolivia (Plurinational State of)"
-                    # else:
-                    #     s_country = c['Country']
-
-                    if not XBRLCountry.objects.filter(name=s_country).all().count() > 0:
-                        XBRLCountry.objects.create(region=region, name=s_country, updated_adamodar=True)
-                        # print('created')
-                        # print(c['Country'])
-                    else:
-                        country = XBRLCountry.objects.filter(name=s_country).all()[0]
-                        country.region = region
-                        country.updated_adamodar = True
-                        country.save()
-                        # print('updated')
-                        # print(c['Country'])
-                except Exception as ex:
-                    print('Error 100: ' + str(ex))
-        # try:
-        #     XBRLCountryYearData.objects.all().update(sp_rating='', moodys_rating='')
-        # except Exception as ex:
-        #     print(ex)
-
-        # print('--SP Moodys')
-        for i, c in df.iterrows():
-            s_country_ = 'Country1'
-            if c[s_country_] in match:
-                s_country = match[c[s_country_]]
-            else:
-                s_country = c[s_country_]
-            # print('-'*50)
-            # print(s_country)
-            # print(c)
-            try:
-                country = XBRLCountry.objects.filter(name=s_country).all()[0]
-                data, created = XBRLCountryYearData.objects.get_or_create(country=country, year=2020)
-                if str(c['sp_rating_2020']) == 'nan':
-                    s_sp = ''
-                else:
-                    s_sp = c['sp_rating_2020']
-                data.sp_rating = s_sp
-                # print(s_country + "                  " + str(c['Moodys_rating_2020']))
-
-                if str(c['Moodys_rating_2020']) == 'nan':
-                    s_moodys = ''
-                else:
-                    s_moodys = c['Moodys_rating_2020']
-                data.moodys_rating = s_moodys
-
-                data.tax_rate = c['tax_rate_2020']
-                data.save()
-                # print(data)
-            except Exception as ex:
-                pass
-                # print("Error 229: "+str(ex))
-                # print(s_country)
-                # print(c)
-                # print("Error 229: "+str(ex))
-
-        # print('--composite_risk_rating_7_21 --')
-        for i, c in df.iterrows():
-            s_country_ = 'Country2'
-            if c[s_country_] in match:
-                s_country = match[c[s_country_]]
-            else:
-                s_country = c[s_country_]
-            # print(s_country)
-            # print(c)
-
-            try:
-                country = XBRLCountry.objects.filter(name=s_country).all()[0]
-                data, created = XBRLCountryYearData.objects.get_or_create(country=country, year=2020)
-                data.composite_risk_rating = c['composite_risk_rating_7_21']
-                data.save()
-                # print(data)
-            except Exception as ex:
-                pass
-                # print("Error 230: "+str(ex))
-                # print(s_country)
-                # print("Error 230: "+str(ex))
-
-        # print('-- CDS_07_01_20211 --')
-        for i, c in df.iterrows():
-            s_country_ = 'Country3'
-            if c[s_country_] in match:
-                s_country = match[c[s_country_]]
-            else:
-                s_country = c[s_country_]
-            # print(s_country)
-            # print(c)
-            try:
-                data, created = XBRLCountryYearData.objects.get_or_create(country=country, year=2020)
-
-                # need to consider this.  Since three country with missing data turned to 0.
-                if str(c['CDS_01_01_2021']) == 'nan':
-                    s_ = 0
-                else:
-                    s_ = 100*c['CDS_01_01_2021']
-                data.cds = s_
-                data.save()
-                # print(data)
-            except Exception as ex:
-                pass
-                # print("Error 231: "+str(ex))
-                # print(s_country)
-                # print("Error 231: "+str(ex))
-
-        # print('-- SPMoodys 1--')
-        for i, c in df.iterrows():
-            try:
-                # print('-'*50)
-                # print(c['SP'])
-                # print(c['Moodys'])
-                # print(c['sp_moodys_year'])
-
-                if str(c['sp_moodys_year']) != 'nan':
-                    # print('-'*50)
-                    # print(c['sp_moodys_year'])
-                    d, created = XBRLSPMoodys.objects.get_or_create(year=c['sp_moodys_year'], sp=c['SP'], moodys=c['Moodys'])
-                    # print(d)
-            except Exception as ex:
-                pass
-                # print("Error 232: "+str(ex))
-                # print(c['sp_moodys_year'])
-                # print("Error 232: "+str(ex))
-
-        # print('-- SPMoodys 2--')
-        for i, c in df.iterrows():
-            try:
-                if str(c['Rating']) != 'nan':
-                    d = XBRLSPMoodys.objects.get(year=int(c['rating_year']), moodys=c['Rating'])
-                    dd = round(c['Default_Spread_1_1_2021']/100, 2)
-                    d.default_spread = dd
-                    d.save()
-            except Exception as ex:
-                pass
-                # print("Error 233: "+str(ex))
-
-        # print('Done')
+    def test1(self):
+        for k in XBRLCountryYearData.objects.filter(year=2020).all():
+            print(k.cds)
+    #

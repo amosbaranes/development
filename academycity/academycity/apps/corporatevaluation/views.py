@@ -14,7 +14,9 @@ from .models import (RBOIC, CountryRegion, CountryRating, Country, GlobalIndustr
                      CompanyData, Project, ToDoList,
                      XBRLValuationAccounts, XBRLValuationAccountsMatch,
                      XBRLIndustryInfo, Industry,
-                     XBRLCompanyInfo, CompanyInfo)
+                     XBRLCompanyInfo, CompanyInfo,
+                     XBRLCountryYearData,
+                     XBRLCountry)
 # --
 
 from ..core.sql import SQL
@@ -37,7 +39,10 @@ def home(request, obj_id):
     industry = XBRLIndustryInfo.objects.exclude(sic_description='0').all()
     global_industry_averages = GlobalIndustryAverages.objects.all()
     project = Project.objects.filter(translations__language_code=get_language()).get(id=obj_id)
-    country = Country.objects.all()
+    XBRLCountryYearData.project = project
+    request.session['cv_project_id'] = project.id
+
+    countries_data = XBRLCountryYearData.project_objects.all()
 
     companies = XBRLCompanyInfo.objects.filter(ticker__gte='9')
     if not has_group(request.user, "admins"):
@@ -50,7 +55,7 @@ def home(request, obj_id):
                    'industry': industry,
                    'global_industry_averages': global_industry_averages,
                    'project': project,
-                   'country': country,
+                   'countries_data': countries_data,
                    'companies': companies,
                    'todolist': todolist,
                    })
@@ -450,19 +455,20 @@ def update_data(request):
 # load sic numbers from the SEC
 def set_sic_code(request):
     acx = AcademyCityXBRL()
-    acx.set_sic_code()
+    return acx.set_sic_code()
 
 
 def get_all_companies(request):
     acx = AcademyCityXBRL()
-    acx.get_all_companies()
+    dic = acx.get_all_companies()
+    return dic
 
 
 def admin_setup(request):
     try:
         fun_ = request.POST.get('fun')
-        eval(fun_+'(request)')
-        return JsonResponse({'status': 'ok'})
+        dic = eval(fun_+'(request)')
+        return JsonResponse(dic)
     except Exception as ex:
         return JsonResponse({'status': 'error: '+str(ex)})
 
@@ -470,29 +476,22 @@ def admin_setup(request):
 def load_tax_rates_by_country_year(request):
     try:
         acx = AcademyCityXBRL()
-        acx.load_tax_rates_by_country_year()
-        return JsonResponse({'status': 'ok'})
+        dic = acx.load_tax_rates_by_country_year()
+        return dic
     except Exception as ex:
         return JsonResponse({'status': 'error: '+str(ex)})
 
 
 def load_sp_returns(request):
-    try:
-        acx = AcademyCityXBRL()
-        acx.load_sp_returns()
-        return JsonResponse({'status': 'ok'})
-    except Exception as ex:
-        return JsonResponse({'status': 'error: '+str(ex)})
+    acx = AcademyCityXBRL()
+    dic = acx.load_sp_returns()
+    return dic
 
 
 def load_country_premium(request):
-    try:
-        # print('load_country_premium(request)')
-        acx = AcademyCityXBRL()
-        acx.load_country_premium()
-        return JsonResponse({'status': 'ok'})
-    except Exception as ex:
-        return JsonResponse({'status': 'error: '+str(ex)})
+    acx = AcademyCityXBRL()
+    dic = acx.load_country_premium(request)
+    return dic
 
 # End Admin
 
@@ -772,7 +771,8 @@ def get_r(request):
 
 def clean_data_for_all_companies(request):
     acx = AcademyCityXBRL()
-    return JsonResponse(acx.clean_data_for_all_companies())
+    dic = acx.clean_data_for_all_companies()
+    return dic
 
 
 def create_company_by_ticker(request):
@@ -789,13 +789,15 @@ def create_company_by_ticker(request):
 
 def copy_processed_companies(request):
     acx = AcademyCityXBRL()
-    return JsonResponse(acx.copy_processed_companies())
+    dic = acx.copy_processed_companies()
+    return dic
 
 
 def get_data_ticker(request):
     ticker_ = request.POST.get('ticker')
+    is_update_ = request.POST.get('is_update')
     acx = AcademyCityXBRL()
-    data = acx.get_data_for_cik(cik=ticker_, type='10-K')
+    data = acx.get_data_for_cik(cik=ticker_, type='10-K', is_update=is_update_)
     request.session['cv_statements'] = data['statements']
     return JsonResponse(data)
 
@@ -804,8 +806,10 @@ def get_data_ticker(request):
 def get_risk_premium(request):
     year50 = request.POST.get('year50')
     year10 = request.POST.get('year10')
+    cv_project_id = request.POST.get('cv_project_id')
+    is_update = request.POST.get('is_update')
     acx = AcademyCityXBRL()
-    data = acx.get_risk_premium(year10=year10, year50=year50)
+    data = acx.get_risk_premium(year10=year10, year50=year50, cv_project_id=cv_project_id, is_update=is_update)
     return JsonResponse(data)
 
 
@@ -858,11 +862,13 @@ def onchange_account(request):
     except Exception as ex:
         pass
         # print("error 101: " + str(ex))
+
     try:
-        # print('-2'*10)
-        i, created = XBRLValuationAccountsMatch.objects.get_or_create(year=year_, company=company_, account=account_,
-                                                                      match_account=match_account_,
-                                                                      accounting_standard=accounting_standard_)
+        # print('-22'*10)
+        if account_order != "-1":
+            i, created = XBRLValuationAccountsMatch.objects.get_or_create(year=year_, company=company_, account=account_,
+                                                                          match_account=match_account_,
+                                                                          accounting_standard=accounting_standard_)
         # print('-21'*10)
         # print(i)
         # print('-22'*10)
@@ -876,15 +882,16 @@ def onchange_account(request):
 
         dic = {'status': 'ok', 'matching_accounts': matching_accounts}
 
-        # print('dic matching_accounts')
-        # print(dic)
-        # print('dic matching_accounts')
+        print('dic matching_accounts')
+        print(dic)
+        print('dic matching_accounts')
         return JsonResponse(dic)
 
     except Exception as ex:
-        # print("error 102: " + str(ex))
+        print("error 102: " + str(ex))
         dic = {'status': 'not ok'}
 
+    # print('-2'*20)
     return JsonResponse(dic)
 
 
@@ -900,12 +907,31 @@ def save_industry_default(request):
 def get_duplications_tickers(request):
     dic = {'status': 'ok'}
     for q in XBRLCompanyInfo.objects.values('ticker').annotate(count=Count('id')).values('ticker').order_by().filter(count__gt=1):
-        print(q)
+        # print('q')
+        # print(q)
+        # print('q')
         try:
-            c = XBRLCompanyInfo.objects.get((Q(exchange='nasdaq') | Q(exchange='amex')) & Q(ticker=q['ticker']))
+            c = XBRLCompanyInfo.objects.filter((Q(exchange='nasdaq') | Q(exchange='amex')) & Q(ticker=q['ticker'])).all()[0]
         except Exception as ex:
-            c = XBRLCompanyInfo.objects.get(Q(exchange='amex') & Q(ticker=q['ticker']))
-        print(c)
-        c.delete()
-    return JsonResponse(dic)
+            # print("Error 100: " + str(ex))
+            try:
+                c = XBRLCompanyInfo.objects.filter(Q(exchange='nyse') & Q(ticker=q['ticker'])).all()[0]
+            except Exception as ex:
+                print("Error 110: " + str(ex))
+        # print(c)
+        try:
+            c.delete()
+        except Exception as ex:
+            print("Error 200: "+str(ex))
+    # print(dic)
+    return dic
 
+
+def test(request):
+    acx = AcademyCityXBRL()
+    return acx.test()
+
+
+def test1(request):
+    acx = AcademyCityXBRL()
+    acx.test1()

@@ -38,7 +38,7 @@ class Department(TranslatableModel):
 
     description = PlaceholderField('department_description')
     image = FilerImageField(blank=True, null=True, on_delete=models.SET_NULL)
-    active = models.NullBooleanField(default=True)
+    active = models.BooleanField(default=True)
     order = OrderField(blank=True, for_fields=[], default=1)
 
 # upload_to='course/', default='course/unknown.png',
@@ -94,7 +94,7 @@ class Course(TranslatableModel):
     image = FilerImageField(blank=True, null=True, on_delete=models.SET_NULL)
     department = models.ForeignKey(Department, on_delete=models.CASCADE, related_name='department_courses')
     order = OrderField(blank=True, for_fields=['department'], default=1)
-    active = models.NullBooleanField(default=True)
+    active = models.BooleanField(default=True)
     instructors = models.ManyToManyField(
         settings.AUTH_USER_MODEL,
         # limit_choices_to={'groups__id__in': get_user_model().objects.filter(groups__name="instructors").values_list('id', flat=True)},
@@ -208,7 +208,7 @@ class CourseSchedule(models.Model):
     created_date = models.DateField(auto_now_add=True)
     start_date = models.DateField(default=timezone.now)
     end_date = models.DateField(default=timezone.now)
-    active = models.NullBooleanField(default=True)
+    active = models.BooleanField(default=True)
 
     name = models.CharField(max_length=100, default='', blank=True)
     price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
@@ -322,8 +322,8 @@ class CourseScheduleUser(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='course_schedule_users')
 
     created_date = models.DateField(auto_now_add=True)
-    active = models.NullBooleanField(default=False)
-    graduated = models.NullBooleanField(default=False)
+    active = models.BooleanField(default=False)
+    graduated = models.BooleanField(default=False)
     paid = models.BooleanField(default=False)
     slug = models.SlugField(_('slug'), blank=False, default='', db_index=True,
                             help_text=_('Please supply the course slug.'), max_length=128)

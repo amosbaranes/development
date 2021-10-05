@@ -148,6 +148,7 @@ class XBRLCountryYearDataAdmin(admin.ModelAdmin):
     list_display = ('id', 'country', 'year'
                     , 'sp_rating'
                     , 'moodys_rate_completed_by_sp'
+                    , 'country_risk_premium_rating'
                     , 'cds'
                     , 'excess_cds_spread_over_us_cds'
                     , 'rating_based_default_spread'
@@ -173,6 +174,9 @@ class XBRLHistoricalReturnsSPAdmin(admin.ModelAdmin):
 
 @admin.register(XBRLSPMoodys)
 class XBRLSPMoodysAdmin(admin.ModelAdmin):
-    list_display = ('id', 'year', 'sp', 'moodys', 'default_spread')
+    list_display = ('id', 'year', 'sp', 'moodys',
+                    'score_from',
+                    'score_to',
+                    'default_spread')
     list_filter = ('year',)
 

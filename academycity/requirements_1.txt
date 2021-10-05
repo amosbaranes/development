@@ -176,4 +176,4 @@ beautifulsoup4
 yfinance
 xlsxwriter
 #
-django-recaptcha
+

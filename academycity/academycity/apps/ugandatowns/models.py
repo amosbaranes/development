@@ -48,7 +48,7 @@ class Towns(models.Model):
 
     created_date = models.DateField(auto_now_add=True)
     updated_date = models.DateField(auto_now=True)
-    active = models.NullBooleanField(default=False)
+    active = models.BooleanField(default=False)
 
     description = PlaceholderField('description', related_name='town_description')
 
@@ -131,7 +131,7 @@ class Projects(models.Model):
     project_name = models.CharField(max_length=100, default='', blank=True)
     created_date = models.DateField(auto_now_add=True)
     updated_date = models.DateField(auto_now=True)
-    active = models.NullBooleanField(default=False)
+    active = models.BooleanField(default=False)
 
     description = PlaceholderField('description')
 
@@ -165,7 +165,7 @@ class Directors(models.Model):
     position = models.CharField(max_length=100, default='', blank=True)
     created_date = models.DateField(auto_now_add=True)
     updated_date = models.DateField(auto_now=True)
-    active = models.NullBooleanField(default=False)
+    active = models.BooleanField(default=False)
 
     description = PlaceholderField('description')
 
@@ -199,7 +199,7 @@ class Services(models.Model):
 
     created_date = models.DateField(auto_now_add=True)
     updated_date = models.DateField(auto_now=True)
-    active = models.NullBooleanField(default=False)
+    active = models.BooleanField(default=False)
 
     description = PlaceholderField('description')
 
@@ -233,7 +233,7 @@ class NewAnnouncements(models.Model):
 
     created_date = models.DateField(auto_now_add=True)
     updated_date = models.DateField(auto_now=True)
-    active = models.NullBooleanField(default=False)
+    active = models.BooleanField(default=False)
 
     description = PlaceholderField('description')
 
@@ -267,7 +267,7 @@ class Tenders(models.Model):
 
     created_date = models.DateField(auto_now_add=True)
     updated_date = models.DateField(auto_now=True)
-    active = models.NullBooleanField(default=False)
+    active = models.BooleanField(default=False)
 
     description = PlaceholderField('description')
 
@@ -301,7 +301,7 @@ class Tourism(models.Model):
 
     created_date = models.DateField(auto_now_add=True)
     updated_date = models.DateField(auto_now=True)
-    active = models.NullBooleanField(default=False)
+    active = models.BooleanField(default=False)
 
     description = PlaceholderField('description')
 
@@ -335,7 +335,7 @@ class Careers(models.Model):
 
     created_date = models.DateField(auto_now_add=True)
     updated_date = models.DateField(auto_now=True)
-    active = models.NullBooleanField(default=False)
+    active = models.BooleanField(default=False)
 
     description = PlaceholderField('description')
 
@@ -367,7 +367,7 @@ class Conferencing(models.Model):
     tc_user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='town_conferences')
     created_date = models.DateField(auto_now_add=True)
     updated_date = models.DateField(auto_now=True)
-    active = models.NullBooleanField(default=True)
+    active = models.BooleanField(default=True)
 
     def get_absolute_url(self):
         return reverse('ugandatowns:conference', kwargs={'conference_number': self.conference_number})

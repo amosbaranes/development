@@ -2,6 +2,58 @@
 
 <div id="valuationadmin" class="tabcontent">
     <table>
+        <tr><td>
+            <label for="myCheck">Update Data For Companies:</label>
+            <input type="checkbox" id="update_data_for_companies" onclick="update_data_for_companies()">
+        </td></tr>
+    </table><br/>
+    <table>
+        <tr>
+            <td>
+                <button onclick="admin_setup(event)" fun="load_sp_returns" style="width: 250px;">Load S&P 500 Returns</button>
+            </td>
+        </tr>
+    </table>
+    <hr/>
+    <table>
+        <tr>
+            <td>
+                <!--  in calculation tab -->
+                <button onclick="get_risk_premium()" style="width: 250px;">Get Risk Premium</button>
+            </td>
+        </tr>
+    </table>
+    <hr/>
+    <table>
+        <tr>
+            <td>
+                <button onclick="admin_setup(event)" fun="load_tax_rates_by_country_year" style="width: 250px;">Load Tax Rates By Country and Year</button>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <button onclick="admin_setup(event)" fun="load_country_premium" style="width: 250px;">load_country_premium</button>
+            </td>
+        </tr>
+    </table>
+    <hr/>
+
+    <table>
+        <tr>
+            <td>
+                <button onclick="admin_setup(event)" fun="test" style="width: 250px;">test</button>
+            </td>
+        </tr>
+<!--
+        <tr>
+            <td>
+                <button onclick="admin_setup(event)" fun="test1" style="width: 250px;">test1</button>
+            </td>
+        </tr>
+-->
+    </table>
+    <hr/>
+    <table>
         <tr>
             <td>
                 <button onclick="admin_setup(event)" fun="set_sic_code" style="width: 250px;">Load SIC Codes from SEC</button>
@@ -41,29 +93,7 @@
                 Remove duplicate companies that trade in more than one exchange.
             </td>
         </tr>
-        <tr>
-            <td>
-                <button onclick="admin_setup(event)" fun="load_tax_rates_by_country_year" style="width: 250px;">Load Tax Rates By Country and Year</button>
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <button onclick="admin_setup(event)" fun="load_sp_returns" style="width: 250px;">Load S&P 500 Returns</button>
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <button onclick="get_risk_premium()" style="width: 250px;">Get Risk Premium</button>
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <button onclick="admin_setup(event)" fun="load_country_premium" style="width: 250px;">load_country_premium</button>
-            </td>
-        </tr>
-
     </table>
-
 <!--
         <tr>
             <td>
@@ -95,6 +125,17 @@
 </div>
 
 <script>
+function update_data_for_companies() {
+  var checkBox = document.getElementById("update_data_for_companies");
+  if (checkBox.checked == true){
+    vObj["is_update"] = "yes";
+  } else {
+    vObj["is_update"] = "no";
+  }
+}
+</script>
+
+<script>
 
 function admin_setup(event)
 {
@@ -109,7 +150,19 @@ function admin_setup(event)
         fun: fun_,
       },
       function(data){
-        message_div.innerHTML = 'Process done with status: ' + data['status']
+        for (k in data)
+        {
+          if (k == 'status')
+           {
+            message_div.innerHTML = 'Process done with status: ' + data['status']
+           }
+           else
+           {
+                // alert(k + " : " + data[k])
+                vObj[k] = data[k];
+                // alert(vObj[k])
+           }
+        }
       }
     );
 }

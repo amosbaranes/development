@@ -97,6 +97,8 @@ DJANGO_APPS = [
     'django_elasticsearch_dsl',
     'simpy',
     'mesa',
+    #
+    'captcha',
 ]
 
 BOOTSTRAP_APPS = [
@@ -191,7 +193,7 @@ WebApps = [
 INSTALLED_APPS = THIRD_PARTY_APPS + LOCAL_APPS + WebApps + BOOTSTRAP_APPS + DJANGO_APPS
 
 MIDDLEWARE = [
-    'django_cookies_samesite.middleware.CookiesSameSite',
+    # 'django_cookies_samesite.middleware.CookiesSameSite',
     'cms.middleware.utils.ApphookReloadMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -480,3 +482,15 @@ DJANGOCMS_BOOTSTRAP4_CAROUSEL_ASPECT_RATIOS = (
 X_FRAME_OPTIONS = 'SAMEORIGIN'   # 'ALLOWALL'
 
 XS_SHARING_ALLOWED_METHODS = ['POST','GET','OPTIONS', 'PUT', 'DELETE']
+
+#
+# https://pypi.org/project/django-recaptcha/#requirements
+# https://micropyramid.medium.com/django-model-managers-and-properties-564ef668a04c?p=620b28644ef2
+# https://developers.google.com/recaptcha/docs/v3
+# https://www.google.com/recaptcha/admin/site/479260808/
+# https://www.google.com/recaptcha/admin/site/479260808/settings
+#
+
+RECAPTCHA_PUBLIC_KEY = '6LeI8JAcAAAAAG7fUvIvZMYHCTzqh3Hte_ulUiS1'
+RECAPTCHA_PRIVATE_KEY = '6LeI8JAcAAAAACKrZcgZca7Qjg4v0IRlzRqt6cYA'
+RECAPTCHA_DOMAIN = 'www.recaptcha.net'

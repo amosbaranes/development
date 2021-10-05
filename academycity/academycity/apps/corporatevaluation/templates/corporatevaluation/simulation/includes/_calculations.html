@@ -9,7 +9,8 @@
     <li class="nav-item"><a id="calc_cost_of_equity" class="nav-link" data-toggle="pill" href="#tab_cost_of_equity">Cost of Equity</a></li>
     <li class="nav-item"><a id="calc_estimated_roic" class="nav-link" data-toggle="pill" href="#tab_estimated_roic">Estimated ROIC</a></li>
     <li class="nav-item"><a id="calc_effective_tax_rate" class="nav-link" data-toggle="pill" href="#tab_effective_tax_rate">Effective tax rate</a></li>
-    <li class="nav-item"><a id="calc_risk_premium" class="nav-link" data-toggle="pill" href="#tab_risk_premium">Risk Premium</a></li>
+    <li class="nav-item"><a id="calc_risk_premium" class="nav-link" data-toggle="pill"
+                            href="#tab_risk_premium" onclick="set_risk_premium_()">Risk Premium</a></li>
   </ul>
   <!-- Tab panes -->
   <div class="tab-content">
@@ -91,12 +92,25 @@
           </table>
     </div>
 
-    <div id="tab_risk_premium" class="container tab-pane">
-        Risk Premium
+    <div id="tab_risk_premium" class="container tab-pane" style="width:100%;">
+
+        <div id="chart_components" style="width:100%;">
+        </div>
+        <div id="chart_average" style="width:100%;">
+        </div>
+        <div id="chart_b" style="width:100%;">
+        </div>
+        <div id="chart_geometric" style="width:100%;">
+        </div>
+        <div id="risk_premium_data">
+            Calculating Risk Premium.  Please wait.
+        </div>
     </div>
 
   </div>
 <br/><br/><br/><br/>
+
+
 </div>
 
 <!-- WACC -->
@@ -325,13 +339,20 @@ function set_active_tab_()
 {
   var evt = new Event("click", {bubbles: true});
   document.getElementById("calc_cost_of_debt").dispatchEvent(evt);
-  // --
+}
+
+function set_risk_premium_()
+{
   if (vObj["risk_premium_downloaded"] == 0)
   {
     get_risk_premium() ; vObj["risk_premium_downloaded"] = 1;
   }
-  // --
 }
+
+</script>
+
+<!--get_risk_premium-->
+<script>
 
 function get_risk_premium()
 {
@@ -342,6 +363,8 @@ function get_risk_premium()
       {
         year50: year50_,
         year10: year10_,
+        cv_project_id: vObj['cv_project_id'],
+        is_update : vObj["is_update"],
       },
       function(data){
             var s = "<tr><th></th>"
@@ -353,7 +376,7 @@ function get_risk_premium()
               nzz_ = 0
               for (var y in data[k])
               {
-                  if (nz_ < 3)
+                  if (nz_ < Object.keys(data[k]).length)
                   {
                      eval("s_"+y+" = '<td>"+y+"-"+(this_year-1).toString()+"</td>'"); nz_ += 1;
                      eval("s_s_"+y+" = '<td style=\"padding-right:5px;text-align: center;\">Std</td>'");
@@ -377,14 +400,212 @@ function get_risk_premium()
             }
              ss += "</tr>"
              s += "</tr>" + ss
+
+              yi = []; ye = []; ym = [];
+              gyi = []; gye = []; gym = [];
+              sp500 = []; tb3ms = []; tbond = []; x = [];
+              yib = []; yeb = []; ymb = [];
               for (var y in data[k])
               {
                     eval('s += "<tr>" + s_' + y + ' + "</tr>"')
                     eval('s += "<tr>" + s_s_' + y + ' + "</tr>"')
+                  x.push(y)
+                  yi.push(data['Arithmetic'][y]['Stocks-TBonds']['value'])
+                  ye.push(data['Arithmetic'][y]['Stocks-TBonds']['std'])
+                  ym.push(data['Arithmetic'][y]['Stocks-TBonds']['m_b_median'])
+
+                  yib.push(data['Arithmetic'][y]['Stocks-TBonds']['b_value'])
+                  yeb.push(data['Arithmetic'][y]['Stocks-TBonds']['b_std'])
+                  ymb.push(data['Arithmetic'][y]['Stocks-TBonds']['b_m_b_median'])
+
+                  gyi.push(data['Geometric'][y]['Stocks-TBonds']['value'])
+                  gym.push(data['Geometric'][y]['Stocks-TBonds']['b_value'])
+
+                  sp500.push(data['Arithmetic'][y]['Stocks-TBonds']['sp500'])
+                  tb3ms.push(data['Arithmetic'][y]['Stocks-TBonds']['tb3ms'])
+                  tbond.push(data['Arithmetic'][y]['Stocks-TBonds']['tbond'])
               }
 
-            document.getElementById("tab_risk_premium").innerHTML = "<table class='data'>" + s + "</table>"
+            document.getElementById("risk_premium_data").innerHTML = "<table class='data'>" + s + "</table>"
+
+            get_risk_premium_chart_components(x, sp500, tb3ms, tbond, "Risk Premium - Components")
+
+            get_risk_premium_chart(x, y1=yib, y1_title='Risk Premium-average',
+                                   y2=yeb, y2_title='Std',
+                                   y3=ymb, y3_title='Risk Premium-median',
+                                   "Risk Premium - up to year (as func of duration)", chart_id='chart_b')
+
+            get_risk_premium_chart(x, y1=yi, y1_title='Risk Premium-average',
+                                   y2=ye, y2_title='Std',
+                                   y3=ym, y3_title='Risk Premium-median',
+                                   "Risk Premium: from year- (as func of duration)", chart_id='chart_average')
+
+            get_risk_premium_chart2(x, gyi, gym, "Risk Premium (geometric) from, to year- (as func of duration)", chart_id='chart_geometric')
       });
 }
+
+</script>
+
+<!--get_risk_premium_chart-->
+<script>
+get_risk_premium_chart = function(x, y1, y1_title, y2, y2_title, y3, y3_title, title, chart_id)
+{
+
+//alert(x)
+//alert(yi)
+//alert(ye)
+
+    var trace1 = {
+      x: x,
+      y: y1,
+      mode: 'lines+markers',
+      marker: {
+        color: 'rgb(219, 64, 82)',
+        size: 8
+      },
+      name: y1_title,
+      line: {
+        color: 'rgb(219, 64, 82)',
+        width: 1
+      }
+    };
+
+    var trace2 = {
+      x: x,
+      y: y2,
+      mode: 'lines+markers',
+      marker: {
+        color: 'rgb(0, 0, 0)',
+        size: 8
+      },
+      name: y2_title,
+      line: {
+        color: 'rgb(0, 0, 0)',
+        width: 1
+      }
+    };
+
+    var trace3 = {
+      x: x,
+      y: y3,
+      mode: 'lines+markers',
+      marker: {
+        color: 'rgb(55, 128, 191)',
+        size: 8
+      },
+      name: y3_title,
+      line: {
+        color: 'rgb(55, 128, 191)',
+        width: 1
+      }
+    };
+
+    var data = [trace1, trace2, trace3]
+    var layout = {title: title}
+    CHART = document.getElementById(chart_id);
+	Plotly.newPlot( CHART, data, layout );
+}
+
+</script>
+
+<!--get_risk_premium_chart2-->
+<script>
+get_risk_premium_chart2 = function(x, yi, ym, title, chart_id)
+{
+    var trace1 = {
+      x: x,
+      y: yi,
+      mode: 'lines+markers',
+      marker: {
+        color: 'rgb(219, 64, 82)',
+        size: 8
+      },
+      name: 'Risk Premium (from)',
+      line: {
+        color: 'rgb(219, 64, 82)',
+        width: 1
+      }
+    };
+
+    var trace2 = {
+      x: x,
+      y: gym,
+      mode: 'lines+markers',
+      marker: {
+        color: 'rgb(55, 128, 191)',
+        size: 8
+      },
+      name: 'Risk Premium (up to)',
+      line: {
+        color: 'rgb(55, 128, 191)',
+        width: 1
+      }
+    };
+
+    var data = [trace1, trace2]
+    var layout = {title: title}
+    CHART = document.getElementById(chart_id);
+	Plotly.newPlot( CHART, data, layout );
+}
+
+</script>
+
+<!--get_risk_premium_chart_components-->
+<script>
+
+get_risk_premium_chart_components = function(x, sp500, tb3ms, tbond, title)
+{
+    var trace1 = {
+      x: x,
+      y: sp500,
+      mode: 'lines+markers',
+      marker: {
+        color: 'rgb(219, 64, 82)',
+        size: 8
+      },
+      name: 'sp500',
+      line: {
+        color: 'rgb(219, 64, 82)',
+        width: 1
+      }
+    };
+
+    var trace2 = {
+      x: x,
+      y: tb3ms,
+      mode: 'lines+markers',
+      marker: {
+        color: 'rgb(0, 0, 0)',
+        size: 8
+      },
+      name: 'tb3ms',
+      line: {
+        color: 'rgb(55, 128, 191)',
+        width: 1
+      }
+    };
+
+
+    var trace3 = {
+      x: x,
+      y: tbond,
+      mode: 'lines+markers',
+      marker: {
+        color: 'rgb(55, 128, 191)',
+        size: 8
+      },
+      name: 'tbond',
+      line: {
+        color: 'rgb(55, 128, 191)',
+        width: 1
+      }
+    };
+
+    var data = [trace1, trace2, trace3]
+    var layout = {title: title}
+    CHART = document.getElementById('chart_components');
+	Plotly.newPlot( CHART, data, layout );
+}
+
 
 </script>

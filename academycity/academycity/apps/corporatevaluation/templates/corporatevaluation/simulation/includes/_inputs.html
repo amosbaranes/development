@@ -23,29 +23,12 @@
         <tr>
             <td>{% trans "Company" %}:</td>
             <td>
-                <select name="companies" id="companies" style="width: 150px;" onChange="companies_fun(event)">
+                <select name="companies" id="companies" style="width: 150px;" onChange="companies_fun(event)" >
                 <option value='0' ticker="">Choose company</option>
                 {% for c in companies %}
                 <option value='{{c.id}}' ticker="{{c.ticker}}">{{c.company_name}}</option>
                 {% endfor %}
                 </select> <span id="ticker_">Ticker: </span><input id="search_ticker" value="" style="width:70px" onchange="ticker_onchange(event)">
-            </td>
-        </tr>
-        <tr>
-            <td>{% trans "Country" %}:</td>
-            <td>
-                <select  name="countries" id="countries" style="width: 150px;" onChange="countries_fun(event)">
-                    <option value='0'>--------------------</option>
-                {% for c in country %}
-                    <option value={{c.id}} data='{{ c.marginal_tax_rate }}_{{ c.long_term_rating.country_rating }}_{{ c.long_term_rating.default_spread }}'>
-                        {{ c.country }}</option>
-                {% endfor %}
-                </select>
-<!--                <span class="tooltiptext">-->
-                  {% trans "Rating" %}: <span id="country_rating"></span>
-                   &nbsp&nbsp {% trans "Spread" %}: <span id="country_default_spread"></span>%
-                   &nbsp&nbsp {% trans "Tax rate" %}: <span id="country_tax_rate"></span>%
-<!--                </span>-->
             </td>
         </tr>
         <tr>
@@ -57,11 +40,35 @@
             </td>
         </tr>
     </table>
+    <hr/>
+        <table>
+        <tr>
+            <td>{% trans "Country" %}:</td>
+            <td>
+                <select  name="countries" id="countries" style="width: 150px;" onChange="countries_fun(event)">
+                    <option value='0'>--------------------</option>
+                {% for cd in countries_data %}
+                    <option value={{cd.country.id}}
+                      data='{{cd.tax_rate}}_{{cd.moodys_rate_completed_by_sp}}_{{cd.rating_based_default_spread}}_{{cd.country_risk_premium_rating}}'>
+                        {{cd.country.name}}</option>
+                {% endfor %}
+                </select>
+<!--                <span class="tooltiptext">-->
+                  {% trans "Rating" %}: <span id="country_rating"></span>
+                   &nbsp&nbsp {% trans "Spread" %}: <span id="country_default_spread"></span>%
+                   &nbsp&nbsp {% trans "Risk premium" %}: <span id="country_risk_premium_rating"></span>%
+                   &nbsp&nbsp {% trans "Tax rate" %}: <span id="country_tax_rate"></span>%
+
+<!--                </span>-->
+            </td>
+        </tr>
+    </table>
     </div>
     <br/>
     <div>
 
       <!--  Beta by industries  -->
+<!--        beta source: https://www.zacks.com/stock/chart/aap/fundamental/beta -->
       <button onclick="add_industry_beta()">{% trans "Add Industry Beta" %}</button>
       <table id="cost_of_equity" class="w3-table-all w3-hoverable" style="width:53%">
         <tr>
@@ -164,6 +171,7 @@ function cofe_business_fun(event)
     calculate_all()
 }
 </script>
+
 <script>
 
 function ticker_onchange(event)
@@ -242,6 +250,13 @@ function valuation_year_fun(event)
 
 function countries_fun(event)
 {
+
+//data='{{ cd.tax_rate }}_
+//{{ cd.moodys_rate_completed_by_sp }}_
+//{{ cd.rating_based_default_spread }}_
+//{{ cd.country_risk_premium_rating }}
+
+
   //alert('countries_fun 1')
   e = event.target
   eo = e.options[e.selectedIndex]
@@ -249,15 +264,17 @@ function countries_fun(event)
   var s = value.split("_");
   marginal_tax_rate = s[0];
   //--
-  vObj["country_tax_rate"] = s[0]*100
-  vObj["country_rating"] = s[1]
-  vObj["country_default_spread"] = s[2]*100
+  //vObj["country_tax_rate"] = s[0]*100
+  //vObj["country_rating"] = s[1]
+  //vObj["country_default_spread"] = s[2]*100
   //--
-  document.getElementById('country_rating').innerHTML = vObj["country_rating"]
-  document.getElementById('country_default_spread').innerHTML = Math.round(100*vObj["country_default_spread"])/100
-  document.getElementById('country_tax_rate').innerHTML = Math.round(100*vObj["country_tax_rate"])/100
-  document.getElementById('cofe_ads').innerHTML = Math.round(100*vObj["country_default_spread"])/100
-  document.getElementById('marginal_tax_rate_').value = Math.round(100*vObj["country_tax_rate"])/100
+  document.getElementById('country_rating').innerHTML = s[1]
+  document.getElementById('country_default_spread').innerHTML = s[2]
+  document.getElementById('country_tax_rate').innerHTML = s[0]
+  document.getElementById('country_risk_premium_rating').innerHTML = s[3]
+
+  document.getElementById('cofe_ads').innerHTML = s[2]
+  document.getElementById('marginal_tax_rate_').value = s[0]
   calculate_all()
 }
 
@@ -269,19 +286,20 @@ function companies_fun(event)
     e = event.target
     id_ = e.options[e.selectedIndex].value
     //alert(id_)
+    vObj["accounts_chosen"] = []
     $.post('{% url "corporatevaluation:get_company_detail" %}',
           {
             id: id_,
           },
           function(data){
                 vObj["sec_company_data"][id_] = data
+                // in data
                 try{ set_data(data);}
                 catch(err){sm.TabObjects["data"].tabDoc.innerHTML = "We did not collect data from FinDynamic. Downloading data from SEC."}  // in data tab
 
                 vObj["ticker"] = data['ticker'];
                 vObj["sic_code"] = data['sic_code'];
                 vObj["sic_description"] = data['sic_description'];
-
                 //document.getElementById('ticker_').innerHTML = data['ticker'];
 
                 document.getElementById('search_ticker').value = "";
@@ -289,14 +307,17 @@ function companies_fun(event)
                 document.getElementById('sic_code_').innerHTML = data['sic_code'];
                 document.getElementById('industries').value = data['sic_code'];
                 document.getElementById('countries').value = data['country_id'];
+
                 var event = new Event("change", {bubbles: true});
                 document.getElementById('countries').dispatchEvent(event);
                 console.log("companies_fun: ", "before get_data_ticker")
+
                 get_data_ticker();  // see below
 
                 console.log("companies_fun: ", "222")
         });
 }
+
 
 function industries_fun_(value)
 {
@@ -337,6 +358,9 @@ function industries_fun(event)
   industries_fun_(value)
 }
 
+</script>
+<!--  create_valuation_year  -->
+<script>
 // create list of years for valuation
 // ----------------------------------
 function create_valuation_year()
@@ -359,7 +383,6 @@ function create_valuation_year()
 </script>
 
 <!--  For valuationsetup  -->
-
 <script>
 
 function process_get_data_ticker(data)
@@ -375,16 +398,15 @@ function process_get_data_ticker(data)
     vObj["xbrl_statements"] = data['statements']
 
     //alert(vObj["xbrl_data"]['2020']['dei']['entityregistrantname'])
-   // -- in _xbrl_data
+    // -- in _xbrl_data
       xbrl_set_data()
-   // --
+    // --
     sv = '<table><tr id="fs_years_data_sec">'
     console.log("get_data_ticker: ", "in post get_data_ticker 2")
     for (y in vObj["xbrl_data"])
     {
          console.log("get_data_ticker year: ", "in post get_data_ticker 20: ", y)
          try{var ry = vObj["xbrl_data"][y]['dei']['documentfiscalyearfocus'];} catch(er){var ry=''}
-
          console.log("process_get_data_ticker: ", "in post get_data_ticker 22", y)
 
          //if(!ry){ry=''}
@@ -398,10 +420,8 @@ function process_get_data_ticker(data)
          //else{ sv += 'view_link="" ' }
 
          console.log("process_get_data_ticker: ", "in post get_data_ticker 24", y)
-
          try{ var y_r_link = vObj["xbrl_data"][y]['r_link']; sv += 'r_link="' + y_r_link + '" ';}
          catch(er){sv += 'r_link="" ';}
-
          console.log("process_get_data_ticker: ", "in post get_data_ticker 26", y)
 
          // if(y_r_link) { sv += 'r_link="' + y_r_link + '" '} else{sv += 'r_link="" '}
@@ -418,10 +438,10 @@ function process_get_data_ticker(data)
                 console.log("get_data_ticker: ", "in post error get_data_ticker 100: ", y, er)
          }
          console.log("process_get_data_ticker: ", "in post get_data_ticker 28", y)
-
          try{
              var tx = document.getElementById("sec_xbrl_data_"+ry)
              tx.setAttribute("view_link", vObj["xbrl_data"][y]['view_link'])
+             tx.setAttribute("href", vObj["xbrl_data"][y]['view_link'])
              tx.setAttribute("r_link", vObj["xbrl_data"][y]['r_link'])
              tx.setAttribute("filing_year", y)
              tx.setAttribute("style", "color:white")
@@ -437,7 +457,6 @@ function process_get_data_ticker(data)
         d.innerHTML = sv
     console.log("process_get_data_ticker: ", "in post get_data_ticker 54")
         //alert(d.outerHTML)
-
 
     // -- in xbrl_data tab --
     balance_accounts()
@@ -464,6 +483,7 @@ function get_data_ticker()
       {
         ticker: ticker_,
         accounting_principle: 'us-gaap',
+        is_update : vObj["is_update"],
       },
       function(data){
             process_get_data_ticker(data)

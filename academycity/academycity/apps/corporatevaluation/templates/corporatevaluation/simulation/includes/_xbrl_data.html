@@ -52,9 +52,7 @@ function get_select_accounts(year='2020', ticker='', type='1')
    var s = "<select onchange='onchange_account(event)'><option value='-1'>------------</option>"
    for (var key in data){
      account_properties = get_account_properties(key)
-
      //print(account_properties)
-
      if (type == "-1" || account_properties[1]==type)
      {
          s += "<option value='" + key + "' ma='"+data[key][0].toLowerCase()+"'"
@@ -72,8 +70,10 @@ function get_select_accounts(year='2020', ticker='', type='1')
    //alert(s)
    return s;
 }
+</script>
 
-
+<!-- balance_accounts() -->
+<script>
 function balance_accounts()
 {
     //var cd = JSON.parse(JSON.stringify(vObj["xbrl_data"]));
@@ -151,13 +151,15 @@ function balance_accounts()
 
                     var id=y.toString()+"_"+account_order.toString()
                         elm = document.getElementById(id)
-                        elm.innerHTML = toCommas(sm.accounting_equality[k][nn_]['data'])
+                        elm.innerHTML = toCommas(
+                        Math.round(100*sm.accounting_equality[k][nn_]['data'])/100
+                        )
                         elm.setAttribute("style", elm.getAttribute("style") + ";color:red;")
 
-try{
-                    matching_data[account_order] = [String(account_order), 'us-gaap']
+                        try{
+                            matching_data[account_order] = [String(account_order), 'us-gaap']
+                        } catch (er) {alert(er)}
 
-} catch (er) {alert(er)}
                     y_data['year_data'][account_order] = sm.accounting_equality[k][nn_]['data']
 
                     //if(y == 2020){if (k == '14999' || k == 14999){ alert('-4-');alert(sm.accounting_equality[k][nn_]['data']);}}
@@ -168,9 +170,11 @@ try{
                     var account_order = sm.accounting_equality[k]['3']['account']
                     var id=y.toString()+"_"+account_order.toString()
                         elm = document.getElementById(id)
-                        elm.innerHTML = toCommas(sm.accounting_equality[k]['3']['data'])
+                        elm.innerHTML = toCommas(
+                        Math.round(100*sm.accounting_equality[k]['3']['data'])/100
+                        )
                         elm.setAttribute("style", elm.getAttribute("style") + ";color:red;")
-                    matching_data[account_order] = [str(account_order), 'us-gaap']
+                    matching_data[account_order] = [(account_order).toString(), 'us-gaap']
                     y_data['year_data'][account_order] = sm.accounting_equality[k]['3']['data']
                   }
                 }
@@ -231,7 +235,12 @@ try{
                         t = sm.accounts_structure[k]['total'];
                         u = nn - t;
                         elm = document.getElementById(id);
-                        elm.innerHTML = toCommas(u);
+
+                        elm.innerHTML = toCommas(
+                        Math.round(1000*u)/1000
+                        )
+
+
                         elm.setAttribute("style", elm.getAttribute("style") + ";color:red;");
                 } catch (er) {}
            }
@@ -247,6 +256,10 @@ try{
   }
 }
 
+</script>
+
+<!-- xbrl_set_data() -->
+<script>
 
 function xbrl_set_data()
 {
@@ -270,8 +283,8 @@ function xbrl_set_data()
     ss = {}
     s_title = "<thead><tr id='fs_years_xbrl_data'><th>Accounts</th>"
     for ( var y = from_year; y < to_year; y++) {
-       // get_xbrl_view in
-       s_title += "<th><a id='sec_xbrl_data_"+y+"' href='#' onclick='get_xbrl_view(event)'>"+String(y)+"</a></th>"
+       // get_xbrl_view in this tab
+       s_title += "<th><a id='sec_xbrl_data_"+y+"' href='#' target='_blank'>"+String(y)+"</a></th>"
     }
     // alert(s_title);
     for (var key_statement in vObj["xbrl_statements"])
@@ -312,6 +325,73 @@ function xbrl_set_data()
     sm.TabObjects["xbrl_data"].tabDoc.innerHTML = s
     var evt = new Event("click", {bubbles: true});sm.TabObjects["xbrl_data"].tabTitle.dispatchEvent(evt);
 }
+
+</script>
+
+<!--  get_xbrl_view  -->
+<script>
+
+function get_xbrl_view(event)
+{
+    e = event.target // this object is updated from the input tab
+    //alert(e.outerHTML)
+
+    y = e.innerHTML
+    try{
+        p1_childElementCount = 0
+        p1 = document.getElementById("fs_years_data")
+        p1_childElementCount = p1.childElementCount
+    } catch (er) {}
+    p2 = document.getElementById("fs_years_data_sec")
+    p3 = document.getElementById("fs_years_xbrl_data")
+    m_ = 1+Math.max(p1_childElementCount, p2.childElementCount, p3.childElementCount)
+    try {
+        for(let i = 0; i < m_ ; i++)
+        {
+            try
+            {
+                if (p1.childNodes[i].childNodes[0].innerHTML == y)
+                {p1.childNodes[i].childNodes[0].setAttribute("style", "color:green")} else
+                {p1.childNodes[i].childNodes[0].setAttribute("style", "color:white")}
+
+            } catch(err){}
+        }
+    } catch(err1){}
+    for(let i = 0; i < m_ ; i++)
+    {
+        try
+        {
+            if (p2.childNodes[i].childNodes[0].innerHTML == y)
+            {p2.childNodes[i].childNodes[0].setAttribute("style", "color:green")} else
+            {p2.childNodes[i].childNodes[0].setAttribute("style", "color:blue")}
+
+        } catch(err){}
+        try
+        {
+            if (p3.childNodes[i].childNodes[0].innerHTML == y)
+            {p3.childNodes[i].childNodes[0].setAttribute("style", "color:green")} else
+            {p3.childNodes[i].childNodes[0].setAttribute("style", "color:white")}
+
+        } catch(err){}
+    }
+ //alert(e.outerHTML)
+
+ sm.TabObjects["sec"].tabTitle.innerHTML = "XBRL: " + e.innerHTML
+ var url = e.getAttribute("view_link")
+
+ vObj["filing_year"] = e.getAttribute("filing_year")
+ vObj["reporting_year"] = e.innerHTML
+
+ // the following line was moved - to be deleted
+ // vObj['select_accounts'] = get_select_accounts(vObj["reporting_year"], vObj["ticker"])
+ // alert(vObj['select_accounts'])
+ get_sec(url) // in sec tab
+}
+
+</script>
+
+<!-- xbrl_input_valuation  -->
+<script>
 
 // update data
 function xbrl_input_valuation(event)

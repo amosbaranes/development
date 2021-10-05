@@ -14,7 +14,7 @@ from .models import (Institution, Profile,)
 from ..webapps.education.models import ReceivedMessages
 from ..courses.models import (Department, GeneralLedger, TrialBalance, Order,
                               OrderItem, CourseSchedule, CourseScheduleUser)
-from .forms import (ProfileEditForm, UserEditForm, RegistrationForm)
+from .forms import (ProfileEditForm, UserEditForm, RegistrationForm, ACAuthenticationForm)
 from ..actions.models import Action
 from ..courses.models import (CourseScheduleUser, Order, TrialBalance,
                               Course, Section, SubSection)
@@ -33,7 +33,6 @@ from django.http import JsonResponse
 from django.contrib.auth.models import User
 from ..webcompanies.WebCompanies import WebSiteCompany
 from django.contrib.auth.views import LogoutView
-from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import login, authenticate, logout
 from django.contrib import messages
 # from allauth.account.forms import SignupForm
@@ -351,7 +350,7 @@ def login_page(request):
         pass
         # print('' + str(ex))
     if request.method == "POST":
-        form_login = AuthenticationForm(request, data=request.POST)
+        form_login = ACAuthenticationForm(request, data=request.POST)
         if form_login.is_valid():
             username = form_login.cleaned_data.get('username')
             password = form_login.cleaned_data.get('password')
@@ -373,7 +372,7 @@ def signup_login_form(request, error_message=''):
     # print(error_message)
 
     company_obj = WebSiteCompany(request, web_company_id=7).site_company()
-    form_login = AuthenticationForm()
+    form_login = ACAuthenticationForm()
     form_signup = RegistrationForm()
 
     arg = {'form_login': form_login, 'form_signup': form_signup,
