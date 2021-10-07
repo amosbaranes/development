@@ -53,14 +53,14 @@ function create_table_for_earning_forecast_sp500(data)
      {
         for (q in data[t][y])
         {
-          s_body += "<td>"+data[first_ticker][y][q][0]+"</td>"
-          s_body += "<td>"+data[first_ticker][y][q][1]+"</td>"
-          s_body += "<td>"+data[first_ticker][y][q][2]+"</td>"
-          s_body += "<td>"+data[first_ticker][y][q][3]+"</td>"
-          nn = parseFloat(data[first_ticker][y][q][2]) - parseFloat(data[first_ticker][y][q][3])
+          s_body += "<td>"+data[t][y][q][0]+"</td>"
+          s_body += "<td>"+data[t][y][q][1]+"</td>"
+          s_body += "<td>"+data[t][y][q][2]+"</td>"
+          s_body += "<td>"+data[t][y][q][3]+"</td>"
+          nn = parseFloat(data[t][y][q][2]) - parseFloat(data[t][y][q][3])
           //alert(nn)
           s_body += "<td>"+Math.round(100*nn)/100+"</td>"
-          nn = parseFloat(data[first_ticker][y][q][2])/parseFloat(data[first_ticker][y][q][3])-1
+          nn = parseFloat(data[t][y][q][2])/parseFloat(data[t][y][q][3])-1
           //alert(nn)
           s_body += "<td>"+Math.round(10000*nn)/100+"</td>"
         }

@@ -690,9 +690,12 @@ class AcademyCityXBRL(object):
                             company = XBRLCompanyInfo.objects.get(ticker=ticker)
                             year = date_.year
                             quarter = math.ceil(date_.month / 3)
-                            ef, ct = XBRLSPEarningForecast.objects.get_or_create(company=company, forecast=forecast,
-                                                                                 actual=actual, year=year,
-                                                                                 date=date_, quarter=quarter)
+                            ef, ct = XBRLSPEarningForecast.objects.get_or_create(company=company, year=year,
+                                                                                 quarter=quarter)
+                            ef.forecast = forecast
+                            ef.actual = actual
+                            ef.date = date_
+                            ef.save()
                             self.get_ticker_prices(earning_forecast=ef)
             except Exception as ex:
                 # pass

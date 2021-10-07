@@ -73,36 +73,6 @@ def home(request):
 
     title = _('Courses by Fields')
 
-    # for course in department.department_courses.all():
-    #     for cs in course.course_schedules():
-    #         for cs.c
-    #
-    # course_schedule_ = get_object_or_404(CourseSchedule, slug=slug)
-    # user = request.user
-    # s_name = user.first_name + ' ' + str(user.id) + ' ' + course_schedule_.name
-    # s_slug = slugify(s_name)
-    # # s_slug1 = slugify(s_name+str(random.randint(0, 10**9)))
-    # print('------')
-    # # print(s_slug1)
-    # print('-------')
-    #
-    # new = False
-    # if not CourseScheduleUser.objects.filter(slug=s_slug).count() > 0:
-    #     #if not CourseScheduleUser.objects.filter(slug=s_slug).count() > 0:
-    #     new = True
-    # if new:
-    #     coupon = request.POST.get('coupon')
-    #     print(coupon)
-    #     now = timezone.now()
-    #     try:
-    #         coupon_obj = Coupon.objects.get(code__iexact=coupon,
-    #                                         product=course_schedule_,
-    #                                         valid_from__lte=now,
-    #                                         valid_to__gte=now,
-    #                                         active=True)
-    #     except Coupon.DoesNotExist:
-    #         coupon_obj = None
-
     departments = Department.objects.all().filter(active=True).filter(translations__language_code=get_language()).order_by('order')
     user_courses_schedule = request.user.course_schedule_users.all()
     # user_courses_schedule = request.user.objects.filter(course_schedule__active=True).all()
