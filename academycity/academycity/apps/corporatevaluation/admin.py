@@ -6,7 +6,8 @@ from .models import (Project, RBOIC, CountryRegion, CountryRating, Industry,
                      XBRLMainIndustryInfo, XBRLIndustryInfo, XBRLCompanyInfoInProcess, XBRLValuationAccounts,
                      XBRLCompanyInfo, XBRLValuationAccountsMatch, XBRLValuationStatementsAccounts,
                      XBRLRegion, XBRLCountry, XBRLCountryYearData,
-                     XBRLHistoricalReturnsSP, XBRLSPMoodys)
+                     XBRLHistoricalReturnsSP, XBRLSPMoodys,
+                     XBRLSPEarningForecast)
 
 # -*- coding: utf-8 -*-
 from cms.admin.placeholderadmin import PlaceholderAdminMixin
@@ -174,9 +175,12 @@ class XBRLHistoricalReturnsSPAdmin(admin.ModelAdmin):
 
 @admin.register(XBRLSPMoodys)
 class XBRLSPMoodysAdmin(admin.ModelAdmin):
-    list_display = ('id', 'year', 'sp', 'moodys',
-                    'score_from',
-                    'score_to',
-                    'default_spread')
+    list_display = ('id', 'year', 'sp', 'moodys', 'score_from', 'score_to', 'default_spread')
     list_filter = ('year',)
+
+
+@admin.register(XBRLSPEarningForecast)
+class XBRLSPEarningForecastAdmin(admin.ModelAdmin):
+    list_display = ('id', 'company', 'year', 'quarter', 'forecast', 'actual', 'today_price', 'yesterday_price', 'date')
+    list_filter = ('company', 'year', 'quarter',)
 

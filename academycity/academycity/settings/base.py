@@ -165,7 +165,6 @@ LOCAL_APPS = [
     'academycity.apps.orders',
     'academycity.apps.payment',
     'academycity.apps.globsim',
-    'academycity.apps.corporatevaluation',
     'academycity.apps.trades',
     'academycity.apps.trading',
     'academycity.apps.research',
@@ -177,6 +176,7 @@ LOCAL_APPS = [
     'academycity.apps.webcompanies',
     'academycity.apps.openvidu',
     'academycity.apps.search',
+    'academycity.apps.corporatevaluation.apps.CorporatevaluationConfig',
 ]
 
 WebApps = [

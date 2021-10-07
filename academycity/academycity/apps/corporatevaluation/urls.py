@@ -4,8 +4,11 @@ from .views import (home, get_companies_valuation_actual, wacc_ebit_roic, team, 
                     get_screens, update_todo, delete_todo,
                     get_accounts, get_data_ticker, admin_setup,
                     sec, get_r, get_sec, onchange_account, get_matching_accounts,
-                    save_industry_default, clean_data_for_all_companies, create_company_by_ticker,
+                    save_industry_default,
+                    create_company_by_ticker,
                     get_risk_premium)
+
+# create_company_by_ticker,
 
 app_name = "corporatevaluation"
 
@@ -37,7 +40,7 @@ urlpatterns = [
     path('get_matching_accounts/', get_matching_accounts, name='get_matching_accounts'),
     path('onchange_account/', onchange_account, name='onchange_account'),
     path('save_industry_default/', save_industry_default, name='save_industry_default'),
-    path('clean_data_for_all_companies/', clean_data_for_all_companies, name='clean_data_for_all_companies'),
+    # path('clean_data_for_all_companies/', clean_data_for_all_companies, name='clean_data_for_all_companies'),
     path('create_company_by_ticker/', create_company_by_ticker, name='create_company_by_ticker'),
     # Valuation
     path('get_risk_premium/', get_risk_premium, name='get_risk_premium'),

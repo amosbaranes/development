@@ -453,39 +453,46 @@ def update_data(request):
 
 # Admin
 # load sic numbers from the SEC
-def set_sic_code(request):
-    acx = AcademyCityXBRL()
-    return acx.set_sic_code()
+# def set_sic_code(request):
+#     acx = AcademyCityXBRL()
+#     return acx.set_sic_code()
 
-
-def get_all_companies(request):
-    acx = AcademyCityXBRL()
-    dic = acx.get_all_companies()
-    return dic
+#
+# def get_all_companies(request):
+#     acx = AcademyCityXBRL()
+#     dic = acx.get_all_companies()
+#     return dic
 
 
 def admin_setup(request):
     try:
         fun_ = request.POST.get('fun')
-        dic = eval(fun_+'(request)')
+        # print(fun_)
+        try:
+            # print('AcademyCityXBRL().' + fun_ + '()')
+            dic = eval('AcademyCityXBRL().' + fun_ + '()')
+            # print(dic)
+        except Exception as ex:
+            dic = eval(fun_+'(request)')
         return JsonResponse(dic)
+
     except Exception as ex:
         return JsonResponse({'status': 'error: '+str(ex)})
 
+#
+# def load_tax_rates_by_country_year(request):
+#     try:
+#         acx = AcademyCityXBRL()
+#         dic = acx.load_tax_rates_by_country_year()
+#         return dic
+#     except Exception as ex:
+#         return JsonResponse({'status': 'error: '+str(ex)})
 
-def load_tax_rates_by_country_year(request):
-    try:
-        acx = AcademyCityXBRL()
-        dic = acx.load_tax_rates_by_country_year()
-        return dic
-    except Exception as ex:
-        return JsonResponse({'status': 'error: '+str(ex)})
-
-
-def load_sp_returns(request):
-    acx = AcademyCityXBRL()
-    dic = acx.load_sp_returns()
-    return dic
+#
+# def load_sp_returns(request):
+#     acx = AcademyCityXBRL()
+#     dic = acx.load_sp_returns()
+#     return dic
 
 
 def load_country_premium(request):
@@ -768,11 +775,11 @@ def get_r(request):
     dic = {'html': edgar_resp.text}
     return JsonResponse(dic)
 
-
-def clean_data_for_all_companies(request):
-    acx = AcademyCityXBRL()
-    dic = acx.clean_data_for_all_companies()
-    return dic
+#
+# def clean_data_for_all_companies(request):
+#     acx = AcademyCityXBRL()
+#     dic = acx.clean_data_for_all_companies()
+#     return dic
 
 
 def create_company_by_ticker(request):
@@ -786,11 +793,11 @@ def create_company_by_ticker(request):
 
     return JsonResponse(response)
 
-
-def copy_processed_companies(request):
-    acx = AcademyCityXBRL()
-    dic = acx.copy_processed_companies()
-    return dic
+#
+# def copy_processed_companies(request):
+#     acx = AcademyCityXBRL()
+#     dic = acx.copy_processed_companies()
+#     return dic
 
 
 def get_data_ticker(request):
@@ -926,12 +933,12 @@ def get_duplications_tickers(request):
     # print(dic)
     return dic
 
+#
+# def test(request):
+#     acx = AcademyCityXBRL()
+#     return acx.test()
 
-def test(request):
-    acx = AcademyCityXBRL()
-    return acx.test()
-
-
-def test1(request):
-    acx = AcademyCityXBRL()
-    acx.test1()
+#
+# def test1(request):
+#     acx = AcademyCityXBRL()
+#     acx.test1()

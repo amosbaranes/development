@@ -1,0 +1,78 @@
+{% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
+{% load core_tags %}
+
+<div id="sp_forecast_actual" class="tabcontent data">
+</div>
+
+
+<script>
+function get_earning_forecast_sp500_view()
+{
+  if (vObj["earning_forecast_sp500_view_downloaded"] == 1){return;}
+  message_div = document.getElementById("sp_forecast_actual")
+  message_div.innerHTML = 'In process .. '
+
+  $.post('{% url "corporatevaluation:admin_setup" %}',
+      {
+        fun: "get_earning_forecast_sp500_view",
+      },
+      function(data){
+            message_div.innerHTML = 'Process done with status: ' + data['status']
+            vObj["earning_forecast_sp500_view_downloaded"] = 1;
+            create_table_for_earning_forecast_sp500(data=data['earning_forecast_sp500_view']) ;
+      }
+    );
+}
+</script>
+
+<script>
+function create_table_for_earning_forecast_sp500(data)
+{
+ first_ticker = Object.keys(data)[0]
+ s_title1 = "<tr><td style='text-align:center'>Year</td>";
+ s_title2 = "<tr><td style='text-align:center'>Qt</td>";
+ s_title3 = "<tr><td style='text-align:center'>Ticker</td>";
+ s_body = "";
+ for (y in data[first_ticker])
+ {
+    nq = Object.keys(data[first_ticker][y]).length * 6
+    //alert(nq)
+    s_title1 += "<td colspan='"+nq+"' style='text-align:center'>" + y + "</td>"
+    for (q in data[first_ticker][y])
+    {
+      //alert(q)
+      s_title2 += "<td  colspan='6' style='text-align:center'>"+q+"</td>"
+      s_title3 += "<td style='text-align:center'>For.</td><td style='text-align:center'>Act.</td><td style='text-align:center'>Price</td><td style='text-align:center'>Price(-1)</td><td style='text-align:center'>D</td><td style='text-align:center'>D%</td>"
+    }
+ }
+
+ for (t in data)
+ {
+     s_body += "<tr><td>"+t+"</td>" ;
+     for (y in data[t])
+     {
+        for (q in data[t][y])
+        {
+          s_body += "<td>"+data[first_ticker][y][q][0]+"</td>"
+          s_body += "<td>"+data[first_ticker][y][q][1]+"</td>"
+          s_body += "<td>"+data[first_ticker][y][q][2]+"</td>"
+          s_body += "<td>"+data[first_ticker][y][q][3]+"</td>"
+          nn = parseFloat(data[first_ticker][y][q][2]) - parseFloat(data[first_ticker][y][q][3])
+          //alert(nn)
+          s_body += "<td>"+Math.round(100*nn)/100+"</td>"
+          nn = parseFloat(data[first_ticker][y][q][2])/parseFloat(data[first_ticker][y][q][3])-1
+          //alert(nn)
+          s_body += "<td>"+Math.round(10000*nn)/100+"</td>"
+        }
+     }
+ }
+ s_title1 += "</tr>"
+ s_title2 += "</tr>"
+ s_body += "</tr>"
+ s = "<table>"+s_title1 + s_title2 + s_title3 + s_body + "</table>"
+ //alert(s)
+ document.getElementById("sp_forecast_actual").innerHTML = s;
+
+}
+</script>
+

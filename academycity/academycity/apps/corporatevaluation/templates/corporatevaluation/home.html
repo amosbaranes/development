@@ -118,6 +118,9 @@ data {
           {% include 'corporatevaluation/simulation/includes/_calculations.html' %}
           {% include 'corporatevaluation/simulation/includes/_valuation.html' %}
           {% include 'corporatevaluation/simulation/includes/_comparablecompanies.html' %}
+
+          {% include 'corporatevaluation/simulation/includes/_sp_forecast_actual.html' %}
+
         {%if user.is_staff or request.user|has_group:"instructors"%}
           {% include 'corporatevaluation/simulation/includes/valuationtodo.html' %}
           {% include 'corporatevaluation/simulation/includes/valuationmethodology.html' %}
@@ -130,7 +133,7 @@ data {
 <!-- home -->
 
 <span id="tabs_"
-      tabs_s="xbrl_data:{% trans "XBRL Data" %};local,data:{% trans "Data" %};local,comparablecompanies:{% trans "Comparable Companies" %};local,calculations:{% trans "Supporting Schedules" %};local,fsa:{% trans "Financial Statements Analysis" %};local,valuation:{% trans "Valuation" %};local,inputs:{% trans "Inputs" %};local"
+      tabs_s="sp_forecast_actual:{% trans "S&P500 F/A" %};local,xbrl_data:{% trans "XBRL Data" %};local,data:{% trans "Data" %};local,comparablecompanies:{% trans "Comparable Companies" %};local,calculations:{% trans "Supporting Schedules" %};local,fsa:{% trans "Financial Statements Analysis" %};local,valuation:{% trans "Valuation" %};local,inputs:{% trans "Inputs" %};local"
 tabs_m="valuationsetup:{% trans "Setup" %};pull_screen,valuationadmin:{% trans "Admin" %};pull_screen,valuationmethodology:{% trans "Methodology" %};pull_screen,valuationtodo:{% trans "To do list" %};pull_screen,sec:{% trans "SEC" %};local"
         accounts_structure="{'11990': {'star_other': [11100, 11800], 'total':0}, '12990': {'star_other': [12500, 12900], 'total':0}, '13990': {'star_other': [13100, 13200], 'total':0},'14990': {'star_other': [14100, 14200], 'total':0},'15990': {'star_other': [15000, 15500], 'total':0}}"
  accounting_equality="{'12998' :{'1': {'account': '11990', 'data': 0}, '2': {'account': '12990', 'data': 0}, '3': {'account': '12999', 'data': 0}}, '12999': {'1': {'account': '14999', 'data': 0}, '2': {'account': '15990', 'data': 0}, '3': {'account': '12999', 'data': 0}}, '14999': {'1': {'account': '13990', 'data': 0}, '2': {'account': '14990', 'data': 0}, '3': {'account': '14999', 'data': 0}}, '20100': {'1': {'account': '20200', 'data': 0}, '2': {'account': '20300', 'data': 0}, '3': {'account': '20100', 'data': 0}}, '20800': {'1': {'account': '20850', 'data': 0}, '2': {'account': '20900', 'data': 0}, '3': {'account': '20800', 'data': 0}}}"
@@ -167,6 +170,7 @@ vObj["select_accounts"] = "";
 vObj["is_update"] = "no";
 // --
 vObj["risk_premium_downloaded"] = 0
+vObj["earning_forecast_sp500_view_downloaded"] = 0
 // --
 vObj["accounts_chosen"] = []
 // --
@@ -468,6 +472,7 @@ SimManager.prototype.setTabs = function() {
 SimManager.prototype.setTitleCallFunction = function() {
         this.TabObjects["comparablecompanies"].add_title_click_call_function("valuation_vs_actual");
         this.TabObjects["calculations"].add_title_click_call_function("set_active_tab_");
+        this.TabObjects["sp_forecast_actual"].add_title_click_call_function("get_earning_forecast_sp500_view");
 }
 
 // == Math ==

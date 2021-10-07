@@ -9,6 +9,7 @@ from django.conf import settings
 import pandas as pd
 import string
 import datetime
+from datetime import timedelta
 from django.db.models import Q
 from concurrent.futures import ThreadPoolExecutor
 import xml.etree.ElementTree as ET
@@ -17,6 +18,12 @@ import xlrd
 import numpy as np
 import statistics
 from django.utils.translation import get_language
+import math
+from django.utils.dateparse import parse_date
+
+# import yfinance as yf
+from yahoofinancials import YahooFinancials
+
 from ..core.utils import log_debug, clear_log_debug
 
 from django.db.models import Avg
@@ -24,7 +31,7 @@ from .models import (XBRLMainIndustryInfo, XBRLIndustryInfo, XBRLCompanyInfoInPr
                      XBRLCompanyInfo, XBRLValuationStatementsAccounts, XBRLValuationAccounts, XBRLValuationAccountsMatch,
                      XBRLRegion, XBRLCountry, XBRLCountryYearData,
                      XBRLHistoricalReturnsSP, XBRLSPMoodys, Project,
-                     XBRLRegion)
+                     XBRLRegion, XBRLSPEarningForecast)
 
 # cik = '0000051143'
 # type = '10-K'
@@ -630,12 +637,124 @@ class AcademyCityXBRL(object):
             dic = {'status': 'You can update only data of year 2020.'}
         return dic
 
+    # # #
     def get_sp500(self):
         sp500_url = 'https://en.wikipedia.org/wiki/List_of_S%26P_500_companies'
         self.sp_tickers = list(pd.read_html(sp500_url)[0]['Symbol'].values)
-        return sp_tickers
+        self.sp_tickers = [x.split('.')[0] for x in self.sp_tickers]
+        for ticker in self.sp_tickers:
+            try:
+                XBRLCompanyInfo.objects.get(ticker=ticker)
+            except Exception as ex:
+                try:
+                    dic = self.create_company_by_ticker(ticker=ticker)
+                except Exception as exx:
+                    self.sp_tickers.remove(ticker)
+                    # print('exx')
+                    # print(exx)
 
+        dic = {'status': 'ok', 'sp_tickers': self.sp_tickers}
+        log_debug("End load_sp_returns.")
+        return dic
+
+    def get_earning_forecast_sp500(self):
+        sp_tickers = self.get_sp500()['sp_tickers']
+        headers = {'User-Agent': 'amos@drbaranes.com'}
+        url = "https://www.investing.com/earnings-calendar/"
+        sp_resp = requests.get(url, headers=headers, timeout=30)
+        # print("Current Time 11 =", datetime.datetime.now().strftime("%H:%M:%S"))
+        sp_str = sp_resp.text
+        soup = BeautifulSoup(sp_str, 'html.parser')
+        form_tag = soup.find('form', id='earningsCalendarForm')
+        # print(form_tag)
+        form_cells = form_tag.find_all('input')
+        # print(form_cells)
+        date_str = form_cells[0]['value']
+        date_ = parse_date(date_str)
+
+        table_tag = soup.find('table', id='earningsCalendarData')
+        tbody_tag = table_tag.find('tbody')
+        try:
+            rows = tbody_tag.find_all('tr')
+        except Exception as ex:
+            return print("Error 1")
+        for row in rows:
+            try:
+                cells = row.find_all('td')
+                if len(cells) > 3:
+                    if cells[2].text != '--':
+                        ticker = cells[1].find('a').text
+                        if ticker in sp_tickers:
+                            actual = cells[2].text
+                            forecast = cells[3].text.split('/')[1].lstrip()
+                            company = XBRLCompanyInfo.objects.get(ticker=ticker)
+                            year = date_.year
+                            quarter = math.ceil(date_.month / 3)
+                            ef, ct = XBRLSPEarningForecast.objects.get_or_create(company=company, forecast=forecast,
+                                                                                 actual=actual, year=year,
+                                                                                 date=date_, quarter=quarter)
+                            self.get_ticker_prices(earning_forecast=ef)
+            except Exception as ex:
+                # pass
+                print(ex)
+        dic = {'status': 'ok'}
+        return dic
+
+    def get_ticker_prices(self, earning_forecast):
+        # https://pypi.org/project/yahoofinancials/
+        # https://www.analyticsvidhya.com/blog/2021/06/download-financial-dataset-using-yahoo-finance-in-python-a-complete-guide/
+
+        # print(earning_forecast.company.ticker)
+
+        yahoo_financials = YahooFinancials(earning_forecast.company.ticker)
+        today = earning_forecast.date
+        # print(today)
+        yesterday = (today + timedelta(days=-1))
+        # print(yesterday)
+        today_str = str(today)
+        yesterday_str = str(yesterday)
+        data = yahoo_financials.get_historical_price_data(start_date='2019-01-01', end_date=str(today + timedelta(days=1)),
+                                                          time_interval='daily')
+        # print(data)
+        df = pd.DataFrame(data[earning_forecast.company.ticker]['prices'])
+        df = df.drop('date', axis=1).set_index('formatted_date')
+        # print(df.tail())
+        try:
+            today_price = int(100*df.filter(items=[today_str], axis=0)['adjclose'])/100
+            # print(today_price)
+            earning_forecast.today_price = today_price
+        except Exception as ex:
+            pass
+            # print('ex 1')
+            # print(ex)
+        try:
+            yesterday_price = int(100*df.filter(items=[yesterday_str], axis=0)['adjclose'])/100
+            # print(yesterday_price)
+            earning_forecast.yesterday_price = yesterday_price
+        except Exception as ex:
+            pass
+            # print('ex 2')
+            # print(ex)
+        earning_forecast.save()
+        dic = {'status': 'ok'}
+        return dic
+
+    def get_earning_forecast_sp500_view(self):
+        d = {}
+        for t in XBRLSPEarningForecast.objects.all():
+            if t.company.ticker not in d:
+                d[t.company.ticker] = {}
+            if t.year not in d[t.company.ticker]:
+                d[t.company.ticker][t.year] = {}
+            if t.quarter not in d[t.company.ticker][t.year]:
+                d[t.company.ticker][t.year][t.quarter] = ['f', 'a', 'p', '-p']
+            d[t.company.ticker][t.year][t.quarter][0] = str(t.forecast)
+            d[t.company.ticker][t.year][t.quarter][1] = str(t.actual)
+            d[t.company.ticker][t.year][t.quarter][2] = str(t.today_price)
+            d[t.company.ticker][t.year][t.quarter][3] = str(t.yesterday_price)
+        return {'status': 'ok', 'earning_forecast_sp500_view': d}
     # # #
+
     def create_company_by_ticker(self, ticker=None):
         try:
             company_id = -1
@@ -711,7 +830,8 @@ class AcademyCityXBRL(object):
                 company_id = company.id
 
         except Exception as ex:
-            print('error 1: '+str(ex))
+            pass
+            # print('error 1: '+str(ex))
         return {'status': 'ok', 'id': company_id, 'company_name': company_name_}
 
     def clean_data_for_all_companies(self):
@@ -960,6 +1080,7 @@ class AcademyCityXBRL(object):
     # # #
 
     def load_tax_rates_by_country_year(self):
+        dic = {'status': 'ko'}
         log_debug("Start load_tax_rates_by_country_year.")
         url = "https://files.taxfoundation.org/20210125115215/1980-2020-Corporate-Tax-Rates-Around-the-World.csv.xlsx"
         file = "world_taxes"
@@ -1006,7 +1127,7 @@ class AcademyCityXBRL(object):
             except Exception as ex:
                 log_debug("Error 2 save country: " + str(r['continent']) + " " + str(r['country']) + " " + str(r['year']) + " " + str(ex))
 
-        dic = {'status': 'ok'}
+        dic['status'] = 'ok'
         log_debug("End load_tax_rates_by_country_year.")
         return dic
 
@@ -1319,6 +1440,7 @@ class AcademyCityXBRL(object):
 
     # general purpose functions for testing
     def test(self):
+        print('test')
         dic = {'status': 'ok'}
         return dic
 

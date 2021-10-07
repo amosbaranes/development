@@ -19,6 +19,7 @@ from cms.models.pluginmodel import CMSPlugin
 from ..courses.models import (CourseSchedule, CourseScheduleUser, Team)
 from ..core.sql import TruncateTableMixin
 import decimal
+import datetime
 
 from django.db.models.functions import Coalesce
 
@@ -539,11 +540,12 @@ class XBRLValuationCompanyUser(TruncateTableMixin, models.Model):
                                 related_name='valuation_companies')
     user = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, on_delete=models.CASCADE,
                              related_name='valuation_users')
-    analysis = PlaceholderField('course_ schedule_description')
+    analysis = PlaceholderField('valuation_analysis_user')
     #
 
     def __str__(self):
         return self.user.name + " " + self.company
+
 
 # https://docs.djangoproject.com/en/3.2/topics/db/managers/
 class XBRLRegionQuerySet(models.QuerySet):
@@ -981,3 +983,22 @@ class XBRLSPMoodys(TruncateTableMixin, models.Model):
 #
 #     country = models.ForeignKey(XBRLCountry, on_delete=models.CASCADE, default=None, blank=True, null=True)
 #
+
+
+class XBRLSPEarningForecast(TruncateTableMixin, models.Model):
+    class Meta:
+        verbose_name = _('XBRLSPEarningForcast')
+        verbose_name_plural = _('XBRLSPEarningForcast')
+        ordering = ['-created']
+    #
+    created = models.DateTimeField(auto_now_add=True)
+    company = models.ForeignKey(XBRLCompanyInfo, on_delete=models.CASCADE, default=None,
+                                related_name='company_forecast')
+    forecast = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    actual = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    date = models.DateField(blank=True, null=True)
+    year = models.PositiveSmallIntegerField(default=datetime.datetime.now().year, blank=True)
+    quarter = models.PositiveSmallIntegerField(default=math.ceil(datetime.datetime.now().month / 3), blank=True)
+    today_price = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    yesterday_price = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+
