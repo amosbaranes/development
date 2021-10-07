@@ -133,18 +133,19 @@ data {
 <!-- home -->
 
 <span id="tabs_"
-      tabs_s="sp_forecast_actual:{% trans "S&P500 F/A" %};local,xbrl_data:{% trans "XBRL Data" %};local,data:{% trans "Data" %};local,comparablecompanies:{% trans "Comparable Companies" %};local,calculations:{% trans "Supporting Schedules" %};local,fsa:{% trans "Financial Statements Analysis" %};local,valuation:{% trans "Valuation" %};local,inputs:{% trans "Inputs" %};local"
+tabs_s="xbrl_data:{% trans "XBRL Data" %};local,data:{% trans "Data" %};local,comparablecompanies:{% trans "Comparable Companies" %};local,calculations:{% trans "Supporting Schedules" %};local,fsa:{% trans "Financial Statements Analysis" %};local,valuation:{% trans "Valuation" %};local,inputs:{% trans "Inputs" %};local"
 tabs_m="valuationsetup:{% trans "Setup" %};pull_screen,valuationadmin:{% trans "Admin" %};pull_screen,valuationmethodology:{% trans "Methodology" %};pull_screen,valuationtodo:{% trans "To do list" %};pull_screen,sec:{% trans "SEC" %};local"
-        accounts_structure="{'11990': {'star_other': [11100, 11800], 'total':0}, '12990': {'star_other': [12500, 12900], 'total':0}, '13990': {'star_other': [13100, 13200], 'total':0},'14990': {'star_other': [14100, 14200], 'total':0},'15990': {'star_other': [15000, 15500], 'total':0}}"
- accounting_equality="{'12998' :{'1': {'account': '11990', 'data': 0}, '2': {'account': '12990', 'data': 0}, '3': {'account': '12999', 'data': 0}}, '12999': {'1': {'account': '14999', 'data': 0}, '2': {'account': '15990', 'data': 0}, '3': {'account': '12999', 'data': 0}}, '14999': {'1': {'account': '13990', 'data': 0}, '2': {'account': '14990', 'data': 0}, '3': {'account': '14999', 'data': 0}}, '20100': {'1': {'account': '20200', 'data': 0}, '2': {'account': '20300', 'data': 0}, '3': {'account': '20100', 'data': 0}}, '20800': {'1': {'account': '20850', 'data': 0}, '2': {'account': '20900', 'data': 0}, '3': {'account': '20800', 'data': 0}}}"
+tabs_options = "sp_forecast_actual:{% trans "S&P500 F/A" %};local"
+accounts_structure="{'11990': {'star_other': [11100, 11800], 'total':0}, '12990': {'star_other': [12500, 12900], 'total':0}, '13990': {'star_other': [13100, 13200], 'total':0},'14990': {'star_other': [14100, 14200], 'total':0},'15990': {'star_other': [15000, 15500], 'total':0}}"
+accounting_equality="{'12998' :{'1': {'account': '11990', 'data': 0}, '2': {'account': '12990', 'data': 0}, '3': {'account': '12999', 'data': 0}}, '12999': {'1': {'account': '14999', 'data': 0}, '2': {'account': '15990', 'data': 0}, '3': {'account': '12999', 'data': 0}}, '14999': {'1': {'account': '13990', 'data': 0}, '2': {'account': '14990', 'data': 0}, '3': {'account': '14999', 'data': 0}}, '20100': {'1': {'account': '20200', 'data': 0}, '2': {'account': '20300', 'data': 0}, '3': {'account': '20100', 'data': 0}}, '20800': {'1': {'account': '20850', 'data': 0}, '2': {'account': '20900', 'data': 0}, '3': {'account': '20800', 'data': 0}}}"
 
-        ></span>
+></span>
 
 <!--        xbrl_data:{% trans "XBRLData" %};local,
                    accounting_equality="[[11990, 12990, 12999], [13990, 14990, 14999], [14999, 15990, 12999]]"
                    -->
 
-<span id="is_staff" is_staff="{{user.is_staff}}" is_instructor="{{user|has_group:'instructors'}}"></span>
+<span id="is_staff" is_staff="{{user.is_staff}}" is_instructor="{{user|has_group:'instructors'}}"  is_options="{{user|has_group:'options'}}"></span>
 <div id="log_info"></div>
 
 <!-- corporate valuation -->
@@ -416,6 +417,7 @@ function SimManager(valuation_id)
 {
     this.is_staff = document.getElementById("is_staff").getAttribute("is_staff");
     this.is_instructor = document.getElementById("is_staff").getAttribute("is_instructor");
+    this.is_options = document.getElementById("is_staff").getAttribute("is_options");
     this.valuation_id = valuation_id;
     this.url_get_screens = '{% url "corporatevaluation:get_screens" %}';
     this.name = "Corporate Valuation";
@@ -433,6 +435,7 @@ function SimManager(valuation_id)
 
 SimManager.prototype.setTabs = function() {
     var tabs_ = document.getElementById("tabs_");
+    var tabs_options = tabs_.getAttribute("tabs_options");
     var tabs_s = tabs_.getAttribute("tabs_s");
 
     eval('this.accounting_equality =' + tabs_.getAttribute("accounting_equality"))
@@ -444,6 +447,7 @@ SimManager.prototype.setTabs = function() {
         //alert(this.accounts_structure['11990']['total'])
 
     var tans_all = tabs_s.split(",");
+    var tabs_options_all = tabs_options.split(",");
     var tabs_m = tabs_.getAttribute("tabs_m");
     var tans_all_m = tabs_m.split(",");
     var tabs_management = {};
@@ -456,10 +460,23 @@ SimManager.prototype.setTabs = function() {
       ss = tans_all[property]; ss_ = ss.split(":"); ss__ = ss_[1].split(";")
       tabs[ss_[0]] = [ss__[0], ss__[1]]
     }
+
+    var tabs_options = {};
+    for (var property in tabs_options_all) {
+      ss = tabs_options_all[property]; ss_ = ss.split(":"); ss__ = ss_[1].split(";")
+      tabs_options[ss_[0]] = [ss__[0], ss__[1]]
+    }
+
     if (this.is_staff == 'True' || this.is_instructor == 'True'){
       for(var name in tabs_management)
       { s = "this.TabObjects[name] = new SimManagementTab(this, name, '"+tabs_management[name][0]+"', this.valuation_id, this.url_get_screens, '"+tabs_management[name][1]+"')" ;eval(s) }
     }
+
+    if (this.is_staff == 'True' || this.is_options == 'True'){
+      for(var name in tabs_options)
+      {s = "this.TabObjects[name] = new SimTab(this, name, tabs_options[name][0], this.valuation_id, this.url_get_screens, tabs_options[name][1])" ; eval(s)}
+    }
+
     for(var name in tabs)
     {s = "this.TabObjects[name] = new SimTab(this, name, tabs[name][0], this.valuation_id, this.url_get_screens, tabs[name][1])" ; eval(s)}
 

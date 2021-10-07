@@ -180,7 +180,6 @@ function ticker_onchange(event)
   // alert(search_ticker)
   elm = document.getElementById("companies")
   value_ = -1
-
   for (var i = 0; i < elm.children.length; i++)
   {
    e = elm.children[i]
@@ -190,12 +189,9 @@ function ticker_onchange(event)
     value_ = e.getAttribute("value")
    }
   }
-
   if (value_ == -1)
   {
-
     alert("We do not provide data for this company.");  return;
-
     $.post('{% url "corporatevaluation:create_company_by_ticker" %}',
           {
             ticker: search_ticker.toUpperCase(),

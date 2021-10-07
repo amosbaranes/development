@@ -48,7 +48,7 @@ function create_table_for_earning_forecast_sp500(data)
 
  for (t in data)
  {
-     s_body += "<tr><td>"+t+"</td>" ;
+     s_body += "<tr><td onclick='set_ticker_to_valuation(event)' style='cursor:pointer;'>"+t+"</td>" ;
      for (y in data[t])
      {
         for (q in data[t][y])
@@ -73,6 +73,16 @@ function create_table_for_earning_forecast_sp500(data)
  //alert(s)
  document.getElementById("sp_forecast_actual").innerHTML = s;
 
+}
+</script>
+
+<script>
+function set_ticker_to_valuation(event)
+{
+ ticker = event.target.innerHTML
+ let search_ticker = document.getElementById("search_ticker")
+ search_ticker.value = ticker
+ var event = new Event("change", {bubbles: true}); search_ticker.dispatchEvent(event);
 }
 </script>
 
