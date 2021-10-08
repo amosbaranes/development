@@ -487,9 +487,9 @@ SimManager.prototype.setTabs = function() {
 
 //-- Add callback for click event of title folder
 SimManager.prototype.setTitleCallFunction = function() {
-        this.TabObjects["comparablecompanies"].add_title_click_call_function("valuation_vs_actual");
-        this.TabObjects["calculations"].add_title_click_call_function("set_active_tab_");
-        this.TabObjects["sp_forecast_actual"].add_title_click_call_function("get_earning_forecast_sp500_view");
+        try{this.TabObjects["comparablecompanies"].add_title_click_call_function("valuation_vs_actual");} catch(er){}
+        try{this.TabObjects["calculations"].add_title_click_call_function("set_active_tab_");} catch(er){}
+        try{this.TabObjects["sp_forecast_actual"].add_title_click_call_function("get_earning_forecast_sp500_view");} catch(er){}
 }
 
 // == Math ==
