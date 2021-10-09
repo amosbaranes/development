@@ -6,7 +6,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 
 def start():
     scheduler = BackgroundScheduler()
-    scheduler.add_job(update_forecast, 'interval', minutes=60, id='update_earning_forecast')
+    scheduler.add_job(update_forecast, 'interval', minutes=15, id='update_earning_forecast')
     scheduler.start()
 
 

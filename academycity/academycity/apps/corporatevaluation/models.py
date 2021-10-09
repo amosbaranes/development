@@ -989,7 +989,7 @@ class XBRLSPEarningForecast(TruncateTableMixin, models.Model):
     class Meta:
         verbose_name = _('XBRLSPEarningForcast')
         verbose_name_plural = _('XBRLSPEarningForcast')
-        ordering = ['-created']
+        ordering = ['-date']
     #
     created = models.DateTimeField(auto_now_add=True)
     company = models.ForeignKey(XBRLCompanyInfo, on_delete=models.CASCADE, default=None,

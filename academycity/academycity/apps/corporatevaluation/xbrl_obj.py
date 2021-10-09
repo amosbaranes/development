@@ -62,6 +62,10 @@ class AcademyCityXBRL(object):
         os.makedirs(self.EXCEL_PATH, exist_ok=True)
         # print(self.EXCEL_PATH)
 
+        self.TEXT_PATH = os.path.join(self.TO_DATA_PATH, "text")
+        os.makedirs(self.TEXT_PATH, exist_ok=True)
+        # print(self.TEXT_PATH)
+
         self.Data = None
 
         self.sp_tickers = []
@@ -338,11 +342,6 @@ class AcademyCityXBRL(object):
         log_debug("End get_data_for_cik.")
         return dic_company_info
 
-    def insure_two_digit_month_day(self, s):
-        if len(s) == 1:
-            s = "0"+s
-        return s
-
     def get_data_for_years(self, dic_data_year):
         # print("Current Time Start get data = " + str(dic_data_year[0]), datetime.datetime.now().strftime("%H:%M:%S"))
         # dic_data_year[3] = ticker
@@ -454,8 +453,8 @@ class AcademyCityXBRL(object):
                 start_date_should = str((int(end_date[0])-1))+'-'+end_date[1]
                 start_date0_should = str((int(end_date[0])-2))+'-12'
                 start_date1_should = end_date[0]+'-01'
-                start_date2_should = str((int(end_date[0])-1))+'-'+self.insure_two_digit_month_day(str((int(end_date[1])+1)))
-                start_date3_should = str((int(end_date[0])-1))+'-'+self.insure_two_digit_month_day(str((int(end_date[1])-1)))
+                start_date2_should = str((int(end_date[0])-1))+'-'+self.add_zero(str((int(end_date[1])+1)))
+                start_date3_should = str((int(end_date[0])-1))+'-'+self.add_zero(str((int(end_date[1])-1)))
 
                 # print('-6'*10)
                 # print('end_date')
@@ -657,6 +656,97 @@ class AcademyCityXBRL(object):
         log_debug("End load_sp_returns.")
         return dic
 
+    def month_to_num(self, month):
+        return {
+            'January': '01',
+            'February': '02',
+            'March': '03',
+            'April': '04',
+            'May': '05',
+            'June': '06',
+            'July': '07',
+            'August': '08',
+            'September': '09',
+            'October': '10',
+            'November': '11',
+            'December': '12'
+        }[month]
+
+    def add_zero(self, s):
+        if len(s) == 1:
+            s = "0"+s
+        return s
+
+    def upload_old_earning_forecast_sp500(self):
+        # XBRLSPEarningForecast.truncate()
+        sp_tickers = self.get_sp500()['sp_tickers']
+        for file in os.listdir(self.TEXT_PATH):
+            # print(file)
+            log_debug("Start file: " + file)
+            file_path = f"{self.TEXT_PATH}/{file}"
+            with open(file_path, 'r') as f:
+                text = f.read()
+                soup = BeautifulSoup(text, 'html.parser')
+                rows = soup.find_all('tr')
+                for row in rows:
+                    try:
+                        cells = row.find_all('td')
+                        if len(cells) < 3:
+                            dd = cells[0].text.split(",")
+                            ddd = dd[1].strip().split(" ")
+                            mm = self.month_to_num(ddd[0])
+                            yy = dd[2].strip()
+                            dd = ddd[1]
+                            date_str = yy+"-"+mm+"-"+self.add_zero(dd)
+                            date_ = parse_date(date_str)
+                        else:
+                            if cells[2].text != '--':
+                                ticker = cells[1].find('a').text
+                                if ticker in sp_tickers:
+                                    # print('-'*20)
+                                    # print('in sp')
+                                    # print(date_str)
+                                    # print(ticker)
+                                    # print('-'*20)
+                                    actual = cells[2].text
+                                    forecast = cells[3].text.split('/')[1].lstrip()
+                                    try:
+                                        actual_ = float(actual)
+                                        # print(actual_)
+                                    except Exception as eex:
+                                        # print('eex')
+                                        # print('actual')
+                                        # print(actual)
+                                        # print(eex)
+                                        continue
+                                    try:
+                                        forecast_ = float(forecast)
+                                        # print(forecast_)
+                                    except Exception as eex:
+                                        # print('eex')
+                                        # print(eex)
+                                        # print('forecast')
+                                        # print(forecast)
+                                        continue
+                                    company = XBRLCompanyInfo.objects.get(ticker=ticker)
+                                    year = date_.year
+                                    quarter = math.ceil(date_.month / 3)
+                                    ef, ct = XBRLSPEarningForecast.objects.get_or_create(company=company, year=year,
+                                                                                         quarter=quarter)
+                                    ef.forecast = forecast
+                                    ef.actual = actual
+                                    ef.date = date_
+                                    ef.save()
+                                    self.get_ticker_prices(earning_forecast=ef)
+                    except Exception as ex:
+                        # print('ex')
+                        # print(ex)
+                        # print(ticker)
+                        # print(cells[2].text)
+                        # print('ex')
+                        pass
+            log_debug("End Processing file: " + file)
+
     def get_earning_forecast_sp500(self):
         sp_tickers = self.get_sp500()['sp_tickers']
         headers = {'User-Agent': 'amos@drbaranes.com'}
@@ -730,14 +820,19 @@ class AcademyCityXBRL(object):
             pass
             # print('ex 1')
             # print(ex)
-        try:
-            yesterday_price = int(100*df.filter(items=[yesterday_str], axis=0)['adjclose'])/100
-            # print(yesterday_price)
-            earning_forecast.yesterday_price = yesterday_price
-        except Exception as ex:
-            pass
-            # print('ex 2')
-            # print(ex)
+        is_ok = False
+        while not is_ok:
+            try:
+                yesterday_price = int(100*df.filter(items=[yesterday_str], axis=0)['adjclose'])/100
+                # print(yesterday_price)
+                earning_forecast.yesterday_price = yesterday_price
+                is_ok = True
+            except Exception as ex:
+                yesterday = (yesterday + timedelta(days=-1))
+                # print(yesterday)
+                yesterday_str = str(yesterday)
+                # print('ex 2')
+                # print(ex)
         earning_forecast.save()
         dic = {'status': 'ok'}
         return dic
@@ -755,6 +850,7 @@ class AcademyCityXBRL(object):
             d[t.company.ticker][t.year][t.quarter][1] = str(t.actual)
             d[t.company.ticker][t.year][t.quarter][2] = str(t.today_price)
             d[t.company.ticker][t.year][t.quarter][3] = str(t.yesterday_price)
+        # print(d)
         return {'status': 'ok', 'earning_forecast_sp500_view': d}
     # # #
 

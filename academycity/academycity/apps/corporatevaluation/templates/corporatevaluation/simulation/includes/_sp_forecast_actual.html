@@ -28,50 +28,73 @@ function get_earning_forecast_sp500_view()
 <script>
 function create_table_for_earning_forecast_sp500(data)
 {
- first_ticker = Object.keys(data)[0]
- s_title1 = "<tr><td style='text-align:center'>Year</td>";
- s_title2 = "<tr><td style='text-align:center'>Qt</td>";
- s_title3 = "<tr><td style='text-align:center'>Ticker</td>";
+ //first_ticker = Object.keys(data)[0]
+ s_title1 = "<tr><td style='text-align:center' colspan='2'>Year</td>";
+ s_title2 = "<tr><td style='text-align:center' colspan='2'>Qt</td>";
+ s_title3 = "<tr><td>#</td><td style='text-align:center'>Ticker</td>";
  s_body = "";
- for (y in data[first_ticker])
+ var y_max = 0; var q_max = 0; var y_min = 10000; var q_min = 4;
+ for (t in data)
  {
-    nq = Object.keys(data[first_ticker][y]).length * 6
-    //alert(nq)
+     for (y in data[t])
+     {
+       if(y >= y_max){y_max = y;for (q in data[t][y]){if(q > q_max){q_max = q}}}
+       if(y <= y_min){y_min = y;for (q in data[t][y]){if(q < q_min){q_min = q}}}
+     }
+ }
+
+//alert(y_max); alert(q_max);alert(y_min); alert(q_min)
+
+ for (y = y_max; y >= y_min ; y--)
+ {
+   if(y==y_max){nq=q_max*6;q_t=q_max;q_b=1} else if (y==y_min){nq=(4-q_min+1)*6;;q_t=4;q_b=q_min} else {nq = 24;q_t=4;q_b=1}
+
+   //alert(nq)
+   //alert(q_t)
+   //alert(q_b)
+
     s_title1 += "<td colspan='"+nq+"' style='text-align:center'>" + y + "</td>"
-    for (q in data[first_ticker][y])
+
+    for (q = q_t; q >= q_b ; q--)
     {
-      //alert(q)
       s_title2 += "<td  colspan='6' style='text-align:center'>"+q+"</td>"
       s_title3 += "<td style='text-align:center'>For.</td><td style='text-align:center'>Act.</td><td style='text-align:center'>Price</td><td style='text-align:center'>Price(-1)</td><td style='text-align:center'>D</td><td style='text-align:center'>D%</td>"
     }
  }
 
+ //alert(s_title1 + s_title2 + s_title3)
+n=0
  for (t in data)
  {
-     s_body += "<tr><td onclick='set_ticker_to_valuation(event)' style='cursor:pointer;'>"+t+"</td>" ;
-     for (y in data[t])
+  n += 1
+     s_body += "<tr><td>"+n+"</td><td onclick='set_ticker_to_valuation(event)' style='cursor:pointer;'>"+t+"</td>" ;
+     for (y = y_max; y >= y_min ; y--)
      {
-        for (q in data[t][y])
+        if(y==y_max){q_t=q_max;q_b=1} else if (y==y_min){q_t=4;q_b=q_min} else {q_t=4;q_b=1}
+        for (q = q_t; q >= q_b ; q--)
         {
-          s_body += "<td>"+data[t][y][q][0]+"</td>"
-          s_body += "<td>"+data[t][y][q][1]+"</td>"
-          s_body += "<td>"+data[t][y][q][2]+"</td>"
-          s_body += "<td>"+data[t][y][q][3]+"</td>"
-          nn = parseFloat(data[t][y][q][2]) - parseFloat(data[t][y][q][3])
-          //alert(nn)
-          s_body += "<td>"+Math.round(100*nn)/100+"</td>"
-          nn = parseFloat(data[t][y][q][2])/parseFloat(data[t][y][q][3])-1
-          //alert(nn)
-          s_body += "<td>"+Math.round(10000*nn)/100+"</td>"
+            try{
+              s_body += "<td>"+data[t][y][q][0]+"</td>"
+              s_body += "<td>"+data[t][y][q][1]+"</td>"
+              s_body += "<td>"+data[t][y][q][2]+"</td>"
+              s_body += "<td>"+data[t][y][q][3]+"</td>"
+              nn = parseFloat(data[t][y][q][2]) - parseFloat(data[t][y][q][3])
+              //alert(nn)
+              s_body += "<td>"+Math.round(100*nn)/100+"</td>"
+              nn = parseFloat(data[t][y][q][2])/parseFloat(data[t][y][q][3])-1
+              //alert(nn)
+              s_body += "<td>"+Math.round(10000*nn)/100+"</td>"
+            } catch (er) {s_body += "<td></td><td></td><td></td><td></td><td></td><td></td>"}
         }
      }
  }
  s_title1 += "</tr>"
  s_title2 += "</tr>"
  s_body += "</tr>"
- s = "<table>"+s_title1 + s_title2 + s_title3 + s_body + "</table>"
+ s = "<table>"+s_title1 + s_title2 + s_title3 + s_body + "</table><br/><br/><br/><br/><br/>"
  //alert(s)
  document.getElementById("sp_forecast_actual").innerHTML = s;
+
 
 }
 </script>
