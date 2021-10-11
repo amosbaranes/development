@@ -1547,3 +1547,13 @@ class AcademyCityXBRL(object):
         for k in XBRLCountryYearData.objects.filter(year=2020).all():
             print(k.cds)
     #
+
+
+
+
+
+
+
+
+
+

@@ -5,6 +5,8 @@ var is_in_session = "False";
 function acWin(my_name_="none", win_name="none", win_title="none", width="500", height="300", right= "0%", top="0%",
   is_scroll=true, zindex=11)
 {
+
+  // create its div for window
   //alert(win_name +" : " + win_title +" width: " + width +" : " + height +" : " + right +" top: " + top)
   this.win_name = win_name
   this.my_name_ = my_name_
@@ -18,6 +20,7 @@ function acWin(my_name_="none", win_name="none", win_title="none", width="500", 
   this.win_frame.setAttribute("style", this.style_frame);
   //alert(this.win_frame.outerHTML)
 
+  // create its title for window
   this.title_height = 25
   this.win_frame_title = document.createElement("div");
   this.win_frame_title.setAttribute("id", "win_frame_title_"+this.win_name);
@@ -78,14 +81,13 @@ function acWin(my_name_="none", win_name="none", win_title="none", width="500", 
 
 acWin.prototype.set_acWinStat = function(ss)
 {
-//open and close acWin.
+    //open and close acWin.
     if (ss != this.win_frame.style.display)
     {
       var event_close_ac = new Event("click", {bubbles: true});
       this.win_frame_ico.dispatchEvent(event_close_ac)
     }
 }
-
 
 acWin.prototype.move_frame = function(pos1, pos2, pos3, pos4)
 {
@@ -96,7 +98,6 @@ acWin.prototype.move_frame = function(pos1, pos2, pos3, pos4)
   this.win_frame.style.left = (this.win_frame.offsetLeft - pos1) + "px";
   this.win_nav.style.top = this.win_frame.style.top;
 }
-
 
 acWin.prototype.set_acWinStatEventListeners = function(ss_obj)
 {

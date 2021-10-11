@@ -3,8 +3,7 @@
 
 <div id="sp_forecast_actual" class="tabcontent data">
 </div>
-
-
+<!--  get_earning_forecast_sp500_view -->
 <script>
 function get_earning_forecast_sp500_view()
 {
@@ -25,6 +24,7 @@ function get_earning_forecast_sp500_view()
 }
 </script>
 
+<!-- create_table_for_earning_forecast_sp500 -->
 <script>
 function create_table_for_earning_forecast_sp500(data)
 {
@@ -48,33 +48,28 @@ function create_table_for_earning_forecast_sp500(data)
  for (y = y_max; y >= y_min ; y--)
  {
    if(y==y_max){nq=q_max*6;q_t=q_max;q_b=1} else if (y==y_min){nq=(4-q_min+1)*6;;q_t=4;q_b=q_min} else {nq = 24;q_t=4;q_b=1}
-
-   //alert(nq)
-   //alert(q_t)
-   //alert(q_b)
-
+   //alert(nq); alert(q_t); alert(q_b)
     s_title1 += "<td colspan='"+nq+"' style='text-align:center'>" + y + "</td>"
-
     for (q = q_t; q >= q_b ; q--)
     {
-      s_title2 += "<td  colspan='6' style='text-align:center'>"+q+"</td>"
+      s_title2 += "<td  colspan='6' style='text-align:center'>"+q+"</td>";
       s_title3 += "<td style='text-align:center'>For.</td><td style='text-align:center'>Act.</td><td style='text-align:center'>Price</td><td style='text-align:center'>Price(-1)</td><td style='text-align:center'>D</td><td style='text-align:center'>D%</td>"
     }
  }
 
  //alert(s_title1 + s_title2 + s_title3)
-n=0
+  n=0
  for (t in data)
  {
   n += 1
-     s_body += "<tr><td>"+n+"</td><td onclick='set_ticker_to_valuation(event)' style='cursor:pointer;'>"+t+"</td>" ;
+     s_body += "<tr><td onclick=show_detailed_forecast_data(event) style='cursor:pointer;'>"+n+"</td><td onclick='set_ticker_to_valuation(event)' style='cursor:pointer;'>"+t+"</td>" ;
      for (y = y_max; y >= y_min ; y--)
      {
         if(y==y_max){q_t=q_max;q_b=1} else if (y==y_min){q_t=4;q_b=q_min} else {q_t=4;q_b=1}
         for (q = q_t; q >= q_b ; q--)
         {
             try{
-              s_body += "<td>"+data[t][y][q][0]+"</td>"
+              s_body += "<td y='"+y+"' q='"+q+"'>"+data[t][y][q][0]+"</td>"
               s_body += "<td>"+data[t][y][q][1]+"</td>"
               s_body += "<td>"+data[t][y][q][2]+"</td>"
               s_body += "<td>"+data[t][y][q][3]+"</td>"
@@ -94,9 +89,46 @@ n=0
  s = "<table>"+s_title1 + s_title2 + s_title3 + s_body + "</table><br/><br/><br/><br/><br/>"
  //alert(s)
  document.getElementById("sp_forecast_actual").innerHTML = s;
-
-
 }
+
+</script>
+
+<!-- show_detailed_forecast_data -->
+
+<!--
+<script href="{% static 'js/basic_pop_windows.js' %}" crossorigin="anonymous"></script>
+-->
+
+<!--  show_detailed_forecast_data  -->
+<script>
+
+function show_detailed_forecast_data(event)
+{
+ elm = event.target; //alert(elm.outerHTML)
+ pelm = elm.parentNode; //alert(pelm.outerHTML)
+ s1 = "";
+ s2 = "<tr><td>Y</td><td>Q</td><td>For.</td><td>Act.</td><td>P</td><td>P(-1)</td><td>D</td><td>D%</td></tr>";
+
+ n = 0
+ for (let i = 0; i < pelm.children.length; i++)
+ {
+  if(i==0){s1+= "<h3>" +pelm.children[i].innerHTML; continue;}
+  if(i==1){s1+= ": "+pelm.children[i].innerHTML +"</h3>"; continue;}
+  k = (i - 2 - n*6)
+  if (i==2) { var q = pelm.children[i].getAttribute("q"); y = y = pelm.children[i].getAttribute("y");}
+  if(k>5){k=0; y = pelm.children[i].getAttribute("y"); q = pelm.children[i].getAttribute("q");n+=1 }
+
+  if (y != null) {
+   if(k==0){ s2 += "<tr><td>" + y + "</td><td>" + q + "</td>"}
+   s2+="<td>"+pelm.children[i].innerHTML+"</td>"
+   if(k==5){s2 += "</tr>"}
+  }
+ }
+ s_all = s1 + "<table>" +  s2 + "</table>"
+ //alert(s_all)
+ ef.set_info_by_ticker(s_all)
+}
+
 </script>
 
 <script>
@@ -108,4 +140,13 @@ function set_ticker_to_valuation(event)
  var event = new Event("change", {bubbles: true}); search_ticker.dispatchEvent(event);
 }
 </script>
+
+
+
+
+
+
+
+
+
 
