@@ -747,7 +747,31 @@ class AcademyCityXBRL(object):
                         pass
             log_debug("End Processing file: " + file)
 
+    def get_next_relealse_date(self, cell):
+        # print(cell)
+        # print(cell.find('a'))
+        # print(cell.find('a')['href'])
+        url = cell.find('a')['href']
+        url = "https://www.investing.com/" + url
+        # print(url)
+        id_ = "earningsHistory" + cell['_r_pid']
+        # print(id_)
+        headers = {'User-Agent': 'amos@drbaranes.com'}
+        sp_resp = requests.get(url, headers=headers, timeout=30)
+        sp_str = sp_resp.text
+        soup = BeautifulSoup(sp_str, 'html.parser')
+        table_tag = soup.find('table', id=id_)
+        # print(table_tag)
+        tbody_tag = table_tag.find('tbody')
+        try:
+            date_str = tbody_tag.find_all('tr')[0]['event_timestamp']
+            # print(date_str)
+        except Exception as ex:
+            print("Error 105")
+        return date_str
+
     def get_earning_forecast_sp500(self):
+        # print('get_earning_forecast_sp500')
         sp_tickers = self.get_sp500()['sp_tickers']
         headers = {'User-Agent': 'amos@drbaranes.com'}
         url = "https://www.investing.com/earnings-calendar/"
@@ -766,30 +790,37 @@ class AcademyCityXBRL(object):
         tbody_tag = table_tag.find('tbody')
         try:
             rows = tbody_tag.find_all('tr')
-        except Exception as ex:
-            return print("Error 1")
-        for row in rows:
-            try:
-                cells = row.find_all('td')
-                if len(cells) > 3:
-                    if cells[2].text != '--':
+            for row in rows:
+                try:
+                    cells = row.find_all('td')
+                    # print(row)
+                    if len(cells) > 3:
+                        # print('row 3')
+                        # if cells[2].text != '--':
                         ticker = cells[1].find('a').text
+                        # print(ticker)
                         if ticker in sp_tickers:
-                            actual = cells[2].text
-                            forecast = cells[3].text.split('/')[1].lstrip()
-                            company = XBRLCompanyInfo.objects.get(ticker=ticker)
+                            # print('ticker in sp')
+                            # print(ticker)
                             year = date_.year
                             quarter = math.ceil(date_.month / 3)
+                            company = XBRLCompanyInfo.objects.get(ticker=ticker)
                             ef, ct = XBRLSPEarningForecast.objects.get_or_create(company=company, year=year,
                                                                                  quarter=quarter)
-                            ef.forecast = forecast
-                            ef.actual = actual
-                            ef.date = date_
-                            ef.save()
-                            self.get_ticker_prices(earning_forecast=ef)
-            except Exception as ex:
-                # pass
-                print(ex)
+                            if cells[2].text != '--':
+                                actual = cells[2].text
+                                forecast = cells[3].text.split('/')[1].lstrip()
+                                ef.forecast = forecast
+                                ef.actual = actual
+                                ef.date = date_
+                                next_release_date = self.get_next_relealse_date(cells[1])
+                                ef.next_release_date = next_release_date
+                                ef.save()
+                                self.get_ticker_prices(ef)
+                except Exception as ex:
+                    print("error 102: " + str(ex))
+        except Exception as ex:
+            return print("Error 101")
         dic = {'status': 'ok'}
         return dic
 
@@ -930,7 +961,7 @@ class AcademyCityXBRL(object):
 
         except Exception as ex:
             pass
-            # print('error 1: '+str(ex))
+            # print('error 108: '+str(ex))
         return {'status': 'ok', 'id': company_id, 'company_name': company_name_}
 
     def clean_data_for_all_companies(self):
@@ -976,7 +1007,7 @@ class AcademyCityXBRL(object):
                 company.sic = sic0
                 company.save()
             except Exception as ex:
-                # print('error 1: '+str(ex))
+                # print('error 106: '+str(ex))
                 company.is_error = True
                 company.message = "Can not get CIK or SIC: " + str(ex)
                 company.cik = ''
@@ -1074,7 +1105,7 @@ class AcademyCityXBRL(object):
         try:
             XBRLCompanyInfoInProcess.truncate()
         except Exception as ex:
-            print("Error 1:  " + str(ex))
+            print("Error 107:  " + str(ex))
 
         # print('done collecting data on companies')
 

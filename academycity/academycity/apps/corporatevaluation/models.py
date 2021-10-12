@@ -997,6 +997,7 @@ class XBRLSPEarningForecast(TruncateTableMixin, models.Model):
     forecast = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     actual = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     date = models.DateField(blank=True, null=True)
+    next_release_date = models.DateField(blank=True, null=True)
     year = models.PositiveSmallIntegerField(default=datetime.datetime.now().year, blank=True)
     quarter = models.PositiveSmallIntegerField(default=math.ceil(datetime.datetime.now().month / 3), blank=True)
     today_price = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)

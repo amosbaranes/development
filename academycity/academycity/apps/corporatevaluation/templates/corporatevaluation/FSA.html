@@ -18,6 +18,7 @@ sum_category01 = function(list_, t0, t1)
     {value0 += parseInt(eval(account+"0").innerHTML); value1 += parseInt(eval(account+"1").value);}
     t0.innerHTML = value0; t1.innerHTML = value1;
 }
+
 sum_category1 = function(list_, t1)
 {
     var value1 = 0;
@@ -40,11 +41,11 @@ sum_category_cf1 = function(list_, t1)
 {var value1 = 0; for (let account of list_){value1 += parseInt(eval(account+"1").innerHTML);}; t1.innerHTML = value1;}
 
 </script>
+
 <!-- re_calculate -->
 <script>
 re_calculate = function (event)
 {
-    //elm = event.target
     let accounts01 = ['cash', 'inventory', 'account_receivables', 'other_current_assets', 'total_current_assets',
                        'ppe', 'accumulated_depreciation', 'subsidiaries', 'intangibles', 'total_long_term_assets',
                        'total_assets',
@@ -55,7 +56,6 @@ re_calculate = function (event)
       eval(account+"1 = document.getElementById('"+account+"1')");
       eval(account+"0 = document.getElementById('"+account+"0')");
     }
-
     let accounts1 = ['revenue', 'cofgs', 'depreciation_is', 'gross_profit', 'sales_marketing', 'general_administrative',
                      'income_before_taxes', 'taxes', 'interest', 'net_income_is',
                      'net_income_cf', 'depreciation_cf', 'wc', 'cf_operation',
@@ -63,6 +63,20 @@ re_calculate = function (event)
                      'common_stock_cf', 'ltd_cf', 'dividend_cf', 'financing_activities_cf', 'change_in_cash_cf',
                      'retained_earning_bre1', 'retained_earning_ere1', 'net_income_is_re', 'dividend'];
     for (const account of accounts1){eval(account+"1 = document.getElementById('"+account+"1')");}
+
+    let gross_profit = ['revenue', 'cofgs', 'depreciation_is']; sum_category1(gross_profit, gross_profit1)
+    let ebit = ['sales_marketing', 'general_administrative'];  sum_category_net1(gross_profit1, ebit, ebit1)
+    let interest = ['interest'];  sum_category_net1(ebit1, interest, income_before_taxes1)
+    let taxes = ['taxes'];  sum_category_net1(income_before_taxes1, taxes, net_income_is1)
+    //
+    retained_earning_bre1.innerHTML = retained_earning0.innerHTML
+    net_income_is_re1.innerHTML = net_income_is1.innerHTML
+    retained_earning_ere1.innerHTML = parseInt(retained_earning_bre1.innerHTML)+parseInt(net_income_is_re1.innerHTML)+parseInt(dividend1.value)
+    retained_earning1.innerHTML = retained_earning_ere1.innerHTML
+    //
+    sum_category_net1(retained_earning1, ['common_stock'], total_equity1)
+   retained_earning1.value = net_income_is1.innerHTML
+
 
     let total_current_assets = ['cash', 'inventory', 'account_receivables', 'other_current_assets'];
     sum_category01(total_current_assets, total_current_assets0, total_current_assets1)
@@ -79,18 +93,7 @@ re_calculate = function (event)
     //let total_equity = ['common_stock','retained_earning'];
     //sum_category01(total_equity, total_equity0, total_equity1)
 
-    let gross_profit = ['revenue', 'cofgs', 'depreciation_is']; sum_category1(gross_profit, gross_profit1)
-    let ebit = ['sales_marketing', 'general_administrative'];  sum_category_net1(gross_profit1, ebit, ebit1)
-    let interest = ['interest'];  sum_category_net1(ebit1, interest, income_before_taxes1)
-    let taxes = ['taxes'];  sum_category_net1(income_before_taxes1, taxes, net_income_is1)
-    //
-    retained_earning_bre1.innerHTML = retained_earning0.innerHTML
-    net_income_is_re1.innerHTML = net_income_is1.innerHTML
-    retained_earning_ere1.innerHTML = parseInt(retained_earning_bre1.innerHTML)+parseInt(net_income_is_re1.innerHTML)+parseInt(dividend1.value)
-    retained_earning1.innerHTML = retained_earning_ere1.innerHTML
-    //
-    sum_category_net1(retained_earning1, ['common_stock'], total_equity1)
-
+    // --
     sum_category_html(retained_earning0, ['common_stock'], total_equity0, year="0")
     total_liabilities_equity0.innerHTML = parseInt(total_liabilities0.innerHTML) + parseInt(total_equity0.innerHTML)
     total_liabilities_equity1.innerHTML = parseInt(total_liabilities1.innerHTML) + parseInt(total_equity1.innerHTML)
@@ -129,24 +132,28 @@ re_calculate = function (event)
 <script>
 new_company = function (c)
 {
- let accounts01 = ['cash', 'inventory', 'account_receivables', 'other_current_assets', 'total_current_assets',
+    let accounts01_nc = ['cash', 'inventory', 'account_receivables', 'other_current_assets', 'total_current_assets',
                    'ppe', 'accumulated_depreciation', 'subsidiaries', 'intangibles', 'total_long_term_assets',
                    'total_assets',
                    'current_liabilities', 'long_term_liabilities', 'total_liabilities',
                    'common_stock','retained_earning', 'total_equity' , 'total_liabilities_equity'
                   ];
-    for (const account of accounts01){
-     s0 = account + "0.innerHTML = 0"; eval(s0);
-     s1 = account + "1.value = 0";eval(s1);
-     s10 = account+"1.innerHTML = 0";eval(s10);
-    }
-    let accounts1 = ['revenue', 'cofgs', 'depreciation_is', 'sales_marketing', 'general_administrative',
+
+    for (const account of accounts01_nc){
+                     s0 = account + "0.innerHTML = 0"; eval(s0);
+                     s1 = account + "1.value = 0";eval(s1);
+                     s10 = account+"1.innerHTML = 0";eval(s10);}
+
+    let accounts1_nc = ['revenue', 'cofgs', 'depreciation_is', 'sales_marketing', 'general_administrative',
                      'taxes', 'interest', 'dividend'];
-    for (const account of accounts1){s1 = account + "1.value = 0"; eval(s1)}
-    let accounts0 = ['gross_profit', 'income_before_taxes', 'net_income_is', 'retained_earning_bre',
+    for (const account of accounts1_nc){s1 = account + "1.value = 0"; eval(s1)}
+
+    let accounts0_nc = ['gross_profit', 'income_before_taxes', 'net_income_is', 'retained_earning_bre',
                      'retained_earning_ere', 'net_income_is_re'];
-    for (const account of accounts0) {s0 = account + "1.innerHTML = 0"; eval(s0);}
-    re_calculate()
+    for (const account of accounts0_nc) {s0 = account + "1.innerHTML = 0"; eval(s0);}
+
+    re_calculate();
+
     if (c==0)
     {
         as_ = document.querySelectorAll('[ac]')
@@ -154,7 +161,10 @@ new_company = function (c)
         for (i in as_)
         {
           a = as_[i].getAttribute("ac")
-          if(a==1){as_[i].dispatchEvent(event);}
+          if(a==1)
+          {
+            as_[i].dispatchEvent(event);
+          }
         }
     }
 }
@@ -184,8 +194,6 @@ case_studies = function (event)
    eval(sa)
    }
 
-   re_calculate()
-   retained_earning1.value = net_income_is1.innerHTML
    re_calculate()
 }
 </script>
@@ -572,12 +580,28 @@ case_studies = function (event)
                    </a>
                 </td>
             </tr>
+            <tr><td class="account">
+                    <a href="#" class="btn btn-sm btn-info" ac="1" style="background-color:#3366ff"
+                     account="{'cash1': 100, 'ppe1': -100}">
+                     16.&nbsp;<i class="fa fa-file-o" style="font-size:15px;color:white;"
+                     account="{'cash1': -400, 'ppe1': 400}"></i> {% trans "sale PP&E 100" %}
+                   </a>
+                </td>
+                <td class="side">
+                    <a href="#" class="btn btn-sm btn-info" style="background-color:#3366ff"
+                     account="{'cash1': -100, 'ppe1': 100}">
+                     <i class="fa fa-remove" style="font-size:12px;color:red"
+                     account="{'cash1': 400, 'ppe1': -400}"></i>
+                   </a>
+                </td></tr>
+
 <!--9) account for depreciation-->
 <!--8) pay taxes-->
 <!--10) Distribute dividend-->
         </tbody>
     </table>
   </div>
+
 </div>
 <br/><br/>
 {% endblock content %}

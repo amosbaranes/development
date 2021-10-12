@@ -6,7 +6,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 
 def start():
     scheduler = BackgroundScheduler()
-    scheduler.add_job(update_forecast, 'interval', minutes=15, id='update_earning_forecast')
+    scheduler.add_job(update_forecast, 'interval', minutes=60, id='update_earning_forecast')
     scheduler.start()
 
 
@@ -19,7 +19,8 @@ def update_forecast():
             # and (h == 23 or h == 16)
             acx = AcademyCityXBRL()
             acx.get_earning_forecast_sp500()
-    except:
-        pass
+            del acx
+    except Exception as ex:
+        print(ex)
 
 
