@@ -873,15 +873,20 @@ class AcademyCityXBRL(object):
         for t in XBRLSPEarningForecast.objects.all():
             if t.company.ticker not in d:
                 d[t.company.ticker] = {}
+            new_ticker = False
             if t.year not in d[t.company.ticker]:
                 d[t.company.ticker][t.year] = {}
+                new_ticker = True
             if t.quarter not in d[t.company.ticker][t.year]:
                 d[t.company.ticker][t.year][t.quarter] = ['f', 'a', 'p', '-p']
             d[t.company.ticker][t.year][t.quarter][0] = str(t.forecast)
             d[t.company.ticker][t.year][t.quarter][1] = str(t.actual)
             d[t.company.ticker][t.year][t.quarter][2] = str(t.today_price)
             d[t.company.ticker][t.year][t.quarter][3] = str(t.yesterday_price)
-        # print(d)
+            if new_ticker:
+                d[t.company.ticker][t.year][t.quarter].append(str(t.next_release_date))
+
+        print(d)
         return {'status': 'ok', 'earning_forecast_sp500_view': d}
     # # #
 
