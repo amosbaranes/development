@@ -21,7 +21,7 @@ from .models import (RBOIC, CountryRegion, CountryRating, Country, GlobalIndustr
 
 from ..core.sql import SQL
 from ..webcompanies.WebCompanies import WebSiteCompany
-from .xbrl_obj import AcademyCityXBRL
+from .xbrl_obj import AcademyCityXBRL, TDAmeriTrade
 import datetime
 import requests
 from bs4 import BeautifulSoup
@@ -464,6 +464,22 @@ def update_data(request):
 #     return dic
 
 
+def tdameritrade_setup(request):
+    try:
+        fun_ = request.POST.get('fun')
+        # print(fun_)
+        try:
+            # print('TDAmeriTrade().' + fun_ + '()')
+            dic = eval('TDAmeriTrade().' + fun_ + '()')
+            # print(dic)
+        except Exception as ex:
+            dic = eval(fun_+'(request)')
+        return JsonResponse(dic)
+
+    except Exception as ex:
+        return JsonResponse({'status': 'error: '+str(ex)})
+
+
 def admin_setup(request):
     try:
         fun_ = request.POST.get('fun')
@@ -804,7 +820,7 @@ def get_data_ticker(request):
     ticker_ = request.POST.get('ticker')
     is_update_ = request.POST.get('is_update')
     acx = AcademyCityXBRL()
-    data = acx.get_data_for_cik(cik=ticker_, type='10-K', is_update=is_update_)
+    data = acx.get_data_ticker(cik=ticker_, type_='10-K', is_update=is_update_, request=request)
     request.session['cv_statements'] = data['statements']
     return JsonResponse(data)
 
@@ -889,9 +905,9 @@ def onchange_account(request):
 
         dic = {'status': 'ok', 'matching_accounts': matching_accounts}
 
-        print('dic matching_accounts')
-        print(dic)
-        print('dic matching_accounts')
+        # print('dic matching_accounts')
+        # print(dic)
+        # print('dic matching_accounts')
         return JsonResponse(dic)
 
     except Exception as ex:

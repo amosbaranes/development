@@ -66,7 +66,6 @@
     </div>
     <br/>
     <div>
-
       <!--  Beta by industries  -->
 <!--        beta source: https://www.zacks.com/stock/chart/aap/fundamental/beta -->
       <button onclick="add_industry_beta()">{% trans "Add Industry Beta" %}</button>
@@ -172,6 +171,7 @@ function cofe_business_fun(event)
 }
 </script>
 
+<!-- ticker_onchange(event) -->
 <script>
 
 function ticker_onchange(event)
@@ -221,168 +221,112 @@ function ticker_onchange(event)
     var evt = new Event("change", {bubbles: true});elm.dispatchEvent(evt);
   }
 }
+</script>
 
-
-function companies_on_input(event)
-{
-  e = event.target
-  var x = e.value;
-}
-
-
-function valuation_year_fun(event)
-{
-  //alert('valuation_year_fun 1')
-  e = event.target
-  value = e.options[e.selectedIndex].value
-  vObj["valuation_year"] = value
-  calculate_all()
-}
-
-// pick a country
-// vObj["country_tax_rate"] = s[0]*100
-// vObj["country_rating"] = s[1]
-// vObj["country_default_spread"] = s[2]*100
-
-function countries_fun(event)
-{
-
-//data='{{ cd.tax_rate }}_
-//{{ cd.moodys_rate_completed_by_sp }}_
-//{{ cd.rating_based_default_spread }}_
-//{{ cd.country_risk_premium_rating }}
-
-
-  //alert('countries_fun 1')
-  e = event.target
-  eo = e.options[e.selectedIndex]
-  value = eo.getAttribute('data')
-  var s = value.split("_");
-  marginal_tax_rate = s[0];
-  //--
-  //vObj["country_tax_rate"] = s[0]*100
-  //vObj["country_rating"] = s[1]
-  //vObj["country_default_spread"] = s[2]*100
-  //--
-  document.getElementById('country_rating').innerHTML = s[1]
-  document.getElementById('country_default_spread').innerHTML = s[2]
-  document.getElementById('country_tax_rate').innerHTML = s[0]
-  document.getElementById('country_risk_premium_rating').innerHTML = s[3]
-
-  document.getElementById('cofe_ads').innerHTML = s[2]
-  document.getElementById('marginal_tax_rate_').value = s[0]
-  calculate_all()
-}
-
-
+<!-- companies_fun(event) -->
+<script>
 function companies_fun(event)
 {
-    //var evt = new Event("click", {bubbles: true});sm.TabObjects["data"].tabTitle.dispatchEvent(evt);
-    //
     e = event.target
     id_ = e.options[e.selectedIndex].value
+    ticker_ = e.options[e.selectedIndex].getAttribute("ticker")
+    //document.getElementById('search_ticker').value = "";
+    document.getElementById('search_ticker').value = ticker_;
+    //alert(ticker_)
     //alert(id_)
+    vObj["ticker"] = ticker_;
     vObj["accounts_chosen"] = []
+
+    // From FinDynamic
     $.post('{% url "corporatevaluation:get_company_detail" %}',
           {
             id: id_,
           },
           function(data){
                 vObj["sec_company_data"][id_] = data
-                // in data
+                // in this tab
                 try{ set_data(data);}
                 catch(err){sm.TabObjects["data"].tabDoc.innerHTML = "We did not collect data from FinDynamic. Downloading data from SEC."}  // in data tab
 
-                vObj["ticker"] = data['ticker'];
-                vObj["sic_code"] = data['sic_code'];
-                vObj["sic_description"] = data['sic_description'];
-                //document.getElementById('ticker_').innerHTML = data['ticker'];
-
-                document.getElementById('search_ticker').value = "";
-                document.getElementById('search_ticker').value = data['ticker'];
-                document.getElementById('sic_code_').innerHTML = data['sic_code'];
-                document.getElementById('industries').value = data['sic_code'];
-                document.getElementById('countries').value = data['country_id'];
-
                 var event = new Event("change", {bubbles: true});
                 document.getElementById('countries').dispatchEvent(event);
-                console.log("companies_fun: ", "before get_data_ticker")
-
-                get_data_ticker();  // see below
-
-                console.log("companies_fun: ", "222")
         });
-}
 
-
-function industries_fun_(value)
-{
-  var sic_code_ = value;
-  vObj["sic_code"] = value;
-    $.post('{% url "corporatevaluation:get_industry_detail" %}',
-      {
-        sic_code: sic_code_,
-      },
-      function(data){
-        var output = document.getElementById("companies")
-        output.innerHTML = '';
-        var ss = data["status"]
-        arr = ss.split("[+]")
-        //alert(arr[1])
-        for ( kk in arr)
-        {
-        //alert(arr[kk])
-        ar = arr[kk].split(";")
-        //alert(ar[0])
-        //alert(ar[1])
-            var option = document.createElement("option");
-            //alert(option.outerHTML)
-            option.text = ar[1];
-            option.value = ar[0];
-            //alert(option.outerHTML)
-            output.add(option);
-            }
-        //alert(output.outerHTML)
-      }
-    );
-}
-
-function industries_fun(event)
-{
-  e = event.target
-  value = e.options[e.selectedIndex].value
-  industries_fun_(value)
-}
-
-</script>
-<!--  create_valuation_year  -->
-<script>
-// create list of years for valuation
-// ----------------------------------
-function create_valuation_year()
-{
-    var output = document.getElementById("valuation_year")
-    this_year = new Date().getFullYear();
-    this_year -= 1
-    vObj["valuation_year"] = this_year
-    var option = document.createElement("option");
-    for(var i = this_year; i > 2016 ; i--)
-    {
-        var option = document.createElement("option");
-        option.text = i;
-        option.value = i;
-        output.add(option);
+     // From our system of data collection
+     if(!vObj["sec_company_data"][ticker_]){vObj["sec_company_data"][ticker_]={}}
+     console.log("get_data_ticker: ", "before post get_data_ticker");
+     if(vObj["sec_company_data"][ticker_]['company_info'])
+     {
+        process_get_data_ticker(vObj["sec_company_data"][ticker_]['company_info'])
+     } else {
+         $.post('{% url "corporatevaluation:get_data_ticker" %}',
+          {
+            ticker: ticker_,
+            accounting_principle: 'us-gaap',
+            is_update : vObj["is_update"],
+          },
+          function(data){
+                process_get_data_ticker(data)
+                vObj["sec_company_data"][ticker_]['company_info'] = data
+          });
+     }
+        console.log("get_data_ticker: ", "in post get_data_ticker 55")
     }
-    output.value = this_year
-    vObj["short_number_of_years"] = 1*document.getElementById("duration_of_st_period_").value
-}
+
 </script>
 
-<!--  For valuationsetup  -->
+<!-- set_data(data) It is pulling data from FinDynamics-->
 <script>
+function set_data(data)
+{
+    vObj["sic_code"] = data['sic_code'];
+    vObj["sic_description"] = data['sic_description'];
+    //document.getElementById('ticker_').innerHTML = data['ticker'];
 
+    document.getElementById('sic_code_').innerHTML = data['sic_code'];
+    document.getElementById('industries').value = data['sic_code'];
+    document.getElementById('countries').value = data['country_id'];
+    // -----------
+    cd = data['company_data'];
+    vObj["cd"] = cd;
+    sy = "<thead><tr id='fs_years_data'><th>Account</th>"
+    z = 0
+    for (y in cd)
+    {
+     z += 1;
+     if(z==1)
+     {
+      for (a in cd[y])
+      {
+        s = a + "= \"<tr><td class='account'>"+cd[y][a][1]+"</td>\""; eval(s);
+      }
+     }
+     sy += "<th><a id='xbrl_data_"+y+"' href='#'>"+y+"</th>"
+     for (a in cd[y])
+     {
+       s = a + "+= get_account('"+a+"', y, cd)"; eval(s);
+     }
+    }
+    st = "<table id='data'>"+sy+"</tr></thead>"
+    ss = ""
+    for (a in cd[y])
+    {
+      ss += "st+=" + a + " + '</tr>'; "
+    }
+    eval(ss)
+    st += "</table><br/><br/><br/><br/><br/>";
+    s_yf_http = "https:\/\/finance.yahoo.com\/quote\/" + data['ticker'] + "\/financials?p=" + data['ticker']
+    st='<div><a id="fy_link" href="'+ s_yf_http +'" target="_blank"> Yahoo Finance</a></div><br/>'+st;
+    sm.TabObjects["data"].tabDoc.innerHTML = st
+}
+
+</script>
+
+<!-- process_get_data_ticker(data) -->
+<script>
 function process_get_data_ticker(data)
 {
+    // --------------
     var d = document.getElementById('valuationsetup_xbrl_data')
     console.log("get_data_ticker: ", "in post get_data_ticker 1")
 
@@ -464,29 +408,138 @@ function process_get_data_ticker(data)
     calculate_all()
     // --
 }
+</script>
 
+<!-- get_data_ticker()
+  This has to be deleted -->
+<script>
 
 function get_data_ticker()
 {
- ticker_ = vObj["ticker"];
- if(!vObj["sec_company_data"][ticker_]){vObj["sec_company_data"][ticker_]={}}
- console.log("get_data_ticker: ", "before post get_data_ticker");
- if(vObj["sec_company_data"][ticker_]['company_info'])
- {
-    process_get_data_ticker(vObj["sec_company_data"][ticker_]['company_info'])
- } else {
-     $.post('{% url "corporatevaluation:get_data_ticker" %}',
-      {
-        ticker: ticker_,
-        accounting_principle: 'us-gaap',
-        is_update : vObj["is_update"],
-      },
-      function(data){
-            process_get_data_ticker(data)
-            vObj["sec_company_data"][ticker_]['company_info'] = data
-      });
- }
-    console.log("get_data_ticker: ", "in post get_data_ticker 55")
+  alert("data function move.  I should not see this message")
 }
 
 </script>
+
+
+<!-- industries_fun_(value) -->
+<script>
+function industries_fun_(value)
+{
+  var sic_code_ = value;
+  vObj["sic_code"] = value;
+    $.post('{% url "corporatevaluation:get_industry_detail" %}',
+      {
+        sic_code: sic_code_,
+      },
+      function(data){
+        var output = document.getElementById("companies")
+        output.innerHTML = '';
+        var ss = data["status"]
+        arr = ss.split("[+]")
+        //alert(arr[1])
+        for ( kk in arr)
+        {
+        //alert(arr[kk])
+        ar = arr[kk].split(";")
+        //alert(ar[0])
+        //alert(ar[1])
+            var option = document.createElement("option");
+            //alert(option.outerHTML)
+            option.text = ar[1];
+            option.value = ar[0];
+            //alert(option.outerHTML)
+            output.add(option);
+            }
+        //alert(output.outerHTML)
+      }
+    );
+}
+
+function industries_fun(event)
+{
+  e = event.target
+  value = e.options[e.selectedIndex].value
+  industries_fun_(value)
+}
+
+</script>
+
+<script>
+function companies_on_input(event)
+{
+  e = event.target
+  var x = e.value;
+}
+
+
+function valuation_year_fun(event)
+{
+  //alert('valuation_year_fun 1')
+  e = event.target
+  value = e.options[e.selectedIndex].value
+  vObj["valuation_year"] = value
+  calculate_all()
+}
+
+// pick a country
+// vObj["country_tax_rate"] = s[0]*100
+// vObj["country_rating"] = s[1]
+// vObj["country_default_spread"] = s[2]*100
+
+function countries_fun(event)
+{
+
+//data='{{ cd.tax_rate }}_
+//{{ cd.moodys_rate_completed_by_sp }}_
+//{{ cd.rating_based_default_spread }}_
+//{{ cd.country_risk_premium_rating }}
+
+
+  //alert('countries_fun 1')
+  e = event.target
+  eo = e.options[e.selectedIndex]
+  value = eo.getAttribute('data')
+  var s = value.split("_");
+  marginal_tax_rate = s[0];
+  //--
+  //vObj["country_tax_rate"] = s[0]*100
+  //vObj["country_rating"] = s[1]
+  //vObj["country_default_spread"] = s[2]*100
+  //--
+  document.getElementById('country_rating').innerHTML = s[1]
+  document.getElementById('country_default_spread').innerHTML = s[2]
+  document.getElementById('country_tax_rate').innerHTML = s[0]
+  document.getElementById('country_risk_premium_rating').innerHTML = s[3]
+
+  document.getElementById('cofe_ads').innerHTML = s[2]
+  document.getElementById('marginal_tax_rate_').value = s[0]
+  calculate_all()
+}
+
+
+</script>
+
+<!--  create_valuation_year()  -->
+<script>
+// create list of years for valuation
+// ----------------------------------
+function create_valuation_year()
+{
+    var output = document.getElementById("valuation_year")
+    this_year = new Date().getFullYear();
+    this_year -= 1
+    vObj["valuation_year"] = this_year
+    var option = document.createElement("option");
+    for(var i = this_year; i > 2016 ; i--)
+    {
+        var option = document.createElement("option");
+        option.text = i;
+        option.value = i;
+        output.add(option);
+    }
+    output.value = this_year
+    vObj["short_number_of_years"] = 1*document.getElementById("duration_of_st_period_").value
+}
+</script>
+

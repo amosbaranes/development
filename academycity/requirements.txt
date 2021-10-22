@@ -94,7 +94,7 @@ dropbox==9.4.0
 easy-thumbnails==2.7
 et-xmlfile==1.0.1
 eventkit==0.8.5
-flower==0.9.3
+flower
 gunicorn==20.0.4
 hiredis==1.1.0
 # html5lib==1.1
@@ -142,7 +142,7 @@ sqlparse==0.4.1
 text-unidecode==1.2
 tinycss2
 toml==0.10.0
-tornado==5.1.1
+tornado>=6.1
 
 txaio==20.4.1
 tzlocal==2.1
@@ -180,3 +180,6 @@ xlsxwriter
 apscheduler
 #
 django-recaptcha
+#
+# splinter
+#

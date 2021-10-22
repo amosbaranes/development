@@ -20,9 +20,10 @@ from ..webcompanies.WebCompanies import WebSiteCompany
 
 
 def home(request):
+    # print('partners home0: ')
     # log_debug('partners home0: ')
     host = request.META["HTTP_HOST"]
-    log_debug('partners host: ' + host)
+    # log_debug('partners host: ' + host)
     host = host.split(':')[0]
     # log_debug('partners host1: ' + host)
     host_s = host.split('.')
@@ -45,22 +46,24 @@ def home(request):
     # print(host_)
     # print('host_')
 
+    # print('partners home1: ')
     try:
-        log_debug('try1: ' + host_)
+        # log_debug('try1: ' + host_)
         wsc = WebSiteCompany(request, host_)
         if wsc.is_registered_domain():
             # print('wsc.is_registered_domain():wsc.is_registered_domain()')
             return wsc.get_redirect_link()
     except Exception as ex:
-        log_debug('exception Partners:home error: ' + str(ex))
+        # log_debug('exception Partners:home error: ' + str(ex))
+        pass
 
     # if host_ == "ugandatowns":
     #     if town:
     #         return HttpResponseRedirect(reverse('ugandatowns:town', kwargs={'town': town}))
     #     return HttpResponseRedirect(reverse('ugandatowns:ut_login_page'))
 
-    user_counter = 100
     try:
+        user_counter = 100
         user_counter = r.incr('user:{}:views'.format(request.user.id))
         # print('='*100)
         # print(request.user.id, user_counter)
@@ -71,15 +74,19 @@ def home(request):
         # print("e0-"*50)
         # print(ex)
         # print("e1-"*50)
+
+    # print('partners home2: ')
+
     partners = Partners.objects.all().order_by('order')
     # user_ranking = ranking()
+    # print('partners home21: ')
 
     form_class = LoginForm
     form_signup = SignupForm
     redirect_field_name = "next"
     current_site = get_current_site(request)
 
-    home_test = 'hometest'
+    # print('partners home3: ')
     return render(request, 'partners/home.html', {'host': host, 'host_': host_, 'town': town,
                                                   'current_site': current_site,
         'partners': partners,

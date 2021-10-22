@@ -329,7 +329,11 @@ class CompanyData(TruncateTableMixin, models.Model):
 
     @property
     def short_term_reinvestment_rate(self):
-        return float(self.short_term_growth)/float(self.short_term_roic_based_on_n_years)  # need to complete
+        try:
+            nn = float(self.short_term_growth)/float(self.short_term_roic_based_on_n_years)
+        except Exception as ex:
+            nn = float("NaN")
+        return nn  # need to complete
 
     @property
     def long_term_growth(self):
@@ -407,7 +411,7 @@ class Project(TruncateTableMixin, TranslatableModel):
     volatility_ratio = models.DecimalField(max_digits=8, decimal_places=4, default=1.50)
     rf = models.DecimalField(max_digits=8, decimal_places=4, default=0.02)
     #
-    dic_data = models.JSONField(null=True)
+    dic_data = models.JSONField(null=True)   # relate to risk premium
     #
 
     translations = TranslatedFields(
@@ -983,6 +987,7 @@ class XBRLSPMoodys(TruncateTableMixin, models.Model):
 #
 #     country = models.ForeignKey(XBRLCountry, on_delete=models.CASCADE, default=None, blank=True, null=True)
 #
+    # parent = models.ForeignKey('self', on_delete=models.CASCADE, related_name='children', default=1)
 
 
 class XBRLSPEarningForecast(TruncateTableMixin, models.Model):
@@ -1002,4 +1007,57 @@ class XBRLSPEarningForecast(TruncateTableMixin, models.Model):
     quarter = models.PositiveSmallIntegerField(default=math.ceil(datetime.datetime.now().month / 3), blank=True)
     today_price = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     yesterday_price = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+
+
+# -- Business Intelligence --
+# -- The Accounting Cube --
+class XBRLDimCompany(TruncateTableMixin, models.Model):
+    class Meta:
+        verbose_name = _('XBRL Dim Company Info')
+        verbose_name_plural = _('XBRL Dim Companies Info')
+        ordering = ['main_sic_code', 'sic_code', 'company_name']
+    #
+    main_sic_code = models.PositiveSmallIntegerField()
+    main_sic_description = models.CharField(max_length=128, default='', blank=True, null=True)
+    sic_code = models.PositiveSmallIntegerField()
+    sic_description = models.CharField(max_length=128, default='', blank=True, null=True)
+    exchange = models.CharField(max_length=10, default='nyse')
+
+    ticker = models.CharField(max_length=10, null=False)
+    cik = models.CharField(max_length=10, null=True)
+    company_name = models.CharField(max_length=128, default='', blank=True, null=True)
+
+
+class XBRLDimTime(TruncateTableMixin, models.Model):
+    class Meta:
+        verbose_name = _('XBRL Dim Time')
+        verbose_name_plural = _('XBRL Dim Time')
+        ordering = ['year', 'quarter']
+    #
+    year = models.PositiveSmallIntegerField(default=0)
+    quarter = models.PositiveSmallIntegerField(default=0)
+
+
+class XBRLDimAccount(TruncateTableMixin, models.Model):
+    class Meta:
+        verbose_name = _('XBRL Dim Account')
+        verbose_name_plural = _('XBRL Dim Account')
+        ordering = ['statement_order', 'order']
+    #
+    statement_order = models.PositiveSmallIntegerField(default=0)
+    statement = models.CharField(max_length=250, default='Income Statement')
+    order = models.PositiveSmallIntegerField(default=0)
+    account = models.CharField(max_length=250, null=True)
+    parent = models.PositiveIntegerField(default=1)
+
+
+class XBRLFactCompany(TruncateTableMixin, models.Model):
+    class Meta:
+        verbose_name = _('XBRL Fact')
+        verbose_name_plural = _('XBRL Facts')
+
+    company = models.ForeignKey(XBRLDimCompany, on_delete=models.CASCADE, default=None, related_name='dim_companies')
+    time = models.ForeignKey(XBRLDimTime, on_delete=models.CASCADE, default=None, related_name='dim_times')
+    account = models.ForeignKey(XBRLDimAccount, on_delete=models.CASCADE, default=None, related_name='dim_companies')
+    amount = models.IntegerField(default=0)
 

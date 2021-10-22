@@ -9,6 +9,7 @@ from django.conf import settings
 import pandas as pd
 import string
 import datetime
+import time
 from datetime import timedelta
 from django.db.models import Q
 from concurrent.futures import ThreadPoolExecutor
@@ -28,20 +29,104 @@ from ..core.utils import log_debug, clear_log_debug
 
 from django.db.models import Avg
 from .models import (XBRLMainIndustryInfo, XBRLIndustryInfo, XBRLCompanyInfoInProcess,
-                     XBRLCompanyInfo, XBRLValuationStatementsAccounts, XBRLValuationAccounts, XBRLValuationAccountsMatch,
+                     XBRLCompanyInfo, XBRLValuationStatementsAccounts, XBRLValuationAccounts,
+                     XBRLValuationAccountsMatch,
                      XBRLRegion, XBRLCountry, XBRLCountryYearData,
                      XBRLHistoricalReturnsSP, XBRLSPMoodys, Project,
                      XBRLRegion, XBRLSPEarningForecast)
+
 
 # cik = '0000051143'
 # type = '10-K'
 # dateb = '20160101'
 
 
-class AcademyCityXBRL(object):
+class TDAmeriTrade(object):
     def __init__(self):
         # Should remove it later on
         clear_log_debug()
+        self.password = "Sigal2105Shir"
+        self.user_name = "amosbaranes"
+        self.callback_url = "https://academycity.org/en/corporatevaluation/options"
+        self.app_name = "academycity"
+        self.customer_key = "LLGYGYRSAMWGZJNMXY8B8KGTOYG9BNDU"
+
+    def get_prices(self):
+        ticker = "GOOG"
+        # print(ticker)
+        url = r"https://api.tdameritrade.com/v1/marketdata/{}/pricehistory".format(ticker.upper())
+        d = datetime.datetime.now()
+        d_ = (d + timedelta(days=-100))
+        d = int(d.strftime("%s"))
+        d_ = int(d_.strftime("%s"))
+        # print(d)
+        # print(d_)
+
+        pay_load = {'apikey': self.customer_key + "@AMER.OAUTHAP",
+                    'periodType': 'day',
+                    'frequencyType': 'minute',
+                    'frequency': 1,
+                    'period': 2,
+                    # 'endDate': '1634037360000',  # str(d),  # '1556158524000',
+                    # 'startDate': '1634068200000',  # str(d_),  # '1554535854000'
+                    'needExtendedHoursData': 'true'
+                    }
+
+        # print(pay_load)
+        # res = requests.get(url=url, params=pay_load)
+        # data = res.json()
+        # for k in data["candles"]:
+        #     ndt_ = k["datetime"]
+        #     date_ = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(ndt_))
+        #     print(date_)
+
+        self.get_quote(ticker)
+        print('-'*20)
+        self.get_quotes(tickers='GOOG,MSFT')
+        print('-'*20)
+
+        dic = {'status': 'ok'}
+        log_debug("End get_prices.")
+        return dic
+
+    def get_quote(self, ticker):
+        url = r"https://api.tdameritrade.com/v1/marketdata/{}/quotes".format(ticker.upper())
+        print(url)
+        pay_load = {'apikey': self.customer_key + '@AMER.OAUTHAP'}
+        print(pay_load)
+        try:
+            res = requests.get(url=url, params=pay_load)
+            data = res.json()
+            print(data)
+        except Exception as ex:
+            print(ex)
+
+        dic = {'status': 'ok', 'data': data}
+        log_debug("End get_prices.")
+        return dic
+
+    def get_quotes(self, tickers):
+        url = r"https://api.tdameritrade.com/v1/marketdata/quotes"
+        print(url)
+        pay_load = {'apikey': self.customer_key + "@AMER.OAUTHAP", 'symbol': tickers}
+
+        print(pay_load)
+        res = requests.get(url=url, params=pay_load)
+        data = res.json()
+        print(data)
+        dic = {'status': 'ok', 'data': data}
+        log_debug("End get_prices.")
+        return dic
+
+
+class AcademyCityXBRL(object):
+    def __init__(self):
+
+        # Should remove it later on
+        try:
+            clear_log_debug()
+        except Exception as ex:
+            pass
         #
         self.PROJECT_ROOT_DIR = os.path.join(settings.WEB_DIR, "data", "corporatevaluation")
         os.makedirs(self.PROJECT_ROOT_DIR, exist_ok=True)
@@ -66,14 +151,16 @@ class AcademyCityXBRL(object):
         os.makedirs(self.TEXT_PATH, exist_ok=True)
         # print(self.TEXT_PATH)
 
+        self.XBRL_PATH = os.path.join(self.TO_DATA_PATH, "xbrl")
+        os.makedirs(self.XBRL_PATH, exist_ok=True)
+        # print(self.XBRL_PATH)
+
         self.Data = None
-
         self.sp_tickers = []
-
         self.xbrl_base_year = 2020
         self.xbrl_start_year = 2012
         self.today_year = datetime.datetime.now().year
-        log_debug("AcademyCityXBRL was created")
+        # log_debug("AcademyCityXBRL was created")
 
     # Valuation Functions
     def get_risk_premium(self, year10=1928, year50=1928, cv_project_id=None, is_update='no'):
@@ -100,13 +187,15 @@ class AcademyCityXBRL(object):
                 # print(2222222)
 
                 log_debug('Start process year : ' + str(y))
-                ll = [[rp.return_on_sp500, rp.tb3ms_rate, rp.return_on_tbond] for rp in XBRLHistoricalReturnsSP.objects.filter(year__gte=y).all()]
+                ll = [[rp.return_on_sp500, rp.tb3ms_rate, rp.return_on_tbond] for rp in
+                      XBRLHistoricalReturnsSP.objects.filter(year__gte=y).all()]
                 df = pd.DataFrame(ll)
                 df.columns = ['M', 'TB', 'B']
                 df['M_TB'] = df['M'] - df['TB']
                 df['M_B'] = df['M'] - df['B']
 
-                llb = [[rp.return_on_sp500, rp.tb3ms_rate, rp.return_on_tbond] for rp in XBRLHistoricalReturnsSP.objects.filter(year__lte=y).filter(year__gte=base_year).all()]
+                llb = [[rp.return_on_sp500, rp.tb3ms_rate, rp.return_on_tbond] for rp in
+                       XBRLHistoricalReturnsSP.objects.filter(year__lte=y).filter(year__gte=base_year).all()]
                 dfb = pd.DataFrame(llb)
                 dfb.columns = ['M', 'TB', 'B']
                 dfb['M_TB'] = dfb['M'] - dfb['TB']
@@ -124,8 +213,8 @@ class AcademyCityXBRL(object):
                 dic['Geometric'][y]['Stocks-TBills'] = {}
                 dic['Geometric'][y]['Stocks-TBonds'] = {}
 
-                dic['Arithmetic'][y]['Stocks-TBills']['value'] = round(10000*df.mean()['M_TB'])/10000
-                dic['Arithmetic'][y]['Stocks-TBonds']['value'] = round(10000*df.mean()['M_B'])/10000
+                dic['Arithmetic'][y]['Stocks-TBills']['value'] = round(10000 * df.mean()['M_TB']) / 10000
+                dic['Arithmetic'][y]['Stocks-TBonds']['value'] = round(10000 * df.mean()['M_B']) / 10000
 
                 yrp = XBRLHistoricalReturnsSP.objects.get(year=y)
 
@@ -134,18 +223,21 @@ class AcademyCityXBRL(object):
                 dic['Arithmetic'][y]['Stocks-TBonds']['sp500'] = yrp.return_on_sp500
                 dic['Arithmetic'][y]['Stocks-TBonds']['tb3ms'] = yrp.tb3ms_rate
                 dic['Arithmetic'][y]['Stocks-TBonds']['tbond'] = yrp.return_on_tbond
-                dic['Arithmetic'][y]['Stocks-TBonds']['m_b_median'] = round(10000*df.median()['M_B'])/10000
+                dic['Arithmetic'][y]['Stocks-TBonds']['m_b_median'] = round(10000 * df.median()['M_B']) / 10000
                 #
-                dic['Arithmetic'][y]['Stocks-TBonds']['b_value'] = round(10000*dfb.mean()['M_B'])/10000
-                dic['Arithmetic'][y]['Stocks-TBonds']['b_m_b_median'] = round(10000*dfb.median()['M_B'])/10000
+                dic['Arithmetic'][y]['Stocks-TBonds']['b_value'] = round(10000 * dfb.mean()['M_B']) / 10000
+                dic['Arithmetic'][y]['Stocks-TBonds']['b_m_b_median'] = round(10000 * dfb.median()['M_B']) / 10000
                 #
                 log_debug('process year : ' + str(y) + " calculation 1 done")
 
                 try:
-                    dic['Arithmetic'][y]['Stocks-TBills']['std'] = round(10000*df.std()['M_TB']/((df.shape[0]+1)**(1/2)))/10000
-                    dic['Arithmetic'][y]['Stocks-TBonds']['std'] = round(10000*df.std()['M_B']/((df.shape[0]+1)**(1/2)))/10000
+                    dic['Arithmetic'][y]['Stocks-TBills']['std'] = round(
+                        10000 * df.std()['M_TB'] / ((df.shape[0] + 1) ** (1 / 2))) / 10000
+                    dic['Arithmetic'][y]['Stocks-TBonds']['std'] = round(
+                        10000 * df.std()['M_B'] / ((df.shape[0] + 1) ** (1 / 2))) / 10000
 
-                    dic['Arithmetic'][y]['Stocks-TBonds']['b_std'] = round(10000*dfb.std()['M_B']/((dfb.shape[0]+1)**(1/2)))/10000
+                    dic['Arithmetic'][y]['Stocks-TBonds']['b_std'] = round(
+                        10000 * dfb.std()['M_B'] / ((dfb.shape[0] + 1) ** (1 / 2))) / 10000
                     log_debug('process year : ' + str(y) + " std calculation 2 done")
                 except Exception as exx:
                     log_debug('Error 10 : ' + " " + str(y) + " " + str(exx))
@@ -153,15 +245,15 @@ class AcademyCityXBRL(object):
                 gtb = 1
                 gb = 1
                 for i, r in df.iterrows():
-                    gm *= (1+r['M'])
-                    gtb *= (1+r['TB'])
-                    gb *= (1+r['B'])
-                gm = gm**(1/df.shape[0]) - 1
-                gtb = gtb**(1/df.shape[0]) - 1
-                gb = gb**(1/df.shape[0]) - 1
+                    gm *= (1 + r['M'])
+                    gtb *= (1 + r['TB'])
+                    gb *= (1 + r['B'])
+                gm = gm ** (1 / df.shape[0]) - 1
+                gtb = gtb ** (1 / df.shape[0]) - 1
+                gb = gb ** (1 / df.shape[0]) - 1
 
-                dic['Geometric'][y]['Stocks-TBills']['value'] = round(10000*(gm - gtb))/10000
-                dic['Geometric'][y]['Stocks-TBonds']['value'] = round(10000*(gm - gb))/10000
+                dic['Geometric'][y]['Stocks-TBills']['value'] = round(10000 * (gm - gtb)) / 10000
+                dic['Geometric'][y]['Stocks-TBonds']['value'] = round(10000 * (gm - gb)) / 10000
                 dic['Geometric'][y]['Stocks-TBills']['std'] = ''
                 dic['Geometric'][y]['Stocks-TBonds']['std'] = ''
 
@@ -170,13 +262,13 @@ class AcademyCityXBRL(object):
                     bgtb = 1
                     bgb = 1
                     for i, r in dfb.iterrows():
-                        bgm *= (1+r['M'])
+                        bgm *= (1 + r['M'])
                         # bgtb *= (1+r['TB'])
-                        bgb *= (1+r['B'])
-                    bgm = bgm**(1/dfb.shape[0]) - 1
+                        bgb *= (1 + r['B'])
+                    bgm = bgm ** (1 / dfb.shape[0]) - 1
                     # bgtb = bgtb**(1/dfb.shape[0]) - 1
-                    bgb = bgb**(1/dfb.shape[0]) - 1
-                    dic['Geometric'][y]['Stocks-TBonds']['b_value'] = round(10000*(bgm - bgb))/10000
+                    bgb = bgb ** (1 / dfb.shape[0]) - 1
+                    dic['Geometric'][y]['Stocks-TBonds']['b_value'] = round(10000 * (bgm - bgb)) / 10000
                 except Exception as ex:
                     print('ex')
                     print(ex)
@@ -212,27 +304,23 @@ class AcademyCityXBRL(object):
         return self.DATA
 
     # I use ticker as cik
-    def get_data_for_cik(self, cik, type='10-k', is_update='no'):
-        log_debug("Start get_data_for_cik.")
-        company = XBRLCompanyInfo.objects.get(ticker=cik)
-        # print(company.financial_data)
+    def get_dic_company_info(self, company, cik, type_='10-K', is_update="yes"):
         if is_update != 'yes':
             if company.financial_data:
                 # print('company.financial_data')
                 # for r in XBRLRegion.region_objects.averages():
                 #     print(r.name)
                 #     print(r.num_countries)
-
                 # print(company.financial_data)
                 return company.financial_data
 
         dic_company_info = {'company_info': {'ticker': cik,
-                                             'type': type,
+                                             'type': type_,
                                              }
                             }
         headers = {'User-Agent': 'amos@drbaranes.com'}
         base_url = "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK={}&type={}"  # &dateb={}"
-        url = base_url.format(cik, type)
+        url = base_url.format(cik, type_)
 
         dic_company_info['company_info']['10k_url'] = url
         #
@@ -261,6 +349,7 @@ class AcademyCityXBRL(object):
             sic0 = str(results[0])
         dic_company_info['company_info']['SIC'] = sic0
         #
+
         # Find the document links
         soup = BeautifulSoup(edgar_str, 'html.parser')
         table_tag = soup.find('table', class_='tableFile2')
@@ -269,15 +358,17 @@ class AcademyCityXBRL(object):
             rows = table_tag.find_all('tr')
         except Exception as ex:
             return dic_company_info
+
+        # Obtain HTML for document page
         dic_data = {}
         for row in rows:
             try:
                 cells = row.find_all('td')
                 if len(cells) > 3:
-                    if cells[0].text.lower() != type.lower():
+                    if cells[0].text.lower() != type_.lower():
                         continue
                     # for filing_year in range(2019, 2020):
-                    for filing_year in range(self.xbrl_start_year, self.today_year+1):
+                    for filing_year in range(self.xbrl_start_year, self.today_year + 1):
                         if str(filing_year) in cells[3].text:
                             dic_data[filing_year] = {'href': 'https://www.sec.gov' + cells[1].a['href']}
             except Exception as ex:
@@ -285,64 +376,104 @@ class AcademyCityXBRL(object):
                 # print(ex)
 
         # need to add send message on no data
+        dic_company_info['data'] = dic_data
+        company.financial_data = dic_company_info
+        company.save()
+        return dic_company_info
+
+    def get_data_ticker(self, cik, type_='10-k', is_update='no', request=None):
+        # print('get_data_for_cik')
+        # log_debug("Start get_data_for_cik.")
+        company = XBRLCompanyInfo.objects.get(ticker=cik)
+        dic_company_info = self.get_dic_company_info(company, cik, type_, is_update)
+        # -----------
+        # Statements
+        # Should be a function of industry
+        if 'statements' not in dic_company_info:
+            statements = {}
+            for statement in XBRLValuationStatementsAccounts.objects.all():
+                statements[statement.order] = {'name': statement.statement, 'accounts': {}}
+                for a in statement.xbrl_valuation_statements.all():
+                    statements[statement.order]['accounts'][a.order] = [a.account, a.type, a.scale]
+            #
+            dic_company_info['statements'] = statements
+        # print(statements)
+        # -----------
+        # print(dic_company_info)
+        if is_update != 'yes':
+            return dic_company_info
+        #
+        dic_data = dic_company_info['data']
         if len(dic_data) == 0:
             print("Couldn't find the document link")
             return dic_company_info
 
-        # Obtain HTML for document page
-        statements = {}
-        for statement in XBRLValuationStatementsAccounts.objects.all():
-            statements[statement.order] = {'name': statement.statement, 'accounts': {}}
-            for a in statement.xbrl_valuation_statements.all():
-                statements[statement.order]['accounts'][a.order] = [a.account, a.type, a.scale]
+        # #  ---- Replaced ----
+        # dic_data_list = []
+        # for key, value in dic_data.items():
+        #     temp = [key, value,
+        #             dic_company_info['company_info']['SIC'],
+        #             dic_company_info['company_info']['ticker'], statements
+        #             ]
+        #     dic_data_list.append(temp)
         #
-        # print(statements)
+        # # Exit if document link couldn't be found
+        # # print('-13' * 10)
+        # # print(len(dic_data))
+        # # print(dic_company_info['company_info'])
+        # # print(dic_data)
+        # # print(dic_data_list)
+        # # print('-13' * 10)
         #
-        dic_data_list = []
-        for key, value in dic_data.items():
-            temp = [key, value,
-                    dic_company_info['company_info']['SIC'],
-                    dic_company_info['company_info']['ticker'], statements
-                    ]
-            dic_data_list.append(temp)
+        # results = []
+        # # print("Current Time Before ThreadPoolExecutor =", datetime.datetime.now().strftime("%H:%M:%S"))
+        #
+        # log_debug("Start ThreadPoolExecutor.")
+        # with ThreadPoolExecutor(max_workers=len(dic_data)) as pool:
+        #     results = pool.map(self.get_data_for_years, dic_data_list)
+        # # print("Current Time After ThreadPoolExecutor =", datetime.datetime.now().strftime("%H:%M:%S"))
+        # log_debug("End ThreadPoolExecutor.")
+        # for r in results:
+        #     dic_data[r[0]] = r[1]
+        #     # statements = r[4]
+        # log_debug("End collect data from ThreadPoolExecutor.")
+        #
+        # # print("Current Time After process result ThreadPoolExecutor =", datetime.datetime.now().strftime("%H:%M:%S"))
+        # dic_company_info['data'] = dic_data
+        #
+        #  ---- End Replaced ----
 
-        # Exit if document link couldn't be found
-        # print('-13' * 10)
-        # print(len(dic_data))
-        # print(dic_company_info['company_info'])
-        # print(dic_data)
-        # print(dic_data_list)
-        # print('-13' * 10)
-
-        results = []
-        # print("Current Time Before ThreadPoolExecutor =", datetime.datetime.now().strftime("%H:%M:%S"))
-
-        log_debug("Start ThreadPoolExecutor.")
-        with ThreadPoolExecutor(max_workers=len(dic_data)) as pool:
-            results = pool.map(self.get_data_for_years, dic_data_list)
-        # print("Current Time After ThreadPoolExecutor =", datetime.datetime.now().strftime("%H:%M:%S"))
-        log_debug("End ThreadPoolExecutor.")
-        for r in results:
-            dic_data[r[0]] = r[1]
-            # statements = r[4]
-        log_debug("End collect data from ThreadPoolExecutor.")
+        # print("Current Time start =", datetime.datetime.now().strftime("%H:%M:%S"))
+        for key in dic_company_info['data']:
+            dic_company_info = self.get_data_for_one_year(key, dic_company_info, request)
+            # print(dic_company_info)
+            # print('-10' * 10)
+        # print("Current Time End =", datetime.datetime.now().strftime("%H:%M:%S"))
 
         # print("Current Time After process result ThreadPoolExecutor =", datetime.datetime.now().strftime("%H:%M:%S"))
-
         dic_company_info['data'] = dic_data
         # acc['instant'].sort()
         # acc['flow'].sort()
-        dic_company_info['statements'] = statements
 
         # print('-16' * 10)
-        # print(dic_company_info)
+        print(dic_company_info)
         # print('-16' * 10)
         company.financial_data = dic_company_info
         company.save()
-        log_debug("End get_data_for_cik.")
+        # log_debug("End get_data_for_cik.")
         return dic_company_info
 
-    def get_data_for_years(self, dic_data_year):
+    def get_data_for_one_year(self, key, dic_company_info, request):
+        value = dic_company_info['data'][key]
+        temp = [key, value,
+                dic_company_info['company_info']['SIC'], dic_company_info['company_info']['ticker'],
+                dic_company_info['statements']
+                ]
+        dic_company_info['data'][key] = self.get_data_for_years(dic_data_year=temp, request=request)[1]
+        return dic_company_info
+
+    def get_data_for_years(self, dic_data_year, request):
+        log_debug("start get_data_for_years: "+dic_data_year[3]+", "+str(dic_data_year[0]))
         # print("Current Time Start get data = " + str(dic_data_year[0]), datetime.datetime.now().strftime("%H:%M:%S"))
         # dic_data_year[3] = ticker
         # dic_data_year[0] = year
@@ -353,29 +484,28 @@ class AcademyCityXBRL(object):
         # print('-30'*10)
 
         headers = {'User-Agent': 'amos@drbaranes.com'}
-        try:
-            # print("Current Time 2 =", datetime.datetime.now().strftime("%H:%M:%S"))
-            doc_resp = requests.get(dic_data_year[1]['href'], headers=headers, timeout=30)
-            # print("Current Time 21 =", datetime.datetime.now().strftime("%H:%M:%S"))
-        except Exception as exc:
-            print(exc)
-            return dic_data_year
-
+        file_name = dic_data_year[3]+"_"+str(dic_data_year[0])
+        # try:
+        #     doc_str = request.session[file_name]
+        # except Exception as exc:
+        doc_resp = requests.get(dic_data_year[1]['href'], headers=headers, timeout=30)
         doc_str = doc_resp.text
+        # request.session[file_name] = doc_str
+
+        # print("get_data_for_years (after getting file_name): "+dic_data_year[3]+", "+str(dic_data_year[0]))
 
         # Find the XBRL link
         xbrl_link = ''
         soup = BeautifulSoup(doc_str, 'html.parser')
         table_tag = soup.find('table', class_='tableFile', summary='Data Files')
 
-        # print('-1-'*10)
+        # print('-11-'*10)
         # print(dic_data_year[0])
         # print(dic_data_year[1]['href'])
-        # print('-1-'*10)
+        # print('-11-'*10)
 
         try:
             rows = table_tag.find_all('tr')
-
             for row in rows:
                 cells = row.find_all('td')
                 if len(cells) > 3:
@@ -387,38 +517,34 @@ class AcademyCityXBRL(object):
 
             dic_data_year[1]['xbrl_link'] = 'https://www.sec.gov' + xbrl_link
             accession_number = xbrl_link.split('/')
-            # print('-1'*10)
+            # print('-12-'*10)
             # print(accession_number)
-            # print('-1'*10)
+            # print('-12-'*10)
 
             view_link = 'https://www.sec.gov/cgi-bin/viewer?action=view&cik='
-            view_link += accession_number[4]+'&accession_number='+accession_number[5]+'&xbrl_type=v#'
+            view_link += accession_number[4] + '&accession_number=' + accession_number[5] + '&xbrl_type=v#'
 
-            r_link = "https://www.sec.gov/Archives/edgar/data/"+accession_number[4]+"/"+accession_number[5]+"/R"
-
+            r_link = "https://www.sec.gov/Archives/edgar/data/" + accession_number[4] + "/" + accession_number[5] + "/R"
             dic_data_year[1]['r_link'] = r_link
             dic_data_year[1]['view_link'] = view_link
+
         except Exception as ex:
             return dic_data_year
 
-        try:
-            # print("Current Time 3 =", datetime.datetime.now().strftime("%H:%M:%S"))
-            xbrl_resp = requests.get(dic_data_year[1]['xbrl_link'], headers=headers, timeout=30)
-            # print("Current Time 31 =", datetime.datetime.now().strftime("%H:%M:%S"))
-        except Exception as exc:
-            print(exc)
-            return dic_data_year
-
+        xbrl_file_name = "xbrl_" + dic_data_year[3] + "_" + str(dic_data_year[0])
+        # try:
+        #     xbrl_str = request.session[xbrl_file_name]
+        # except Exception as exc:
+        xbrl_resp = requests.get(dic_data_year[1]['xbrl_link'], headers=headers, timeout=30)
         xbrl_str = xbrl_resp.text
-        # print("Current Time 32 =", datetime.datetime.now().strftime("%H:%M:%S"))
-        soup = BeautifulSoup(xbrl_str, 'lxml')
-        # print("Current Time 33 =", datetime.datetime.now().strftime("%H:%M:%S"))
+        # request.session[xbrl_file_name] = xbrl_str
 
+        log_debug("get_data_for_years (after getting xbrl_file_name): "+dic_data_year[3]+", "+str(dic_data_year[0]))
+        soup = BeautifulSoup(xbrl_str, 'lxml')
         dic_data_year[1]['dei'] = {}
         for tag in soup.find_all(re.compile("dei:")):
             name_ = tag.name.split(":")
             dic_data_year[1]['dei'][name_[1]] = tag.text
-        # print("Current Time 34 =", datetime.datetime.now().strftime("%H:%M:%S"))
 
         documentperiodenddate = dic_data_year[1]['dei']['documentperiodenddate']
         entitycentralindexkey = dic_data_year[1]['dei']['entitycentralindexkey']
@@ -439,8 +565,8 @@ class AcademyCityXBRL(object):
 
                 if len(context_name) > 1:
                     identifier = context.find(context_name[0] + ':identifier')
-                    segment = context.find(context_name[0] +':segment')
-                    startdate = context.find(context_name[0] +':startdate')
+                    segment = context.find(context_name[0] + ':segment')
+                    startdate = context.find(context_name[0] + ':startdate')
                 else:
                     identifier = context.find('identifier')
                     segment = context.find('segment')
@@ -448,29 +574,33 @@ class AcademyCityXBRL(object):
 
                 end_date = tag.text.split('-')
                 start_date = startdate.text.split('-')
-                start_date = start_date[0]+'-'+start_date[1]
+                start_date = start_date[0] + '-' + start_date[1]
 
-                start_date_should = str((int(end_date[0])-1))+'-'+end_date[1]
-                start_date0_should = str((int(end_date[0])-2))+'-12'
-                start_date1_should = end_date[0]+'-01'
-                start_date2_should = str((int(end_date[0])-1))+'-'+self.add_zero(str((int(end_date[1])+1)))
-                start_date3_should = str((int(end_date[0])-1))+'-'+self.add_zero(str((int(end_date[1])-1)))
+                start_date_should = str((int(end_date[0]) - 1)) + '-' + end_date[1]
+                start_date0_should = str((int(end_date[0]) - 2)) + '-12'
+                start_date1_should = end_date[0] + '-01'
+                start_date2_should = str((int(end_date[0]) - 1)) + '-' + self.add_zero(str((int(end_date[1]) + 1)))
+                start_date3_should = str((int(end_date[0]) - 1)) + '-' + self.add_zero(str((int(end_date[1]) - 1)))
 
-                # print('-6'*10)
-                # print('end_date')
-                # print(end_date)
-                # print('end_date')
-                # print(start_date_should)
-                # print(start_date0_should)
-                # print(start_date1_should)
-                # print(start_date2_should)
-                # print(start_date3_should)
-                # print(start_date)
-                # print('=5'*10)
-                # print('=6'*10)
+                # if end_date[0] == "2020":
+                #     print('-6'*10)
+                #     print('end_date')
+                #     print(end_date)
+                #     print('end_date')
+                #     print(start_date_should)
+                #     print(start_date0_should)
+                #     print(start_date1_should)
+                #     print(start_date2_should)
+                #     print(start_date3_should)
+                #     print(start_date)
+                #     print('=5'*10)
+                #     print('=6'*10)
 
                 if (not segment) and (identifier.text == entitycentralindexkey) \
-                        and (start_date == start_date_should or start_date == start_date1_should or start_date == start_date2_should or start_date == start_date3_should or start_date == start_date0_should):
+                        and (
+                        start_date == start_date_should or start_date == start_date0_should or
+                        start_date == start_date1_should or start_date == start_date2_should or
+                        start_date == start_date3_should):
                     flow_context_id = context['id']
 
             except Exception as ex:
@@ -494,7 +624,7 @@ class AcademyCityXBRL(object):
 
             if len(context_name) > 1:
                 identifier = context.find(context_name[0] + ':identifier')
-                segment = context.find(context_name[0] +':segment')
+                segment = context.find(context_name[0] + ':segment')
             else:
                 identifier = context.find('identifier')
                 segment = context.find('segment')
@@ -514,42 +644,60 @@ class AcademyCityXBRL(object):
         dic_data_year[1]['matching_accounts'] = matching_accounts
         year_data = {}
 
+        log_debug("get_data_for_years (after getting matching_accounts): "+dic_data_year[3]+", "+str(dic_data_year[0]))
+
         # print("Current Time 6 =", datetime.datetime.now().strftime("%H:%M:%S"))
+
+        accounts_flow = {}
+        for k in accounts_['flow']:
+            accounts_flow[k[0:92]] = accounts_['flow'][k]
+
+        accounts_instant = {}
+        for k in accounts_['instant']:
+            accounts_instant[k[0:92]] = accounts_['instant'][k]
+
+        # if str(dic_data_year[0]) == "2020":
+        #     print(int(dic_data_year[1]['dei']['documentfiscalyearfocus']))
+        #     print(str(dic_data_year[0]))
+        #     print(accounts_instant)
+
         for std in used_accounting_standards:
-            tag_list = soup.find_all(re.compile(std+":"))
+            tag_list = soup.find_all(re.compile(std + ":"))
             for tag in tag_list:
                 name_ = tag.name.split(":")
                 try:
-                    if name_[1] in accounts_['instant'] and tag['contextref'] == instant_context_id:
-                        order = accounts_['instant'][name_[1]][0]
-                        scale = accounts_['instant'][name_[1]][1]
+                    if name_[1][0:92] in accounts_instant and tag['contextref'] == instant_context_id:
+                        if accounts_instant[name_[1][0:92]][2] == std:
+                            order = accounts_instant[name_[1][0:92]][0]
+                            scale = accounts_instant[name_[1][0:92]][1]
+                            if scale == 1:
+                                year_data[order] = tag.text
+                            else:
+                                year_data[order] = int(tag.text) / scale
+                    if name_[1][0:92] in accounts_flow and tag['contextref'] == flow_context_id:
+                        order = accounts_flow[name_[1][0:92]][0]
+                        scale = accounts_flow[name_[1][0:92]][1]
                         if scale == 1:
                             year_data[order] = tag.text
                         else:
-                            year_data[order] = int(tag.text)/scale
-
-                    if name_[1] in accounts_['flow'] and tag['contextref'] == flow_context_id:
-                        order = accounts_['flow'][name_[1]][0]
-                        scale = accounts_['flow'][name_[1]][1]
-                        if scale == 1:
-                            year_data[order] = tag.text
-                        else:
-                            year_data[order] = int(tag.text)/scale
+                            year_data[order] = int(tag.text) / scale
 
                 except Exception as ex:
                     pass
                     # print("Error: year=" + str(dic_data_year[0]) + "   dic=" + dic_data_year[1]['href'] + "   " + str(ex) + tag.text)
 
         dic_data_year[1]['year_data'] = year_data
+
+        log_debug("End get_data_for_years: "+dic_data_year[3]+", "+str(dic_data_year[0]))
         # print("Current Time End get data = " + str(dic_data_year[0]), datetime.datetime.now().strftime("%H:%M:%S"))
         return dic_data_year
 
     def get_matching_accounts(self, ticker, year, sic, statements):
         try:
             if year <= self.xbrl_base_year:
-                years = sorted(range(year, self.xbrl_base_year+1), reverse=True)
+                years = sorted(range(year, self.xbrl_base_year + 1), reverse=True)
             else:
-                years = range(self.xbrl_base_year, year+1)
+                years = range(self.xbrl_base_year, year + 1)
         except Exception as ex:
             print(ex)
 
@@ -562,6 +710,12 @@ class AcademyCityXBRL(object):
                 dic_matches[m.account.order] = [m.match_account, m.accounting_standard]
                 if m.accounting_standard not in used_accounting_standards:
                     used_accounting_standards.append(m.accounting_standard)
+
+        # print('dic_matches 0')
+        # print(year)
+        # print(dic_matches)
+        # print('dic_matches 0')
+
         for y in years:
             for m in matches:
                 if m.year == y:
@@ -570,6 +724,7 @@ class AcademyCityXBRL(object):
                         used_accounting_standards.append(m.accounting_standard)
 
         # print('dic_matches')
+        # print(year)
         # print(dic_matches)
         # print('dic_matches')
 
@@ -605,10 +760,16 @@ class AcademyCityXBRL(object):
 
                 if ma_ != '':
                     if statements[st_]['accounts'][a_order][1] == 1:
-                        accounts_['instant'][ma_] = (a_order, statements[st_]['accounts'][a_order][2])
+                        accounts_['instant'][ma_] = (a_order, statements[st_]['accounts'][a_order][2], ma_std)
                     else:
-                        accounts_['flow'][ma_] = (a_order, statements[st_]['accounts'][a_order][2])
+                        accounts_['flow'][ma_] = (a_order, statements[st_]['accounts'][a_order][2], ma_std)
                 matching_accounts[a_order] = [ma_, ma_std]
+
+        # print('matching_accounts')
+        # print(year)
+        # print(matching_accounts)
+        # print('matching_accounts')
+
         return matching_accounts, accounts_, used_accounting_standards
 
     def save_industry_default(self, year, ticker, sic):
@@ -622,14 +783,15 @@ class AcademyCityXBRL(object):
                 # zero_company = XBRLValuationAccountsMatch.objects.filter(Q(company__ticker=ticker) & Q(year=year)).all()
                 # zero_company.update(company=c, year=0)
                 for m in XBRLValuationAccountsMatch.objects.filter(Q(company__ticker=ticker) & Q(year=year)).all():
-                    cs, created_s = XBRLValuationAccountsMatch.objects.get_or_create(year=0,company=c,account=m.account)
+                    cs, created_s = XBRLValuationAccountsMatch.objects.get_or_create(year=0, company=c,
+                                                                                     account=m.account)
                     if created_s:
                         cs.match_account = m.match_account
                         cs.accounting_standard = m.accounting_standard
                         cs.save()
                         m.delete()
             except Exception as ex:
-                print('-3'*20)
+                print('-3' * 20)
                 print(ex)
                 dic = {'status': 'ko'}
         else:
@@ -674,7 +836,7 @@ class AcademyCityXBRL(object):
 
     def add_zero(self, s):
         if len(s) == 1:
-            s = "0"+s
+            s = "0" + s
         return s
 
     def upload_old_earning_forecast_sp500(self):
@@ -697,11 +859,12 @@ class AcademyCityXBRL(object):
                             mm = self.month_to_num(ddd[0])
                             yy = dd[2].strip()
                             dd = ddd[1]
-                            date_str = yy+"-"+mm+"-"+self.add_zero(dd)
+                            date_str = yy + "-" + mm + "-" + self.add_zero(dd)
                             date_ = parse_date(date_str)
                         else:
                             if cells[2].text != '--':
                                 ticker = cells[1].find('a').text
+                                # print(ticker)
                                 if ticker in sp_tickers:
                                     # print('-'*20)
                                     # print('in sp')
@@ -737,8 +900,14 @@ class AcademyCityXBRL(object):
                                     ef.actual = actual
                                     ef.date = date_
                                     ef.save()
+                                    # print('ticker1')
                                     self.get_ticker_prices(earning_forecast=ef)
+                                    # print(ticker)
+                                    # print('ticker2')
+
+                                # print(ticker)
                     except Exception as ex:
+                        # if ticker in sp_tickers:
                         # print('ex')
                         # print(ex)
                         # print(ticker)
@@ -829,7 +998,6 @@ class AcademyCityXBRL(object):
         # https://www.analyticsvidhya.com/blog/2021/06/download-financial-dataset-using-yahoo-finance-in-python-a-complete-guide/
 
         # print(earning_forecast.company.ticker)
-
         yahoo_financials = YahooFinancials(earning_forecast.company.ticker)
         today = earning_forecast.date
         # print(today)
@@ -837,14 +1005,15 @@ class AcademyCityXBRL(object):
         # print(yesterday)
         today_str = str(today)
         yesterday_str = str(yesterday)
-        data = yahoo_financials.get_historical_price_data(start_date='2019-01-01', end_date=str(today + timedelta(days=1)),
+        data = yahoo_financials.get_historical_price_data(start_date='2015-01-01',
+                                                          end_date=str(today + timedelta(days=1)),
                                                           time_interval='daily')
         # print(data)
         df = pd.DataFrame(data[earning_forecast.company.ticker]['prices'])
         df = df.drop('date', axis=1).set_index('formatted_date')
         # print(df.tail())
         try:
-            today_price = int(100*df.filter(items=[today_str], axis=0)['adjclose'])/100
+            today_price = int(100 * df.filter(items=[today_str], axis=0)['adjclose']) / 100
             # print(today_price)
             earning_forecast.today_price = today_price
         except Exception as ex:
@@ -854,7 +1023,7 @@ class AcademyCityXBRL(object):
         is_ok = False
         while not is_ok:
             try:
-                yesterday_price = int(100*df.filter(items=[yesterday_str], axis=0)['adjclose'])/100
+                yesterday_price = int(100 * df.filter(items=[yesterday_str], axis=0)['adjclose']) / 100
                 # print(yesterday_price)
                 earning_forecast.yesterday_price = yesterday_price
                 is_ok = True
@@ -886,8 +1055,9 @@ class AcademyCityXBRL(object):
             if new_ticker:
                 d[t.company.ticker][t.year][t.quarter].append(str(t.next_release_date))
 
-        print(d)
+        # print(d)
         return {'status': 'ok', 'earning_forecast_sp500_view': d}
+
     # # #
 
     def create_company_by_ticker(self, ticker=None):
@@ -959,7 +1129,7 @@ class AcademyCityXBRL(object):
                 # print(company_name_)
                 # print(company_name_[0].upper())
 
-                company, created = XBRLCompanyInfo.objects.get_or_create(industry=industry_, ticker=ticker,cik=cik0,
+                company, created = XBRLCompanyInfo.objects.get_or_create(industry=industry_, ticker=ticker, cik=cik0,
                                                                          company_name=company_name_,
                                                                          company_letter=company_name_[0].upper())
                 company_id = company.id
@@ -1052,7 +1222,7 @@ class AcademyCityXBRL(object):
                     if len(cells) > 3:
                         # print(cells[3].text)
                         # for filing_year in range(2019, 2020):
-                        for filing_year in range(self.xbrl_start_year, self.today_year+1):
+                        for filing_year in range(self.xbrl_start_year, self.today_year + 1):
                             if str(filing_year) in cells[3].text:
                                 dic_data[filing_year] = {'href': 'https://www.sec.gov' + cells[1].a['href']}
                 except Exception as ex:
@@ -1097,7 +1267,7 @@ class AcademyCityXBRL(object):
         companies = None
         for exchange in exchanges:
             # print(exchange)
-            url = 'https://www.advfn.com/'+exchanges[exchange]+'.asp?companies='
+            url = 'https://www.advfn.com/' + exchanges[exchange] + '.asp?companies='
             df = self.get_companies_for_exchange(exchange=exchange, exchange_url=url)
             if n == 0:
                 companies = df
@@ -1148,7 +1318,7 @@ class AcademyCityXBRL(object):
         letters = string.ascii_uppercase
         for letter in letters:
             company_name, company_ticker, company_letter = self.get_companies_for_letter(
-                letter, exchange_url+letter, company_name, company_ticker, company_letter)
+                letter, exchange_url + letter, company_name, company_ticker, company_letter)
         companies['name'] = company_name
         companies['ticker'] = company_ticker
         companies['exchange'] = exchange
@@ -1212,6 +1382,7 @@ class AcademyCityXBRL(object):
             XBRLIndustryInfo.objects.get_or_create(sic_code=sic_code_, main_sic=main_sic_,
                                                    sic_description=sic_description_)
         return {'status': 'ok'}
+
     # # #
 
     def load_tax_rates_by_country_year(self):
@@ -1260,7 +1431,8 @@ class AcademyCityXBRL(object):
                 d.save()
                 log_debug("Done: " + str(r['continent']) + " " + str(r['country']) + " " + str(r['year']))
             except Exception as ex:
-                log_debug("Error 2 save country: " + str(r['continent']) + " " + str(r['country']) + " " + str(r['year']) + " " + str(ex))
+                log_debug("Error 2 save country: " + str(r['continent']) + " " + str(r['country']) + " " + str(
+                    r['year']) + " " + str(ex))
 
         dic['status'] = 'ok'
         log_debug("End load_tax_rates_by_country_year.")
@@ -1405,7 +1577,7 @@ class AcademyCityXBRL(object):
                 if str(c['CDS_01_01_2021']) == 'nan':
                     s_ = 0
                 else:
-                    s_ = 100*c['CDS_01_01_2021']
+                    s_ = 100 * c['CDS_01_01_2021']
                 data.cds = s_
                 data.save()
                 # print(data.cds)
@@ -1419,7 +1591,8 @@ class AcademyCityXBRL(object):
         for i, c in df.iterrows():
             try:
                 if str(c['sp_moodys_year']) != 'nan':
-                    d, created = XBRLSPMoodys.objects.get_or_create(year=c['sp_moodys_year'], sp=c['SP'], moodys=c['Moodys'])
+                    d, created = XBRLSPMoodys.objects.get_or_create(year=c['sp_moodys_year'], sp=c['SP'],
+                                                                    moodys=c['Moodys'])
             except Exception as ex:
                 pass
 
@@ -1429,10 +1602,10 @@ class AcademyCityXBRL(object):
             try:
                 if str(c['Rating']) != 'nan':
                     d, created = XBRLSPMoodys.objects.get_or_create(year=int(c['rating_year']), moodys=c['Rating'])
-                    dd = round(c['Default_Spread_1_1_2021']/100, 2)
+                    dd = round(c['Default_Spread_1_1_2021'] / 100, 2)
                     d.default_spread = dd
-                    d_from = round(100*c['score_from'], 2)/100
-                    d_to = round(100*c['score_to'], 2)/100
+                    d_from = round(100 * c['score_from'], 2) / 100
+                    d_to = round(100 * c['score_to'], 2) / 100
                     d.score_from = d_from
                     d.score_to = d_to
                     d.save()
@@ -1446,7 +1619,7 @@ class AcademyCityXBRL(object):
         today = str(today)
         # print(today)
         # print(today_5)
-        s_baml = "https://fred.stlouisfed.org/graph/fredgraph.xls?bgcolor=%23e1e9f0&chart_type=line&drp=0&fo=open%20sans&graph_bgcolor=%23ffffff&height=450&mode=fred&recession_bars=on&txtcolor=%23444444&ts=12&tts=12&width=1168&nt=0&thu=0&trc=0&show_legend=yes&show_axis_titles=yes&show_tooltip=yes&id=BAMLEMPBPUBSICRPIEY&scale=left&cosd="+today_5+"&coed="+today+"&line_color=%234572a7&link_values=false&line_style=solid&mark_type=none&mw=3&lw=2&ost=-99999&oet=99999&mma=0&fml=a&fq=Daily&fam=avg&fgst=lin&fgsnd=2020-02-01&line_index=1&transformation=lin&vintage_date=2021-09-17&revision_date=2021-09-17&nd=1998-12-31"
+        s_baml = "https://fred.stlouisfed.org/graph/fredgraph.xls?bgcolor=%23e1e9f0&chart_type=line&drp=0&fo=open%20sans&graph_bgcolor=%23ffffff&height=450&mode=fred&recession_bars=on&txtcolor=%23444444&ts=12&tts=12&width=1168&nt=0&thu=0&trc=0&show_legend=yes&show_axis_titles=yes&show_tooltip=yes&id=BAMLEMPBPUBSICRPIEY&scale=left&cosd=" + today_5 + "&coed=" + today + "&line_color=%234572a7&link_values=false&line_style=solid&mark_type=none&mw=3&lw=2&ost=-99999&oet=99999&mma=0&fml=a&fq=Daily&fam=avg&fgst=lin&fgsnd=2020-02-01&line_index=1&transformation=lin&vintage_date=2021-09-17&revision_date=2021-09-17&nd=1998-12-31"
         s_bmi = "http://www.spglobal.com/spdji/en/idsexport/file.xls?hostIdentifier=48190c8c-42c4-46af-8d1a-0cd5db894797&redesignExport=true&languageId=1&selectedModule=PerformanceGraphView&selectedSubModule=Graph&yearFlag=fiveYearFlag&indexId=5457901"
         path_baml = self.download_excel_file(s_baml, "baml", ext='xls')
         path_bmi = self.download_excel_file(s_bmi, "bmi", ext='xls')
@@ -1475,8 +1648,8 @@ class AcademyCityXBRL(object):
                 data_bmi.append(sh_bmi.cell(cur_row, 1).value)
         # print('data_bmi')
         # print(data_bmi)
-        data_bmi = [x2/x1-1 for (x1, x2) in zip(data_bmi, data_bmi[1:])]
-        std_bmi = statistics.pstdev(data_bmi)*(260**0.5)
+        data_bmi = [x2 / x1 - 1 for (x1, x2) in zip(data_bmi, data_bmi[1:])]
+        std_bmi = statistics.pstdev(data_bmi) * (260 ** 0.5)
         # log_debug('-- Processed file bmi --')
         sh_baml = wb_baml.sheet_by_index(0)
         data_baml = []
@@ -1502,14 +1675,15 @@ class AcademyCityXBRL(object):
             k1 = data_baml[i]
         std_baml = statistics.pstdev(data_baml)
         mean_baml = statistics.mean(data_baml)
-        cv = std_baml/mean_baml
-        volatility_ratio = std_bmi/cv
+        cv = std_baml / mean_baml
+        volatility_ratio = std_bmi / cv
 
         # log_debug('-- Processed file baml --')
 
         # ll = [volatility_ratio, std_bmi, cv, std_baml, mean_baml]
         # print(ll)
-        project = Project.objects.filter(translations__language_code=get_language()).get(id=int(request.session['cv_project_id']))
+        project = Project.objects.filter(translations__language_code=get_language()).get(
+            id=int(request.session['cv_project_id']))
         project.volatility_ratio = volatility_ratio
         project.save()
         dic = {'status': 'ok', 'volatility_ratio': volatility_ratio}
@@ -1576,6 +1750,12 @@ class AcademyCityXBRL(object):
     # general purpose functions for testing
     def test(self):
         print('test')
+        text = "<us-gaap:IncomeLossFromContinuingOperationsBeforeIncomeTaxesMinorityInterestAndIncomeLossFromEquityMethodInvestments>a</us-gaap:IncomeLossFromContinuingOperationsBeforeIncomeTaxesMinorityInterestAndIncomeLossFromEquityMethodInvestments><td:k>b</td:k><td:k>c</td:k><td:k>d</td:k>"
+        soup = BeautifulSoup(text, 'lxml')
+        tag_list = soup.find_all(re.compile("us-gaap:"))
+        for tag in tag_list:
+            name_ = tag.name.split(":")
+            print(name_[1])
         dic = {'status': 'ok'}
         return dic
 
@@ -1583,13 +1763,3 @@ class AcademyCityXBRL(object):
         for k in XBRLCountryYearData.objects.filter(year=2020).all():
             print(k.cds)
     #
-
-
-
-
-
-
-
-
-
-

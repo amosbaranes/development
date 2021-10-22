@@ -1,5 +1,4 @@
 {% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
-{% block content %}
 <style>
 #plugin td.account {
 {% if LANGUAGE_CODE == "ar" %}
@@ -129,8 +128,12 @@ re_calculate = function (event)
 }
 </script>
 <!-- new_company -->
+<!--
+ a = elm.getAttribute("class").split("-")[1]
+ if ( a=="remove" || a=="file"){ elm = elm.parentNode; }
+-->
 <script>
-new_company = function (c)
+new_company = function (c=0)
 {
     let accounts01_nc = ['cash', 'inventory', 'account_receivables', 'other_current_assets', 'total_current_assets',
                    'ppe', 'accumulated_depreciation', 'subsidiaries', 'intangibles', 'total_long_term_assets',
@@ -146,15 +149,16 @@ new_company = function (c)
 
     let accounts1_nc = ['revenue', 'cofgs', 'depreciation_is', 'sales_marketing', 'general_administrative',
                      'taxes', 'interest', 'dividend'];
+
     for (const account of accounts1_nc){s1 = account + "1.value = 0"; eval(s1)}
 
     let accounts0_nc = ['gross_profit', 'income_before_taxes', 'net_income_is', 'retained_earning_bre',
                      'retained_earning_ere', 'net_income_is_re'];
     for (const account of accounts0_nc) {s0 = account + "1.innerHTML = 0"; eval(s0);}
 
-    re_calculate();
+    re_calculate()
 
-    if (c==0)
+    if (c==1)
     {
         as_ = document.querySelectorAll('[ac]')
         var event = new Event("click", {bubbles: true});
@@ -175,31 +179,20 @@ new_company = function (c)
 case_studies = function (event)
 {
  elm = event.target
-  //alert(elm.outerHTML)
-
- a = elm.getAttribute("class").split("-")[1]
-  //alert(a)
- if ( a=="remove" || a=="file"){ elm = elm.parentNode; }
 
   s = "a = " + elm.getAttribute("account");
-  //alert(s)
   eval(s)
-  //alert(a)
-
   for (i in a)
   {
-   //alert(i) ; alert(a[i])
    sa = i + ".value =  parseInt(" + i + ".value) + parseInt(" + a[i] + ")"
-   //alert(sa)
    eval(sa)
    }
-
    re_calculate()
 }
 </script>
 
-<button onclick="new_company(c=1)" class="badge badge-pill badge-primary">{% trans "Clean data" %}</button>
-<button onclick="new_company(c=0)" class="badge badge-pill badge-primary" >{% trans "Run all transactions" %}</button>
+<button onclick="new_company(c=0)" class="badge badge-pill badge-primary">{% trans "Clean data" %}</button>
+<button onclick="new_company(c=1)" class="badge badge-pill badge-primary" >{% trans "Run all transactions" %}</button>
 
 <div oninput="re_calculate(event)" class="row"
         {% if LANGUAGE_CODE == "ar" %}
@@ -584,14 +577,14 @@ case_studies = function (event)
                     <a href="#" class="btn btn-sm btn-info" ac="1" style="background-color:#3366ff"
                      account="{'cash1': 100, 'ppe1': -100}">
                      16.&nbsp;<i class="fa fa-file-o" style="font-size:15px;color:white;"
-                     account="{'cash1': -400, 'ppe1': 400}"></i> {% trans "sale PP&E 100" %}
+                     account="{'cash1': 100, 'ppe1': -100}"></i> {% trans "Buy PP&E 100" %}
                    </a>
                 </td>
                 <td class="side">
                     <a href="#" class="btn btn-sm btn-info" style="background-color:#3366ff"
                      account="{'cash1': -100, 'ppe1': 100}">
                      <i class="fa fa-remove" style="font-size:12px;color:red"
-                     account="{'cash1': 400, 'ppe1': -400}"></i>
+                     account="{'cash1': -100, 'ppe1': 100}"></i>
                    </a>
                 </td></tr>
 
@@ -604,4 +597,3 @@ case_studies = function (event)
 
 </div>
 <br/><br/>
-{% endblock content %}

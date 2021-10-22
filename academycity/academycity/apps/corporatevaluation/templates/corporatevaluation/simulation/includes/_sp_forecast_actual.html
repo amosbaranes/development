@@ -114,33 +114,95 @@ function create_table_for_earning_forecast_sp500(data)
 <!--  show_detailed_forecast_data  -->
 <script>
 
+
 function show_detailed_forecast_data(event)
 {
  elm = event.target; //alert(elm.outerHTML)
  pelm = elm.parentNode; //alert(pelm.outerHTML)
  s1 = "";
- s2 = "<tr><td>Y</td><td>Q</td><td>For.</td><td>Act.</td><td>P</td><td>P(-1)</td><td>D</td><td>D%</td></tr>";
+ s2 = "<tr><td>Y</td><td>Q</td><td>For.</td><td>Act.</td><td>AF%</td><td>P</td><td>P(-1)</td><td>D</td><td>D%</td></tr>";
 
- n = 0
+ var n = 0; var afl_ = []; var pl_ = [];
  for (let i = 1; i < pelm.children.length; i++)
  {
-  if(i==1){s1+= "<h3>" +pelm.children[i].innerHTML; continue;}
-  if(i==2){s1+= ": "+pelm.children[i].innerHTML +"</h3>"; continue;}
-  k = (i - 3 - n*6)
-  if (i==3) { var q = pelm.children[i].getAttribute("q"); y = y = pelm.children[i].getAttribute("y");}
-  if(k>5){k=0; y = pelm.children[i].getAttribute("y"); q = pelm.children[i].getAttribute("q");n+=1 }
-
-  if (y != null) {
-   if(k==0){ s2 += "<tr><td>" + y + "</td><td>" + q + "</td>"}
-   s2+="<td>"+pelm.children[i].innerHTML+"</td>"
+    if(i==1){s1+= "<h3>" +pelm.children[i].innerHTML; continue;}
+    if(i==2){s1+= ": "+pelm.children[i].innerHTML; continue;}
+    k = (i - 3 - n*6)
+    if (i==3) { var q = pelm.children[i].getAttribute("q"); var y = pelm.children[i].getAttribute("y"); }
+    if(k>5){k=0; y = pelm.children[i].getAttribute("y"); q = pelm.children[i].getAttribute("q");n+=1; }
+    if (y != null)
+    {
+       if(k==0){ s2 += "<tr><td>" + y + "</td><td>" + q + "</td>"}
+       s2+="<td>"+pelm.children[i].innerHTML+"</td>"
+       d_ = ""
+       if(k==0){var f_=parseFloat(pelm.children[i].innerHTML);}
+       if(k==1)
+       {
+           if(!isNaN(f_))
+           {
+              var a_=parseFloat(pelm.children[i].innerHTML);
+              var d_ = Math.round(10000*(parseFloat(a_) - parseFloat(f_))/parseFloat(a_))/100;
+              afl_.push(d_)
+           }
+       }
+       s2+="<td>"+d_+"</td>";
+   if(k==5){ k_ = pelm.children[i].innerHTML; if(!isNaN(k_)){pl_.push(parseFloat(k_));}}
    if(k==5){s2 += "</tr>"}
   }
  }
+ //std = Math.round(100*StandardDeviation(pl_))/100;
+ // alert(pl_); alert(afl_)
+ pl_ = pl_.map(Math.abs)
+ Mpl_ = Math.round(100*Mean(pl_))/100;
+ let r = Math.round(100*pcorr(afl_, pl_))/100;
+ s1 += ";   R= "+r+";   MAbs(D%)= "+Mpl_+"</h3>"
  s_all = s1 + "<table>" +  s2 + "</table>"
  //alert(s_all)
  ef.set_info_by_ticker(s_all)
 }
 
+function Mean(numbersArr) {
+    var total = 0;
+    for(var key in numbersArr)
+       total += numbersArr[key];
+    var meanVal = total / numbersArr.length;
+    return meanVal;
+}
+
+function StandardDeviation(numbersArr) {
+    //--CALCULATE AVAREGE--
+    var total = 0;
+    for(var key in numbersArr)
+       total += numbersArr[key];
+    var meanVal = total / numbersArr.length;
+    //--CALCULATE AVAREGE--
+
+    //--CALCULATE STANDARD DEVIATION--
+    var SDprep = 0;
+    for(var key in numbersArr)
+       SDprep += Math.pow((parseFloat(numbersArr[key]) - meanVal),2);
+    var SDresult = Math.sqrt(SDprep/numbersArr.length);
+    //--CALCULATE STANDARD DEVIATION--
+    return SDresult
+}
+const pcorr = (x, y) => {
+  let sumX = 0,
+    sumY = 0,
+    sumXY = 0,
+    sumX2 = 0,
+    sumY2 = 0;
+  const minLength = x.length = y.length = Math.min(x.length, y.length),
+    reduce = (xi, idx) => {
+      const yi = y[idx];
+      sumX += xi;
+      sumY += yi;
+      sumXY += xi * yi;
+      sumX2 += xi * xi;
+      sumY2 += yi * yi;
+    }
+  x.forEach(reduce);
+  return (minLength * sumXY - sumX * sumY) / Math.sqrt((minLength * sumX2 - sumX * sumX) * (minLength * sumY2 - sumY * sumY));
+};
 </script>
 
 <script>

@@ -19,43 +19,9 @@ function get_account(sk, y, cd)
 {
   return "<td><input class='value' id='"+sk+"_" + y + "' account='"+sk+"' year='" + y + "' type='text' value='" + toCommas(cd[y][sk][0]) + "' onchange='input_valuation(event)'></td>"
 }
+</script>
 
-function set_data(data)
-{
-    cd = data['company_data'];
-    vObj["cd"] = cd;
-    sy = "<thead><tr id='fs_years_data'><th>Account</th>"
-    z = 0
-    for (y in cd)
-    {
-     z += 1;
-     if(z==1)
-     {
-      for (a in cd[y])
-      {
-        s = a + "= \"<tr><td class='account'>"+cd[y][a][1]+"</td>\""; eval(s);
-      }
-     }
-     sy += "<th><a id='xbrl_data_"+y+"' href='#'>"+y+"</th>"
-     for (a in cd[y])
-     {
-       s = a + "+= get_account('"+a+"', y, cd)"; eval(s);
-     }
-    }
-    st = "<table id='data'>"+sy+"</tr></thead>"
-    ss = ""
-    for (a in cd[y])
-    {
-      ss += "st+=" + a + " + '</tr>'; "
-    }
-    eval(ss)
-    st += "</table><br/><br/><br/><br/><br/>";
-    s_yf_http = "https:\/\/finance.yahoo.com\/quote\/" + data['ticker'] + "\/financials?p=" + data['ticker']
-    st='<div><a id="fy_link" href="'+ s_yf_http +'" target="_blank"> Yahoo Finance</a></div><br/>'+st;
-    sm.TabObjects["data"].tabDoc.innerHTML = st
-}
-
-
+<script>
 // update data
 function input_valuation(event)
 {

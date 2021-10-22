@@ -18,6 +18,11 @@
     <table>
         <tr>
             <td>
+                <button onclick="admin_setup(event)" fun="test" style="width: 250px;">test</button>
+            </td>
+        </tr>
+        <tr>
+            <td>
                 <!--  in calculation tab -->
                 <button onclick="get_risk_premium()" style="width: 250px;">Get Risk Premium</button>
             </td>
@@ -33,6 +38,16 @@
         <tr>
             <td>
                 <button onclick="admin_setup(event)" fun="load_country_premium" style="width: 250px;">load_country_premium</button>
+            </td>
+        </tr>
+    </table>
+    <hr/>
+    <table>
+        <tr>
+            <td>
+                <button onclick="tdameritrade_setup(event)" fun="get_prices" style="width: 250px;">
+                    get_prices
+                </button>
             </td>
         </tr>
     </table>
@@ -171,6 +186,40 @@ function update_data_for_companies() {
 
 <script>
 
+function tdameritrade_setup(event)
+{
+ e = event.target; fun_ = e.getAttribute("fun");
+ //var ss = prompt("are you sure you want to run function: " + fun_ + "\nType Yes to run", 'No')
+ //if(ss == '' || ss == 'No') { return;}
+ message_div = document.getElementById("result_message")
+ message_div.innerHTML = 'In process .. '
+
+ $.post('{% url "corporatevaluation:tdameritrade_setup" %}',
+      {
+        fun: fun_,
+      },
+      function(data){
+        for (k in data)
+        {
+          if (k == 'status')
+           {
+            message_div.innerHTML = 'Process done with status: ' + data['status']
+           }
+           else
+           {
+                // alert(k + " : " + data[k])
+                vObj[k] = data[k];
+                // alert(vObj[k])
+           }
+        }
+      }
+    );
+}
+
+</script>
+
+<!-- admin_setup(event) -->
+<script>
 function admin_setup(event)
 {
  e = event.target; fun_ = e.getAttribute("fun");
