@@ -21,7 +21,6 @@
 {% endblock add_css %}
 
 {% block nav_bar %}
-          {% include 'education/includes/description_page.html' %}
 {% endblock %}
 
 {% block body_content %}
@@ -43,7 +42,7 @@ body {font-family: Arial;}
   border: none;
   outline: none;
   cursor: pointer;
-  padding: 14px 16px;
+  padding: 5px 10px;
   transition: 0.3s;
   font-size: 17px;
 }
@@ -100,7 +99,19 @@ data {
 .data tr:nth-child(even){background-color: lightblue}
 
 </style>
+<style>
+    .chosen {color: blue}
+</style>
+
 <div>
+    <div style="color:white;background-color:blue">
+        <a href="/" >
+            <img src="{{ institution_obj.logo_image.url }}" width="25px" height="36px" alt="HOME">
+        </a>
+        <span>Financial Statements, Corporate Valuation & Options Trading</span>
+    </div>
+
+
     <!-- Location for tabs.  The management tabs has to be entered manually  -->
     <div id="tab_titles" class="tab">
     </div>
@@ -122,18 +133,15 @@ data {
         {%if user.is_staff or request.user|has_group:"options"%}
           {% include 'corporatevaluation/simulation/includes/_sp_forecast_actual.html' %}
             <!-- base win object -->
-            <script src="{% static 'js/basic_pop_windows.js' %}" crossorigin="anonymous"></script>
+            <script src="{% static 'js/basic_pop_windows_v3.js' %}" crossorigin="anonymous"></script>
             <script>
-            function EarningForecast(my_name_, win_name_, win_title_, use_id)
+            function EarningForecast(my_name_, win_name_, win_title_, use_id, tab_obj_)
             {
                 this.my_name = my_name_;
                 this.name = "ef_" + win_name_.toString(); // course_schedule_id
-                this.width_ = "700";
-                this.height_ = "500";
-                this.user_id = user_id;
-                var is_scroll_ = true;
+                this.width_ = "700"; this.height_ = "500"; this.user_id = user_id; var is_scroll_ = true;
                 acWin.call(this, my_name_=my_name_, win_name=this.name, win_title=win_title_, width=this.width_,
-                           height=this.height_, right="2%", top="30%", is_scroll=is_scroll_, zindex=20)
+                           height=this.height_, right="2%", top="30%", is_scroll=is_scroll_, zindex=20, tab_obj_=tab_obj_)
             }
             EarningForecast.prototype = Object.create(acWin.prototype)
             var ef = '';
@@ -147,30 +155,37 @@ data {
           {% include 'corporatevaluation/simulation/includes/valuationsetup.html' %}
         {% endif %}
     </div>
-  <br/>
+  <br/><br/><br/>
 </div>
 <!-- home -->
 
 <span id="tabs_"
-tabs_s="xbrl_data:{% trans "XBRL Data" %};local,data:{% trans "Data" %};local,comparablecompanies:{% trans "Comparable Companies" %};local,calculations:{% trans "Supporting Schedules" %};local,fsa:{% trans "Financial Statements Analysis" %};local,valuation:{% trans "Valuation" %};local,inputs:{% trans "Inputs" %};local"
-tabs_m="valuationsetup:{% trans "Setup" %};pull_screen,valuationadmin:{% trans "Admin" %};pull_screen,valuationmethodology:{% trans "Methodology" %};pull_screen,valuationtodo:{% trans "To do list" %};pull_screen,sec:{% trans "SEC" %};local"
-tabs_options = "sp_forecast_actual:{% trans "S&P500 F/A" %};local"
-accounts_structure="{'11990': {'star_other': [11100, 11800], 'total':0}, '12990': {'star_other': [12500, 12900], 'total':0}, '13990': {'star_other': [13100, 13200], 'total':0},'14990': {'star_other': [14100, 14200], 'total':0},'15990': {'star_other': [15000, 15500], 'total':0}}"
-accounting_equality="{'12998' :{'1': {'account': '11990', 'data': 0}, '2': {'account': '12990', 'data': 0}, '3': {'account': '12999', 'data': 0}},'12999': {'1': {'account': '14999', 'data': 0}, '2': {'account': '15990', 'data': 0}, '3': {'account': '12999', 'data': 0}},'14999': {'1': {'account': '13990', 'data': 0}, '2': {'account': '14990', 'data': 0}, '3': {'account': '14999', 'data': 0}},'20100': {'1': {'account': '20200', 'data': 0}, '2': {'account': '20300', 'data': 0}, '3': {'account': '20100', 'data': 0}},'20100': {'1': {'account': '20700', 'data': 0}, '2': {'account': '20800', 'data': 0}, '3': {'account': '20300', 'data': 0}}, '20800': {'1': {'account': '20850', 'data': 0}, '2': {'account': '20900', 'data': 0}, '3': {'account': '20800', 'data': 0}}}"
+tabs_s="xbrl_data:{% trans "XBRL Data" %};local,data:{% trans "Data" %};local,comparablecompanies:{% trans "Comparable Companies" %};local,calculations:{% trans "Schedules" %};local,fsa:{% trans "FSA" %};local,valuation:{% trans "Valuation" %};local,inputs:{% trans "Inputs" %};local"
+tabs_m="valuationsetup:{% trans "Setup" %};pull_screen,valuationadmin:{% trans "Admin" %};pull_screen,valuationmethodology:{% trans "Methodology" %};pull_screen,valuationtodo:{% trans "To Do" %};pull_screen,sec:{% trans "SEC" %};local"
+tabs_options = "sp_forecast_actual:{% trans "S&P500" %};local"
+accounts_structure="{'11990': {'star_other': [11100, 11800], 'total':0}, '12990': {'star_other': [12500, 12900], 'total':0}, '13990': {'star_other': [13100, 13200], 'total':0},'14990': {'star_other': [14100, 14200], 'total':0},'15390': {'star_other': [15000, 15350], 'total':0}}"
+accounting_equality="
+        {'12998': {'1': {'account': '11990', 'data': 0}, '2': {'account': '12990', 'data': 0}, '3': {'account': '12999', 'data': 0}},
+         '12999': {'1': {'account': '14999', 'data': 0}, '2': {'account': '15990', 'data': 0}, '3': {'account': '12999', 'data': 0}},
+         '14999': {'1': {'account': '13990', 'data': 0}, '2': {'account': '14990', 'data': 0}, '3': {'account': '14999', 'data': 0}},
+         '012999': {'1': {'account': '14999', 'data': 0}, '2': {'account': '15990', 'data': 0}, '3': {'account': '12999', 'data': 0}},
+         '15990': {'1': {'account': '15390', 'data': 0}, '2': {'account': '15400', 'data': 0}, '3': {'account': '15990', 'data': 0}},
+         '20100': {'1': {'account': '20200', 'data': 0}, '2': {'account': '20300', 'data': 0}, '3': {'account': '20100', 'data': 0}},
+         '20101': {'1': {'account': '20700', 'data': 0}, '2': {'account': '20800', 'data': 0}, '3': {'account': '20300', 'data': 0}},
+         '20800': {'1': {'account': '20850', 'data': 0}, '2': {'account': '20900', 'data': 0}, '3': {'account': '20800', 'data': 0}}}"
+         '20102': {'1': {'account': '20700', 'data': 0}, '2': {'account': '20800', 'data': 0}, '3': {'account': '20300', 'data': 0}},
+
 user_id = "{{request.user.id}}"
 ></span>
-
-<!--        xbrl_data:{% trans "XBRLData" %};local,
-                   accounting_equality="[[11990, 12990, 12999], [13990, 14990, 14999], [14999, 15990, 12999]]"
-                   -->
 
 <span id="is_staff" is_staff="{{user.is_staff}}" is_instructor="{{user|has_group:'instructors'}}"  is_options="{{user|has_group:'options'}}"></span>
 <div id="log_info"></div>
 
 <!-- corporate valuation -->
+<!-- PARAMETERS IN vObj -->
 <script>
 
-//    https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Working_with_Objects
+// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Working_with_Objects
 var vObj = new Object();
 vObj["rf"] = {{ project.rf }};
 vObj["volatility_ratio"] = {{ project.volatility_ratio }};
@@ -183,6 +198,7 @@ vObj["sec_company_data"] = {}
 vObj["company_info"] = {};
 vObj["xbrl_data"] = {};
 vObj["xbrl_statements"] = {};
+vObj["options_delta"] = {};
 vObj["filing_year"] = 0;
 vObj["reporting_year"] = 0;
 vObj["select_accounts_type"] = "-1";
@@ -190,7 +206,8 @@ vObj["select_accounts"] = "";
 vObj["is_update"] = "no";
 // --
 vObj["risk_premium_downloaded"] = 0
-vObj["earning_forecast_sp500_view_downloaded"] = 0
+// vObj["earning_forecast_sp500_view_downloaded"] = 0
+vObj["earning_forecast_sp500_view_main_downloaded"] = 0
 // --
 vObj["accounts_chosen"] = []
 // --
@@ -224,76 +241,57 @@ create_valuation_year()
 
 
 {% block domready %}
-
 // ================================================
-//SimTab object -->
+//  SimTab object
 function SimTab(parent, name, title, valuation_id, url_get_screens, screen_update)
 {
- this.parent = parent;
- this.name = name;
- this.title = title;
- this.VALUATION_ID = valuation_id
- this.screen_update = screen_update
- this.need_update_screen = 1;
- this.NAV = null;
- this.CONTENT = null;
- this.CONTENTObjects = {};
- this.is_show_first = true;
- this.callback_functions = []
+ this.parent = parent; this.name = name; this.title = title; this.VALUATION_ID = valuation_id;
+ this.screen_update = screen_update; this.NAV = null; this.CONTENT = null;
+ this.PopWinObjects = {};
+ // --
+ this.callback_functions = []; this.need_update_screen = 1; this.CONTENTObjects = {}; this.is_show_first = true;
  //--
-   // alert(this.name)
   if (this.screen_update == 'pull_screen')
   {
-      ed = document.createElement("div")
-      ed.setAttribute("class", "tabcontent")
-      ed.setAttribute("id", this.name)
-      this.parent.tabContents.appendChild(ed)
-  } else
-  {
-  try{
-     ed = document.getElementById(this.name);
-     } catch (er) {alert('Error1: ' + er)}
-  }
-
-  // alert(ed.outerHTML)
-
-  //
-  e = document.createElement("button")
-  e.setAttribute("class", "tablinks ")
-  e.setAttribute("id", "tab-"+name)
-  e.setAttribute("obj_name", name)
-  e.innerHTML = title
+    ed = document.createElement("div"); ed.setAttribute("class", "tabcontent");
+    ed.setAttribute("id", this.name);this.parent.tabContents.appendChild(ed);
+  } else{try{ed = document.getElementById(this.name);} catch (er) {alert('Error1: ' + er)}}
+    // --
+  e = document.createElement("button");e.setAttribute("class", "tablinks ");e.setAttribute("id", "tab-"+name);
+  e.setAttribute("obj_name", name); e.innerHTML = title;
 
   this.parent.tabTitles.insertBefore(e, this.parent.tabTitles.childNodes[0])
 
   e.addEventListener("click", function(){
-        event.preventDefault();
-        obj_name = this.getAttribute('obj_name');
-        obj = parent.TabObjects[obj_name]
-        is_show_first = obj.is_show_first
-         if(obj.screen_update == 'pull_screen')
-         {
-          obj.setScreens(valuation_id, url_get_screens, is_show_first);
-         }
-         // --
-          obj.title_click(obj)
-         // --
-              //post_ajax_create_action('globsim__change_to_tab__' + obj.title)
-              var i, tabcontent, tablinks;
-              tabcontent = document.getElementsByClassName("tabcontent");
-              for (i = 0; i < tabcontent.length; i++) {
-                tabcontent[i].style.display = "none";
-              }
-              tablinks = document.getElementsByClassName("tablinks");
-              for (i = 0; i < tablinks.length; i++) {
-                tablinks[i].className = tablinks[i].className.replace(" active", "");
-              }
-              document.getElementById(obj_name).style.display = "block";
-              this.className += " active";
+    event.preventDefault();
+    obj_name = this.getAttribute('obj_name');
+    obj = parent.TabObjects[obj_name]
+    is_show_first = obj.is_show_first
+    if(obj.screen_update == 'pull_screen')
+    {obj.setScreens(valuation_id, url_get_screens, is_show_first);}
+    // --
+      obj.title_click(obj); obj.parent.titleWasClicked(); for (win in obj.PopWinObjects) {obj.PopWinObjects[win].resume_win();}
+    // --
+      //post_ajax_create_action('globsim__change_to_tab__' + obj.title)
+      var i, tabcontent, tablinks; tabcontent = document.getElementsByClassName("tabcontent");
+      for (i = 0; i < tabcontent.length; i++) {tabcontent[i].style.display = "none";}
+      tablinks = document.getElementsByClassName("tablinks");
+      for (i = 0; i < tablinks.length; i++) {tablinks[i].className = tablinks[i].className.replace(" active", "");}
+      document.getElementById(obj_name).style.display = "block"; this.className += " active";
   }.bind(e, event, parent ));
 
- this.tabTitle = e; // document.getElementById("tab-"+this.name)
- this.tabDoc = ed; //document.getElementById(this.name)
+  this.tabTitle = e; this.tabDoc = ed;
+}
+
+SimTab.prototype.set_max_zindex = function(win) {
+    var nmax = 0;
+    for (i in this.PopWinObjects)
+    {if(this.PopWinObjects[i].win_frame.style.zIndex > nmax){nmax=this.PopWinObjects[i].win_frame.style.zIndex}}
+    win.style.zIndex = 1*nmax+1
+}
+
+SimTab.prototype.tabTitleWasClicked = function() {
+      for (win in this.PopWinObjects){this.PopWinObjects[win].close_win();}
 }
 
 SimTab.prototype.setScreens = function(valuation_id, url_get_screens, is_show_first=false) {
@@ -332,12 +330,8 @@ SimTab.prototype.add_title_click_call_function = function(fun) {
 }
 
 SimTab.prototype.title_click = function() {
-        for (k in this.callback_functions)
-        {
-            try{
-             eval(this.callback_functions[k]+"(this)")
-            } catch(err){alert(err)}
-        }
+    for (k in this.callback_functions)
+    {try{eval(this.callback_functions[k]+"(this)")} catch(err){alert(err)}}
 }
 
 SimTab.prototype.set_nav_prefix = function() {
@@ -373,55 +367,37 @@ set_first_obj = function(folder, first=null, obj_name='')
 // -- SimManagementTab object --
 function SimManagementTab(parent, name, title, valuation_id, url_get_screens, screen_update)
 {
- this.parent = parent;
- this.name = name;
- this.title = title;
- this.VALUATION_ID = valuation_id
- this.screen_update = screen_update
- this.NAV = null;
- this.CONTENT = null;
+ this.parent = parent; this.name = name; this.title = title; this.VALUATION_ID = valuation_id;
+ this.screen_update = screen_update; this.NAV = null; this.CONTENT = null;
+ this.PopWinObjects = {};
+ // --
+ this.callback_functions = [];
+ //--
   if (this.screen_update == 'pull_screen')
   {
-      ed = document.createElement("div")
-      ed.setAttribute("class", "tabcontent")
-      ed.setAttribute("id", this.name)
-      this.parent.tabContents.appendChild(ed)
-  } else
-  {
-  try{
-     ed = document.getElementById(this.name);
-     } catch (er) {alert('Error1: ' + er)}
-  }
+    ed = document.createElement("div"); ed.setAttribute("class", "tabcontent");
+    ed.setAttribute("id", this.name); this.parent.tabContents.appendChild(ed);
+  } else{try{ed = document.getElementById(this.name);} catch (er) {alert('Error1: ' + er)}}
+ // --
+  e = document.createElement("button");e.setAttribute("class", "tablinks ");e.setAttribute("id", "tab-"+name);
+  e.setAttribute("obj_name", name); e.innerHTML = title;
 
-  // alert(ed.outerHTML)
-
-  //
-  e = document.createElement("button")
-  e.setAttribute("class", "tablinks ")
-  e.setAttribute("id", "tab-"+name)
-  e.setAttribute("obj_name", name)
-  e.innerHTML = title
   this.parent.tabTitles.insertBefore(e, this.parent.tabTitles.childNodes[0])
   e.addEventListener("click", function(){
-        event.preventDefault();
-        obj_name = this.getAttribute('obj_name');
-        obj = parent.TabObjects[obj_name]
-
-              //post_ajax_create_action('globsim__change_to_tab__' + obj.title)
-              var i, tabcontent, tablinks;
-              tabcontent = document.getElementsByClassName("tabcontent");
-              for (i = 0; i < tabcontent.length; i++) {
-                tabcontent[i].style.display = "none";
-              }
-              tablinks = document.getElementsByClassName("tablinks");
-              for (i = 0; i < tablinks.length; i++) {
-                tablinks[i].className = tablinks[i].className.replace(" active", "");
-              }
-              document.getElementById(obj_name).style.display = "block";
-              this.className += " active";
+    event.preventDefault(); obj_name = this.getAttribute('obj_name'); obj = parent.TabObjects[obj_name];
+    // --
+    obj.title_click(obj); obj.parent.titleWasClicked(); for (win in obj.PopWinObjects) {obj.PopWinObjects[win].resume_win();}
+    // --
+      //post_ajax_create_action('globsim__change_to_tab__' + obj.title)
+      var i, tabcontent, tablinks; tabcontent = document.getElementsByClassName("tabcontent");
+      for (i = 0; i < tabcontent.length; i++) {tabcontent[i].style.display = "none";}
+      tablinks = document.getElementsByClassName("tablinks");
+      for (i = 0; i < tablinks.length; i++) {tablinks[i].className = tablinks[i].className.replace(" active", "");}
+      document.getElementById(obj_name).style.display = "block"; this.className += " active";
   }.bind(e, event, parent ));
- this.tabTitle = e; // document.getElementById("tab-"+this.name)
- this.tabDoc = ed; //document.getElementById(this.name)
+
+ this.tabTitle = e; this.tabDoc = ed;
+
  try{
   name_ = this.name.toLowerCase(); content_ = name_ + "_content"; nav_ = name_ + "_nav"
   this.NAV = document.getElementById(nav_)
@@ -431,6 +407,15 @@ function SimManagementTab(parent, name, title, valuation_id, url_get_screens, sc
 
 SimManagementTab.prototype.setScreens = function(valuation_id, url_get_screens){
    doc_ = this.tabDoc
+}
+
+SimManagementTab.prototype.tabTitleWasClicked = function() {
+  for (win in this.PopWinObjects){this.PopWinObjects[win].close_win();}
+}
+
+SimManagementTab.prototype.title_click = function() {
+    for (k in this.callback_functions)
+    {try{eval(this.callback_functions[k]+"(this)")} catch(err){alert(err)}}
 }
 
 // =========== Tabs management ==========================
@@ -452,6 +437,14 @@ function SimManager(valuation_id)
       this.TabObjects["inputs"].tabTitle.dispatchEvent(event);
     } catch (err) {alert(err)}
     this.vObj = new ValuationObject(this);
+}
+
+
+SimManager.prototype.titleWasClicked = function() {
+        for (t in this.TabObjects)
+        {
+          this.TabObjects[t].tabTitleWasClicked()
+        }
 }
 
 SimManager.prototype.setTabs = function() {
@@ -493,15 +486,6 @@ SimManager.prototype.setTabs = function() {
     }
 
     if (this.is_staff == 'True' || this.is_options == 'True'){
-
-
-try{
-   ef = new EarningForecast(my_name_="ef", win_name_="earning_forecast", win_title_="Earning Forecast", user_id=vObj["user_id"]);
-   ef.set_acWinStatEventListeners(ef);
-} catch (err) {console.log("Error Erning Forecast 100: ",err.message)}
-
-
-
       for(var name in tabs_options)
       {s = "this.TabObjects[name] = new SimTab(this, name, tabs_options[name][0], this.valuation_id, this.url_get_screens, tabs_options[name][1])" ; eval(s)}
     }
@@ -519,7 +503,9 @@ try{
 SimManager.prototype.setTitleCallFunction = function() {
         try{this.TabObjects["comparablecompanies"].add_title_click_call_function("valuation_vs_actual");} catch(er){}
         try{this.TabObjects["calculations"].add_title_click_call_function("set_active_tab_");} catch(er){}
-        try{this.TabObjects["sp_forecast_actual"].add_title_click_call_function("get_earning_forecast_sp500_view");} catch(er){}
+        //try{this.TabObjects["sp_forecast_actual"].add_title_click_call_function("get_earning_forecast_sp500_view");} catch(er){}
+        //try{this.TabObjects["sp_forecast_actual"].add_title_click_call_function("get_earning_forecast_sp500_view_main");} catch(er){}
+        try{this.TabObjects["sp_forecast_actual"].add_title_click_call_function("get_earning_forecast_sp500_view_main_title");} catch(er){}
 }
 
 // == Math ==

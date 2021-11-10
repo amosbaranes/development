@@ -20,8 +20,11 @@ from ..courses.models import (CourseSchedule, CourseScheduleUser, Team)
 from ..core.sql import TruncateTableMixin
 import decimal
 import datetime
+from datetime import timedelta
 
 from django.db.models.functions import Coalesce
+from scipy.stats import pearsonr
+from ..core.utils import log_debug
 
 
 # Data
@@ -763,6 +766,7 @@ class XBRLValuationAccounts(TruncateTableMixin, models.Model):
         verbose_name_plural = _('XBRLValuationAccounts')
         ordering = ['order']
     #
+    sic = models.PositiveSmallIntegerField(default=0)
     order = models.PositiveSmallIntegerField(default=0)
     account = models.CharField(max_length=250, null=True)
     type = models.SmallIntegerField(default=1)   # 1 balance sheet 2 income statement -1 all
@@ -990,11 +994,76 @@ class XBRLSPMoodys(TruncateTableMixin, models.Model):
     # parent = models.ForeignKey('self', on_delete=models.CASCADE, related_name='children', default=1)
 
 
+class XBRLSPStatistics(TruncateTableMixin, models.Model):
+    class Meta:
+        verbose_name = _('XBRLSPStatistic')
+        verbose_name_plural = _('XBRLSPStatistics')
+        ordering = ['next_release_date']
+    #
+    company = models.OneToOneField(XBRLCompanyInfo, on_delete=models.CASCADE, default=None,
+                                   related_name='company_statistic')
+    next_release_date = models.DateField(blank=True, null=True)
+    mean_abs_price_change = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, default=0)
+    mean_abs_actual_forecast_change = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, default=0)
+    correlation_afp = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, default=0)
+    updated = models.DateField()
+    straddle_price = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, default=0)
+    butterfly_price = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, default=0)
+    announcement_time = models.CharField(max_length=1, default='', blank=True, null=True)
+
+    def set_company_statistics(self, is_update=True):
+        # print('---111--- set_company_statistics ------')
+        # if self.company.ticker == "PYPL":
+        #     print(self.company.ticker)
+        # print(is_update)
+        # log_debug("Start set_company_statistics for: " + self.company.ticker)
+        tmp = []
+        taf = []
+        efs = XBRLSPEarningForecast.objects.filter(company=self.company).order_by('-year', '-quarter').all()[:5]
+        for e in efs:
+            try:
+                if e.forecast == 0 or e.yesterday_price == 0:
+                    continue
+                pa = abs(e.today_price - e.yesterday_price)  # / e.yesterday_price)
+                af = abs((e.actual - e.forecast) / e.forecast)
+                tmp.append(pa)
+                taf.append(af)
+            except Exception as ex:
+                pass
+        try:
+
+            mp = sum(tmp)/len(tmp)
+            mp = round(100 * mp)/100
+            # if self.company.ticker == "PYPL":
+            #     print(len(tmp))
+            #     print(tmp)
+            #     print(mp)
+            self.mean_abs_price_change = mp
+            maf = sum(taf)/len(taf)
+            maf = round(10000 * maf)/100
+            self.mean_abs_actual_forecast_change = maf
+            tmp = [float(x) for x in tmp]
+            taf = [float(x) for x in taf]
+            if len(tmp) > 1:
+                corr, p_value = pearsonr(tmp, taf)
+                corr = round(100*corr)/100
+                self.correlation_afp = corr
+            if is_update:
+                d = (datetime.datetime.now() + timedelta(hours=-7)).date()
+                self.updated = d
+            self.save()
+        except Exception as ex:
+            # print("error 201 save mp: " + str(ex))
+            log_debug("Error 201 save mp for: " + self.company.ticker)
+        # print("End set_company_statistics: " + self.company.ticker)
+        # log_debug("End set_company_statistics: " + self.company.ticker)
+
+
 class XBRLSPEarningForecast(TruncateTableMixin, models.Model):
     class Meta:
         verbose_name = _('XBRLSPEarningForcast')
         verbose_name_plural = _('XBRLSPEarningForcast')
-        ordering = ['-date']
+        ordering = ['next_release_date']
     #
     created = models.DateTimeField(auto_now_add=True)
     company = models.ForeignKey(XBRLCompanyInfo, on_delete=models.CASCADE, default=None,

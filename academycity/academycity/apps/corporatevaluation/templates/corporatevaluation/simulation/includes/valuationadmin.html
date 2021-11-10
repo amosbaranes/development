@@ -13,6 +13,36 @@
                 <button onclick="admin_setup(event)" fun="load_sp_returns" style="width: 250px;">Load S&P 500 Returns</button>
             </td>
         </tr>
+        <tr>
+            <td>
+                <button onclick="admin_setup(event)" fun="update_statistics" style="width: 122px;">updateStatis</button>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <button onclick="admin_setup_attribute(event)" fun="get_announcement_time" attribute="m" attribute_value="5" style="width: 122px;">announTime</button>
+                <input id="attribute_name" type="text" value="m" size="4" placeholder="name"/>
+                <input id="attribute_value" type="text" value="9" size="4" placeholder="value"/>
+            </td>
+        </tr>
+
+        <tr>
+            <td>
+                <button onclick="tdameritrade_setup(event)" fun="update_options_statistics" style="width: 122px;">UpOptionsStat</button>
+                <button onclick="tdameritrade_setup(event)" fun="get_option_statistics_for_ticker" style="width: 122px;">optionForTicker</button>
+            </td>
+        </tr>
+    </table>
+
+    <hr/>
+    <table>
+        <tr>
+            <td>
+                <button onclick="tdameritrade_setup(event)" fun="get_option_chain" style="width: 250px;">
+                    get_option_chain
+                </button>
+            </td>
+        </tr>
     </table>
     <hr/>
     <table>
@@ -38,16 +68,6 @@
         <tr>
             <td>
                 <button onclick="admin_setup(event)" fun="load_country_premium" style="width: 250px;">load_country_premium</button>
-            </td>
-        </tr>
-    </table>
-    <hr/>
-    <table>
-        <tr>
-            <td>
-                <button onclick="tdameritrade_setup(event)" fun="get_prices" style="width: 250px;">
-                    get_prices
-                </button>
             </td>
         </tr>
     </table>
@@ -184,8 +204,8 @@ function update_data_for_companies() {
 }
 </script>
 
+<!--  tdameritrade_setup -->
 <script>
-
 function tdameritrade_setup(event)
 {
  e = event.target; fun_ = e.getAttribute("fun");
@@ -207,15 +227,14 @@ function tdameritrade_setup(event)
            }
            else
            {
-                // alert(k + " : " + data[k])
                 vObj[k] = data[k];
+                // alert(k + " : " + data[k])
                 // alert(vObj[k])
            }
         }
       }
     );
 }
-
 </script>
 
 <!-- admin_setup(event) -->
@@ -231,6 +250,55 @@ function admin_setup(event)
  $.post('{% url "corporatevaluation:admin_setup" %}',
       {
         fun: fun_,
+      },
+      function(data){
+        for (k in data)
+        {
+          if (k == 'status')
+           {
+            message_div.innerHTML = 'Process done with status: ' + data['status']
+           }
+           else
+           {
+                // alert(k + " : " + data[k])
+                vObj[k] = data[k];
+                // alert(vObj[k])
+           }
+        }
+      }
+    );
+}
+</script>
+
+
+<script>
+function admin_setup_attribute(event)
+{
+ var e = event.target;
+ try{
+      var attribute_name_ = document.getElementById("attribute_name").value;
+      if (attribute_name_=="")
+      {
+         var attribute_ = e.getAttribute("attribute");
+         var attribute_value_ = e.getAttribute("attribute_value");
+      } else
+      {
+         var attribute_ = attribute_name_;
+         var attribute_value_ = document.getElementById("attribute_value").value;
+      }
+
+ } catch(er){alert(er)}
+
+ var fun_ = e.getAttribute("fun");
+
+ message_div = document.getElementById("result_message")
+ message_div.innerHTML = 'In process .. '
+
+ $.post('{% url "corporatevaluation:admin_setup_attribute" %}',
+      {
+        fun: fun_,
+        attribute: attribute_,
+        attribute_value: attribute_value_
       },
       function(data){
         for (k in data)

@@ -1,6 +1,6 @@
 {% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
 {% load core_tags %}
-<div id="inputs" class="container tabcontent" style="background-color:#b3d1ff;">
+<div id="inputs" class="tabcontent" style="background-color:#b3d1ff;">
     <div>
 <!--
     <input id="company" value="" oninput="companies_on_input(event)" />
@@ -173,7 +173,6 @@ function cofe_business_fun(event)
 
 <!-- ticker_onchange(event) -->
 <script>
-
 function ticker_onchange(event)
 {
   search_ticker = event.target.value
@@ -331,8 +330,7 @@ function process_get_data_ticker(data)
     console.log("get_data_ticker: ", "in post get_data_ticker 1")
 
     vObj["company_info"] = data['company_info'];
-    if (!data['data'])
-    {alert("There is no data for this company."); return;}
+    if (!data['data']){alert("There is no data for this company."); return;}
 
     vObj["xbrl_data"] = data['data'];
     vObj["xbrl_statements"] = data['statements']
@@ -397,15 +395,18 @@ function process_get_data_ticker(data)
         d.innerHTML = sv
     console.log("process_get_data_ticker: ", "in post get_data_ticker 54")
         //alert(d.outerHTML)
-
-    // -- in xbrl_data tab --
+    // -- in _xbrl_data tab --
     balance_accounts()
     console.log("process_get_data_ticker: ", "in post get_data_ticker 56")
-    // -- in fsa tab --
+    // -- in fsa tab -
+    -
+    //alert(101)
     ratio_analysis()
     console.log("process_get_data_ticker: ", "in post get_data_ticker 58")
     // --
+    //alert(102)
     calculate_all()
+    //alert(103)
     // --
 }
 </script>

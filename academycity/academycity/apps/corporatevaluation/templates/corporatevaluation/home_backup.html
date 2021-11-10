@@ -1,0 +1,513 @@
+{% extends "base_corporatevaluation0.html" %}
+{% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
+{% load core_tags %}
+
+{% block title %}<title>Corporate Valuation</title>{% endblock title %}
+
+{% block links %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-KyZXEAg3QhqLMpG8r+8fhAXLRk2vvoC2f3B09zVXn8CA5QIVfZOJ3BCsw2P0p/We" crossorigin="anonymous">
+{% endblock %}
+
+{% block add_js %}
+ <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js"
+         integrity="sha384-U1DAWAznBHeqEIlVSCgzq+c9gqGAJn5c/t99JyeKa9xxaYpSvHU5awsuZVVFIhvj" crossorigin="anonymous"></script>
+{% endblock add_js %}
+
+
+{% block add_css %}
+    <link href="{% static 'css/simulation_style.css' %}" rel="stylesheet">
+    <link href="{% static 'css/globsim.css' %}" rel="stylesheet">
+{% endblock add_css %}
+
+{% block nav_bar %}
+          {% include 'education/includes/description_page.html' %}
+{% endblock %}
+
+{% block body_content %}
+<!--tabes click-->
+<style>
+body {font-family: Arial;}
+
+/* Style the tab */
+.tab {
+  overflow: hidden;
+  border: 1px solid #ccc;
+  background-color: #f1f1f1;
+}
+
+/* Style the buttons inside the tab */
+.tab button {
+  background-color: inherit;
+  float: left;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  padding: 5px 10px;
+  transition: 0.3s;
+  font-size: 17px;
+}
+
+/* Change background color of buttons on hover */
+.tab button:hover {
+  background-color: #ddd;
+}
+
+/* Create an active/current tablink class */
+.tab button.active {
+  background-color: #ccc;
+}
+
+/* Style the tab content */
+.tabcontent {
+  display: none;
+  padding: 6px 12px;
+  border: 1px solid #ccc;
+  border-top: none;
+}
+</style>
+<style>
+
+.value {
+ width:110px;
+ padding-right:5px;
+ text-align: right;
+}
+
+.account {
+  padding-left:10px; padding-right:5px;
+  text-align: left;
+}
+
+data {
+  font-family: Arial, Helvetica, sans-serif;
+  border-collapse: collapse;
+}
+
+.data td {
+  text-align: left;
+  border: 2px solid #ddd;
+}
+
+.data th {
+  text-align: center;
+  padding-top: 7px;
+  padding-bottom: 7px;
+  background-color: blue;
+  color: white;
+  border: 1px solid #ddd;
+}
+.data tr:nth-child(even){background-color: lightblue}
+
+</style>
+<style>
+    .chosen {color: blue}
+</style>
+
+<div>
+    <!-- Location for tabs.  The management tabs has to be entered manually  -->
+    <div id="tab_titles" class="tab">
+    </div>
+    <div id="tab_contents">
+        {% if LANGUAGE_CODE == "ar" %}
+            <div dir="RTL" style="text-align: right;" class="row">
+            {% else %}
+            <div dir="LTR" class="row">
+        {% endif%}
+          {% include 'corporatevaluation/simulation/includes/_inputs.html' %}
+          {% include 'corporatevaluation/simulation/includes/_data.html' %}
+          {% include 'corporatevaluation/simulation/includes/_fsa.html' %}
+          {% include 'corporatevaluation/simulation/includes/_xbrl_data.html' %}
+          {% include 'corporatevaluation/simulation/includes/_sec.html' %}
+          {% include 'corporatevaluation/simulation/includes/_calculations.html' %}
+          {% include 'corporatevaluation/simulation/includes/_valuation.html' %}
+          {% include 'corporatevaluation/simulation/includes/_comparablecompanies.html' %}
+
+        {%if user.is_staff or request.user|has_group:"options"%}
+          {% include 'corporatevaluation/simulation/includes/_sp_forecast_actual.html' %}
+            <!-- base win object -->
+            <script src="{% static 'js/basic_pop_windows_v3.js' %}" crossorigin="anonymous"></script>
+            <script>
+            function EarningForecast(my_name_, win_name_, win_title_, use_id, tab_obj_)
+            {
+                this.my_name = my_name_;
+                this.name = "ef_" + win_name_.toString(); // course_schedule_id
+                this.width_ = "700"; this.height_ = "500"; this.user_id = user_id; var is_scroll_ = true;
+                acWin.call(this, my_name_=my_name_, win_name=this.name, win_title=win_title_, width=this.width_,
+                           height=this.height_, right="2%", top="30%", is_scroll=is_scroll_, zindex=20, tab_obj_=tab_obj_)
+            }
+            EarningForecast.prototype = Object.create(acWin.prototype)
+            var ef = '';
+            </script>
+        {% endif %}
+
+        {%if user.is_staff or request.user|has_group:"instructors"%}
+          {% include 'corporatevaluation/simulation/includes/valuationtodo.html' %}
+          {% include 'corporatevaluation/simulation/includes/valuationmethodology.html' %}
+          {% include 'corporatevaluation/simulation/includes/valuationadmin.html' %}
+          {% include 'corporatevaluation/simulation/includes/valuationsetup.html' %}
+        {% endif %}
+    </div>
+  <br/><br/><br/>
+</div>
+<!-- home -->
+
+<span id="tabs_"
+tabs_s="xbrl_data:{% trans "XBRL Data" %};local,data:{% trans "Data" %};local,comparablecompanies:{% trans "Comparable Companies" %};local,calculations:{% trans "Schedules" %};local,fsa:{% trans "FSA" %};local,valuation:{% trans "Valuation" %};local,inputs:{% trans "Inputs" %};local"
+tabs_m="valuationsetup:{% trans "Setup" %};pull_screen,valuationadmin:{% trans "Admin" %};pull_screen,valuationmethodology:{% trans "Methodology" %};pull_screen,valuationtodo:{% trans "To Do" %};pull_screen,sec:{% trans "SEC" %};local"
+tabs_options = "sp_forecast_actual:{% trans "S&P500" %};local"
+accounts_structure="{'11990': {'star_other': [11100, 11800], 'total':0}, '12990': {'star_other': [12500, 12900], 'total':0}, '13990': {'star_other': [13100, 13200], 'total':0},'14990': {'star_other': [14100, 14200], 'total':0},'15390': {'star_other': [15000, 15350], 'total':0}}"
+accounting_equality="
+        {'12998': {'1': {'account': '11990', 'data': 0}, '2': {'account': '12990', 'data': 0}, '3': {'account': '12999', 'data': 0}},
+         '12999': {'1': {'account': '14999', 'data': 0}, '2': {'account': '15990', 'data': 0}, '3': {'account': '12999', 'data': 0}},
+         '14999': {'1': {'account': '13990', 'data': 0}, '2': {'account': '14990', 'data': 0}, '3': {'account': '14999', 'data': 0}},
+         '012999': {'1': {'account': '14999', 'data': 0}, '2': {'account': '15990', 'data': 0}, '3': {'account': '12999', 'data': 0}},
+         '15990': {'1': {'account': '15390', 'data': 0}, '2': {'account': '15400', 'data': 0}, '3': {'account': '15990', 'data': 0}},
+         '20100': {'1': {'account': '20200', 'data': 0}, '2': {'account': '20300', 'data': 0}, '3': {'account': '20100', 'data': 0}},
+         '20101': {'1': {'account': '20700', 'data': 0}, '2': {'account': '20800', 'data': 0}, '3': {'account': '20300', 'data': 0}},
+         '20800': {'1': {'account': '20850', 'data': 0}, '2': {'account': '20900', 'data': 0}, '3': {'account': '20800', 'data': 0}}}"
+         '20102': {'1': {'account': '20700', 'data': 0}, '2': {'account': '20800', 'data': 0}, '3': {'account': '20300', 'data': 0}},
+
+user_id = "{{request.user.id}}"
+></span>
+
+<span id="is_staff" is_staff="{{user.is_staff}}" is_instructor="{{user|has_group:'instructors'}}"  is_options="{{user|has_group:'options'}}"></span>
+<div id="log_info"></div>
+
+<!-- corporate valuation -->
+<!-- PARAMETERS IN vObj -->
+<script>
+
+// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Working_with_Objects
+var vObj = new Object();
+vObj["rf"] = {{ project.rf }};
+vObj["volatility_ratio"] = {{ project.volatility_ratio }};
+vObj["mature_marker_risk_premium"] = {{ project.mature_marker_risk_premium }};
+vObj["cv_project_id"] = {{ project.id }};
+
+vObj["valuation_actual_sic_code"] = -1
+// --
+vObj["sec_company_data"] = {}
+vObj["company_info"] = {};
+vObj["xbrl_data"] = {};
+vObj["xbrl_statements"] = {};
+vObj["options_delta"] = {};
+vObj["filing_year"] = 0;
+vObj["reporting_year"] = 0;
+vObj["select_accounts_type"] = "-1";
+vObj["select_accounts"] = "";
+vObj["is_update"] = "no";
+// --
+vObj["risk_premium_downloaded"] = 0
+// vObj["earning_forecast_sp500_view_downloaded"] = 0
+vObj["earning_forecast_sp500_view_main_downloaded"] = 0
+// --
+vObj["accounts_chosen"] = []
+// --
+vObj["user_id"] = "-1"
+// --
+
+set_framework()
+
+</script>
+
+<script>
+
+function ValuationObject(parent)
+{
+    this.parent = parent
+}
+
+ValuationObject.prototype.setTabs = function()
+{
+
+}
+
+</script>
+
+<!-- basic functions-->
+<script>
+create_valuation_year()
+</script>
+
+{% endblock body_content %}
+
+
+{% block domready %}
+// ================================================
+//  SimTab object
+function SimTab(parent, name, title, valuation_id, url_get_screens, screen_update)
+{
+ this.parent = parent; this.name = name; this.title = title; this.VALUATION_ID = valuation_id;
+ this.screen_update = screen_update; this.NAV = null; this.CONTENT = null;
+ this.PopWinObjects = {};
+ // --
+ this.callback_functions = []; this.need_update_screen = 1; this.CONTENTObjects = {}; this.is_show_first = true;
+ //--
+  if (this.screen_update == 'pull_screen')
+  {
+    ed = document.createElement("div"); ed.setAttribute("class", "tabcontent");
+    ed.setAttribute("id", this.name);this.parent.tabContents.appendChild(ed);
+  } else{try{ed = document.getElementById(this.name);} catch (er) {alert('Error1: ' + er)}}
+    // --
+  e = document.createElement("button");e.setAttribute("class", "tablinks ");e.setAttribute("id", "tab-"+name);
+  e.setAttribute("obj_name", name); e.innerHTML = title;
+
+  this.parent.tabTitles.insertBefore(e, this.parent.tabTitles.childNodes[0])
+
+  e.addEventListener("click", function(){
+    event.preventDefault();
+    obj_name = this.getAttribute('obj_name');
+    obj = parent.TabObjects[obj_name]
+    is_show_first = obj.is_show_first
+    if(obj.screen_update == 'pull_screen')
+    {obj.setScreens(valuation_id, url_get_screens, is_show_first);}
+    // --
+      obj.title_click(obj); obj.parent.titleWasClicked(); for (win in obj.PopWinObjects) {obj.PopWinObjects[win].resume_win();}
+    // --
+      //post_ajax_create_action('globsim__change_to_tab__' + obj.title)
+      var i, tabcontent, tablinks; tabcontent = document.getElementsByClassName("tabcontent");
+      for (i = 0; i < tabcontent.length; i++) {tabcontent[i].style.display = "none";}
+      tablinks = document.getElementsByClassName("tablinks");
+      for (i = 0; i < tablinks.length; i++) {tablinks[i].className = tablinks[i].className.replace(" active", "");}
+      document.getElementById(obj_name).style.display = "block"; this.className += " active";
+  }.bind(e, event, parent ));
+
+  this.tabTitle = e; this.tabDoc = ed;
+}
+
+SimTab.prototype.set_max_zindex = function(win) {
+    var nmax = 0;
+    for (i in this.PopWinObjects)
+    {if(this.PopWinObjects[i].win_frame.style.zIndex > nmax){nmax=this.PopWinObjects[i].win_frame.style.zIndex}}
+    win.style.zIndex = 1*nmax+1
+}
+
+SimTab.prototype.tabTitleWasClicked = function() {
+      for (win in this.PopWinObjects){this.PopWinObjects[win].close_win();}
+}
+
+SimTab.prototype.setScreens = function(valuation_id, url_get_screens, is_show_first=false) {
+   //alert('SimTab.prototype.setScreens')
+   //alert(url_get_screens)
+   //alert(valuation_id)
+   //alert(this.name)
+
+   console.log('SimTab.prototype.setScreens', valuation_id)
+   doc_ = this.tabDoc
+   sim_tab = this;
+   if (this.need_update_screen == 1)
+   {
+      $.post(url_get_screens,
+        {
+          name: this.name,
+          obj_id: valuation_id
+        },
+        function(data){
+        //alert(data)
+            doc_.innerHTML = data
+            try{
+            sim_tab.set_nav_prefix()
+            } catch (e) {alert(e)}
+        });
+      this.need_update_screen = 0;
+      //log(this.name + "--setScreens, is_show_first= "+is_show_first)
+      try{
+        if(is_show_first){folder = this.name.toLowerCase(); setTimeout(set_first_obj, 1, folder)}
+        } catch (err) {}
+   }
+}
+
+SimTab.prototype.add_title_click_call_function = function(fun) {
+   this.callback_functions.push(fun)
+}
+
+SimTab.prototype.title_click = function() {
+    for (k in this.callback_functions)
+    {try{eval(this.callback_functions[k]+"(this)")} catch(err){alert(err)}}
+}
+
+SimTab.prototype.set_nav_prefix = function() {
+    obj_name = this.name.toLowerCase()+"_nav"
+    var obj = document.getElementById(obj_name)
+    if (!obj) {setTimeout(this.set_nav_prefix, 1); return;}
+    else {this.NAV_PREFIX =  obj.getAttribute("nav_prefix") }
+}
+
+set_first_obj = function(folder, first=null, obj_name='')
+{
+    var projects = document.getElementById(folder+"_content")
+    if (!projects) {setTimeout(set_first_obj, 1, folder, first, obj_name); return;}
+    else{
+       if (obj_name != '')
+       {
+         var obj = document.getElementById(obj_name)
+         if (!obj) {setTimeout(set_first_obj, 1, folder, first, obj_name); return;}
+         else {
+          first = obj;
+          var event = new Event("click", {bubbles: true});
+          first.dispatchEvent(event);
+         }
+       } else {
+        if (!first){first = projects.children[0].children[1]}
+         var event = new Event("click", {bubbles: true});
+         first.dispatchEvent(event);
+       }
+    }
+}
+
+// =========== Tabs management for admin ==========================
+// -- SimManagementTab object --
+function SimManagementTab(parent, name, title, valuation_id, url_get_screens, screen_update)
+{
+ this.parent = parent; this.name = name; this.title = title; this.VALUATION_ID = valuation_id;
+ this.screen_update = screen_update; this.NAV = null; this.CONTENT = null;
+ this.PopWinObjects = {};
+ // --
+ this.callback_functions = [];
+ //--
+  if (this.screen_update == 'pull_screen')
+  {
+    ed = document.createElement("div"); ed.setAttribute("class", "tabcontent");
+    ed.setAttribute("id", this.name); this.parent.tabContents.appendChild(ed);
+  } else{try{ed = document.getElementById(this.name);} catch (er) {alert('Error1: ' + er)}}
+ // --
+  e = document.createElement("button");e.setAttribute("class", "tablinks ");e.setAttribute("id", "tab-"+name);
+  e.setAttribute("obj_name", name); e.innerHTML = title;
+
+  this.parent.tabTitles.insertBefore(e, this.parent.tabTitles.childNodes[0])
+  e.addEventListener("click", function(){
+    event.preventDefault(); obj_name = this.getAttribute('obj_name'); obj = parent.TabObjects[obj_name];
+    // --
+    obj.title_click(obj); obj.parent.titleWasClicked(); for (win in obj.PopWinObjects) {obj.PopWinObjects[win].resume_win();}
+    // --
+      //post_ajax_create_action('globsim__change_to_tab__' + obj.title)
+      var i, tabcontent, tablinks; tabcontent = document.getElementsByClassName("tabcontent");
+      for (i = 0; i < tabcontent.length; i++) {tabcontent[i].style.display = "none";}
+      tablinks = document.getElementsByClassName("tablinks");
+      for (i = 0; i < tablinks.length; i++) {tablinks[i].className = tablinks[i].className.replace(" active", "");}
+      document.getElementById(obj_name).style.display = "block"; this.className += " active";
+  }.bind(e, event, parent ));
+
+ this.tabTitle = e; this.tabDoc = ed;
+
+ try{
+  name_ = this.name.toLowerCase(); content_ = name_ + "_content"; nav_ = name_ + "_nav"
+  this.NAV = document.getElementById(nav_)
+  this.CONTENT = document.getElementById(content_)
+ } catch(err) {}
+}
+
+SimManagementTab.prototype.setScreens = function(valuation_id, url_get_screens){
+   doc_ = this.tabDoc
+}
+
+SimManagementTab.prototype.tabTitleWasClicked = function() {
+  for (win in this.PopWinObjects){this.PopWinObjects[win].close_win();}
+}
+
+SimManagementTab.prototype.title_click = function() {
+    for (k in this.callback_functions)
+    {try{eval(this.callback_functions[k]+"(this)")} catch(err){alert(err)}}
+}
+
+// =========== Tabs management ==========================
+// -- SimManager --
+function SimManager(valuation_id)
+{
+    this.is_staff = document.getElementById("is_staff").getAttribute("is_staff");
+    this.is_instructor = document.getElementById("is_staff").getAttribute("is_instructor");
+    this.is_options = document.getElementById("is_staff").getAttribute("is_options");
+    this.valuation_id = valuation_id;
+    this.url_get_screens = '{% url "corporatevaluation:get_screens" %}';
+    this.name = "Corporate Valuation";
+    this.tabTitles = document.getElementById("tab_titles");
+    this.tabContents = document.getElementById("tab_contents");
+    this.TabObjects = {};
+    this.setTabs();
+    try{
+      var event = new Event("click", {bubbles: true});
+      this.TabObjects["inputs"].tabTitle.dispatchEvent(event);
+    } catch (err) {alert(err)}
+    this.vObj = new ValuationObject(this);
+}
+
+
+SimManager.prototype.titleWasClicked = function() {
+        for (t in this.TabObjects)
+        {
+          this.TabObjects[t].tabTitleWasClicked()
+        }
+}
+
+SimManager.prototype.setTabs = function() {
+    var tabs_ = document.getElementById("tabs_");
+    var tabs_options = tabs_.getAttribute("tabs_options");
+    var tabs_s = tabs_.getAttribute("tabs_s");
+    vObj["user_id"] = tabs_.getAttribute("user_id");
+    eval('this.accounting_equality =' + tabs_.getAttribute("accounting_equality"))
+    eval('this.accounts_structure =' + tabs_.getAttribute("accounts_structure"))
+
+        //alert(this.accounting_equality)
+        //alert(this.accounts_structure['11990']['star_other'])
+        //alert(this.accounts_structure['11990']['total'])
+
+    var tans_all = tabs_s.split(",");
+    var tabs_options_all = tabs_options.split(",");
+    var tabs_m = tabs_.getAttribute("tabs_m");
+    var tans_all_m = tabs_m.split(",");
+    var tabs_management = {};
+    for (const property in tans_all_m) {
+      var ss = tans_all_m[property]; var ss_ = ss.split(":"); var ss__ = ss_[1].split(";");
+      tabs_management[ss_[0]] = [ss__[0], ss__[1]];
+    }
+    var tabs = {};
+    for (var property in tans_all) {
+      ss = tans_all[property]; ss_ = ss.split(":"); ss__ = ss_[1].split(";")
+      tabs[ss_[0]] = [ss__[0], ss__[1]]
+    }
+
+    var tabs_options = {};
+    for (var property in tabs_options_all) {
+      ss = tabs_options_all[property]; ss_ = ss.split(":"); ss__ = ss_[1].split(";")
+      tabs_options[ss_[0]] = [ss__[0], ss__[1]]
+    }
+
+    if (this.is_staff == 'True' || this.is_instructor == 'True'){
+      for(var name in tabs_management)
+      { s = "this.TabObjects[name] = new SimManagementTab(this, name, '"+tabs_management[name][0]+"', this.valuation_id, this.url_get_screens, '"+tabs_management[name][1]+"')" ;eval(s) }
+    }
+
+    if (this.is_staff == 'True' || this.is_options == 'True'){
+      for(var name in tabs_options)
+      {s = "this.TabObjects[name] = new SimTab(this, name, tabs_options[name][0], this.valuation_id, this.url_get_screens, tabs_options[name][1])" ; eval(s)}
+    }
+
+    for(var name in tabs)
+    {s = "this.TabObjects[name] = new SimTab(this, name, tabs[name][0], this.valuation_id, this.url_get_screens, tabs[name][1])" ; eval(s)}
+
+    // --
+    this.setTitleCallFunction()
+    // --
+}
+
+
+//-- Add callback for click event of title folder
+SimManager.prototype.setTitleCallFunction = function() {
+        try{this.TabObjects["comparablecompanies"].add_title_click_call_function("valuation_vs_actual");} catch(er){}
+        try{this.TabObjects["calculations"].add_title_click_call_function("set_active_tab_");} catch(er){}
+        //try{this.TabObjects["sp_forecast_actual"].add_title_click_call_function("get_earning_forecast_sp500_view");} catch(er){}
+        //try{this.TabObjects["sp_forecast_actual"].add_title_click_call_function("get_earning_forecast_sp500_view_main");} catch(er){}
+        try{this.TabObjects["sp_forecast_actual"].add_title_click_call_function("get_earning_forecast_sp500_view_main_title");} catch(er){}
+}
+
+// == Math ==
+function sigmoid(t) {
+    return 1/(1+Math.pow(Math.E, -t));
+}
+
+// ------------------------------------------------
+sm = new SimManager(valuation_id=0)
+// ------------------------------------------------
+
+{% endblock %}

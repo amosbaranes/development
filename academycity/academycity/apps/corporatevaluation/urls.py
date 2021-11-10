@@ -2,7 +2,7 @@ from django.urls import path
 from .views import (home, get_companies_valuation_actual, wacc_ebit_roic, team, update_data, update_data_year,
                     update_account, get_industry_detail, get_company_detail, get_interest_coverage_ratio,
                     get_screens, update_todo, delete_todo,
-                    get_accounts, get_data_ticker, admin_setup, tdameritrade_setup,
+                    get_accounts, get_data_ticker, admin_setup, admin_setup_attribute, tdameritrade_setup,
                     sec, get_r, get_sec, onchange_account, get_matching_accounts,
                     save_industry_default,
                     create_company_by_ticker,
@@ -31,6 +31,7 @@ urlpatterns = [
     path('get_accounts/', get_accounts, name='get_accounts'),
     path('get_data_ticker/', get_data_ticker, name='get_data_ticker'),
     path('admin_setup/', admin_setup, name='admin_setup'),
+    path('admin_setup_attribute/', admin_setup_attribute, name='admin_setup_attribute'),
     path('tdameritrade_setup/', tdameritrade_setup, name='tdameritrade_setup'),
 
     path('sec/', sec, name='sec'),

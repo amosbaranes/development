@@ -21,6 +21,8 @@ import statistics
 from django.utils.translation import get_language
 import math
 from django.utils.dateparse import parse_date
+from tda import auth, client
+import json
 
 # import yfinance as yf
 from yahoofinancials import YahooFinancials
@@ -33,57 +35,289 @@ from .models import (XBRLMainIndustryInfo, XBRLIndustryInfo, XBRLCompanyInfoInPr
                      XBRLValuationAccountsMatch,
                      XBRLRegion, XBRLCountry, XBRLCountryYearData,
                      XBRLHistoricalReturnsSP, XBRLSPMoodys, Project,
-                     XBRLRegion, XBRLSPEarningForecast)
+                     XBRLRegion, XBRLSPEarningForecast, XBRLSPStatistics)
 
 
 # cik = '0000051143'
 # type = '10-K'
 # dateb = '20160101'
 
-
+# https://github.com/alexgolec/tda-api
 class TDAmeriTrade(object):
     def __init__(self):
         # Should remove it later on
         clear_log_debug()
+        self.PROJECT_ROOT_DIR = os.path.join(settings.WEB_DIR, "data", "corporatevaluation")
+        os.makedirs(self.PROJECT_ROOT_DIR, exist_ok=True)
+
+        self.TO_DATA_PATH = os.path.join(self.PROJECT_ROOT_DIR, "datasets")
+        os.makedirs(self.TO_DATA_PATH, exist_ok=True)
+        # print(self.TO_DATA_PATH)
+
+        self.OPTIONS_PATH = os.path.join(self.PROJECT_ROOT_DIR, "options")
+        os.makedirs(self.OPTIONS_PATH, exist_ok=True)
+        # print(self.OPTIONS_PATH)
+        #
+        # need to move to env file
         self.password = "Sigal2105Shir"
         self.user_name = "amosbaranes"
         self.callback_url = "https://academycity.org/en/corporatevaluation/options"
         self.app_name = "academycity"
         self.customer_key = "LLGYGYRSAMWGZJNMXY8B8KGTOYG9BNDU"
+        #
+        self.token_path = os.path.join(self.OPTIONS_PATH, "token")
+        os.makedirs(self.token_path, exist_ok=True)
+
+        try:
+            import shutil
+            BIN_DIR = "/tmp/bin"
+            CURR_BIN_DIR = self.token_path
+            executable_name = "chromedriver"
+
+            if not os.path.exists(BIN_DIR):
+                os.makedirs(BIN_DIR)
+            currfile = os.path.join(CURR_BIN_DIR, executable_name)
+            newfile = os.path.join(BIN_DIR, executable_name)
+            shutil.copy2(currfile, newfile)
+            os.chmod(newfile, 0o775)
+        except Exception as ex:
+            print(ex)
+
+        self.api_key = self.customer_key + "@AMER.OAUTHAP"
+        try:
+            self.client = auth.client_from_token_file(self.token_path+"/token", self.api_key)
+        except Exception as fex:
+            # print(fex)
+            try:
+                from selenium import webdriver
+                from webdriver_manager.chrome import ChromeDriverManager
+                with webdriver.Chrome(ChromeDriverManager().install()) as driver:
+                    try:
+                        self.client = auth.client_from_login_flow(driver, self.api_key, self.callback_url, self.token_path+"/token")
+                    except Exception as ex:
+                        print(ex)
+            except Exception as eex:
+                print(eex)
+
+    def update_options_statistics(self):
+        log_debug("Start update_options_statistics: " + datetime.datetime.now().strftime("%H:%M:%S"))
+        # print("Start update_options_statistics: " + datetime.datetime.now().strftime("%H:%M:%S"))
+        start_date_ = datetime.datetime.now().date()
+        end_date_ = (datetime.datetime.now() + datetime.timedelta(days=6)).date()
+        # print(s.company.ticker, start_date_, end_date_)
+        n = 0
+        for s in XBRLSPStatistics.objects.all():
+            try:
+                n += 1
+                if n % 100 == 0:
+                    time.sleep(1)
+                # print("-1"*50)
+                # print(s.company.ticker)
+                dic = self.get_option_chain(ticker=s.company.ticker, start_date=start_date_, end_date=end_date_)
+                if dic['status'] == "ok":
+                    try:
+                        s.straddle_price = dic['straddle_price']
+                        s.butterfly_price = dic['butterfly_c']
+                        s.save()
+                        # log_debug("options DATA saved for: " + s.company.ticker)
+                    except Exception as ex:
+                        # log_debug("Error saving options for: " + s.company.ticker)
+                        pass
+                else:
+                    # log_debug("Error getting options data for: " + s.company.ticker)
+                    pass
+            except Exception as ex:
+                # print("error 202 save update_options_statistics: " + str(ex))
+                # log_debug("Error 202 getting data 202 td: : " + str(ex) + " " + s.company.ticker)
+                pass
+        log_debug("End update_options_statistics: " + datetime.datetime.now().strftime("%H:%M:%S"))
+        return {'status': 'ok'}
+
+    def get_option_chain_new(self, ticker=None, start_date=None, end_date=None):
+        # print("-1"*50)
+        # print("start td.get_option_chain for " + ticker)
+        dic = {'status': 'ko'}
+        try:
+            options_ = self.client.get_option_chain(ticker, contract_type=self.client.Options.ContractType.ALL,
+                                                    strike_range=self.client.Options.StrikeRange.IN_THE_MONEY,
+                                                    from_date=start_date, to_date=end_date,
+                                                    strategy=self.client.Options.Strategy.STRADDLE)
+        except Exception as ex:
+            print("Error in get_option_chain api options pull for : " + ticker)
+            log_debug("Error in get_option_chain api options pull for : " + ticker)
+            return dic
+
+        print('------options_---- ' + ticker)
+        if len(options_['"putExpDateMap']) > 0 or len(options_['"callExpDateMap']) > 0:
+            print(json.dumps(options_.json(), indent=4))
+        print('-----')
+
+        return
+
+        llp = []
+        try:
+            for d in options_.json()['putExpDateMap']:
+                for p in options_.json()['putExpDateMap'][d]:
+                    p_ = options_.json()['putExpDateMap'][d][p][0]
+                    p_p = (p_['bid'] + p_['ask'])/2
+                    # print(d, p, p_p, p_['bid'], p_['ask'])
+                    llp.append(p_p)
+        except Exception as ex:
+            return dic
+
+        llc = []
+        try:
+            for d in options_.json()['callExpDateMap']:
+                for c in options_.json()['callExpDateMap'][d]:
+                    c_ = options_.json()['callExpDateMap'][d][c][0]
+                    c_p = (c_['bid'] + c_['ask'])/2
+                    # print(d, c, c_p, c_['bid'], c_['ask'])
+                    llc.append(c_p)
+        except Exception as ex:
+            return dic
+
+        # print('td.get_option_chain 123')
+        # print('llp')
+        # print('---')
+        # print(llp)
+        # print('llc')
+        # print('---')
+        # print(llc)
+        # print('---')
+        # print('td.get_option_chain 124')
+        # print('---')
+        straddle_price = round(100*(llp[2] + llc[2]))/100
+        butterfly_c = round(100*(-2*llc[2] + llc[1] + llc[3]))/100
+        butterfly_p = round(100*(-2*llp[2] + llp[1] + llp[3]))/100
+        dic = {'status': 'ok', 'straddle_price': straddle_price, "butterfly_c": butterfly_c, "butterfly_p": butterfly_p,
+               'llc': llc, 'llp': llp}
+        # log_debug("End get_option_chain: " + ticker)
+        return dic
+
+    def get_option_chain(self, ticker=None, start_date=None, end_date=None):
+        # print("-1"*50)
+        # print("start td.get_option_chain for " + ticker)
+        dic = {'status': 'ko'}
+        # log_debug("in get_option_chain api options pull for : " + ticker)
+        try:
+            options_ = self.client.get_option_chain(ticker, contract_type=self.client.Options.ContractType.ALL,
+                                                    strike_count=5, from_date=start_date, to_date=end_date)
+        except Exception as ex:
+            log_debug("Error in get_option_chain api options pull for : " + ticker)
+            return dic
+
+        # print('------options_----')
+        # print(json.dumps(options_.json(), indent=4))
+        # print('-----')
+
+        llp = []
+        try:
+            for d in options_.json()['putExpDateMap']:
+                for p in options_.json()['putExpDateMap'][d]:
+                    p_ = options_.json()['putExpDateMap'][d][p][0]
+                    p_p = (p_['bid'] + p_['ask'])/2
+                    # print(d, p, p_p, p_['bid'], p_['ask'])
+                    llp.append(p_p)
+        except Exception as ex:
+            return dic
+
+        llc = []
+        try:
+            for d in options_.json()['callExpDateMap']:
+                for c in options_.json()['callExpDateMap'][d]:
+                    c_ = options_.json()['callExpDateMap'][d][c][0]
+                    c_p = (c_['bid'] + c_['ask'])/2
+                    # print(d, c, c_p, c_['bid'], c_['ask'])
+                    llc.append(c_p)
+        except Exception as ex:
+            return dic
+        straddle_price = round(100*(llp[2] + llc[2]))/100
+        butterfly_c = round(100*(-2*llc[2] + llc[1] + llc[3]))/100
+        butterfly_p = round(100*(-2*llp[2] + llp[1] + llp[3]))/100
+        dic = {'status': 'ok', 'straddle_price': straddle_price, "butterfly_c": butterfly_c, "butterfly_p": butterfly_p,
+               'llc': llc, 'llp': llp}
+        # log_debug("End get_option_chain: " + ticker)
+        return dic
+
+    def get_option_statistics_for_ticker(self, ticker):
+        dic = {'status': 'ko'}
+        log_debug("in get_option_statistics_for_ticker : " + ticker)
+        # print("in get_option_statistics_for_ticker 1 : " + ticker)
+        try:
+            start_date_ = datetime.datetime.now().date()
+            end_date_ = (datetime.datetime.now() + datetime.timedelta(days=6)).date()
+            options_ = self.client.get_option_chain(ticker, contract_type=self.client.Options.ContractType.ALL,
+                                                    from_date=start_date_, to_date=end_date_)
+        except Exception as ex:
+            log_debug("Error in get_option_chain api options pull for : " + ticker + " = " + str(ex))
+            return dic
+
+        # print("in get_option_statistics_for_ticker 2 : " + ticker)
+        # print(dic)
+
+        try:
+            dic = {'ticker': ticker, 'underlyingPrice': options_.json()['underlyingPrice']}
+            # print(options_.json())
+            for d in options_.json()['callExpDateMap']:
+                dic['date'] = str(d).split(":")[0]
+                dic['tickers'] = {}
+                for t in options_.json()['callExpDateMap'][d]:
+                    # print(t)
+                    # print(options_.json()['callExpDateMap'][d][t][0]['delta'])
+                    if options_.json()['callExpDateMap'][d][t][0]['delta'] != "NaN":
+                        if 0.1 < abs(options_.json()['callExpDateMap'][d][t][0]['delta']) < 0.9:
+                            dic['tickers'][t] = {}
+                            dic['tickers'][t]['call'] = {}
+                            dic['tickers'][t]['call']['price'] = round(100*(options_.json()['callExpDateMap'][d][t][0]['bid'] + options_.json()['callExpDateMap'][d][t][0]['ask'])/2)/100
+                            dic['tickers'][t]['call']['delta'] = round(100*options_.json()['callExpDateMap'][d][t][0]['delta'])/100
+                            dic['tickers'][t]['call']['theta'] = round(100*options_.json()['callExpDateMap'][d][t][0]['theta'])/100
+                            # print(options_.json()['callExpDateMap'][d][t][0])
+        except Exception as ex:
+            log_debug("Error 201 in get_option_chain api options pull for : " + ticker + " = " + str(ex))
+
+        # print("in get_option_statistics_for_ticker 211 : " + ticker)
+
+        try:
+            # print("in get_option_statistics_for_ticker 221 : " + ticker)
+            # print(dic)
+
+            for d in options_.json()['putExpDateMap']:
+                if dic['date'] != str(d).split(":")[0]:
+                    dic['ticker'] = ticker
+                    dic['underlyingPrice'] = options_.json()['underlyingPrice']
+                    dic['date'] = str(d).split(":")[0]
+                    dic['tickers'] = {}
+                for t in options_.json()['putExpDateMap'][d]:
+                    # print(t)
+                    # print(options_.json()['putExpDateMap'][d][t][0]['delta'])
+                    if options_.json()['putExpDateMap'][d][t][0]['delta'] != "NaN":
+                        if 0 < abs(options_.json()['putExpDateMap'][d][t][0]['delta']) < 1:
+                            if t not in dic['tickers']:
+                                dic['tickers'][t] = {}
+                            dic['tickers'][t]['put'] = {}
+                            dic['tickers'][t]['put']['price'] = round(100*(options_.json()['putExpDateMap'][d][t][0]['bid'] + options_.json()['putExpDateMap'][d][t][0]['ask'])/2)/100
+                            dic['tickers'][t]['put']['delta'] = round(100*options_.json()['putExpDateMap'][d][t][0]['delta'])/100
+                            dic['tickers'][t]['put']['theta'] = round(100*options_.json()['putExpDateMap'][d][t][0]['theta'])/100
+                            # print(options_.json()['callExpDateMap'][d][t][0])
+
+        except Exception as ex:
+            log_debug("Error 301 in get_option_chain api options pull for : " + ticker + " = " + str(ex))
+
+        # print("in get_option_statistics_for_ticker 4 : " + ticker)
+
+        dic = {'status': 'ok', 'option_data_ticker': dic}
+        # print(dic)
+        log_debug("End in get_option_statistics_for_ticker : " + ticker)
+        return dic
 
     def get_prices(self):
-        ticker = "GOOG"
-        # print(ticker)
-        url = r"https://api.tdameritrade.com/v1/marketdata/{}/pricehistory".format(ticker.upper())
-        d = datetime.datetime.now()
-        d_ = (d + timedelta(days=-100))
-        d = int(d.strftime("%s"))
-        d_ = int(d_.strftime("%s"))
-        # print(d)
-        # print(d_)
-
-        pay_load = {'apikey': self.customer_key + "@AMER.OAUTHAP",
-                    'periodType': 'day',
-                    'frequencyType': 'minute',
-                    'frequency': 1,
-                    'period': 2,
-                    # 'endDate': '1634037360000',  # str(d),  # '1556158524000',
-                    # 'startDate': '1634068200000',  # str(d_),  # '1554535854000'
-                    'needExtendedHoursData': 'true'
-                    }
-
-        # print(pay_load)
-        # res = requests.get(url=url, params=pay_load)
-        # data = res.json()
-        # for k in data["candles"]:
-        #     ndt_ = k["datetime"]
-        #     date_ = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(ndt_))
-        #     print(date_)
-
-        self.get_quote(ticker)
-        print('-'*20)
-        self.get_quotes(tickers='GOOG,MSFT')
-        print('-'*20)
+        r = self.client.get_price_history('GOOGL',
+                                period_type=client.Client.PriceHistory.PeriodType.YEAR,
+                                period=client.Client.PriceHistory.Period.TWO_DAYS,
+                                frequency_type=client.Client.PriceHistory.FrequencyType.DAILY,
+                                frequency=client.Client.PriceHistory.Frequency.DAILY)
+        assert r.status_code == 200, r.raise_for_status()
+        print(json.dumps(r.json(), indent=4))
 
         dic = {'status': 'ok'}
         log_debug("End get_prices.")
@@ -160,7 +394,7 @@ class AcademyCityXBRL(object):
         self.xbrl_base_year = 2020
         self.xbrl_start_year = 2012
         self.today_year = datetime.datetime.now().year
-        # log_debug("AcademyCityXBRL was created")
+        # log_debug("AcademyCityXBRL was created")`
 
     # Valuation Functions
     def get_risk_premium(self, year10=1928, year50=1928, cv_project_id=None, is_update='no'):
@@ -379,33 +613,50 @@ class AcademyCityXBRL(object):
         dic_company_info['data'] = dic_data
         company.financial_data = dic_company_info
         company.save()
+        # print(dic_company_info)
         return dic_company_info
+
+    def get_statements(self, ticker):
+        statements = {}
+        for statement in XBRLValuationStatementsAccounts.objects.all():
+            statements[statement.order] = {'name': statement.statement, 'accounts': {}}
+            company = XBRLCompanyInfo.objects.get(ticker=ticker)
+            sic_ = company.industry.sic_code
+            sic__ = company.industry.main_sic.sic_code
+            accounts = statement.xbrl_valuation_statements.filter(Q(sic=0) | Q(sic=sic_) | Q(sic=sic__)).all()
+
+            for a in accounts:
+                statements[statement.order]['accounts'][a.order] = [a.account, a.type, a.scale]
+
+        # print(statements)
+        return statements
 
     def get_data_ticker(self, cik, type_='10-k', is_update='no', request=None):
         # print('get_data_for_cik')
-        # log_debug("Start get_data_for_cik.")
+        log_debug("Start get_data_for_cik.")
+        # print(cik)
         company = XBRLCompanyInfo.objects.get(ticker=cik)
         dic_company_info = self.get_dic_company_info(company, cik, type_, is_update)
-        # -----------
-        # Statements
-        # Should be a function of industry
-        if 'statements' not in dic_company_info:
-            statements = {}
-            for statement in XBRLValuationStatementsAccounts.objects.all():
-                statements[statement.order] = {'name': statement.statement, 'accounts': {}}
-                for a in statement.xbrl_valuation_statements.all():
-                    statements[statement.order]['accounts'][a.order] = [a.account, a.type, a.scale]
-            #
-            dic_company_info['statements'] = statements
-        # print(statements)
-        # -----------
-        # print(dic_company_info)
-        if is_update != 'yes':
-            return dic_company_info
         #
         dic_data = dic_company_info['data']
         if len(dic_data) == 0:
-            print("Couldn't find the document link")
+            # print("Couldn't find the document link trying 20-F")
+            dic_company_info = self.get_dic_company_info(company, cik, "20-F", is_update)
+            dic_data = dic_company_info['data']
+            if len(dic_data) == 0:
+                print("Couldn't find the document link FOR 20-F")
+                return dic_company_info
+        # -----------
+        # Statements
+        if 'statements' not in dic_company_info:
+            dic_company_info['statements'] = self.get_statements(ticker=cik)
+        # print('statements')
+        # print(statements)
+        # -----------
+        # print('dic_company_info')
+        # print(dic_company_info)
+
+        if is_update != 'yes':
             return dic_company_info
 
         # #  ---- Replaced ----
@@ -456,11 +707,12 @@ class AcademyCityXBRL(object):
         # acc['flow'].sort()
 
         # print('-16' * 10)
-        print(dic_company_info)
+        # print(dic_company_info)
         # print('-16' * 10)
         company.financial_data = dic_company_info
         company.save()
-        # log_debug("End get_data_for_cik.")
+        # print(dic_company_info)
+        log_debug("End get_data_for_cik.")
         return dic_company_info
 
     def get_data_for_one_year(self, key, dic_company_info, request):
@@ -578,11 +830,14 @@ class AcademyCityXBRL(object):
 
                 start_date_should = str((int(end_date[0]) - 1)) + '-' + end_date[1]
                 start_date0_should = str((int(end_date[0]) - 2)) + '-12'
-                start_date1_should = end_date[0] + '-01'
+                if int(end_date[1]) > 10 or int(end_date[1]) < 3:
+                    start_date1_should = end_date[0] + '-01'
+                else:
+                    start_date1_should = 0
                 start_date2_should = str((int(end_date[0]) - 1)) + '-' + self.add_zero(str((int(end_date[1]) + 1)))
                 start_date3_should = str((int(end_date[0]) - 1)) + '-' + self.add_zero(str((int(end_date[1]) - 1)))
 
-                # if end_date[0] == "2020":
+                # if end_date[0] == "2016":
                 #     print('-6'*10)
                 #     print('end_date')
                 #     print(end_date)
@@ -607,10 +862,11 @@ class AcademyCityXBRL(object):
                 # print(ex)
                 continue
 
-        # print('-flow'*20)
-        # print(flow_context_id)
-        # print(documentperiodenddate)
-        # print('-flow'*20)
+        # if end_date[0] == "2016":
+        #     print('-flow'*20)
+        #     print(flow_context_id)
+        #     print(documentperiodenddate)
+        #     print('-flow'*20)
 
         # print('=bs'*50)
         # print("Current Time 5 =", datetime.datetime.now().strftime("%H:%M:%S"))
@@ -799,6 +1055,7 @@ class AcademyCityXBRL(object):
         return dic
 
     # # #
+    # Functions for Forecasted EPS
     def get_sp500(self):
         sp500_url = 'https://en.wikipedia.org/wiki/List_of_S%26P_500_companies'
         self.sp_tickers = list(pd.read_html(sp500_url)[0]['Symbol'].values)
@@ -841,8 +1098,19 @@ class AcademyCityXBRL(object):
 
     def upload_old_earning_forecast_sp500(self):
         # XBRLSPEarningForecast.truncate()
+        # print('upload_old_earning_forecast_sp500')
         sp_tickers = self.get_sp500()['sp_tickers']
+        for ticker_ in sp_tickers:
+            # print(ticker_)
+            try:
+                company_ = XBRLCompanyInfo.objects.get(ticker=ticker_)
+                s, c = XBRLSPStatistics.objects.get_or_create(company=company_)
+            except Exception as eex:
+                pass
+                # print("error sp_tickers: " + ticker_ + " : " + str(eex))
+
         for file in os.listdir(self.TEXT_PATH):
+            log_debug("Start Processing file: " + file)
             # print(file)
             log_debug("Start file: " + file)
             file_path = f"{self.TEXT_PATH}/{file}"
@@ -862,50 +1130,92 @@ class AcademyCityXBRL(object):
                             date_str = yy + "-" + mm + "-" + self.add_zero(dd)
                             date_ = parse_date(date_str)
                         else:
-                            if cells[2].text != '--':
-                                ticker = cells[1].find('a').text
+                            # if cells[2].text != '--':
+
+                            ticker = cells[1].find('a').text
+                            # print(ticker)
+                            if ticker in sp_tickers:
+                                # print('-'*20)
+                                # print('in sp')
+                                # print(date_str)
                                 # print(ticker)
-                                if ticker in sp_tickers:
-                                    # print('-'*20)
-                                    # print('in sp')
-                                    # print(date_str)
-                                    # print(ticker)
-                                    # print('-'*20)
-                                    actual = cells[2].text
-                                    forecast = cells[3].text.split('/')[1].lstrip()
-                                    try:
-                                        actual_ = float(actual)
-                                        # print(actual_)
-                                    except Exception as eex:
-                                        # print('eex')
-                                        # print('actual')
-                                        # print(actual)
-                                        # print(eex)
-                                        continue
-                                    try:
-                                        forecast_ = float(forecast)
-                                        # print(forecast_)
-                                    except Exception as eex:
-                                        # print('eex')
-                                        # print(eex)
-                                        # print('forecast')
-                                        # print(forecast)
-                                        continue
-                                    company = XBRLCompanyInfo.objects.get(ticker=ticker)
-                                    year = date_.year
-                                    quarter = math.ceil(date_.month / 3)
-                                    ef, ct = XBRLSPEarningForecast.objects.get_or_create(company=company, year=year,
-                                                                                         quarter=quarter)
-                                    ef.forecast = forecast
-                                    ef.actual = actual
+                                log_debug("Ticker: " + ticker)
+                                # print('-'*5)
+                                actual = cells[2].text
+                                forecast = cells[3].text.split('/')[1].lstrip()
+                                # print("actual: " + str(actual) + " forecast: " + str(forecast))
+                                # print('-'*20)
+
+                                company = XBRLCompanyInfo.objects.get(ticker=ticker)
+                                year = date_.year
+                                quarter = math.ceil(date_.month / 3)
+                                ef, ct = XBRLSPEarningForecast.objects.get_or_create(company=company, year=year,
+                                                                                     quarter=quarter)
+                                # print(ct)
+                                # print(ef)
+                                # print("Got or created record")
+                                # print('-'*20)
+                                try:
+                                    forecast_ = float(forecast)
+                                    ef.forecast = forecast_
+                                    ef.save()
+                                    # print("forecast saved")
+                                except Exception as eex:
+                                    # print("error forecast: " + str(eex))
+                                    pass
+
+                                try:
+                                    actual_ = float(actual)
+                                    ef.actual = actual_
+                                    ef.save()
+                                    # print("Actual saved")
+                                except Exception as eex:
+                                    # print("error actual: " + str(eex))
+                                    ef.actual = None
+                                    # pass
+
+                                try:
                                     ef.date = date_
                                     ef.save()
-                                    # print('ticker1')
+                                    # print("Date saved")
+                                except Exception as eex:
+                                    pass
+                                    # print("error Date act for: " + str(eex))
+
+                                # try:
+                                #     ef.save()
+                                # except Exception as eex:
+                                #     pass
+                                #     # print("error Save act for: " + str(eex))
+
+                                # print('ticker1')
+                                try:
                                     self.get_ticker_prices(earning_forecast=ef)
-                                    # print(ticker)
-                                    # print('ticker2')
+                                except Exception as eex:
+                                    pass
+                                    # print("error Price act for: " + str(eex))
+
+                                try:
+                                    next_release_date = self.get_next_relealse_date(cells[1], date_)
+                                    # print(next_release_date)
+                                    ef.next_release_date = next_release_date
+                                    s = XBRLSPStatistics.objects.get(company__ticker=ticker)
+                                    s.next_release_date = next_release_date
+                                    s.save()
+                                    ef.save()
+                                    # print("next_release_date saved")
+                                except Exception as eex:
+                                    pass
+                                    # print("error next_release_date: " + str(eex))
 
                                 # print(ticker)
+                                # print('ticker2')
+
+                                try:
+                                    company.company_statistic.set_company_statistics()
+                                except Exception as eex:
+                                    pass
+                                    # print("error company.set_company_statisitcs: " + str(eex))
                     except Exception as ex:
                         # if ticker in sp_tickers:
                         # print('ex')
@@ -915,8 +1225,13 @@ class AcademyCityXBRL(object):
                         # print('ex')
                         pass
             log_debug("End Processing file: " + file)
+        log_debug("End Processing all files1: ")
+        log_debug("End Processing all files2: ")
 
-    def get_next_relealse_date(self, cell):
+    def get_next_relealse_date(self, cell, date):
+        # print("get_next_relealse_date ")
+        # print("get_next_relealse_date ")
+        # print("get_next_relealse_date ")
         # print(cell)
         # print(cell.find('a'))
         # print(cell.find('a')['href'])
@@ -932,16 +1247,37 @@ class AcademyCityXBRL(object):
         table_tag = soup.find('table', id=id_)
         # print(table_tag)
         tbody_tag = table_tag.find('tbody')
+        # print("-"*100)
+        # print(date)
+        # print("-"*10)
         try:
-            date_str = tbody_tag.find_all('tr')[0]['event_timestamp']
-            # print(date_str)
+            # date_str = tbody_tag.find_all('tr')[0]['event_timestamp']
+            next_date = datetime.datetime.now()
+            next_date = (next_date + timedelta(days=180)).date()
+            # print(next_date)
+            for k in tbody_tag.find_all('tr'):
+                date_str = k['event_timestamp']
+                # print(date_str)
+                date_ = parse_date(date_str)
+                if date < date_ < next_date:
+                    next_date = date_
+                # print("-"*5)
         except Exception as ex:
-            print("Error 105")
-        return date_str
+            print("Error 105" + str(ex))
+        # print(next_date)
+        # print("-"*100)
+
+        return next_date
 
     def get_earning_forecast_sp500(self):
         # print('get_earning_forecast_sp500')
         sp_tickers = self.get_sp500()['sp_tickers']
+        for ticker_ in sp_tickers:
+            try:
+                s, c = XBRLSPStatistics.objects.get_or_create(company__ticker=ticker_)
+            except Exception as eex:
+                pass
+                # print("error sp_tickers: " + ticker_ + " : " + str(eex))
         headers = {'User-Agent': 'amos@drbaranes.com'}
         url = "https://www.investing.com/earnings-calendar/"
         sp_resp = requests.get(url, headers=headers, timeout=30)
@@ -982,14 +1318,99 @@ class AcademyCityXBRL(object):
                                 ef.forecast = forecast
                                 ef.actual = actual
                                 ef.date = date_
-                                next_release_date = self.get_next_relealse_date(cells[1])
+                                next_release_date = self.get_next_relealse_date(cells[1], date_)
                                 ef.next_release_date = next_release_date
                                 ef.save()
+                                s, c = XBRLSPStatistics.objects.get_or_create(company__ticker=ticker)
+                                s.next_release_date = next_release_date
+                                s.save()
                                 self.get_ticker_prices(ef)
+                                try:
+                                    company.company_statistic.set_company_statistics()
+                                except Exception as eex:
+                                    pass
+                                    # print("error company.set_company_statisitcs: " + str(eex))
                 except Exception as ex:
                     print("error 102: " + str(ex))
         except Exception as ex:
             return print("Error 101")
+        dic = {'status': 'ok'}
+        return dic
+
+    def get_announcement_time_day(self, s_day):
+        try:
+            s_from = "2021-01-01"
+            s_to = "2021-12-31"
+            url = "https://finance.yahoo.com/calendar/earnings?from="+s_from+"&to="+s_to+"&day=" + s_day
+            log_debug(url)
+            headers = {'User-Agent': 'amos@drbaranes.com'}
+            sp_resp = requests.get(url, headers=headers, timeout=30)
+            sp_str = sp_resp.text
+            # print(sp_str)
+            soup = BeautifulSoup(sp_str, 'html.parser')
+            id_ = "cal-res-table"
+            div_tag = soup.find('div', id=id_)
+            # print('--12--')
+            tbody_tag = div_tag.find('tbody')
+            # print('--13--')
+            # print("-"*100)
+            # print(tbody_tag)
+            # print("-"*10)
+            sp_tickers = self.get_sp500()['sp_tickers']
+            rows = tbody_tag.find_all('tr')
+            # print('--14--')
+            for row in rows:
+                try:
+                    cells = row.find_all('td')
+                    if len(cells) > 2:
+                        sa = ""
+                        # print(cells[2])
+                        sa_ = cells[2].text
+                        if sa_ == "Time Not Supplied":
+                            sa = "N"
+                        elif sa_ == "TAS":
+                            sa = "T"
+                        elif sa_ == "Before Market Open":
+                            sa = "B"
+                        elif sa_ == "After Market Close":
+                            sa = "A"
+                        else:
+                            sa = "O"
+                        ticker = cells[0].find('a').text
+                        if ticker in sp_tickers:
+                            # log_debug(ticker +":" + sa_ + ":" + sa)
+                            s = XBRLSPStatistics.objects.get(company__ticker=ticker)
+                            s.announcement_time = sa
+                            s.save()
+                            log_debug("Saved: " + ticker + " : " + sa)
+                except Exception as ex:
+                    log_debug("Error 102: " + ticker + " : " + str(ex))
+        except Exception as ex:
+            log_debug("Error 101: " + str(ex))
+
+    def get_announcement_time(self, m=""):
+        try:
+            m = int(m)
+            nd = 31
+            if m in [1, 3, 5, 7, 8, 10, 12]:
+                nd = 32
+            elif m == 2:  # do not care about 29
+                nd = 28
+            sm = self.add_zero(str(m))
+            for d in range(1, nd):
+                sd = self.add_zero(str(d))
+                s_day = "2021-"+sm+"-"+sd
+                # print(s_day)
+                log_debug("Start day: " + s_day)
+                # print('-----------')
+                try:
+                    self.get_announcement_time_day(s_day=s_day)
+                except Exception as ex:
+                    log_debug("Error 202 time: " + str(ex))
+            # print(s_day)
+            # self.get_announcement_time_day(s_day="2021-07-20")
+        except Exception as ex:
+            log_debug("Error 201 time: " + str(ex))
         dic = {'status': 'ok'}
         return dic
 
@@ -1037,6 +1458,7 @@ class AcademyCityXBRL(object):
         dic = {'status': 'ok'}
         return dic
 
+    # Should delete this function
     def get_earning_forecast_sp500_view(self):
         d = {}
         for t in XBRLSPEarningForecast.objects.all():
@@ -1058,8 +1480,48 @@ class AcademyCityXBRL(object):
         # print(d)
         return {'status': 'ok', 'earning_forecast_sp500_view': d}
 
-    # # #
+    def get_earning_forecast_sp500_view_main_detail(self, ticker):
+        # print(ticker)
+        d = {}
+        for r in XBRLSPEarningForecast.objects.filter(company__ticker=ticker).order_by('-year', 'quarter').all():
+            try:
+                d[str(int(r.year)*10 + int(r.quarter))] = [r.year, r.quarter, float(r.forecast), float(r.actual),
+                                                           float(r.today_price), float(r.yesterday_price)]
+            except Exception as ex:
+                pass
+                # print('error get_earning_forecast_sp500_view_main')
+                # print(ex)
+        # print(d)
+        return {'status': 'ok', 'get_earning_forecast_sp500_view_main_detail': d}
 
+    def get_earning_forecast_sp500_view_main(self, order_by):
+        # print('get_earning_forecast_sp500_view_main')
+        # print('order_by')
+        # print(order_by)
+        # print('order_by')
+
+        d = {}
+        for t in XBRLSPStatistics.objects.select_related("company__industry__main_sic").order_by(order_by).all():
+            if t.company.ticker not in d:
+                try:
+                    d[str(t.company.ticker)] = {"cn": str(t.company.company_name), "nrd": str(t.next_release_date),
+                                                "mapc": str(t.mean_abs_price_change),
+                                                "maafc": str(t.mean_abs_actual_forecast_change),
+                                                "cafp": str(t.correlation_afp),
+                                                "ud": str(t.updated),
+                                                "sic": t.company.industry.sic_code,
+                                                "msic": t.company.industry.main_sic.sic_code,
+                                                "bfp": str(t.butterfly_price),
+                                                "stp": str(t.straddle_price),
+                                                "a": str(t.announcement_time)}
+                except Exception as ex:
+                    print('error get_earning_forecast_sp500_view_main')
+                    print(ex)
+        # print(d)
+        return {'status': 'ok', 'earning_forecast_sp500_view_main': d}
+
+    # # #
+    #  Data processing
     def create_company_by_ticker(self, ticker=None):
         try:
             company_id = -1
@@ -1382,7 +1844,6 @@ class AcademyCityXBRL(object):
             XBRLIndustryInfo.objects.get_or_create(sic_code=sic_code_, main_sic=main_sic_,
                                                    sic_description=sic_description_)
         return {'status': 'ok'}
-
     # # #
 
     def load_tax_rates_by_country_year(self):

@@ -15,7 +15,7 @@ from .models import (RBOIC, CountryRegion, CountryRating, Country, GlobalIndustr
                      XBRLValuationAccounts, XBRLValuationAccountsMatch,
                      XBRLIndustryInfo, Industry,
                      XBRLCompanyInfo, CompanyInfo,
-                     XBRLCountryYearData,
+                     XBRLCountryYearData, XBRLSPStatistics,
                      XBRLCountry)
 # --
 
@@ -463,6 +463,12 @@ def update_data(request):
 #     dic = acx.get_all_companies()
 #     return dic
 
+def get_option_statistics_for_ticker(request):
+    ticker_ = request.POST.get('ticker')
+    dic = TDAmeriTrade().get_option_statistics_for_ticker(ticker=ticker_)
+    # print(dic)
+    return dic
+
 
 def tdameritrade_setup(request):
     try:
@@ -471,6 +477,66 @@ def tdameritrade_setup(request):
         try:
             # print('TDAmeriTrade().' + fun_ + '()')
             dic = eval('TDAmeriTrade().' + fun_ + '()')
+            # print(dic)
+        except Exception as ex:
+            # print(fun_ + '(request)')
+            dic = eval(fun_+'(request)')
+        return JsonResponse(dic)
+
+    except Exception as ex:
+        return JsonResponse({'status': 'error: '+str(ex)})
+
+
+def get_earning_forecast_sp500_view_main_detail(request):
+    ticker_ = request.POST.get('ticker')
+    # print('get_earning_forecast_sp500_view_main_')
+    # print('order_by_')
+    # print(order_by_)
+    # print('order_by_')
+    # print('order_by_')
+    dic = AcademyCityXBRL().get_earning_forecast_sp500_view_main_detail(ticker=ticker_)
+    # print('get_earning_forecast_sp500_view_main_1')
+    # print(dic)
+    # print('get_earning_forecast_sp500_view_main_2')
+    return dic
+
+
+def get_earning_forecast_sp500_view_main(request):
+    order_by_ = request.POST.get('order_by')
+    # print('get_earning_forecast_sp500_view_main_')
+    # print('order_by_')
+    # print(order_by_)
+    # print('order_by_')
+    # print('order_by_')
+    dic = AcademyCityXBRL().get_earning_forecast_sp500_view_main(order_by=order_by_)
+    # print('get_earning_forecast_sp500_view_main_1')
+    # print(dic)
+    # print('get_earning_forecast_sp500_view_main_2')
+    return dic
+
+
+def update_statistics(request):
+    try:
+        log_debug("Start update_statistics: " + datetime.datetime.now().strftime("%H:%M:%S"))
+        for s in XBRLSPStatistics.objects.all():
+            s.set_company_statistics(is_update=False)
+        log_debug("End update_statistics " + datetime.datetime.now().strftime("%H:%M:%S"))
+    except Exception as ex:
+        print(ex)
+    return {'status': 'ok'}
+
+
+def admin_setup_attribute(request):
+    try:
+        fun_ = request.POST.get('fun')
+        attribute_ = request.POST.get('attribute')
+        attribute_value_ = request.POST.get('attribute_value')
+        # print(fun_)
+        # print(attribute_)
+        # print(attribute_value_)
+        try:
+            # print('AcademyCityXBRL().' + fun_ + '('+attribute_+'="'+attribute_value_+'")')
+            dic = eval('AcademyCityXBRL().' + fun_ + '('+attribute_+'="'+attribute_value_+'")')
             # print(dic)
         except Exception as ex:
             dic = eval(fun_+'(request)')
@@ -818,7 +884,9 @@ def create_company_by_ticker(request):
 
 def get_data_ticker(request):
     ticker_ = request.POST.get('ticker')
+    # print(ticker_)
     is_update_ = request.POST.get('is_update')
+    # print(is_update_)
     acx = AcademyCityXBRL()
     data = acx.get_data_ticker(cik=ticker_, type_='10-K', is_update=is_update_, request=request)
     request.session['cv_statements'] = data['statements']

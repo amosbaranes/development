@@ -185,6 +185,7 @@ WebApps = [
     'academycity.apps.webapps.portfolio',
     'academycity.apps.webapps.fabhouseafrica',
     'academycity.apps.webapps.bizland',
+    'academycity.apps.webapps.apewives',
     'academycity.apps.webapps.radiusfood',
     'academycity.apps.webapps.swotclock',
 ]

@@ -1,15 +1,376 @@
 {% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
 {% load core_tags %}
 
-<div id="sp_forecast_actual" class="tabcontent data">
+<div id="sp_forecast_actual" class="tabcontent">
+<input type="text" id="search_input" onkeyup="search_function()" n="0" placeholder="Search for Tickers.." title="Type in a name">
+<div id="sp_forecast_actual_data" class="data">
+</div>
 </div>
 
-<!--  get_earning_forecast_sp500_view -->
+<!-- function search_function() -->
+<script>
+function search_function() {
+  var input_elm = document.getElementById("search_input")
+  n_ = input_elm.getAttribute("n");
+  var input, filter, table, tr, td, i, txtValue;
+  input = document.getElementById("search_input");
+  filter = input.value.toUpperCase();
+  table = document.getElementById("all_tickers_data");
+  tr = table.getElementsByTagName("tr");
+  for (i = 0; i < tr.length; i++) {
+    td = tr[i].getElementsByTagName("td")[n_];
+    if (td) {
+      txtValue = td.textContent || td.innerText;
+      if (txtValue.toUpperCase().indexOf(filter) > -1) {
+        tr[i].style.display = "";
+      } else {
+        tr[i].style.display = "none";
+      }
+    }
+  }
+}
+</script>
+
+<!-- function search_today_or_tomorrow_announcements_function(event) -->
+<script>
+function search_today_or_tomorrow_announcements_function(event) {
+  var input_elm = document.getElementById("search_input")
+  n_ = input_elm.getAttribute("n");
+  var input, filter, table, tr, td, i, txtValue;
+  table = document.getElementById("all_tickers_data");
+  tr = table.getElementsByTagName("tr");
+  if (event.altKey)
+  {
+     var today = new Date(); today.setHours(today.getHours() - 7);
+     const tomorrow = new Date(today); tomorrow.setDate(tomorrow.getDate() + 1);
+     var dd = String(tomorrow.getDate()).padStart(2, '0');
+     var mm = String(tomorrow.getMonth() + 1).padStart(2, '0'); //January is 0!
+     var yyyy = tomorrow.getFullYear();
+     filter = yyyy + '-' + mm + '-' + dd
+  }
+  for (i = 0; i < tr.length; i++) {
+    td = tr[i].getElementsByTagName("td")[n_];
+    if (td) {
+        if (event.ctrlKey)
+        {
+          if (td.style.color == "blue") {tr[i].style.display = "";} else {tr[i].style.display = "none";}
+        } else if (event.altKey)
+        {
+           txtValue = td.textContent || td.innerText;if (txtValue.toUpperCase().indexOf(filter) > -1) {tr[i].style.display = "";} else {tr[i].style.display = "none";}
+        }
+    }
+  }
+}
+</script>
+<!-- get_earning_forecast_sp500_view_main_detail(event) -->
+<script>
+function get_earning_forecast_sp500_view_main_detail(event)
+{
+        var e = event.target;
+        ticker_ = e.innerHTML;
+        // alert(ticker_)
+      $.post('{% url "corporatevaluation:admin_setup" %}',
+          {
+            fun: "get_earning_forecast_sp500_view_main_detail",
+            ticker: ticker_,
+          },
+          function(data){
+             clean_marked_chosen_field(e)
+             create_table_earning_forecast_sp500_view_main_detail(data, ticker_);
+          }
+        );
+}
+</script>
+
+<!-- create_table_options_w01_delta -->
+<script>
+function create_table_options_w01_delta(data, ticker)
+{
+    s = "<tr><th colspan='3' style='text-align: center'>Call</th><th>"+data['ticker']+"</th><th colspan='3' style='text-align: center'>Put</th></tr>"
+    s += "<tr><th>Delta</th><th>Theta</th><th>Price</th><th>Strike</th><th>Price</th><th>Theta</th><th>Delta</th></tr>"
+    for (z in data['tickers'])
+    {
+        st = ""
+        //alert(z)
+        //alert(data[k]['tickers'][z])
+        st += "<td>" + z + "</td>"
+        try{
+            d = data['tickers'][z]['call']['delta']
+            t = data['tickers'][z]['call']['theta']
+            p = data['tickers'][z]['call']['price']
+            st = "<td>"+d+"</td><td>"+t+"</td><td>"+p+"</td>" + st
+            //alert(st)
+            } catch(er){
+            //alert(er)
+            st = "<td></td><td></td><td></td>" + st}
+        try{
+            d = data['tickers'][z]['put']['delta']
+            t = data['tickers'][z]['put']['theta']
+            p = data['tickers'][z]['put']['price']
+            st += "<td>"+p+"</td><td>"+t+"</td><td>"+d+"</td>"
+            //alert(st)
+            } catch(er){
+            //alert(er);
+            st += "<td></td><td></td><td></td>"}
+            s += "<tr>" + st + "</tr>"
+    }
+    s = "<table class='data'>" + s + "</table>";
+    //alert(s)
+    delta.set_info_by_ticker(content=s, win_titles="Delta for ticker: "+ticker);
+}
+
+</script>
+<!--  options_w01_delta  -->
+<script>
+function options_w01_delta(event, ticker)
+{
+ e = event.target; fun_ = e.getAttribute("fun");
+ //alert(fun_)
+ //alert(ticker)
+ if (!(ticker in vObj["options_delta"]))
+ {
+     delta.set_info_by_ticker(content="In Process ... please wait.", win_titles="Delta for ticker: "+ticker);
+     $.post('{% url "corporatevaluation:tdameritrade_setup" %}',
+          {
+            fun: fun_,
+            ticker: ticker
+          },
+          function(data)
+          {
+            clean_marked_chosen_field(e);
+            vObj["options_delta"][ticker] = data['option_data_ticker'];
+            create_table_options_w01_delta(vObj["options_delta"][ticker], ticker)
+          }
+        );
+ } else
+ {
+  create_table_options_w01_delta(vObj["options_delta"][ticker], ticker)
+ }
+}
+
+</script>
+
+<!-- create_table_earning_forecast_sp500_view_main_detail(data) -->
+<script>
+function create_table_earning_forecast_sp500_view_main_detail(data, ticker)
+{
+  var s = "<tr><th>Y</th><th>Q</th><th>Act.</th><th>For.</th><th>AF%</th><th>P</th><th>P(-1)</th><th>D</th><th>D%</th></tr>"
+  data = data['get_earning_forecast_sp500_view_main_detail']
+  aa = Object.keys(data)
+  for (i = aa.length-1; i >= 0; i--)
+  {
+   var d = data[aa[i]];
+    daf = ""; dp = "--";
+     s += "<tr><td>" + d[0] + "</td><td>" + d[1] + "</td>"
+     try{daf = Math.round(10000*(d[3]-d[2])/d[2])/100} catch (er){alert(er)}
+     s += "<td>" + d[3] + "</td><td>" + d[2] + "</td><td>" + daf + "</td>"
+     try{dp = Math.round(100*(d[4]-d[5]))/100; dpp = Math.round(10000*(d[4]-d[5])/d[5])/100;} catch (er) {alert(er);}
+     s += "<td>" + d[4] + "</td><td>" + d[5] + "</td><td>" + dp + "</td><td>" + dpp + "</td></tr>"
+   }
+   s = "<table class='data'>" + s + "</table>"
+   //alert(s)
+   ef.set_info_by_ticker(content=s, win_titles="Data of ticker: "+ticker)
+}
+</script>
+
+<!-- clean_marked_chosen_field(event) -->
+<script>
+function clean_marked_chosen_field(e)
+{
+ var n=-1; pe = e.parentNode;
+ for (let i = 0; i < pe.children.length; i++){if( e.innerHTML == pe.children[i].innerHTML){n=i;break};}
+ var pelm = document.getElementById("all_tickers_data");
+ try{for (let i = 0; i < pelm.children.length; i++){var elm = pelm.children[i].children[n];elm.classList.remove("chosen");}} catch(er){alert(er)}
+ e.classList.add("chosen")
+}
+</script>
+
+<!-- create_table_for_earning_forecast_sp500_view_main(data) -->
+<script>
+function create_table_for_earning_forecast_sp500_view_main(data)
+{
+ st = "<tr onclick='get_earning_forecast_sp500_view_main(event)' style='cursor:pointer;'>";
+ st += "<th order_by='company__ticker'>Ticker</th>" + "<th order_by='company__company_name'>Company</th>";
+ st += "<th order_by='next_release_date'>N.R. Date</th><th order_by='-mean_abs_price_change'>D$PC</th>";
+ st += "<th order_by='-mean_abs_actual_forecast_change'>D%AFC</th>";
+ st += "<th order_by='-correlation_afp'>Corr</th>";
+ st += "<th order_by='company__industry__sic_code'>sic</th>";
+ st += "<th order_by='company__industry__main_sic__sic_code'>msic</th>";
+ st += "<th order_by='announcement_time'>A</th>";
+ st += "<th order_by='-butterfly_price'>bfp</th>";
+ st += "<th order_by='-straddle_price'>stp</th>";
+ st += "</tr>"
+
+ var today = new Date();
+ today.setHours(today.getHours() - 7);
+ var dd = String(today.getDate()).padStart(2, '0');
+ var mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
+ var yyyy = today.getFullYear();
+ s_today = yyyy + '-' + mm + '-' + dd
+ sb = ""
+ for (k in data)
+ {
+   sb += "<tr><td onclick='get_earning_forecast_sp500_view_main_detail(event)' style='cursor:pointer;' >" + k + "</td>"
+   sb += "<td onclick='set_ticker_to_valuation(event, \""+k+"\")' style='cursor:pointer;'>" + data[k]['cn'] + "</td>"
+   sc = ""; if(data[k]['ud'] == s_today){sc = "style='color:blue'"}
+   sb += "<td "+sc+">" + data[k]['nrd'] + "</td>"
+   sb += "<td>" + data[k]['mapc'] + "</td>"
+   sb += "<td>" + data[k]['maafc'] + "</td>"
+   sb += "<td>" + data[k]['cafp'] + "</td>"
+   sb += "<td>" + data[k]['sic'] + "</td>"
+   sb += "<td>" + data[k]['msic'] + "</td>"
+   sb += "<td>" + data[k]['a'] + "</td>"
+   sb += "<td>" + data[k]['bfp'] + "</td>"
+   sb += "<td onclick='options_w01_delta(event, \""+k+"\")' fun='get_option_statistics_for_ticker' style='cursor:pointer;'>" + data[k]['stp'] + "</td>"
+   sb += "</tr>"
+ }
+ s = "<table>" + st + "<tbody id='all_tickers_data'>" + sb + "</tbody>" + "</table><br/><br/><br/><br/>"
+ document.getElementById("sp_forecast_actual_data").innerHTML = s;
+}
+</script>
+
+<!-- get_earning_forecast_sp500_view_main(event) -->
+<script>
+function get_earning_forecast_sp500_view_main(event)
+{
+  try{
+     var e = event.target;pe_ = e.parentNode; var n_=-1;
+     for (let i = 0; i < pe_.children.length; i++){if( e.innerHTML == pe_.children[i].innerHTML){n_=i;break};}
+     var input_elm = document.getElementById("search_input")
+     input_elm.setAttribute("placeholder", "Search for "+e.innerHTML+"...");
+     input_elm.setAttribute("n", n_);
+     input_elm.value = "";
+  } catch (er) {}
+  // event.altKey
+  if (event.ctrlKey || event.altKey)
+  {
+   search_today_or_tomorrow_announcements_function(event); return;
+  }
+
+ var order_by_ = "next_release_date"
+ try{ order_by_ = e.getAttribute("order_by");
+     if(order_by_ == vObj["earning_forecast_sp500_view_main_order_by"]){return;}
+     } catch(er){ if (vObj["earning_forecast_sp500_view_main_downloaded"] == 1){return;} }
+  message_div = document.getElementById("sp_forecast_actual_data")
+  message_div.innerHTML = 'In process ... '
+
+  $.post('{% url "corporatevaluation:admin_setup" %}',
+      {
+        fun: "get_earning_forecast_sp500_view_main",
+        order_by: order_by_,
+      },
+      function(data){
+            message_div.innerHTML = 'Process done with status: ' + data['status']
+            vObj["earning_forecast_sp500_view_main_downloaded"] = 1;
+            vObj["earning_forecast_sp500_view_main_order_by"] = order_by_;
+            create_table_for_earning_forecast_sp500_view_main(data=data['earning_forecast_sp500_view_main']) ;
+      }
+    );
+}
+</script>
+
+<!--  get_earning_forecast_sp500_view_main_title (tab_obj) -->
+<!--  Activated every time the user click the tab -->
+<script>
+function get_earning_forecast_sp500_view_main_title(tab_obj)
+{
+  // this is activated only first time the use click the tab.
+  if ( vObj["earning_forecast_sp500_view_main_downloaded"] == 0 )
+  {
+      var order_by_ = "next_release_date"
+      message_div = document.getElementById("sp_forecast_actual_data")
+      message_div.innerHTML = 'In process ... '
+      $.post('{% url "corporatevaluation:admin_setup" %}',
+          {
+            fun: "get_earning_forecast_sp500_view_main",
+            order_by: order_by_,
+          },
+          function(data){
+            message_div.innerHTML = 'Process done with status: ' + data['status']
+            vObj["earning_forecast_sp500_view_main_downloaded"] = 1;
+            vObj["earning_forecast_sp500_view_main_order_by"] = order_by_;
+            create_table_for_earning_forecast_sp500_view_main(data=data['earning_forecast_sp500_view_main']) ;
+          }
+        );
+      try{
+           ef = new EarningForecast(my_name_="ef", win_name_="earning_forecast", win_title_="Earning Forecast", user_id=vObj["user_id"], tab_obj_=tab_obj);
+           ef.set_win_frame_style("20", "505", "500", "5%", "30%", "white")
+           ef.set_acWinStatEventListeners(ef);
+           tab_obj.PopWinObjects['ef'] = ef;
+           // --
+           delta = new EarningForecast(my_name_="delta", win_name_="delta", win_title_="Delta", user_id=vObj["user_id"], tab_obj_=tab_obj);
+           delta.set_win_frame_style("21", "345", "450", "2%", "35%", "white")
+           delta.set_title_colors("#fff", "#000080");
+           delta.set_acWinStatEventListeners(delta);
+           tab_obj.PopWinObjects['delta'] = delta;
+      } catch (err) {console.log("Error Earning Forecast 100: ",err.message)}
+  }
+}
+</script>
+
+<!-- stat functions -->
+<script>
+function Mean(numbersArr) {
+    var total = 0;
+    for(var key in numbersArr)
+       total += numbersArr[key];
+    var meanVal = total / numbersArr.length;
+    return meanVal;
+}
+
+function StandardDeviation(numbersArr) {
+    //--CALCULATE AVAREGE--
+    var total = 0;
+    for(var key in numbersArr)
+       total += numbersArr[key];
+    var meanVal = total / numbersArr.length;
+    //--CALCULATE AVAREGE--
+
+    //--CALCULATE STANDARD DEVIATION--
+    var SDprep = 0;
+    for(var key in numbersArr)
+       SDprep += Math.pow((parseFloat(numbersArr[key]) - meanVal),2);
+    var SDresult = Math.sqrt(SDprep/numbersArr.length);
+    //--CALCULATE STANDARD DEVIATION--
+    return SDresult
+}
+const pcorr = (x, y) => {
+  let sumX = 0,
+    sumY = 0,
+    sumXY = 0,
+    sumX2 = 0,
+    sumY2 = 0;
+  const minLength = x.length = y.length = Math.min(x.length, y.length),
+    reduce = (xi, idx) => {
+      const yi = y[idx];
+      sumX += xi;
+      sumY += yi;
+      sumXY += xi * yi;
+      sumX2 += xi * xi;
+      sumY2 += yi * yi;
+    }
+  x.forEach(reduce);
+  return (minLength * sumXY - sumX * sumY) / Math.sqrt((minLength * sumX2 - sumX * sumX) * (minLength * sumY2 - sumY * sumY));
+};
+</script>
+
+<!-- set_ticker_to_valuation(ticker) -->
+<script>
+function set_ticker_to_valuation(event, ticker)
+{
+ clean_marked_chosen_field(event.target);
+ let search_ticker = document.getElementById("search_ticker");
+ search_ticker.value = ticker;
+ var event = new Event("change", {bubbles: true}); search_ticker.dispatchEvent(event);
+}
+</script>
+
+<!--  get_earning_forecast_sp500_view SHOULD DELETE this function-->
 <script>
 function get_earning_forecast_sp500_view()
 {
   if (vObj["earning_forecast_sp500_view_downloaded"] == 1){return;}
-  message_div = document.getElementById("sp_forecast_actual")
+  message_div = document.getElementById("sp_forecast_actual_data")
   message_div.innerHTML = 'In process .. '
 
   $.post('{% url "corporatevaluation:admin_setup" %}',
@@ -25,7 +386,7 @@ function get_earning_forecast_sp500_view()
 }
 </script>
 
-<!-- create_table_for_earning_forecast_sp500 -->
+<!-- create_table_for_earning_forecast_sp500  SHOULD DELETE this function-->
 <script>
 function create_table_for_earning_forecast_sp500(data)
 {
@@ -106,15 +467,13 @@ function create_table_for_earning_forecast_sp500(data)
 
  s = "<table>"+s_title1 + s_title2 + s_title3 + s_body + "</table><br/><br/><br/><br/><br/>"
  //alert(s)
- document.getElementById("sp_forecast_actual").innerHTML = s;
+ document.getElementById("sp_forecast_actual_data").innerHTML = s;
 }
 
 </script>
 
-<!--  show_detailed_forecast_data  -->
+<!--  show_detailed_forecast_data.  SHOULD DELETE  -->
 <script>
-
-
 function show_detailed_forecast_data(event)
 {
  elm = event.target; //alert(elm.outerHTML)
@@ -132,10 +491,9 @@ function show_detailed_forecast_data(event)
     if(k>5){k=0; y = pelm.children[i].getAttribute("y"); q = pelm.children[i].getAttribute("q");n+=1; }
     if (y != null)
     {
-       if(k==0){ s2 += "<tr><td>" + y + "</td><td>" + q + "</td>"}
-       s2+="<td>"+pelm.children[i].innerHTML+"</td>"
        d_ = ""
-       if(k==0){var f_=parseFloat(pelm.children[i].innerHTML);}
+       if(k==0){ s2 += "<tr><td>" + y + "</td><td>" + q + "</td>"; var f_=parseFloat(pelm.children[i].innerHTML);}
+       s2+="<td>"+pelm.children[i].innerHTML+"</td>"
        if(k==1)
        {
            if(!isNaN(f_))
@@ -144,8 +502,8 @@ function show_detailed_forecast_data(event)
               var d_ = Math.round(10000*(parseFloat(a_) - parseFloat(f_))/parseFloat(a_))/100;
               afl_.push(d_)
            }
+           s2+="<td>"+d_+"</td>";
        }
-       s2+="<td>"+d_+"</td>";
    if(k==5){ k_ = pelm.children[i].innerHTML; if(!isNaN(k_)){pl_.push(parseFloat(k_));}}
    if(k==5){s2 += "</tr>"}
   }
@@ -161,66 +519,5 @@ function show_detailed_forecast_data(event)
  ef.set_info_by_ticker(s_all)
 }
 
-function Mean(numbersArr) {
-    var total = 0;
-    for(var key in numbersArr)
-       total += numbersArr[key];
-    var meanVal = total / numbersArr.length;
-    return meanVal;
-}
-
-function StandardDeviation(numbersArr) {
-    //--CALCULATE AVAREGE--
-    var total = 0;
-    for(var key in numbersArr)
-       total += numbersArr[key];
-    var meanVal = total / numbersArr.length;
-    //--CALCULATE AVAREGE--
-
-    //--CALCULATE STANDARD DEVIATION--
-    var SDprep = 0;
-    for(var key in numbersArr)
-       SDprep += Math.pow((parseFloat(numbersArr[key]) - meanVal),2);
-    var SDresult = Math.sqrt(SDprep/numbersArr.length);
-    //--CALCULATE STANDARD DEVIATION--
-    return SDresult
-}
-const pcorr = (x, y) => {
-  let sumX = 0,
-    sumY = 0,
-    sumXY = 0,
-    sumX2 = 0,
-    sumY2 = 0;
-  const minLength = x.length = y.length = Math.min(x.length, y.length),
-    reduce = (xi, idx) => {
-      const yi = y[idx];
-      sumX += xi;
-      sumY += yi;
-      sumXY += xi * yi;
-      sumX2 += xi * xi;
-      sumY2 += yi * yi;
-    }
-  x.forEach(reduce);
-  return (minLength * sumXY - sumX * sumY) / Math.sqrt((minLength * sumX2 - sumX * sumX) * (minLength * sumY2 - sumY * sumY));
-};
 </script>
-
-<script>
-function set_ticker_to_valuation(event)
-{
- ticker = event.target.innerHTML
- let search_ticker = document.getElementById("search_ticker")
- search_ticker.value = ticker
- var event = new Event("change", {bubbles: true}); search_ticker.dispatchEvent(event);
-}
-</script>
-
-
-
-
-
-
-
-
-
 

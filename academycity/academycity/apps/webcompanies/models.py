@@ -22,6 +22,7 @@ class WebCompanies(models.Model):
                                   limit_choices_to={'model__in': (
                                       'fabhoseafricaweb',
                                       'bizlandweb',
+                                      'apewivesweb',
                                       'radiusfoodweb',
                                       'countries',
                                       'institutionweb',

@@ -193,7 +193,6 @@ function ratio_analysis()
   document.getElementById("ratio_analysis").innerHTML = s
   var evt = new Event("click", {bubbles: true});sm.TabObjects["fsa"].tabTitle.dispatchEvent(evt);
   document.getElementById("fsa_ratio").dispatchEvent(evt);
-
   v_analysis();
   prepare_income_and_balance_sheet();
 }
@@ -204,7 +203,6 @@ function ratio_analysis()
 function v_analysis()
 {
   ll = get_from_to(); from_year = ll[0] ; to_year = ll[1]; s_title = ll[2];
-
   for (var key in vObj["xbrl_statements"])
   {
         if(key == 2)
@@ -218,7 +216,6 @@ function v_analysis()
               eval("s_h_"+k + "='<tr><td>"+ vObj["xbrl_statements"][key]['accounts'][k][0] +"</td>'")
           }
         }
-
         if(key == 1)
         {
           for (var k in vObj["xbrl_statements"][key]['accounts'])
@@ -230,6 +227,7 @@ function v_analysis()
           }
         }
   }
+
   for (var key in vObj["xbrl_statements"])
   {
     if(key == 2)
@@ -307,6 +305,8 @@ var sb_h = "<b><u>Balance Sheet:</u></b><br/><table>" + s_title + sb_h + "</tabl
 
 document.getElementById("vertical").innerHTML = s + "<br/><br/>" + sb + "<br/><br/>"
 document.getElementById("horizontal").innerHTML = s_h + "<br/><br/>" + sb_h + "<br/><br/>"
+
+
 }
 
 </script>

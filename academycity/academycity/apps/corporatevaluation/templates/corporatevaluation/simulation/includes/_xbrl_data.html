@@ -91,19 +91,25 @@ function balance_accounts()
     eval('z_max = Math.max('+ ys + ')');  eval('z_min = Math.min('+ ys + ')');
     from_year = Math.max(z_min, from_year) ; to_year = z_max+1;
 
+    //alert(from_year + " : " + to_year)
+
     for ( var y = from_year; y < to_year; y++)
     {
             for(let z in cd)
             {
-              try{if (cd[z]['dei']['documentfiscalyearfocus'] == y.toString()) {y_data = vObj["xbrl_data"][z]; break;}
+              y_data = -1;
+              try{if (cd[z]['dei']['documentfiscalyearfocus'] == y.toString()) {y_data = cd[z]; break;}
               } catch (er){ y_data = -1 }
             }
             if (y_data == -1) {continue;}
-
             var matching_data = y_data['matching_accounts'];
             for (k in sm.accounting_equality)
             {
-                //if(y == 2020){ alert('-k-');alert(k);}
+               // if(key == '20100')
+               // {
+               //   alert("y: " + y + "  k: " + k )
+               // }
+
                 var num = 0; nums = []
                 for (k1 in sm.accounting_equality[k])
                 {
@@ -112,8 +118,14 @@ function balance_accounts()
                       nn = 0
                       try {
                            if (matching_data[key][0].toLowerCase() != '')
-                           { nn_ = y_data['year_data'][key];
-                                 //if(y == 2020){if (k == '20800' || k == 20800){alert('-1-');alert(k1);alert(nn_);}}
+                           {
+                             nn_ = y_data['year_data'][key];
+
+                      //  if(key == '20100')
+                      //  {
+                      //   alert("y: " + y + " k: " + k + " : " + key + " : " + nn_)
+                      //  }
+
                              if(!isNaN(nn_)){nn = Number(nn_)}
                            }
                       } catch (er) {}
@@ -126,11 +138,18 @@ function balance_accounts()
                        //if(y == 2020){if (k == '14999' || k == 14999){ alert('-2-');alert(k1);alert(nn);}}
                       sm.accounting_equality[k][k1]['data'] = nn
                 }
-                    //alert('num')
-                    //alert(num)
-                    //alert('nums')
-                    //alert(nums)
+               // if(y == 2020 ){
+               //         if(k == '20100')
+               //         {
+               //             alert('-k-'); alert(k);
+               //             alert('num')
+               //             alert(num)
+               //             alert('nums')
+               //             alert(nums)
+               //         }
+               //     }
                       //if(y == 2020){if (k == '14999' || k == 14999){ alert('-3-');alert(num); alert(nums);}}
+
                 if (num == 2)
                 {
                   if (nums.includes("3"))
@@ -178,9 +197,12 @@ function balance_accounts()
                     y_data['year_data'][account_order] = sm.accounting_equality[k]['3']['data']
                   }
                 }
+
             }
 
-// return ;
+//alert(y)
+
+ // return ;
 
             for(h in sm.accounts_structure)
             {
@@ -253,7 +275,7 @@ function balance_accounts()
                   elm.innerHTML = "";
                 }
             }
-  }
+    }
 }
 
 </script>
@@ -279,14 +301,23 @@ function xbrl_set_data()
     }
     eval('z_max = Math.max('+ ys + ')');  eval('z_min = Math.min('+ ys + ')');
     from_year = Math.max(z_min, from_year) ; to_year = z_max+1;
-    // alert(from_year); alert(to_year);
+
+    //alert(from_year); alert(to_year);
+
+    var ticker_ = vObj["company_info"]["ticker"]
     ss = {}
-    s_title = "<thead><tr id='fs_years_xbrl_data'><th>Accounts</th>"
+    s_yf_http = "https:\/\/finance.yahoo.com\/quote\/" + ticker_ + "\/financials?p=" + ticker_
+
+    s_title = "<thead><tr id='fs_years_xbrl_data'><th>Accounts (<a id='fy_link' href='"+ s_yf_http +"' target='_blank'> Yahoo Finance</a>)"
+
+    s_title += "</th>"
     for ( var y = from_year; y < to_year; y++) {
        // get_xbrl_view in this tab
        s_title += "<th><a id='sec_xbrl_data_"+y+"' href='#' target='_blank'>"+String(y)+"</a></th>"
     }
-    // alert(s_title);
+
+    //alert(s_title);
+
     for (var key_statement in vObj["xbrl_statements"])
     {
         for (var key in vObj["xbrl_statements"][key_statement]['accounts'])
@@ -299,7 +330,7 @@ function xbrl_set_data()
                  try {
                          if (cd[z]['dei']['documentfiscalyearfocus'] == y.toString())
                          {
-                           y_data = vObj["xbrl_data"][z]
+                           y_data = cd[z];
                            break;
                          }
                          else
@@ -309,11 +340,20 @@ function xbrl_set_data()
                  } catch (er) { //alert(er);
                   y_data = -1; }
                }
-               if (y_data == -1) { nn = '' } else { nn = y_data['year_data'][key] }
+               if (y_data == -1) { nn = '' } else {
+
+                   nn = y_data['year_data'][key]
+
+                    //if(key == "20100" || key == "20200" || key == "20300" )
+                    //{
+                    // alert(z+" : "+y+" : "+key +" : "+nn)
+                    //}
+               }
                ss[key] += "<td id='"+y.toString()+"_"+key.toString()+"' style='padding-right:5px;text-align: right;'>" + toCommas(nn) + "</td>"
            }
         }
     }
+
     ss_ = ""
     for( var k in ss)
     {
