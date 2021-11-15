@@ -7,7 +7,8 @@ from .models import (Project, RBOIC, CountryRegion, CountryRating, Industry,
                      XBRLCompanyInfo, XBRLValuationAccountsMatch, XBRLValuationStatementsAccounts,
                      XBRLRegion, XBRLCountry, XBRLCountryYearData,
                      XBRLHistoricalReturnsSP, XBRLSPMoodys,
-                     XBRLSPEarningForecast, XBRLSPStatistics)
+                     XBRLSPEarningForecast, XBRLSPStatistics,
+                     XBRLCountriesOfOperations, XBRLRegionsOfOperations, XBRLYearsCompanyOperations)
 
 # -*- coding: utf-8 -*-
 from cms.admin.placeholderadmin import PlaceholderAdminMixin
@@ -190,3 +191,19 @@ class XBRLSPEarningForecastAdmin(admin.ModelAdmin):
 class XBRLSPStatisticsAdmin(admin.ModelAdmin):
     list_display = ('id', 'company', 'next_release_date', 'mean_abs_price_change', 'mean_abs_actual_forecast_change',
                     'correlation_afp', 'updated', 'straddle_price', 'butterfly_price', 'announcement_time')
+
+
+@admin.register(XBRLCountriesOfOperations)
+class XBRLCountriesOfOperationsAdmin(admin.ModelAdmin):
+    list_display = ('id', 'company_year', 'country')
+
+
+@admin.register(XBRLRegionsOfOperations)
+class XBRLRegionsOfOperationsAdmin(admin.ModelAdmin):
+    list_display = ('id', 'company_year', 'region')
+
+
+@admin.register(XBRLYearsCompanyOperations)
+class XBRLYearsCompanyOperationsAdmin(admin.ModelAdmin):
+    list_display = ('id', 'company', 'year')
+

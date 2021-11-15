@@ -532,6 +532,23 @@ class XBRLCompanyInfo(TruncateTableMixin, models.Model):
     city = models.CharField(max_length=50, default="", blank=True)
     state = models.CharField(max_length=50, default="", blank=True)
     zip = models.CharField(max_length=10, default="", blank=True)
+    #
+    by_country_or_regine = models.BooleanField(default=True)
+
+    def get_countries_regions(self):
+        dic = {}
+        try:
+            for y in self.years_of_operation.all():
+                dic[y.year] = {}
+                dic[y.year]['countries'] = {}
+                for c in y.countries_of_operation.all():
+                    dic[y.year]['countries'][c.country.id] = str(c.revenues)
+                dic[y.year]['regions'] = {}
+                for r in y.regions_of_operation.all():
+                    dic[y.year]['regions'][r.region.id] = str(r.revenues)
+        except Exception as ex:
+            print(ex)
+        return dic
 
     def __str__(self):
         return str(self.company_name) + " : " + str(self.ticker)
@@ -575,7 +592,7 @@ class XBRLRegion(TruncateTableMixin, models.Model):
     region_objects = XBRLRegionQuerySet.as_manager()  # The project manager.
 
     def __str__(self):
-        return self.name
+        return str(self.full_name) + " (" + str(self.name) + ")"
 
 
 class XBRLCountry(TruncateTableMixin, models.Model):
@@ -598,7 +615,47 @@ class XBRLCountry(TruncateTableMixin, models.Model):
     brics = models.BooleanField(default=False)
 
     def __str__(self):
-        return self.name
+        return str(self.name) + " (" + str(self.region.name) + ")"
+
+
+class XBRLYearsCompanyOperations(TruncateTableMixin, models.Model):
+    class Meta:
+        verbose_name = _('XBRL Year Company Of Operations')
+        verbose_name_plural = _('XBRL Year companies Of Operations')
+        ordering = ['year']
+    #
+    company = models.ForeignKey(XBRLCompanyInfo, on_delete=models.CASCADE, default=None, blank=True, null=True,
+                                related_name="years_of_operation")
+    year = models.SmallIntegerField(default=2020)
+
+    def __str__(self):
+        return str(self.company.company_name) + ": " + str(self.year)
+
+
+class XBRLCountriesOfOperations(TruncateTableMixin, models.Model):
+    class Meta:
+        verbose_name = _('XBRL Country Of Operations')
+        verbose_name_plural = _('XBRL Countries Of Operations')
+        ordering = ['country']
+    #
+    company_year = models.ForeignKey(XBRLYearsCompanyOperations, on_delete=models.CASCADE, default=None, blank=True,
+                                     null=True, related_name="countries_of_operation")
+    country = models.ForeignKey(XBRLCountry, on_delete=models.CASCADE, default=None, blank=True, null=True,
+                                related_name="company_year_countries")
+    revenues = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+
+
+class XBRLRegionsOfOperations(TruncateTableMixin, models.Model):
+    class Meta:
+        verbose_name = _('XBRL region Of Operations')
+        verbose_name_plural = _('XBRL regions Of Operations')
+        ordering = ['region']
+    #
+    company_year = models.ForeignKey(XBRLYearsCompanyOperations, on_delete=models.CASCADE, default=None, blank=True,
+                                     null=True, related_name="regions_of_operation")
+    region = models.ForeignKey(XBRLRegion, on_delete=models.CASCADE, default=None, blank=True, null=True,
+                               related_name="company_year_regions")
+    revenues = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
 
 
 class XBRLCountryYearDataProject(models.Manager):
@@ -747,51 +804,6 @@ class XBRLCountryYearData(TruncateTableMixin, models.Model):
         # + " : " + str(self.year) + " : " + str(self.tax_rate)
 
 
-class XBRLValuationStatementsAccounts(TruncateTableMixin, models.Model):
-    class Meta:
-        verbose_name = _('XBRLValuationStatementsAccount')
-        verbose_name_plural = _('XBRLValuationStatementsAccounts')
-        ordering = ['order']
-    #
-    order = models.PositiveSmallIntegerField(default=0)
-    statement = models.CharField(max_length=250, default='Income Statement')
-
-    def __str__(self):
-        return str(self.statement)
-
-
-class XBRLValuationAccounts(TruncateTableMixin, models.Model):
-    class Meta:
-        verbose_name = _('XBRLValuationAccount')
-        verbose_name_plural = _('XBRLValuationAccounts')
-        ordering = ['order']
-    #
-    sic = models.PositiveSmallIntegerField(default=0)
-    order = models.PositiveSmallIntegerField(default=0)
-    account = models.CharField(max_length=250, null=True)
-    type = models.SmallIntegerField(default=1)   # 1 balance sheet 2 income statement -1 all
-    statement = models.ForeignKey(XBRLValuationStatementsAccounts, on_delete=models.CASCADE, default=None, blank=True,
-                                  null=True, related_name='xbrl_valuation_statements')
-    scale = models.PositiveIntegerField(default=1000000)
-
-    def __str__(self):
-        return self.account
-
-
-class XBRLValuationAccountsMatch(TruncateTableMixin, models.Model):
-    class Meta:
-        verbose_name = _('XBRLValuationAccountMatch')
-        verbose_name_plural = _('XBRLValuationAccountsMatch')
-        ordering = ['company']
-    #
-    year = models.PositiveSmallIntegerField(default=0)
-    company = models.ForeignKey(XBRLCompanyInfo, on_delete=models.CASCADE, default=None, blank=True, null=True,
-                                related_name='xbrl_valuation_accounts_match')
-    account = models.ForeignKey(XBRLValuationAccounts, on_delete=models.CASCADE, default=None, blank=True, null=True)
-    match_account = models.CharField(max_length=250, null=True)
-    accounting_standard = models.CharField(max_length=250, default="us-gaap")
-
-
 class XBRLHistoricalReturnsSP(TruncateTableMixin, models.Model):
     class Meta:
         verbose_name = _('XBRLHistoricalReturnsSP')
@@ -808,7 +820,7 @@ class XBRLHistoricalReturnsSP(TruncateTableMixin, models.Model):
     return_on_real_estate = models.DecimalField(max_digits=8, decimal_places=4, default=None, blank=True, null=True)
     home_prices = models.DecimalField(max_digits=8, decimal_places=2, default=None, blank=True, null=True)
     cpi = models.DecimalField(max_digits=8, decimal_places=4, default=None, blank=True, null=True)
-    risk_premium = models.DecimalField(max_digits=8, decimal_places=4, default=None, blank=True, null=True)
+    risk_premium = models.DecimalField(max_digits=8, decimal_places=4, default=None, blank=True, null=True) # Geometric rp
 
     @property
     def aaa_rate(self):
@@ -981,6 +993,52 @@ class XBRLSPMoodys(TruncateTableMixin, models.Model):
         return str(self.sp) + " = " + str(self.moodys) + " default_spread: " + str(self.default_spread) + \
                " score_from: " + str(self.score_from) + " score_to: " + str(self.score_to)
 
+
+# XBRL data collection
+class XBRLValuationStatementsAccounts(TruncateTableMixin, models.Model):
+    class Meta:
+        verbose_name = _('XBRLValuationStatementsAccount')
+        verbose_name_plural = _('XBRLValuationStatementsAccounts')
+        ordering = ['order']
+    #
+    order = models.PositiveSmallIntegerField(default=0)
+    statement = models.CharField(max_length=250, default='Income Statement')
+
+    def __str__(self):
+        return str(self.statement)
+
+
+class XBRLValuationAccounts(TruncateTableMixin, models.Model):
+    class Meta:
+        verbose_name = _('XBRLValuationAccount')
+        verbose_name_plural = _('XBRLValuationAccounts')
+        ordering = ['order']
+    #
+    sic = models.PositiveSmallIntegerField(default=0)
+    order = models.PositiveSmallIntegerField(default=0)
+    account = models.CharField(max_length=250, null=True)
+    type = models.SmallIntegerField(default=1)   # 1 balance sheet 2 income statement -1 all
+    statement = models.ForeignKey(XBRLValuationStatementsAccounts, on_delete=models.CASCADE, default=None, blank=True,
+                                  null=True, related_name='xbrl_valuation_statements')
+    scale = models.PositiveIntegerField(default=1000000)
+
+    def __str__(self):
+        return self.account
+
+
+class XBRLValuationAccountsMatch(TruncateTableMixin, models.Model):
+    class Meta:
+        verbose_name = _('XBRLValuationAccountMatch')
+        verbose_name_plural = _('XBRLValuationAccountsMatch')
+        ordering = ['company']
+    #
+    year = models.PositiveSmallIntegerField(default=0)
+    company = models.ForeignKey(XBRLCompanyInfo, on_delete=models.CASCADE, default=None, blank=True, null=True,
+                                related_name='xbrl_valuation_accounts_match')
+    account = models.ForeignKey(XBRLValuationAccounts, on_delete=models.CASCADE, default=None, blank=True, null=True)
+    match_account = models.CharField(max_length=250, null=True)
+    accounting_standard = models.CharField(max_length=250, default="us-gaap")
+
 #
 # # https://www.moodys.com/researchandratings/market-segment/sovereign-supranational/-/005005?tb=2&sbk=issr_name&sbo=1
 # class XBRLCountryPremium(TruncateTableMixin, models.Model):
@@ -994,6 +1052,7 @@ class XBRLSPMoodys(TruncateTableMixin, models.Model):
     # parent = models.ForeignKey('self', on_delete=models.CASCADE, related_name='children', default=1)
 
 
+# Options
 class XBRLSPStatistics(TruncateTableMixin, models.Model):
     class Meta:
         verbose_name = _('XBRLSPStatistic')

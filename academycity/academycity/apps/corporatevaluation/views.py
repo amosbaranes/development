@@ -33,21 +33,35 @@ from ..core.templatetags.core_tags import has_group
 
 # Fix game_id.  should use project_id
 def home(request, obj_id):
+    clear_log_debug()
+    log_debug("cv_home")
     wsc = WebSiteCompany(request, web_company_id=7)
+    log_debug("cv_home 11")
     company_obj = wsc.site_company()
+    log_debug("cv_home 12")
 
     industry = XBRLIndustryInfo.objects.exclude(sic_description='0').all()
+    log_debug("cv_home 13")
     global_industry_averages = GlobalIndustryAverages.objects.all()
+    log_debug("cv_home 14")
     project = Project.objects.filter(translations__language_code=get_language()).get(id=obj_id)
+    log_debug("cv_home 15")
     XBRLCountryYearData.project = project
+    log_debug("cv_home 16")
     request.session['cv_project_id'] = project.id
+    log_debug("cv_home 17")
 
     countries_data = XBRLCountryYearData.project_objects.all()
+    # regions_data = XBRL CountryYearData.project_objects.all()
+    log_debug("cv_home 18")
 
     companies = XBRLCompanyInfo.objects.filter(ticker__gte='9')
+    log_debug("cv_home 19")
     if not has_group(request.user, "admins"):
         companies = companies.filter(is_active=True)
+    log_debug("cv_home 20")
     companies = companies.all()
+    log_debug("cv_home 21")
 
     todolist = ToDoList.objects.filter().all()
     return render(request, 'corporatevaluation/home.html',
@@ -59,6 +73,25 @@ def home(request, obj_id):
                    'companies': companies,
                    'todolist': todolist,
                    })
+
+
+def update_country_risk(request):
+    clear_log_debug()
+    c_ =request.POST.get('c')
+    re_ =request.POST.get('re')
+    ra_ =request.POST.get('ra')
+    sp_ =request.POST.get('sp')
+    rp_ =request.POST.get('rp')
+    tx_ =request.POST.get('tx')
+
+    # XBRLYearsCompanyOperations.objects.get_orcreate()
+    #
+    # company = models.ForeignKey(XBRLCompanyInfo, on_delete=models.CASCADE, default=None, blank=True, null=True,
+    #                             related_name="years_of_operation")
+    # year = models.SmallIntegerField(default=2020)
+
+    dic = {'status': 'ok'}
+    return JsonResponse(dic)
 
 
 def get_companies_valuation_actual(request):
@@ -889,6 +922,7 @@ def get_data_ticker(request):
     # print(is_update_)
     acx = AcademyCityXBRL()
     data = acx.get_data_ticker(cik=ticker_, type_='10-K', is_update=is_update_, request=request)
+    print(data)
     request.session['cv_statements'] = data['statements']
     return JsonResponse(data)
 

@@ -39,19 +39,41 @@ function search_today_or_tomorrow_announcements_function(event) {
   var input, filter, table, tr, td, i, txtValue;
   table = document.getElementById("all_tickers_data");
   tr = table.getElementsByTagName("tr");
+
   if (event.altKey)
   {
      var today = new Date(); today.setHours(today.getHours() - 7);
-     const tomorrow = new Date(today); tomorrow.setDate(tomorrow.getDate() + 1);
+     var tomorrow = new Date(today); tomorrow.setDate(tomorrow.getDate() + 1);
      var dd = String(tomorrow.getDate()).padStart(2, '0');
      var mm = String(tomorrow.getMonth() + 1).padStart(2, '0'); //January is 0!
      var yyyy = tomorrow.getFullYear();
      filter = yyyy + '-' + mm + '-' + dd
+     if (event.ctrlKey)
+     {
+         ll = []
+         for(i = 0; i < 7 ;i++)
+         {
+             var today = new Date(); today.setHours(today.getHours() - 7);
+             var tomorrow = new Date(today); tomorrow.setDate(tomorrow.getDate() + i);
+             var dd = String(tomorrow.getDate()).padStart(2, '0');
+             var mm = String(tomorrow.getMonth() + 1).padStart(2, '0'); //January is 0!
+             var yyyy = tomorrow.getFullYear();
+             filter = yyyy + '-' + mm + '-' + dd
+             ll.push(filter)
+         }
+     }
   }
+
   for (i = 0; i < tr.length; i++) {
     td = tr[i].getElementsByTagName("td")[n_];
     if (td) {
-        if (event.ctrlKey)
+
+        if (event.ctrlKey && event.altKey)
+        {
+          txtValue = td.textContent || td.innerText;
+          const isLargeNumber = (element) => element == txtValue;
+          if (ll.findIndex(isLargeNumber) > -1) {tr[i].style.display = "";} else {tr[i].style.display = "none";}
+        } else if (event.ctrlKey)
         {
           if (td.style.color == "blue") {tr[i].style.display = "";} else {tr[i].style.display = "none";}
         } else if (event.altKey)
@@ -129,7 +151,7 @@ function options_w01_delta(event, ticker)
  //alert(ticker)
  if (!(ticker in vObj["options_delta"]))
  {
-     delta.set_info_by_ticker(content="In Process ... please wait.", win_titles="Delta for ticker: "+ticker);
+     delta.set_info_by_ticker(content="In Process ... please wait. ...  <i class='fa fa-spinner fa-spin'></i>", win_titles="Delta for ticker: "+ticker +" ...  <i class='fa fa-spinner fa-spin'></i>");
      $.post('{% url "corporatevaluation:tdameritrade_setup" %}',
           {
             fun: fun_,
@@ -252,7 +274,7 @@ function get_earning_forecast_sp500_view_main(event)
      if(order_by_ == vObj["earning_forecast_sp500_view_main_order_by"]){return;}
      } catch(er){ if (vObj["earning_forecast_sp500_view_main_downloaded"] == 1){return;} }
   message_div = document.getElementById("sp_forecast_actual_data")
-  message_div.innerHTML = 'In process ... '
+  message_div.innerHTML = " ...  <i class='fa fa-spinner fa-spin'></i>";
 
   $.post('{% url "corporatevaluation:admin_setup" %}',
       {
@@ -371,7 +393,7 @@ function get_earning_forecast_sp500_view()
 {
   if (vObj["earning_forecast_sp500_view_downloaded"] == 1){return;}
   message_div = document.getElementById("sp_forecast_actual_data")
-  message_div.innerHTML = 'In process .. '
+  message_div.innerHTML = " ...  <i class='fa fa-spinner fa-spin'></i>"
 
   $.post('{% url "corporatevaluation:admin_setup" %}',
       {

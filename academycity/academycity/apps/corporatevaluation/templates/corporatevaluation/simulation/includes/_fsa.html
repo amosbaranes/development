@@ -191,9 +191,14 @@ function ratio_analysis()
 
   //alert(s)
   document.getElementById("ratio_analysis").innerHTML = s
-  var evt = new Event("click", {bubbles: true});sm.TabObjects["fsa"].tabTitle.dispatchEvent(evt);
-  document.getElementById("fsa_ratio").dispatchEvent(evt);
+  var evt = new Event("click", {bubbles: true});
+  //alert('1')
+  //sm.TabObjects["fsa"].tabTitle.dispatchEvent(evt);
+  //alert('1')
+  //document.getElementById("fsa_ratio").dispatchEvent(evt);
+  //alert('12')
   v_analysis();
+  //alert('13')
   prepare_income_and_balance_sheet();
 }
 

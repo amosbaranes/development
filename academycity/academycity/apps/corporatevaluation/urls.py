@@ -6,7 +6,8 @@ from .views import (home, get_companies_valuation_actual, wacc_ebit_roic, team, 
                     sec, get_r, get_sec, onchange_account, get_matching_accounts,
                     save_industry_default,
                     create_company_by_ticker,
-                    get_risk_premium)
+                    get_risk_premium,
+                    update_country_risk)
 
 # create_company_by_ticker,
 
@@ -23,6 +24,8 @@ urlpatterns = [
     path('get_companies_valuation_actual/', get_companies_valuation_actual, name='get_companies_valuation_actual'),
     path('get_company_detail/', get_company_detail, name='get_company_detail'),
     path('get_interest_coverage_ratio/', get_interest_coverage_ratio, name='get_interest_coverage_ratio'),
+
+    path('update_country_risk/', update_country_risk, name='update_country_risk'),
 
     path('get_screens/', get_screens, name='get_screens'),
     path('update_todo/', update_todo, name='update_todo'),

@@ -548,15 +548,20 @@ class AcademyCityXBRL(object):
                 # print(company.financial_data)
                 return company.financial_data
 
-        dic_company_info = {'company_info': {'ticker': cik,
-                                             'type': type_,
-                                             }
-                            }
+        dic_company_info = {'company_info': {'ticker': cik, 'type': type_}}
+
         headers = {'User-Agent': 'amos@drbaranes.com'}
         base_url = "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK={}&type={}"  # &dateb={}"
         url = base_url.format(cik, type_)
 
         dic_company_info['company_info']['10k_url'] = url
+        #
+        dic_company_info["countries_regions"] = company.get_countries_regions()
+        #
+
+        # print(dic_company_info)
+        #
+        # print(dic_company_info)
         #
         # print('-'*100)
         # print(url)
@@ -636,6 +641,7 @@ class AcademyCityXBRL(object):
         log_debug("Start get_data_for_cik.")
         # print(cik)
         company = XBRLCompanyInfo.objects.get(ticker=cik)
+
         dic_company_info = self.get_dic_company_info(company, cik, type_, is_update)
         #
         dic_data = dic_company_info['data']

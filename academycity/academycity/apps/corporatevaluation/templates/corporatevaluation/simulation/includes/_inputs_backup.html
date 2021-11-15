@@ -1,0 +1,228 @@
+{% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
+{% load core_tags %}
+<div class="tabcontent" id="inputs" style="background-color:lightcyan">
+    <div>
+        <table>
+            <tr>
+                <td>{% trans "Industry" %}:</td>
+                <td>
+                    <select id="industries" name="industries" onChange="industries_fun(event)" style="width: 150px;">
+                        <option value='1'>{% trans "All Companies" %}</option>
+                        {% for i in industry %}
+                        <option value='{{ i.sic_code }}'>{{ i.sic_description }}</option>
+                        {% endfor %}
+                    </select> Sic Code: <input id="sic_code_" onchange="sic_code_onchange(event)" style="width:70px;line-height: 10px;" value="">
+                </td>
+            </tr>
+            <tr>
+                <td>{% trans "Company" %}:</td>
+                <td>
+                    <select id="companies" name="companies" onChange="companies_fun(event)" style="width: 150px;">
+                        <option ticker="" value='0'>Choose company</option>
+                        {% for c in companies %}
+                        <option ticker="{{c.ticker}}" value='{{c.id}}'>{{c.company_name}}</option>
+                        {% endfor %}
+                    </select>
+                    <span id="ticker_">Ticker: </span>
+                    <input id="search_ticker" onchange="ticker_onchange(event)" style="width:70px;line-height: 10px;" value="">
+                </td>
+            </tr>
+            <tr>
+                <td>Year:</td>
+                <td>
+                    <select id="valuation_year" name="valuation_year" onChange="valuation_year_fun(event)"
+                            style="width: 150px;">
+                        <option value='0'>--------------------</option>
+                    </select>
+                </td>
+            </tr>
+        </table>
+
+        <!-- countries -->
+        <hr/>
+        <button class="button" onclick="add_country_risk_premium()"><i class="fa fa-plus"></i> {% trans "Country" %}
+        </button>
+        <table class="data" id="country_risk_" onchange="rp_calculate(event)" oninput="risk_premium_function(event)">
+            <tr>
+                <th>{% trans "Country" %}</th>
+                <th>{% trans "Rating" %}</th>
+                <th>{% trans "Spread" %}</th>
+                <th>{% trans "Risk premium" %}</th>
+                <th>{% trans "Tax rate" %}</th>
+                <th></th>
+            </tr>
+            <tr id="risk_premium_row" oninput="cofeFunction_changeit(event)">
+                <td>
+                    <select id="countries" name="countries" onChange="countries_fun(event)" style="width: 150px;">
+                        <option value='0'>--------------------</option>
+                        {% for cd in countries_data %}
+                        <option data='{{cd.tax_rate}}_{{cd.moodys_rate_completed_by_sp}}_{{cd.rating_based_default_spread}}_{{cd.country_risk_premium_rating}}'
+                                value={{cd.country.id}}>
+                            {{cd.country.name}}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </td>
+
+                <td style="padding:0px"><input id="rp_rate" style="width:100px;line-height: 10px;" type="text" value=""/></td>
+                <td style="padding:0px"><input id="rp_spread" style="width:100px;line-height: 10px;" type="text" value=""/></td>
+                <td style="padding:0px"><input id="rp_risk_premium" style="width:100px;line-height: 10px;" type="text" value=""/></td>
+                <td style="padding:0px"><input id="rp_tax_rate" style="width:100px;line-height: 10px;" type="text" value=""/></td>
+
+                <td style="padding:0px"><button class="btn" onclick="delete_rp_for_country(event)"><i class="fa fa-trash"></i></button></td>
+                <!--
+                                    {% trans "Rating" %}: <span id="country_rating"></span>
+                                    &nbsp&nbsp {% trans "Spread" %}: <span id="country_default_spread"></span>%
+                                    &nbsp&nbsp {% trans "Risk premium" %}: <span id="country_risk_premium_rating"></span>%
+                                    &nbsp&nbsp {% trans "Tax rate" %}: <span id="country_tax_rate"></span>%
+
+                                                   </span>-->
+            </tr>
+        </table>
+    </div>
+    <br/>
+    <div>
+
+        <!--  Beta by industries  -->
+        <!--        beta source: https://www.zacks.com/stock/chart/aap/fundamental/beta -->
+        <button class="button" onclick="add_industry_beta()"><i class="fa fa-plus"></i> {% trans "Industry Beta" %}
+        </button>
+        <table class="data" id="cost_of_equity">
+            <tr>
+                <th>{% trans "Business" %}</th>
+                <th>{% trans "Revenues" %}</th>
+                <th>{% trans "EV/Sales" %}</th>
+                <th>{% trans "Est. Value" %}</th>
+                <th>{% trans "Unl. Beta" %}</th>
+                <th>{% trans "Exp. Growth" %}</th>
+                <th></th>
+            </tr>
+            <tr id="cofe_row" oninput="cofeFunction(event)" style="padding:0px;border-collapse: collapse;">
+                <td style="padding:0px">
+                    <select id="cofe_business" name="cofe_business" onChange="cofe_business_fun(event)"
+                            style="width: 150px;padding-top:0px">
+                        <option value='0'>--------------------</option>
+                        {% for gi in global_industry_averages %}
+                        <option value="{{ gi.ev_over_sales }}_{{ gi.unlevered_beta_corrected_for_cash }}_{{ gi.expected_earnings_growth_next_5_years }}">
+                            {{ gi.industry_name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </td>
+                <td style="padding:0px"><input id="cofe_revenues" onchange="cofe_revenue_fun(event)"
+                                               style="width:100px;line-height: 10px;" type="text" value="100"/></td>
+                <td style="padding:0px"><input id="cofe_ev_over_sales" onchange="cofe_revenue_fun(event)"
+                                               style="width:100px;line-height: 10px;" type="text" value="100"/></td>
+                <td style="padding:0px"><input id="cofe_estimated_value" onchange="cofe_revenue_fun(event)"
+                                               style="width:100px;line-height: 10px;" type="text" value="100"/></td>
+                <td style="padding:0px"><input id="cofe_unlevered_beta" onchange="cofe_revenue_fun(event)"
+                                               style="width:100px;line-height: 10px;" type="text" value="100"/></td>
+                <td style="padding:0px"><input id="cofe_expected_growth" onchange="cofe_revenue_fun(event)"
+                                               style="width:100px;line-height: 10px;" type="text" value="100"/></td>
+                <td style="padding:0px">
+                    <button class="btn" onclick="delete_industry_beta(event)"><i class="fa fa-trash"></i></button>
+                </td>
+            </tr>
+        </table>
+
+        <hr/>
+
+        <table class="data" style="width:30%">
+            <tr>
+                <td>
+                    <b>Beta: <span id="cofe_beta" style="float: right"></span></b>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <b>{% trans "Growth" %}: <span id="cofe_growth" style="float: right"></span></b>
+                </td>
+            </tr>
+        </table>
+    </div>
+</div>
+
+<!-- sic_code_onchange(event) -->
+<script>
+function sic_code_onchange(event)
+{
+ alert(1)
+}
+</script>
+
+<!-- Input -->
+<!-- dd country -->
+<!-- add Beta -->
+function add_industry_beta()
+{
+    t = document.getElementById("cost_of_equity")
+    r = document.getElementById("cofe_row")
+    var c = r.cloneNode(true);
+    t.appendChild(c);
+    var c = r.cloneNode(true);
+    t.appendChild(cln);
+    calculate_all()
+}
+
+</script>
+
+<!-- delete_rp_for_country(event) -->
+
+<!-- cofe_revenue_fun(event) -->
+<script>
+function cofe_revenue_fun(event)
+{
+    e = event.target
+    r = e.parentNode.parentNode
+    revenue_v = r.children[1].childNodes[0].value
+    evs_v = r.children[2].childNodes[0].innerHTML
+    ev = r.children[3].childNodes[0]
+    ev.innerHTML = Math.round(evs_v*revenue_v)
+    calculate_all()
+}
+
+</script>
+
+<!-- cofe_business_fun(event) -->
+<script>
+function cofe_business_fun(event)
+{
+    e = event.target
+    gi = e.options[e.selectedIndex]
+    value = e.options[e.selectedIndex].value
+    s = value.split("_")
+    var evs_v = s[0];
+    var b_v = s[1];
+    var g_v = (1+1*s[2])**(1/5)-1;
+    r = gi.parentNode.parentNode.parentNode
+    revenue = r.children[1].children[0].value
+    evs = r.children[2].children[0]
+    evs.innerHTML = Math.round(100*evs_v)/100
+    ev = r.children[3].children[0]
+    ev.innerHTML = Math.round(evs_v*revenue)
+    bv = r.children[4].children[0]
+    bv.innerHTML = Math.round(100*b_v)/100
+    bg = r.children[5].children[0]
+    bg.innerHTML = Math.round(10000*g_v)/10000
+    calculate_all()
+}
+
+</script>
+
+
+
+<!-- get_data_ticker()
+  This has to be deleted -->
+<script>
+
+function get_data_ticker()
+{
+  alert("data function move.  I should not see this message")
+}
+
+
+
+</script>
+
+
+
