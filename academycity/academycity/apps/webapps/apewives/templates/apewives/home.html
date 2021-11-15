@@ -10,12 +10,12 @@
 {% block body_content %}
 <body class="home page-template-default page page-id-9 wp-custom-logo ast-single-post ast-inherit-site-logo-transparent ast-hfb-header ast-desktop ast-page-builder-template ast-no-sidebar astra-3.7.2 elementor-default elementor-kit-4 elementor-page elementor-page-9 astra-addon-3.6.0" itemscope='itemscope'
       itemtype='https://schema.org/WebPage'>
-<!-- Google Tag Manager (noscript) -->
+
 <noscript>
     <iframe height="0" src="https://www.googletagmanager.com/ns.html?id=GTM-KKCQSLK" style="display:none;visibility:hidden"
             width="0"></iframe>
 </noscript>
-<!-- End Google Tag Manager (noscript) -->
+
 <div class="hfeed site" id="page">
     <a class="skip-link screen-reader-text" href="#content">Skip to content</a>
     <div class="elementor elementor-33 elementor-location-header" data-elementor-id="33" data-elementor-settings="[]"
@@ -32,12 +32,13 @@
                                  data-element_type="widget" data-id="0938f89"
                                  data-widget_type="theme-site-logo.default">
                                 <div class="elementor-widget-container">
-                                    <a href="https://desperateapewives.com">
+                                    <a href="https://{{company_obj.logo_image_link}}">
+                                       {% thumbnail company_obj.main_page_image "501x376" crop="center" as main_page_image %}
                                         <img alt="" class="attachment-full size-full"
-                                             height="376"
-                                             loading="lazy" sizes="(max-width: 501px) 100vw, 501px" src="https://desperateapewives.com/wp-content/uploads/logo-02.png"
-                                             srcset="https://desperateapewives.com/wp-content/uploads/logo-02.png 501w, https://desperateapewives.com/wp-content/uploads/logo-02-300x225.png 300w"
-                                             width="501"/>
+                                            height="376"
+                                            loading="lazy" sizes="(max-width: 501px) 100vw, 501px"
+                                            src="{{ company_obj.main_page_logo_image.url }}" alt=""
+                                            >
                                     </a>
                                 </div>
                             </div>
@@ -109,18 +110,18 @@
                                                  data-element_type="widget" data-id="f52006d"
                                                  data-widget_type="image.default">
                                                 <div class="elementor-widget-container">
-                                                    <a href="https://twitter.com/DApeWives" target="_blank">
+                                                    <a href="https://{{company_obj.main_page_twitter_link}}" target="_blank">
                                                         <img alt="1-17"
-                                                             src="https://desperateapewives.com/wp-content/uploads/elementor/thumbs/1-17-pdizq3kytlml9n1dgb74wjgfpz3l9o0zyeo5sht964.png" title="1-17"/></a>
+                                                             src="{{company_obj.main_page_twitter_image.url}}" title="1-17"/></a>
                                                 </div>
                                             </div>
                                             <div class="elementor-element elementor-element-c6f6824 elementor-widget__width-auto elementor-hidden-tablet elementor-hidden-mobile elementor-widget elementor-widget-image"
                                                  data-element_type="widget" data-id="c6f6824"
                                                  data-widget_type="image.default">
                                                 <div class="elementor-widget-container">
-                                                    <a href="https://discord.gg/nXCbs99BfG" target="_blank">
+                                                    <a href="https://{{company_obj.main_page_discord_link}}" target="_blank">
                                                         <img alt="1-15"
-                                                             src="https://desperateapewives.com/wp-content/uploads/elementor/thumbs/1-15-pdizpafyxqip9q7p6glp98t5b137n1tbieg3wx0gj0.png" title="1-15"/></a>
+                                                             src="{{company_obj.main_page_discord_image.url}}" title="1-15"/></a>
                                                 </div>
                                             </div>
                                             <div class="elementor-element elementor-element-0f85faa elementor-widget__width-auto elementor-hidden-desktop elementor-hidden-tablet elementor-hidden-mobile elementor-widget elementor-widget-heading"
@@ -167,7 +168,7 @@
                                                          data-widget_type="heading.default">
                                                         <div class="elementor-widget-container">
                                                             <h1 class="elementor-heading-title elementor-size-default">
-                                                                THE DESPERATE APEWIVES</h1></div>
+                                                                {{company_obj.text_main_page_title}}</h1></div>
                                                     </div>
                                                     <div class="elementor-element elementor-element-dd0bcc6 elementor-testimonial--align-left elementor-testimonial--skin-default elementor-testimonial--layout-image_inline elementor-arrows-yes elementor-pagination-type-bullets elementor-widget elementor-widget-testimonial-carousel"
                                                          data-element_type="widget" data-id="dd0bcc6"
@@ -177,31 +178,19 @@
                                                             <div class="elementor-swiper">
                                                                 <div class="elementor-main-swiper swiper-container">
                                                                     <div class="swiper-wrapper">
-                                                                        <div class="swiper-slide">
-                                                                            <div class="elementor-testimonial">
-                                                                                <div class="elementor-testimonial__content">
-                                                                                    <div class="elementor-testimonial__text">
-                                                                                        Come for the Art, stay for the
-                                                                                        Community!
-                                                                                    </div>
-                                                                                </div>
-                                                                                <div class="elementor-testimonial__footer">
-                                                                                </div>
-                                                                            </div>
+                                                                        {% for slide in company_obj.titleslides.all %}
+                                                                      <div class="swiper-slide">
+                                                                        <div class="elementor-testimonial">
+                                                                           <div class="elementor-testimonial__content">
+                                                                             <div class="elementor-testimonial__text">
+                                                                               {{slide.text}}
+                                                                             </div>
+                                                                           </div>
+                                                                          <div class="elementor-testimonial__footer">
+                                                                          </div>
                                                                         </div>
-                                                                        <div class="swiper-slide">
-                                                                            <div class="elementor-testimonial">
-                                                                                <div class="elementor-testimonial__content">
-                                                                                    <div class="elementor-testimonial__text">
-                                                                                        A startup, a venture,
-                                                                                        entrepreneurs with ambitious
-                                                                                        plans, not a project.
-                                                                                    </div>
-                                                                                </div>
-                                                                                <div class="elementor-testimonial__footer">
-                                                                                </div>
-                                                                            </div>
-                                                                        </div>
+                                                                      </div>
+                                                                        {% endfor %}
                                                                     </div>
                                                                     <div class="swiper-pagination"></div>
                                                                     <div class="elementor-swiper-button elementor-swiper-button-prev">
@@ -228,20 +217,12 @@
                                                          data-settings="{&quot;_animation&quot;:&quot;none&quot;}"
                                                          data-widget_type="image.default">
                                                         <div class="elementor-widget-container">
-
                                                            {% thumbnail company_obj.main_page_image "783x1123" crop="center" as main_page_image %}
-
                                                             <img alt="" class="attachment-full size-full"
                                                                  height="1123"
                                                                  loading="lazy" sizes="(max-width: 783px) 100vw, 783px"
                                                                  src="{{ main_page_image.url }}" alt=""
-                                                                 srcset="https://desperateapewives.com/wp-content/uploads/WONDER-WOMAN-Main2.png 783w,
-                                                                 https://desperateapewives.com/wp-content/uploads/WONDER-WOMAN-Main2-209x300.png 209w,
-                                                                 https://desperateapewives.com/wp-content/uploads/WONDER-WOMAN-Main2-714x1024.png 714w,
-                                                                 https://desperateapewives.com/wp-content/uploads/WONDER-WOMAN-Main2-768x1101.png 768w"
-                                                                 width="783"
                                                             >
-
                                                         </div>
                                                     </div>
                                                 </div>
@@ -261,20 +242,18 @@
                                                          data-widget_type="heading.default">
                                                         <div class="elementor-widget-container">
                                                             <h2 class="elementor-heading-title elementor-size-default">
-                                                                THE APES ARE SUPER COOL BUT WHERE ARE THE LADIES?</h2>
+                                                                {{company_obj.text_second_page_title}}
+                                                            </h2>
                                                         </div>
                                                     </div>
                                                     <div class="elementor-element elementor-element-86b4865 elementor-widget elementor-widget-text-editor"
                                                          data-element_type="widget" data-id="86b4865"
                                                          data-widget_type="text-editor.default">
                                                         <div class="elementor-widget-container">
-                                                            <p>Inspired by the award winning television series “The
-                                                                Desperate Housewives”, DAW is a collection of 10,000
-                                                                Desperate ApeWives NFTs. Some are frustrated with their
-                                                                husbands and are looking for new thrills. A few are
-                                                                smitten with their hot and steamy new relationships and
-                                                                others are simply looking for eternal romance. Like Ella
-                                                                Fitzgerald once said ‘anything goes’.</p></div>
+                                                            <p>
+                                                              {{company_obj.text_second_page_text}}
+                                                            </p>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -295,148 +274,15 @@
                                                             <div class="elementor-image-carousel-wrapper swiper-container"
                                                                  dir="ltr">
                                                                 <div class="elementor-image-carousel swiper-wrapper">
-                                                                    <div class="swiper-slide">
+                                                                  {% for slide_image in company_obj.sliding_images.all %}
+                                                                   <div class="swiper-slide">
                                                                         <figure class="swiper-slide-inner"><img
-                                                                                alt="Marilyn"
+                                                                                alt=""
                                                                                 class="swiper-slide-image"
-                                                                                src="https://desperateapewives.com/wp-content/uploads/Marilyn-2.jpg"/></figure>
+                                                                                src="{{slide_image.image.url }}"/>
+                                                                        </figure>
                                                                     </div>
-                                                                    <div class="swiper-slide">
-                                                                        <figure class="swiper-slide-inner"><img
-                                                                                alt="Cleopatra"
-                                                                                class="swiper-slide-image"
-                                                                                src="https://desperateapewives.com/wp-content/uploads/Cleopatra-2.jpg"/></figure>
-                                                                    </div>
-                                                                    <div class="swiper-slide">
-                                                                        <figure class="swiper-slide-inner"><img
-                                                                                alt="nun"
-                                                                                class="swiper-slide-image"
-                                                                                src="https://desperateapewives.com/wp-content/uploads/nun-1.jpg"/></figure>
-                                                                    </div>
-                                                                    <div class="swiper-slide">
-                                                                        <figure class="swiper-slide-inner"><img
-                                                                                alt="queen"
-                                                                                class="swiper-slide-image"
-                                                                                src="https://desperateapewives.com/wp-content/uploads/queen.jpg"/></figure>
-                                                                    </div>
-                                                                    <div class="swiper-slide">
-                                                                        <figure class="swiper-slide-inner"><img
-                                                                                alt="Punk"
-                                                                                class="swiper-slide-image"
-                                                                                src="https://desperateapewives.com/wp-content/uploads/Punk.jpg"/></figure>
-                                                                    </div>
-                                                                    <div class="swiper-slide">
-                                                                        <figure class="swiper-slide-inner"><img
-                                                                                alt="wilma"
-                                                                                class="swiper-slide-image"
-                                                                                src="https://desperateapewives.com/wp-content/uploads/wilma-1.jpg"/></figure>
-                                                                    </div>
-                                                                    <div class="swiper-slide">
-                                                                        <figure class="swiper-slide-inner"><img
-                                                                                alt="marge"
-                                                                                class="swiper-slide-image"
-                                                                                src="https://desperateapewives.com/wp-content/uploads/marge-1.jpg"/></figure>
-                                                                    </div>
-                                                                    <div class="swiper-slide">
-                                                                        <figure class="swiper-slide-inner"><img
-                                                                                alt="lois"
-                                                                                class="swiper-slide-image"
-                                                                                src="https://desperateapewives.com/wp-content/uploads/lois.jpg"/></figure>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </section>
-                                    <section
-                                            class="elementor-section elementor-top-section elementor-element elementor-element-1bf26b5 elementor-section-content-middle elementor-hidden-desktop elementor-hidden-tablet elementor-section-boxed elementor-section-height-default elementor-section-height-default"
-                                            data-element_type="section" data-id="1bf26b5">
-                                        <div class="elementor-container elementor-column-gap-no">
-                                            <div class="elementor-column elementor-col-100 elementor-top-column elementor-element elementor-element-180efd7"
-                                                 data-element_type="column" data-id="180efd7">
-                                                <div class="elementor-widget-wrap elementor-element-populated">
-                                                    <div class="elementor-element elementor-element-be6a6f7 elementor-widget elementor-widget-image-carousel"
-                                                         data-element_type="widget" data-id="be6a6f7"
-                                                         data-settings="{&quot;slides_to_show&quot;:&quot;4&quot;,&quot;navigation&quot;:&quot;none&quot;,&quot;pause_on_interaction&quot;:&quot;no&quot;,&quot;autoplay_speed&quot;:3000,&quot;slides_to_show_tablet&quot;:&quot;3&quot;,&quot;slides_to_show_mobile&quot;:&quot;2&quot;,&quot;autoplay&quot;:&quot;yes&quot;,&quot;pause_on_hover&quot;:&quot;yes&quot;,&quot;infinite&quot;:&quot;yes&quot;,&quot;speed&quot;:500,&quot;image_spacing_custom&quot;:{&quot;unit&quot;:&quot;px&quot;,&quot;size&quot;:20,&quot;sizes&quot;:[]}}"
-                                                         data-widget_type="image-carousel.default">
-                                                        <div class="elementor-widget-container">
-                                                            <div class="elementor-image-carousel-wrapper swiper-container"
-                                                                 dir="ltr">
-                                                                <div class="elementor-image-carousel swiper-wrapper">
-                                                                    <div class="swiper-slide">
-                                                                        <figure class="swiper-slide-inner"><img
-                                                                                alt="Cleopatra"
-                                                                                class="swiper-slide-image"
-                                                                                src="https://desperateapewives.com/wp-content/uploads/Cleopatra-3.jpg"/></figure>
-                                                                    </div>
-                                                                    <div class="swiper-slide">
-                                                                        <figure class="swiper-slide-inner"><img
-                                                                                alt="nun"
-                                                                                class="swiper-slide-image"
-                                                                                src="https://desperateapewives.com/wp-content/uploads/nun-3.jpg"/></figure>
-                                                                    </div>
-                                                                    <div class="swiper-slide">
-                                                                        <figure class="swiper-slide-inner"><img
-                                                                                alt="queen"
-                                                                                class="swiper-slide-image"
-                                                                                src="https://desperateapewives.com/wp-content/uploads/queen-2.jpg"/></figure>
-                                                                    </div>
-                                                                    <div class="swiper-slide">
-                                                                        <figure class="swiper-slide-inner"><img
-                                                                                alt="Punk"
-                                                                                class="swiper-slide-image"
-                                                                                src="https://desperateapewives.com/wp-content/uploads/Punk-2.jpg"/></figure>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </section>
-                                    <section
-                                            class="elementor-section elementor-top-section elementor-element elementor-element-849bd7c elementor-section-content-middle elementor-hidden-desktop elementor-hidden-tablet elementor-section-boxed elementor-section-height-default elementor-section-height-default"
-                                            data-element_type="section" data-id="849bd7c">
-                                        <div class="elementor-container elementor-column-gap-no">
-                                            <div class="elementor-column elementor-col-100 elementor-top-column elementor-element elementor-element-7e64644"
-                                                 data-element_type="column" data-id="7e64644">
-                                                <div class="elementor-widget-wrap elementor-element-populated">
-                                                    <div class="elementor-element elementor-element-eb4b6c2 elementor-widget elementor-widget-image-carousel"
-                                                         data-element_type="widget" data-id="eb4b6c2"
-                                                         data-settings="{&quot;slides_to_show&quot;:&quot;4&quot;,&quot;navigation&quot;:&quot;none&quot;,&quot;pause_on_interaction&quot;:&quot;no&quot;,&quot;autoplay_speed&quot;:3000,&quot;slides_to_show_tablet&quot;:&quot;3&quot;,&quot;slides_to_show_mobile&quot;:&quot;2&quot;,&quot;autoplay&quot;:&quot;yes&quot;,&quot;pause_on_hover&quot;:&quot;yes&quot;,&quot;infinite&quot;:&quot;yes&quot;,&quot;speed&quot;:500,&quot;image_spacing_custom&quot;:{&quot;unit&quot;:&quot;px&quot;,&quot;size&quot;:20,&quot;sizes&quot;:[]}}"
-                                                         data-widget_type="image-carousel.default">
-                                                        <div class="elementor-widget-container">
-                                                            <div class="elementor-image-carousel-wrapper swiper-container"
-                                                                 dir="ltr">
-                                                                <div class="elementor-image-carousel swiper-wrapper">
-                                                                    <div class="swiper-slide">
-                                                                        <figure class="swiper-slide-inner"><img
-                                                                                alt="wilma"
-                                                                                class="swiper-slide-image"
-                                                                                src="https://desperateapewives.com/wp-content/uploads/wilma-2.jpg"/></figure>
-                                                                    </div>
-                                                                    <div class="swiper-slide">
-                                                                        <figure class="swiper-slide-inner"><img
-                                                                                alt="marge"
-                                                                                class="swiper-slide-image"
-                                                                                src="https://desperateapewives.com/wp-content/uploads/marge-3.jpg"/></figure>
-                                                                    </div>
-                                                                    <div class="swiper-slide">
-                                                                        <figure class="swiper-slide-inner"><img
-                                                                                alt="lois"
-                                                                                class="swiper-slide-image"
-                                                                                src="https://desperateapewives.com/wp-content/uploads/lois-2.jpg"/></figure>
-                                                                    </div>
-                                                                    <div class="swiper-slide">
-                                                                        <figure class="swiper-slide-inner"><img
-                                                                                alt="Marilyn"
-                                                                                class="swiper-slide-image"
-                                                                                src="https://desperateapewives.com/wp-content/uploads/Marilyn-4.jpg"/></figure>
-                                                                    </div>
+                                                                   {% endfor %}
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -467,15 +313,18 @@
                                                                          data-widget_type="heading.default">
                                                                         <div class="elementor-widget-container">
                                                                             <h2 class="elementor-heading-title elementor-size-default">
-                                                                                JOIN THE COMMUNITY</h2></div>
+                                                                                {{company_obj.community_title}}
+                                                                            </h2>
+                                                                        </div>
                                                                     </div>
                                                                     <div class="elementor-element elementor-element-d26e592 elementor-widget elementor-widget-text-editor"
                                                                          data-element_type="widget" data-id="d26e592"
                                                                          data-widget_type="text-editor.default">
                                                                         <div class="elementor-widget-container">
-                                                                            <p>Join the Discord and follow us on Twitter
-                                                                                for more information, our latest news
-                                                                                and announcements.</p></div>
+                                                                            <p>
+                                                                                {{company_obj.community_text}}
+                                                                            </p>
+                                                                        </div>
                                                                     </div>
                                                                 </div>
                                                             </div>
@@ -487,10 +336,10 @@
                                                                          data-settings="{&quot;_animation&quot;:&quot;pulse&quot;}"
                                                                          data-widget_type="image.default">
                                                                         <div class="elementor-widget-container">
-                                                                            <a href="https://twitter.com/DApeWives"
+                                                                            <a href="https://{{company_obj.main_page_twitter_link}}"
                                                                                target="_blank">
                                                                                 <img alt="twiter_btn4"
-                                                                                     src="https://desperateapewives.com/wp-content/uploads/elementor/thumbs/twiter_btn4-pdi4v489ikajgw2cknbzobojvso8x8si89vy5d9ni4.png"
+                                                                                     src="{{company_obj.community_twitter_image.url}}"
                                                                                      title="twiter_btn4"/> </a>
                                                                         </div>
                                                                     </div>
@@ -499,10 +348,10 @@
                                                                          data-settings="{&quot;_animation&quot;:&quot;pulse&quot;}"
                                                                          data-widget_type="image.default">
                                                                         <div class="elementor-widget-container">
-                                                                            <a href="https://discord.gg/nXCbs99BfG"
+                                                                            <a href="https://{{company_obj.main_page_discord_link}}"
                                                                                target="_blank">
                                                                                 <img alt="discord_btn4"
-                                                                                     src="https://desperateapewives.com/wp-content/uploads/elementor/thumbs/discord_btn4-pdi4v563pebtsi0zf5qm8tg0h6jm4xw8kejfmn89bw.png"
+                                                                                     src="{{company_obj.community_discord_image.url}}"
                                                                                      title="discord_btn4"/> </a>
                                                                         </div>
                                                                     </div>
@@ -533,7 +382,7 @@
                                                                         <figure class="swiper-slide-inner"><img
                                                                                 alt="Mona lisa New"
                                                                                 class="swiper-slide-image"
-                                                                                src="https://desperateapewives.com/wp-content/uploads/Mona-lisa-New.jpg"/></figure>
+                                                                                src="{{company_obj.membership_image.url}}"/></figure>
                                                                     </div>
                                                                 </div>
                                                             </div>
@@ -549,16 +398,16 @@
                                                          data-widget_type="heading.default">
                                                         <div class="elementor-widget-container">
                                                             <h2 class="elementor-heading-title elementor-size-default">
-                                                                DAW MEMBERSHIP CARD</h2></div>
+                                                                {{company_obj.membership_title}}</h2></div>
                                                     </div>
                                                     <div class="elementor-element elementor-element-d6bfbda elementor-widget elementor-widget-text-editor"
                                                          data-element_type="widget" data-id="d6bfbda"
                                                          data-widget_type="text-editor.default">
                                                         <div class="elementor-widget-container">
-                                                            <p>With signature red lips each Ape Wife is not only an
-                                                                awesome fine art JPEG, it’s also an exclusive DAW
-                                                                membership card that allows access to members-only
-                                                                benefits which will be revealed over time.</p></div>
+                                                            <p>
+                                                                {{company_obj.membership_text}}
+                                                            </p>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -578,7 +427,7 @@
                                                          data-widget_type="heading.default">
                                                         <div class="elementor-widget-container">
                                                             <h2 class="elementor-heading-title elementor-size-default">
-                                                                BUY A DAW<br>
+                                                                {{company_obj.buy_title}}<br>
 
                                                                 <span></h2></div>
                                                     </div>
@@ -594,10 +443,11 @@
                                                         <div class="elementor-widget-container">
                                                             <h2 class="elementor-heading-title elementor-size-default"><span
                                                                     style="font-size: 0.6em">
-The initial sale has sold out. To get your Desperate Ape Wife NFT, check out
-  our collection on OpenSea.
+                                                                  {{company_obj.buy_text}}
 
-<span></h2></div>
+                                                                   <span>
+                                                             </h2>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -610,10 +460,10 @@ The initial sale has sold out. To get your Desperate Ape Wife NFT, check out
                                                          data-settings="{&quot;_animation&quot;:&quot;pulse&quot;}"
                                                          data-widget_type="image.default">
                                                         <div class="elementor-widget-container">
-                                                            <a href="https://opensea.io/collection/desperate-ape-wives"
+                                                            <a href="https://{{company_obj.buy_link}}"
                                                                target="_blank">
                                                                 <img alt="BUY-ON-OPENSEA_btn"
-                                                                     src="https://desperateapewives.com/wp-content/uploads/elementor/thumbs/BUY-ON-OPENSEA_btn-pf7zmvq5bc29xmtyhh4a4ztpb8hynsd484a46a9uj8.png"
+                                                                     src="{{ company_obj.buy_image.url }}"
                                                                      title="BUY-ON-OPENSEA_btn"/> </a>
                                                         </div>
                                                     </div>
@@ -634,19 +484,17 @@ The initial sale has sold out. To get your Desperate Ape Wife NFT, check out
                                                          data-widget_type="heading.default">
                                                         <div class="elementor-widget-container">
                                                             <h2 class="elementor-heading-title elementor-size-default">
-                                                                SPECS</h2></div>
+                                                                {{company_obj.specs_title}}</h2></div>
                                                     </div>
                                                     <div class="elementor-element elementor-element-c0042cf elementor-widget elementor-widget-text-editor"
                                                          data-element_type="widget" data-id="c0042cf"
                                                          data-widget_type="text-editor.default">
                                                         <div class="elementor-widget-container">
-                                                            <p>Each Desperate Ape Wife is unique and algorithmically
-                                                                generated from over 213 traits. All apewives are hot but
-                                                                some are supermodels is our tagline.</p>
-                                                            <p>The apewives are stored as ERC-721 tokens on the Ethereum
-                                                                blockchain and hosted on IPFS. Minting an Ape Wife costs
-                                                                0.08 ETH in a fair distribution with no bonding
-                                                                curves.</p></div>
+                                                            <p>
+                                                               {{company_obj.specs_text_paragraph|linebreaks}}
+                                                            </p>
+
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -657,11 +505,13 @@ The initial sale has sold out. To get your Desperate Ape Wife NFT, check out
                                                          data-element_type="widget" data-id="4f870e0"
                                                          data-widget_type="image.default">
                                                         <div class="elementor-widget-container">
+                                                            {% thumbnail company_obj.specs_image "1688x1688" crop="center" as specs_image %}
                                                             <img alt="" class="attachment-full size-full"
                                                                  height="1688"
-                                                                 loading="lazy" sizes="(max-width: 1688px) 100vw, 1688px" src="https://desperateapewives.com/wp-content/uploads/Kylie2.jpg"
-                                                                 srcset="https://desperateapewives.com/wp-content/uploads/Kylie2.jpg 1688w, https://desperateapewives.com/wp-content/uploads/Kylie2-300x300.jpg 300w, https://desperateapewives.com/wp-content/uploads/Kylie2-1024x1024.jpg 1024w, https://desperateapewives.com/wp-content/uploads/Kylie2-150x150.jpg 150w, https://desperateapewives.com/wp-content/uploads/Kylie2-768x768.jpg 768w, https://desperateapewives.com/wp-content/uploads/Kylie2-1536x1536.jpg 1536w"
-                                                                 width="1688"/></div>
+                                                                 loading="lazy" sizes="(max-width: 1688px) 100vw, 1688px"
+                                                                 src="{{ company_obj.specs_image.url }}"
+
+                                                            /></div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -680,7 +530,8 @@ The initial sale has sold out. To get your Desperate Ape Wife NFT, check out
                                                          data-widget_type="image.default">
                                                         <div class="elementor-widget-container">
                                                             <img alt="lipstick4"
-                                                                 src="https://desperateapewives.com/wp-content/uploads/elementor/thumbs/lipstick4-pdjfx15uyvunpfxrlt01ih7r4rg07xg8rnpqzy3whi.png" title="lipstick4"/></div>
+                                                                 src="{{company_obj.ownership_image.url}}" title="lipstick4"/>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -694,19 +545,16 @@ The initial sale has sold out. To get your Desperate Ape Wife NFT, check out
                                                          data-widget_type="heading.default">
                                                         <div class="elementor-widget-container">
                                                             <h2 class="elementor-heading-title elementor-size-default">
-                                                                OWNERSHIP</h2></div>
+                                                                {{company_obj.ownership_title}}</h2></div>
                                                     </div>
                                                     <div class="elementor-element elementor-element-8cf796d elementor-widget elementor-widget-text-editor"
                                                          data-element_type="widget" data-id="8cf796d"
                                                          data-widget_type="text-editor.default">
                                                         <div class="elementor-widget-container">
-                                                            <p>As part of our roadmap development, our vision is to
-                                                                bridge the NFT space with the physical world, one of the
-                                                                many pros is that ownership and commercial usage rights
-                                                                are given to the owner, over their NFT.</p>
-                                                            <p>“You want your Desperate Ape Wife to be the face of your
-                                                                young and multi billion dollar cosmetics company or
-                                                                fashion brand, go ahead and do it.” The Gardener</p>
+                                                            <p>
+                                                                {{company_obj.ownership_text_paragraph|linebreaks}}
+                                                            </p>
+
                                                         </div>
                                                     </div>
                                                 </div>
@@ -728,16 +576,17 @@ The initial sale has sold out. To get your Desperate Ape Wife NFT, check out
                                                          data-widget_type="heading.default">
                                                         <div class="elementor-widget-container">
                                                             <h2 class="elementor-heading-title elementor-size-default">
-                                                                ROADMAP</h2></div>
+                                                                {{company_obj.roadmap_title}}</h2></div>
                                                     </div>
                                                     <div class="elementor-element elementor-element-858b2f7 elementor-widget elementor-widget-text-editor"
                                                          data-element_type="widget" data-id="858b2f7"
                                                          data-settings="{&quot;_animation&quot;:&quot;none&quot;}"
                                                          data-widget_type="text-editor.default">
                                                         <div class="elementor-widget-container">
-                                                            <p>We are here for the long run. We have ambitious plans,
-                                                                some of which were never before seen in the NFT space,
-                                                                stay tuned.</p></div>
+                                                            <p>
+                                                                {{company_obj.roadmap_text}}
+                                                            </p>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -756,7 +605,7 @@ The initial sale has sold out. To get your Desperate Ape Wife NFT, check out
                                                          data-widget_type="image.default">
                                                         <div class="elementor-widget-container">
                                                             <img alt="police-woman"
-                                                                 src="https://desperateapewives.com/wp-content/uploads/elementor/thumbs/police-woman-pdjumftfn2nl3745bf9q4wgtyontnc4eztufgtbtbo.png" title="police-woman"/></div>
+                                                                 src="{{company_obj.roadmap_image.url}}" title="police-woman"/></div>
                                                     </div>
                                                     <div class="elementor-element elementor-element-cc79b3f elementor-hidden-desktop elementor-hidden-tablet elementor-hidden-mobile elementor-widget elementor-widget-text-editor"
                                                          data-element_type="widget" data-id="cc79b3f"
@@ -781,9 +630,10 @@ The initial sale has sold out. To get your Desperate Ape Wife NFT, check out
                                                                 <div class="ee-timeline__line">
                                                                     <div class="ee-timeline__line__inner"></div>
                                                                 </div>
-                                                                <div class="elementor-repeater-item-4734863 ee-timeline__item timeline-item">
+                                                                {% for roadmap in company_obj.roadmaps.all %}
+                                                                 <div class="elementor-repeater-item-{{roadmap.roadmap_data_id}} ee-timeline__item timeline-item">
                                                                     <div class="timeline-item__point">
-                                                                        <div class="timeline-item__point__text">1</div>
+                                                                        <div class="timeline-item__point__text">{{roadmap.roadmap_timeline_item_point}}</div>
                                                                     </div>
                                                                     <div class="timeline-item__card-wrapper">
                                                                         <div class="timeline-item__card">
@@ -794,10 +644,9 @@ The initial sale has sold out. To get your Desperate Ape Wife NFT, check out
                                                                                     <div class="timeline-item__meta meta">
                                                                                     </div>
                                                                                     <div class="timeline-item__content__wysiwyg">
-                                                                                        <p>We donate the GoodDollar rare
-                                                                                            Desperate Ape Wife icon to
-                                                                                            the GoodDollar Foundation.
-                                                                                            <a href="https://www.gooddollar.org">https://www.gooddollar.org</a>
+                                                                                        <p>{{roadmap.text}}
+                                                                                            {% if roadmap.link is not null %}
+                                                                                            <a href="https://{{roadmap.link}}">{{roadmap.link_name}}</a>{% endif %}
                                                                                         </p></div>
                                                                                 </div>
                                                                             </div>
@@ -810,205 +659,7 @@ The initial sale has sold out. To get your Desperate Ape Wife NFT, check out
                                                                         </div>
                                                                     </div>
                                                                 </div>
-                                                                <div class="elementor-repeater-item-18ed8e5 ee-timeline__item timeline-item">
-                                                                    <div class="timeline-item__point">
-                                                                        <div class="timeline-item__point__text">2</div>
-                                                                    </div>
-                                                                    <div class="timeline-item__card-wrapper">
-                                                                        <div class="timeline-item__card">
-
-                                                                            <div class="timeline-item__content-wrapper">
-                                                                                <div class="timeline-item__content">
-                                                                                    <!-- meta -->
-                                                                                    <div class="timeline-item__meta meta">
-                                                                                    </div>
-                                                                                    <div class="timeline-item__content__wysiwyg">
-                                                                                        <p>We airdrop 5 hot apewives to
-                                                                                            random apewives owners.</p>
-                                                                                    </div>
-                                                                                </div>
-                                                                            </div>
-                                                                            <div class="timeline-item__card__arrow"></div>
-                                                                        </div>
-                                                                    </div>
-                                                                    <div class="timeline-item__meta-wrapper">
-                                                                        <!-- meta -->
-                                                                        <div class="timeline-item__meta meta timeline-item__meta meta">
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                                <div class="elementor-repeater-item-82142e9 ee-timeline__item timeline-item">
-                                                                    <div class="timeline-item__point">
-                                                                        <div class="timeline-item__point__text">3</div>
-                                                                    </div>
-                                                                    <div class="timeline-item__card-wrapper">
-                                                                        <div class="timeline-item__card">
-
-                                                                            <div class="timeline-item__content-wrapper">
-                                                                                <div class="timeline-item__content">
-                                                                                    <!-- meta -->
-                                                                                    <div class="timeline-item__meta meta">
-                                                                                    </div>
-                                                                                    <div class="timeline-item__content__wysiwyg">
-                                                                                        <p>We go live with the DAW House
-                                                                                            music in collaboration with
-                                                                                            International DJ’s.</p>
-                                                                                    </div>
-                                                                                </div>
-                                                                            </div>
-                                                                            <div class="timeline-item__card__arrow"></div>
-                                                                        </div>
-                                                                    </div>
-                                                                    <div class="timeline-item__meta-wrapper">
-                                                                        <!-- meta -->
-                                                                        <div class="timeline-item__meta meta timeline-item__meta meta">
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                                <div class="elementor-repeater-item-024fe2a ee-timeline__item timeline-item">
-                                                                    <div class="timeline-item__point">
-                                                                        <div class="timeline-item__point__text">4</div>
-                                                                    </div>
-                                                                    <div class="timeline-item__card-wrapper">
-                                                                        <div class="timeline-item__card">
-
-                                                                            <div class="timeline-item__content-wrapper">
-                                                                                <div class="timeline-item__content">
-                                                                                    <!-- meta -->
-                                                                                    <div class="timeline-item__meta meta">
-                                                                                    </div>
-                                                                                    <div class="timeline-item__content__wysiwyg">
-                                                                                        <p>As part of the breast cancer
-                                                                                            awareness month of October,
-                                                                                            we donate the Stay Strong
-                                                                                            extremely rare Desperate Ape
-                                                                                            Wife to a breast cancer
-                                                                                            charity chosen by our
-                                                                                            community.</p></div>
-                                                                                </div>
-                                                                            </div>
-                                                                            <div class="timeline-item__card__arrow"></div>
-                                                                        </div>
-                                                                    </div>
-                                                                    <div class="timeline-item__meta-wrapper">
-                                                                        <!-- meta -->
-                                                                        <div class="timeline-item__meta meta timeline-item__meta meta">
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                                <div class="elementor-repeater-item-1b9bf53 ee-timeline__item timeline-item">
-                                                                    <div class="timeline-item__point">
-                                                                        <div class="timeline-item__point__text">5</div>
-                                                                    </div>
-                                                                    <div class="timeline-item__card-wrapper">
-                                                                        <div class="timeline-item__card">
-
-                                                                            <div class="timeline-item__content-wrapper">
-                                                                                <div class="timeline-item__content">
-                                                                                    <!-- meta -->
-                                                                                    <div class="timeline-item__meta meta">
-                                                                                    </div>
-                                                                                    <div class="timeline-item__content__wysiwyg">
-                                                                                        <p>The debut of the DAW Dress
-                                                                                            Code, exclusive merch for
-                                                                                            DAW membership card
-                                                                                            holders.</p></div>
-                                                                                </div>
-                                                                            </div>
-                                                                            <div class="timeline-item__card__arrow"></div>
-                                                                        </div>
-                                                                    </div>
-                                                                    <div class="timeline-item__meta-wrapper">
-                                                                        <!-- meta -->
-                                                                        <div class="timeline-item__meta meta timeline-item__meta meta">
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                                <div class="elementor-repeater-item-c07019b ee-timeline__item timeline-item">
-                                                                    <div class="timeline-item__point">
-                                                                        <div class="timeline-item__point__text">6</div>
-                                                                    </div>
-                                                                    <div class="timeline-item__card-wrapper">
-                                                                        <div class="timeline-item__card">
-
-                                                                            <div class="timeline-item__content-wrapper">
-                                                                                <div class="timeline-item__content">
-                                                                                    <!-- meta -->
-                                                                                    <div class="timeline-item__meta meta">
-                                                                                    </div>
-                                                                                    <div class="timeline-item__content__wysiwyg">
-                                                                                        <p>The launch of the DAW Artists
-                                                                                            collaboration program
-                                                                                            (already in play).</p></div>
-                                                                                </div>
-                                                                            </div>
-                                                                            <div class="timeline-item__card__arrow"></div>
-                                                                        </div>
-                                                                    </div>
-                                                                    <div class="timeline-item__meta-wrapper">
-                                                                        <!-- meta -->
-                                                                        <div class="timeline-item__meta meta timeline-item__meta meta">
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                                <div class="elementor-repeater-item-319029d ee-timeline__item timeline-item">
-                                                                    <div class="timeline-item__point">
-                                                                        <div class="timeline-item__point__text">7</div>
-                                                                    </div>
-                                                                    <div class="timeline-item__card-wrapper">
-                                                                        <div class="timeline-item__card">
-
-                                                                            <div class="timeline-item__content-wrapper">
-                                                                                <div class="timeline-item__content">
-                                                                                    <!-- meta -->
-                                                                                    <div class="timeline-item__meta meta">
-                                                                                    </div>
-                                                                                    <div class="timeline-item__content__wysiwyg">
-                                                                                        <p>The Ape Kids Club (NFT Family
-                                                                                            creation) is officially
-                                                                                            open. We reveal a new and
-                                                                                            never before seen cross
-                                                                                            communities collaboration
-                                                                                            and partnership.</p></div>
-                                                                                </div>
-                                                                            </div>
-                                                                            <div class="timeline-item__card__arrow"></div>
-                                                                        </div>
-                                                                    </div>
-                                                                    <div class="timeline-item__meta-wrapper">
-                                                                        <!-- meta -->
-                                                                        <div class="timeline-item__meta meta timeline-item__meta meta">
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                                <div class="elementor-repeater-item-74b1010 ee-timeline__item timeline-item">
-                                                                    <div class="timeline-item__point">
-                                                                        <div class="timeline-item__point__text">8</div>
-                                                                    </div>
-                                                                    <div class="timeline-item__card-wrapper">
-                                                                        <div class="timeline-item__card">
-
-                                                                            <div class="timeline-item__content-wrapper">
-                                                                                <div class="timeline-item__content">
-                                                                                    <!-- meta -->
-                                                                                    <div class="timeline-item__meta meta">
-                                                                                    </div>
-                                                                                    <div class="timeline-item__content__wysiwyg">
-                                                                                        <p>Roadmap 2.0. DAW Membership
-                                                                                            Card network, business
-                                                                                            collaborations and physical
-                                                                                            world benefits.</p></div>
-                                                                                </div>
-                                                                            </div>
-                                                                            <div class="timeline-item__card__arrow"></div>
-                                                                        </div>
-                                                                    </div>
-                                                                    <div class="timeline-item__meta-wrapper">
-                                                                        <!-- meta -->
-                                                                        <div class="timeline-item__meta meta timeline-item__meta meta">
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
+                                                                {% endfor %}
                                                             </section>
                                                         </div>
                                                     </div>
@@ -1036,18 +687,15 @@ The initial sale has sold out. To get your Desperate Ape Wife NFT, check out
                                                                          data-widget_type="heading.default">
                                                                         <div class="elementor-widget-container">
                                                                             <h2 class="elementor-heading-title elementor-size-default">
-                                                                                MEMBERS TOOLS</h2></div>
+                                                                                {{company_obj.member_tool_title}}</h2></div>
                                                                     </div>
                                                                     <div class="elementor-element elementor-element-c5aa75d elementor-widget elementor-widget-text-editor"
                                                                          data-element_type="widget" data-id="c5aa75d"
                                                                          data-widget_type="text-editor.default">
                                                                         <div class="elementor-widget-container">
-                                                                            <p>The following is a rarity tool which will
-                                                                                help you identify (objectively) how hot
-                                                                                is your Desperate Ape Wife. Please bear
-                                                                                in mind that these are 3rd party tools
-                                                                                and every placing of your Ape Wife
-                                                                                rarity and value is subjective.</p>
+                                                                            <p>
+                                                                                {{company_obj.member_tool_text}}
+                                                                            </p>
                                                                         </div>
                                                                     </div>
                                                                 </div>
@@ -1061,12 +709,12 @@ The initial sale has sold out. To get your Desperate Ape Wife NFT, check out
                                                                         <div class="elementor-widget-container">
                                                                             <div class="elementor-button-wrapper">
                                                                                 <a class="elementor-button-link elementor-button elementor-size-sm"
-                                                                                   href="https://rarity.tools/desperate-ape-wives"
+                                                                                   href="https://{{company_obj.member_rarity_tools_link}}"
                                                                                    role="button"
                                                                                    target="_blank">
-						<span class="elementor-button-content-wrapper">
-						<span class="elementor-button-text">rarity.tools</span>
-		</span>
+						                                                               <span class="elementor-button-content-wrapper">
+                                                                                         <span class="elementor-button-text">{{company_obj.member_rarity_tools}}</span>
+                                                                                       </span>
                                                                                 </a>
                                                                             </div>
                                                                         </div>
@@ -1092,26 +740,25 @@ The initial sale has sold out. To get your Desperate Ape Wife NFT, check out
                                                          data-widget_type="heading.default">
                                                         <div class="elementor-widget-container">
                                                             <h2 class="elementor-heading-title elementor-size-default">
-                                                                THE TEAM</h2></div>
+                                                                {{company_obj.team_title}}</h2></div>
                                                     </div>
                                                     <div class="elementor-element elementor-element-29824d9 elementor-widget elementor-widget-text-editor"
                                                          data-element_type="widget" data-id="29824d9"
                                                          data-widget_type="text-editor.default">
                                                         <div class="elementor-widget-container">
-                                                            <p>DAW was created by friends who dipped their toes in the
-                                                                NFT space, got hooked and decided to go all in. We are
-                                                                here to ignite an already very flammable space.</p>
+                                                            <p>{{company_obj.team_text}}</p>
                                                         </div>
                                                     </div>
                                                     <section
                                                             class="elementor-section elementor-inner-section elementor-element elementor-element-b3623fd elementor-section-boxed elementor-section-height-default elementor-section-height-default"
                                                             data-element_type="section" data-id="b3623fd">
                                                         <div class="elementor-container elementor-column-gap-default">
-                                                            <div class="elementor-column elementor-col-33 elementor-inner-column elementor-element elementor-element-e04367e"
-                                                                 data-element_type="column" data-id="e04367e">
+                                                            {% for team in company_obj.teams.all %}
+                                                          <div class="elementor-column elementor-col-33 elementor-inner-column elementor-element elementor-element-{{team.data_id_1}}"
+                                                                 data-element_type="column" data-id="{{team.data_id_1}}">
                                                                 <div class="elementor-widget-wrap elementor-element-populated">
-                                                                    <div class="elementor-element elementor-element-fce02e9 animated-slow elementor-position-top elementor-vertical-align-top elementor-widget elementor-widget-image-box"
-                                                                         data-element_type="widget" data-id="fce02e9"
+                                                                    <div class="elementor-element elementor-element-{{team.data_id_2}} animated-slow elementor-position-top elementor-vertical-align-top elementor-widget elementor-widget-image-box"
+                                                                         data-element_type="widget" data-id="{{team.data_id_2}}"
                                                                          data-settings="{&quot;_animation&quot;:&quot;none&quot;}"
                                                                          data-widget_type="image-box.default">
                                                                         <div class="elementor-widget-container">
@@ -1120,71 +767,20 @@ The initial sale has sold out. To get your Desperate Ape Wife NFT, check out
                                                                                     <img alt="" class="attachment-full size-full"
                                                                                          height="211"
                                                                                          loading="lazy"
-                                                                                         src="https://desperateapewives.com/wp-content/uploads/MAYC-21584-new.jpg" width="211"/>
+                                                                                         src="{{team.image.url }}" width="211"/>
                                                                                 </figure>
                                                                                 <div class="elementor-image-box-content">
                                                                                     <h3 class="elementor-image-box-title">
-                                                                                        THE GARDENER.</h3>
+                                                                                        {{team.team_header }}</h3>
                                                                                     <p class="elementor-image-box-description">
-                                                                                        OG Traditional Art Market
-                                                                                        Collector. Planting Expert.</p>
+                                                                                        {{team.team_description }}</p>
                                                                                 </div>
                                                                             </div>
                                                                         </div>
                                                                     </div>
                                                                 </div>
-                                                            </div>
-                                                            <div class="elementor-column elementor-col-33 elementor-inner-column elementor-element elementor-element-6616f15"
-                                                                 data-element_type="column" data-id="6616f15">
-                                                                <div class="elementor-widget-wrap elementor-element-populated">
-                                                                    <div class="elementor-element elementor-element-cf58f65 animated-slow elementor-position-top elementor-vertical-align-top elementor-widget elementor-widget-image-box"
-                                                                         data-element_type="widget" data-id="cf58f65"
-                                                                         data-settings="{&quot;_animation&quot;:&quot;none&quot;}"
-                                                                         data-widget_type="image-box.default">
-                                                                        <div class="elementor-widget-container">
-                                                                            <div class="elementor-image-box-wrapper">
-                                                                                <figure class="elementor-image-box-img">
-                                                                                    <img alt="" class="attachment-full size-full"
-                                                                                         height="211"
-                                                                                         loading="lazy"
-                                                                                         src="https://desperateapewives.com/wp-content/uploads/archer_mccall.jpg" width="211"/>
-                                                                                </figure>
-                                                                                <div class="elementor-image-box-content">
-                                                                                    <h3 class="elementor-image-box-title">
-                                                                                        ARCHER MCCALL.</h3>
-                                                                                    <p class="elementor-image-box-description">
-                                                                                        The Creative Outlaw.</p></div>
-                                                                            </div>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                            <div class="elementor-column elementor-col-33 elementor-inner-column elementor-element elementor-element-bea9372"
-                                                                 data-element_type="column" data-id="bea9372">
-                                                                <div class="elementor-widget-wrap elementor-element-populated">
-                                                                    <div class="elementor-element elementor-element-23d5afb animated-slow elementor-position-top elementor-vertical-align-top elementor-widget elementor-widget-image-box"
-                                                                         data-element_type="widget" data-id="23d5afb"
-                                                                         data-settings="{&quot;_animation&quot;:&quot;none&quot;}"
-                                                                         data-widget_type="image-box.default">
-                                                                        <div class="elementor-widget-container">
-                                                                            <div class="elementor-image-box-wrapper">
-                                                                                <figure class="elementor-image-box-img">
-                                                                                    <img alt="" class="attachment-full size-full"
-                                                                                         height="211"
-                                                                                         loading="lazy"
-                                                                                         src="https://desperateapewives.com/wp-content/uploads/anna3.jpg" width="211"/>
-                                                                                </figure>
-                                                                                <div class="elementor-image-box-content">
-                                                                                    <h3 class="elementor-image-box-title">
-                                                                                        ANNA.</h3>
-                                                                                    <p class="elementor-image-box-description">
-                                                                                        Web Master. Heartbreaking
-                                                                                        Expert. </p></div>
-                                                                            </div>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
+                                                              </div>
+                                                             {% endfor %}
                                                         </div>
                                                     </section>
                                                 </div>
@@ -1204,29 +800,13 @@ The initial sale has sold out. To get your Desperate Ape Wife NFT, check out
                                                          data-widget_type="heading.default">
                                                         <div class="elementor-widget-container">
                                                             <h2 class="elementor-heading-title elementor-size-default">
-                                                                ABOUT US</h2></div>
+                                                                {{company_obj.about_title}}</h2></div>
                                                     </div>
                                                     <div class="elementor-element elementor-element-b5ed4b0 elementor-widget elementor-widget-text-editor"
                                                          data-element_type="widget" data-id="b5ed4b0"
                                                          data-widget_type="text-editor.default">
                                                         <div class="elementor-widget-container">
-                                                            <p>It started with two friends, an ape and an idea. One
-                                                                being heavily involved in the traditional art market and
-                                                                world renowned museums and the other a professional
-                                                                artist and illustrator full time, both are completely
-                                                                obsessed with crypto and the NFT Space.</p>
-                                                            <p>The Gardener being a BAYC (Mutant) holder and Archer
-                                                                Mccall being a huge fan of the project from inception,
-                                                                asked each other one question. Where are the ladies?
-                                                                From that ‘aha’ moment the two of them got stuck into
-                                                                creating a female version to the legendary ape.</p>
-                                                            <p>In order for the project to be a success the team
-                                                                required a woman&#8217;s touch and influence. Although
-                                                                the nft market has grown and a number of women are
-                                                                successfully carving out a niche, the trend of male
-                                                                dominance has also become more apparent. The two made it
-                                                                their mission to recruit a team of talented women with
-                                                                various skill sets to take on this project.</p>
+                                                          {{company_obj.about_text_top|linebreaksbr}}
                                                         </div>
                                                     </div>
                                                     <div class="elementor-element elementor-element-882a608 elementor-widget elementor-widget-toggle"
@@ -1240,68 +820,21 @@ The initial sale has sold out. To get your Desperate Ape Wife NFT, check out
                                                                          data-tab="1"
                                                                          id="elementor-tab-title-1421"
                                                                          role="tab">
-												<span aria-hidden="true"
-                                                      class="elementor-toggle-icon elementor-toggle-icon-left">
-															<span class="elementor-toggle-icon-closed"><i
-                                                                    class="fas fa-caret-right"></i></span>
-								<span class="elementor-toggle-icon-opened"><i
-                                        class="elementor-toggle-icon-opened fas fa-caret-up"></i></span>
-													</span>
-                                                                        <a class="elementor-toggle-title" href="">Read
-                                                                            more...</a>
+												                         <span aria-hidden="true" class="elementor-toggle-icon elementor-toggle-icon-left">
+                                                                             <span class="elementor-toggle-icon-closed">
+                                                                                 <i class="fas fa-caret-right"></i></span>
+								                                             <span class="elementor-toggle-icon-opened">
+                                                                                 <i class="elementor-toggle-icon-opened fas fa-caret-up"></i></span>
+													                     </span>
+                                                                        <a class="elementor-toggle-title" href="">Read more...</a>
                                                                     </div>
 
                                                                     <div aria-labelledby="elementor-tab-title-1421"
                                                                          class="elementor-tab-content elementor-clearfix"
                                                                          data-tab="1" id="elementor-tab-content-1421"
-                                                                         role="tabpanel"><p>
-                                                                        What was essential from the beginning is that it
-                                                                        will not be another copy and paste derivative in
-                                                                        any way. From the character to each trait, every
-                                                                        element had to be conceptualized, handsketched
-                                                                        and original in its own unique way with some
-                                                                        references to female icons.</p>
-                                                                        <p>What is apparent is that the original concept
-                                                                            has evolved into something much larger. It
-                                                                            is said that the brands and companies of
-                                                                            today that have no strategy to enter the NFT
-                                                                            space are like those back in the late 1990’s
-                                                                            that did not have strategies to get involved
-                                                                            as early adopters to the internet.</p>
-                                                                        <p>Our goal is to bridge the NFT space with the
-                                                                            physical world by working with people,
-                                                                            brands and companies. Collaborating and
-                                                                            designing custom ApeWives which can then be
-                                                                            used on various applications, one for
-                                                                            example as the face/ supermodel for a
-                                                                            specific line of cosmetic products. This
-                                                                            will enable businesses to enter the NFT
-                                                                            space not only by investing in an NFT and
-                                                                            storing it in their wallet, but by
-                                                                            capitalizing on it and benefiting from
-                                                                            it.</p>
-                                                                        <p>The DAW community will then benefit from this
-                                                                            strategy as it will offer our members
-                                                                            exclusive access to various tangible and
-                                                                            virtual experiences. From discounts at
-                                                                            exclusive hotels around the world, access to
-                                                                            high end clubs, restaurants and even airline
-                                                                            upgrade priority is on the list.</p>
-                                                                        <p>Our vision is to create a functional,
-                                                                            sustainable and solid membership network so
-                                                                            that our community will enjoy the perks of
-                                                                            being part of this Exclusive and Unique
-                                                                            Club.</p>
-                                                                        <p>Last but not least, our roadmap development
-                                                                            and activities are first and foremost
-                                                                            promoting women, their strong character and
-                                                                            leadership capabilities in this new
-                                                                            Renaissance. The aim is to address the lack
-                                                                            of female representation in Cryptospace. Our
-                                                                            team at the Desperate ApeWives celebrates
-                                                                            women and looks to collaborate with and
-                                                                            promote female NFT artists and
-                                                                            entrepreneurs.</p></div>
+                                                                         role="tabpanel">
+                                                                        {{company_obj.about_text_bottom|linebreaksbr}}
+                                                                    </div>
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -1341,9 +874,8 @@ The initial sale has sold out. To get your Desperate Ape Wife NFT, check out
                             <div class="elementor-element elementor-element-68897a7 elementor-widget elementor-widget-text-editor"
                                  data-element_type="widget" data-id="68897a7" data-widget_type="text-editor.default">
                                 <div class="elementor-widget-container">
-                                    <p>VERIFIED SMART CONTRACT ADDRESS: 0xF1268733C6FB05EF6bE9cF23d24436Dcd6E0B35E</p>
-                                    <p>* We are not affiliated with the Bored Ape Yacht Club. (But our communities can
-                                        collaborate).</p></div>
+                                    <p>{{company_obj.contract_address_text_paragraph|linebreaks}}</p>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -1359,8 +891,8 @@ The initial sale has sold out. To get your Desperate Ape Wife NFT, check out
                             <div class="elementor-element elementor-element-76c3934 elementor-widget elementor-widget-text-editor"
                                  data-element_type="widget" data-id="76c3934" data-widget_type="text-editor.default">
                                 <div class="elementor-widget-container">
-                                    <p>DAW <a href="https://desperateapewives.com/terms-conditions" rel="noopener"
-                                              target="_blank">Terms &amp; Conditions</a><br/>© 2021 Desperate ApeWives
+                                    <p>{{company_obj.footer_title_1}} <a href="https://desperateapewives.com/terms-conditions" rel="noopener"
+                                              target="_blank">{{company_obj.footer_title_2}}</a><br/>{{company_obj.footer_desc}}
                                     </p></div>
                             </div>
                         </div>
@@ -1379,12 +911,13 @@ The initial sale has sold out. To get your Desperate Ape Wife NFT, check out
                                                  data-element_type="widget" data-id="2f47ad4"
                                                  data-widget_type="theme-site-logo.default">
                                                 <div class="elementor-widget-container">
-                                                    <a href="https://desperateapewives.com">
-                                                        <img alt="" class="attachment-full size-full"
-                                                             height="376"
-                                                             loading="lazy" sizes="(max-width: 501px) 100vw, 501px" src="https://desperateapewives.com/wp-content/uploads/logo-02.png"
-                                                             srcset="https://desperateapewives.com/wp-content/uploads/logo-02.png 501w, https://desperateapewives.com/wp-content/uploads/logo-02-300x225.png 300w"
-                                                             width="501"/> </a>
+                                                    <a href="https://{{company_obj.logo_image_link}}">
+                                                    <img alt="" class="attachment-full size-full"
+                                                        height="376"
+                                                        loading="lazy" sizes="(max-width: 501px) 100vw, 501px"
+                                                        src="{{ company_obj.main_page_logo_image.url }}" alt=""
+                                                        >
+                                                    </a>
                                                 </div>
                                             </div>
                                         </div>
@@ -1396,38 +929,38 @@ The initial sale has sold out. To get your Desperate Ape Wife NFT, check out
                                                  data-element_type="widget" data-id="7b1b68c"
                                                  data-widget_type="image.default">
                                                 <div class="elementor-widget-container">
-                                                    <a href="https://youtube.com/channel/UCrxF43jOxC_bf2PEedrTQtw"
+                                                    <a href="https://{{company_obj.youtube_link}}"
                                                        target="_blank">
                                                         <img alt="youtube_icon"
-                                                             src="https://desperateapewives.com/wp-content/uploads/elementor/thumbs/youtube_icon-pf4eg4vnjmelyjxgti0lry1slexn0fybmam54r6758.png" title="youtube_icon"/> </a>
+                                                             src="{{company_obj.youtube_image.url}}" title="youtube_icon"/> </a>
                                                 </div>
                                             </div>
                                             <div class="elementor-element elementor-element-7cef5c3 elementor-widget__width-auto elementor-widget elementor-widget-image"
                                                  data-element_type="widget" data-id="7cef5c3"
                                                  data-widget_type="image.default">
                                                 <div class="elementor-widget-container">
-                                                    <a href="https://twitter.com/DApeWives" target="_blank">
+                                                    <a href="https://{{company_obj.main_page_twitter_link}}" target="_blank">
                                                         <img alt="1-17"
-                                                             src="https://desperateapewives.com/wp-content/uploads/elementor/thumbs/1-17-pdizq3kytlml9n1dgb74wjgfpz3l9o0zyeo5sht964.png" title="1-17"/> </a>
+                                                             src="{{company_obj.main_page_twitter_image.url}}" title="1-17"/> </a>
                                                 </div>
                                             </div>
                                             <div class="elementor-element elementor-element-2a3b7da elementor-widget__width-auto elementor-widget elementor-widget-image"
                                                  data-element_type="widget" data-id="2a3b7da"
                                                  data-widget_type="image.default">
                                                 <div class="elementor-widget-container">
-                                                    <a href="https://www.instagram.com/desperateapewives/"
+                                                    <a href="https://{{company_obj.instagram_link}}"
                                                        target="_blank">
                                                         <img alt="1-16"
-                                                             src="https://desperateapewives.com/wp-content/uploads/elementor/thumbs/1-16-pdizudqhyfhm5otgg5ty9gk155zsc10z7lnshvgoto.png" title="1-16"/> </a>
+                                                             src="{{company_obj.instagram_image.url}}" title="1-16"/> </a>
                                                 </div>
                                             </div>
                                             <div class="elementor-element elementor-element-6818219 elementor-widget__width-auto elementor-widget elementor-widget-image"
                                                  data-element_type="widget" data-id="6818219"
                                                  data-widget_type="image.default">
                                                 <div class="elementor-widget-container">
-                                                    <a href="https://discord.gg/nXCbs99BfG" target="_blank">
+                                                    <a href="https://{{company_obj.main_page_discord_link}}" target="_blank">
                                                         <img alt="1-15"
-                                                             src="https://desperateapewives.com/wp-content/uploads/elementor/thumbs/1-15-pdizpafyxqip9q7p6glp98t5b137n1tbieg3wx0gj0.png" title="1-15"/> </a>
+                                                             src="{{company_obj.main_page_discord_image.url}}" title="1-15"/> </a>
                                                 </div>
                                             </div>
                                         </div>
@@ -1459,7 +992,7 @@ The initial sale has sold out. To get your Desperate Ape Wife NFT, check out
             </section>
         </div>
     </div>
-</div><!-- #page -->
+</div>
 <a class="ast-scroll-top-icon ast-scroll-to-top-right" data-on-devices="both" id="ast-scroll-top">
 	<span class="ast-icon icon-arrow"><svg enable-background="new 57 35.171 26 16.043" height="16.043px" id="Layer_1" version="1.1" viewBox="57 35.171 26 16.043" width="26px" x="0px" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" y="0px">
 		<path d="M57.5,38.193l12.5,12.5l12.5-12.5l-2.5-2.5l-10,10l-10-10L57.5,38.193z"/>

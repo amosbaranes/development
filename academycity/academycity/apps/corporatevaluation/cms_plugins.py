@@ -67,3 +67,11 @@ class EquityEnterpriseValuationPlugin(CMSPluginBase):
     name = _("EquityEnterpriseValuation")  # Name of the plugin
     cache = False
 
+
+@plugin_pool.register_plugin
+class MergersAcquisitionPlugin(CMSPluginBase):
+    model = CMSPlugin  # Model where data about this plugin is saved
+    render_template = "corporatevaluation/M$A.html"  # template to render the plugin with
+    name = _("Mergers $ Acquisition")  # Name of the plugin
+    cache = False
+
