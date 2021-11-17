@@ -546,26 +546,17 @@ class AcademyCityXBRL(object):
                 #     print(r.name)
                 #     print(r.num_countries)
                 # print(company.financial_data)
-                return company.financial_data
-
-        dic_company_info = {'company_info': {'ticker': cik, 'type': type_}}
+                dic_company_info = company.financial_data
+                dic_company_info["countries_regions"] = company.get_countries_regions()
+                return dic_company_info
+        dic_company_info = {"company_info": {'ticker': cik, 'type': type_},
+                            "countries_regions": company.get_countries_regions()}
 
         headers = {'User-Agent': 'amos@drbaranes.com'}
         base_url = "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK={}&type={}"  # &dateb={}"
         url = base_url.format(cik, type_)
 
         dic_company_info['company_info']['10k_url'] = url
-        #
-        dic_company_info["countries_regions"] = company.get_countries_regions()
-        #
-
-        # print(dic_company_info)
-        #
-        # print(dic_company_info)
-        #
-        # print('-'*100)
-        # print(url)
-        # print('-'*100)
         #
         # print("Current Time 1 =", datetime.datetime.now().strftime("%H:%M:%S"))
         edgar_resp = requests.get(url, headers=headers, timeout=30)
@@ -588,7 +579,6 @@ class AcademyCityXBRL(object):
             sic0 = str(results[0])
         dic_company_info['company_info']['SIC'] = sic0
         #
-
         # Find the document links
         soup = BeautifulSoup(edgar_str, 'html.parser')
         table_tag = soup.find('table', class_='tableFile2')
@@ -613,7 +603,6 @@ class AcademyCityXBRL(object):
             except Exception as ex:
                 pass
                 # print(ex)
-
         # need to add send message on no data
         dic_company_info['data'] = dic_data
         company.financial_data = dic_company_info

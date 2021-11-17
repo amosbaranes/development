@@ -542,12 +542,16 @@ class XBRLCompanyInfo(TruncateTableMixin, models.Model):
                 dic[y.year] = {}
                 dic[y.year]['countries'] = {}
                 for c in y.countries_of_operation.all():
-                    dic[y.year]['countries'][c.country.id] = str(c.revenues)
+                    dic[y.year]['countries'][c.country.id] = [str(c.id), str(c.revenues), str(c.rating), str(c.spread),
+                                                              str(c.risk_premium), str(c.tax_rate)]
                 dic[y.year]['regions'] = {}
                 for r in y.regions_of_operation.all():
-                    dic[y.year]['regions'][r.region.id] = str(r.revenues)
+                    dic[y.year]['regions'][r.region.id] = [str(r.id), str(r.revenues), str(r.rating), str(r.spread),
+                                                           str(r.risk_premium), str(r.tax_rate)]
+
         except Exception as ex:
             print(ex)
+        # print(dic)
         return dic
 
     def __str__(self):
@@ -615,7 +619,10 @@ class XBRLCountry(TruncateTableMixin, models.Model):
     brics = models.BooleanField(default=False)
 
     def __str__(self):
-        return str(self.name) + " (" + str(self.region.name) + ")"
+        if self.region:
+            return str(self.name) + " (" + str(self.region.name) + ")"
+        else:
+            return str(self.name)
 
 
 class XBRLYearsCompanyOperations(TruncateTableMixin, models.Model):
@@ -643,6 +650,10 @@ class XBRLCountriesOfOperations(TruncateTableMixin, models.Model):
     country = models.ForeignKey(XBRLCountry, on_delete=models.CASCADE, default=None, blank=True, null=True,
                                 related_name="company_year_countries")
     revenues = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    rating = models.CharField(max_length=10, default='')
+    spread = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    risk_premium = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    tax_rate = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
 
 
 class XBRLRegionsOfOperations(TruncateTableMixin, models.Model):
@@ -656,6 +667,10 @@ class XBRLRegionsOfOperations(TruncateTableMixin, models.Model):
     region = models.ForeignKey(XBRLRegion, on_delete=models.CASCADE, default=None, blank=True, null=True,
                                related_name="company_year_regions")
     revenues = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    rating = models.CharField(max_length=10, default='')
+    spread = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    risk_premium = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    tax_rate = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
 
 
 class XBRLCountryYearDataProject(models.Manager):
@@ -663,11 +678,32 @@ class XBRLCountryYearDataProject(models.Manager):
         return super().get_queryset().filter(year=self.model.project.year)
 
 
+class XBRLRegionYearData(TruncateTableMixin, models.Model):
+    project = None
+
+    class Meta:
+        verbose_name = _('XBRL Region Year Data')
+        verbose_name_plural = _('XBRL Regions Year Data')
+        ordering = ['region', 'year']
+
+    region = models.ForeignKey(XBRLRegion, on_delete=models.CASCADE, default=None, blank=True, null=True,
+                               related_name='region_data')
+    year = models.PositiveSmallIntegerField(default=0)
+    # The following are dimensions
+    tax_rate = models.DecimalField(max_digits=4, decimal_places=2, blank=True, null=True)
+    moodys_rate_completed_by_sp = models.CharField(max_length=20, default='NA')
+    rating_based_default_spread = models.DecimalField(max_digits=4, decimal_places=2, blank=True, null=True)
+    country_risk_premium_rating = models.DecimalField(max_digits=4, decimal_places=2, blank=True, null=True)
+    # Managers
+    objects = models.Manager()  # The default manager.
+    project_objects = XBRLCountryYearDataProject()  # The project manager.
+
+
 class XBRLCountryYearData(TruncateTableMixin, models.Model):
     project = None
 
     class Meta:
-        verbose_name = _('XBRL Country Yea rData')
+        verbose_name = _('XBRL Country Year Data')
         verbose_name_plural = _('XBRL Countries Year Data')
         ordering = ['country', 'year']
 

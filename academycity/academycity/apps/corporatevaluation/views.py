@@ -16,7 +16,8 @@ from .models import (RBOIC, CountryRegion, CountryRating, Country, GlobalIndustr
                      XBRLIndustryInfo, Industry,
                      XBRLCompanyInfo, CompanyInfo,
                      XBRLCountryYearData, XBRLSPStatistics,
-                     XBRLCountry)
+                     XBRLCountry, XBRLYearsCompanyOperations, XBRLCountriesOfOperations,
+                     XBRLRegion, XBRLRegionYearData, XBRLRegionsOfOperations)
 # --
 
 from ..core.sql import SQL
@@ -36,30 +37,21 @@ def home(request, obj_id):
     clear_log_debug()
     log_debug("cv_home")
     wsc = WebSiteCompany(request, web_company_id=7)
-    log_debug("cv_home 11")
     company_obj = wsc.site_company()
-    log_debug("cv_home 12")
-
     industry = XBRLIndustryInfo.objects.exclude(sic_description='0').all()
-    log_debug("cv_home 13")
     global_industry_averages = GlobalIndustryAverages.objects.all()
-    log_debug("cv_home 14")
     project = Project.objects.filter(translations__language_code=get_language()).get(id=obj_id)
-    log_debug("cv_home 15")
     XBRLCountryYearData.project = project
-    log_debug("cv_home 16")
+    XBRLRegionYearData.project = project
+
     request.session['cv_project_id'] = project.id
-    log_debug("cv_home 17")
 
     countries_data = XBRLCountryYearData.project_objects.all()
-    # regions_data = XBRL CountryYearData.project_objects.all()
-    log_debug("cv_home 18")
+    regions_data = XBRLRegionYearData.project_objects.all()
 
     companies = XBRLCompanyInfo.objects.filter(ticker__gte='9')
-    log_debug("cv_home 19")
     if not has_group(request.user, "admins"):
         companies = companies.filter(is_active=True)
-    log_debug("cv_home 20")
     companies = companies.all()
     log_debug("cv_home 21")
 
@@ -70,6 +62,7 @@ def home(request, obj_id):
                    'global_industry_averages': global_industry_averages,
                    'project': project,
                    'countries_data': countries_data,
+                   'regions_data': regions_data,
                    'companies': companies,
                    'todolist': todolist,
                    })
@@ -77,20 +70,75 @@ def home(request, obj_id):
 
 def update_country_risk(request):
     clear_log_debug()
-    c_ =request.POST.get('c')
-    re_ =request.POST.get('re')
-    ra_ =request.POST.get('ra')
-    sp_ =request.POST.get('sp')
-    rp_ =request.POST.get('rp')
-    tx_ =request.POST.get('tx')
+    rg_ = request.POST.get('rg')
+    print('rg_')
+    print(rg_)
 
-    # XBRLYearsCompanyOperations.objects.get_orcreate()
-    #
-    # company = models.ForeignKey(XBRLCompanyInfo, on_delete=models.CASCADE, default=None, blank=True, null=True,
-    #                             related_name="years_of_operation")
-    # year = models.SmallIntegerField(default=2020)
+    y_ = request.POST.get('y')
+    t_ = request.POST.get('t')
 
-    dic = {'status': 'ok'}
+    id_ = request.POST.get('id')
+    print('id_')
+    print(id_)
+
+    if int(id_) > -1:
+        if rg_ == "true":
+            k = XBRLRegionsOfOperations.objects.get(id=id_).delete()
+        else:
+            k = XBRLCountriesOfOperations.objects.get(id=id_).delete()
+        print('k')
+        print(k)
+
+    c_ = request.POST.get('c')
+    print(c_)
+    if c_ == -1:
+        return JsonResponse({'status': 'ok', 'id': -1})
+
+    re_ = request.POST.get('re')
+    ra_ = request.POST.get('ra')
+    sp_ = request.POST.get('sp')
+    rp_ = request.POST.get('rp')
+    tx_ = request.POST.get('tx')
+    print(y_, t_, c_, re_, ra_, sp_, rp_, tx_)
+
+    company = XBRLCompanyInfo.objects.get(ticker=t_)
+    cy, c = XBRLYearsCompanyOperations.objects.get_or_create(company=company, year=y_)
+    if rg_ == "true":
+        region = XBRLRegion.objects.get(id=c_)
+        print(region)
+        co, c = XBRLRegionsOfOperations.objects.get_or_create(company_year=cy, region=region)
+    else:
+        country = XBRLCountry.objects.get(id=c_)
+        co, c = XBRLCountriesOfOperations.objects.get_or_create(company_year=cy, country=country)
+
+    print(co)
+    try:
+        re_ = float(re_)
+        co.revenues = re_
+    except Exception as ex:
+        log_debug(ex)
+    co.rating = ra_
+    try:
+        sp_ = float(sp_)
+        co.spread = sp_
+    except Exception as ex:
+        log_debug(ex)
+    try:
+        rp_ = float(rp_)
+        co.risk_premium = rp_
+    except Exception as ex:
+        log_debug(ex)
+    try:
+        tx_ = float(tx_)
+        co.tax_rate = tx_
+    except Exception as ex:
+        log_debug(ex)
+    try:
+        co.save()
+    except Exception as ex:
+        log_debug(ex)
+
+    dic = {'status': 'ok', 'id': co.id}
     return JsonResponse(dic)
 
 
@@ -110,7 +158,6 @@ def get_companies_valuation_actual(request):
     #     print('----')
     #     print(c.company.company_name, c.iv_per_share)
     #     print('----')
-
 
     # q = cs.values('iv_per_share')
     # df = pd.DataFrame.from_records(q)

@@ -5,7 +5,7 @@ from .models import (Project, RBOIC, CountryRegion, CountryRating, Industry,
                      Country, GlobalIndustryAverages, CompanyInfo, CompanyData, ToDoList,
                      XBRLMainIndustryInfo, XBRLIndustryInfo, XBRLCompanyInfoInProcess, XBRLValuationAccounts,
                      XBRLCompanyInfo, XBRLValuationAccountsMatch, XBRLValuationStatementsAccounts,
-                     XBRLRegion, XBRLCountry, XBRLCountryYearData,
+                     XBRLRegion, XBRLCountry, XBRLCountryYearData,XBRLRegionYearData,
                      XBRLHistoricalReturnsSP, XBRLSPMoodys,
                      XBRLSPEarningForecast, XBRLSPStatistics,
                      XBRLCountriesOfOperations, XBRLRegionsOfOperations, XBRLYearsCompanyOperations)
@@ -163,6 +163,18 @@ class XBRLCountryYearDataAdmin(admin.ModelAdmin):
     search_fields = ('country', )
 
 
+@admin.register(XBRLRegionYearData)
+class XBRLRegionYearDataAdmin(admin.ModelAdmin):
+    list_display = ('id', 'region', 'year'
+                    , 'moodys_rate_completed_by_sp'
+                    , 'country_risk_premium_rating'
+                    , 'rating_based_default_spread'
+                    , 'tax_rate'
+                    )
+    list_filter = ('region', 'year',)
+    search_fields = ('region', )
+
+
 @admin.register(XBRLHistoricalReturnsSP)
 class XBRLHistoricalReturnsSPAdmin(admin.ModelAdmin):
     list_display = ('id', 'year', 'tb3ms', 'stock_tbill_return', 'stock_tbonds_return', 'stock_baa_return',
@@ -206,4 +218,6 @@ class XBRLRegionsOfOperationsAdmin(admin.ModelAdmin):
 @admin.register(XBRLYearsCompanyOperations)
 class XBRLYearsCompanyOperationsAdmin(admin.ModelAdmin):
     list_display = ('id', 'company', 'year')
+
+
 

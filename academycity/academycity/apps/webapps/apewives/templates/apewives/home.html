@@ -10,7 +10,6 @@
 {% block body_content %}
 <body class="home page-template-default page page-id-9 wp-custom-logo ast-single-post ast-inherit-site-logo-transparent ast-hfb-header ast-desktop ast-page-builder-template ast-no-sidebar astra-3.7.2 elementor-default elementor-kit-4 elementor-page elementor-page-9 astra-addon-3.6.0" itemscope='itemscope'
       itemtype='https://schema.org/WebPage'>
-
 <noscript>
     <iframe height="0" src="https://www.googletagmanager.com/ns.html?id=GTM-KKCQSLK" style="display:none;visibility:hidden"
             width="0"></iframe>
@@ -32,12 +31,12 @@
                                  data-element_type="widget" data-id="0938f89"
                                  data-widget_type="theme-site-logo.default">
                                 <div class="elementor-widget-container">
+                                       {% thumbnail company_obj.main_page_logo_image "501x376" crop="center" as main_page_logo_image %}
                                     <a href="https://{{company_obj.logo_image_link}}">
-                                       {% thumbnail company_obj.main_page_image "501x376" crop="center" as main_page_image %}
                                         <img alt="" class="attachment-full size-full"
                                             height="376"
                                             loading="lazy" sizes="(max-width: 501px) 100vw, 501px"
-                                            src="{{ company_obj.main_page_logo_image.url }}" alt=""
+                                            src="{{ main_page_logo_image.url }}" alt=""
                                             >
                                     </a>
                                 </div>
@@ -119,9 +118,11 @@
                                                  data-element_type="widget" data-id="c6f6824"
                                                  data-widget_type="image.default">
                                                 <div class="elementor-widget-container">
+                                       {% thumbnail company_obj.main_page_discord_image "50x37" crop="center" as main_page_discord_image %}
                                                     <a href="https://{{company_obj.main_page_discord_link}}" target="_blank">
+
                                                         <img alt="1-15"
-                                                             src="{{company_obj.main_page_discord_image.url}}" title="1-15"/></a>
+                                                             src="{{main_page_discord_image.url}}" title="1-15"/></a>
                                                 </div>
                                             </div>
                                             <div class="elementor-element elementor-element-0f85faa elementor-widget__width-auto elementor-hidden-desktop elementor-hidden-tablet elementor-hidden-mobile elementor-widget elementor-widget-heading"

@@ -6,7 +6,11 @@ from ..core.utils import log_debug
 
 
 class WebSiteCompany(object):
-    def __init__(self, request, domain=None, web_company_id=None):
+    def __init__(self, request, domain=None, web_company_id=None, is_test=False):
+        if web_company_id:
+            log_debug("Create WebSiteCompany for: "+str(web_company_id))
+        if domain:
+            log_debug("Create WebSiteCompany for domain: "+str(domain))
         # print('-1 '*20)
         # print('WebSiteCompany--'*3)
         # print('-1'*20)
@@ -33,12 +37,14 @@ class WebSiteCompany(object):
 
         self.web_site_company = request.session[settings.WEB_SITE_COMPANY_ID]
 
-        if self.is_registered_domain():
+        if (not is_test) and self.is_registered_domain():
             self.web_company_id = self.web_site_company['web_company_id']
         elif web_company_id:
             self.web_company_id = web_company_id
 
         # print('WebSiteCompany-web_company_id')
+
+        log_debug("WebSiteCompany created for: " + str(self.web_company_id))
         # print(web_company_id)
         # print('-' * 20)
 
@@ -93,5 +99,6 @@ class WebSiteCompany(object):
                 objs = web_company.target
 
         except Exception as ex:
-            print(ex)
+            log_debug("Exception WebSiteCompany: "+str(ex))
+            # print(ex)
         return objs
