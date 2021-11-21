@@ -549,7 +549,7 @@ class AcademyCityXBRL(object):
                 dic_company_info = company.financial_data
                 dic_company_info["countries_regions"] = company.get_countries_regions()
                 return dic_company_info
-        dic_company_info = {"company_info": {'ticker': cik, 'type': type_},
+        dic_company_info = {"company_info": {'ticker': cik, 'type': type_, 'marginal_tax_rate': str(company.tax_rate)},
                             "countries_regions": company.get_countries_regions()}
 
         headers = {'User-Agent': 'amos@drbaranes.com'}
@@ -630,7 +630,6 @@ class AcademyCityXBRL(object):
         log_debug("Start get_data_for_cik.")
         # print(cik)
         company = XBRLCompanyInfo.objects.get(ticker=cik)
-
         dic_company_info = self.get_dic_company_info(company, cik, type_, is_update)
         #
         dic_data = dic_company_info['data']
@@ -1042,7 +1041,6 @@ class AcademyCityXBRL(object):
                         cs.save()
                         m.delete()
             except Exception as ex:
-                print('-3' * 20)
                 print(ex)
                 dic = {'status': 'ko'}
         else:

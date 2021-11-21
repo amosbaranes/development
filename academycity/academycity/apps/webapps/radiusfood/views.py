@@ -3,7 +3,7 @@ from ...webcompanies.WebCompanies import WebSiteCompany
 
 
 def home(request):
-    wsc = WebSiteCompany(request, web_company_id=1)
+    wsc = WebSiteCompany(request, web_company_id=1, is_test=True)
     company_obj = wsc.site_company()
     return render(request, 'radiusfood/home.html', {'company_obj': company_obj})
 

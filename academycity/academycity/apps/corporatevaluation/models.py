@@ -512,69 +512,6 @@ class XBRLCompanyInfoInProcess(TruncateTableMixin, models.Model):
     def __str__(self):
         return self.company_name
 
-
-class XBRLCompanyInfo(TruncateTableMixin, models.Model):
-    class Meta:
-        verbose_name = _('XBRL Company Info')
-        verbose_name_plural = _('XBRL Companies Info')
-        ordering = ['company_name']
-    #
-    industry = models.ForeignKey(XBRLIndustryInfo, on_delete=models.CASCADE, default=None, blank=True, null=True)
-    exchange = models.CharField(max_length=10, default='nyse')
-    company_name = models.CharField(max_length=128, default='', blank=True, null=True)
-    ticker = models.CharField(max_length=10, null=False)
-    company_letter = models.CharField(max_length=1, default='')
-    cik = models.CharField(max_length=10, null=True)
-    is_active = models.BooleanField(default=False)
-    #
-    financial_data = models.JSONField(null=True)
-    #
-    city = models.CharField(max_length=50, default="", blank=True)
-    state = models.CharField(max_length=50, default="", blank=True)
-    zip = models.CharField(max_length=10, default="", blank=True)
-    #
-    by_country_or_regine = models.BooleanField(default=True)
-
-    def get_countries_regions(self):
-        dic = {}
-        try:
-            for y in self.years_of_operation.all():
-                dic[y.year] = {}
-                dic[y.year]['countries'] = {}
-                for c in y.countries_of_operation.all():
-                    dic[y.year]['countries'][c.country.id] = [str(c.id), str(c.revenues), str(c.rating), str(c.spread),
-                                                              str(c.risk_premium), str(c.tax_rate)]
-                dic[y.year]['regions'] = {}
-                for r in y.regions_of_operation.all():
-                    dic[y.year]['regions'][r.region.id] = [str(r.id), str(r.revenues), str(r.rating), str(r.spread),
-                                                           str(r.risk_premium), str(r.tax_rate)]
-
-        except Exception as ex:
-            print(ex)
-        # print(dic)
-        return dic
-
-    def __str__(self):
-        return str(self.company_name) + " : " + str(self.ticker)
-
-
-class XBRLValuationCompanyUser(TruncateTableMixin, models.Model):
-    class Meta:
-        verbose_name = _('XBRL Company Info')
-        verbose_name_plural = _('XBRL Companies Info')
-        ordering = ['company', 'user']
-    #
-    company = models.ForeignKey(XBRLCompanyInfo, on_delete=models.CASCADE, default=None, blank=True, null=True,
-                                related_name='valuation_companies')
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, on_delete=models.CASCADE,
-                             related_name='valuation_users')
-    analysis = PlaceholderField('valuation_analysis_user')
-    #
-
-    def __str__(self):
-        return self.user.name + " " + self.company
-
-
 # https://docs.djangoproject.com/en/3.2/topics/db/managers/
 class XBRLRegionQuerySet(models.QuerySet):
     def averages(self):
@@ -625,6 +562,80 @@ class XBRLCountry(TruncateTableMixin, models.Model):
             return str(self.name)
 
 
+class XBRLCompanyInfo(TruncateTableMixin, models.Model):
+
+    class Meta:
+        verbose_name = _('XBRL Company Info')
+        verbose_name_plural = _('XBRL Companies Info')
+        ordering = ['company_name']
+    #
+    industry = models.ForeignKey(XBRLIndustryInfo, on_delete=models.CASCADE, default=None, blank=True, null=True)
+    country_of_incorporation = models.ForeignKey(XBRLCountry, on_delete=models.CASCADE, default=None, blank=True,
+                                                 null=True, related_name="country_companies")
+    exchange = models.CharField(max_length=10, default='nyse')
+    company_name = models.CharField(max_length=128, default='', blank=True, null=True)
+    ticker = models.CharField(max_length=10, null=False)
+    company_letter = models.CharField(max_length=1, default='')
+    cik = models.CharField(max_length=10, null=True)
+    is_active = models.BooleanField(default=False)
+    #
+    financial_data = models.JSONField(null=True)
+    #
+    city = models.CharField(max_length=50, default="", blank=True)
+    state = models.CharField(max_length=50, default="", blank=True)
+    zip = models.CharField(max_length=10, default="", blank=True)
+    #
+    by_country_or_regine = models.BooleanField(default=True)
+
+    @property
+    def tax_rate(self):
+        t_ = XBRLCountryYearData.project_objects.get(country=self.country_of_incorporation).tax_rate
+        return t_
+
+    def get_countries_regions(self):
+        dic = {}
+        try:
+            for y in self.years_of_operation.all():
+                dic[y.year] = {}
+                dic[y.year]['countries'] = {}
+                for c in y.countries_of_operation.all():
+                    dic[y.year]['countries'][c.country.id] = [str(c.id), str(c.revenues), str(c.rating), str(c.spread),
+                                                              str(c.risk_premium), str(c.tax_rate)]
+                dic[y.year]['regions'] = {}
+                for r in y.regions_of_operation.all():
+                    dic[y.year]['regions'][r.region.id] = [str(r.id), str(r.revenues), str(r.rating), str(r.spread),
+                                                           str(r.risk_premium), str(r.tax_rate)]
+                dic[y.year]['industries'] = {}
+                for r in y.industries_of_operation.all():
+                    dic[y.year]['industries'][r.industry.id] = [str(r.id), str(r.revenues), str(r.ev_over_sales),
+                                                                str(r.estimated_value), str(r.unlevered_beta),
+                                                                str(r.estimated_growth)]
+        except Exception as ex:
+            print(ex)
+        # print(dic)
+        return dic
+
+    def __str__(self):
+        return str(self.company_name) + " : " + str(self.ticker)
+
+
+class XBRLValuationCompanyUser(TruncateTableMixin, models.Model):
+    class Meta:
+        verbose_name = _('XBRL Company Info')
+        verbose_name_plural = _('XBRL Companies Info')
+        ordering = ['company', 'user']
+    #
+    company = models.ForeignKey(XBRLCompanyInfo, on_delete=models.CASCADE, default=None, blank=True, null=True,
+                                related_name='valuation_companies')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, on_delete=models.CASCADE,
+                             related_name='valuation_users')
+    analysis = PlaceholderField('valuation_analysis_user')
+    #
+
+    def __str__(self):
+        return self.user.name + " " + self.company
+
+
 class XBRLYearsCompanyOperations(TruncateTableMixin, models.Model):
     class Meta:
         verbose_name = _('XBRL Year Company Of Operations')
@@ -671,6 +682,23 @@ class XBRLRegionsOfOperations(TruncateTableMixin, models.Model):
     spread = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     risk_premium = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     tax_rate = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+
+
+class XBRLIndustryBetasOfOperations(TruncateTableMixin, models.Model):
+    class Meta:
+        verbose_name = _('XBRL industry beta Of Operations')
+        verbose_name_plural = _('XBRL industry betas Of Operations')
+        ordering = ['industry']
+    #
+    company_year = models.ForeignKey(XBRLYearsCompanyOperations, on_delete=models.CASCADE, default=None, blank=True,
+                                     null=True, related_name="industries_of_operation")
+    industry = models.ForeignKey(GlobalIndustryAverages, on_delete=models.CASCADE, default=None, blank=True, null=True,
+                                 related_name="company_year_industries")
+    revenues = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    ev_over_sales = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    estimated_value = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    unlevered_beta = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    estimated_growth = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
 
 
 class XBRLCountryYearDataProject(models.Manager):

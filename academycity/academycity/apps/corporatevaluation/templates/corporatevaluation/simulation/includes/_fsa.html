@@ -48,12 +48,9 @@ function get_account_comma_value(y, account)
 function get_account_value(y, account)
 {
   try{
-        var idn = y.toString() + "_" + String(account)
-        elm = document.getElementById(idn)
-        if(elm.innerHTML != '')
-        {var nnn = Number(removeCommas(elm.innerHTML))} else
-        {var nnn = 0}
-  } catch (er) { nnn=0}
+        var idn = y.toString() + "_" + String(account); elm = document.getElementById(idn)
+        if(elm){if(elm.innerHTML != '') {var nnn = Number(removeCommas(elm.innerHTML))} else {var nnn = 0}}
+  } catch (er) {nnn=0;}
   return nnn
 }
 

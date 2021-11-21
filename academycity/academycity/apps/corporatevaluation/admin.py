@@ -8,7 +8,8 @@ from .models import (Project, RBOIC, CountryRegion, CountryRating, Industry,
                      XBRLRegion, XBRLCountry, XBRLCountryYearData,XBRLRegionYearData,
                      XBRLHistoricalReturnsSP, XBRLSPMoodys,
                      XBRLSPEarningForecast, XBRLSPStatistics,
-                     XBRLCountriesOfOperations, XBRLRegionsOfOperations, XBRLYearsCompanyOperations)
+                     XBRLCountriesOfOperations, XBRLRegionsOfOperations, XBRLYearsCompanyOperations,
+                     XBRLIndustryBetasOfOperations)
 
 # -*- coding: utf-8 -*-
 from cms.admin.placeholderadmin import PlaceholderAdminMixin
@@ -220,4 +221,6 @@ class XBRLYearsCompanyOperationsAdmin(admin.ModelAdmin):
     list_display = ('id', 'company', 'year')
 
 
-
+@admin.register(XBRLIndustryBetasOfOperations)
+class XBRLIndustryBetasOfOperationsAdmin(admin.ModelAdmin):
+    list_display = ('id', 'company_year', 'industry')

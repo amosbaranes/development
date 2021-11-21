@@ -102,7 +102,7 @@ function get_iv(sObj)
       sObj["pv"] += tv_
     }
  }
- iv_per_share = Math.round(100*1000*(sObj["pv"] -sObj["ltd"]-sObj["mi"]-sObj["ps"]+ sObj["ec"] )/sObj["ns"])/100
+ iv_per_share = Math.round(100*1000000*(sObj["pv"] -sObj["ltd"]-sObj["mi"]-sObj["ps"]+ sObj["ec"] )/sObj["ns"])/100
  return iv_per_share
 }
 

@@ -4,7 +4,7 @@ from .models import PortfolioWeb, Service
 
 
 def home(request):
-    wsc = WebSiteCompany(request, web_company_id=9)
+    wsc = WebSiteCompany(request, web_company_id=9, is_test=True)
     company_obj = wsc.site_company()
     services = wsc.site_company('services')
     projects = wsc.site_company('projects')

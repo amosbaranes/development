@@ -217,13 +217,21 @@ vObj["rf"] = {{ project.rf }};
 vObj["volatility_ratio"] = {{ project.volatility_ratio }};
 vObj["mature_marker_risk_premium"] = {{ project.mature_marker_risk_premium }};
 vObj["cv_project_id"] = {{ project.id }};
-
+// --
+vObj["country_default_spread"] = 0;
+vObj["interest_coverage_ratio_table"] = 0;
+vObj["marginal_tax_rate"] = 0;
+vObj["effective_tax_rate"] = 0;
+//
 vObj["valuation_actual_sic_code"] = -1
 // --
 vObj["sec_company_data"] = {}
 vObj["company_info"] = {};
 vObj["xbrl_data"] = {};
 vObj["xbrl_statements"] = {};
+// --
+vObj['entitycommonstocksharesoutstanding'] = -1;
+// --
 vObj["options_delta"] = {};
 vObj["filing_year"] = 0;
 vObj["reporting_year"] = 0;
@@ -238,6 +246,8 @@ vObj["earning_forecast_sp500_view_main_downloaded"] = 0
 vObj["accounts_chosen"] = []
 // --
 vObj["user_id"] = "-1"
+// --
+vObj["short_number_of_years"] = 5;
 // --
 
 set_framework()

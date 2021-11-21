@@ -17,7 +17,7 @@ from .models import (RBOIC, CountryRegion, CountryRating, Country, GlobalIndustr
                      XBRLCompanyInfo, CompanyInfo,
                      XBRLCountryYearData, XBRLSPStatistics,
                      XBRLCountry, XBRLYearsCompanyOperations, XBRLCountriesOfOperations,
-                     XBRLRegion, XBRLRegionYearData, XBRLRegionsOfOperations)
+                     XBRLRegion, XBRLRegionYearData, XBRLRegionsOfOperations, XBRLIndustryBetasOfOperations)
 # --
 
 from ..core.sql import SQL
@@ -70,9 +70,9 @@ def home(request, obj_id):
 
 def update_country_risk(request):
     clear_log_debug()
-    rg_ = request.POST.get('rg')
-    print('rg_')
-    print(rg_)
+    ty_ = request.POST.get('ty')
+    print('ty_')
+    print(ty_)
 
     y_ = request.POST.get('y')
     t_ = request.POST.get('t')
@@ -82,10 +82,12 @@ def update_country_risk(request):
     print(id_)
 
     if int(id_) > -1:
-        if rg_ == "true":
+        if ty_ == "region":
             k = XBRLRegionsOfOperations.objects.get(id=id_).delete()
-        else:
+        elif ty_ == "country":
             k = XBRLCountriesOfOperations.objects.get(id=id_).delete()
+        else:
+            k = XBRLIndustryBetasOfOperations.objects.get(id=id_).delete()
         print('k')
         print(k)
 
@@ -103,13 +105,15 @@ def update_country_risk(request):
 
     company = XBRLCompanyInfo.objects.get(ticker=t_)
     cy, c = XBRLYearsCompanyOperations.objects.get_or_create(company=company, year=y_)
-    if rg_ == "true":
+    if ty_ == "region":
         region = XBRLRegion.objects.get(id=c_)
-        print(region)
         co, c = XBRLRegionsOfOperations.objects.get_or_create(company_year=cy, region=region)
-    else:
+    elif ty_ == "country":
         country = XBRLCountry.objects.get(id=c_)
         co, c = XBRLCountriesOfOperations.objects.get_or_create(company_year=cy, country=country)
+    else:
+        industry = GlobalIndustryAverages.objects.get(id=c_)
+        co, c = XBRLIndustryBetasOfOperations.objects.get_or_create(company_year=cy, industry=industry)
 
     print(co)
     try:
@@ -117,22 +121,45 @@ def update_country_risk(request):
         co.revenues = re_
     except Exception as ex:
         log_debug(ex)
-    co.rating = ra_
-    try:
-        sp_ = float(sp_)
-        co.spread = sp_
-    except Exception as ex:
-        log_debug(ex)
-    try:
-        rp_ = float(rp_)
-        co.risk_premium = rp_
-    except Exception as ex:
-        log_debug(ex)
-    try:
-        tx_ = float(tx_)
-        co.tax_rate = tx_
-    except Exception as ex:
-        log_debug(ex)
+
+    if ty_ == "industry":
+        try:
+            ra_ = float(ra_)
+            co.ev_over_sales = ra_
+        except Exception as ex:
+            log_debug(ex)
+        try:
+            sp_ = float(sp_)
+            co.estimated_value = sp_
+        except Exception as ex:
+            log_debug(ex)
+        try:
+            rp_ = float(rp_)
+            co.unlevered_beta = rp_
+        except Exception as ex:
+            log_debug(ex)
+        try:
+            tx_ = float(tx_)
+            co.estimated_growth = tx_
+        except Exception as ex:
+            log_debug(ex)
+    else:
+        co.rating = ra_
+        try:
+            sp_ = float(sp_)
+            co.spread = sp_
+        except Exception as ex:
+            log_debug(ex)
+        try:
+            rp_ = float(rp_)
+            co.risk_premium = rp_
+        except Exception as ex:
+            log_debug(ex)
+        try:
+            tx_ = float(tx_)
+            co.tax_rate = tx_
+        except Exception as ex:
+            log_debug(ex)
     try:
         co.save()
     except Exception as ex:
@@ -174,15 +201,11 @@ def configure_corporatevaluation_project(request, game):
 
 def get_interest_coverage_ratio(request):
     try:
-        icr=float(request.POST.get('icr'))
-        if icr <= -100000.0:
-            icr = -1000.0
-        if icr >= 100000.0:
-            icr = 1000.0
-        o = RBOIC.objects.filter(to_ic__gte=icr).filter(from_ic__lte=icr).all()[0]
-        data = {'rating': o.rating, 'spread': o.spread}
+        data = {}
+        for r in RBOIC.objects.all():
+            data[r.id] = {"from_ic": float(r.from_ic), "to_ic": float(r.to_ic), "rating": r.rating, "spread": float(r.spread)}
     except Exception as ex:
-        data = {'rating': 'nan', 'spread': 'nan'}
+        data = {'data': 'nan'}
     return JsonResponse(data)
 
 
@@ -969,7 +992,7 @@ def get_data_ticker(request):
     # print(is_update_)
     acx = AcademyCityXBRL()
     data = acx.get_data_ticker(cik=ticker_, type_='10-K', is_update=is_update_, request=request)
-    print(data)
+    # print(data)
     request.session['cv_statements'] = data['statements']
     return JsonResponse(data)
 

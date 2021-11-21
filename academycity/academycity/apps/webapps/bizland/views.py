@@ -7,7 +7,7 @@ from .models import PortfolioItem
 
 
 def home(request):
-    wsc = WebSiteCompany(request, web_company_id=2)
+    wsc = WebSiteCompany(request, web_company_id=2, is_test=True)
     company_obj = wsc.site_company()
     return render(request, 'bizland/home.html', {'company_obj': company_obj})
 

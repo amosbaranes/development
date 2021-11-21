@@ -7,10 +7,10 @@ from ..core.utils import log_debug
 
 class WebSiteCompany(object):
     def __init__(self, request, domain=None, web_company_id=None, is_test=False):
-        if web_company_id:
-            log_debug("Create WebSiteCompany for: "+str(web_company_id))
-        if domain:
-            log_debug("Create WebSiteCompany for domain: "+str(domain))
+        # if web_company_id:
+        #     log_debug("Create WebSiteCompany for: "+str(web_company_id))
+        # if domain:
+        #     log_debug("Create WebSiteCompany for domain: "+str(domain))
         # print('-1 '*20)
         # print('WebSiteCompany--'*3)
         # print('-1'*20)
@@ -44,7 +44,7 @@ class WebSiteCompany(object):
 
         # print('WebSiteCompany-web_company_id')
 
-        log_debug("WebSiteCompany created for: " + str(self.web_company_id))
+        # log_debug("WebSiteCompany created for: " + str(self.web_company_id))
         # print(web_company_id)
         # print('-' * 20)
 

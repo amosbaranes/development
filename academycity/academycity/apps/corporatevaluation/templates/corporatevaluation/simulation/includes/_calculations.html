@@ -15,11 +15,6 @@
   <!-- Tab panes -->
   <div class="tab-content">
     <div id="tab_cost_of_debt" class="container tab-pane">
-            <!--  Cost of Debt
-            <span style="color:blue; font-size: 20px;">
-                <u><b>{% trans "Cost of Debt" %}</b></u>
-            </span><br/>
-            -->
             <table class="data" style="width:30%">
                 <thead><tr><th>Parameter</th><th>Value</th><th></th></tr></thead>
                 <tr><td class="account">{% trans "Risk Free" %}</td><td id="cofd_rf" style="text-align:right;"></td><td>%</td></tr>
@@ -40,12 +35,6 @@
     </div>
 
     <div id="tab_cost_of_equity" class="container tab-pane">
-              <!--  Cost of Equity
-              <span style="color:blue; font-size: 20px;">
-                 <u><b>{% trans "Cost of Equity" %}</b></u>
-              </span>
-              <br/>
-              -->
               <table class="data" style="width:25%">
                   <thead><tr><th>Parameter</th><th>Value</th><th></th></tr></thead>
                   <tr><td class="account">{% trans "Risk Free" %}</td>
@@ -120,7 +109,7 @@ function set_wacc()
     d = 1*vObj["book_value_debt"]
     e = 1*vObj["book_value_equity"]
     v = d+e
-    vObj["wacc"] = (d/v)*vObj["cofd"]*(1-1*vObj["country_tax_rate"]/100) + (e/v)*vObj["cofe"]
+    vObj["wacc"] = (d/v)*vObj["cofd"]*(1-1*vObj["marginal_tax_rate"]/100) + (e/v)*vObj["cofe"]
     document.getElementById("wacc_").value = Math.round(100*vObj["wacc"])/100
     //--
     vObj["roic_lt"] = vObj["wacc"]
@@ -137,200 +126,44 @@ function set_wacc()
 <script>
 function set_cofe()
 {
-    rows = document.getElementById('cost_of_equity').rows
-    t_evs = 0; tb = 0; tg = 0;
-    for (r = 1; r < rows.length; r++)
-    {
-      evs = 1*rows.item(r).children[3].children[0].innerHTML
-      b = 1*rows.item(r).children[4].children[0].innerHTML
-      g = 1*rows.item(r).children[5].children[0].innerHTML
-      tb += evs*b
-      tg += evs*g
-      t_evs += evs
-    }
-    document.getElementById('cofe_beta').innerHTML = Math.round(100*tb/t_evs)/100;
     document.getElementById('cofe_rf').innerHTML = Math.round(100*vObj["rf"]*100)/100;
-    document.getElementById('cofe_ub').innerHTML = Math.round(100*tb/t_evs)/100;
+    var effective_tax_rate = vObj["effective_tax_rate"];
+    var d = get_account_value(y=vObj["valuation_year"], account="14990");
+    var e = get_account_value(y=vObj["valuation_year"], account="15990");
+    vObj["book_value_debt"] = d; vObj["book_value_equity"] = e; d_over_e = d/e;
 
-    document.getElementById('cofe_growth').innerHTML = Math.round(10000*tg/t_evs)/10000;
-    vObj["stgrowth"] = Math.round(10000*100*tg/t_evs)/10000;
-    document.getElementById("stgrowth_").value = Math.round(vObj["stgrowth"]*100)/100;
-    tax_rate = vObj["itr"];
-    ub = Math.round(10000*tb/t_evs)/10000
-    d = removeCommas(document.getElementById('noncurrent_liabilities_'+vObj["valuation_year"]).value)
-    e = removeCommas(document.getElementById('stockholders_equity_'+vObj["valuation_year"]).value)
-    vObj["book_value_debt"] = d
-    vObj["book_value_equity"] = e
-    d_over_e = d/e
-    b = ub*(1+(1-(vObj["country_tax_rate"]/100))*d_over_e)
+    //alert('d_over_e=' + d_over_e + "  : vObj[ubeta]=" + vObj["ubeta"] + "  vObj[marginal_tax_rate]=: " + vObj["marginal_tax_rate"] + " Beta Co= " +  (1+(1-(vObj["marginal_tax_rate"]/100))*d_over_e) )
+
+    var b = vObj["ubeta"]*  (1+(1-vObj["marginal_tax_rate"]/100)*d_over_e)
     document.getElementById('cofe_b').innerHTML = Math.round(100*b)/100
 
-    rf = vObj["rf"]*100
-    rp = vObj["mature_marker_risk_premium"]*100
-    document.getElementById('cofe_rp').innerHTML = rp
-    vr = vObj["volatility_ratio"]
-    ads = vObj["country_default_spread"]
-    document.getElementById('cofe_ads').innerHTML =  Math.round(100*ads)/100
-    tcr = ads*vr
-
+    var rf = vObj["rf"]*100;
+    var rp = vObj["mature_marker_risk_premium"]*100; document.getElementById('cofe_rp').innerHTML = rp;
+    var vr = vObj["volatility_ratio"];  ads = vObj["country_default_spread"];
+    document.getElementById('cofe_ads').innerHTML =  Math.round(100*ads)/100; tcr = ads*vr;
     document.getElementById('cofe_tcr').innerHTML = Math.round(100*tcr)/100
-    cofe_ = rf + b*(rp + tcr)
+    cofe_ = rf + b*rp + tcr;
     document.getElementById('cofe_').innerHTML = Math.round(100*cofe_)/100
-    vObj["cofe"] = Math.round(100*cofe_)/100
-    set_wacc()
+    vObj["cofe"] = Math.round(100*cofe_)/100;
+    set_wacc();
 }
 
-</script>
-
-<!-- Cost of Debt -->
-<script>
-// ---
-// vObj["cofd"]
-function set_cost_of_debt()
-{
-  cd = vObj["cd"]
-  document.getElementById("cofd_rf").innerHTML=Math.round(100*vObj["rf"]*100)/100
-  ve = cd[vObj["valuation_year"]]["ebit"][0]
-  document.getElementById("cofd_ebit").innerHTML=toCommas(ve)
-  vi = cd[vObj["valuation_year"]]["interest_expense"][0]
-  document.getElementById("cofd_interest_expense").innerHTML=toCommas(vi)
-  icr_ = ve/vi
-
-  if(vi < 1)
-  {
-   document.getElementById("cofd_interest_coverage").innerHTML = "<span class='tooltip_'>Infinity<span class='tooltiptext'>Check the Interest Expense in the data section</span></span>"
-  }
-  else
-  {
-   document.getElementById("cofd_interest_coverage").innerHTML=Math.round(100*icr_)/100
-  }
-
-    $.post('{% url "corporatevaluation:get_interest_coverage_ratio" %}',
-      {
-        icr: icr_,
-      },
-      function(data){
-      rating = data['rating']
-      spread = data['spread']*100
-      document.getElementById("cofd_estimated_bond_rating").innerHTML=rating
-      document.getElementById("cofd_estimated_company_default_spread").innerHTML=Math.round(100*spread)/100
-      document.getElementById("cofd_estimated_county_default_spread").innerHTML=Math.round(100*vObj["country_default_spread"])/100
-      cofd = 100*vObj["rf"]+1*spread+1*vObj["country_default_spread"]
-      vObj["cofd"] = cofd
-      document.getElementById("cofd_estimated_cost_of_debt").innerHTML=Math.round(100*cofd)/100
-      set_wacc()
-      })
-}
-
-</script>
-
-<!--ROIC and taxes-->
-<script>
-
-function on_change_num_of_estimation_periods(event)
-{
- document.getElementById('roic_effective_tax_rate_periods').value = event.target.value
- document.getElementById('roic_effective_tax_rate_periods_').value = event.target.value
- calculate_all()
-}
-
-// vObj["roic"]
-// vObj["itr"]
-function set_roic_efective_tax_rate(y, cd)
-{
- // --- Roic -----
- // --------------
- year = "<thead><th>Account</th>"
- oiat = "<tr><td class='account'>Operating Income After Tax</td>"
- ltd = "<tr><td class='account'>LT Liabilities (Non-Current)</td>"
- ltdc = "<tr><td class='account'>Long Term Debt (current)</td>"
- tltd = "<tr><td class='account'>Long-term Liabilities</td>"
- she = "<tr><td class='account'>Stockholders Equity</td>"
- ta = "<tr><td class='account'>Total Assets</td>"
- noiat = 0; nltd= 0; nltdc = 0; ntltd = 0; nshe = 0; nta=0
- // --
- roic_effective_tax_rate_periods_ = document.getElementById('roic_effective_tax_rate_periods').value
- valuation_year_ = parseInt(vObj["valuation_year"])
- nn_ = valuation_year_ - roic_effective_tax_rate_periods_ + 1
- for( yy = nn_; yy <=valuation_year_; yy++)
- {
-  year += "<th>" + yy + "</th>"
-  oiat += "<td style='text-align:right'>" + (cd[yy]["ebit"][0]-cd[yy]["income_taxes"][0]) + "</td>"
-  noiat += (cd[yy]["ebit"][0]-cd[yy]["income_taxes"][0])
-  ltd += "<td style='text-align:right'>" + cd[yy]["long_term_debt_noncurrent"][0] + "</td>"
-  nltd += cd[yy]["long_term_debt_noncurrent"][0]
-
-  ltdc += "<td style='text-align:right'><u>" + (cd[yy]["noncurrent_liabilities"][0]-cd[yy]["long_term_debt_noncurrent"][0]) + "</u></td>"
-  nltdc += (cd[yy]["noncurrent_liabilities"][0]-cd[yy]["long_term_debt_noncurrent"][0])
-
-  tltd += "<td style='text-align:right'>" + cd[yy]["noncurrent_liabilities"][0] + "</td>";
-  ntltd += cd[yy]["noncurrent_liabilities"][0]
-
-  she += "<td style='text-align:right'><u>" + cd[yy]["stockholders_equity"][0] + "</u></td>"
-  nshe += cd[yy]["stockholders_equity"][0]
-  nta_ = 1*cd[yy]["stockholders_equity"][0]+1*cd[yy]["noncurrent_liabilities"][0]
-  ta += "<td style='text-align:right'><u>" + nta_ + "</u></td>"
-  nta += nta_
- }
-
- year += "<th>Total</th></thead>"
- oiat += "<td style='text-align:right'>"+noiat+"</td></tr>"
- ltd += "<td style='text-align:right'>"+nltd+"</td></tr>"
- ltdc += "<td style='text-align:right'><u>"+nltdc+"</u></td></tr>"
- tltd += "<td style='text-align:right'>"+ntltd+"</td></tr>"
- she += "<td style='text-align:right'><u>"+nshe+"</u></td></tr>"
- ta += "<td style='text-align:right'><u>"+nta+"</u></td></tr>"
-
- roic_st = Math.round(10000*noiat/(ntltd + nshe))/100
- vObj["roic_st"] = roic_st
- st = year + oiat + ltd + ltdc + tltd + she + ta + "<tr><td style='text-align:right' colspan='"+(1+1*roic_effective_tax_rate_periods_)+"'>ROIC</td><td id='calc_roic' style='text-align:right'>"+roic_st+"%</td></tr>"
-  document.getElementById('estimated_roic').innerHTML = st
- document.getElementById('roic_st_').value = roic_st
-
- // ----------  effective_tax_rate  ------
- year = "<tr><th>Account</td>"
- it = "<tr><td class='account'>Actual Taxes</td>"
- ibt = "<tr><td class='account'>Income Before Taxes</td>"
- nit = 0; nibt= 0;
- for( yy = nn_; yy <=valuation_year_; yy++)
- {
-  var income_tax = Number(removeCommas(document.getElementById(yy + "_20970").innerHTML));
-  var income = Number(removeCommas(document.getElementById(yy + "_20999").innerHTML));
-  var income_before_tax = Math.round(100*(income + income_tax))/100;
-
-  year += "<th>" + yy + "</th>"
-  it += "<td style='text-align:right'>" + document.getElementById(yy + "_20970").innerHTML + "</td>";
-  nit += income_tax;
-
-  ibt += "<td style='text-align:right'>" + toCommas(income_before_tax.toString()) + "</td>"
-  nibt += income_before_tax
- }
- year += "<th>Total</th></tr>"
- it += "<td style='text-align:right'>"+toCommas(nit.toString())+"</td></tr>"
- ibt += "<td style='text-align:right'>"+toCommas(nibt.toString())+"</td></tr>"
- itr = Math.round(10000*nit/nibt)/100
- vObj["itr"] = itr
- st = year + it + ibt + "<td style='text-align:right' colspan='"+(1+1*roic_effective_tax_rate_periods_)+"'>Actual Tax Rate</td><td id='calc_itr' style='text-align:right'>"+itr+"%</td></tr>"
- document.getElementById('effective_tax_rate').innerHTML = st
- document.getElementById('effective_tax_rate_').value = itr
-}
 </script>
 
 <!-- calculate all -->
 <script>
 function calculate_all()
 {
-//alert('calculate_all 1')
-  set_cost_of_debt()
-  set_roic_efective_tax_rate(vObj["valuation_year"], vObj["cd"])
-  set_cofe()
-  //--
-  document.getElementById("valuation_year_").innerHTML = vObj["valuation_year"]
-  document.getElementById("cf1_ebit").value = Math.round(vObj["cd"][vObj["valuation_year"]]["ebit"][0]/1000)
-  //--
-  input_dcf()
+  try{s="set_cost_of_debt() "; set_cost_of_debt();} catch(er){alert("inside calculate_all(): - error in function "+s)}
+  try{s='set_roic_effective_tax_rate(vObj["valuation_year"], vObj["cd"]) ';set_roic_effective_tax_rate(vObj["valuation_year"], vObj["cd"])
+  } catch(er){alert("inside calculate_all(): - error in function "+s)}
+  try{s="set_cofe() "; set_cofe();} catch(er){alert("inside calculate_all(): - error in function "+s)}
+  document.getElementById("valuation_year_").innerHTML = vObj["valuation_year"];
+  document.getElementById("cf1_ebit").value = get_account_value(y=vObj["valuation_year"], account="20800");
+  try{s="input_dcf() "; input_dcf();} catch(er){alert("inside calculate_all(): - error in function "+s)}
 }
 </script>
+
 
 <!-- get_risk_premium -->
 <script>
@@ -608,4 +441,144 @@ get_risk_premium_chart_components = function(x, sp500, tb3ms, tbond, title)
 }
 
 
+</script>
+
+
+<!--ROIC and taxes-->
+<script>
+function on_change_num_of_estimation_periods(event)
+{
+ document.getElementById('roic_effective_tax_rate_periods').value = event.target.value
+ document.getElementById('roic_effective_tax_rate_periods_').value = event.target.value
+ calculate_all()
+}
+
+// vObj["roic"]
+// vObj["effective_tax_rate"]
+function set_roic_effective_tax_rate(y, cd)
+{
+    // --- Roic -----
+    // --------------
+    year = "<thead><th>Account</th>"
+    oiat = "<tr><td class='account'>Operating Income After Tax</td>"
+    ltd = "<tr><td class='account'>Long Tearm Liabilities</td>"
+
+    //ltdc = "<tr><td class='account'>Long Term Debt (current)</td>"
+    //tltd = "<tr><td class='account'>Long-term Liabilities</td>"
+
+    she = "<tr><td class='account'>Stockholders Equity</td>"
+    ta = "<tr><td class='account'>Invested Capital</td>"
+    noiat = 0; nltd= 0; nltdc = 0; ntltd = 0; nshe = 0; nta=0
+    // --
+    roic_effective_tax_rate_periods_ = document.getElementById('roic_effective_tax_rate_periods').value
+    valuation_year_ = parseInt(vObj["valuation_year"])
+    nn_ = valuation_year_ - roic_effective_tax_rate_periods_ + 1
+
+    for( yy = nn_; yy <=valuation_year_; yy++)
+    {
+     var v_ebit = get_account_value(y=yy, account="20800");
+     var v_income_taxes = get_account_value(y=yy, account="20970");
+     var v_lt_debt = get_account_value(y=yy, account="14990");
+     var v_stockholders_equity = get_account_value(y=yy, account="15990");
+     v_ebit_net = v_ebit - v_income_taxes;
+     noiat += v_ebit_net; nltd += v_lt_debt; nshe += v_stockholders_equity;
+     nta_ = 1*v_stockholders_equity+1*v_lt_debt;
+     nta += nta_;
+     year += "<th>" + yy + "</th>";
+     oiat += "<td style='text-align:right'>" + v_ebit_net + "</td>";
+     ltd += "<td style='text-align:right'>" + v_lt_debt + "</td>";
+     she += "<td style='text-align:right'><u>" + v_stockholders_equity + "</u></td>";
+     ta += "<td style='text-align:right'><u>" + nta_ + "</u></td>";
+    }
+    var roic_st = Math.round(10000*noiat/nta)/100;
+    vObj["roic_st"] = roic_st;
+
+    year += "<th>Total</th></thead>";
+    oiat += "<td style='text-align:right'>"+noiat+"</td></tr>";
+    ltd += "<td style='text-align:right'>"+nltd+"</td></tr>";
+    she += "<td style='text-align:right'><u>"+nshe+"</u></td></tr>";
+    ta += "<td style='text-align:right'><u>"+nta+"</u></td></tr>";
+
+    st = year + oiat + ltd + she + ta + "<tr><td style='text-align:right' colspan='"+(1+1*roic_effective_tax_rate_periods_)+"'>ROIC</td><td id='calc_roic' style='text-align:right'>"+roic_st+"%</td></tr>"
+
+    document.getElementById('estimated_roic').innerHTML = st
+    document.getElementById('roic_st_').value = roic_st
+
+    // ----------  effective_tax_rate  ------
+    year = "<tr><th>Account</td>"
+    it = "<tr><td class='account'>Actual Taxes</td>"
+    ibt = "<tr><td class='account'>Income Before Taxes</td>"
+
+    nit = 0; nibt= 0;
+    for( yy = nn_; yy <=valuation_year_; yy++)
+    {
+     var income_tax = get_account_value(y=yy, account="20970"); var income = get_account_value(y=yy, account="20999");
+     var income_before_tax = Math.round(100*(income + income_tax))/100;
+     nit += income_tax; nibt += income_before_tax;
+     year += "<th>" + yy + "</th>";
+     it += "<td style='text-align:right'>" + income_tax + "</td>";
+     ibt += "<td style='text-align:right'>" + toCommas(income_before_tax.toString()) + "</td>";
+    }
+    year += "<th>Total</th></tr>";
+    it += "<td style='text-align:right'>"+toCommas(nit.toString())+"</td></tr>";
+    ibt += "<td style='text-align:right'>"+toCommas(nibt.toString())+"</td></tr>";
+    var effective_tax_rate = Math.round(10000*nit/nibt)/100;
+    vObj["effective_tax_rate"] = effective_tax_rate;
+    st = year + it + ibt + "<td style='text-align:right' colspan='"+(1+1*roic_effective_tax_rate_periods_)+"'>Actual Tax Rate</td><td id='calc_itr' style='text-align:right'>"+effective_tax_rate+"%</td></tr>"
+    document.getElementById('effective_tax_rate').innerHTML = st;
+    document.getElementById('effective_tax_rate_').value = effective_tax_rate;
+}
+</script>
+
+<!-- Cost of Debt -->
+<script>
+function set_cost_of_debt()
+{
+  document.getElementById("cofd_rf").innerHTML = Math.round(100*vObj["rf"]*100)/100;
+  var ve = get_account_value(y=vObj["valuation_year"], account="20800");
+  document.getElementById("cofd_ebit").innerHTML=toCommas(ve);
+  var vi = get_account_value(y=vObj["valuation_year"], account="20850");
+  document.getElementById("cofd_interest_expense").innerHTML=toCommas(vi)
+  icr_ = ve/vi; if(icr_ <= -100000.0){icr = -1000.0}; if(icr_ >= 100000.0){icr = 1000.0}
+  if(vi < 1)
+  {document.getElementById("cofd_interest_coverage").innerHTML = "<span class='tooltip_'>Infinity<span class='tooltiptext'>Check the Interest Expense in the data section</span></span>"
+  } else {document.getElementById("cofd_interest_coverage").innerHTML=Math.round(100*icr_)/100 }
+
+  document.getElementById("cofd_estimated_county_default_spread").innerHTML=vObj["country_default_spread"];
+  if (vObj["interest_coverage_ratio_table"] == 0)
+  {
+    $.post('{% url "corporatevaluation:get_interest_coverage_ratio" %}',
+      { },
+      function(data){
+        vObj["interest_coverage_ratio_table"] = data;
+        set_cost_of_debt_();
+      })
+  } else { set_cost_of_debt_(); }
+}
+</script>
+
+<!-- set_cost_of_debt_ -->
+<script>
+function set_cost_of_debt_()
+{
+  for(key in vObj["interest_coverage_ratio_table"])
+  {
+     var f = vObj["interest_coverage_ratio_table"][key]["from_ic"];
+     var t = vObj["interest_coverage_ratio_table"][key]["to_ic"];
+     //alert(icr_ + " " + f + " " + t )
+     if(1*f < 1*icr_ && 1*icr_ < 1*t)
+     {
+       var rating = vObj["interest_coverage_ratio_table"][key]["rating"];
+       var spread = vObj["interest_coverage_ratio_table"][key]["spread"];
+       break;
+     }
+  }
+    document.getElementById("cofd_estimated_bond_rating").innerHTML=rating;
+    document.getElementById("cofd_estimated_company_default_spread").innerHTML=Math.round(10000*spread)/10000;
+
+    cofd = 100*vObj["rf"]+1*spread+1*vObj["country_default_spread"]; vObj["cofd"] = cofd;
+    document.getElementById("cofd_estimated_cost_of_debt").innerHTML=Math.round(100*cofd)/100;
+    set_wacc();
+    //alert(icr_ + " --:::::::-- " + f + " " + t + " " + rating + " " + spread)
+}
 </script>
