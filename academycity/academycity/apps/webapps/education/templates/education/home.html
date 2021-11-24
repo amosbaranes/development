@@ -7,12 +7,12 @@
 
 
 {% block nav_bar %}
-          {% include 'education/includes/main_page.html' %}
+      {% include 'education/includes/main_page.html' %}
 {% endblock %}
 
 
 {% block main_page %}
- <div class="hero-intro" style="background-image: url('{{ institution_obj.institution_image.url }}');">
+<div class="hero-intro" style="background-image: url('{{ institution_obj.institution_image.url }}');">
             <div class="hero-intro__inner">
                 <div class="hero-intro__body">
                     <div class="hero-intro__content">
@@ -47,90 +47,196 @@
 
 
 {% block body_content %}
- <!--     program section-->
-    <section class="section ">
+ <!--program section-->
+ <section class="section ">
         <div class="section__row">
             <h2 class="section__title">{{ institution_obj.programs_title }}</h2>
-            <div id="program_" class="section__items">
+            <div id="program" class="section__items">
+                {% for program in programs %}
+                <a href="{% url 'education:program_description' program.id %}" target="_blank" class="program-glimpse program-glimpse--link">
+                    <div class="program-glimpse__media">
+                        <img src="{{program.image.url}}"
+                             srcset="{{program.image.url}}" sizes="300px" alt="">
+                    </div>
+                    <div class="program-glimpse__content">
+                        <div class="program-glimpse__wrapper">
+                            <p class="program-glimpse__title">{{program.name}}</p>
+                            <p>{{program.short_description}}</p>
+                        </div>
+                    </div>
+                </a>
+                {% endfor %}
                 <div id="more_program_btn" class="button-caesura">
 <!--                   <a href="/en/programs/">More {{ institution_obj.programs_title }}</a>-->
                 </div>
             </div>
         </div>
     </section>
-<!--     end of program section-->
+<!--end of program section-->
 
-<!--     course section-->
-    <section class="section ">
+<!--course section-->
+<section class="section ">
         <div class="section__row">
             <h2 class="section__title">{{ institution_obj.courses_title }}</h2>
-            <div id="courses_" class="section__items">
-                <div id="more_courses_btn" class="button-caesura">
-<!--                    <a href="/en/courses/">More {{ institution_obj.courses_title }}</a>-->
+            <div id="courses" class="section__items">
+        {% for course in courses %}
+          <a class="course-glimpse" href="{% url 'education:course_description' course.id %}" target="_blank">
+            <div class="course-glimpse__media">
+                <img src="{{course.image.url}}"
+                     srcset="{{course.image.url}} 300w"
+                     sizes="300px" alt="">
+            </div>
+            <div class="course-glimpse__content">
+                <div class="course-glimpse__wrapper">
+                    <p class="course-glimpse__title">{{course.name}}</p>
+                    <div class="icon" role="img" aria-hidden="true">
+                     <!--<svg><use href="#icon-pin"></use></svg>-->
+                        <span>{{course.short_description}}</span>
+                    </div>
+                </div>
+                <div class="course-glimpse-footer">
+                    <div class="course-glimpse-footer__date">
+                        <svg role="img" aria-hidden="true" class="icon">
+                            <use href="#icon-calendar"></use>
+                        </svg>
+                        {{course.date}}
+                    </div>
                 </div>
             </div>
+            </a>
+          {% endfor %}
+            <div id="more_courses_btn" class="button-caesura">
+                <!-- <a href="/en/courses/">More {{ institution_obj.courses_title }}</a>-->
+            </div>
+        </div>
         </div>
     </section>
-<!--     end of course section-->
+<!--end of course section-->
 
-<!--      service section-->
-    <section class="section ">
+<!--service section-->
+<section class="section ">
         <div class="section__row">
             <h2 class="section__title">{{ institution_obj.services_title }}</h2>
-            <div id="service_" class="section__items">
+            <div id="service" class="section__items">
+                {% for service in services %}
+                <a href="{% url 'education:service_description' service.id %}" target="_blank" class="program-glimpse program-glimpse--link">
+                    <div class="program-glimpse__media">
+                        <img src="{{service.image.url}}"
+                             srcset="{{service.image.url}} 300w" sizes="300px" alt="">
+                    </div>
+                    <div class="program-glimpse__content">
+                        <div class="program-glimpse__wrapper">
+                            <p class="program-glimpse__title">{{service.name}}</p>
+                            <p>{{service.short_description}}</p>
+                        </div>
+                    </div>
+                </a>
+                {% endfor %}
                 <div id="more_service_btn" class="button-caesura">
 <!--                    <a href="/en/Services/">More Services</a>-->
                 </div>
             </div>
         </div>
     </section>
-<!--      end of service section-->
+<!--end of service section-->
 
-<!--      news section   -->
-    <section class="section ">
+<!--news section   -->
+<section class="section ">
         <div class="section__row">
             <h2 class="section__title">{{ institution_obj.new_title }}</h2>
-            <div id="news_" class="section__items">
+            <div id="news" class="section__items">
+            {% for new in news %}
+            <a {% if new.is_links %} href="{% url 'education:news_description' new.id %}" target="_blank" {% endif %} class="blogpost-glimpse">
+                <p class="blogpost-glimpse__date">{{new.news_date}}</p>
+                <div class="blogpost-glimpse__media">
+                    <img src="{{new.image.url}}"
+                         srcset="{{new.image.url}} 300w" sizes="300px" alt="">
+                </div>
+                <div class="blogpost-glimpse__content">
+                    <div class="blogpost-glimpse__wrapper">
+                        <div class="blogpost-glimpse__categories">
+                            <span class="category-tag">
+                                <span class="category-tag__title">{{new.news_title}}</span>
+                            </span>
+                            <span class="category-tag__title">{{new.news_type_description}}</span>
+                        </div>
+                        <p class="blogpost-glimpse__title">{{new.news_type}}</p>
+                        <p class="blogpost-glimpse__excerpt">{{new.news_description}}</p>
+                    </div>
+                </div>
+            </a>
+            {% endfor %}
                 <div id="more_news_btn" class="button-caesura">
-                   <a href="{% url 'education:news_detail' %}">More {{ institution_obj.new_title }}</a>
+            <!--<a href="{% url 'education:news_detail' %}">More {{ institution_obj.new_title }}</a>-->
                 </div>
             </div>
         </div>
     </section>
-<!--      end of news section-->
+<!--end of news section-->
 
-<!--       subject section-->
-         <!--
-    <section class="section ">
+<!-- subject section-->
+<!--    <section class="section ">
         <div class="section__row">
             <h2 class="section__title">{{ institution_obj.subjects_title }}</h2>
-            <div id="subject_" class="section__items">
+            <div id="subject" class="section__items">
+           {% for subject in subjects %}
+            <a class="category-glimpse" href="{% url 'education:subject_description' subject.id %}" target="_blank">
+                <div class="category-glimpse__body">
+                    <div class="category-glimpse__logo">
+                        <img src="{{subject.image.url}}"
+                             srcset="{{subject.image.url}} 200w" sizes="200px" alt="">
+                    </div>
+                    <h3 class="category-glimpse__title">{{subject.name}}</h3>
+                </div>
+            </a>
+            {% endfor %}
                 <div id="more_subject_btn" class="button-caesura">
-                    <a href="/en/categories/">More {{ institution_obj.subjects_title }}</a>
+            <a href="/en/categories/">More {{ institution_obj.subjects_title }}</a>
                 </div>
             </div>
         </div>
     </section>
 -->
-<!--       end of subject section -->
+<!-- end of subject section -->
 
-<!--       persons section-->
-    <section class="section ">
-        <div class="section__row">
+<!--persons section-->
+<section class="section ">
+    <div class="section__row">
             <h2 class="section__title">{{ institution_obj.person_title }}</h2>
-            <div id="person_" class="section__items">
+            <div id="person-" class="section__items">
+                {% for person in persons %}
+                <div class="person-glimpse">
+                    <a class="person-glimpse__media" href="/p/{{person.cv_type}}/{{person.cv_number}}" target="_blank" tabindex="-1" aria-hidden="true">
+                        <img src="{{person.image.url}}" srcset="{{person.image.url}} 200w">
+                    </a>
+                    <div class="person-glimpse__content">
+                        <div class="person-glimpse__wrapper">
+                            <a href="/p/{{person.cv_type}}/{{person.cv_number}}" target="_blank">
+                                <h3 class="person-glimpse__title">{{person.persons_name}}</h3>
+                            </a>
+                            <div class="person-glimpse__categories">
+                                <div class="category-tag-list category-tag-list--primary">
+                                    <a class="category-tag" href="/p/{{person.cv_type}}/{{person.cv_number}}" target="_blank">
+                                        <span class="category-tag__title">{{person.persons_duty}}</span>
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="person-glimpse__bio">{{person.persons_description}}</div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
                 <div id="more_person_btn" class="button-caesura">
-                    <a href="/en/persons/">More {{ institution_obj.person_title }}</a>
+                    <!--<a href="/en/persons/">More {{ institution_obj.person_title }}</a>-->
                 </div>
             </div>
         </div>
+</section>
+<!-- end of persons section-->
 
 
-    </section>
-<!--       end of persons section-->
-
-<!--       persons phrase section-->
-    <section class="section ">
+<!--persons phrase section-->
+<section class="section ">
         <div class="section__row">
             <h2 class="section__title">{{ institution_obj.person_phrase_title }}</h2>
             <div class="section__items">
@@ -151,10 +257,10 @@
             </div>
         </div>
     </section>
-<!--       end of persons phrase section-->
+<!--end of persons phrase section-->
 
-<!--       other section -->
-    <section class="section ">
+<!--other section -->
+<section class="section ">
         <div class="section__row">
              <h2 class="section__title">{{ institution_obj.other_title }}</h2>
             <div class="section__items">
@@ -175,549 +281,80 @@
             </div>
         </div>
     </section>
-<!--       end of other section-->
+<!--end of other section-->
 {% endblock %}
 
 
- {% block js %}
-        <script>
-            window.__richie_frontend_context__ = JSON.parse('{"context": {"csrftoken": "768IGrqrYPenfUujq5oHR37cYmw17KZbHxhX2QTj8PkvXmQxe6TVz7SlIgIpdIVw", "environment": "production", "release": "demo-1.9.0", "sentry_dsn": "https://b0ed6c7e47554152918928057029315c@sentry.io/1198559", "authentication": {"endpoint": "https://edx.richie.education", "backend": "openedx-hawthorn"}, "lms_backends": [{"endpoint": "https://edx.richie.education", "backend": "openedx-hawthorn", "course_regexp": "^.*/courses/(?<course_id>.*)/course/?$"}]}}');
-        </script>
-        <script src="{% static 'js/index.dc82dfe6f1fc.js' %}"></script>
-        <script>
+{% block js %}
+<script>
+    window.__richie_frontend_context__ = JSON.parse('{"context": {"csrftoken": "768IGrqrYPenfUujq5oHR37cYmw17KZbHxhX2QTj8PkvXmQxe6TVz7SlIgIpdIVw", "environment": "production", "release": "demo-1.9.0", "sentry_dsn": "https://b0ed6c7e47554152918928057029315c@sentry.io/1198559", "authentication": {"endpoint": "https://edx.richie.education", "backend": "openedx-hawthorn"}, "lms_backends": [{"endpoint": "https://edx.richie.education", "backend": "openedx-hawthorn", "course_regexp": "^.*/courses/(?<course_id>.*)/course/?$"}]}}');
+</script>
+<script src="{% static 'js/index.dc82dfe6f1fc.js' %}"></script>
+<script>
 
-            function search(event)
-            {
+    function search(event)
+    {
 
-              elm = document.getElementById("search_input")
-              alert(elm.value)
+      elm = document.getElementById("search_input")
+      alert(elm.value)
 
-              var value = elm.value
-                try{
-                    $.post('{% url "search:search" %}',
-                      {
-                        q: value
-                      },
-                      function(data){
-                          alert(data['status'])
-                      });
-                  } catch(er){alert(er)}
-            }
-
-
-
-            function initializeHamburgerMenu() {
-                // Get all topbar burger elements
-                const topbarBurgers = Array.prototype.slice.call(
-                    document.querySelectorAll(".topbar__hamburger"), 0
-                );
-
-                // Check if there are any navbar burgers
-                if (topbarBurgers.length > 0) {
-                    // Add a click event on each of them
-                    topbarBurgers.forEach(function(el) {
-                        el.addEventListener("click", function() {
-                            // Get the target from the "data-target" attribute
-                            const target = document.getElementById(el.dataset.target);
-                            // Toggle the "is-active" class on both the burger and container
-                            el.classList.toggle("is-active");
-                            target.classList.toggle("is-open");
-                        });
-                    });
-                }
-            }
-
-            function initializeAccordions() {
-                // Implement accordion item behaviors
-                const $accordionItems = Array.prototype.slice.call(
-                    document.querySelectorAll('[data-accordion-button]'), 0
-                );
-
-                if ($accordionItems.length > 0) {
-                    $accordionItems.forEach(function(itemObject, itemIndex) {
-                        itemObject.addEventListener('click', function () {
-                            itemObject.closest('li').toggleAttribute('data-accordion-active');
-                            itemObject.toggleAttribute('data-accordion-open');
-                        });
-                    });
-                }
-            }
-
-            document.addEventListener("DOMContentLoaded", function() {
-                initializeAccordions();
-                initializeHamburgerMenu();
-            });
-        </script>
-  {% endblock %}
-
-  {% block domready %}
-
-// -------beginning of course template -------
-
-var link_course = "{% url 'education:course_description' '1' %}"
-link_course = link_course.split('/')
-link_course.pop()
-link_course.pop()
-link_course = link_course.join('/')
-link_course += '/'
-
-        function make_course_template(k, course)
-        {
-            var a_ = document.createElement("a")
-            a_.setAttribute("class", "course-glimpse")
-            a_.setAttribute("href", link_course + k);
-            a_.setAttribute("target", '_blank');
-            var div_ = document.createElement("div")
-            a_.appendChild(div_)
-            div_.setAttribute("class", "course-glimpse__media")
-            var img_ = document.createElement("img")
-            div_.appendChild(img_)
-            img_.setAttribute("src", course['image_url'])
-            img_.setAttribute("srcset", course['image_url'] + " 300w")
-            img_.setAttribute("sizes", "300px")
-            img_.setAttribute("alt", "")
-
-            var div1_ = document.createElement("div")
-            a_.appendChild(div1_)
-            div1_.setAttribute("class", "course-glimpse__content")
-            var div11_ = document.createElement("div")
-            div1_.appendChild(div11_)
-            div11_.setAttribute("class", "course-glimpse__wrapper")
-            var p_ = document.createElement("p")
-            div11_.appendChild(p_)
-            p_.setAttribute("class", "course-glimpse__title")
-            p_.innerHTML = course['name'];
-
-            var div111_ = document.createElement("div")
-            div11_.appendChild(div111_)
-            div111_.setAttribute("class", "course-glimpse__organization")
-            var svg_ = document.createElement("svg")
-            div111_.appendChild(svg_)
-            div111_.setAttribute("role", "img")
-            div111_.setAttribute("aria-hidden", "true")
-            div111_.setAttribute("class", "icon")
-            var use_ = document.createElement("use")
-            svg_.appendChild(use_)
-            use_.setAttribute("href", "#icon-pin")
-            var span_ = document.createElement("span")
-            div111_.appendChild(span_)
-            span_.innerHTML = course['short_description']
-            var div12_ = document.createElement("div")
-            div1_.appendChild(div12_)
-            div12_.setAttribute("class", "course-glimpse-footer")
-            var div121_ = document.createElement("div")
-            div12_.appendChild(div121_)
-            div121_.setAttribute("class", "course-glimpse-footer__date")
-            var svg1_ = document.createElement("svg")
-            div121_.appendChild(svg1_)
-            svg1_.setAttribute("role", "img")
-            svg1_.setAttribute("aria-hidden", "true")
-            svg1_.setAttribute("class", "icon")
-            var use1_ = document.createElement("use")
-            svg1_.appendChild(use1_)
-            use1_.setAttribute("href", "#icon-calendar")
-            div121_.innerHTML += course['date'];
-            return a_
-        }
+      var value = elm.value
+        try{
+            $.post('{% url "search:search" %}',
+              {
+                q: value
+              },
+              function(data){
+                  alert(data['status'])
+              });
+          } catch(er){alert(er)}
+    }
 
 
-        /**
-         * Sort object properties (only own properties will be sorted).
-         * @param {object} obj object to sort properties
-         * @param {string|int} sortedBy 1 - sort object properties by specific value.
-         * @param {bool} isNumericSort true - sort object properties as numeric value, false - sort as string value.
-         * @param {bool} reverse false - reverse sorting.
-         * @returns {Array} array of items in [[key,value],[key,value],...] format.
-         */
-        function sortProperties(obj) {
-            var sortable = [];
-            for (var key in obj) {
-                if (obj.hasOwnProperty(key)) {
-                    sortable.push([key, obj[key]]);
-                }
-            }
-            sortable.sort(function (a, b) {
-                    var x = parseInt(a[1]['order']);
-                    var y = parseInt(b[1]['order']);
-                    return (x - y);
+
+    function initializeHamburgerMenu() {
+        // Get all topbar burger elements
+        const topbarBurgers = Array.prototype.slice.call(
+            document.querySelectorAll(".topbar__hamburger"), 0
+        );
+
+        // Check if there are any navbar burgers
+        if (topbarBurgers.length > 0) {
+            // Add a click event on each of them
+            topbarBurgers.forEach(function(el) {
+                el.addEventListener("click", function() {
+                    // Get the target from the "data-target" attribute
+                    const target = document.getElementById(el.dataset.target);
+                    // Toggle the "is-active" class on both the burger and container
+                    el.classList.toggle("is-active");
+                    target.classList.toggle("is-open");
                 });
-return sortable
-}
+            });
+        }
+    }
 
-            function get_courses()
-            {
-                try{
-                    $.post('{% url "education:get_courses" %}',
-                      {
-                      },
-                      function(data){
-                            var courses_elm = document.getElementById("courses_")
-                            var more_courses_btn = document.getElementById("more_courses_btn")
-                        data = sortProperties(data)
-                        for (k in data)
-                        {
-                            course_elm = make_course_template(data[k][0], data[k][1])
-                            //alert(courses_elm.innerHTML)
-                            courses_elm.insertBefore(course_elm, more_courses_btn)
-                        }
-                      });
-                  } catch(er){alert(er)}
-            }
+    function initializeAccordions() {
+        // Implement accordion item behaviors
+        const $accordionItems = Array.prototype.slice.call(
+            document.querySelectorAll('[data-accordion-button]'), 0
+        );
 
-            get_courses()
+        if ($accordionItems.length > 0) {
+            $accordionItems.forEach(function(itemObject, itemIndex) {
+                itemObject.addEventListener('click', function () {
+                    itemObject.closest('li').toggleAttribute('data-accordion-active');
+                    itemObject.toggleAttribute('data-accordion-open');
+                });
+            });
+        }
+    }
 
-// -------end of course template -------
+    document.addEventListener("DOMContentLoaded", function() {
+        initializeAccordions();
+        initializeHamburgerMenu();
+    });
+</script>
+{% endblock %}
 
-// -------beginning of news template -------
-
-var link_news = "{% url 'education:news_description' '1' %}"
-link_news = link_news.split('/')
-link_news.pop()
-link_news.pop()
-link_news = link_news.join('/')
-link_news += '/'
-
-        function make_news_template(news)
-                 {
-                    var a_ = document.createElement("a")
-// alert(news.is_links)
-        if([news.is_links] == 'true' )
-{
-        a_.setAttribute("href", link_news + k)
-}
-                    a_.setAttribute("target", '_blank');
-                    a_.setAttribute("class", "blogpost-glimpse")
-                    var p_ = document.createElement("p")
-                    a_.appendChild(p_)
-                    p_.setAttribute("class", "blogpost-glimpse__date")
-                    p_.innerHTML=news['news_date'];
-                    var div_ = document.createElement("div")
-                    a_.appendChild(div_)
-                    div_.setAttribute("class","blogpost-glimpse__media")
-                    var img_ = document.createElement("img")
-                    div_.appendChild(img_)
-                    img_.setAttribute("src", news['image_url'])
-                    img_.setAttribute("srcset", news['image_url'] + " 300w")
-                    img_.setAttribute("sizes", "300px")
-                    img_.setAttribute("alt", "")
-                    var div_1 = document.createElement("div")
-                    a_.appendChild(div_1)
-                    div_1.setAttribute("class", "blogpost-glimpse__content")
-                    div_2 = document.createElement("div")
-                    div_1.appendChild(div_2)
-                    div_2.setAttribute("class", "blogpost-glimpse__wrapper")
-                    div_3 = document.createElement("div")
-                    div_2.appendChild(div_3)
-                    div_3.setAttribute("class", "blogpost-glimpse__categories")
-                    var span_ = document.createElement("span")
-                    div_3.appendChild(span_)
-                    span_.setAttribute("class", "category-tag")
-                    var span_1 = document.createElement("span")
-                    span_.appendChild(span_1)
-                    span_1.setAttribute("class", "category-tag__title")
-                    span_1.innerHTML=news['news_type'];
-                    var span_2 = document.createElement("span")
-                    div_3.appendChild(span_2)
-                    span_2.innerHTML=news['news_type_description'];
-                    span_2.setAttribute("class", "category-tag__title")
-                    var p_1 = document.createElement("p")
-                    div_2.appendChild(p_1)
-                    p_1.setAttribute("class", "blogpost-glimpse__title")
-                    p_1.innerHTML= news['news_title'];
-                    var p_2 = document.createElement("p")
-                    div_2.appendChild(p_2)
-                    p_2.setAttribute("class", "blogpost-glimpse__excerpt")
-                    p_2.innerHTML=news['news_description'];
-                    return a_
-
-               }
-
-
-        function get_news()
-            {
-                try{
-                    $.post('{% url "education:get_news" %}',
-                      {
-                      },
-                      function(data){
-                        var new_elm = document.getElementById("news_")
-                        var more_news_btn = document.getElementById("more_news_btn")
-                        for (k in data)
-                        {
-                            news_elm = make_news_template(data[k])
-                            //alert(news_elm.outerHTML)
-                            new_elm.insertBefore(news_elm, more_news_btn)
-                        }
-                      });
-                  } catch(er){alert(er)}
-            }
-
-            get_news()
-
-// -------end of news template -------
-
-// -------beginning of program template -------
-
-var link_program = "{% url 'education:program_description' '1' %}"
-link_program = link_program.split('/')
-link_program.pop()
-link_program.pop()
-link_program = link_program.join('/')
-link_program += '/'
-
-         function make_program_template(programs)
-                 {
-                    var a_ = document.createElement("a")
-                    a_.setAttribute("href", link_program + k)
-                    a_.setAttribute("target", '_blank');
-                    a_.setAttribute("class", "program-glimpse program-glimpse--link")
-                    var div_ = document.createElement("div")
-                    a_.appendChild(div_)
-                    div_.setAttribute("class", "program-glimpse__media")
-                    img_ = document.createElement("img")
-                    div_.appendChild(img_)
-                    img_.setAttribute("src", programs['image_url'])
-                    img_.setAttribute("srcset", programs['image_url'] + " 300w")
-                    img_.setAttribute("sizes", "300px")
-                    img_.setAttribute("alt" , "")
-                    var div_1 = document.createElement("div")
-                    a_.appendChild(div_1)
-                    div_1.setAttribute("class", "program-glimpse__content")
-                    var div_2 = document.createElement("div")
-                    div_1.appendChild(div_2)
-                    div_2.setAttribute("class", "program-glimpse__wrapper")
-                    var p_ = document.createElement("p")
-                    div_2.appendChild(p_)
-                    p_.setAttribute("class", "program-glimpse__title")
-                    p_.innerHTML=programs['name'];
-                    var p_1 = document.createElement("p")
-                    div_2.appendChild(p_1)
-                    p_1.innerHTML=programs['short_description'];
-
-                   return a_
-                 }
-
-              function get_program()
-            {
-                try{
-                    $.post('{% url "education:get_program" %}',
-                      {
-                      },
-                      function(data){
-                        var program_elm = document.getElementById("program_")
-                        var more_program_btn = document.getElementById("more_program_btn")
-                        for (k in data)
-                        {
-                            programs_elm = make_program_template(data[k])
-                            //alert(programs_elm.outerHTML)
-                            program_elm.insertBefore(programs_elm, more_program_btn)
-                        }
-                      });
-                  } catch(er){alert(er)}
-            }
-
-            get_program()
-
-// -------end of program template -------
-
-// -------beginning of subject template -------
-
-var link_subject = "{% url 'education:subject_description' '1' %}"
-link_subject = link_subject.split('/')
-link_subject.pop()
-link_subject.pop()
-link_subject = link_subject.join('/')
-link_subject += '/'
-          function make_subject_template(subjects)
-                 {
-                    var a_ = document.createElement("a")
-                    a_.setAttribute("class", "category-glimpse")
-                    a_.setAttribute("href", link_subject + k)
-                    a_.setAttribute("target", '_blank');
-                    var div_ = document.createElement("div")
-                    a_.appendChild(div_)
-                    div_.setAttribute("class", "category-glimpse__body")
-                    div_1 = document.createElement("div")
-                    div_.appendChild(div_1)
-                    div_1.setAttribute("class", "category-glimpse__logo")
-                    img_ = document.createElement("img")
-                    div_1.appendChild(img_)
-                    img_.setAttribute("src", subjects['image_url'] )
-                    img_.setAttribute("srcset", subjects['image_url'] + " 200w")
-                    img_.setAttribute("sizes", "200px")
-                    img_.setAttribute("alt" , "")
-                    var h3_ = document.createElement("h3")
-                    div_.appendChild(h3_)
-                    h3_.setAttribute("class", "category-glimpse__title")
-                    h3_.innerHTML= subjects['name'];
-                    //alert(a_.outerHTML)
-
-                   return a_
-                 };
-
-          function get_subject()
-          {
-                try{
-                    $.post('{% url "education:get_subject" %}',
-                      {
-                      },
-                      function(data){
-                        var subject_elm = document.getElementById("subject_")
-                        var more_subject_btn = document.getElementById("more_subject_btn")
-                        for (k in data)
-                        {
-                            subjects_elm = make_subject_template(data[k])
-                            //alert(subjects_elm.outerHTML)
-                            subject_elm.insertBefore(subjects_elm, more_subject_btn)
-                        }
-                      });
-                  } catch(er){alert(er)}
-            }
-
-  // get_subject()
-
-// -------end of subject template -------
-
-// -------beginning of person template -------
-
-          function make_person_template(persons)
-          {
-                var div_ = document.createElement("div")
-                div_.setAttribute("class", "person-glimpse")
-                var a_ = document.createElement("a")
-                div_.appendChild(a_)
-                a_.setAttribute("class", "person-glimpse__media")
-                a_.setAttribute("href", "/p/"+persons['cv_type']+"/"+persons['cv_number'])
-                a_.setAttribute("target", "_blank")
-                a_.setAttribute("tabindex", "-1")
-                a_.setAttribute("aria-hidden", "true")
-                var img_ = document.createElement("img")
-                a_.appendChild(img_)
-                img_.setAttribute("src", persons['image_url'])
-                img_.setAttribute("srcset", persons['image_url'] + " 200w")
-                var div_1 = document.createElement("div")
-                div_.appendChild(div_1)
-                div_1.setAttribute("class", "person-glimpse__content")
-                var div_2 = document.createElement("div")
-                div_1.appendChild(div_2)
-                div_2.setAttribute("class", "person-glimpse__wrapper")
-                var a_1 = document.createElement("a")
-                div_2.appendChild(a_1)
-                a_1.setAttribute("href", "/p/"+persons['cv_type']+"/"+persons['cv_number'])
-                a_1.setAttribute("target", "_blank")
-                var h3_ = document.createElement("h3")
-                a_1.appendChild(h3_)
-                h3_.setAttribute("class", "person-glimpse__title")
-                h3_.innerHTML=persons['persons_name'];
-                var div_3 = document.createElement("div")
-                div_2.appendChild(div_3)
-                div_3.setAttribute("class", "person-glimpse__categories")
-                var div_4 = document.createElement("div")
-                div_3.appendChild(div_4)
-                div_4.setAttribute("class", "category-tag-list category-tag-list--primary")
-                var a_2 = document.createElement("a")
-                div_4.appendChild(a_2)
-                a_2.setAttribute("class", "category-tag")
-                a_2.setAttribute("href", "/p/"+persons['cv_type']+"/"+persons['cv_number'])
-                a_2.setAttribute("target", "_blank")
-                var span_ = document.createElement("span")
-                a_2.appendChild(span_)
-                span_.setAttribute("class", "category-tag__title")
-                span_.innerHTML= persons['persons_duty'];
-                var div_5 = document.createElement("div")
-                div_2.appendChild(div_5)
-                div_5.setAttribute("class", "person-glimpse__bio")
-                div_5.innerHTML=persons['persons_description'];
-               //alert(div_.outerHTML)
-                return div_
-          }
-
-           function get_person()
-            {
-                try{
-                    $.post('{% url "education:get_person" %}',
-                      {
-                      },
-                      function(data){
-                        var person_elm = document.getElementById("person_")
-                        var more_person_btn = document.getElementById("more_person_btn")
-                        for (k in data)
-                        {
-                            persons_elm = make_person_template(data[k])
-                            //alert(persons_elm.outerHTML)
-                            person_elm.insertBefore(persons_elm, more_person_btn)
-                        }
-                      });
-                  } catch(er){alert(er)}
-            }
-
-            get_person()
-
-// -------end of person template -------
-
-// -------beginning of service template -------
-
-var link_service = "{% url 'education:service_description' '1' %}"
-link_service = link_service.split('/')
-link_service.pop()
-link_service.pop()
-link_service = link_service.join('/')
-link_service += '/'
-
-                  function make_service_template(services)
-                {
-
-                    var a_ = document.createElement("a")
-                    a_.setAttribute("href", link_service + k)
-                    a_.setAttribute("target", '_blank');
-                    a_.setAttribute("class", "program-glimpse program-glimpse--link")
-                    var div_ = document.createElement("div")
-                    a_.appendChild(div_)
-                    div_.setAttribute("class", "program-glimpse__media")
-                    img_ = document.createElement("img")
-                    div_.appendChild(img_)
-                    img_.setAttribute("src", services['image_url'])
-                    img_.setAttribute("srcset", services['image_url'] + " 300w")
-                    img_.setAttribute("sizes", "300px")
-                    img_.setAttribute("alt" , "")
-                    var div_1 = document.createElement("div")
-                    a_.appendChild(div_1)
-                    div_1.setAttribute("class", "program-glimpse__content")
-                    var div_2 = document.createElement("div")
-                    div_1.appendChild(div_2)
-                    div_2.setAttribute("class", "program-glimpse__wrapper")
-                    var p_ = document.createElement("p")
-                    div_2.appendChild(p_)
-                    p_.setAttribute("class", "program-glimpse__title")
-                    p_.innerHTML=services['name'];
-                    var p_1 = document.createElement("p")
-                    div_2.appendChild(p_1)
-                    p_1.innerHTML=services['short_description'];
-
-                   return a_
-                 }
-
-              function get_service()
-            {
-                try{
-                    $.post('{% url "education:get_service" %}',
-                      {
-                      },
-                      function(data){
-                        var service_elm = document.getElementById("service_")
-                        var more_service_btn = document.getElementById("more_service_btn")
-                        for (k in data)
-                        {
-                            services_elm = make_service_template(data[k])
-                            //alert(services_elm.outerHTML)
-                            service_elm.insertBefore(services_elm, more_service_btn)
-                        }
-                      });
-                  } catch(er){alert(er)}
-            }
-
-            get_service()
-
-// ------- end of service template --------
-
+{% block domready %}
 {% endblock %}

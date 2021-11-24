@@ -29,7 +29,7 @@ class ProgramAdmin(PlaceholderAdminMixin, admin.ModelAdmin):
 
 @admin.register(Subject)
 class SubjectAdmin(admin.ModelAdmin):
-    list_display = ('id', 'order', 'subject_name', 'is_popular', 'is_active',)
+    list_display = ('id', 'order', 'name', 'is_popular', 'is_active',)
     list_filter = ('is_active', 'is_popular', )
 
 

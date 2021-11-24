@@ -11,10 +11,21 @@ def home(request):
     company_obj = wsc.site_company()
     phrases_ = wsc.site_company('phrases')
     topics_ = wsc.site_company('topics')
-
+    courses = wsc.site_company('courses')
+    programs = wsc.site_company('programs')
+    services = wsc.site_company('services')
+    news = wsc.site_company('news')
+    persons = wsc.site_company('persons')
+    subjects = wsc.site_company('subjects')
     return render(request, 'education/home.html', {'institution_obj': company_obj,
                                                    'phrases': phrases_,
-                                                   'topics': topics_
+                                                   'topics': topics_,
+                                                   'courses': courses,
+                                                   'programs': programs,
+                                                   'services': services,
+                                                   'news': news,
+                                                   'persons': persons,
+                                                   'subjects': subjects
                                                    })
 
 
@@ -46,101 +57,6 @@ def subject_description(request, pk):
                   {'subject': subject,
                    'institution_obj': company_obj,
                    })
-
-
-def get_courses(request):
-    wsc = WebSiteCompany(request, web_company_id=7)
-    courses = wsc.site_company('courses')
-    is_admin = request.user.groups.filter(name='admins').exists()
-    if is_admin:
-        for obj in courses:
-            obj.save()
-    rr = {}
-    for course in courses:
-        rr[str(course.id)] = {
-                                'name': course.name,
-                                'order': course.order,
-                                'date': course.date,
-                                'is_popular': course.is_popular,
-                                'image_url': course.image.url,
-                                'short_description': course.short_description
-                                }
-
-    return JsonResponse(rr)
-
-
-def get_news(request):
-    wsc = WebSiteCompany(request, web_company_id=7)
-    news = wsc.site_company('news')
-    rr = {}
-    for new in news:
-        if new.is_active:
-            rr[str(new.id)] = {
-                'news_title': new.news_title,
-                'news_type': new.news_type,
-                'order': new.order,
-                'news_description': new.news_description,
-                'news_type_description': new.news_type_description,
-                'news_date': new.news_date,
-                'is_popular': new.is_popular,
-                'is_links': new.is_links,
-                'image_url': new.image.url
-            }
-    return JsonResponse(rr)
-
-
-def get_program(request):
-    wsc = WebSiteCompany(request, web_company_id=7)
-    programs = wsc.site_company('programs')
-    is_admin = request.user.groups.filter(name='admins').exists()
-    if is_admin:
-        for obj in programs:
-            obj.save()
-    rr = {}
-    for program in programs:
-        print('-' * 50)
-        rr[str(program.id)] = {
-            'name': program.name,
-            'order': program.order,
-            'short_description': program.short_description,
-            'is_popular': program.is_popular,
-            'image_url': program.image.url
-        }
-    return JsonResponse(rr)
-
-
-def get_subject(request):
-    wsc = WebSiteCompany(request, web_company_id=7)
-    subjects = wsc.site_company('subjects')
-    rr = {}
-    for subject in subjects:
-        print('-' * 50)
-        rr[str(subject.id)] = {
-            'name': subject.name,
-            'order': subject.order,
-            'is_popular': subject.is_popular,
-            'image_url': subject.image.url
-        }
-    return JsonResponse(rr)
-
-
-def get_person(request):
-    wsc = WebSiteCompany(request, web_company_id=7)
-    persons = wsc.site_company('persons')
-    rr = {}
-    for person in persons:
-        print('-' * 50)
-        rr[str(person.id)] = {
-            'persons_name': person.persons_name,
-            'persons_duty': person.persons_duty,
-            'persons_description': person.persons_description,
-            'order': person.order,
-            'is_popular': person.is_popular,
-            'image_url': person.image.url,
-            'cv_type': person.cv_type,
-            'cv_number': person.cv_number
-        }
-    return JsonResponse(rr)
 
 
 def news_detail(request):
@@ -189,20 +105,5 @@ def news_description(request, pk):
                    })
 
 
-def get_service(request):
-    wsc = WebSiteCompany(request, web_company_id=7)
-    services = wsc.site_company('services')
-    is_admin = request.user.groups.filter(name='admins').exists()
-    if is_admin:
-        for obj in services:
-            obj.save()
-    rr = {}
-    for service in services:
-        rr[str(service.id)] = {
-            'name': service.name,
-            'order': service.order,
-            'short_description': service.short_description,
-            'image_url': service.image.url
-        }
-    return JsonResponse(rr)
+
 
