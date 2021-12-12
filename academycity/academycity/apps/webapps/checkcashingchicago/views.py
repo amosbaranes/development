@@ -10,7 +10,7 @@ from django.shortcuts import redirect
 
 
 def home(request):
-    wsc = WebSiteCompany(request, web_company_id=8)
+    wsc = WebSiteCompany(request, web_company_id=8, is_test=False)
     company_obj = wsc.site_company()
     locations = wsc.site_company('locations')
     currencies = Currency.objects.all()

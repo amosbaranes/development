@@ -9,7 +9,8 @@ from .models import (Project, RBOIC, CountryRegion, CountryRating, Industry,
                      XBRLHistoricalReturnsSP, XBRLSPMoodys,
                      XBRLSPEarningForecast, XBRLSPStatistics,
                      XBRLCountriesOfOperations, XBRLRegionsOfOperations, XBRLYearsCompanyOperations,
-                     XBRLIndustryBetasOfOperations)
+                     XBRLIndustryBetasOfOperations,
+                     XBRLDimTime, XBRLDimCompany, XBRLDimAccount, XBRLFactCompany)
 
 # -*- coding: utf-8 -*-
 from cms.admin.placeholderadmin import PlaceholderAdminMixin
@@ -224,3 +225,25 @@ class XBRLYearsCompanyOperationsAdmin(admin.ModelAdmin):
 @admin.register(XBRLIndustryBetasOfOperations)
 class XBRLIndustryBetasOfOperationsAdmin(admin.ModelAdmin):
     list_display = ('id', 'company_year', 'industry')
+
+
+@admin.register(XBRLDimTime)
+class XBRLDimTimeAdmin(admin.ModelAdmin):
+    list_display = ('id', 'year', 'quarter')
+
+
+@admin.register(XBRLDimCompany)
+class XBRLDimCompanyAdmin(admin.ModelAdmin):
+    list_display = ('id', 'company_name')
+
+
+@admin.register(XBRLDimAccount)
+class XBRLDimAccountAdmin(admin.ModelAdmin):
+    list_display = ('order', 'account')
+
+
+@admin.register(XBRLFactCompany)
+class XBRLFactCompanyAdmin(admin.ModelAdmin):
+    list_display = ('id', 'company', 'time', 'account', 'amount')
+    list_filter = ('company', 'time', 'account')
+

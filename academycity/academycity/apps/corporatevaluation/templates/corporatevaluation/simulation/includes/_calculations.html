@@ -122,6 +122,53 @@ function set_wacc()
 }
 </script>
 
+<!-- Cost of Debt -->
+<script>
+function set_cost_of_debt()
+{
+  document.getElementById("cofd_rf").innerHTML = Math.round(100*vObj["rf"]*100)/100;
+  var ve = get_account_value_tq(y=vObj["valuation_year"], account="20800");
+  document.getElementById("cofd_ebit").innerHTML=toCommas(ve);
+  var vi=get_account_value_tq(y=vObj["valuation_year"], account="20850",0);
+
+  document.getElementById("cofd_interest_expense").innerHTML=toCommas(vi)
+  var icr_=ve/vi;if(icr_<=-100000.0){icr_=-1000.0};if(icr_>=100000.0){icr_ = 1000.0}
+  if(vi < 1)
+  {document.getElementById("cofd_interest_coverage").innerHTML = "<span class='tooltip_'>Infinity<span class='tooltiptext'>Check the Interest Expense in the data section</span></span>"
+  } else {document.getElementById("cofd_interest_coverage").innerHTML=Math.round(100*icr_)/100 }
+
+  document.getElementById("cofd_estimated_county_default_spread").innerHTML=vObj["country_default_spread"];
+  if (vObj["interest_coverage_ratio_table"] == 0)
+  {
+    $.post('{% url "corporatevaluation:get_interest_coverage_ratio" %}',
+      {a: "a" },
+      function(data){
+        vObj["interest_coverage_ratio_table"]=data;
+        set_cost_of_debt_(icr_);
+      })
+  } else { set_cost_of_debt_(icr_); }
+}
+</script>
+
+<!-- set_cost_of_debt_ -->
+<script>
+function set_cost_of_debt_(icr_)
+{var icrv = vObj["interest_coverage_ratio_table"];
+  for(key in icrv)
+  {
+     var f=icrv[key]["from_ic"];var t=icrv[key]["to_ic"];
+     if(1*f<1*icr_ && 1*icr_<1*t){var rating=icrv[key]["rating"];var spread = icrv[key]["spread"];break;}
+  }
+    document.getElementById("cofd_estimated_bond_rating").innerHTML=rating;
+    document.getElementById("cofd_estimated_company_default_spread").innerHTML=Math.round(10000*spread)/10000;
+
+    var cofd = 100*vObj["rf"]+1*spread+1*vObj["country_default_spread"]; vObj["cofd"] = cofd;
+    document.getElementById("cofd_estimated_cost_of_debt").innerHTML=Math.round(100*cofd)/100;
+    set_wacc();
+    //alert(icr_ + " --:::::::-- " + f + " " + t + " " + rating + " " + spread)
+}
+</script>
+
 <!-- set cofe -->
 <script>
 function set_cofe()
@@ -155,12 +202,16 @@ function set_cofe()
 function calculate_all()
 {
   try{s="set_cost_of_debt() "; set_cost_of_debt();} catch(er){alert("inside calculate_all(): - error in function "+s)}
-  try{s='set_roic_effective_tax_rate(vObj["valuation_year"], vObj["cd"]) ';set_roic_effective_tax_rate(vObj["valuation_year"], vObj["cd"])
+  try{s='set_roic_effective_tax_rate(vObj["valuation_year"])'; set_roic_effective_tax_rate(vObj["valuation_year"])
   } catch(er){alert("inside calculate_all(): - error in function "+s)}
   try{s="set_cofe() "; set_cofe();} catch(er){alert("inside calculate_all(): - error in function "+s)}
-  document.getElementById("valuation_year_").innerHTML = vObj["valuation_year"];
-  document.getElementById("cf1_ebit").value = get_account_value(y=vObj["valuation_year"], account="20800");
-  try{s="input_dcf() "; input_dcf();} catch(er){alert("inside calculate_all(): - error in function "+s)}
+  var sq="";if(vObj["last_quarter_of_data"]!=-1 && vObj["last_quarter_of_data"]!=0)
+  {
+   sq=":Q"+vObj["last_quarter_of_data"]
+  }
+  document.getElementById("valuation_year_").innerHTML=vObj["valuation_year"]+sq;
+  document.getElementById("cf1_ebit").value = get_account_value_tq(y=vObj["valuation_year"], account="20800");
+  try{s="input_dcf() "; input_dcf();} catch(er){alert("inside calculate_all(): - error in function "+s)}; // in valuation tab
 }
 </script>
 
@@ -443,7 +494,6 @@ get_risk_premium_chart_components = function(x, sp500, tb3ms, tbond, title)
 
 </script>
 
-
 <!--ROIC and taxes-->
 <script>
 function on_change_num_of_estimation_periods(event)
@@ -453,9 +503,14 @@ function on_change_num_of_estimation_periods(event)
  calculate_all()
 }
 
+function get_quarterly_valuation_data()
+{
+
+}
+
 // vObj["roic"]
 // vObj["effective_tax_rate"]
-function set_roic_effective_tax_rate(y, cd)
+function set_roic_effective_tax_rate(y)
 {
     // --- Roic -----
     // --------------
@@ -476,19 +531,19 @@ function set_roic_effective_tax_rate(y, cd)
 
     for( yy = nn_; yy <=valuation_year_; yy++)
     {
-     var v_ebit = get_account_value(y=yy, account="20800");
-     var v_income_taxes = get_account_value(y=yy, account="20970");
-     var v_lt_debt = get_account_value(y=yy, account="14990");
-     var v_stockholders_equity = get_account_value(y=yy, account="15990");
-     v_ebit_net = v_ebit - v_income_taxes;
-     noiat += v_ebit_net; nltd += v_lt_debt; nshe += v_stockholders_equity;
-     nta_ = 1*v_stockholders_equity+1*v_lt_debt;
+     var v_ebit=get_account_value(y=yy, account="20800");
+     var v_income_taxes=get_account_value(y=yy, account="20970");
+     var v_lt_debt=get_account_value(y=yy, account="14990");
+     var v_stockholders_equity=get_account_value(y=yy, account="15990");
+     v_ebit_net=v_ebit-v_income_taxes;
+     noiat+=v_ebit_net; nltd += v_lt_debt; nshe += v_stockholders_equity;
+     nta_=1*v_stockholders_equity+1*v_lt_debt;
      nta += nta_;
      year += "<th>" + yy + "</th>";
-     oiat += "<td style='text-align:right'>" + v_ebit_net + "</td>";
-     ltd += "<td style='text-align:right'>" + v_lt_debt + "</td>";
-     she += "<td style='text-align:right'><u>" + v_stockholders_equity + "</u></td>";
-     ta += "<td style='text-align:right'><u>" + nta_ + "</u></td>";
+     oiat += "<td style='text-align:right'>" + Math.round(10000*v_ebit_net)/100 + "</td>";
+     ltd += "<td style='text-align:right'>" + Math.round(10000*v_lt_debt)/100 + "</td>";
+     she += "<td style='text-align:right'><u>" + Math.round(10000*v_stockholders_equity)/100 + "</u></td>";
+     ta += "<td style='text-align:right'><u>" + Math.round(10000*nta_)/100 + "</u></td>";
     }
     var roic_st = Math.round(10000*noiat/nta)/100;
     vObj["roic_st"] = roic_st;
@@ -520,6 +575,8 @@ function set_roic_effective_tax_rate(y, cd)
      ibt += "<td style='text-align:right'>" + toCommas(income_before_tax.toString()) + "</td>";
     }
     year += "<th>Total</th></tr>";
+    nit = Math.round(10000*nit)/100;
+    nibt = Math.round(10000*nibt)/100;
     it += "<td style='text-align:right'>"+toCommas(nit.toString())+"</td></tr>";
     ibt += "<td style='text-align:right'>"+toCommas(nibt.toString())+"</td></tr>";
     var effective_tax_rate = Math.round(10000*nit/nibt)/100;
@@ -530,55 +587,3 @@ function set_roic_effective_tax_rate(y, cd)
 }
 </script>
 
-<!-- Cost of Debt -->
-<script>
-function set_cost_of_debt()
-{
-  document.getElementById("cofd_rf").innerHTML = Math.round(100*vObj["rf"]*100)/100;
-  var ve = get_account_value(y=vObj["valuation_year"], account="20800");
-  document.getElementById("cofd_ebit").innerHTML=toCommas(ve);
-  var vi = get_account_value(y=vObj["valuation_year"], account="20850");
-  document.getElementById("cofd_interest_expense").innerHTML=toCommas(vi)
-  icr_ = ve/vi; if(icr_ <= -100000.0){icr = -1000.0}; if(icr_ >= 100000.0){icr = 1000.0}
-  if(vi < 1)
-  {document.getElementById("cofd_interest_coverage").innerHTML = "<span class='tooltip_'>Infinity<span class='tooltiptext'>Check the Interest Expense in the data section</span></span>"
-  } else {document.getElementById("cofd_interest_coverage").innerHTML=Math.round(100*icr_)/100 }
-
-  document.getElementById("cofd_estimated_county_default_spread").innerHTML=vObj["country_default_spread"];
-  if (vObj["interest_coverage_ratio_table"] == 0)
-  {
-    $.post('{% url "corporatevaluation:get_interest_coverage_ratio" %}',
-      { },
-      function(data){
-        vObj["interest_coverage_ratio_table"] = data;
-        set_cost_of_debt_();
-      })
-  } else { set_cost_of_debt_(); }
-}
-</script>
-
-<!-- set_cost_of_debt_ -->
-<script>
-function set_cost_of_debt_()
-{
-  for(key in vObj["interest_coverage_ratio_table"])
-  {
-     var f = vObj["interest_coverage_ratio_table"][key]["from_ic"];
-     var t = vObj["interest_coverage_ratio_table"][key]["to_ic"];
-     //alert(icr_ + " " + f + " " + t )
-     if(1*f < 1*icr_ && 1*icr_ < 1*t)
-     {
-       var rating = vObj["interest_coverage_ratio_table"][key]["rating"];
-       var spread = vObj["interest_coverage_ratio_table"][key]["spread"];
-       break;
-     }
-  }
-    document.getElementById("cofd_estimated_bond_rating").innerHTML=rating;
-    document.getElementById("cofd_estimated_company_default_spread").innerHTML=Math.round(10000*spread)/10000;
-
-    cofd = 100*vObj["rf"]+1*spread+1*vObj["country_default_spread"]; vObj["cofd"] = cofd;
-    document.getElementById("cofd_estimated_cost_of_debt").innerHTML=Math.round(100*cofd)/100;
-    set_wacc();
-    //alert(icr_ + " --:::::::-- " + f + " " + t + " " + rating + " " + spread)
-}
-</script>

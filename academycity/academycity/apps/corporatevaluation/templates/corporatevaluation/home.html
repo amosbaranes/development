@@ -151,6 +151,7 @@ data {
           {% include 'corporatevaluation/simulation/includes/_data.html' %}
           {% include 'corporatevaluation/simulation/includes/_fsa.html' %}
           {% include 'corporatevaluation/simulation/includes/_xbrl_data.html' %}
+          {% include 'corporatevaluation/simulation/includes/_q_data.html' %}
           {% include 'corporatevaluation/simulation/includes/_sec.html' %}
           {% include 'corporatevaluation/simulation/includes/_calculations.html' %}
           {% include 'corporatevaluation/simulation/includes/_valuation.html' %}
@@ -186,7 +187,7 @@ data {
 <!-- home -->
 
 <span id="tabs_"
-tabs_s="xbrl_data:{% trans "XBRL Data" %};local,data:{% trans "Data" %};local,comparablecompanies:{% trans "Comparable Companies" %};local,calculations:{% trans "Schedules" %};local,fsa:{% trans "FSA" %};local,valuation:{% trans "Valuation" %};local,inputs:{% trans "Inputs" %};local"
+tabs_s="xbrl_data:{% trans "A. Data" %};local,q_data:{% trans "Q. Data" %};local,comparablecompanies:{% trans "Comparable Companies" %};local,valuation:{% trans "Valuation" %};local,calculations:{% trans "Schedules" %};local,fsa:{% trans "FSA" %};local,inputs:{% trans "Inputs" %};local"
 tabs_m="valuationsetup:{% trans "Setup" %};pull_screen,valuationadmin:{% trans "Admin" %};pull_screen,valuationmethodology:{% trans "Methodology" %};pull_screen,valuationtodo:{% trans "To Do" %};pull_screen,sec:{% trans "SEC" %};local"
 tabs_options = "sp_forecast_actual:{% trans "S&P500" %};local"
 accounts_structure="{'11990': {'star_other': [11100, 11800], 'total':0}, '12990': {'star_other': [12500, 12900], 'total':0}, '13990': {'star_other': [13100, 13200], 'total':0},'14990': {'star_other': [14100, 14200], 'total':0},'15390': {'star_other': [15000, 15350], 'total':0}}"
@@ -195,11 +196,13 @@ accounting_equality="
          '12999': {'1': {'account': '14999', 'data': 0}, '2': {'account': '15990', 'data': 0}, '3': {'account': '12999', 'data': 0}},
          '14999': {'1': {'account': '13990', 'data': 0}, '2': {'account': '14990', 'data': 0}, '3': {'account': '14999', 'data': 0}},
          '012999': {'1': {'account': '14999', 'data': 0}, '2': {'account': '15990', 'data': 0}, '3': {'account': '12999', 'data': 0}},
-         '15990': {'1': {'account': '15390', 'data': 0}, '2': {'account': '15400', 'data': 0}, '3': {'account': '15990', 'data': 0}},
+         '014999': {'1': {'account': '13990', 'data': 0}, '2': {'account': '14990', 'data': 0}, '3': {'account': '14999', 'data': 0}},
+        '0012998': {'1': {'account': '11990', 'data': 0}, '2': {'account': '12990', 'data': 0}, '3': {'account': '12999', 'data': 0}},
+        '15990': {'1': {'account': '15390', 'data': 0}, '2': {'account': '15400', 'data': 0}, '3': {'account': '15990', 'data': 0}},
          '20100': {'1': {'account': '20200', 'data': 0}, '2': {'account': '20300', 'data': 0}, '3': {'account': '20100', 'data': 0}},
          '20101': {'1': {'account': '20700', 'data': 0}, '2': {'account': '20800', 'data': 0}, '3': {'account': '20300', 'data': 0}},
+         '20102': {'1': {'account': '30030', 'data': 0}, '2': {'account': '30040', 'data': 0}, '3': {'account': '20999', 'data': 0}},
          '20800': {'1': {'account': '20850', 'data': 0}, '2': {'account': '20900', 'data': 0}, '3': {'account': '20800', 'data': 0}}}"
-         '20102': {'1': {'account': '20700', 'data': 0}, '2': {'account': '20800', 'data': 0}, '3': {'account': '20300', 'data': 0}},
 
 user_id = "{{request.user.id}}"
 ></span>
@@ -208,6 +211,64 @@ user_id = "{{request.user.id}}"
 <div id="log_info"></div>
 
 <!-- corporate valuation -->
+
+<!-- two_decimal_points -->
+<!-- get_filling_year(y) -->
+<!-- get_data_for_reporting_year(y) -->
+<!-- get_account_value_from_data(data,account) -->
+<script>
+function removeCommas(value) {return value.replace(/,/g, '')}
+
+function toCommas(value) {value_=value;try{value_=value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");} catch(er){};return value_;}
+
+function get_account_comma_value(y="2020",account="0",q="")
+{var n=get_account_value(y=y,account=account,q=q);if(isNaN(n)){n=""} else {n=toCommas(""+n)};return n}
+
+function two_decimal_points(n)
+{n=n+""; n_=n.indexOf("."); if (n_==-1){var s=n+".00"} else{n=n.split(".");if(n[1].length==1){n[1]+="0"} else if (n[1].length==0){n[1]+="00"}; var s=n[0]+"."+n[1] };return s;}
+
+function get_account_properties(account_order)
+{var xs=vObj["xbrl_statements"];for(let key in xs){for(k in xs[key]['accounts']){if(account_order==k){return xs[key]['accounts'][k]}}}}
+
+function get_data_for_reporting_year(y)
+{var cd=vObj["xbrl_data"];var y_data=-1;for(let z in cd){try{if(cd[z]['dei']['documentfiscalyearfocus']==y.toString()){y_data=cd[z];break}} catch (er){}};return y_data;}
+
+function get_data_for_reporting_quarter(y, q)
+{var cd=vObj["xbrl_dataq"];var y_data=-1;for(var y_ in cd){var zzn=0;for(var q_ in cd[y_]){try{if (cd[y_][q_]['dei']['documentfiscalyearfocus']==""+y && cd[y_][q_]['dei']['documentfiscalperiodfocus']=='Q'+q){y_data=cd[y_][q_];zzn+=1;break}}catch(er){}};if(zzn==1){break}};return y_data}
+
+function get_filling_year(y)
+{v=-1;var cd=vObj["xbrl_data"];for(let z in cd){try {if (cd[z]['dei']['documentfiscalyearfocus']==y.toString()){v=z;break;}} catch (er) {v=-1;}};return v;}
+
+function get_filling_year_q(y, q)
+{var cd=vObj["xbrl_dataq"];
+var y_data=-1;filling_year=-1;
+for(var y_ in cd){var zzn=0;
+for(var q_ in cd[y_])
+{
+try{
+if(cd[y_][q_]['dei']['documentfiscalyearfocus']==""+y && cd[y_][q_]['dei']['documentfiscalperiodfocus']=='Q'+q)
+{y_data=cd[y_][q_];filling_year=q_;zzn+=1;break}
+} catch(er){}
+};if(zzn==1){break}};
+
+return [y_data,filling_year]}
+
+function get_account_value_from_data(data,account,nn_)
+{if(data!=-1){var nn=data['year_data'][account];if(!isNaN(nn)){return Number(nn)}};return nn_}
+
+function get_account_value(y="2020",account="0",q="")
+{if(q==""){var d=get_data_for_reporting_year(y)} else {var d=get_data_for_reporting_quarter(y, q);};var n=get_account_value_from_data(d,account,0);return Math.round(100*n)/100}
+
+function get_reporting_years()
+{var from_year=2012;var to_year=new Date().getFullYear();var cd=vObj["xbrl_data"];var ys="";var zn=0;var zz="";for(let z in cd){try{z_=cd[z]['dei']['documentfiscalyearfocus'];if(zn!=0){zz=", "};ys+=zz+z_;zn+=1} catch(err){}};eval('z_max=Math.max('+ys+')');eval('z_min=Math.min('+ys+')');from_year=Math.max(z_min,from_year);to_year=z_max+1;return [from_year, to_year];}
+
+function get_reporting_years_q()
+{var cd = vObj["xbrl_dataq"];if(Object.keys(cd).length==0){return -1};var from_year=2012;var to_year=new Date().getFullYear();ys="";zn=0;zz="";for(let y in cd){for(let z in cd[y]){try {z_=cd[y][z]['dei']['documentfiscalyearfocus'];if(zn!=0){zz=", "};ys+=zz+z_;zn+=1;} catch (err){}}};eval('z_max=Math.max('+ys+')');eval('z_min=Math.min('+ys+')');from_year=Math.max(z_min,from_year);to_year=z_max+1;return [from_year, to_year];}
+
+// need to fix it to pull balance sheet accounts
+function get_account_value_tq(y=2020, account="20800"){var lq=1*vObj["last_quarter_of_data"];var ly=1*vObj["last_year_of_data"];if(lq==-1){return -1;} else {var v=get_account_value(y=y,account=account,q="");if(lq!=-1){for(q=1;q<=lq;q++){var vq=1*get_account_value(y=ly+1,account=account,q=q);var vq1=1*get_account_value(y=ly,account=account,q=q);v+=vq-vq1}}};return Math.round(100*v)/100}
+</script>
+
 <!-- PARAMETERS IN vObj -->
 <script>
 
@@ -224,20 +285,26 @@ vObj["marginal_tax_rate"] = 0;
 vObj["effective_tax_rate"] = 0;
 //
 vObj["valuation_actual_sic_code"] = -1
+vObj["sic_code"] = -1
 // --
 vObj["sec_company_data"] = {}
 vObj["company_info"] = {};
 vObj["xbrl_data"] = {};
+vObj["xbrl_dataq"] = {};
 vObj["xbrl_statements"] = {};
 // --
 vObj['entitycommonstocksharesoutstanding'] = -1;
 // --
-vObj["options_delta"] = {};
+vObj["options_delta"] = {}; vObj["options_bf"] = {};
 vObj["filing_year"] = 0;
 vObj["reporting_year"] = 0;
+vObj["reporting_q"] = 0;
+vObj["last_r"] = 0 ;
+vObj["r_link"] = 0 ;
 vObj["select_accounts_type"] = "-1";
 vObj["select_accounts"] = "";
 vObj["is_update"] = "no";
+vObj["is_updateq"] = "no";
 // --
 vObj["risk_premium_downloaded"] = 0
 // vObj["earning_forecast_sp500_view_downloaded"] = 0
@@ -249,6 +316,9 @@ vObj["user_id"] = "-1"
 // --
 vObj["short_number_of_years"] = 5;
 // --
+vObj["last_year_of_data"] = -1;
+vObj["last_quarter_of_data"] = -1;
+//--
 
 set_framework()
 
@@ -509,7 +579,6 @@ SimManager.prototype.setTabs = function() {
       ss = tans_all[property]; ss_ = ss.split(":"); ss__ = ss_[1].split(";")
       tabs[ss_[0]] = [ss__[0], ss__[1]]
     }
-
     var tabs_options = {};
     for (var property in tabs_options_all) {
       ss = tabs_options_all[property]; ss_ = ss.split(":"); ss__ = ss_[1].split(";")

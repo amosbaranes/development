@@ -9,19 +9,12 @@
   {% trans "Range" %}: <input id="simulation_range" type="text" value="0.1" style="width:45px"/>
   {% trans "Skew" %}: <input id="simulation_skew" type="text" value="1" style="width:45px"/>
   {% trans "# Randomization" %}: <input id="simulation_number_of_randomization" type="text" value="100000" style="width:70px"/>
-  <div id="simulation_chart_all"></div>
+  <div id="simulation_chart_all" style="height:400px; width:900px"></div>
   <table>
       <tr>
-          <td style="text-align:center">
-              <span class="cursor badge badge-pill badge-info"
-                    onclick="simulate('wacc')" >WACC</span>
-          </td>
-          <td style="text-align:center">
-              <span class="cursor badge badge-pill badge-info"
-                    onclick="simulate('stgrowth')">{% trans "Short Term Growth" %}</span></td>
-          <td style="text-align:center">
-              <span class="cursor badge badge-pill badge-info"
-                    onclick="simulate('ltgrowth')">{% trans "Long Term Growth" %}</span></td>
+          <td style="text-align:center"><span class="cursor badge badge-pill badge-info" onclick="simulate('wacc')" >WACC</span></td>
+          <td style="text-align:center"><span class="cursor badge badge-pill badge-info" onclick="simulate('stgrowth')">{% trans "Short Term Growth" %}</span></td>
+          <td style="text-align:center"><span class="cursor badge badge-pill badge-info" onclick="simulate('ltgrowth')">{% trans "Long Term Growth" %}</span></td>
       </tr>
       <tr>
           <td><div id="simulation_chart_wacc" style="height:300px; width:300px"></div></td>
@@ -29,15 +22,9 @@
           <td><div id="simulation_chart_ltgrowth" style="height:300px; width:300px"></div></td>
       </tr>
       <tr>
-          <td style="text-align:center">
-              <span class="cursor badge badge-pill badge-info"
-                    onclick="simulate('ebit')">EBIT</span></td>
-          <td style="text-align:center">
-              <span class="cursor badge badge-pill badge-info"
-                    onclick="simulate('mtr')">{% trans "Marginal tax rate" %}</span></td>
-          <td style="text-align:center">
-              <span class="cursor badge badge-pill badge-info"
-                    onclick="simulate('etr')">{% trans "Effective tax rate" %}</span></td>
+          <td style="text-align:center"><span class="cursor badge badge-pill badge-info" onclick="simulate('ebit')">EBIT</span></td>
+          <td style="text-align:center"><span class="cursor badge badge-pill badge-info" onclick="simulate('mtr')">{% trans "Marginal tax rate" %}</span></td>
+          <td style="text-align:center"><span class="cursor badge badge-pill badge-info" onclick="simulate('etr')">{% trans "Effective tax rate" %}</span></td>
       </tr>
       <tr>
           <td><div id="simulation_chart_ebit" style="height:300px; width:300px"></div></td>
@@ -102,7 +89,7 @@ function get_iv(sObj)
       sObj["pv"] += tv_
     }
  }
- iv_per_share = Math.round(100*1000000*(sObj["pv"] -sObj["ltd"]-sObj["mi"]-sObj["ps"]+ sObj["ec"] )/sObj["ns"])/100
+ iv_per_share = Math.round(100*(sObj["pv"] -sObj["ltd"]-sObj["mi"]-sObj["ps"]+ sObj["ec"] )/sObj["ns"])/100
  return iv_per_share
 }
 
@@ -112,22 +99,22 @@ function getObj()
  Obj = new Object();
  // ---
  Obj["ebit"] = 1*removeCommas(document.getElementById("cf1_ebit").value) ;
- Obj["stgrowth"] = document.getElementById("stgrowth_").value/100
- Obj["ltgrowth"] = document.getElementById("ltgrowth_").value/100
- Obj["wacc"] = document.getElementById("wacc_").value/100
- Obj["mtr"] = document.getElementById("marginal_tax_rate_").value/100
- Obj["rir_lt"] = document.getElementById("re_investment_rate_long_term_").value/100
+ Obj["stgrowth"] = document.getElementById("stgrowth_").value/100;
+ Obj["ltgrowth"] = document.getElementById("ltgrowth_").value/100;
+ Obj["wacc"] = document.getElementById("wacc_").value/100;
+ Obj["mtr"] = document.getElementById("marginal_tax_rate_").value/100;
+ Obj["rir_lt"] = document.getElementById("re_investment_rate_long_term_").value/100;
  // ---
- Obj["etr"] = document.getElementById("effective_tax_rate_").value/100
- Obj["rir_st"] = document.getElementById("re_investment_rate_short_term_").value/100
+ Obj["etr"] = document.getElementById("effective_tax_rate_").value/100;
+ Obj["rir_st"] = document.getElementById("re_investment_rate_short_term_").value/100;
  //
- Obj["ltd"] = 1*removeCommas(document.getElementById("debt_sum").innerHTML)
- Obj["mi"] = 1*removeCommas(document.getElementById("minority_sum").innerHTML)
- Obj["ps"] = 1*removeCommas(document.getElementById("prefered_stock_sum").innerHTML)
- Obj["ec"] = 1*removeCommas(document.getElementById("excess_cash_sum").innerHTML)
- Obj["ns"] = 1*removeCommas(document.getElementById('number_of_shares_'+vObj["valuation_year"]).value)
+ Obj["ltd"] = 1*removeCommas(document.getElementById("debt_sum").innerHTML);
+ Obj["mi"] = 1*removeCommas(document.getElementById("minority_sum").innerHTML);
+ Obj["ps"] = 1*removeCommas(document.getElementById("prefered_stock_sum").innerHTML);
+ Obj["ec"] = 1*removeCommas(document.getElementById("excess_cash_sum").innerHTML);
+ Obj["ns"] = 1*removeCommas(document.getElementById('num_of_shares_sum').innerHTML);
  //
- return Obj
+ return Obj;
 }
 
 function simulate(param)
@@ -136,16 +123,15 @@ function simulate(param)
  range = 1*document.getElementById("simulation_range").value
  skew = 1*document.getElementById("simulation_skew").value
  number_of_randomization = 1*document.getElementById("simulation_number_of_randomization").value
- //
+ // --
  var pps = [];
  for (i = 1; i <= number_of_randomization; i++)
  {
   sObj = randomize(Obj, range, skew, param)
   sObj["short_number_of_years"] = vObj["short_number_of_years"]
-  //
   pps[i] = get_iv(sObj)
  }
- //
+ // --
  var trace = {
      x: pps,
      type: 'histogram',

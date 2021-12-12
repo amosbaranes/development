@@ -35,7 +35,8 @@ from .models import (XBRLMainIndustryInfo, XBRLIndustryInfo, XBRLCompanyInfoInPr
                      XBRLValuationAccountsMatch,
                      XBRLRegion, XBRLCountry, XBRLCountryYearData,
                      XBRLHistoricalReturnsSP, XBRLSPMoodys, Project,
-                     XBRLRegion, XBRLSPEarningForecast, XBRLSPStatistics)
+                     XBRLRegion, XBRLRegionYearData, XBRLSPEarningForecast, XBRLSPStatistics,
+                     XBRLDimTime, XBRLDimCompany, XBRLDimAccount, XBRLFactCompany)
 
 
 # cik = '0000051143'
@@ -101,7 +102,7 @@ class TDAmeriTrade(object):
 
     def update_options_statistics(self):
         log_debug("Start update_options_statistics: " + datetime.datetime.now().strftime("%H:%M:%S"))
-        # print("Start update_options_statistics: " + datetime.datetime.now().strftime("%H:%M:%S"))
+        print("Start update_options_statistics: " + datetime.datetime.now().strftime("%H:%M:%S"))
         start_date_ = datetime.datetime.now().date()
         end_date_ = (datetime.datetime.now() + datetime.timedelta(days=6)).date()
         # print(s.company.ticker, start_date_, end_date_)
@@ -117,7 +118,7 @@ class TDAmeriTrade(object):
                 if dic['status'] == "ok":
                     try:
                         s.straddle_price = dic['straddle_price']
-                        s.butterfly_price = dic['butterfly_c']
+                        s.butterfly_price = dic['llc'][1]
                         s.save()
                         # log_debug("options DATA saved for: " + s.company.ticker)
                     except Exception as ex:
@@ -130,12 +131,13 @@ class TDAmeriTrade(object):
                 # print("error 202 save update_options_statistics: " + str(ex))
                 # log_debug("Error 202 getting data 202 td: : " + str(ex) + " " + s.company.ticker)
                 pass
+        # print('end options')
         log_debug("End update_options_statistics: " + datetime.datetime.now().strftime("%H:%M:%S"))
         return {'status': 'ok'}
 
     def get_option_chain_new(self, ticker=None, start_date=None, end_date=None):
-        # print("-1"*50)
-        # print("start td.get_option_chain for " + ticker)
+        print("-1"*50)
+        print("start td.get_option_chain for " + ticker)
         dic = {'status': 'ko'}
         try:
             options_ = self.client.get_option_chain(ticker, contract_type=self.client.Options.ContractType.ALL,
@@ -194,9 +196,23 @@ class TDAmeriTrade(object):
         # log_debug("End get_option_chain: " + ticker)
         return dic
 
+    def get_butterfly_price(self, strike_num, strikes, llc, llp):
+        p0 = llc['calls']['date']['strikes'][strikes[strike_num]]
+        pl = llc['calls']['date']['strikes'][strikes[strike_num-1]]
+        pr = llc['calls']['date']['strikes'][strikes[strike_num+1]]
+        bfc = round(100*(-2*p0 + pl + pr))/100
+        p0 = llp['puts']['date']['strikes'][strikes[strike_num]]
+        pl = llp['puts']['date']['strikes'][strikes[strike_num-1]]
+        pr = llp['puts']['date']['strikes'][strikes[strike_num+1]]
+        bfp = round(100*(-2*p0 + pl + pr))/100
+        return bfc, bfp
+
     def get_option_chain(self, ticker=None, start_date=None, end_date=None):
-        # print("-1"*50)
-        # print("start td.get_option_chain for " + ticker)
+        print("-1"*50)
+        print("start td.get_option_chain for " + ticker)
+        if not start_date:
+            start_date = datetime.datetime.now().date()
+            end_date = (datetime.datetime.now() + datetime.timedelta(days=6)).date()
         dic = {'status': 'ko'}
         # log_debug("in get_option_chain api options pull for : " + ticker)
         try:
@@ -209,38 +225,93 @@ class TDAmeriTrade(object):
         # print('------options_----')
         # print(json.dumps(options_.json(), indent=4))
         # print('-----')
-
-        llp = []
         try:
-            for d in options_.json()['putExpDateMap']:
-                for p in options_.json()['putExpDateMap'][d]:
-                    p_ = options_.json()['putExpDateMap'][d][p][0]
+            llp = {'puts': {}}
+            for d_ in options_.json()['putExpDateMap']:
+                d = d_.split(":")[0]
+                llp['puts']['date'] = {'date': d}
+                llp['puts']['date']['strikes'] = {}
+                for p in options_.json()['putExpDateMap'][d_]:
+                    p_ = options_.json()['putExpDateMap'][d_][p][0]
                     p_p = (p_['bid'] + p_['ask'])/2
-                    # print(d, p, p_p, p_['bid'], p_['ask'])
-                    llp.append(p_p)
+                    llp['puts']['date']['strikes'][p] = round(100*p_p)/100
         except Exception as ex:
+            print("puts: " + str(ex))
             return dic
 
-        llc = []
         try:
-            for d in options_.json()['callExpDateMap']:
-                for c in options_.json()['callExpDateMap'][d]:
-                    c_ = options_.json()['callExpDateMap'][d][c][0]
+            llc = {'calls': {}}
+            for d_ in options_.json()['callExpDateMap']:
+                d = d_.split(":")[0]
+                llc['calls']['date'] = {'date': d}
+                llc['calls']['date']['strikes'] = {}
+                for c in options_.json()['callExpDateMap'][d_]:
+                    c_ = options_.json()['callExpDateMap'][d_][c][0]
                     c_p = (c_['bid'] + c_['ask'])/2
                     # print(d, c, c_p, c_['bid'], c_['ask'])
-                    llc.append(c_p)
+                    llc['calls']['date']['strikes'][c] = round(100*c_p)/100
         except Exception as ex:
+            print("calls: " + str(ex))
             return dic
-        straddle_price = round(100*(llp[2] + llc[2]))/100
-        butterfly_c = round(100*(-2*llc[2] + llc[1] + llc[3]))/100
-        butterfly_p = round(100*(-2*llp[2] + llp[1] + llp[3]))/100
-        dic = {'status': 'ok', 'straddle_price': straddle_price, "butterfly_c": butterfly_c, "butterfly_p": butterfly_p,
-               'llc': llc, 'llp': llp}
+        strikes = []
+        for k in llp['puts']['date']['strikes']:
+            if k not in strikes:
+                strikes.append(k)
+        straddle_price = round(100*(llp['puts']['date']['strikes'][strikes[2]] +
+                                    llc['calls']['date']['strikes'][strikes[2]]))/100
+        bfcl, bfpl = self.get_butterfly_price(strike_num=1, strikes=strikes, llc=llc, llp=llp)
+        bfc0, bfp0 = self.get_butterfly_price(strike_num=2, strikes=strikes, llc=llc, llp=llp)
+        bfcr, bfpr = self.get_butterfly_price(strike_num=3, strikes=strikes, llc=llc, llp=llp)
+        llc_ = [bfcl, bfc0, bfcr]
+        llp_ = [bfpl, bfp0, bfpr]
+        #
+        price_data = self.get_quote(ticker)['data'][ticker]
+        # print(price_data)
+        share_price = (price_data['bidPrice'] + price_data['askPrice'])/2
+        # print(price_data['bidPrice'], price_data['askPrice'], price)
+
+        # self.get_quote(ticker="GOOG"):
+        dic = {'status': 'ok', 'share_price': share_price, 'straddle_price': straddle_price, 'strikes': strikes, "llc_": llc_, "llp_": llp_, 'llc': llc, 'llp': llp}
         # log_debug("End get_option_chain: " + ticker)
+        # print(dic)
         return dic
 
-    def get_option_statistics_for_ticker(self, ticker):
+    def get_option_strategy_lh_(self, options_, dic, option_type, l_=0.1, h_=0.9, ticker=""):
+        # print(option_type)
+        # print(ticker)
+        # print(dic)
+        try:
+            for d in options_.json()[option_type+'ExpDateMap']:
+                if 'date' not in dic:
+                    dic['date'] = str(d).split(":")[0]
+                    dic['tickers'] = {}
+                elif dic['date'] != str(d).split(":")[0]:
+                    dic['ticker'] = ticker
+                    dic['underlyingPrice'] = options_.json()['underlyingPrice']
+                    dic['date'] = str(d).split(":")[0]
+                    dic['tickers'] = {}
+                for t in options_.json()[option_type+'ExpDateMap'][d]:
+                    # print(t)
+                    # print(options_.json()[option_type+'ExpDateMap'][d][t][0]['delta'])
+                    if options_.json()[option_type+'ExpDateMap'][d][t][0]['delta'] != "NaN":
+                        if l_ < abs(options_.json()[option_type+'ExpDateMap'][d][t][0]['delta']) < h_:
+                            if t not in dic['tickers']:
+                                dic['tickers'][t] = {}
+                            dic['tickers'][t][option_type] = {}
+                            dic['tickers'][t][option_type]['price'] = round(100*(options_.json()[option_type+'ExpDateMap'][d][t][0]['bid'] + options_.json()[option_type+'ExpDateMap'][d][t][0]['ask'])/2)/100
+                            dic['tickers'][t][option_type]['delta'] = round(100*options_.json()[option_type+'ExpDateMap'][d][t][0]['delta'])/100
+                            dic['tickers'][t][option_type]['theta'] = round(100*options_.json()[option_type+'ExpDateMap'][d][t][0]['theta'])/100
+                            # print(options_.json()[option_type+'ExpDateMap'][d][t][0])
+        except Exception as ex:
+            log_debug("Error 201 in get_option_chain api options pull for : " + ticker + " = " + str(ex))
+            # print("Error 201 in get_option_chain api options pull for : " + ticker + " = " + str(ex))
+        # print("in get_option_statistics_for_ticker 211 : for options: " + option_type)
+        return dic
+
+    def get_option_strategy_lh(self, ticker):
         dic = {'status': 'ko'}
+        # ticker = "^SPX"  #
+        # ticker = "^GSPC"
         log_debug("in get_option_statistics_for_ticker : " + ticker)
         # print("in get_option_statistics_for_ticker 1 : " + ticker)
         try:
@@ -253,60 +324,37 @@ class TDAmeriTrade(object):
             return dic
 
         # print("in get_option_statistics_for_ticker 2 : " + ticker)
-        # print(dic)
+        # print(options_)
 
-        try:
-            dic = {'ticker': ticker, 'underlyingPrice': options_.json()['underlyingPrice']}
-            # print(options_.json())
-            for d in options_.json()['callExpDateMap']:
-                dic['date'] = str(d).split(":")[0]
-                dic['tickers'] = {}
-                for t in options_.json()['callExpDateMap'][d]:
-                    # print(t)
-                    # print(options_.json()['callExpDateMap'][d][t][0]['delta'])
-                    if options_.json()['callExpDateMap'][d][t][0]['delta'] != "NaN":
-                        if 0.1 < abs(options_.json()['callExpDateMap'][d][t][0]['delta']) < 0.9:
-                            dic['tickers'][t] = {}
-                            dic['tickers'][t]['call'] = {}
-                            dic['tickers'][t]['call']['price'] = round(100*(options_.json()['callExpDateMap'][d][t][0]['bid'] + options_.json()['callExpDateMap'][d][t][0]['ask'])/2)/100
-                            dic['tickers'][t]['call']['delta'] = round(100*options_.json()['callExpDateMap'][d][t][0]['delta'])/100
-                            dic['tickers'][t]['call']['theta'] = round(100*options_.json()['callExpDateMap'][d][t][0]['theta'])/100
-                            # print(options_.json()['callExpDateMap'][d][t][0])
-        except Exception as ex:
-            log_debug("Error 201 in get_option_chain api options pull for : " + ticker + " = " + str(ex))
-
-        # print("in get_option_statistics_for_ticker 211 : " + ticker)
-
-        try:
-            # print("in get_option_statistics_for_ticker 221 : " + ticker)
-            # print(dic)
-
-            for d in options_.json()['putExpDateMap']:
-                if dic['date'] != str(d).split(":")[0]:
-                    dic['ticker'] = ticker
-                    dic['underlyingPrice'] = options_.json()['underlyingPrice']
-                    dic['date'] = str(d).split(":")[0]
-                    dic['tickers'] = {}
-                for t in options_.json()['putExpDateMap'][d]:
-                    # print(t)
-                    # print(options_.json()['putExpDateMap'][d][t][0]['delta'])
-                    if options_.json()['putExpDateMap'][d][t][0]['delta'] != "NaN":
-                        if 0 < abs(options_.json()['putExpDateMap'][d][t][0]['delta']) < 1:
-                            if t not in dic['tickers']:
-                                dic['tickers'][t] = {}
-                            dic['tickers'][t]['put'] = {}
-                            dic['tickers'][t]['put']['price'] = round(100*(options_.json()['putExpDateMap'][d][t][0]['bid'] + options_.json()['putExpDateMap'][d][t][0]['ask'])/2)/100
-                            dic['tickers'][t]['put']['delta'] = round(100*options_.json()['putExpDateMap'][d][t][0]['delta'])/100
-                            dic['tickers'][t]['put']['theta'] = round(100*options_.json()['putExpDateMap'][d][t][0]['theta'])/100
-                            # print(options_.json()['callExpDateMap'][d][t][0])
-
-        except Exception as ex:
-            log_debug("Error 301 in get_option_chain api options pull for : " + ticker + " = " + str(ex))
-
-        # print("in get_option_statistics_for_ticker 4 : " + ticker)
-
+        dic = {'ticker': ticker, 'underlyingPrice': options_.json()['underlyingPrice']}
+        dic = self.get_option_strategy_lh_(options_=options_, dic=dic, option_type='call', l_=0.1, h_=0.9)
+        dic = self.get_option_strategy_lh_(options_=options_, dic=dic, option_type='put', l_=0.1, h_=0.9)
         dic = {'status': 'ok', 'option_data_ticker': dic}
-        # print(dic)
+        log_debug("End in get_option_statistics_for_ticker : " + ticker)
+
+    def get_option_statistics_for_ticker(self, ticker):
+        dic = {'status': 'ko'}
+        # ticker = "^SPX"  #
+        # ticker = "^GSPC"
+        log_debug("in get_option_statistics_for_ticker : " + ticker)
+        # print("in get_option_statistics_for_ticker 1 : " + ticker)
+        try:
+            start_date_ = datetime.datetime.now().date()
+            end_date_ = (datetime.datetime.now() + datetime.timedelta(days=6)).date()
+            options_ = self.client.get_option_chain(ticker, contract_type=self.client.Options.ContractType.ALL,
+                                                    from_date=start_date_, to_date=end_date_)
+        except Exception as ex:
+            log_debug("Error in get_option_chain api options pull for : " + ticker + " = " + str(ex))
+            return dic
+
+        print("in get_option_statistics_for_ticker 2 : " + ticker)
+        # print(options_)
+
+        dic = {'ticker': ticker, 'underlyingPrice': options_.json()['underlyingPrice']}
+        dic = self.get_option_strategy_lh_(options_=options_, dic=dic, option_type='call', l_=0.1, h_=0.9, ticker=ticker)
+        dic = self.get_option_strategy_lh_(options_=options_, dic=dic, option_type='put', l_=0.1, h_=0.9, ticker=ticker)
+        dic = {'status': 'ok', 'option_data_ticker': dic}
+        print(dic)
         log_debug("End in get_option_statistics_for_ticker : " + ticker)
         return dic
 
@@ -323,19 +371,25 @@ class TDAmeriTrade(object):
         log_debug("End get_prices.")
         return dic
 
-    def get_quote(self, ticker):
+    def get_quote(self, ticker="GOOG"):
         url = r"https://api.tdameritrade.com/v1/marketdata/{}/quotes".format(ticker.upper())
         print(url)
         pay_load = {'apikey': self.customer_key + '@AMER.OAUTHAP'}
-        print(pay_load)
+        # print(pay_load)
         try:
             res = requests.get(url=url, params=pay_load)
             data = res.json()
-            print(data)
+            # print(data)
+            epoch_date = data[ticker]['quoteTimeInLong']
+            epoch_url = "https://showcase.api.linx.twenty57.net/UnixTime/fromunix?timestamp=" + str(epoch_date)
+            # print(epoch_url)
+        #     convert Epoch
+        #     https://showcase.api.linx.twenty57.net/UnixTime/fromunix?timestamp=1549892280
         except Exception as ex:
             print(ex)
 
         dic = {'status': 'ok', 'data': data}
+        # print(dic)
         log_debug("End get_prices.")
         return dic
 
@@ -538,120 +592,86 @@ class AcademyCityXBRL(object):
         return self.DATA
 
     # I use ticker as cik
-    def get_dic_company_info(self, company, cik, type_='10-K', is_update="yes"):
-        if is_update != 'yes':
-            if company.financial_data:
-                # print('company.financial_data')
-                # for r in XBRLRegion.region_objects.averages():
-                #     print(r.name)
-                #     print(r.num_countries)
-                # print(company.financial_data)
-                dic_company_info = company.financial_data
-                dic_company_info["countries_regions"] = company.get_countries_regions()
-                return dic_company_info
-        dic_company_info = {"company_info": {'ticker': cik, 'type': type_, 'marginal_tax_rate': str(company.tax_rate)},
-                            "countries_regions": company.get_countries_regions()}
-
-        headers = {'User-Agent': 'amos@drbaranes.com'}
-        base_url = "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK={}&type={}"  # &dateb={}"
-        url = base_url.format(cik, type_)
-
-        dic_company_info['company_info']['10k_url'] = url
-        #
-        # print("Current Time 1 =", datetime.datetime.now().strftime("%H:%M:%S"))
-        edgar_resp = requests.get(url, headers=headers, timeout=30)
-        # print("Current Time 11 =", datetime.datetime.now().strftime("%H:%M:%S"))
-        edgar_str = edgar_resp.text
-        #
-        cik0 = ''
-        cik_re = re.compile(r'.*CIK=(\d{10}).*')
-        results = cik_re.findall(edgar_str)
-        if len(results):
-            results[0] = int(re.sub('\.[0]*', '.', results[0]))
-            cik0 = str(results[0])
-        dic_company_info['company_info']['CIK'] = cik0
-        #
-        sic0 = ''
-        cik_re = re.compile(r'.*SIC=(\d{4}).*')
-        results = cik_re.findall(edgar_str)
-        if len(results):
-            results[0] = int(re.sub('\.[0]*', '.', results[0]))
-            sic0 = str(results[0])
-        dic_company_info['company_info']['SIC'] = sic0
-        #
-        # Find the document links
-        soup = BeautifulSoup(edgar_str, 'html.parser')
-        table_tag = soup.find('table', class_='tableFile2')
-
-        try:
-            rows = table_tag.find_all('tr')
-        except Exception as ex:
-            return dic_company_info
-
-        # Obtain HTML for document page
-        dic_data = {}
-        for row in rows:
-            try:
-                cells = row.find_all('td')
-                if len(cells) > 3:
-                    if cells[0].text.lower() != type_.lower():
-                        continue
-                    # for filing_year in range(2019, 2020):
-                    for filing_year in range(self.xbrl_start_year, self.today_year + 1):
-                        if str(filing_year) in cells[3].text:
-                            dic_data[filing_year] = {'href': 'https://www.sec.gov' + cells[1].a['href']}
-            except Exception as ex:
-                pass
-                # print(ex)
-        # need to add send message on no data
-        dic_company_info['data'] = dic_data
-        company.financial_data = dic_company_info
-        company.save()
-        # print(dic_company_info)
-        return dic_company_info
-
-    def get_statements(self, ticker):
+    def get_statements(self, company):
         statements = {}
         for statement in XBRLValuationStatementsAccounts.objects.all():
             statements[statement.order] = {'name': statement.statement, 'accounts': {}}
-            company = XBRLCompanyInfo.objects.get(ticker=ticker)
             sic_ = company.industry.sic_code
             sic__ = company.industry.main_sic.sic_code
             accounts = statement.xbrl_valuation_statements.filter(Q(sic=0) | Q(sic=sic_) | Q(sic=sic__)).all()
 
             for a in accounts:
                 statements[statement.order]['accounts'][a.order] = [a.account, a.type, a.scale]
-
         # print(statements)
         return statements
 
-    def get_data_ticker(self, cik, type_='10-k', is_update='no', request=None):
+    def get_data_ticker(self, ticker, is_update='no', is_updateq='no'):
         # print('get_data_for_cik')
-        log_debug("Start get_data_for_cik.")
-        # print(cik)
-        company = XBRLCompanyInfo.objects.get(ticker=cik)
-        dic_company_info = self.get_dic_company_info(company, cik, type_, is_update)
-        #
-        dic_data = dic_company_info['data']
-        if len(dic_data) == 0:
-            # print("Couldn't find the document link trying 20-F")
-            dic_company_info = self.get_dic_company_info(company, cik, "20-F", is_update)
-            dic_data = dic_company_info['data']
-            if len(dic_data) == 0:
-                print("Couldn't find the document link FOR 20-F")
-                return dic_company_info
-        # -----------
-        # Statements
-        if 'statements' not in dic_company_info:
-            dic_company_info['statements'] = self.get_statements(ticker=cik)
-        # print('statements')
-        # print(statements)
-        # -----------
-        # print('dic_company_info')
+        # print('is_update', is_update, 'is_updateq', is_updateq)
+        # print("Start get_data_for_cik.")
+        try:
+            company = XBRLCompanyInfo.objects.get(ticker=ticker)
+        except Exception as ex:
+            print("Error 666" + str(ex))
+            log_debug("Error 666" + str(ex))
+        dataq = ""
+        # print('get_data_for_cik 1')
+        if is_update == "no" and company.financial_data:
+            dic_company_info = company.financial_data
+            # print('dic_company_info 1')
+            # print(dic_company_info)
+            # quarterly data
+            if is_updateq == "no" and company.financial_dataq:
+                # print('dic_company_info q 2')
+                dataq = company.financial_dataq
+            elif is_updateq == "yes":
+                log_debug("self.get_dic_company_info_q 1")
+                # print('self.get_dic_company_info_q 1')
+                dataq = self.get_dic_company_info_q(company, dic_company_info)
+                company.financial_dataq = dataq
+                company.save()
+                log_debug("self.get_dic_company_info_q 2")
+                # print('self.get_dic_company_info_q 2')
+        else:
+            # print("self.get_dic_company_info 1")
+            log_debug("self.get_dic_company_info 1")
+            dic_company_info = self.get_dic_company_info(company)
+            company.financial_data = dic_company_info
+            company.save()
+            # print("self.get_dic_company_info 2")
+            log_debug("self.get_dic_company_info 2")
+        # print('get_data_for_cik 2')
+
+        try:
+            countries_regions_ = company.get_countries_regions()
+            dic_company_info["countries_regions"] = countries_regions_
+            # log_debug(countries_regions_)
+        except Exception as ex:
+            log_debug("get_dic_company_info ex1: " + str(ex))
+
+        # print('get_data_for_cik 3')
         # print(dic_company_info)
 
-        if is_update != 'yes':
-            return dic_company_info
+        result = {'dic_company_info': dic_company_info, 'dataq': dataq}
+        # print(result)
+        return result
+
+    def get_dic_company_info(self, company, type_="10-K"):
+        dic_company_info = self.get_dic_company_info_(company, type_)
+        # print(dic_company_info)
+        dic_data = dic_company_info['data']
+        # print(len(dic_data))
+        if len(dic_data) == 0:
+            # print("Couldn't find the document link trying 20-F")
+            dic_company_info = self.get_dic_company_info_(company, "20-F")
+            dic_data = dic_company_info['data']
+            if len(dic_data) == 0:
+                # print("Couldn't find the document link FOR 20-F")
+                log_debug("Couldn't find the document link FOR 20-F")
+                return dic_company_info
+
+        if 'statements' not in dic_company_info:
+            dic_company_info['statements'] = self.get_statements(company=company)
 
         # #  ---- Replaced ----
         # dic_data_list = []
@@ -689,54 +709,127 @@ class AcademyCityXBRL(object):
         #  ---- End Replaced ----
 
         # print("Current Time start =", datetime.datetime.now().strftime("%H:%M:%S"))
+
         for key in dic_company_info['data']:
-            dic_company_info = self.get_data_for_one_year(key, dic_company_info, request)
-            # print(dic_company_info)
-            # print('-10' * 10)
-        # print("Current Time End =", datetime.datetime.now().strftime("%H:%M:%S"))
+            # print(key, len(dic_company_info['data'][key]))
+            if len(dic_company_info['data'][key]) != 0:
+                dic_company_info = self.get_data_for_one_year(key, dic_company_info)
 
-        # print("Current Time After process result ThreadPoolExecutor =", datetime.datetime.now().strftime("%H:%M:%S"))
-        dic_company_info['data'] = dic_data
-        # acc['instant'].sort()
-        # acc['flow'].sort()
-
-        # print('-16' * 10)
-        # print(dic_company_info)
-        # print('-16' * 10)
-        company.financial_data = dic_company_info
-        company.save()
-        # print(dic_company_info)
-        log_debug("End get_data_for_cik.")
+        log_debug("get_dic_company_info")
         return dic_company_info
 
-    def get_data_for_one_year(self, key, dic_company_info, request):
+    def get_dic_company_info_(self, company, type_="10-K"):
+        # if is_update != 'yes':
+        #     if company.financial_data:
+        #         # print('company.financial_data')
+        #         # for r in XBRLRegion.region_objects.averages():
+        #         #     print(r.name)
+        #         #     print(r.num_countries)
+        #         # print(company.financial_data)
+        #         dic_company_info = company.financial_data
+        #         dic_company_info["countries_regions"] = company.get_countries_regions()
+        #         # print(dic_company_info)
+        #         if is_update == 'q':
+        #             dic_company_info = self.get_dic_company_info_q(company, dic_company_info)
+        #         return dic_company_info
+        clear_log_debug()
+        # print("get_dic_company_info_ 1")
+        base_url = "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK={}&type={}&count=100"  # &dateb={}"
+        url = base_url.format(company.cik, type_)
+        # print("get_dic_company_info_ 3: ", company.ticker, company.cik, str(company.tax_rate), url)
+        # print('-'*10)
+        dic_company_info = {"company_info": {'ticker': company.ticker,
+                                             'cik': company.cik,
+                                             'sic_code': company.industry.sic_code,
+                                             'marginal_tax_rate': str(company.tax_rate),
+                                             '10k_url': url,
+                                             },
+                            'data': {}}
+        #
+        # print('--'*10)
+        # print("get_dic_company_info_ 32 ", dic_company_info)
+        # print('-1'*10)
+        #
+        # print("Current Time 1 =", datetime.datetime.now().strftime("%H:%M:%S"))
+        headers = {'User-Agent': 'amos@drbaranes.com'}
+        edgar_resp = requests.get(url, headers=headers, timeout=30)
+        # print("Current Time 11 =", datetime.datetime.now().strftime("%H:%M:%S"))
+        edgar_str = edgar_resp.text
+        #
+        cik0 = ''
+        cik_re = re.compile(r'.*CIK=(\d{10}).*')
+        results = cik_re.findall(edgar_str)
+        if len(results):
+            results[0] = int(re.sub('\.[0]*', '.', results[0]))
+            cik0 = str(results[0])
+        dic_company_info['company_info']['cik'] = cik0
+        #
+        sic0 = ''
+        cik_re = re.compile(r'.*SIC=(\d{4}).*')
+        results = cik_re.findall(edgar_str)
+        if len(results):
+            results[0] = int(re.sub('\.[0]*', '.', results[0]))
+            sic0 = str(results[0])
+        dic_company_info['company_info']['SIC'] = sic0
+        #
+        # Find the document links
+        soup = BeautifulSoup(edgar_str, 'html.parser')
+        table_tag = soup.find('table', class_='tableFile2')
+        try:
+            rows = table_tag.find_all('tr')
+        except Exception as ex:
+            return dic_company_info
+
+        # Obtain HTML for document page
+        dic_data = {}
+        for row in rows:
+            try:
+                cells = row.find_all('td')
+                if len(cells) > 3:
+                    if cells[0].text.lower() != type_.lower():
+                        continue
+                    # for filing_year in range(2019, 2020):
+                    for filing_year in range(self.xbrl_start_year, self.today_year + 1):
+                        if filing_year not in dic_data:
+                            dic_data[filing_year] = {}
+                        # print(str(filing_year), cells[3].text)
+                        if str(filing_year) in cells[3].text:
+                            dic_data[filing_year]['href'] = 'https://www.sec.gov' + cells[1].a['href']
+            except Exception as ex:
+                pass
+                # print(ex)
+
+        dic_company_info['data'] = dic_data
+        # print('dic_company_info')
+        # print(dic_company_info)
+        return dic_company_info
+
+    def get_data_for_one_year(self, key, dic_company_info):
         value = dic_company_info['data'][key]
         temp = [key, value,
                 dic_company_info['company_info']['SIC'], dic_company_info['company_info']['ticker'],
                 dic_company_info['statements']
                 ]
-        dic_company_info['data'][key] = self.get_data_for_years(dic_data_year=temp, request=request)[1]
+        dic_company_info['data'][key] = self.get_data_for_years(dic_data_year=temp)[1]
         return dic_company_info
 
-    def get_data_for_years(self, dic_data_year, request):
+    def get_data_for_years(self, dic_data_year):
+        # print(dic_data_year)
         log_debug("start get_data_for_years: "+dic_data_year[3]+", "+str(dic_data_year[0]))
         # print("Current Time Start get data = " + str(dic_data_year[0]), datetime.datetime.now().strftime("%H:%M:%S"))
         # dic_data_year[3] = ticker
         # dic_data_year[0] = year
         # dic_data_year[2] = sic
-
+        #
         # print('-30'*10)
         # print(str(dic_data_year[0]) + dic_data_year[1]['href'])
         # print('-30'*10)
 
         headers = {'User-Agent': 'amos@drbaranes.com'}
-        file_name = dic_data_year[3]+"_"+str(dic_data_year[0])
-        # try:
-        #     doc_str = request.session[file_name]
-        # except Exception as exc:
+        # print(dic_data_year[1])
+
         doc_resp = requests.get(dic_data_year[1]['href'], headers=headers, timeout=30)
         doc_str = doc_resp.text
-        # request.session[file_name] = doc_str
 
         # print("get_data_for_years (after getting file_name): "+dic_data_year[3]+", "+str(dic_data_year[0]))
 
@@ -745,10 +838,8 @@ class AcademyCityXBRL(object):
         soup = BeautifulSoup(doc_str, 'html.parser')
         table_tag = soup.find('table', class_='tableFile', summary='Data Files')
 
-        # print('-11-'*10)
         # print(dic_data_year[0])
         # print(dic_data_year[1]['href'])
-        # print('-11-'*10)
 
         try:
             rows = table_tag.find_all('tr')
@@ -785,7 +876,7 @@ class AcademyCityXBRL(object):
         xbrl_str = xbrl_resp.text
         # request.session[xbrl_file_name] = xbrl_str
 
-        log_debug("get_data_for_years (after getting xbrl_file_name): "+dic_data_year[3]+", "+str(dic_data_year[0]))
+        # log_debug("get_data_for_years (after getting xbrl_file_name): "+dic_data_year[3]+", "+str(dic_data_year[0]))
         soup = BeautifulSoup(xbrl_str, 'lxml')
         dic_data_year[1]['dei'] = {}
         for tag in soup.find_all(re.compile("dei:")):
@@ -799,6 +890,7 @@ class AcademyCityXBRL(object):
         # print(entitycentralindexkey)
 
         # print("Current Time 4 =", datetime.datetime.now().strftime("%H:%M:%S"))
+        flow_context_id = ""
         for tag in soup.find_all(name=re.compile('enddate'), string=documentperiodenddate):
             # print(tag.name)
             try:
@@ -894,7 +986,7 @@ class AcademyCityXBRL(object):
         dic_data_year[1]['matching_accounts'] = matching_accounts
         year_data = {}
 
-        log_debug("get_data_for_years (after getting matching_accounts): "+dic_data_year[3]+", "+str(dic_data_year[0]))
+        # log_debug("get_data_for_years (after getting matching_accounts): "+dic_data_year[3]+", "+str(dic_data_year[0]))
 
         # print("Current Time 6 =", datetime.datetime.now().strftime("%H:%M:%S"))
 
@@ -942,6 +1034,335 @@ class AcademyCityXBRL(object):
         # print("Current Time End get data = " + str(dic_data_year[0]), datetime.datetime.now().strftime("%H:%M:%S"))
         return dic_data_year
 
+    def get_dic_company_info_q(self, company, dic_company_info):
+        # print('get_dic_company_info_q')
+        # print(dic_company_info)
+        # for key in dic_company_info['data']:
+        #     print(key)
+        #     u = dic_company_info['data'][key]
+        #     print(u)
+        #     u = dic_company_info['data'][key]['href']
+        #     print(u)
+
+        # print('get_dic_company_info_q')
+        headers = {'User-Agent': 'amos@drbaranes.com'}
+        base_url = "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK={}&type={}&count=100"  # &dateb={}"
+        type_ = '10-Q'
+        url_q = base_url.format(company.cik, type_)
+        # print(url_q)
+        dic_data = {'10q_url': url_q, 'data': {}}
+        try:
+            edgar_resp_q = requests.get(url_q, headers=headers, timeout=30)
+        except Exception as ex:
+            print(str(ex))
+        edgar_str_q = edgar_resp_q.text
+        soup_q = BeautifulSoup(edgar_str_q, 'html.parser')
+        table_tag_q = soup_q.find('table', class_='tableFile2')
+        try:
+            rows = table_tag_q.find_all('tr')
+        except Exception as ex:
+            return dic_company_info
+
+        # print('dic_data 1110000')
+        # print(dic_data)
+        # print('-'*100)
+
+        for row in rows:
+            try:
+                cells = row.find_all('td')
+                # print(cells[0].text.lower())
+                if len(cells) > 3:
+                    if cells[0].text.lower() != type_.lower():
+                        continue
+                    # for filing_year in range(2019, 2020):
+                    for filing_year in range(self.xbrl_start_year, self.today_year + 1):
+                        if str(filing_year) in cells[3].text:
+                            # print('---')
+                            m = cells[3].text.split("-")[1]
+                            # print(cells[3].text, 'filing_year', filing_year, 'm', m)
+                            try:
+                                # print('='*20)
+                                if filing_year not in dic_data['data']:
+                                    dic_data['data'][filing_year] = {}
+                            except Exception as exx:
+                                print(str(exx))
+                            dic_data['data'][filing_year][m] = {'href': 'https://www.sec.gov' + cells[1].a['href']}
+            except Exception as ex:
+                pass
+
+        # print('dic_data111')
+        # print(dic_data)
+        # print('='*100)
+
+        for key in dic_data['data']:
+            # print(key)
+            try:
+                # print(dic_company_info['data'][str(key)])
+                url_ = dic_company_info['data'][str(key)]['href']
+                # print(url_)
+                # print("dic_data['data'][key]")
+                # print(dic_data['data'][key])
+                dic_data['data'][key]['Q4'] = {'href': url_}
+            except Exception as ex:
+                dic_data['data'][key]['Q4'] = {'href': ""}
+                # print("Error 300: " + str(ex))
+                log_debug("Error 300: " + str(ex))
+            for m in dic_data['data'][key]:
+                # print(1111)
+                # print('='*150)
+                # print(key, m)
+                if dic_data['data'][key][m]['href'] == "":
+                    # print("empty: "+m)
+                    continue
+                dic_data = self.get_data_for_one_year_q(key, m, dic_data, dic_company_info)
+                # print('='*150)
+
+        # print(dic_data)
+        # print('-='*50)
+        return dic_data
+
+    def get_data_for_one_year_q(self, key, m, dic_data, dic_company_info):
+        # print(key, m)
+        value = dic_data['data'][key][m]
+        temp = [key, m, value,
+                dic_company_info['company_info']['SIC'], dic_company_info['company_info']['ticker'],
+                dic_company_info['statements']
+                ]
+        # print('temp')
+        # print(temp)
+        d = self.get_data_for_years_q(dic_data_year=temp)[2]
+        # print('-d'*50)
+        # print(d)
+        # print('-d'*50)
+        dic_data['data'][key][m] = d
+        # print(dic_data)
+        return dic_data
+
+    def get_data_for_years_q(self, dic_data_year):
+        # print("start get_data_for_years_q: "+dic_data_year[4]+", "+str(dic_data_year[0])+", "+str(dic_data_year[1]))
+        # print("start get_data_for_years_q: "+dic_data_year[4]+", "+str(dic_data_year[0])+", "+str(dic_data_year[1]))
+        headers = {'User-Agent': 'amos@drbaranes.com'}
+        doc_resp = requests.get(dic_data_year[2]['href'], headers=headers, timeout=30)
+        doc_str = doc_resp.text
+        # print('-'*100)
+        # print('-'*100)
+        # print("get_data_for_years_q: "+str(dic_data_year[4])+", "+str(dic_data_year[0])+":"+str(dic_data_year[1]),
+        #       dic_data_year[2]['href'])
+
+        # Find the XBRL link
+        xbrl_link = ''
+        soup = BeautifulSoup(doc_str, 'html.parser')
+        table_tag = soup.find('table', class_='tableFile', summary='Data Files')
+        try:
+            rows = table_tag.find_all('tr')
+            for row in rows:
+                cells = row.find_all('td')
+                if len(cells) > 3:
+                    if 'INS' in cells[3].text or 'XML' in cells[3].text:
+                        #
+                        # print(cells[3].text)
+                        #
+                        xbrl_link = cells[2].a['href']
+
+            dic_data_year[2]['xbrl_link'] = 'https://www.sec.gov' + xbrl_link
+            accession_number = xbrl_link.split('/')
+            # print('-12-'*3, 'accession_number', accession_number)
+
+            view_link = 'https://www.sec.gov/cgi-bin/viewer?action=view&cik='
+            view_link += accession_number[4] + '&accession_number=' + accession_number[5] + '&xbrl_type=v#'
+
+            r_link = "https://www.sec.gov/Archives/edgar/data/" + accession_number[4] + "/" + accession_number[5] + "/R"
+            dic_data_year[2]['r_link'] = r_link
+            dic_data_year[2]['view_link'] = view_link
+            # print(dic_data_year)
+        except Exception as ex:
+            return dic_data_year
+
+        xbrl_resp = requests.get(dic_data_year[2]['xbrl_link'], headers=headers, timeout=30)
+        xbrl_str = xbrl_resp.text
+
+        # print("get_data_for_years q: "+dic_data_year[4]+", "+str(dic_data_year[0])+":"+str(dic_data_year[1]))
+        # print('-'*20)
+
+        soup = BeautifulSoup(xbrl_str, 'lxml')
+        dic_data_year[2]['dei'] = {}
+        for tag in soup.find_all(re.compile("dei:")):
+            name_ = tag.name.split(":")
+            dic_data_year[2]['dei'][name_[1]] = tag.text
+
+        documentperiodenddate = dic_data_year[2]['dei']['documentperiodenddate']
+        entitycentralindexkey = dic_data_year[2]['dei']['entitycentralindexkey']
+        if str(dic_data_year[1]) == "Q4":
+            documentfiscalperiodfocus = "Q4"
+            dic_data_year[2]['dei']['documentfiscalperiodfocus'] = "Q4"
+        else:
+            documentfiscalperiodfocus = dic_data_year[2]['dei']['documentfiscalperiodfocus']
+
+        # print(dic_data_year[2]['dei'])
+        # print(documentperiodenddate, entitycentralindexkey, documentfiscalperiodfocus)
+        # print('-'*20)
+
+        # print("Current Time 4 =", datetime.datetime.now().strftime("%H:%M:%S"))
+        flow_context_id = ""
+        for tag in soup.find_all(name=re.compile('enddate'), string=documentperiodenddate):
+            # print(tag.name)
+            try:
+                context = tag.find_parent(re.compile('context'))
+                # print(context)
+                context_name = context.name.split(":")
+                # print('=-3-'*50)
+                # print(context.name + ' : ' + str(len(context_name)))
+                # print('=-3-'*50)
+
+                if len(context_name) > 1:
+                    identifier = context.find(context_name[0] + ':identifier')
+                    segment = context.find(context_name[0] + ':segment')
+                    startdate = context.find(context_name[0] + ':startdate')
+                else:
+                    identifier = context.find('identifier')
+                    segment = context.find('segment')
+                    startdate = context.find('startdate')
+
+                end_date = tag.text.split('-')
+                start_date = startdate.text.split('-')
+                start_date = start_date[0] + '-' + start_date[1]
+
+                # print(end_date[1])
+                if 12 >= int(end_date[1]) > 4:
+                    start_date_should = end_date[0] + '-' + self.add_zero(str(int(end_date[1])-3))
+                    start_date0_should = end_date[0] + '-' + self.add_zero(str(int(end_date[1])-2))
+                    start_date1_should = end_date[0] + '-' + self.add_zero(str(int(end_date[1])-4))
+                    start_date2_should = "none"
+                    # print(start_date_should)
+                elif int(end_date[1]) <= 4:
+                    start_date_should = end_date[0] + '-01'
+                    start_date0_should = end_date[0] + '-02'
+                    start_date1_should = str((int(end_date[0]) - 1)) + '-12'
+                    start_date2_should = str((int(end_date[0]) - 1)) + '-11'
+
+                # if str(dic_data_year[1]) == "Q4":
+                #     if end_date[0] == "2021":
+                #         print('-6-'*50)
+                #         print('end_date')
+                #         print(end_date)
+                #         print('end_date')
+                #         print(start_date_should)
+                #         print(start_date0_should)
+                #         print(start_date1_should)
+                #         print('start_date')
+                #         print(start_date)
+                #         print('=5'*10)
+                #         print('=6'*10)
+
+                if (not segment) and (identifier.text == entitycentralindexkey) \
+                        and (start_date == start_date_should or start_date == start_date0_should or
+                             start_date == start_date1_should or start_date == start_date2_should):
+                    flow_context_id = context['id']
+
+            except Exception as ex:
+                # print(ex)
+                continue
+
+        # if end_date[0] == "2021" or end_date == "2020":
+        #     print('-flow'*20)
+        #     print(documentfiscalperiodfocus)
+        #     print(end_date)
+        #     print(flow_context_id, documentperiodenddate, start_date_should)
+        #     print('-flow'*20)
+
+        # print('-'*50)
+
+        # print('=bs'*50)
+        # print("Current Time 5 =", datetime.datetime.now().strftime("%H:%M:%S"))
+        for tag in soup.find_all(name=re.compile('instant'), string=documentperiodenddate):
+            context = tag.find_parent(re.compile('context'))
+
+            context_name = context.name.split(":")
+            # print('=--'*50)
+            # print(context.name + ' : ' + str(len(context_name)))
+            # print('=--'*50)
+
+            if len(context_name) > 1:
+                identifier = context.find(context_name[0] + ':identifier')
+                segment = context.find(context_name[0] + ':segment')
+            else:
+                identifier = context.find('identifier')
+                segment = context.find('segment')
+            if not segment and identifier.text == entitycentralindexkey:
+                # print(context)
+                instant_context_id = context['id']
+
+        # if end_date[0] == "2021":
+        #     print('-instant'*10)
+        #     print(instant_context_id)
+        #     print(documentperiodenddate)
+        #     print('-instant'*10)
+
+        # temp = [key, m, value,
+        #         dic_company_info['company_info']['SIC'], dic_company_info['company_info']['ticker'],
+        #         dic_company_info['statements']
+        #         ]
+
+        # print(dic_data_year[4], int(dic_data_year[2]['dei']['documentfiscalyearfocus']), dic_data_year[3], dic_data_year[5])
+
+        matching_accounts, accounts_, used_accounting_standards = \
+            self.get_matching_accounts(dic_data_year[4], int(dic_data_year[2]['dei']['documentfiscalyearfocus']),
+                                       dic_data_year[3], dic_data_year[5])
+
+        # print(222222222222222222222)
+        dic_data_year[2]['matching_accounts'] = matching_accounts
+        # print(matching_accounts)
+        # print(3333333333333333333)
+        year_data = {}
+        # log_debug("get_data_for_years (after getting matching_accounts): "+dic_data_year[3]+", "+str(dic_data_year[0]))
+        # print("Current Time 6 =", datetime.datetime.now().strftime("%H:%M:%S"))
+        accounts_flow = {}
+        for k in accounts_['flow']:
+            accounts_flow[k[0:92]] = accounts_['flow'][k]
+
+        accounts_instant = {}
+        for k in accounts_['instant']:
+            accounts_instant[k[0:92]] = accounts_['instant'][k]
+
+        # if str(dic_data_year[0]) == "2021":
+        #     print(int(dic_data_year[2]['dei']['documentfiscalyearfocus']))
+        #     print(str(dic_data_year[0]))
+        #     print(accounts_instant)
+
+        for std in used_accounting_standards:
+            tag_list = soup.find_all(re.compile(std + ":"))
+            for tag in tag_list:
+                name_ = tag.name.split(":")
+                try:
+                    if name_[1][0:92] in accounts_instant and tag['contextref'] == instant_context_id:
+                        if accounts_instant[name_[1][0:92]][2] == std:
+                            order = accounts_instant[name_[1][0:92]][0]
+                            scale = accounts_instant[name_[1][0:92]][1]
+                            if scale == 1:
+                                year_data[order] = tag.text
+                            else:
+                                year_data[order] = int(tag.text) / scale
+                    if name_[1][0:92] in accounts_flow and tag['contextref'] == flow_context_id:
+                        order = accounts_flow[name_[1][0:92]][0]
+                        scale = accounts_flow[name_[1][0:92]][1]
+                        if scale == 1:
+                            year_data[order] = tag.text
+                        else:
+                            year_data[order] = int(tag.text) / scale
+
+                except Exception as ex:
+                    pass
+                    # print("Error: year=" + str(dic_data_year[0]) + "   dic=" + dic_data_year[1]['href'] + "   " + str(ex) + tag.text)
+
+        # print(year_data)
+        # print(4444444444444444444)
+
+        dic_data_year[2]['year_data'] = year_data
+
+        log_debug("End get_data_for_years: "+dic_data_year[3]+", "+str(dic_data_year[0]))
+        # print("Current Time End get data = " + str(dic_data_year[0]), datetime.datetime.now().strftime("%H:%M:%S"))
+        return dic_data_year
+
     def get_matching_accounts(self, ticker, year, sic, statements):
         try:
             if year <= self.xbrl_base_year:
@@ -950,7 +1371,6 @@ class AcademyCityXBRL(object):
                 years = range(self.xbrl_base_year, year + 1)
         except Exception as ex:
             print(ex)
-
         matches = XBRLValuationAccountsMatch.objects.filter((Q(year=0) & Q(company__industry__sic_code=sic)) |
                                                             (Q(year__in=years) & Q(company__ticker=ticker))).all()
         used_accounting_standards = []
@@ -1500,6 +1920,7 @@ class AcademyCityXBRL(object):
                     d[str(t.company.ticker)] = {"cn": str(t.company.company_name), "nrd": str(t.next_release_date),
                                                 "mapc": str(t.mean_abs_price_change),
                                                 "maafc": str(t.mean_abs_actual_forecast_change),
+                                                "maafcm": str(t.mean_abs_actual_forecast_change_money),
                                                 "cafp": str(t.correlation_afp),
                                                 "ud": str(t.updated),
                                                 "sic": t.company.industry.sic_code,
@@ -1595,6 +2016,7 @@ class AcademyCityXBRL(object):
         return {'status': 'ok', 'id': company_id, 'company_name': company_name_}
 
     def clean_data_for_all_companies(self):
+
         companies_ = XBRLCompanyInfoInProcess.objects.all()
         for company in companies_:
             ticker = company.ticker
@@ -1842,7 +2264,7 @@ class AcademyCityXBRL(object):
     def load_tax_rates_by_country_year(self):
         dic = {'status': 'ko'}
         log_debug("Start load_tax_rates_by_country_year.")
-        url = "https://files.taxfoundation.org/20210125115215/1980-2020-Corporate-Tax-Rates-Around-the-World.csv.xlsx"
+        url = "https://files.taxfoundation.org/20210125115215/io1980-2020-Corporate-Tax-Rates-Around-the-World.csv.xlsx"
         file = "world_taxes"
         self.download_excel_file(url, file)
         df = self.load_excel_data(file)
@@ -2144,6 +2566,43 @@ class AcademyCityXBRL(object):
         log_debug("End load_country_premium.")
         return dic
 
+    def update_region_risk_premium(self, request):
+        project = Project.objects.filter(translations__language_code=get_language()).get(id=request.session['cv_project_id'])
+        XBRLCountryYearData.project = project
+        XBRLRegionYearData.project = project
+        for r in XBRLRegion.objects.filter(updated_adamodar=True).all():
+            # print('-------')
+            # print(r)
+            ltx = []
+            lds = []
+            lrp = []
+            for c in r.countries.all():
+                try:
+                    cc = XBRLCountryYearData.objects.get(country=c, year=project.year)
+                    # print(cc, cc.tax_rate, cc.rating_based_default_spread, cc.country_risk_premium_rating)
+                    if cc.tax_rate is not None:
+                        ltx.append(float(cc.tax_rate))
+                    if cc.rating_based_default_spread is not None:
+                        lds.append(float(cc.rating_based_default_spread))
+                    if cc.country_risk_premium_rating is not None:
+                        lrp.append(float(cc.country_risk_premium_rating))
+                except Exception as ex:
+                    pass
+                    # print(c, ex)
+            try:
+                tx, ds, rp = round(100*sum(ltx) / len(ltx))/100, round(100*sum(lds) / len(lds))/100, round(100*sum(lrp) / len(lrp))/100
+                # print(tx, ds, rp)
+                rr, c = XBRLRegionYearData.objects.get_or_create(region=r, year=project.year)
+                rr.tax_rate = tx
+                rr.country_risk_premium_rating = rp
+                rr.rating_based_default_spread = ds
+                rr.save()
+            except Exception as ex:
+                log_debug("update_region_risk_premium: " + str(ex))
+        dic = {'status': 'ok'}
+        log_debug("End update_region_risk_premium.")
+        return dic
+
     def load_sp_returns(self):
         log_debug("Start load_sp_returns.")
         # https://github.com/7astro7/full_fred
@@ -2215,5 +2674,135 @@ class AcademyCityXBRL(object):
 
     def test1(self):
         for k in XBRLCountryYearData.objects.filter(year=2020).all():
+
+
             print(k.cds)
     #
+
+
+class FinancialAnalysis(object):
+    def __init__(self):
+        try:
+            clear_log_debug()
+        except Exception as ex:
+            pass
+
+    def update_chart_of_accounts(self, **kwargs):
+        for account in XBRLValuationAccounts.objects.all():
+            print('-'*50)
+            print(account.id, account.order, account.statement.id, account.statement.statement, account.sic,
+                  account.account, account.type, account.scale)
+
+            a, c = XBRLDimAccount.objects.get_or_create(order=account.order, account=account.account,
+                                                        statement_order=account.statement.order,
+                                                        statement=account.statement.statement)
+        result = {'status': "ok"}
+        # print(result)
+        return result
+
+    def update_companies(self, **kwargs):
+        print("update_companies")
+        for company in XBRLCompanyInfo.objects.all():
+            if company.is_active:
+                # print('-'*10)
+                # print(company.id, company.industry.main_sic.sic_code, company.industry.main_sic.sic_description,
+                #       company.industry.sic_code, company.industry.sic_description,
+                #       company.ticker, company.cik, company.company_name, company.exchange,
+                #       company.is_active, company.city, company.state, company.zip)
+                log_debug(company.ticker)
+                # print(company.country_of_incorporation.name)
+
+                a, c = XBRLDimCompany.objects.get_or_create(id=company.id,
+                                                            main_sic_code=company.industry.main_sic.sic_code,
+                                                            main_sic_description=company.industry.main_sic.sic_description,
+                                                            sic_code=company.industry.sic_code,
+                                                            sic_description=company.industry.sic_description,
+                                                            ticker=company.ticker, cik=company.cik,
+                                                            company_name=company.company_name,
+                                                            exchange=company.exchange,
+                                                            city=company.city,
+                                                            state=company.state,
+                                                            zip=company.zip, is_active=company.is_active)
+        result = {'status': "ok"}
+        # print(result)
+        return result
+
+    def update_time(self, **kwargs):
+        print("update_time")
+        up_to_year = datetime.datetime.now().year+2
+
+        for y in range(2012, up_to_year):
+            for q in range(0, 5):
+                ind = y*10+q
+                log_debug(str(ind) +" "+ str(y)+" "+ str(q))
+                a, c = XBRLDimTime.objects.get_or_create(id=ind, year=y, quarter=q)
+        result = {'status': "ok"}
+        # print(result)
+        return result
+
+    # https://webix-ui.medium.com/top-7-javascript-pivot-widgets-in-2019-2020-8d81d4042f51
+    # https://github.com/nicolaskruchten/pivottable
+    def update_fact_table(self, **kwargs):
+        log_debug("--update_chart_of_accounts--")
+        # request = kwargs['request']
+        ticker_ = kwargs['ticker']
+        log_debug(ticker_)
+        company = XBRLCompanyInfo.objects.get(ticker=ticker_.upper())
+        company_ = XBRLDimCompany.objects.get(ticker=company.ticker.upper())
+        for y in company.financial_data['data']:
+            yd = company.financial_data['data'][y]
+            if int(yd['dei']['documentfiscalyearfocus']) < 2012:
+                continue
+            yq = int(yd['dei']['documentfiscalyearfocus']+"0")
+            time_ = XBRLDimTime.objects.get(id=yq)
+            log_debug("start update fact table for " + ticker_ + " year: " + str(y))
+            for account in yd['year_data']:
+                account_ = XBRLDimAccount.objects.get(order=int(account))
+                amount_ = yd['year_data'][account]
+                try:
+                    f, c = XBRLFactCompany.objects.get_or_create(company=company_, time=time_, account=account_)
+                    f.amount = amount_
+                    f.save()
+                except Exception as ex:
+                    print(ex)
+            log_debug("End update fact table for " + ticker_ + " year: " + str(y))
+
+        for y in company.financial_dataq['data']:
+            for sq in company.financial_dataq['data'][y]:
+                yd = company.financial_dataq['data'][y][sq]
+                if int(yd['dei']['documentfiscalyearfocus']) < 2012:
+                    continue
+                q = yd['dei']['documentfiscalperiodfocus'][1]
+                log_debug("start update fact table for ticker=" + ticker_ + " year=" + str(y) + " q=" + str(q))
+                yq = int(yd['dei']['documentfiscalyearfocus'] + str(q))
+                time_ = XBRLDimTime.objects.get(id=yq)
+                for account in yd['year_data']:
+                    account_ = XBRLDimAccount.objects.get(order=int(account))
+                    amount_ = yd['year_data'][account]
+                    try:
+                        f, c = XBRLFactCompany.objects.get_or_create(company=company_, time=time_, account=account_)
+                        f.amount = amount_
+                        f.save()
+                    except Exception as ex:
+                        print(ex)
+                log_debug("End update fact table for ticker=" + ticker_ + " year=" + str(y) + " q=" + str(q))
+        result = {'status': "ok"}
+        # print(result)
+        return result
+
+    def get_data_for_ticker(self, **kwargs):
+        # print('get_data_for_ticker')
+        ticker_ = kwargs['ticker']
+        # print(ticker_)
+        qsv = XBRLFactCompany.objects.filter(company__ticker=ticker_, time__quarter__gt=0).all().values("time_id", "account_id", "amount")
+        # print(qsv)
+
+        df = pd.DataFrame(qsv)
+        print(df)
+        df = df.pivot(index='account_id', columns='time_id', values='amount')
+        print(df)
+
+        result = {'status': "ok"}
+        # print(result)
+        return result
+

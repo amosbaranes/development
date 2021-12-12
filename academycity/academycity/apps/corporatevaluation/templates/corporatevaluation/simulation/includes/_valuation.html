@@ -5,86 +5,31 @@
     <span style="padding:10px; color:blue">
         <font size="5">{% trans "Parameters effecting the valuation" %}:</font>
     </span>
-    <table class="data" style="width:80%">
+    <table style="background-color:lightblue">
         <tr>
-            <td>WACC: </td>
-            <td style="padding-left:5px">
-                <input id="wacc_" type="text"
-                             value="6" oninput="input_dcf(event)"
-                             style="width:55px"  />%
-            </td>
-            <td style="padding-left:5px">
-                EBIT (<span id="valuation_year_">1</span>):
-            </td>
-            <td><input id="cf1_ebit" type="text" value="1000" oninput="input_dcf(event)"
-                       style="width:80px"  />
-            </td>
-            <td>Short Term Growth:</td>
-            <td>
-                <input id="stgrowth_" type="text"
-                             value="5" oninput="input_dcf(event)"
-                             style="width:55px"  />%
-            </td>
-            <td>Long Term Growth:</td>
-            <td>
-                <input id="ltgrowth_" type="text"
-                             value="2" oninput="input_dcf(event)"
-                             style="width:55px"  />%
-            </td>
+            <td>WACC (%): </td><td style="padding-left:5px"><input id="wacc_" type="text" value="6" oninput="input_dcf(event)" style="width:55px;line-height:10px;text-align:right;"/></td>
+            <td>EBIT (<span id="valuation_year_">1</span>):</td><td><input id="cf1_ebit" type="text" value="1000" oninput="input_dcf(event)" style="width:80px;line-height:10px;text-align:right;"/></td>
+            <td>Short Term Growth(%):</td><td><input id="stgrowth_" type="text" value="5" oninput="input_dcf(event)" style="width:55px;line-height:10px;text-align:right;"/></td>
+            <td>Long Term Growth(%):</td><td><input id="ltgrowth_" type="text" value="2" oninput="input_dcf(event)" style="width:55px;line-height:10px;text-align:right;"/></td>
         </tr>
         <tr>
-            <td>Effective tax rate: </td>
-            <td style="padding-left:5px">
-                <input id="effective_tax_rate_" type="text"
-                             value="0" oninput="input_dcf(event)"
-                             style="width:55px"  />%
-            </td>
-            <td>Marginal tax rate:</td>
-            <td style="padding-left:5px">
-                <input id="marginal_tax_rate_" type="text"
-                             value="0" oninput="input_dcf(event)"
-                             style="width:55px"  />%
-            </td>
-            <td>ROIC (short term):</td>
-            <td style="padding-left:5px">
-                <input id="roic_st_" type="text"
-                             value="0" oninput="input_dcf(event)"
-                             style="width:55px"  />%
-            </td>
-            <td>ROIC (long term):</td>
-            <td style="padding-left:5px">
-                <input id="roic_lt_" type="text"
-                             value="0" oninput="input_dcf(event)"
-                             style="width:55px"  />%
-            </td>
+            <td>Effective tax rate(%): </td><td style="padding-left:5px"><input id="effective_tax_rate_" type="text" value="0" oninput="input_dcf(event)" style="width:55px;line-height:10px;text-align:right;"/></td>
+            <td>Marginal tax rate(%):</td><td style="padding-left:5px"><input id="marginal_tax_rate_" type="text" value="0" oninput="input_dcf(event)" style="width:55px;line-height:10px;text-align:right;"/></td>
+            <td>ROIC (short term %):</td><td style="padding-left:5px"><input id="roic_st_" type="text" value="0" oninput="input_dcf(event)" style="width:55px;line-height:10px;text-align:right;"/></td>
+            <td>ROIC (long term %) :</td><td style="padding-left:5px"><input id="roic_lt_" type="text" value="0" oninput="input_dcf(event)" style="width:55px;line-height:10px;text-align:right;"/></td>
         </tr>
         <tr>
-            <td>Duration of S.T. period</td>
-            <td style="padding-left:5px">
-                <input id="duration_of_st_period_" type="text"
-                             value="5" oninput="input_dcf(event)"
-                             style="width:55px"  />
-            </td>
-            <td></td>
-            <td></td>
-            <td>Re-investment rate (ST):</td>
-            <td style="padding-left:5px">
-                <input id="re_investment_rate_short_term_" type="text"
-                             value="0" oninput="input_dcf(event)"
-                             style="width:55px"  />%
-            </td>
-            <td>Re-investment rate (LT):</td>
-            <td style="padding-left:5px">
-                <input id="re_investment_rate_long_term_" type="text"
-                             value="0" oninput="input_dcf(event)"
-                             style="width:55px"  />%
-            </td>
+            <td># of S.T. period</td><td style="padding-left:5px"><input id="duration_of_st_period_" type="text" value="5" oninput="input_dcf(event)" style="width:55px;line-height:10px;text-align:right;"/></td>
+            <td></td><td></td>
+            <td>Re-investment rate (ST %):</td>
+            <td><input id="re_investment_rate_short_term_" type="text" value="0" oninput="input_dcf(event)" style="width:55px;line-height:10px;text-align:right;"/></td>
+            <td>Re-investment rate (LT %):</td><td style="padding-left:5px"><input id="re_investment_rate_long_term_" type="text" value="0" oninput="input_dcf(event)" style="width:55px;line-height:10px;text-align:right;"/></td>
         </tr>
     </table>
     <br/>
 
     <div>
-        <table id="dcf_framework" class="data" style="width:65%">
+        <table id="dcf_framework" class="data">
         </table>
     </div>
     <br/><br/>
@@ -122,13 +67,13 @@ function set_framework()
   short_number_of_years = vObj["short_number_of_years"];year0 = 1*vObj["valuation_year"]-1;
   var table = document.getElementById("dcf_framework");
   table.innerHTML = "";
-  var s_style='text-align:center;padding-top:7px;padding-bottom:7px;background-color:blue;color:white;border:1px solid #ddd;'
+  var s_style='text-align:center;padding-top:1px;padding-bottom:1px;background-color:blue;color:white;border:1px solid #ddd;'
   row = set_row(table=table, row_num=0, firs_title="Year", id_name="year_", style=s_style, detail_style=s_style)
   row.setAttribute("id", "years_row")
   //alert(row.outerHTML)
   //
-  var style_account = 'padding-left:10px;padding-right:5px;text-align:left;'
-  var style_num = 'padding-left:10px;padding-right:5px;text-align:right;'
+  var style_account = 'padding-left:5px;padding-right:1px;text-align:left;'
+  var style_num = 'padding-left:5px;padding-right:1px;text-align:right;'
   row = set_row(table=table, row_num=1, firs_title="EBIT", id_name="cf_", style=style_account, detail_style=style_num)
   row.setAttribute("id", "cf_")
   //
@@ -138,7 +83,7 @@ function set_framework()
   var row = table.insertRow(4);  var cell = row.insertCell(0);
   cell.innerHTML = "Terminal Value"; cell.setAttribute("style", style_account)
   for (i = 1; i<short_number_of_years+3; i++)
-  { var j=i-1; var cell = row.insertCell(i); cell.setAttribute("style", "text-align:right;padding-right:5px;")
+  { var j=i-1; var cell = row.insertCell(i); cell.setAttribute("style", "text-align:right;padding-right:2px;")
     if(i == short_number_of_years+1){cell.setAttribute("id", "tv");}
   };
   set_row(table=table, row_num=5, firs_title="Cash Flow", id_name="ncf_", style=style_account, detail_style=style_num);
@@ -211,7 +156,6 @@ function input_dcf(event)
       eval("npv_"+i+".innerHTML = toCommas(Math.round(df**"+i+"*(cf_"+i+"_*(1-etr)*(1-rir_st)+tv_)))")}
      eval("document.getElementById('df_"+i+"').innerHTML = toCommas(Math.round(df**"+i+"*100)/100)")
     }
-
     var pv = 0;
     for (i = 1; i < short_number_of_years + 1; i++){eval("pv += 1*removeCommas(npv_"+i+".innerHTML)");}
     document.getElementById("pv_sum").innerHTML = toCommas(pv);
@@ -219,7 +163,9 @@ function input_dcf(event)
     var v_lt_debt = get_account_value(y=vObj["valuation_year"], account=14990);
     document.getElementById("debt_sum").innerHTML = toCommas(Math.round(v_lt_debt));
 
-    var mi = get_account_value(y=vObj["valuation_year"], account=15400);
+    var mi=get_account_value(y=vObj["valuation_year"], account=15400);
+    if(""+mi=="undefined"){mi=0};
+
     document.getElementById("minority_sum").innerHTML = toCommas(Math.round(mi));
     var ps = get_account_value(y=vObj["valuation_year"], account=15150);
     document.getElementById("prefered_stock_sum").innerHTML = toCommas(Math.round(ps));
@@ -227,12 +173,11 @@ function input_dcf(event)
     document.getElementById("excess_cash_sum").innerHTML = ec;
     //var ns = get_account_value(y=vObj["valuation_year"], account=31210);
     // need to check how to put this # of shares in the chart of accounts.
-    var ns = vObj["entitycommonstocksharesoutstanding"];
-
+    var ns = Math.round(1*vObj["entitycommonstocksharesoutstanding"]/10000)/100;
     document.getElementById("num_of_shares_sum").innerHTML = toCommas(ns);
     //alert(pv + " " + v_lt_debt + " " + mi+ " " + ps + " " + ec);
 
-    document.getElementById("iv_per_share_sum").innerHTML = toCommas(Math.round(100*1000000*(pv-v_lt_debt-mi-ps+ec)/ns)/100)
+    document.getElementById("iv_per_share_sum").innerHTML = toCommas(Math.round(100*(pv-v_lt_debt-mi-ps+ec)/ns)/100)
 
     // need to add share price.
     //pps = removeCommas(document.getElementById('share_price_'+vObj["valuation_year"]).value)

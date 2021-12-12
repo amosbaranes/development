@@ -16,11 +16,12 @@
                 {% endif %}
 
                 {% if schedule.price > 1 %}
-                {% trans "Coupon" %}: <input type="text" for="{{ schedule.slug }}" value="" oninput="inputFunction(event, this.value)" style="width:120px"  />
+                {% trans "Coupon" %}: <input type="text" for="{{ schedule.slug }}" value=""
+                                             oninput="inputFunction(event, this.value)" style="width:120px"  />
                 {% endif %}
 
                 <a href={{ schedule.course.get_absolute_url }} id="{{ schedule.slug }}" class="plugin" data-coupon="" data-slug="{{ schedule.slug }}" style="display:block;">
-                    {% trans "Register to:" %} {{ schedule.name }}</a>
+                    {% trans "Register:" %} {{ schedule.name }}</a>
             <br/>
             </li>
             {% empty %}
@@ -38,6 +39,7 @@ function inputFunction(event, val) {
     e = event.target
     a_id = e.getAttribute("for")
     p = document.getElementById(a_id)
+    //alert(p.outHTML)
     p.setAttribute("data-coupon", val)
 }
 </script>

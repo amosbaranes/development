@@ -20,60 +20,27 @@
   </ul>
   <!-- Tab panes -->
   <div class="tab-content">
-    <div id="balance_sheet" class="container tab-pane">balance_sheet</div>
+    <div id="balance_sheet" class="tab-pane">balance_sheet</div>
 
-    <div id="income_statement" class="container tab-pane">income_statement</div>
+    <div id="income_statement" class="tab-pane">income_statement</div>
 
-    <div id="vertical" class="container tab-pane">vertical</div>
+    <div id="vertical" class="tab-pane">vertical</div>
 
-    <div id="horizontal" class="container tab-pane fade">horizontal</div>
+    <div id="horizontal" class="tab-pane fade">horizontal</div>
 
-    <div id="ratio_analysis" class="container tab-pane fade data active">Ratio</div>
+    <div id="ratio_analysis" class="tab-pane fade data active">Ratio</div>
   </div>
 </div>
 
 </div>
 
+<!-- ratio_analysis() -->
 <script>
-
-function get_account_comma_value(y, account)
-{
-  try{
-        var idn = y.toString() + "_"+String(account)
-        elm = document.getElementById(idn)
-  } catch (er) { return ''}
-  return elm.innerHTML
-}
-
-function get_account_value(y, account)
-{
-  try{
-        var idn = y.toString() + "_" + String(account); elm = document.getElementById(idn)
-        if(elm){if(elm.innerHTML != '') {var nnn = Number(removeCommas(elm.innerHTML))} else {var nnn = 0}}
-  } catch (er) {nnn=0;}
-  return nnn
-}
-
 function ratio_analysis()
 {
-    var from_year = 2012;
-    var to_year = 2021;
     var cd = vObj["xbrl_data"];
-    ys = ""; zn = 0; zz = "";
-    for(let z in cd)
-    {
-     try{
-          z_ = cd[z]['dei']['documentfiscalyearfocus']
-          if (zn != 0) { zz = ", " }; ys += zz + z_; zn += 1;
-        } catch (er){}
-    }
-    eval('z_max = Math.max('+ ys + ')');  eval('z_min = Math.min('+ ys + ')');
-    from_year = Math.max(z_min, from_year) ; to_year = z_max+1;
-
+    var ys=get_reporting_years();var from_year=ys[0];to_year=ys[1];
     s_title = "<thead><tr id='fs_years_xbrl_data'><th>Ratio</th>"
-
-   // ll = get_from_to(); from_year = ll[0] ; to_year = ll[1]; s_title = ll[2];
-
     s_current_ratio = "<tr><td>Current Ratio</td>"
     s_quick_ratio = "<tr><td>Quick Ratio</td>"
     s_debt_to_total_assets = "<tr><td>Debt to Total Assets</td>"
@@ -189,18 +156,14 @@ function ratio_analysis()
   //alert(s)
   document.getElementById("ratio_analysis").innerHTML = s
   var evt = new Event("click", {bubbles: true});
-  //alert('1')
-  //sm.TabObjects["fsa"].tabTitle.dispatchEvent(evt);
-  //alert('1')
-  //document.getElementById("fsa_ratio").dispatchEvent(evt);
-  //alert('12')
-  v_analysis();
-  //alert('13')
+  sm.TabObjects["fsa"].tabTitle.dispatchEvent(evt);
+  document.getElementById("fsa_ratio").dispatchEvent(evt);
+  try{v_analysis();} catch(er){alert("Error can not calc all v_analysis")}
   prepare_income_and_balance_sheet();
 }
-
 </script>
 
+<!-- v_analysis() -->
 <script>
 function v_analysis()
 {
@@ -229,12 +192,11 @@ function v_analysis()
           }
         }
   }
-
   for (var key in vObj["xbrl_statements"])
   {
     if(key == 2)
     {
-      for ( var y = from_year; y < to_year; y++)
+      for(var y=from_year;y<to_year;y++)
       {
           var n_revenue = get_account_value(y, 20100);
             for (var k in vObj["xbrl_statements"][key]['accounts'])
@@ -245,11 +207,7 @@ function v_analysis()
                 {
                   //alert("s_h_"+k + "+='<td style=\"padding-right:5px;text-align: right;\">"+String(Math.round(10000*(get_account_value(y, k)-get_account_value(y-1, k))/get_account_value(y-1, k))/10000)+"</td>'")
                   eval("s_h_"+k + "+='<td style=\"padding-right:5px;text-align: right;\">"+String(Math.round(10000*(get_account_value(y, k)-get_account_value(y-1, k))/get_account_value(y-1, k))/10000)+"</td>'")
-                }
-                else
-                {
-                  eval("s_h_"+k + "+='<td></td>'")
-                }
+                } else{eval("s_h_"+k+"+='<td></td>'")}
             }
       }
     }
@@ -266,37 +224,25 @@ function v_analysis()
             {
               eval("sb_h_"+k + "+='<td style=\"padding-right:5px;text-align: right;\">"+String(Math.round(10000* (get_account_value(y, k) - get_account_value(y-1, k))/get_account_value(y-1, k) )/10000)+"</td>'")
             }
-            else
-            {
-              eval("sb_h_"+k + "+='<td></td>'")
-            }
+            else{eval("sb_h_"+k+"+='<td></td>'")}
           }
       }
     }
   }
 
-  var s = ""
-  var s_h = ""
-  var sb = ""
-  var sb_h = ""
+  var s="";var s_h="";var sb="";var sb_h="";
   for (var key in vObj["xbrl_statements"])
   {
-          if(key == 2)
-          {
-            for (var k in vObj["xbrl_statements"][key]['accounts'])
-            {
-                eval("s_"+k + " += '</tr>'"); eval("s += s_"+k)
-                eval("s_h_"+k + " += '</tr>'"); eval("s_h += s_h_"+k)
-            }
-          }
-          if(key == 1)
-          {
-            for (var k in vObj["xbrl_statements"][key]['accounts'])
-            {
-                eval("sb_"+k + " += '</tr>'"); eval("sb += sb_"+k)
-                eval("sb_h_"+k + " += '</tr>'"); eval("sb_h += sb_h_"+k)
-            }
-          }
+      if(key == 2)
+      {
+        for(var k in vObj["xbrl_statements"][key]['accounts'])
+        {eval("s_"+k+" += '</tr>'");eval("s += s_"+k);eval("s_h_"+k+" += '</tr>'");eval("s_h += s_h_"+k)}
+      }
+      if(key == 1)
+      {
+        for (var k in vObj["xbrl_statements"][key]['accounts'])
+        {eval("sb_"+k+" += '</tr>'");eval("sb += sb_"+k);eval("sb_h_"+k+" += '</tr>'");eval("sb_h += sb_h_"+k)}
+      }
   }
 
 var s = "<b><u>Income Statement:</u></b><br/><table>" + s_title + s + "</table>"
@@ -307,106 +253,64 @@ var sb_h = "<b><u>Balance Sheet:</u></b><br/><table>" + s_title + sb_h + "</tabl
 
 document.getElementById("vertical").innerHTML = s + "<br/><br/>" + sb + "<br/><br/>"
 document.getElementById("horizontal").innerHTML = s_h + "<br/><br/>" + sb_h + "<br/><br/>"
-
-
 }
-
 </script>
 
+<!-- get_from_to() -->
 <script>
 function get_from_to()
-{
-  var from_year = 2012;
-  var to_year = 2021;
-  var cd = vObj["xbrl_data"];
-  ys = ""; zn = 0; zz = "";
-  for(let z in cd)
-  {
-     z_ = cd[z]['dei']['documentfiscalyearfocus']
-     if (zn != 0) { zz = ", " }; ys += zz + z_; zn += 1;
-  }
-  eval('z_max = Math.max('+ ys + ')');  eval('z_min = Math.min('+ ys + ')');
-  from_year = Math.max(z_min, from_year) ; to_year = z_max+1;
-
-  s_title = "<thead><tr><th>Account</th>"
-  for ( var y = from_year; y < to_year; y++)
-  {
-     s_title += "<th>"+String(y)+"</th>"
-  }
-  s_title += "</tr></thead>"
-
+{var cd = vObj["xbrl_data"];var ys=get_reporting_years();var from_year=ys[0];to_year=ys[1];
+ var s_title="<thead><tr><th>Account</th>";for(var y=from_year;y<to_year;y++){s_title+="<th>"+String(y)+"</th>"};s_title+="</tr></thead>";
  return [from_year, to_year, s_title]
 }
+</script>
 
-
+<!-- prepare_income_and_balance_sheet() -->
+<script>
 function prepare_income_and_balance_sheet()
 {
   ll = get_from_to(); from_year = ll[0] ; to_year = ll[1]; s_title = ll[2];
   for (var key in vObj["xbrl_statements"])
   {
         if(key == 2)
-        {
-          for (var k in vObj["xbrl_statements"][key]['accounts'])
+        {for (var k in vObj["xbrl_statements"][key]['accounts'])
           {
               //alert("s_"+k + "='<tr><td>"+ vObj["xbrl_statements"][key]['accounts'][k][0] +"</td>'")
               eval("s_"+k + "='<tr><td>"+ vObj["xbrl_statements"][key]['accounts'][k][0] +"</td>'")
               //alert(eval("s_"+k))
-          }
-        }
+         }}
 
         if(key == 1)
-        {
-          for (var k in vObj["xbrl_statements"][key]['accounts'])
+        {for (var k in vObj["xbrl_statements"][key]['accounts'])
           {
               eval("sb_"+k + "='<tr><td>"+ vObj["xbrl_statements"][key]['accounts'][k][0] +"</td>'")
               //alert(eval("sb_"+k))
-          }
-        }
+        }}
   }
 
   for (var key in vObj["xbrl_statements"])
   {
     if(key == 2)
-    {
-      for ( var y = from_year; y < to_year; y++)
-      {
-          for (var k in vObj["xbrl_statements"][key]['accounts'])
+    {for ( var y = from_year; y < to_year; y++)
+      {for (var k in vObj["xbrl_statements"][key]['accounts'])
           {
             // alert(get_account_comma_value(y, k))
             eval("s_"+k + "+='<td style=\"padding-right:5px;text-align: right;\">" + get_account_comma_value(y, k) +"</td>'")
             //alert(eval("s_"+k))
-          }
-      }
-    }
+    }}}
     if(key == 1)
-    {
-      for ( var y = from_year; y < to_year; y++)
-      {
-          for (var k in vObj["xbrl_statements"][key]['accounts'])
-          {
+    {for ( var y = from_year; y < to_year; y++)
+      {for (var k in vObj["xbrl_statements"][key]['accounts'])
+        {
             eval("sb_"+k + "+='<td style=\"padding-right:5px;text-align: right;\">"+get_account_comma_value(y, k)+"</td>'")
-          }
-      }
-    }
+    }}}
   }
 
   var si = ""; var sb = "";
   for (var key in vObj["xbrl_statements"])
   {
-      if(key == 2)
-      {
-        for (var k in vObj["xbrl_statements"][key]['accounts'])
-        {
-            eval("s_"+k + " += '</tr>'"); eval("si += s_"+k)
-        }
-      }
-      if(key == 1)
-      {
-        for (var k in vObj["xbrl_statements"][key]['accounts'])
-        {
-            eval("sb_"+k + " += '</tr>'"); eval("sb += sb_"+k)
-        }
-      }
+    if(key == 2){for (var k in vObj["xbrl_statements"][key]['accounts']){eval("s_"+k + "+='</tr>'");eval("si += s_"+k)}}
+    if(key==1){for (var k in vObj["xbrl_statements"][key]['accounts']){eval("sb_"+k + "+='</tr>'");eval("sb += sb_"+k)}}
   }
   document.getElementById("income_statement").innerHTML = "<table>" + s_title + si + "</table>"
   document.getElementById("balance_sheet").innerHTML = "<table>" + s_title + sb + "</table>"

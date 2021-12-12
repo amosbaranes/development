@@ -1,0 +1,172 @@
+{% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
+{% load core_tags %}
+
+<div id="q_data" class="tabcontent data">
+</div>
+
+<!-- xbrl_set_data_q() -->
+<script>
+function xbrl_set_data_q()
+{
+  var cd = vObj["xbrl_dataq"];
+  var nq_=4;var ys=get_reporting_years_q();var from_year=ys[0];var to_year=ys[1];
+  var s_title="<thead><tr id='fs_years_xbrl_data_q'><th rowspan='2'>Accounts</th>";var s_titleq="<tr>";
+  for (var y=from_year;y<to_year;y++)
+  {
+    s_title += "<th colspan='"+nq_+"'><span id='sec_xbrl_data_"+y+"' href='#'>"+String(y)+"</span></th>";
+    for(var q = 1; q <= nq_; q++){s_titleq += "<th><a id='sec_xbrl_data_"+y+"_"+q+"' href='#' target='_blank'>Q"+String(q)+"</a></th>";}
+  }
+  for (var key_statement in vObj["xbrl_statements"])
+  {for (var key in vObj["xbrl_statements"][key_statement]['accounts'])
+   {
+       acc_=vObj["xbrl_statements"][key_statement]['accounts'][key];
+       ss[key]="<td>"+acc_[0]+"</td>";
+
+       for (var y = from_year; y < to_year; y++)
+       {for(var q = 1; q <= nq_; q++)
+        {var nn =get_account_comma_value(y=y,account=key,q=q);
+          ss[key]+="<td id='"+y.toString()+"_"+q.toString()+"_"+key.toString()+"' style='padding-right:5px;text-align: right;'>" + nn + "</td>";
+       }}
+  }}
+  ss_ = "<tbody>";  for( var k in ss){ss_ += "<tr>" +ss[k]+ "</tr>";}
+  s = "<table>" + s_title + "</tr>" + s_titleq + "</tr></thead>" + ss_ + "</tbody></table><br/><br/><br/>";
+  sm.TabObjects["q_data"].tabDoc.innerHTML = s;
+}
+
+</script>
+
+<!-- balance_accounts_q() -->
+<script>
+function balance_accounts_q()
+{
+  //var cd = JSON.parse(JSON.stringify(vObj["xbrl_data"]));
+  var nq=4;var ys=get_reporting_years_q();var from_year=ys[0];var to_year=ys[1]
+
+  for(var y=from_year; y<to_year;y++)
+  {for(var q = 1; q <= nq; q++)
+   {var y_data=get_data_for_reporting_quarter(y, q);if(y_data==-1){continue;}
+    var matching_data = y_data['matching_accounts'];
+    for (k in sm.accounting_equality)
+    {
+      var num = 0; nums = [];
+      for (k1 in sm.accounting_equality[k]){
+              var key = sm.accounting_equality[k][k1]['account'];nn = 0;
+              try {if (matching_data[key][0].toLowerCase() != ''){nn_ = y_data['year_data'][key];if(!isNaN(nn_)){nn = Number(nn_)}}} catch (er) {}
+              if (nn != 0){num += 1;nums.push(k1);}
+              sm.accounting_equality[k][k1]['data'] = nn
+      }
+      if (num == 2)
+      {
+       if (nums.includes("3"))
+       {
+         nums = nums.filter(item => item !== '3');nn_ = (3-Number(nums[0])).toString();
+         sm.accounting_equality[k][nn_]['data'] = Number(sm.accounting_equality[k]['3']['data']) - Number(sm.accounting_equality[k][nums[0].toString()]['data'])
+         var account_order = sm.accounting_equality[k][nn_]['account'];
+         var id=y+"_"+q+"_"+account_order.toString();elm = document.getElementById(id)
+         elm.innerHTML = toCommas(Math.round(100*sm.accounting_equality[k][nn_]['data'])/100)
+         elm.setAttribute("style", elm.getAttribute("style") + ";color:red;")
+         try{matching_data[account_order] = [String(account_order), 'us-gaap']} catch (er){alert(er)}
+         y_data['year_data'][account_order] = sm.accounting_equality[k][nn_]['data'];
+       } else
+       {
+         sm.accounting_equality[k]['3']['data'] = Number(sm.accounting_equality[k]['2']['data']) + Number(sm.accounting_equality[k]['1']['data'])
+         var account_order = sm.accounting_equality[k]['3']['account']
+         var id=y+"_"+q+"_"+account_order.toString(); elm = document.getElementById(id);
+         elm.innerHTML = toCommas(Math.round(100*sm.accounting_equality[k]['3']['data'])/100)
+         elm.setAttribute("style", elm.getAttribute("style") + ";color:red;")
+         matching_data[account_order] = [(account_order).toString(), 'us-gaap']
+         y_data['year_data'][account_order] = sm.accounting_equality[k]['3']['data']
+       }
+      }
+    }
+
+// --
+
+    for(h in sm.accounts_structure){sm.accounts_structure[h]['total'] = 0}
+    for (var key in matching_data)
+    {
+      nn=0;try {if (matching_data[key][0].toLowerCase() != ''){nn_=y_data['year_data'][key];if(!isNaN(nn_)){nn = Number(nn_)}}} catch (er) {}
+      for (k in sm.accounts_structure)
+      {
+        var l=sm.accounts_structure[k]['star_other'];
+        if (Number(key)<Number(k) && Number(key)>=Number(l[0]) && Number(key)!=Number(l[1])){sm.accounts_structure[k]['total']+=nn}
+      }
+    }
+    for( k in sm.accounts_structure)
+    {
+        var l = sm.accounts_structure[k]['star_other']
+        var id=y+"_"+q+"_"+l[1].toString()
+        nn = 0
+        try {
+               if (matching_data[k][0].toLowerCase() != '');{nn_=y_data['year_data'][k];if(!isNaN(nn_)){nn = Number(nn_)};}
+                if (nn == 0){continue;}
+                t = sm.accounts_structure[k]['total'];
+                u = nn - t;
+                elm = document.getElementById(id);elm.innerHTML = toCommas(Math.round(1000*u)/1000);elm.setAttribute("style", elm.getAttribute("style") + ";color:red;");
+        } catch (er) {}
+   }
+   for (var key in matching_data){var id=y+"_"+q+"_"+key.toString();var elm=document.getElementById(id);if(elm.innerHTML=="undefined"){elm.innerHTML="";}}
+  }
+ }
+}
+
+</script>
+
+<!--  get_xbrl_view  -->
+<script>
+function get_xbrl_view(event)
+{var e=event.target;var y=e.innerHTML;
+ try{var p1_childElementCount=0;var p1=document.getElementById("fs_years_data");var p1_childElementCount=p1.childElementCount} catch (er) {}
+ var p2=document.getElementById("fs_years_data_sec");var p3=document.getElementById("fs_years_xbrl_data")
+ var m_=1+Math.max(p1_childElementCount, p2.childElementCount, p3.childElementCount)
+ try{for(let i=0;i<m_;i++){try{if(p1.childNodes[i].childNodes[0].innerHTML==y){p1.childNodes[i].childNodes[0].setAttribute("style", "color:green")} else {p1.childNodes[i].childNodes[0].setAttribute("style", "color:white")}} catch(err){}}} catch(err1){}
+    for(let i = 0; i < m_ ; i++)
+    {try{if (p2.childNodes[i].childNodes[0].innerHTML==y){p2.childNodes[i].childNodes[0].setAttribute("style", "color:green")} else {p2.childNodes[i].childNodes[0].setAttribute("style", "color:blue")}} catch(err){}
+     try{if (p3.childNodes[i].childNodes[0].innerHTML==y){p3.childNodes[i].childNodes[0].setAttribute("style", "color:green")} else {p3.childNodes[i].childNodes[0].setAttribute("style", "color:white")}} catch(err){}
+    }
+ sm.TabObjects["sec"].tabTitle.innerHTML = "XBRL: " + e.innerHTML
+ var url=e.getAttribute("view_link");
+ vObj["filing_year"]=e.getAttribute("filing_year")
+ vObj["reporting_year"]=e.innerHTML
+ vObj["r_link"]=e.getAttribute("r_link") ;
+ get_sec(url) // in sec tab
+}
+</script>
+
+<!--  get_xbrl_view_q  -->
+<script>
+function get_xbrl_view_q(event)
+{
+    e = event.target // this object is updated from the input tab
+    q = e.innerHTML;
+    y = e.getAttribute("filing_year")
+    p2 = document.getElementById("fs_years_data_sec_q")
+    p3 = document.getElementById("fs_years_xbrl_data_q")
+    m_ = 1+Math.max(p2.childElementCount, p3.childElementCount)
+    for(let i = 0; i < m_ ; i++)
+    {
+        try
+        {
+            if (p2.childNodes[i].childNodes[0].innerHTML == q && y==p2.childNodes[i].childNodes[0].getAttribute("filing_year"))
+            {p2.childNodes[i].childNodes[0].setAttribute("style", "color:green")} else
+            {p2.childNodes[i].childNodes[0].setAttribute("style", "color:blue")}
+        } catch(err){}
+        try
+        {
+            if (p3.childNodes[i].childNodes[0].innerHTML == q && y==p3.childNodes[i].childNodes[0].getAttribute("filing_year"))
+            {p3.childNodes[i].childNodes[0].setAttribute("style", "color:green")} else
+            {p3.childNodes[i].childNodes[0].setAttribute("style", "color:white")}
+        } catch(err){}
+    }
+ //alert(e.outerHTML)
+
+ vObj["filing_year"] = e.getAttribute("filing_year");
+ vObj["reporting_q"] = e.getAttribute("reporting_q");
+ vObj["reporting_year"] = e.getAttribute("reporting_year");
+ vObj["r_link"] = e.getAttribute("r_link") ;
+ sm.TabObjects["sec"].tabTitle.innerHTML = "XBRL: " + vObj["reporting_year"]+":"+vObj["reporting_q"];
+ var url = e.getAttribute("view_link");
+ get_sec_q(url) // in sec tab
+}
+
+</script>

@@ -2,7 +2,7 @@
 {% load core_tags %}
 
 <div id="sp_forecast_actual" class="tabcontent">
-<input type="text" id="search_input" onkeyup="search_function()" n="0" placeholder="Search for Tickers.." title="Type in a name">
+<input type="text" id="search_input" onkeyup="search_function()" n="2" placeholder="Search for Tickers.." title="Type in a name">
 <div id="sp_forecast_actual_data" class="data">
 </div>
 </div>
@@ -88,48 +88,106 @@ function search_today_or_tomorrow_announcements_function(event) {
 <script>
 function get_earning_forecast_sp500_view_main_detail(event)
 {
-        var e = event.target;
-        ticker_ = e.innerHTML;
-        // alert(ticker_)
-      $.post('{% url "corporatevaluation:admin_setup" %}',
-          {
-            fun: "get_earning_forecast_sp500_view_main_detail",
-            ticker: ticker_,
-          },
-          function(data){
-             clean_marked_chosen_field(e)
-             create_table_earning_forecast_sp500_view_main_detail(data, ticker_);
-          }
-        );
+  var e = event.target;
+  clean_marked_chosen_field(e)
+  ticker_ = e.innerHTML;
+  // alert(ticker_)
+  $.post('{% url "corporatevaluation:admin_setup" %}',
+      {
+        fun: "get_earning_forecast_sp500_view_main_detail",
+        ticker: ticker_,
+      },
+      function(data){
+         create_table_earning_forecast_sp500_view_main_detail(data, ticker_);
+      }
+    );
+}
+</script>
+
+<!-- create_table_options_w01_bf_ -->
+<script>
+function get_row_bf_(num=1, nump=1, strikes, llc, llp, share_price=0)
+{
+ share_price = two_decimal_points(share_price);
+ var nl=num-1;var nr=num+1; var s = "";
+ s += "<tr><td><span>"+strikes[nl]+"</span></td><td style='text-align: right;'><span>"+nump+"*"+two_decimal_points(llc[strikes[nl]])+"</span></td>"
+ s += "<td><span>"+strikes[num]+"</span></td><td style='text-align: right;'><span>"+nump+"*"+two_decimal_points(llc[strikes[num]])+"</span></td>"
+ s += "<td><span>"+strikes[nr]+"</span></td><td style='text-align: right;'><span>"+nump+"*"+two_decimal_points(llc[strikes[nr]])+"</span></td>"
+ s += "<td style='text-align: right;'>"+share_price+"</td>"
+ s += "<td><span>"+strikes[nl]+"</span></td><td style='text-align: right;'><span>"+nump+"*"+two_decimal_points(llp[strikes[nl]])+"</span></td>"
+ s += "<td><span>"+strikes[num]+"</span></td><td style='text-align: right;'><span>"+nump+"*"+two_decimal_points(llp[strikes[num]])+"</span></td>"
+ s += "<td><span>"+strikes[nr]+"</span></td><td style='text-align: right;'><span>"+nump+"*"+two_decimal_points(llp[strikes[nr]])+"</span></td></tr>"
+ return s
+}
+</script>
+
+<!-- create_table_options_w01_bf -->
+<script>
+function create_table_options_w01_bf(data, ticker)
+{
+  var strikes = data['strikes'];
+  var expiration_date_call = data['llc']['calls']['date']['date'];
+  var expiration_date_put = data['llp']['puts']['date']['date'];
+
+  var share_price = Math.round(100*data['share_price'])/100
+
+  var llc = data['llc']['calls']['date']['strikes']; var llp = data['llp']['puts']['date']['strikes'];
+  var llc_=data['llc_'];var llp_=data['llp_'];
+  //alert(llc_)
+    s = "<tr><th colspan='6' style='text-align: center'>Call("+expiration_date_call+")</th><th></th><th colspan='6' style='text-align: center'>Put("+expiration_date_put+")</th></tr>"
+    s += "<tr><th>BF(-1)</th><th>price</th><th>BF(0)</th><th>price</th><th>BF(+1)</th><th>price</th>"
+    s += "<th>SharePrice</th>";
+    s += "<th>BF(-1)</th><th>price</th><th>BF(0)</th><th>price</th><th>BF(+1)</th><th>price</th></tr>";
+    s += get_row_bf_(num=1, nump=1, strikes, llc, llp, share_price);
+    s += get_row_bf_(num=2, nump=-2, strikes, llc, llp, share_price);
+    s += get_row_bf_(num=3, nump=1, strikes, llc, llp, share_price);
+    s += "<tr><td></td><td style='text-align:right;'>"+two_decimal_points(llc_[0])+"</td><td></td><td style='text-align:right;'>"+two_decimal_points(llc_[1])+"</td><td></td><td style='text-align:right;'>"+two_decimal_points(llc_[2])+"</td>"
+    s += "<td style='text-align: right;'>"+two_decimal_points(share_price)+"</td>";
+    s += "<td></td><td style='text-align:right;'>"+two_decimal_points(llp_[0])+"</td><td></td><td style='text-align:right;'>"+two_decimal_points(llp_[1])+"</td><td></td><td style='text-align:right;'>"+two_decimal_points(llp_[2])+"</td>"
+    s = "<table class='data'>" + s + "</table>";
+    bf.set_info_by_ticker(content=s, win_titles="Butterfly details for ticker: "+ticker);
 }
 </script>
 
 <!-- create_table_options_w01_delta -->
+<style>
+.inTheMoney{background-color:blue; color:white;}
+</style>
 <script>
 function create_table_options_w01_delta(data, ticker)
 {
-    s = "<tr><th colspan='3' style='text-align: center'>Call</th><th>"+data['ticker']+"</th><th colspan='3' style='text-align: center'>Put</th></tr>"
+    var expiration_date = data['date']
+    var underlyingPrice = two_decimal_points(Math.round(100*data['underlyingPrice'])/100)
+
+    s = "<tr><th colspan='3' rowspan='2' style='text-align: center'>Call</th><th>"+expiration_date+"</th><th colspan='3' rowspan='2' style='text-align: center'>Put</th></tr>"
+
+    s += "<tr><th style='background-color:green'>"+underlyingPrice+"</th></tr>"
+    //s += "<tr><th colspan='3'style='text-align: center'>Call</th><th>"+expiration_date+"</th><th colspan='3' style='text-align: center'>Put</th></tr>"
+
     s += "<tr><th>Delta</th><th>Theta</th><th>Price</th><th>Strike</th><th>Price</th><th>Theta</th><th>Delta</th></tr>"
     for (z in data['tickers'])
     {
         st = ""
-        //alert(z)
         //alert(data[k]['tickers'][z])
-        st += "<td>" + z + "</td>"
+        st += "<td style='text-align: right;'>" + z + "</td>"
         try{
-            d = data['tickers'][z]['call']['delta']
-            t = data['tickers'][z]['call']['theta']
-            p = data['tickers'][z]['call']['price']
-            st = "<td>"+d+"</td><td>"+t+"</td><td>"+p+"</td>" + st
+            d = two_decimal_points(data['tickers'][z]['call']['delta'])
+            t = two_decimal_points(data['tickers'][z]['call']['theta'])
+            p = two_decimal_points(data['tickers'][z]['call']['price'])
+
+            if(1*underlyingPrice<1*z){ var zz= " class = 'inTheMoney'"}else {var zz=""}
+            st = "<td style='text-align: right;'"+zz+">"+d+"</td><td style='text-align: right;'"+zz+">"+t+"</td><td style='text-align: right;'"+zz+">"+p+"</td>" + st
+
             //alert(st)
             } catch(er){
             //alert(er)
             st = "<td></td><td></td><td></td>" + st}
         try{
-            d = data['tickers'][z]['put']['delta']
-            t = data['tickers'][z]['put']['theta']
-            p = data['tickers'][z]['put']['price']
-            st += "<td>"+p+"</td><td>"+t+"</td><td>"+d+"</td>"
+            d = two_decimal_points(data['tickers'][z]['put']['delta'])
+            t = two_decimal_points(data['tickers'][z]['put']['theta'])
+            p = two_decimal_points(data['tickers'][z]['put']['price'])
+            if(1*underlyingPrice>=1*z){ var zz= " class = 'inTheMoney'"} else {var zz=""}
+            st += "<td style='text-align: right;'"+zz+">"+p+"</td><td style='text-align: right;'"+zz+">"+t+"</td><td style='text-align: right;'"+zz+">"+d+"</td>"
             //alert(st)
             } catch(er){
             //alert(er);
@@ -142,24 +200,58 @@ function create_table_options_w01_delta(data, ticker)
 }
 
 </script>
+
+<!--  options_w01_bf  -->
+<script>
+function options_w01_bf(event, ticker)
+{
+ var e = event.target; var fun_ = e.getAttribute("fun");
+ clean_marked_chosen_field(e);
+ //alert(fun_)
+ //alert(ticker)
+
+ if (!(ticker in vObj["options_bf"]))
+ {
+     bf.set_info_by_ticker(content="In Process ... please wait. ...  <i class='fa fa-spinner fa-spin'></i>", win_titles="Butterfly details for ticker: "+ticker +" ...  <i class='fa fa-spinner fa-spin'></i>");
+     $.post('{% url "corporatevaluation:tdameritrade_setup_w_attribute" %}',
+          {
+            fun: fun_,
+            attribute: 'ticker',
+            attribute_value: ticker
+          },
+          function(data)
+          {
+            vObj["options_bf"][ticker] = data;
+            create_table_options_w01_bf(vObj["options_bf"][ticker], ticker)
+          }
+        );
+ } else
+ {
+  create_table_options_w01_bf(vObj["options_bf"][ticker], ticker)
+ }
+}
+
+</script>
+
 <!--  options_w01_delta  -->
 <script>
 function options_w01_delta(event, ticker)
 {
  e = event.target; fun_ = e.getAttribute("fun");
+ clean_marked_chosen_field(e);
  //alert(fun_)
  //alert(ticker)
  if (!(ticker in vObj["options_delta"]))
  {
      delta.set_info_by_ticker(content="In Process ... please wait. ...  <i class='fa fa-spinner fa-spin'></i>", win_titles="Delta for ticker: "+ticker +" ...  <i class='fa fa-spinner fa-spin'></i>");
-     $.post('{% url "corporatevaluation:tdameritrade_setup" %}',
+     $.post('{% url "corporatevaluation:tdameritrade_setup_w_attribute" %}',
           {
             fun: fun_,
-            ticker: ticker
+            attribute: 'ticker',
+            attribute_value: ticker
           },
           function(data)
           {
-            clean_marked_chosen_field(e);
             vObj["options_delta"][ticker] = data['option_data_ticker'];
             create_table_options_w01_delta(vObj["options_delta"][ticker], ticker)
           }
@@ -212,12 +304,15 @@ function clean_marked_chosen_field(e)
 function create_table_for_earning_forecast_sp500_view_main(data)
 {
  st = "<tr onclick='get_earning_forecast_sp500_view_main(event)' style='cursor:pointer;'>";
- st += "<th order_by='company__ticker'>Ticker</th>" + "<th order_by='company__company_name'>Company</th>";
- st += "<th order_by='next_release_date'>N.R. Date</th><th order_by='-mean_abs_price_change'>D$PC</th>";
- st += "<th order_by='-mean_abs_actual_forecast_change'>D%AFC</th>";
- st += "<th order_by='-correlation_afp'>Corr</th>";
  st += "<th order_by='company__industry__sic_code'>sic</th>";
  st += "<th order_by='company__industry__main_sic__sic_code'>msic</th>";
+ st += "<th order_by='company__ticker'>Ticker</th>" + "<th order_by='company__company_name'>Company</th>";
+ st += "<th order_by='next_release_date'>N.R. Date</th><th order_by='-mean_abs_price_change'>D$PC</th>";
+
+ st += "<th order_by='-mean_abs_actual_forecast_change'>D$AFC</th>";
+
+ st += "<th order_by='-mean_abs_actual_forecast_change'>D%AFC</th>";
+ st += "<th order_by='-correlation_afp'>Corr</th>";
  st += "<th order_by='announcement_time'>A</th>";
  st += "<th order_by='-butterfly_price'>bfp</th>";
  st += "<th order_by='-straddle_price'>stp</th>";
@@ -232,19 +327,24 @@ function create_table_for_earning_forecast_sp500_view_main(data)
  sb = ""
  for (k in data)
  {
-   sb += "<tr><td onclick='get_earning_forecast_sp500_view_main_detail(event)' style='cursor:pointer;' >" + k + "</td>"
-   sb += "<td onclick='set_ticker_to_valuation(event, \""+k+"\")' style='cursor:pointer;'>" + data[k]['cn'] + "</td>"
-   sc = ""; if(data[k]['ud'] == s_today){sc = "style='color:blue'"}
-   sb += "<td "+sc+">" + data[k]['nrd'] + "</td>"
-   sb += "<td>" + data[k]['mapc'] + "</td>"
-   sb += "<td>" + data[k]['maafc'] + "</td>"
-   sb += "<td>" + data[k]['cafp'] + "</td>"
+   sb += "<tr>"
    sb += "<td>" + data[k]['sic'] + "</td>"
    sb += "<td>" + data[k]['msic'] + "</td>"
-   sb += "<td>" + data[k]['a'] + "</td>"
-   sb += "<td>" + data[k]['bfp'] + "</td>"
-   sb += "<td onclick='options_w01_delta(event, \""+k+"\")' fun='get_option_statistics_for_ticker' style='cursor:pointer;'>" + data[k]['stp'] + "</td>"
-   sb += "</tr>"
+   sb += "<td onclick='get_earning_forecast_sp500_view_main_detail(event)' style='cursor:pointer;' >" + k + "</td>"
+   sb += "<td onclick='set_ticker_to_valuation(event, \""+k+"\")' style='cursor:pointer;'>" + data[k]['cn'] + "</td>"
+   sc = ""; if(data[k]['ud'] == s_today){sc = "style='color:blue'"}
+   sb += "<td "+sc+">" + data[k]['nrd'] + "</td>";
+   sb += "<td>" + data[k]['mapc'] + "</td>";
+
+   sb += "<td>" + data[k]['maafcm'] + "</td>";
+
+   sb += "<td>" + data[k]['maafc'] + "</td>";
+   sb += "<td>" + data[k]['cafp'] + "</td>";
+
+   sb += "<td>" + data[k]['a'] + "</td>";
+   sb += "<td onclick='options_w01_bf(event, \""+k+"\")' fun='get_option_chain' style='cursor:pointer;'>" + data[k]['bfp'] + "</td>";
+   sb += "<td onclick='options_w01_delta(event, \""+k+"\")' fun='get_option_statistics_for_ticker' style='cursor:pointer;'>" + data[k]['stp'] + "</td>";
+   sb += "</tr>";
  }
  s = "<table>" + st + "<tbody id='all_tickers_data'>" + sb + "</tbody>" + "</table><br/><br/><br/><br/>"
  document.getElementById("sp_forecast_actual_data").innerHTML = s;
@@ -325,6 +425,12 @@ function get_earning_forecast_sp500_view_main_title(tab_obj)
            delta.set_title_colors("#fff", "#000080");
            delta.set_acWinStatEventListeners(delta);
            tab_obj.PopWinObjects['delta'] = delta;
+           // --
+           bf = new EarningForecast(my_name_="bf", win_name_="bf", win_title_="Butterfly", user_id=vObj["user_id"], tab_obj_=tab_obj);
+           bf.set_win_frame_style("22", "250", "900", "2%", "35%", "white")
+           bf.set_title_colors("#fff", "#00AFF0");
+           bf.set_acWinStatEventListeners(bf);
+           tab_obj.PopWinObjects['bf'] = bf;
       } catch (err) {console.log("Error Earning Forecast 100: ",err.message)}
   }
 }

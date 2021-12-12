@@ -20,7 +20,7 @@ from datetime import timedelta
 from django.template.loader import render_to_string
 from django.core.mail import EmailMessage
 from django.conf import settings
-# import weasyprint
+import weasyprint
 from io import BytesIO
 #
 from django.utils.translation import get_language
@@ -231,6 +231,7 @@ def register(request):
     s_slug = slugify(s_name)
     # s_slug1 = slugify(s_name+str(random.randint(0, 10**9)))
     # print('------')
+    # print(s_slug)
     # print(s_slug1)
     # print('-------')
 
@@ -241,7 +242,9 @@ def register(request):
         new = True
     if new:
         coupon = request.POST.get('coupon')
-        print(coupon)
+        # print('coupon')
+        # print(coupon)
+        # print('coupon')
         now = timezone.now()
         try:
             coupon_obj = Coupon.objects.get(code__iexact=coupon,
@@ -249,9 +252,15 @@ def register(request):
                                             valid_from__lte=now,
                                             valid_to__gte=now,
                                             active=True)
+            # print('coupon_obj')
+            # print(coupon_obj)
+            # print('coupon_obj')
         except Coupon.DoesNotExist:
             coupon_obj = None
         message = ""
+
+        # print(course_schedule_.price)
+
         if course_schedule_.price > 0:
             cart = Cart(request, 'courses', 'courseschedule')
             cart.add(product=course_schedule_,
@@ -1067,7 +1076,6 @@ def cart_detail(request):
 # Order
 # ------
 def order_create(request):
-    print('order_create')
     cart = Cart(request, 'courses', 'courseschedule')
     gl_entries = []
     if len(cart.cart) > 0:
@@ -1083,7 +1091,6 @@ def order_create(request):
                                           discount=item['total_discount'],
                                           total_price_after_discount=item['total_price_after_discount']
                                           )
-            print(oi)
             #
             entry = (8, oi.total_price_after_discount, oi)
             gl_entries.append(entry)
@@ -1092,10 +1099,10 @@ def order_create(request):
             entry = (13, oi.discount, oi)
             gl_entries.append(entry)
             #
-            print('--CourseScheduleUser--0--')
             cu = CourseScheduleUser.objects.create(course_schedule=item['product'], user=request.user, slug=item['slug'])
-            print(cu.active)
-            print('--CourseScheduleUser--01--')
+
+            # print(cu.active)
+            # print('--CourseScheduleUser--01--')
         cart.clear()
         request.session['order_id'] = order.id
         create_action(request.user, 'created order', order)

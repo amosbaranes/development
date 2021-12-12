@@ -2,20 +2,19 @@
 {% load core_tags %}
 <div class="tabcontent" id="inputs" style="background-color:lightcyan">
     <!-- pick a company and year of valuation -->
+    <div>
     <table>
             <tr>
                 <td>{% trans "Industry" %}:</td>
                 <td>
-                    <select id="industries" name="industries" onChange="industries_fun(event)" style="width: 150px;">
+                    <select id="industries" name="industries" onChange="industries_fun(event)" style="width: 200px;">
                         <option value='1'>{% trans "All Companies" %}</option>
                         {% for i in industry %}
                         <option value='{{ i.sic_code }}'>{{ i.sic_description }}</option>
                         {% endfor %}
                     </select>
-                    Sic Code: <input id="sic_code_" onchange="sic_code_onchange(event)" style="width:70px;line-height: 10px;" value="">
+                    <input id="sic_code_" onchange="sic_code_onchange(event)" style="width:42px;line-height: 10px;" value="">
                 </td>
-            </tr>
-            <tr>
                 <td>{% trans "Company" %}:</td>
                 <td>
                     <select id="companies" name="companies" onChange="companies_fun(event)" style="width: 150px;">
@@ -25,21 +24,21 @@
                         {% endfor %}
                     </select>
                     <span id="ticker_">Ticker: </span>
-                    <input id="search_ticker" onchange="ticker_onchange(event)" style="width:70px;line-height: 10px;" value="">
+                    <input id="search_ticker" onchange="ticker_onchange(event)" style="width:50px;line-height: 10px;" value="">
                 </td>
             </tr>
             <tr>
                 <td>Year:</td>
                 <td>
                     <select id="valuation_year" name="valuation_year" onChange="valuation_year_fun(event)"
-                            style="width: 150px;">
+                            style="width: 80px;">
                         <option value='0'>--------------------</option>
                     </select>
                 </td>
             </tr>
     </table>
+    </div><br/>
     <!--  Country Risk  -->
-    <hr/>
     Country Risk:
     <label class="radio-inline">
       <input type="radio" name="optradio" onclick="pick_countries_or_regions(event)" id="countries_" value="countries" checked> By Countries
@@ -73,7 +72,7 @@
                     {% endfor %}
                 </select>
             </td>
-            <td style="padding:0px"><input id="rp_revenues" style="width:100px;line-height: 10px;text-align: right;" type="text" value=""/></td>
+            <td style="padding:0px"><input id="rp_revenues" style="width:100px;line-height: 10px;text-align: right;" type="text" value="1"/></td>
             <td style="padding:0px"><input id="rp_rate" style="width:100px;line-height: 10px;text-align: right;" type="text" value=""/></td>
             <td style="padding:0px"><input id="rp_spread" style="width:100px;line-height: 10px;text-align: right;" type="text" value=""/></td>
             <td style="padding:0px"><input id="rp_risk_premium" style="width:100px;line-height: 10px;text-align: right;" type="text" value=""/></td>
@@ -112,7 +111,7 @@
                     {% endfor %}
                 </select>
             </td>
-            <td style="padding:0px"><input id="rp_revenues" style="width:100px;line-height: 10px;text-align: right;" type="text" value=""/></td>
+            <td style="padding:0px"><input id="rp_revenues" style="width:100px;line-height: 10px;text-align: right;" type="text" value="1"/></td>
             <td style="padding:0px"><input id="rp_rate" style="width:100px;line-height: 10px;text-align: right;" type="text" value=""/></td>
             <td style="padding:0px"><input id="rp_spread" style="width:100px;line-height: 10px;text-align: right;" type="text" value=""/></td>
             <td style="padding:0px"><input id="rp_risk_premium" style="width:100px;line-height: 10px;text-align: right;" type="text" value=""/></td>
@@ -125,10 +124,10 @@
         <span id="rpr_risk_premium_avg" style="display:inline-block;width: 95px;font-weight: normal;text-align: right">0</span>
         <span id="rpr_tax_rate_avg" style="display:inline-block;width: 98px;font-weight: normal;text-align: right">0</span>
     </div>
-    <hr/>
     <!--  Beta by industries  -->
     <!--  beta source: https://www.zacks.com/stock/chart/aap/fundamental/beta -->
     <div>
+    <span>Estimated Beta:</span>
     <table class="data" id="cost_of_equity" onchange="calc_rp_(event)" oninput="calc_rp_(event)">
         <thead>
         <tr>
@@ -154,11 +153,11 @@
                 </select>
             </td>
             <td style="padding:0px"><input id="cofe_revenues" oninput="cofe_revenue_fun(event)"
-                                           style="width:100px;line-height: 10px;text-align: right;" type="text" value="100"/></td>
+                                           style="width:100px;line-height: 10px;text-align: right;" type="text" value="1"/></td>
             <td style="padding:0px"><input id="cofe_ev_over_sales" oninput="cofe_revenue_fun(event)"
-                                           style="width:100px;line-height: 10px;text-align: right;" type="text" value="100"/></td>
-            <td style="padding:0px"><input id="cofe_estimated_value" style="width:100px;line-height: 10px;text-align: right;" type="text" value="100"/></td>
-            <td style="padding:0px"><input id="cofe_unlevered_beta" style="width:100px;line-height: 10px;text-align: right;" type="text" value="100"/></td>
+                                           style="width:100px;line-height: 10px;text-align: right;" type="text" value="0"/></td>
+            <td style="padding:0px"><input id="cofe_estimated_value" style="width:100px;line-height: 10px;text-align: right;" type="text" value="0"/></td>
+            <td style="padding:0px"><input id="cofe_unlevered_beta" style="width:100px;line-height: 10px;text-align: right;" type="text" value="0"/></td>
             <td style="padding:0px"><input id="cofe_expected_growth" style="width:100px;line-height: 10px;text-align: right;" type="text" value="100"/></td>
             <td style="padding:0px">
                 <button class="btn" onclick="delete_rp_for_country_or_region(event, type='industry')"><i class="fa fa-trash"></i></button>
@@ -169,7 +168,6 @@
         <span id="beta_b_avg" style="display:inline-block;width: 560px;font-weight: normal;text-align: right">0</span>
         <span id="beta_g_avg" style="display:inline-block;width: 97px;font-weight: normal;text-align: right">0</span>
     </div>
-    <hr/>
 </div>
 
 <!--  Beta by industries  -->
@@ -179,12 +177,12 @@
 function cofe_industries_fun(event)
 {
     var e = event.target; eo = e.options[e.selectedIndex];value = eo.getAttribute('data');
-    s = value.split("_"); var evs_v = s[0]; var b_v = s[1]; var g_v = (1+1*s[2])**(1/5)-1;
+    s = value.split("_"); var evs_v = s[0]; var b_v = s[1]; var g_v = 100*((1+1*s[2])**(1/5)-1);
     r = eo.parentNode.parentNode.parentNode; revenue = r.children[1].children[0].value;
     evs = r.children[2].children[0]; evs.value = Math.round(100*evs_v)/100;
     ev = r.children[3].children[0];  ev.value = Math.round(evs_v*revenue);
     bv = r.children[4].children[0];  bv.value = Math.round(100*b_v)/100;
-    bg = r.children[5].children[0];  bg.value = Math.round(10000*g_v)/10000;
+    bg = r.children[5].children[0];  bg.value = Math.round(100*g_v)/100;
 
   try{s="cofe_industries_fun"; calculate_all();} catch(er){alert("calculate_all() - error in function "+s)}
 }
@@ -237,11 +235,19 @@ function get_countries_regions_for_year()
   var elm = document.getElementById("countries_"); elm.checked = false;
   var elm = document.getElementById("regions_"); elm.checked = false;
 
-  for (y in vObj["countries_regions"])
-  {if (y == vObj["valuation_year"])
-   {
+  clean_rp_for_country_or_region()
+
+  // need to update yearly data.
+  // for now we use 2020
+
+  //for (y in vObj["countries_regions"])
+  //{
+  // if (y == vObj["valuation_year"])
+  // {
+        var y = 2020;
         for (cr in vObj["countries_regions"][y])
         {
+          try{
             if (cr == "countries")
             {
                 var r = document.getElementById("rp_country_row")
@@ -304,9 +310,10 @@ function get_countries_regions_for_year()
                   n_ += 1;
                 }
             }
+          } catch (er) {alert("Error regions: "+er)}
         }
         var evt = new Event("click", {bubbles: true});elm.dispatchEvent(evt);
-  }}
+  //}}
   calc_rp_();
 }
 </script>
@@ -316,18 +323,11 @@ function get_countries_regions_for_year()
 <script>
 function ticker_onchange(event)
 {
-  var search_ticker = event.target.value
-  // alert(search_ticker)
-  elm = document.getElementById("companies")
-  value_ = -1
-  for (var i = 0; i < elm.children.length; i++)
+  var search_ticker=event.target.value;var elm=document.getElementById("companies");value_=-1;
+  for (var i=0;i<elm.children.length;i++)
   {
-   e = elm.children[i]
-   ticker_ = e.getAttribute("ticker")
-   if(search_ticker.toLowerCase() == ticker_.toLowerCase())
-   {
-    value_ = e.getAttribute("value")
-   }
+   var e=elm.children[i];var ticker_=e.getAttribute("ticker");
+   if(search_ticker.toLowerCase()==ticker_.toLowerCase()){value_=e.getAttribute("value");}
   }
   if (value_ == -1)
   {
@@ -356,10 +356,7 @@ function ticker_onchange(event)
             var evt = new Event("change", {bubbles: true});elm.dispatchEvent(evt);
         });
   } else
-  {
-    elm.value = value_;
-    var evt = new Event("change", {bubbles: true});elm.dispatchEvent(evt);
-  }
+  {elm.value=value_;var evt = new Event("change", {bubbles: true});elm.dispatchEvent(evt);}
 }
 
 </script>
@@ -466,18 +463,11 @@ function calc_rp_()
 function valuation_year_fun(event)
 {
   //alert('valuation_year_fun 1');
-  e = event.target; value = e.options[e.selectedIndex].value; vObj["valuation_year"] = value;
-
-    // need to open this:
-    // need to open this:
-    // need to open this:
-
-    try{get_countries_regions_for_year();} catch(er){}
+  e = event.target; value = e.options[e.selectedIndex].value;
+  if(vObj["last_year_of_data"] >= value){vObj["valuation_year"] = value;}
+  else {if(1*vObj["last_year_of_data"]!=-1){alert("there are annual data only for " + vObj["last_year_of_data"] + " and up to quarter "+vObj["last_quarter_of_data"])}}
+  try{get_countries_regions_for_year();} catch(er){}
   try{s="valuation_year_fun"; calculate_all();} catch(er){alert("calculate_all() - error in function "+s)}
-
-    // need to open this:
-    // need to open this:
-    // need to open this:
 };
 </script>
 
@@ -504,7 +494,7 @@ function countries_fun(event)
 function regions_fun(event)
 {
  var elm = event.target; var eo = elm.options[elm.selectedIndex]; var value = eo.getAttribute('data')
- alert(elm.getAttribute("rec_id"))
+ //alert(elm.getAttribute("rec_id"))
  var s = value.split("_");
  var r = elm.parentNode.parentNode
   r.children[2].children[0].value = s[1]
@@ -597,34 +587,32 @@ function add_region_risk_premium()
 }
 </script>
 
-<!-- set_data(data) It is pulling data from FinDynamics-->
+<!-- set_data_ToDelete(data) It is pulling data from FinDynamics-->
 <script>
-function set_data(data)
+function set_data_ToDelete(data)
 {
     vObj["sic_code"] = data['sic_code']; vObj["sic_description"] = data['sic_description'];
     //document.getElementById('ticker_').innerHTML = data['ticker'];
+
     document.getElementById('sic_code_').value = data['sic_code'];
     document.getElementById('industries').value = data['sic_code'];
     document.getElementById('countries').value = data['country_id'];
+
     // -----------
-    cd = data['company_data']; vObj["cd"] = cd;
-    sy = "<thead><tr id='fs_years_data'><th>Account</th>"
-    z = 0;
+    var cd=data['company_data']; vObj["cd"]=cd;
+    var sy="<thead><tr id='fs_years_data'><th>Account</th>";var z=0;
     for (y in cd)
     {z += 1;
-     if(z==1)
-     {for (a in cd[y]){s = a + "= \"<tr><td class='account'>"+cd[y][a][1]+"</td>\""; eval(s);}}
+     if(z==1){for (a in cd[y]){s = a + "= \"<tr><td class='account'>"+cd[y][a][1]+"</td>\""; eval(s);}}
      sy += "<th><a id='xbrl_data_"+y+"' href='#'>"+y+"</th>"
      for (a in cd[y]){s = a + "+= get_account('"+a+"', y, cd)"; eval(s);}
     }
-    st = "<table id='data'>"+sy+"</tr></thead>";
-    ss = "";
-    for (a in cd[y]) {ss += "st+=" + a + " + '</tr>'; "}
-    eval(ss)
+    st = "<table id='data'>"+sy+"</tr></thead>"; ss="";
+    for (a in cd[y]) {ss += "st+=" + a + " + '</tr>'; "}; eval(ss)
     st += "</table><br/><br/><br/><br/><br/>";
     s_yf_http = "https:\/\/finance.yahoo.com\/quote\/" + data['ticker'] + "\/financials?p=" + data['ticker']
     st='<div><a id="fy_link" href="'+ s_yf_http +'" target="_blank"> Yahoo Finance</a></div><br/>'+st;
-    sm.TabObjects["data"].tabDoc.innerHTML = st
+    sm.TabObjects["data"].tabDoc.innerHTML=st;
 }
 </script>
 
@@ -633,45 +621,28 @@ function set_data(data)
 function companies_fun(event)
 {
   try{clean_rp_for_country_or_region();} catch(er){}
-
-  e = event.target; id_ = e.options[e.selectedIndex].value; ticker_ = e.options[e.selectedIndex].getAttribute("ticker");
-  document.getElementById('search_ticker').value = ticker_;
-  //alert(ticker_); //alert(id_)
-  vObj["ticker"] = ticker_; vObj["accounts_chosen"] = [];
-
-  // From FinDynamic
-  $.post('{% url "corporatevaluation:get_company_detail" %}',
-  {
-    id: id_,
-  },
-  function(data){
-    vObj["sec_company_data"][id_] = data;
-    // in this tab
-    try{ set_data(data);}
-    catch(err){sm.TabObjects["data"].tabDoc.innerHTML = "We did not collect data from FinDynamic. Downloading data from SEC."};
-    // var event = new Event("change", {bubbles: true});
-    // document.getElementById('countries').dispatchEvent(event);
-  });
-
-     // From our system of data collection
-     if(!vObj["sec_company_data"][ticker_]){vObj["sec_company_data"][ticker_]={}}
-     console.log("get_data_ticker: ", "before post get_data_ticker");
-     if(vObj["sec_company_data"][ticker_]['company_info'])
-     {
-        process_get_data_ticker(vObj["sec_company_data"][ticker_]['company_info'])
-     } else {
+  var e=event.target;var id_=e.options[e.selectedIndex].value;ticker_=e.options[e.selectedIndex].getAttribute("ticker");
+  document.getElementById('search_ticker').value=ticker_;vObj["ticker"]=ticker_;
+  if(!vObj["sec_company_data"][ticker_]){vObj["sec_company_data"][ticker_]={}}
+  console.log("get_data_ticker: ", "before post get_data_ticker");
+  if(vObj["sec_company_data"][ticker_]['company_info'])
+  {process_get_data_ticker(vObj["sec_company_data"][ticker_]['company_info'])
+   if(vObj["sec_company_data"][ticker_]['dataq']){process_get_data_ticker_q(vObj["sec_company_data"][ticker_]['dataq']);}
+  } else {
          $.post('{% url "corporatevaluation:get_data_ticker" %}',
           {
             ticker: ticker_,
             accounting_principle: 'us-gaap',
             is_update : vObj["is_update"],
+            is_updateq : vObj["is_updateq"],
           },
           function(data){
-                process_get_data_ticker(data)
-                vObj["sec_company_data"][ticker_]['company_info'] = data
+            process_get_data_ticker(data['dic_company_info']);
+            vObj["sec_company_data"][ticker_]['company_info'] = data['dic_company_info'];
+            if (data['dataq']!=""){process_get_data_ticker_q(data['dataq']['data']);vObj["sec_company_data"][ticker_]['dataq']=data['dataq']['data'];}
           });
-     }
-        console.log("get_data_ticker: ", "in post get_data_ticker 55")
+  }
+  console.log("get_data_ticker: ", "in post get_data_ticker 55")
 }
 </script>
 
@@ -684,90 +655,65 @@ function process_get_data_ticker(data)
     vObj["company_info"] = data['company_info'];
     vObj["marginal_tax_rate"] = data['company_info']["marginal_tax_rate"];
     document.getElementById("marginal_tax_rate_").value = vObj["marginal_tax_rate"];
+    vObj["sic_code"] = data['company_info']["sic_code"];
+    document.getElementById("industries").value = vObj["sic_code"];
+    document.getElementById('sic_code_').value = vObj["sic_code"];
     vObj["countries_regions"] = data['countries_regions'];
     vObj["regions_of_operations"] = data['regions_of_operations'];
     if (!data['data']){alert("There is no data for this company."); return;}
+    vObj["xbrl_data"] = data['data'];  vObj["xbrl_statements"] = data['statements'];
+    if(vObj["last_year_of_data"]==-1){try{var year=new Date().getFullYear();zn_=0;do {if(zn_==3){return -1};d=get_data_for_reporting_year(y=year);year-=1;zn_+=1} while (d==-1);year+=1} catch(er){};vObj["last_year_of_data"]=year}
+// -- need to pull it from quartrelly data
+    vObj["entitycommonstocksharesoutstanding"] = vObj["xbrl_data"][vObj["last_year_of_data"]]["dei"]["entitycommonstocksharesoutstanding"];
 
-    vObj["xbrl_data"] = data['data'];
-    vObj["xbrl_statements"] = data['statements'];
-    vObj["entitycommonstocksharesoutstanding"] = vObj["xbrl_data"]["2020"]["dei"]["entitycommonstocksharesoutstanding"];
-//    alert(vObj["entitycommonstocksharesoutstanding"]);
+    set_sec_edit_menu();
 
-    //alert(vObj["xbrl_data"]['2020']['dei']['entityregistrantname'])
-    // -- in _xbrl_data
-      xbrl_set_data()
-    // --
-    sv = '<table><tr id="fs_years_data_sec">'
-    console.log("get_data_ticker: ", "in post get_data_ticker 2")
-    for (y in vObj["xbrl_data"])
-    {
-         console.log("get_data_ticker year: ", "in post get_data_ticker 20: ", y)
-         try{var ry = vObj["xbrl_data"][y]['dei']['documentfiscalyearfocus'];} catch(er){var ry=''}
-         console.log("process_get_data_ticker: ", "in post get_data_ticker 22", y)
-
-         //if(!ry){ry=''}
-         // get_xbrl_view is in
-         sv += '<td><a href="#" onclick="get_xbrl_view(event)" '
-         try{
-            var y_view_link = vObj["xbrl_data"][y]['view_link'];
-            sv += 'view_link="'+ y_view_link + '" ';
-           } catch (er){sv += 'view_link="" ';}
-         //if(y_view_link){ sv += 'view_link="'+ y_view_link + '" '}
-         //else{ sv += 'view_link="" ' }
-
-         console.log("process_get_data_ticker: ", "in post get_data_ticker 24", y)
-         try{ var y_r_link = vObj["xbrl_data"][y]['r_link']; sv += 'r_link="' + y_r_link + '" ';}
-         catch(er){sv += 'r_link="" ';}
-         console.log("process_get_data_ticker: ", "in post get_data_ticker 26", y)
-
-         // if(y_r_link) { sv += 'r_link="' + y_r_link + '" '} else{sv += 'r_link="" '}
-
-         sv += 'filing_year="' + y + '" style="color:blue">' + ry + '</a></td>'
-         try{
-             var t = document.getElementById("xbrl_data_"+ry)
-             t.setAttribute("view_link", vObj["xbrl_data"][y]['view_link'])
-             t.setAttribute("r_link", vObj["xbrl_data"][y]['r_link'])
-             t.setAttribute("filing_year", y)
-             t.setAttribute("style", "color:white")
-             //alert(t.outerHTML)
-            } catch (er) {
-                console.log("get_data_ticker: ", "in post error get_data_ticker 100: ", y, er)
-         }
-         console.log("process_get_data_ticker: ", "in post get_data_ticker 28", y)
-         try{
-             var tx = document.getElementById("sec_xbrl_data_"+ry)
-             tx.setAttribute("view_link", vObj["xbrl_data"][y]['view_link'])
-             tx.setAttribute("href", vObj["xbrl_data"][y]['view_link'])
-             tx.setAttribute("r_link", vObj["xbrl_data"][y]['r_link'])
-             tx.setAttribute("filing_year", y)
-             tx.setAttribute("style", "color:white")
-             //alert(t.outerHTML)
-            } catch (er) {
-                console.log("get_data_ticker: ", "in post error get_data_ticker 200: ", y, er)
-         }
-     }
-
-    console.log("process_get_data_ticker: ", "in post get_data_ticker 50")
-        sv += '</tr></table>'
-    console.log("process_get_data_ticker: ", "in post get_data_ticker 52")
-        d.innerHTML = sv
-    console.log("process_get_data_ticker: ", "in post get_data_ticker 54")
-        //alert(d.outerHTML)
-
-    // -- in _xbrl_data tab --
-    try{ balance_accounts()} catch (er) {alert("not all balances were calculated:" + er)}
-    //alert(101)
-    console.log("process_get_data_ticker: ", "in post get_data_ticker 56")
-    // -- in fsa tab -
-    //alert(102)
-    try{ ratio_analysis()} catch (er) {alert("not all ratios were calculated:" + er)}
-    console.log("process_get_data_ticker: ", "in post get_data_ticker 58")
-    // --
+    try{xbrl_set_data()} catch (er) {alert("Error in xbrl_set_data(): " + er)}; // -- in _xbrl_data
+    try{balance_accounts()} catch (er) {alert("not all balances were calculated:" + er)};  // -- in _xbrl_data
+    try{ratio_analysis()} catch (er) {alert("not all ratios were calculated:" + er)}; // -- in fsa tab -
     try{get_countries_regions_for_year();} catch(er){}
     try{s="process_get_data_ticker"; calculate_all();} catch(er){alert("calculate_all() - error in function "+s)}
+    console.log("process_get_data_ticker: ", "in post get_data_ticker 58")
 }
 
+</script>
 
+<!-- set_sec_edit_menu() -->
+<script>
+function set_sec_edit_menu()
+{
+ var num_of_q=4;var d=document.getElementById('valuationsetup_xbrl_data');
+ var ys=get_reporting_years_q();if(ys==-1){var ys=get_reporting_years();};var from_year=ys[0];var to_year=ys[1];
+  var sv='<table><tr id="fs_years_data_sec">'; var sq='<tr id="fs_years_data_sec_q">';
+  for (var y=from_year;y<to_year;y++)
+  {var y_data=get_data_for_reporting_year(y);var filing_year=get_filling_year(y);reporting_year=y
+    sv += '<td colspan="'+num_of_q+'"><a href="#" onclick="get_xbrl_view(event)" ';
+    try{var y_view_link=y_data['view_link'];sv+='view_link="'+y_view_link+'" ';} catch (er){sv+='view_link="" ';}
+    try{ var y_r_link=y_data['r_link'];sv+='r_link="' +y_r_link+'" ';}catch(er){sv+='r_link="" ';}
+    sv += 'reporting_year="' + reporting_year + '" filing_year="' + filing_year + '" style="color:blue">' + y + '</a></td>'
+     for(var q=1; q<=num_of_q; q++)
+     {var yf=get_filling_year_q(y,q);var y_data=yf[0];var filing_year=yf[1];var reporting_year=y;var reporting_quarter=q;
+      sq+='<td><a href="#" onclick="get_xbrl_view_q(event)" ';
+      try{var y_view_link = y_data['view_link'];sq+='view_link="'+y_view_link+'" ';} catch (er){sq+='view_link="" ';}
+      try{var y_r_link=y_data['r_link'];sq+='r_link="' +y_r_link+'" ';}catch(er){sq+='r_link="" ';}
+      sq+=' reporting_quarter="' + reporting_quarter + '" reporting_year="' + reporting_year + '" filing_year="' + filing_year + '" style="color:blue">Q' + reporting_quarter + '</a></td>';
+     }
+  }     var s=sv+'</tr>'+sq+'</tr></table>';
+     d.innerHTML=s;
+}
+</script>
+
+<!-- process_get_data_ticker_q(data) -->
+<script>
+function process_get_data_ticker_q(data)
+{
+  vObj["xbrl_dataq"]=data;
+  var y_=1*vObj["last_year_of_data"]+1;var qq_=0;
+  for(q_=1;q_<=4;q_++){try{var d_=get_data_for_reporting_quarter(y=y_,q=q_)} catch(er){};if(d_!=-1){qq_=q_};};vObj["last_quarter_of_data"]=qq_;
+  xbrl_set_data_q(); // -- in _q_data tab
+  try{balance_accounts_q()} catch (er) {alert("not all balances were calculated:" + er)}; // -- in _q_data tab
+  create_valuation_year(year=vObj["last_year_of_data"])
+}
 </script>
 
 <!-- sic_code_onchange(event) -->
@@ -828,21 +774,15 @@ function industries_fun(event)
 <script>
 // create list of years for valuation
 // ----------------------------------
-function create_valuation_year()
+function create_valuation_year(year="")
 {
-    var output = document.getElementById("valuation_year")
-    this_year = new Date().getFullYear();
-    this_year -= 1
-    vObj["valuation_year"] = this_year
-    var option = document.createElement("option");
-    for(var i = this_year; i > 2016 ; i--)
-    {
-        var option = document.createElement("option");
-        option.text = i;
-        option.value = i;
-        output.add(option);
-    }
-    output.value = this_year
-    vObj["short_number_of_years"] = 1*document.getElementById("duration_of_st_period_").value
+    var output=document.getElementById("valuation_year");this_year=new Date().getFullYear();
+    if(year==""){var option=document.createElement("option");for(var i=this_year;i>2016;i--){var option=document.createElement("option");option.text=i;option.value=i;output.add(option);}
+    year=this_year};vObj["valuation_year"]=year; output.value = year;
+    vObj["short_number_of_years"]=1*document.getElementById("duration_of_st_period_").value;
+    try{var evt=new Event("change", {bubbles: true}); output.dispatchEvent(evt);} catch (er){}
 }
 </script>
+
+
+

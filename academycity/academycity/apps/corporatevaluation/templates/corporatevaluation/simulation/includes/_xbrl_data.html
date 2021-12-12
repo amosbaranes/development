@@ -5,8 +5,7 @@
 </div>
 
 <!-- xbrl_data -->
-<!--  pull data  -->
-
+<!-- pull data -->
 <style>
 .duration_account
 {
@@ -18,29 +17,14 @@
 }
 </style>
 
+<!-- xbrl_get_account -->
 <script>
-// Pick a company
-// --------------
-function removeCommas(value) {return value.replace(/,/g, '')}
-
 function xbrl_get_account(sk, y, cd)
-{
-  return "<td><input class='value' id='"+sk+"_" + y + "' account='"+sk+"' year='" + y + "' type='text' value='" + toCommas(cd[y][sk][0]) + "' onchange='input_valuation(event)'></td>"
-}
+{return "<td><input class='value' id='"+sk+"_"+y+"' account='"+sk+"' year='"+y+"' type='text' value='"+toCommas(cd[y][sk][0]) + "' onchange='input_valuation(event)'></td>"}
+</script>
 
-function get_account_properties(account_order)
-{     for (let key in vObj["xbrl_statements"])
-     {
-            for (k in vObj["xbrl_statements"][key]['accounts'])
-           {
-                 if (account_order == k)
-                 {
-                   return vObj["xbrl_statements"][key]['accounts'][k]
-                 }
-           }
-     }
-}
-
+<!-- get_select_accounts -->
+<script>
 function get_select_accounts(year='2020', ticker='', type='1')
 {
    //var s = vObj["sec_company_data"][ticker]['company_info']['data'][year]['select_accounts']
@@ -50,382 +34,105 @@ function get_select_accounts(year='2020', ticker='', type='1')
    var data = vObj["xbrl_data"][year]['matching_accounts']
    // onchange_account is in _sec file
    var s = "<select onchange='onchange_account(event)'><option value='-1'>------------</option>"
-   for (var key in data){
-     account_properties = get_account_properties(key)
-     //print(account_properties)
-     if (type == "-1" || account_properties[1]==type)
-     {
-         s += "<option value='" + key + "' ma='"+data[key][0].toLowerCase()+"'"
-           if(account_properties[1]=="2"){
-            s+=" class='duration_account' "
-           } else
-           {
-            s+=" class='instant_account' "
-           }
-         s += ">" + account_properties[0] + "</option>"
+   for (var key in data){account_properties=get_account_properties(key);
+     if(type=="-1"||account_properties[1]==type)
+     {s+="<option value='"+key+"' ma='"+data[key][0].toLowerCase()+"'";
+       if(account_properties[1]=="2"){s+=" class='duration_account' "} else{s+=" class='instant_account' "};
+         s += ">"+account_properties[0]+"</option>"
      }
    }
-   s += "</select>"
-   vObj["xbrl_data"][year]['select_accounts'] = s
-   //alert(s)
-   return s;
+   s += "</select>"; vObj["xbrl_data"][year]['select_accounts']=s;return s;
+}
+</script>
+
+<!-- xbrl_set_data() -->
+<script>
+function xbrl_set_data()
+{
+    var ys=get_reporting_years();var from_year=ys[0];var to_year=ys[1]
+    var ticker_ = vObj["company_info"]["ticker"]; ss = {}
+    s_yf_http = "https:\/\/finance.yahoo.com\/quote\/" + ticker_ + "\/financials?p=" + ticker_
+    s_title = "<thead><tr id='fs_years_xbrl_data'><th>Accounts (<a id='fy_link' href='"+ s_yf_http +"' target='_blank'> Yahoo Finance</a>)</th>"
+
+    for(var y=from_year;y<to_year;y++){y_data = get_data_for_reporting_year(y);
+       s_title += "<th><a id='sec_xbrl_data_"+y+"' target='_blank' style='color:white' "
+       s_title += "view_link='"+y_data['view_link']+"' href='"+y_data['view_link']
+       s_title += "' filing_year='"+get_filling_year(y)+"' r_link='"+y_data['r_link']+"'>"+String(y)+"</a></th>"
+    }
+    for (var key_statement in vObj["xbrl_statements"])
+    {for (var key in vObj["xbrl_statements"][key_statement]['accounts'])
+     {acc_ = vObj["xbrl_statements"][key_statement]['accounts'][key];ss[key]="<td>"+acc_[0]+"</td>";
+      for (var y=from_year;y<to_year;y++){y_data=get_data_for_reporting_year(y);nn=get_account_value_from_data(y_data,key,"");
+       ss[key] += "<td id='"+y.toString()+"_"+key.toString()+"' style='padding-right:5px;text-align: right;'>" + toCommas(nn) + "</td>";
+    }}}
+    ss_="";for(var k in ss){ss_+="<tr>"+ss[k]+"</tr>"};var s="<table>"+s_title+"</tr></thead>"+ss_+"</tbody></table><br/><br/><br/>";
+    sm.TabObjects["xbrl_data"].tabDoc.innerHTML = s
+    //var evt = new Event("click", {bubbles: true});sm.TabObjects["xbrl_data"].tabTitle.dispatchEvent(evt);
 }
 </script>
 
 <!-- balance_accounts() -->
 <script>
 function balance_accounts()
-{
-    //var cd = JSON.parse(JSON.stringify(vObj["xbrl_data"]));
-    var cd = vObj["xbrl_data"];
-    var from_year = 2012;
-    var to_year = 2021;
-    ys = ""; zn = 0; zz = "";
-    for(let z in cd)
-    {
-     try{
-          z_ = cd[z]['dei']['documentfiscalyearfocus']
-          if (zn != 0) { zz = ", " }; ys += zz + z_; zn += 1;
-        } catch (er){}
-    }
-    eval('z_max = Math.max('+ ys + ')');  eval('z_min = Math.min('+ ys + ')');
-    from_year = Math.max(z_min, from_year) ; to_year = z_max+1;
+{//var cd = JSON.parse(JSON.stringify(vObj["xbrl_data"]));
+ var ys=get_reporting_years();var from_year=ys[0];var to_year=ys[1]
+ for (var y=from_year;y<to_year;y++)
+ { y_data=get_data_for_reporting_year(y);if(y_data==-1){continue;}
+   var matching_data=y_data['matching_accounts'];
+   for(k in sm.accounting_equality)
+   { var num=0;var nums=[];
+     for (k1 in sm.accounting_equality[k])
+     {var nn=0;var key=sm.accounting_equality[k][k1]['account'];
+       try{if(matching_data[key][0].toLowerCase()!=''){nn=get_account_value_from_data(y_data,key,0)}} catch(er){}
+       if(nn!=0){num+=1;nums.push(k1);};sm.accounting_equality[k][k1]['data']=nn
+     }
+     if(num==2)
+     {if(nums.includes("3"))
+      {nums = nums.filter(item => item !== '3');
+       var nn_=(3-Number(nums[0])).toString();
+       sm.accounting_equality[k][nn_]['data']=Number(sm.accounting_equality[k]['3']['data'])-Number(sm.accounting_equality[k][nums[0].toString()]['data']);
+       var account_order=sm.accounting_equality[k][nn_]['account'];
+       var id=y.toString()+"_"+account_order.toString();
+       var elm=document.getElementById(id);
+       elm.innerHTML=toCommas(Math.round(100*sm.accounting_equality[k][nn_]['data'])/100);
+       elm.setAttribute("style", elm.getAttribute("style") + ";color:red;");
+       try{matching_data[account_order]=[String(account_order), 'us-gaap']} catch(er){alert(er)};
+       y_data['year_data'][account_order]=sm.accounting_equality[k][nn_]['data'];
+      } else
+      {sm.accounting_equality[k]['3']['data']=Number(sm.accounting_equality[k]['2']['data'])+Number(sm.accounting_equality[k]['1']['data'])
+       var account_order=sm.accounting_equality[k]['3']['account'];
+       var id=y.toString()+"_"+account_order.toString();
+       var elm=document.getElementById(id);
+       elm.innerHTML=toCommas(Math.round(100*sm.accounting_equality[k]['3']['data'])/100);
+       elm.setAttribute("style", elm.getAttribute("style") + ";color:red;");
+       matching_data[account_order]=[(account_order).toString(), 'us-gaap'];
+       y_data['year_data'][account_order]=sm.accounting_equality[k]['3']['data']
+      }
+     }
+   }
 
-    //alert(from_year + " : " + to_year)
+// return ;
 
-    for ( var y = from_year; y < to_year; y++)
-    {
-            for(let z in cd)
-            {
-              y_data = -1;
-              try{if (cd[z]['dei']['documentfiscalyearfocus'] == y.toString()) {y_data = cd[z]; break;}
-              } catch (er){ y_data = -1 }
-            }
-            if (y_data == -1) {continue;}
-            var matching_data = y_data['matching_accounts'];
-            for (k in sm.accounting_equality)
-            {
-               // if(key == '20100')
-               // {
-               //   alert("y: " + y + "  k: " + k )
-               // }
-
-                var num = 0; nums = []
-                for (k1 in sm.accounting_equality[k])
-                {
-                      var key = sm.accounting_equality[k][k1]['account']
-                      //
-                      nn = 0
-                      try {
-                           if (matching_data[key][0].toLowerCase() != '')
-                           {
-                             nn_ = y_data['year_data'][key];
-
-                      //  if(key == '20100')
-                      //  {
-                      //   alert("y: " + y + " k: " + k + " : " + key + " : " + nn_)
-                      //  }
-
-                             if(!isNaN(nn_)){nn = Number(nn_)}
-                           }
-                      } catch (er) {}
-                      //
-                      if (nn != 0)
-                      {
-                       num += 1;
-                       nums.push(k1);
-                      }
-                       //if(y == 2020){if (k == '14999' || k == 14999){ alert('-2-');alert(k1);alert(nn);}}
-                      sm.accounting_equality[k][k1]['data'] = nn
-                }
-               // if(y == 2020 ){
-               //         if(k == '20100')
-               //         {
-               //             alert('-k-'); alert(k);
-               //             alert('num')
-               //             alert(num)
-               //             alert('nums')
-               //             alert(nums)
-               //         }
-               //     }
-                      //if(y == 2020){if (k == '14999' || k == 14999){ alert('-3-');alert(num); alert(nums);}}
-
-                if (num == 2)
-                {
-                  if (nums.includes("3"))
-                  {
-                    nums = nums.filter(item => item !== '3')
-                    nn_ = (3-Number(nums[0])).toString()
-
-                      //if(y == 2020){if (k == '14999' || k == 14999){ alert('-40-'); alert(sm.accounting_equality[k]['3']['data']);}}
-                      //if(y == 2020){if (k == '14999' || k == 14999){ alert('-41-'); alert(sm.accounting_equality[k][nums[0].toString()]['data']);}}
-
-                    sm.accounting_equality[k][nn_]['data'] = Number(sm.accounting_equality[k]['3']['data']) - Number(sm.accounting_equality[k][nums[0].toString()]['data'])
-
-                      //if(y == 2020){if (k == '14999' || k == 14999){ alert('-42-'); alert(sm.accounting_equality[k][nn_]['data']);}}
-
-                    var account_order = sm.accounting_equality[k][nn_]['account']
-
-                      //if(y == 2020){if (k == '14999' || k == 14999){ alert('-43-'); alert(account_order);}}
-
-                    var id=y.toString()+"_"+account_order.toString()
-                        elm = document.getElementById(id)
-                        elm.innerHTML = toCommas(
-                        Math.round(100*sm.accounting_equality[k][nn_]['data'])/100
-                        )
-                        elm.setAttribute("style", elm.getAttribute("style") + ";color:red;")
-
-                        try{
-                            matching_data[account_order] = [String(account_order), 'us-gaap']
-                        } catch (er) {alert(er)}
-
-                    y_data['year_data'][account_order] = sm.accounting_equality[k][nn_]['data']
-
-                    //if(y == 2020){if (k == '14999' || k == 14999){ alert('-4-');alert(sm.accounting_equality[k][nn_]['data']);}}
-                    //alert(sm.accounting_equality[k][nn_]['data'])
-                  } else
-                  {
-                    sm.accounting_equality[k]['3']['data'] = Number(sm.accounting_equality[k]['2']['data']) + Number(sm.accounting_equality[k]['1']['data'])
-                    var account_order = sm.accounting_equality[k]['3']['account']
-                    var id=y.toString()+"_"+account_order.toString()
-                        elm = document.getElementById(id)
-                        elm.innerHTML = toCommas(
-                        Math.round(100*sm.accounting_equality[k]['3']['data'])/100
-                        )
-                        elm.setAttribute("style", elm.getAttribute("style") + ";color:red;")
-                    matching_data[account_order] = [(account_order).toString(), 'us-gaap']
-                    y_data['year_data'][account_order] = sm.accounting_equality[k]['3']['data']
-                  }
-                }
-
-            }
-
-//alert(y)
-
- // return ;
-
-            for(h in sm.accounts_structure)
-            {
-              sm.accounts_structure[h]['total'] = 0
-            }
-
-            for (var key in matching_data)
-            {
-                nn = 0;
-                try {
-                   if (matching_data[key][0].toLowerCase() != '')
-                   { nn_ = y_data['year_data'][key]
-                     if(!isNaN(nn_)){nn = Number(nn_)}
-                   }
-                } catch (er) {}
-
-                for (k in sm.accounts_structure)
-                {
-                  var l = sm.accounts_structure[k]['star_other']
-                  if (Number(key) < Number(k) && Number(key) >= Number(l[0]) && Number(key) != Number(l[1]) )
-                  {
-                    sm.accounts_structure[k]['total'] += nn
-                       // if (y == 2012 && k == '12990')
-                      //  {
-                      //    alert(nn)
-                      //    alert(sm.accounts_structure['12990']['total'])
-                      //  }
-                  }
-                }
-            }
-            for( k in sm.accounts_structure)
-            {
-                var l = sm.accounts_structure[k]['star_other']
-                var id=y.toString()+"_"+l[1].toString()
-                nn = 0
-                try {
-                       if (matching_data[k][0].toLowerCase() != '')
-                       { nn_ = y_data['year_data'][k]
-                         if(!isNaN(nn_)){nn = Number(nn_)}
-                       }
-            //if (y == 2012 && k == '12990')
-            //{
-           //  alert(k)
-           //   alert(matching_data[k][1].toLowerCase())
-           //  alert(sm.accounts_structure[k]['total'])
-           //   alert(nn)
-           // }
-                        if (nn == 0)
-                        {
-                          continue;
-                        }
-                        t = sm.accounts_structure[k]['total'];
-                        u = nn - t;
-                        elm = document.getElementById(id);
-
-                        elm.innerHTML = toCommas(
-                        Math.round(1000*u)/1000
-                        )
-
-
-                        elm.setAttribute("style", elm.getAttribute("style") + ";color:red;");
-                } catch (er) {}
-           }
-            for (var key in matching_data)
-            {
-                var id=y.toString()+"_"+key.toString()
-                var elm = document.getElementById(id)
-                if (elm.innerHTML == "undefined")
-                {
-                  elm.innerHTML = "";
-                }
-            }
-    }
-}
-
-</script>
-
-<!-- xbrl_set_data() -->
-<script>
-
-function xbrl_set_data()
-{
-    var from_year = 2012;
-    var to_year = new Date().getFullYear();
-    var cd = vObj["xbrl_data"];
-    ys = ""; zn = 0; zz = "";
-    for(let z in cd)
-    {
-       try {
-         z_ = cd[z]['dei']['documentfiscalyearfocus']
-         if (zn != 0) { zz = ", " };
-         ys += zz + z_; zn += 1;
-       } catch (err) {
-           // alert ('err');
-       }
-    }
-    eval('z_max = Math.max('+ ys + ')');  eval('z_min = Math.min('+ ys + ')');
-    from_year = Math.max(z_min, from_year) ; to_year = z_max+1;
-
-    //alert(from_year); alert(to_year);
-
-    var ticker_ = vObj["company_info"]["ticker"]
-    ss = {}
-    s_yf_http = "https:\/\/finance.yahoo.com\/quote\/" + ticker_ + "\/financials?p=" + ticker_
-
-    s_title = "<thead><tr id='fs_years_xbrl_data'><th>Accounts (<a id='fy_link' href='"+ s_yf_http +"' target='_blank'> Yahoo Finance</a>)"
-
-    s_title += "</th>"
-    for ( var y = from_year; y < to_year; y++) {
-       // get_xbrl_view in this tab
-       s_title += "<th><a id='sec_xbrl_data_"+y+"' href='#' target='_blank'>"+String(y)+"</a></th>"
-    }
-
-    //alert(s_title);
-
-    for (var key_statement in vObj["xbrl_statements"])
-    {
-        for (var key in vObj["xbrl_statements"][key_statement]['accounts'])
-        {
-           acc_ = vObj["xbrl_statements"][key_statement]['accounts'][key]
-           ss[key] = "<td>" +acc_[0]+ "</td>"
-           for ( var y = from_year; y < to_year; y++) {
-               for(let z in cd)
-               {
-                 try {
-                         if (cd[z]['dei']['documentfiscalyearfocus'] == y.toString())
-                         {
-                           y_data = cd[z];
-                           break;
-                         }
-                         else
-                         {
-                           y_data = -1;
-                         }
-                 } catch (er) { //alert(er);
-                  y_data = -1; }
-               }
-               if (y_data == -1) { nn = '' } else {
-
-                   nn = y_data['year_data'][key]
-
-                    //if(key == "20100" || key == "20200" || key == "20300" )
-                    //{
-                    // alert(z+" : "+y+" : "+key +" : "+nn)
-                    //}
-               }
-               ss[key] += "<td id='"+y.toString()+"_"+key.toString()+"' style='padding-right:5px;text-align: right;'>" + toCommas(nn) + "</td>"
-           }
-        }
-    }
-
-    ss_ = ""
-    for( var k in ss)
-    {
-      ss_ += "<tr>" +ss[k]+ "</tr>"
-    }
-    //alert(ss_)
-    s = "<table>" + s_title + "</tr></thead>" + ss_ + "</tbody></table><br/><br/><br/>"
-    //alert(s)
-    sm.TabObjects["xbrl_data"].tabDoc.innerHTML = s
-    //var evt = new Event("click", {bubbles: true});sm.TabObjects["xbrl_data"].tabTitle.dispatchEvent(evt);
-}
-
-</script>
-
-<!--  get_xbrl_view  -->
-<script>
-
-function get_xbrl_view(event)
-{
-    e = event.target // this object is updated from the input tab
-    //alert(e.outerHTML)
-
-    y = e.innerHTML
-    try{
-        p1_childElementCount = 0
-        p1 = document.getElementById("fs_years_data")
-        p1_childElementCount = p1.childElementCount
-    } catch (er) {}
-    p2 = document.getElementById("fs_years_data_sec")
-    p3 = document.getElementById("fs_years_xbrl_data")
-    m_ = 1+Math.max(p1_childElementCount, p2.childElementCount, p3.childElementCount)
-    try {
-        for(let i = 0; i < m_ ; i++)
-        {
-            try
-            {
-                if (p1.childNodes[i].childNodes[0].innerHTML == y)
-                {p1.childNodes[i].childNodes[0].setAttribute("style", "color:green")} else
-                {p1.childNodes[i].childNodes[0].setAttribute("style", "color:white")}
-
-            } catch(err){}
-        }
-    } catch(err1){}
-    for(let i = 0; i < m_ ; i++)
-    {
-        try
-        {
-            if (p2.childNodes[i].childNodes[0].innerHTML == y)
-            {p2.childNodes[i].childNodes[0].setAttribute("style", "color:green")} else
-            {p2.childNodes[i].childNodes[0].setAttribute("style", "color:blue")}
-
-        } catch(err){}
-        try
-        {
-            if (p3.childNodes[i].childNodes[0].innerHTML == y)
-            {p3.childNodes[i].childNodes[0].setAttribute("style", "color:green")} else
-            {p3.childNodes[i].childNodes[0].setAttribute("style", "color:white")}
-
-        } catch(err){}
-    }
- //alert(e.outerHTML)
-
- sm.TabObjects["sec"].tabTitle.innerHTML = "XBRL: " + e.innerHTML
- var url = e.getAttribute("view_link")
-
- vObj["filing_year"] = e.getAttribute("filing_year")
- vObj["reporting_year"] = e.innerHTML
-
- // the following line was moved - to be deleted
- // vObj['select_accounts'] = get_select_accounts(vObj["reporting_year"], vObj["ticker"])
- // alert(vObj['select_accounts'])
- get_sec(url) // in sec tab
+   for(var h in sm.accounts_structure){sm.accounts_structure[h]['total']=0}
+   for (var key in matching_data)
+   { var nn=0;try{if(matching_data[key][0].toLowerCase()!=''){var nn_=y_data['year_data'][key];if(!isNaN(nn_)){nn=Number(nn_)}}} catch(er){}
+     for(k in sm.accounts_structure)
+     {var l=sm.accounts_structure[k]['star_other'];
+      if(Number(key)<Number(k) && Number(key)>=Number(l[0]) && Number(key)!=Number(l[1])){sm.accounts_structure[k]['total']+=nn}}
+     }
+     for(var k in sm.accounts_structure)
+     {
+       var l=sm.accounts_structure[k]['star_other'];
+       var id=y.toString()+"_"+l[1].toString();var nn=0;
+       try{if(matching_data[k][0].toLowerCase()!=''){nn_=y_data['year_data'][k];if(!isNaN(nn_)){nn=Number(nn_)}}
+        if(nn==0){continue;}
+        t=sm.accounts_structure[k]['total'];
+        u=nn-t;elm=document.getElementById(id);elm.innerHTML = toCommas(Math.round(1000*u)/1000);
+        elm.setAttribute("style", elm.getAttribute("style") + ";color:red;");
+       } catch (er) {}
+     }
+     for(var key in matching_data){var id=y.toString()+"_"+key.toString();var elm=document.getElementById(id);if(elm.innerHTML=="undefined"){elm.innerHTML="";}}
+   }
 }
 
 </script>

@@ -86,7 +86,7 @@ urlpatterns = [
     path('add/<int:product_id>/<str:coupon>/', cart_add, name='cart_add'),
     path('remove/<int:product_id>/', cart_remove, name='cart_remove'),
 
-    path('create/', order_create, name='order_create'),
+    path('payment_process1/', order_create, name='order_create'),
 
     path('payment_process/', payment_process, name='payment_process'),
     path('payment_process/<int:order_id>/', payment_process_, name='payment_process_'),

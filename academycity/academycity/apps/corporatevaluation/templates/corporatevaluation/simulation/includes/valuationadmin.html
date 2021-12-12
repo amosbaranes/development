@@ -1,12 +1,52 @@
 {% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
-
 <div id="valuationadmin" class="tabcontent">
     <table>
         <tr><td>
             <label for="myCheck">Update Data For Companies:</label>
             <input type="checkbox" id="update_data_for_companies" onclick="update_data_for_companies()">
         </td></tr>
+        <tr><td>
+            <label for="myCheck">Update Quarterly Data:</label>
+            <input type="checkbox" id="update_data_for_companiesq" onclick="update_data_for_companiesq(event)">
+        </td></tr>
     </table><br/>
+
+    <hr/>
+    <h4>Fill cube data</h4>
+    <table>
+        <tr>
+            <td onclick="analysis_setup_attribute(event)">
+                <button fun="update_chart_of_accounts" style="width: 50px;">CofA</button>
+                <button fun="update_companies" style="width: 50px;">Com</button>
+                <button fun="update_time" style="width: 50px;">Time</button>
+                <button fun="update_fact_table" style="width: 50px;">Fact</button>
+                <button fun="get_data_for_ticker" style="width: 50px;">Pivot</button>
+            </td><td>
+                <input id="bi_attribute_name" type="text" value="ticker" size="4" placeholder="attribute name"/>
+                <input id="bi_attribute_value" type="text" value="AAPL" size="4" placeholder="attribute value"/>
+            </td>
+        </tr>
+    </table>
+    <br/>
+    <div id="result_message"></div><br/>
+    <hr/>
+    <table>
+        <tr>
+            <td onclick="tdameritrade_setup_w_attribute(event)">
+                <button fun="update_chart_of_accounts" style="width: 50px;">CofA</button>
+                <button fun="update_companies" style="width: 50px;">Com</button>
+                <button fun="update_time" style="width: 50px;">Time</button>
+                <button fun="update_fact_table" style="width: 50px;">Fact</button>
+
+                <input id="bi_attribute_name" type="text" value="ticker" size="4" placeholder="attribute name"/>
+                <input id="bi_attribute_value" type="text" value="AAPL" size="4" placeholder="attribute value"/>
+            </td>
+        </tr>
+    </table>
+    <br/>
+
+
+
     <table>
         <tr>
             <td>
@@ -20,25 +60,32 @@
         </tr>
         <tr>
             <td>
-                <button onclick="admin_setup_attribute(event)" fun="get_announcement_time" attribute="m" attribute_value="5" style="width: 122px;">announTime</button>
+                <button onclick="admin_setup_attribute(event)" fun="get_announcement_time" attribute="m" attribute_value="5"
+                        style="width: 122px;">annualTime</button>
                 <input id="attribute_name" type="text" value="m" size="4" placeholder="name"/>
                 <input id="attribute_value" type="text" value="9" size="4" placeholder="value"/>
             </td>
         </tr>
-
         <tr>
             <td>
-                <button onclick="tdameritrade_setup(event)" fun="update_options_statistics" style="width: 122px;">UpOptionsStat</button>
-                <button onclick="tdameritrade_setup(event)" fun="get_option_statistics_for_ticker" style="width: 122px;">optionForTicker</button>
+                <button onclick="tdameritrade_setup_w_attribute(event)" fun="update_options_statistics" style="width: 122px;">
+                    UpOptionsStat</button>
+                <button onclick="tdameritrade_setup_w_attribute(event)" fun="get_option_statistics_for_ticker" style="width: 122px;">
+                    optionForTicker</button>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <button onclick="tdameritrade_setup_w_attribute(event)" fun="get_quote" style="width: 122px;">get_quote</button>
+                <button >Empty</button>
             </td>
         </tr>
     </table>
-
     <hr/>
     <table>
         <tr>
             <td>
-                <button onclick="tdameritrade_setup(event)" fun="get_option_chain" style="width: 250px;">
+                <button onclick="tdameritrade_setup_w_attribute(event)" fun="get_option_chain" style="width: 250px;">
                     get_option_chain
                 </button>
             </td>
@@ -67,12 +114,12 @@
         </tr>
         <tr>
             <td>
-                <button onclick="admin_setup(event)" fun="load_country_premium" style="width: 250px;">load_country_premium</button>
+                <button onclick="admin_setup(event)" fun="load_country_premium" style="width: 125px;">LCountryPrem</button>
+                <button onclick="admin_setup(event)" fun="update_region_risk_premium" style="width: 125px;">URegionRiskPre</button>
             </td>
         </tr>
     </table>
     <hr/>
-
     <table>
         <tr>
             <td>
@@ -88,7 +135,6 @@
                 </button>
             </td>
         </tr>
-
 <!--  Get data for s&p500 forcast/actual
         <tr>
             <td>
@@ -112,7 +158,6 @@
             </td>
         </tr>
 -->
-
 <!--
         <tr>
             <td>
@@ -180,19 +225,13 @@
     <hr/>
    in the fsa tab
     <button onclick="ratio_analysis()" >ratio_analysis()</button>
-
     <button onclick="xbrl_set_data()" >Create data Table</button>
     <br/>
     <br/>
-
     <button onclick="generate_select_accounts('2020', 'AAPL')" >generate_select_accounts - 2020</button>
 -->
-    <br/>
-    <br/>
-    <div id="result_message"></div><br/><br/><br/>
-
+    <br/><br/><br/><br/>
 </div>
-
 <script>
 function update_data_for_companies() {
   var checkBox = document.getElementById("update_data_for_companies");
@@ -202,21 +241,31 @@ function update_data_for_companies() {
     vObj["is_update"] = "no";
   }
 }
+function update_data_for_companiesq() {
+  var checkBox = document.getElementById("update_data_for_companiesq");
+  if (checkBox.checked == true){
+    vObj["is_updateq"] = "yes";
+  } else {
+    vObj["is_updateq"] = "no";
+  }
+}
 </script>
-
-<!--  tdameritrade_setup -->
+<!--  tdameritrade_setup_w_attribute -->
 <script>
-function tdameritrade_setup(event)
+function tdameritrade_setup_w_attribute(event)
 {
  e = event.target; fun_ = e.getAttribute("fun");
+ attribute_ = "";
+ attribute_value_ = "";
  //var ss = prompt("are you sure you want to run function: " + fun_ + "\nType Yes to run", 'No')
  //if(ss == '' || ss == 'No') { return;}
  message_div = document.getElementById("result_message")
  message_div.innerHTML = 'In process .. '
-
- $.post('{% url "corporatevaluation:tdameritrade_setup" %}',
+ $.post('{% url "corporatevaluation:tdameritrade_setup_w_attribute" %}',
       {
         fun: fun_,
+        attribute: attribute_,
+        attribute_value: attribute_value_
       },
       function(data){
         for (k in data)
@@ -236,7 +285,6 @@ function tdameritrade_setup(event)
     );
 }
 </script>
-
 <!-- admin_setup(event) -->
 <script>
 function admin_setup(event)
@@ -246,7 +294,6 @@ function admin_setup(event)
  //if(ss == '' || ss == 'No') { return;}
  message_div = document.getElementById("result_message")
  message_div.innerHTML = 'In process .. '
-
  $.post('{% url "corporatevaluation:admin_setup" %}',
       {
         fun: fun_,
@@ -270,7 +317,38 @@ function admin_setup(event)
 }
 </script>
 
+<!-- analysis_setup_attribute(event) -->
+<script>
+function analysis_setup_attribute(event)
+{var e=event.target;var fun_=e.getAttribute("fun");
+ message_div=document.getElementById("result_message");message_div.innerHTML='In process .. '
+ try{
+      var attribute_name_=document.getElementById("bi_attribute_name").value;
+      var attribute_value_ = document.getElementById("bi_attribute_value").value;
+      $.post('{% url "corporatevaluation:analysis_setup_attribute" %}',
+          {
+            fun: fun_,
+            attribute: attribute_name_,
+            attribute_value: attribute_value_
+          },
+          function(data){
+            for (k in data)
+            {
+              if (k == 'status'){message_div.innerHTML='Process done with status: '+data['status']}
+              else
+              {
+                    alert(k + " : " + data[k])
+                    vObj[k] = data[k];
+                    // alert(vObj[k])
+              }
+            }
+          }
+        );
+ } catch(er){}
+}
+</script>
 
+<!-- admin_setup_attribute -->
 <script>
 function admin_setup_attribute(event)
 {
@@ -286,14 +364,10 @@ function admin_setup_attribute(event)
          var attribute_ = attribute_name_;
          var attribute_value_ = document.getElementById("attribute_value").value;
       }
-
  } catch(er){alert(er)}
-
  var fun_ = e.getAttribute("fun");
-
  message_div = document.getElementById("result_message")
  message_div.innerHTML = 'In process .. '
-
  $.post('{% url "corporatevaluation:admin_setup_attribute" %}',
       {
         fun: fun_,

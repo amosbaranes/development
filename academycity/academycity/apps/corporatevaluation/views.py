@@ -22,7 +22,7 @@ from .models import (RBOIC, CountryRegion, CountryRating, Country, GlobalIndustr
 
 from ..core.sql import SQL
 from ..webcompanies.WebCompanies import WebSiteCompany
-from .xbrl_obj import AcademyCityXBRL, TDAmeriTrade
+from .xbrl_obj import AcademyCityXBRL, TDAmeriTrade, FinancialAnalysis
 import datetime
 import requests
 from bs4 import BeautifulSoup
@@ -71,15 +71,15 @@ def home(request, obj_id):
 def update_country_risk(request):
     clear_log_debug()
     ty_ = request.POST.get('ty')
-    print('ty_')
-    print(ty_)
+    # print('ty_')
+    # print(ty_)
 
     y_ = request.POST.get('y')
     t_ = request.POST.get('t')
 
     id_ = request.POST.get('id')
-    print('id_')
-    print(id_)
+    # print('id_')
+    # print(id_)
 
     if int(id_) > -1:
         if ty_ == "region":
@@ -88,11 +88,11 @@ def update_country_risk(request):
             k = XBRLCountriesOfOperations.objects.get(id=id_).delete()
         else:
             k = XBRLIndustryBetasOfOperations.objects.get(id=id_).delete()
-        print('k')
-        print(k)
+        # print('k')
+        # print(k)
 
     c_ = request.POST.get('c')
-    print(c_)
+    # print(c_)
     if c_ == -1:
         return JsonResponse({'status': 'ok', 'id': -1})
 
@@ -101,7 +101,7 @@ def update_country_risk(request):
     sp_ = request.POST.get('sp')
     rp_ = request.POST.get('rp')
     tx_ = request.POST.get('tx')
-    print(y_, t_, c_, re_, ra_, sp_, rp_, tx_)
+    # print(y_, t_, c_, re_, ra_, sp_, rp_, tx_)
 
     company = XBRLCompanyInfo.objects.get(ticker=t_)
     cy, c = XBRLYearsCompanyOperations.objects.get_or_create(company=company, year=y_)
@@ -115,7 +115,7 @@ def update_country_risk(request):
         industry = GlobalIndustryAverages.objects.get(id=c_)
         co, c = XBRLIndustryBetasOfOperations.objects.get_or_create(company_year=cy, industry=industry)
 
-    print(co)
+    # print(co)
     try:
         re_ = float(re_)
         co.revenues = re_
@@ -235,8 +235,6 @@ def set_default(v):
         pass
     return v
 
-    #
-    #
     #
     # try:
     #     c = CompanyInfo.objects.get(ticker=xc.ticker)
@@ -358,121 +356,121 @@ def set_default(v):
 
 
 # Should be removed
-def get_company_detail(request):
-    lll = {}
-
-    sid = request.POST.get('id')
-    xc = XBRLCompanyInfo.objects.get(id=sid)
-    country_id = Country.objects.get(country='United States').id
-    data = {'ticker': xc.ticker, 'sic_code': xc.industry.sic_code, 'country_id': country_id,
-            'sic_description': xc.industry.sic_description, 'company_data': lll}
-
-    try:
-        c = CompanyInfo.objects.get(ticker=xc.ticker)
-        for cd in c.company_data.all():
-
-            try:
-                _return_on_equity = round(100 * (cd.number_of_shares * cd.share_price / cd.p_over_e_ratio)) / 100
-            except Exception as e:
-                _return_on_equity = 0
-
-            try:
-                _eps = round(100 * cd.share_price / cd.p_over_e_ratio) / 100
-            except Exception as e:
-                _eps = 0
-
-            try:
-                _debt_to_total_equity = round(100 * cd.total_long_term_debt / cd.stockholders_equity) / 100
-            except Exception as e:
-                _debt_to_total_equity = 0
-
-            try:
-                _book_value_ratio = round(100 * cd.stockholders_equity / cd.number_of_shares) / 100
-            except Exception as e:
-                _book_value_ratio = 0
-
-            try:
-                _times_interest_earned = round(100 * cd.ebit / cd.interest_expense) / 100
-            except Exception as e:
-                _times_interest_earned = 0
-
-            try:
-                _net_profit_on_sales = round(100 * (cd.ebit - cd.income_taxes - cd.interest_expense) / cd.revenue) / 100
-            except Exception as e:
-                _net_profit_on_sales = 0
-
-            ll = {
-                # Balance Sheet
-                # Current Assets
-                'cash_cash_equivalents': (set_default(cd.cash_cash_equivalents), 'Cash & Equivalents'),
-                'goodwill': (set_default(cd.goodwill), 'Goodwill'),
-                'intangible_assets_net': (set_default(cd.intangible_assets_net), 'Intangible Assets(net)'),
-                # Debt
-                'noncurrent_liabilities': (set_default(cd.noncurrent_liabilities), 'Long-term Liabilities'),
-                'long_term_debt_noncurrent': (
-                set_default(cd.long_term_debt_noncurrent), 'LT Liabilities (Non-Current)'),
-                'total_long_term_debt': (set_default(cd.total_long_term_debt), 'Total long term debt'),
-                # Equity
-                'equity_attributable_to_oncontrolling_interest': (
-                set_default(cd.equity_attributable_to_oncontrolling_interest), 'Minority Interest'),
-                'preferred_stock': (set_default(cd.preferred_stock), 'Preferred Stocks'),
-                'stockholders_equity': (set_default(cd.stockholders_equity), 'Stockholders Equity'),
-                # Income Statement
-                'revenue': (set_default(cd.revenue), 'Revenues'),
-                'ebit': (set_default(cd.ebit), 'EBIT'),
-
-                'ebitda': (set_default(cd.ebitda), 'EBITDA'),
-                'interest_expense': (set_default(cd.interest_expense), 'Interest Expense'),
-                'income_taxes': (set_default(cd.income_taxes), 'Income Taxes'),
-
-                # Other Information
-                'share_price': (set_default(cd.share_price), 'Share Price'),
-                'market_value_equity': (set_default(cd.market_value_equity), 'MV of Equity'),
-                'enterprise_value': (set_default(cd.enterprise_value), 'Enterprise Value'),
-                'number_of_shares': (set_default(cd.number_of_shares), '# of Shares'),
-                # Ratios
-                # -------------
-                # current ratio
-                # > quick ratio
-                # > Debt to Total Assets
-                'times_interest_earned': (_times_interest_earned, 'Times Interest Earned'),
-                # > Account Receivable
-                # > Inventory
-                'net_profit_on_sales': (_net_profit_on_sales, 'Net Profit on Sales'),
-                # Gross Profit Margin
-                # Return on Assets
-                # 'return_on_assets': (round(100*(cd.ebit)/cd.interest_expense)/100, 'Return on Assets'),
-
-                'return_on_equity': (_return_on_equity, 'Income On Equity'),
-
-                'eps': (_eps, 'EPS'),
-                'p_over_e_ratio': (set_default(cd.p_over_e_ratio), 'P/E'),
-                # > Dividend Rate/Yield
-                # > Dividend Payout
-                'book_value_ratio': (_book_value_ratio, 'Book Value Ratio'),
-                #
-                'p_over_s_ratio': (set_default(cd.p_over_s_ratio), 'P/S'),
-                'p_over_b_ratio': (set_default(cd.p_over_b_ratio), 'P/B'),
-                'p_over_cash_flow_ratio': (set_default(cd.p_over_cash_flow_ratio), 'P/CF'),
-                'p_over_ebitda_ratio': (set_default(cd.p_over_ebitda_ratio), 'P/EBITDA'),
-                'debt_to_total_equity': (_debt_to_total_equity, 'Debt to Total Equity'),
-                'interest_coverage_ratio': (
-                set_default(cd.interest_coverage_ratio_calculated), 'Interest Coverage Ratio'),
-                'effective_tax_rate': (set_default(cd.effective_tax_rate), 'Effective Tax Rate'),
-                'ev_over_revenue': (set_default(cd.ev_over_revenue), 'EV Over Revenue')
-            }
-            # print(cd.year)
-            lll[cd.year] = ll
-            data['company_data'] = lll
-        # print(lll)
-    except Exception as ex:
-        print('ex')
-        print(ex)
-
-    # country_id = Country.objects.get(country='United States').id
-    # data = {'ticker': c.ticker, 'sic_code': c.industry.sic_code, 'country_id': country_id,
-    #         'sic_description': c.industry.sic_description, 'company_data': lll}
-    return JsonResponse(data)
+# def get_company_detail(request):
+#     lll = {}
+#
+#     sid = request.POST.get('id')
+#     xc = XBRLCompanyInfo.objects.get(id=sid)
+#     country_id = Country.objects.get(country='United States').id
+#     data = {'ticker': xc.ticker, 'sic_code': xc.industry.sic_code, 'country_id': country_id,
+#             'sic_description': xc.industry.sic_description, 'company_data': lll}
+#
+#     try:
+#         c = CompanyInfo.objects.get(ticker=xc.ticker)
+#         for cd in c.company_data.all():
+#
+#             try:
+#                 _return_on_equity = round(100 * (cd.number_of_shares * cd.share_price / cd.p_over_e_ratio)) / 100
+#             except Exception as e:
+#                 _return_on_equity = 0
+#
+#             try:
+#                 _eps = round(100 * cd.share_price / cd.p_over_e_ratio) / 100
+#             except Exception as e:
+#                 _eps = 0
+#
+#             try:
+#                 _debt_to_total_equity = round(100 * cd.total_long_term_debt / cd.stockholders_equity) / 100
+#             except Exception as e:
+#                 _debt_to_total_equity = 0
+#
+#             try:
+#                 _book_value_ratio = round(100 * cd.stockholders_equity / cd.number_of_shares) / 100
+#             except Exception as e:
+#                 _book_value_ratio = 0
+#
+#             try:
+#                 _times_interest_earned = round(100 * cd.ebit / cd.interest_expense) / 100
+#             except Exception as e:
+#                 _times_interest_earned = 0
+#
+#             try:
+#                 _net_profit_on_sales = round(100 * (cd.ebit - cd.income_taxes - cd.interest_expense) / cd.revenue) / 100
+#             except Exception as e:
+#                 _net_profit_on_sales = 0
+#
+#             ll = {
+#                 # Balance Sheet
+#                 # Current Assets
+#                 'cash_cash_equivalents': (set_default(cd.cash_cash_equivalents), 'Cash & Equivalents'),
+#                 'goodwill': (set_default(cd.goodwill), 'Goodwill'),
+#                 'intangible_assets_net': (set_default(cd.intangible_assets_net), 'Intangible Assets(net)'),
+#                 # Debt
+#                 'noncurrent_liabilities': (set_default(cd.noncurrent_liabilities), 'Long-term Liabilities'),
+#                 'long_term_debt_noncurrent': (
+#                 set_default(cd.long_term_debt_noncurrent), 'LT Liabilities (Non-Current)'),
+#                 'total_long_term_debt': (set_default(cd.total_long_term_debt), 'Total long term debt'),
+#                 # Equity
+#                 'equity_attributable_to_oncontrolling_interest': (
+#                 set_default(cd.equity_attributable_to_oncontrolling_interest), 'Minority Interest'),
+#                 'preferred_stock': (set_default(cd.preferred_stock), 'Preferred Stocks'),
+#                 'stockholders_equity': (set_default(cd.stockholders_equity), 'Stockholders Equity'),
+#                 # Income Statement
+#                 'revenue': (set_default(cd.revenue), 'Revenues'),
+#                 'ebit': (set_default(cd.ebit), 'EBIT'),
+#
+#                 'ebitda': (set_default(cd.ebitda), 'EBITDA'),
+#                 'interest_expense': (set_default(cd.interest_expense), 'Interest Expense'),
+#                 'income_taxes': (set_default(cd.income_taxes), 'Income Taxes'),
+#
+#                 # Other Information
+#                 'share_price': (set_default(cd.share_price), 'Share Price'),
+#                 'market_value_equity': (set_default(cd.market_value_equity), 'MV of Equity'),
+#                 'enterprise_value': (set_default(cd.enterprise_value), 'Enterprise Value'),
+#                 'number_of_shares': (set_default(cd.number_of_shares), '# of Shares'),
+#                 # Ratios
+#                 # -------------
+#                 # current ratio
+#                 # > quick ratio
+#                 # > Debt to Total Assets
+#                 'times_interest_earned': (_times_interest_earned, 'Times Interest Earned'),
+#                 # > Account Receivable
+#                 # > Inventory
+#                 'net_profit_on_sales': (_net_profit_on_sales, 'Net Profit on Sales'),
+#                 # Gross Profit Margin
+#                 # Return on Assets
+#                 # 'return_on_assets': (round(100*(cd.ebit)/cd.interest_expense)/100, 'Return on Assets'),
+#
+#                 'return_on_equity': (_return_on_equity, 'Income On Equity'),
+#
+#                 'eps': (_eps, 'EPS'),
+#                 'p_over_e_ratio': (set_default(cd.p_over_e_ratio), 'P/E'),
+#                 # > Dividend Rate/Yield
+#                 # > Dividend Payout
+#                 'book_value_ratio': (_book_value_ratio, 'Book Value Ratio'),
+#                 #
+#                 'p_over_s_ratio': (set_default(cd.p_over_s_ratio), 'P/S'),
+#                 'p_over_b_ratio': (set_default(cd.p_over_b_ratio), 'P/B'),
+#                 'p_over_cash_flow_ratio': (set_default(cd.p_over_cash_flow_ratio), 'P/CF'),
+#                 'p_over_ebitda_ratio': (set_default(cd.p_over_ebitda_ratio), 'P/EBITDA'),
+#                 'debt_to_total_equity': (_debt_to_total_equity, 'Debt to Total Equity'),
+#                 'interest_coverage_ratio': (
+#                 set_default(cd.interest_coverage_ratio_calculated), 'Interest Coverage Ratio'),
+#                 'effective_tax_rate': (set_default(cd.effective_tax_rate), 'Effective Tax Rate'),
+#                 'ev_over_revenue': (set_default(cd.ev_over_revenue), 'EV Over Revenue')
+#             }
+#             # print(cd.year)
+#             lll[cd.year] = ll
+#             data['company_data'] = lll
+#         # print(lll)
+#     except Exception as ex:
+#         print('ex')
+#         print(ex)
+#
+#     # country_id = Country.objects.get(country='United States').id
+#     # data = {'ticker': c.ticker, 'sic_code': c.industry.sic_code, 'country_id': country_id,
+#     #         'sic_description': c.industry.sic_description, 'company_data': lll}
+#     return JsonResponse(data)
 
 
 def wacc_ebit_roic(request):
@@ -566,6 +564,13 @@ def update_data(request):
 #     dic = acx.get_all_companies()
 #     return dic
 
+def get_option_bf_detail_for_ticker(request):
+    ticker_ = request.POST.get('ticker')
+    dic = TDAmeriTrade().get_option_bf_detail_for_ticker(ticker=ticker_)
+    # print(dic)
+    return dic
+
+
 def get_option_statistics_for_ticker(request):
     ticker_ = request.POST.get('ticker')
     dic = TDAmeriTrade().get_option_statistics_for_ticker(ticker=ticker_)
@@ -573,21 +578,29 @@ def get_option_statistics_for_ticker(request):
     return dic
 
 
-def tdameritrade_setup(request):
+def get_option_chain(request):
+    ticker_ = request.POST.get('ticker')
+    dic = TDAmeriTrade().get_option_chain(ticker=ticker_)
+    # print(dic)
+    return dic
+
+
+def tdameritrade_setup_w_attribute(request):
     try:
         fun_ = request.POST.get('fun')
+        attribute_ = request.POST.get('attribute')
+        attribute_value_ = request.POST.get('attribute_value')
         # print(fun_)
-        try:
-            # print('TDAmeriTrade().' + fun_ + '()')
+        if attribute_ != "":
+            print('TDAmeriTrade().' + fun_ + '('+attribute_+'="'+attribute_value_+'")')
+            dic = eval('TDAmeriTrade().' + fun_ + '('+attribute_+'="'+attribute_value_+'")')
+        else:
             dic = eval('TDAmeriTrade().' + fun_ + '()')
-            # print(dic)
-        except Exception as ex:
-            # print(fun_ + '(request)')
-            dic = eval(fun_+'(request)')
-        return JsonResponse(dic)
-
+        # print(dic)
     except Exception as ex:
-        return JsonResponse({'status': 'error: '+str(ex)})
+        # print(fun_ + '(request)')
+        dic = eval(fun_+'(request)')
+    return JsonResponse(dic)
 
 
 def get_earning_forecast_sp500_view_main_detail(request):
@@ -629,6 +642,24 @@ def update_statistics(request):
     return {'status': 'ok'}
 
 
+def analysis_setup_attribute(request):
+    try:
+        fun_ = request.POST.get('fun')
+        attribute_ = request.POST.get('attribute')
+        attribute_value_ = request.POST.get('attribute_value')
+        # print(fun_, attribute_, attribute_value_)
+        try:
+            s_ = 'FinancialAnalysis().' + fun_ + '(request=request,'+attribute_+'="'+attribute_value_+'")'
+            print(s_)
+            dic = eval(s_)
+        except Exception as ex:
+            print("Error analysis_setup_attribute.")
+        return JsonResponse(dic)
+
+    except Exception as ex:
+        return JsonResponse({'status': 'error: '+str(ex)})
+
+
 def admin_setup_attribute(request):
     try:
         fun_ = request.POST.get('fun')
@@ -649,10 +680,13 @@ def admin_setup_attribute(request):
         return JsonResponse({'status': 'error: '+str(ex)})
 
 
+def update_region_risk_premium(request):
+    return AcademyCityXBRL().update_region_risk_premium(request)
+
+
 def admin_setup(request):
     try:
         fun_ = request.POST.get('fun')
-        # print(fun_)
         try:
             # print('AcademyCityXBRL().' + fun_ + '()')
             dic = eval('AcademyCityXBRL().' + fun_ + '()')
@@ -972,10 +1006,8 @@ def create_company_by_ticker(request):
     # print('-1-'*10)
     # print(ticker)
     # print('-1-'*10)
-
     acx = AcademyCityXBRL()
     response = acx.create_company_by_ticker(ticker)
-
     return JsonResponse(response)
 
 #
@@ -989,11 +1021,14 @@ def get_data_ticker(request):
     ticker_ = request.POST.get('ticker')
     # print(ticker_)
     is_update_ = request.POST.get('is_update')
+    is_updateq_ = request.POST.get('is_updateq')
     # print(is_update_)
+    project = Project.objects.filter(translations__language_code=get_language()).get(id=request.session['cv_project_id'])
+    XBRLCountryYearData.project = project
     acx = AcademyCityXBRL()
-    data = acx.get_data_ticker(cik=ticker_, type_='10-K', is_update=is_update_, request=request)
+    data = acx.get_data_ticker(ticker=ticker_, is_update=is_update_, is_updateq=is_updateq_)
     # print(data)
-    request.session['cv_statements'] = data['statements']
+    # request.session['cv_statements'] = data['statements']
     return JsonResponse(data)
 
 

@@ -513,10 +513,10 @@ class XBRLCompanyInfoInProcess(TruncateTableMixin, models.Model):
         return self.company_name
 
 # https://docs.djangoproject.com/en/3.2/topics/db/managers/
-class XBRLRegionQuerySet(models.QuerySet):
-    def averages(self):
-        return self.filter(countries__country_data__year=XBRLCountryYearData.project.year)\
-            .annotate(num_countries=Coalesce(models.Avg("countries__country_data__tax_rate"), 0))
+# class XBRLRegionQuerySet(models.QuerySet):
+#     def averages(self):
+#         return self.filter(countries__country_data__year=XBRLCountryYearData.project.year)\
+#             .annotate(num_countries=Coalesce(models.Avg("countries__country_data__tax_rate"), 0))
 
 
 class XBRLRegion(TruncateTableMixin, models.Model):
@@ -529,8 +529,8 @@ class XBRLRegion(TruncateTableMixin, models.Model):
     full_name = models.CharField(max_length=128, default='', blank=True, null=True)
     updated_adamodar = models.BooleanField(default=False)
 
-    objects = models.Manager()  # The default manager.
-    region_objects = XBRLRegionQuerySet.as_manager()  # The project manager.
+    # objects = models.Manager()  # The default manager.
+    # region_objects = XBRLRegionQuerySet.as_manager()  # The project manager.
 
     def __str__(self):
         return str(self.full_name) + " (" + str(self.name) + ")"
@@ -580,6 +580,7 @@ class XBRLCompanyInfo(TruncateTableMixin, models.Model):
     is_active = models.BooleanField(default=False)
     #
     financial_data = models.JSONField(null=True)
+    financial_dataq = models.JSONField(null=True)
     #
     city = models.CharField(max_length=50, default="", blank=True)
     state = models.CharField(max_length=50, default="", blank=True)
@@ -589,30 +590,50 @@ class XBRLCompanyInfo(TruncateTableMixin, models.Model):
 
     @property
     def tax_rate(self):
-        t_ = XBRLCountryYearData.project_objects.get(country=self.country_of_incorporation).tax_rate
+        try:
+            if not self.country_of_incorporation:
+                print('-6'*50)
+                self.country_of_incorporation = XBRLCountry.objects.get(name="United States")
+                self.save()
+                print('-7'*50)
+                log_debug("You need to setup country_of_incorporation: default is United States of America.")
+            t_ = XBRLCountryYearData.project_objects.get(country=self.country_of_incorporation).tax_rate
+        except Exception as ex:
+            print("Error: you need to setup country_of_incorporation:" + str(ex))
+            return 0.0
+            # log_debug("Error: you need to setup country_of_incorporation:" + str(ex))
         return t_
 
     def get_countries_regions(self):
+        # log_debug("get_countries_regions 0")
         dic = {}
         try:
+            log_debug("get_countries_regions 1")
             for y in self.years_of_operation.all():
+                # log_debug("get_countries_regions year: " + str(y))
+                # log_debug("get_countries_regions 1")
                 dic[y.year] = {}
                 dic[y.year]['countries'] = {}
                 for c in y.countries_of_operation.all():
                     dic[y.year]['countries'][c.country.id] = [str(c.id), str(c.revenues), str(c.rating), str(c.spread),
                                                               str(c.risk_premium), str(c.tax_rate)]
+                # log_debug("get_countries_regions 2")
                 dic[y.year]['regions'] = {}
                 for r in y.regions_of_operation.all():
                     dic[y.year]['regions'][r.region.id] = [str(r.id), str(r.revenues), str(r.rating), str(r.spread),
                                                            str(r.risk_premium), str(r.tax_rate)]
+                # log_debug("get_countries_regions 3")
                 dic[y.year]['industries'] = {}
                 for r in y.industries_of_operation.all():
                     dic[y.year]['industries'][r.industry.id] = [str(r.id), str(r.revenues), str(r.ev_over_sales),
                                                                 str(r.estimated_value), str(r.unlevered_beta),
                                                                 str(r.estimated_growth)]
+                # log_debug("get_countries_regions 4")
+            # log_debug("get_countries_regions 10")
         except Exception as ex:
-            print(ex)
-        # print(dic)
+            log_debug("get_countries_regions ex: " + str(ex))
+            print(dic)
+        # log_debug("get_countries_regions 11")
         return dic
 
     def __str__(self):
@@ -1128,6 +1149,7 @@ class XBRLSPStatistics(TruncateTableMixin, models.Model):
     next_release_date = models.DateField(blank=True, null=True)
     mean_abs_price_change = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, default=0)
     mean_abs_actual_forecast_change = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, default=0)
+    mean_abs_actual_forecast_change_money = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, default=0)
     correlation_afp = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, default=0)
     updated = models.DateField()
     straddle_price = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, default=0)
@@ -1136,11 +1158,10 @@ class XBRLSPStatistics(TruncateTableMixin, models.Model):
 
     def set_company_statistics(self, is_update=True):
         # print('---111--- set_company_statistics ------')
-        # if self.company.ticker == "PYPL":
-        #     print(self.company.ticker)
-        # print(is_update)
-        # log_debug("Start set_company_statistics for: " + self.company.ticker)
+        log_debug("Start set_company_statistics for: " + self.company.ticker)
+        # print(self.company.ticker)
         tmp = []
+        tafc = []
         taf = []
         efs = XBRLSPEarningForecast.objects.filter(company=self.company).order_by('-year', '-quarter').all()[:5]
         for e in efs:
@@ -1148,8 +1169,11 @@ class XBRLSPStatistics(TruncateTableMixin, models.Model):
                 if e.forecast == 0 or e.yesterday_price == 0:
                     continue
                 pa = abs(e.today_price - e.yesterday_price)  # / e.yesterday_price)
-                af = abs((e.actual - e.forecast) / e.forecast)
+                afc = abs((e.actual - e.forecast))
+                af = abs(afc / e.forecast)
+
                 tmp.append(pa)
+                tafc.append(afc)
                 taf.append(af)
             except Exception as ex:
                 pass
@@ -1162,11 +1186,16 @@ class XBRLSPStatistics(TruncateTableMixin, models.Model):
             #     print(tmp)
             #     print(mp)
             self.mean_abs_price_change = mp
+
             maf = sum(taf)/len(taf)
+            mafc = sum(tafc)/len(tafc)
             maf = round(10000 * maf)/100
             self.mean_abs_actual_forecast_change = maf
+            self.mean_abs_actual_forecast_change_money = mafc
+
             tmp = [float(x) for x in tmp]
             taf = [float(x) for x in taf]
+
             if len(tmp) > 1:
                 corr, p_value = pearsonr(tmp, taf)
                 corr = round(100*corr)/100
@@ -1205,10 +1234,11 @@ class XBRLSPEarningForecast(TruncateTableMixin, models.Model):
 # -- The Accounting Cube --
 class XBRLDimCompany(TruncateTableMixin, models.Model):
     class Meta:
-        verbose_name = _('XBRL Dim Company Info')
-        verbose_name_plural = _('XBRL Dim Companies Info')
+        verbose_name = _('XBRL Dim Company')
+        verbose_name_plural = _('XBRL Dim Companies')
         ordering = ['main_sic_code', 'sic_code', 'company_name']
     #
+    id = models.PositiveSmallIntegerField(primary_key=True)
     main_sic_code = models.PositiveSmallIntegerField()
     main_sic_description = models.CharField(max_length=128, default='', blank=True, null=True)
     sic_code = models.PositiveSmallIntegerField()
@@ -1218,6 +1248,13 @@ class XBRLDimCompany(TruncateTableMixin, models.Model):
     ticker = models.CharField(max_length=10, null=False)
     cik = models.CharField(max_length=10, null=True)
     company_name = models.CharField(max_length=128, default='', blank=True, null=True)
+    city = models.CharField(max_length=50, default="", blank=True)
+    state = models.CharField(max_length=50, default="", blank=True)
+    zip = models.CharField(max_length=10, default="", blank=True)
+    is_active = models.BooleanField(default=False)
+
+    def __str__(self):
+        return str(self.ticker) + ":" + str(self.company_name)
 
 
 class XBRLDimTime(TruncateTableMixin, models.Model):
@@ -1226,8 +1263,12 @@ class XBRLDimTime(TruncateTableMixin, models.Model):
         verbose_name_plural = _('XBRL Dim Time')
         ordering = ['year', 'quarter']
     #
+    id = models.PositiveSmallIntegerField(primary_key=True)
     year = models.PositiveSmallIntegerField(default=0)
     quarter = models.PositiveSmallIntegerField(default=0)
+
+    def __str__(self):
+        return str(self.id)
 
 
 class XBRLDimAccount(TruncateTableMixin, models.Model):
@@ -1236,11 +1277,14 @@ class XBRLDimAccount(TruncateTableMixin, models.Model):
         verbose_name_plural = _('XBRL Dim Account')
         ordering = ['statement_order', 'order']
     #
+    order = models.PositiveSmallIntegerField(default=0, primary_key=True)
     statement_order = models.PositiveSmallIntegerField(default=0)
     statement = models.CharField(max_length=250, default='Income Statement')
-    order = models.PositiveSmallIntegerField(default=0)
     account = models.CharField(max_length=250, null=True)
     parent = models.PositiveIntegerField(default=1)
+
+    def __str__(self):
+        return str(self.order) + ":" + str(self.account)
 
 
 class XBRLFactCompany(TruncateTableMixin, models.Model):
@@ -1251,5 +1295,5 @@ class XBRLFactCompany(TruncateTableMixin, models.Model):
     company = models.ForeignKey(XBRLDimCompany, on_delete=models.CASCADE, default=None, related_name='dim_companies')
     time = models.ForeignKey(XBRLDimTime, on_delete=models.CASCADE, default=None, related_name='dim_times')
     account = models.ForeignKey(XBRLDimAccount, on_delete=models.CASCADE, default=None, related_name='dim_companies')
-    amount = models.IntegerField(default=0)
+    amount = models.DecimalField(max_digits=18, decimal_places=2, default=0)
 

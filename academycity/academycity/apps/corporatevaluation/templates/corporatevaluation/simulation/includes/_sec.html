@@ -246,6 +246,7 @@ function get_sec(url) {
     if (data)
     {
       console.log("get_sec 1: ", 'data already downloaded')
+      vObj["last_r"] = data['last_r']
       process_get_sec(data)
     } else
     {
@@ -256,6 +257,33 @@ function get_sec(url) {
             function(data){
                 console.log("get_sec 2: ", 'data not yet downloaded')
                 vObj["sec_company_data"][vObj["ticker"]][vObj["filing_year"]] = data
+                vObj["last_r"] = data['last_r']
+                process_get_sec(data)
+        });
+    }
+}
+
+function get_sec_q(url) {
+    console.log("get_sec: ", url)
+    var elm = document.getElementById('navigation_table')
+    elm.innerHTML = 'In Process Downloading Data.   Please wait';
+    yq = vObj["reporting_year"]+"_"+vObj["reporting_q"]
+    var data = vObj["sec_company_data"][vObj["ticker"]][yq]
+    if (data)
+    {
+      console.log("get_sec 1: ", 'data already downloaded')
+      vObj["last_r"] = data['last_r']
+      process_get_sec(data)
+    } else
+    {
+        $.post("{% url 'corporatevaluation:get_sec' %}",
+            {
+              url: url,
+            },
+            function(data){
+                console.log("get_sec 2: ", 'data not yet downloaded')
+                vObj["sec_company_data"][vObj["ticker"]][yq] = data
+                vObj["last_r"] = data['last_r']
                 process_get_sec(data)
         });
     }
@@ -290,13 +318,13 @@ function loadReport(idx) {
     if (window.XMLHttpRequest || window.ActiveXObject || "ActiveXObject" in window) {
         clearReportDiv();
         xsl_url = null;
-        var last_r = vObj["sec_company_data"][vObj["ticker"]][vObj["filing_year"]]['last_r']
+        var last_r = vObj["last_r"]
         if (idx == last_r) {
             highlightAllMenuItems();
             jQuery.ajaxSetup({async:false});
             for (var i=1; i<=last_r; i++) {
                 if (i < last_r) {
-                    rr = vObj["xbrl_data"][vObj["filing_year"]]["r_link"]+String(i)+".htm"
+                    rr = vObj["r_link"]+String(i)+".htm"
                     getReport(rr, xsl_url);
                     var li = document.getElementById('r'+idx);
                     if (li) { li.parentNode.style.display='block';}
@@ -304,7 +332,7 @@ function loadReport(idx) {
             }
         } else
         {
-            rr = vObj["xbrl_data"][vObj["filing_year"]]["r_link"]+String(idx)+".htm"
+            rr = vObj["r_link"]+String(idx)+".htm"
             getReport(rr, xsl_url);
             var li = document.getElementById('r'+idx);
             if (li) {li.parentNode.style.display='block'; }
@@ -385,8 +413,8 @@ function unHighlightAllMenuItems()
 function highlightAllMenuItems()
 {$('#menu li ul li a.xbrlviewer').css('background-color','#C1CDCD')}
 </script>
-<script>
 
+<script>
     function onchange_account(event)
     {
       var elm = event.target
@@ -412,7 +440,7 @@ function highlightAllMenuItems()
             {
               vObj["xbrl_data"][vObj["reporting_year"]]['matching_accounts']=data['matching_accounts']
               //alert(vObj["xbrl_data"][vObj["reporting_year"]]['matching_accounts'])
-              // -- in _xbrl_data tab
+              // -- in _xbrl_data tabto
               vObj["select_accounts"] = get_select_accounts(vObj["reporting_year"], vObj["ticker"], type=vObj["select_accounts_type"])
               //alert(vObj["select_accounts"])
               add_accounts_editor(replace=1)

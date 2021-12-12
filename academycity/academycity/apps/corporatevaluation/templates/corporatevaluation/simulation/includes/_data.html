@@ -8,13 +8,6 @@
 <script>
 // Pick a company
 // --------------
-function toCommas(value) {
-value_ = value;
-try{ value_ = value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");} catch(er){}
-return value_;
-}
-function removeCommas(value) {return value.replace(/,/g, '')}
-
 function get_account(sk, y, cd)
 {
   return "<td><input class='value' id='"+sk+"_" + y + "' account='"+sk+"' year='" + y + "' type='text' value='" + toCommas(cd[y][sk][0]) + "' onchange='input_valuation(event)'></td>"
