@@ -175,7 +175,7 @@ function create_table_options_w01_delta(data, ticker)
             t = two_decimal_points(data['tickers'][z]['call']['theta'])
             p = two_decimal_points(data['tickers'][z]['call']['price'])
 
-            if(1*underlyingPrice<1*z){ var zz= " class = 'inTheMoney'"}else {var zz=""}
+            if(1*underlyingPrice>1*z){ var zz= " class = 'inTheMoney'"}else {var zz=""}
             st = "<td style='text-align: right;'"+zz+">"+d+"</td><td style='text-align: right;'"+zz+">"+t+"</td><td style='text-align: right;'"+zz+">"+p+"</td>" + st
 
             //alert(st)
@@ -186,7 +186,7 @@ function create_table_options_w01_delta(data, ticker)
             d = two_decimal_points(data['tickers'][z]['put']['delta'])
             t = two_decimal_points(data['tickers'][z]['put']['theta'])
             p = two_decimal_points(data['tickers'][z]['put']['price'])
-            if(1*underlyingPrice>=1*z){ var zz= " class = 'inTheMoney'"} else {var zz=""}
+            if(1*underlyingPrice<=1*z){ var zz= " class = 'inTheMoney'"} else {var zz=""}
             st += "<td style='text-align: right;'"+zz+">"+p+"</td><td style='text-align: right;'"+zz+">"+t+"</td><td style='text-align: right;'"+zz+">"+d+"</td>"
             //alert(st)
             } catch(er){
@@ -207,28 +207,21 @@ function options_w01_bf(event, ticker)
 {
  var e = event.target; var fun_ = e.getAttribute("fun");
  clean_marked_chosen_field(e);
- //alert(fun_)
- //alert(ticker)
+ // alert(fun_); alert(ticker);
 
  if (!(ticker in vObj["options_bf"]))
  {
      bf.set_info_by_ticker(content="In Process ... please wait. ...  <i class='fa fa-spinner fa-spin'></i>", win_titles="Butterfly details for ticker: "+ticker +" ...  <i class='fa fa-spinner fa-spin'></i>");
      $.post('{% url "corporatevaluation:tdameritrade_setup_w_attribute" %}',
-          {
-            fun: fun_,
-            attribute: 'ticker',
-            attribute_value: ticker
-          },
+          {fun: fun_, attribute: 'ticker', attribute_value: ticker},
           function(data)
           {
-            vObj["options_bf"][ticker] = data;
-            create_table_options_w01_bf(vObj["options_bf"][ticker], ticker)
+            if(data['status']=="ok")
+            {vObj["options_bf"][ticker]=data;create_table_options_w01_bf(vObj["options_bf"][ticker], ticker)
+            } else {bf.set_info_by_ticker(content=" No data for "+ticker, win_titles="Butterfly details for ticker: "+ticker);}
           }
         );
- } else
- {
-  create_table_options_w01_bf(vObj["options_bf"][ticker], ticker)
- }
+ } else{create_table_options_w01_bf(vObj["options_bf"][ticker], ticker)}
 }
 
 </script>
@@ -236,9 +229,7 @@ function options_w01_bf(event, ticker)
 <!--  options_w01_delta  -->
 <script>
 function options_w01_delta(event, ticker)
-{
- e = event.target; fun_ = e.getAttribute("fun");
- clean_marked_chosen_field(e);
+{var e=event.target;var fun_=e.getAttribute("fun");clean_marked_chosen_field(e);
  //alert(fun_)
  //alert(ticker)
  if (!(ticker in vObj["options_delta"]))
@@ -253,15 +244,11 @@ function options_w01_delta(event, ticker)
           function(data)
           {
             vObj["options_delta"][ticker] = data['option_data_ticker'];
-            create_table_options_w01_delta(vObj["options_delta"][ticker], ticker)
+            create_table_options_w01_delta(vObj["options_delta"][ticker], ticker);
           }
         );
- } else
- {
-  create_table_options_w01_delta(vObj["options_delta"][ticker], ticker)
- }
+ } else {create_table_options_w01_delta(vObj["options_delta"][ticker], ticker)}
 }
-
 </script>
 
 <!-- create_table_earning_forecast_sp500_view_main_detail(data) -->

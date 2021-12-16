@@ -10,7 +10,6 @@
             <input type="checkbox" id="update_data_for_companiesq" onclick="update_data_for_companiesq(event)">
         </td></tr>
     </table><br/>
-
     <hr/>
     <h4>Fill cube data</h4>
     <table>
@@ -27,24 +26,27 @@
             </td>
         </tr>
     </table>
-    <br/>
     <div id="result_message"></div><br/>
-    <hr/>
-    <table>
-        <tr>
-            <td onclick="tdameritrade_setup_w_attribute(event)">
-                <button fun="update_chart_of_accounts" style="width: 50px;">CofA</button>
-                <button fun="update_companies" style="width: 50px;">Com</button>
-                <button fun="update_time" style="width: 50px;">Time</button>
-                <button fun="update_fact_table" style="width: 50px;">Fact</button>
 
-                <input id="bi_attribute_name" type="text" value="ticker" size="4" placeholder="attribute name"/>
-                <input id="bi_attribute_value" type="text" value="AAPL" size="4" placeholder="attribute value"/>
+    <hr/>
+    <h4>TDAmeriTrade</h4>
+    <table>
+        <tbody obj="TDAmeriTrade" attributes_id="tdameritrade_attributes">
+        <tr id="buttons" onclick="activate_obj_function(event)">
+            <td><button fun="get_prices" style="width: 60px;">hdata</button>
+                <button fun="get_quote" style="width: 60px;">quote</button>
+                <button fun="get_quotes" style="width: 60px;">quotes</button></td>
+        </tr>
+        <tr id="tdameritrade_attributes">
+            <td>
+                <input type="text" value="ticker" size="4" placeholder="name"/>
+                <input type="text" value="AAPL" size="4" placeholder="value"/>
             </td>
         </tr>
+        </tbody>
     </table>
-    <br/>
-
+    <div id="result_message_tdameritrade"></div><br/>
+    <hr/>
 
 
     <table>
@@ -61,7 +63,7 @@
         <tr>
             <td>
                 <button onclick="admin_setup_attribute(event)" fun="get_announcement_time" attribute="m" attribute_value="5"
-                        style="width: 122px;">annualTime</button>
+                        style="width: 122px;">annuacTime</button>
                 <input id="attribute_name" type="text" value="m" size="4" placeholder="name"/>
                 <input id="attribute_value" type="text" value="9" size="4" placeholder="value"/>
             </td>
@@ -81,7 +83,9 @@
             </td>
         </tr>
     </table>
+    <div id="result_message_options"></div><br/>
     <hr/>
+
     <table>
         <tr>
             <td>
@@ -232,6 +236,7 @@
 -->
     <br/><br/><br/><br/>
 </div>
+
 <script>
 function update_data_for_companies() {
   var checkBox = document.getElementById("update_data_for_companies");
@@ -348,13 +353,52 @@ function analysis_setup_attribute(event)
 }
 </script>
 
+<!-- activate_obj_function -->
+<script>
+function activate_obj_function(event)
+{
+ var e=event.target;var p=e.parentNode.parentNode;var g=e.parentNode.parentNode.parentNode;
+ // alert(e.outerHTML);alert(p.outerHTML);alert(g.outerHTML)
+ var attributes=document.getElementById(g.getAttribute("attributes_id"))
+
+ var obj_=g.getAttribute("obj");var fun_=e.getAttribute("fun");var dic_={};
+ //alert(attributes.outerHTML)
+
+ for(var k=0;k<attributes.children.length;k++)
+ {dic_[attributes.children[k].children[0].value]=attributes.children[k].children[1].value}
+
+ var message_div = document.getElementById("result_message_tdameritrade");message_div.innerHTML = 'In process for: '+dic_['ticker']
+ //for(k in dic_){alert(k);alert(dic_[k]);}
+
+ $.post('{% url "corporatevaluation:activate_obj_function" %}',
+      {obj: obj_, fun: fun_, dic: JSON.stringify(dic_),},
+      function(data){
+        for (k in data)
+        {
+          if (k == 'status')
+           {
+            message_div.innerHTML = 'Process done with status: ' + data['status']
+           }
+           else
+           {
+                // alert(k + " : " + data[k])
+                vObj[k] = data[k];
+                // alert(vObj[k])
+           }
+        }
+      }
+    );
+
+}
+</script>
+
 <!-- admin_setup_attribute -->
 <script>
 function admin_setup_attribute(event)
 {
- var e = event.target;
+ var e=event.target;
  try{
-      var attribute_name_ = document.getElementById("attribute_name").value;
+      var attribute_name_=document.getElementById("attribute_name").value;
       if (attribute_name_=="")
       {
          var attribute_ = e.getAttribute("attribute");

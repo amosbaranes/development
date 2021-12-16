@@ -6,6 +6,7 @@ from .views import (home, get_companies_valuation_actual, wacc_ebit_roic, team, 
                     get_screens, update_todo, delete_todo,
                     get_accounts, get_data_ticker,
                     admin_setup, admin_setup_attribute, tdameritrade_setup_w_attribute, analysis_setup_attribute,
+                    activate_obj_function,
                     sec, get_r, get_sec, onchange_account, get_matching_accounts,
                     save_industry_default,
                     create_company_by_ticker,
@@ -40,6 +41,7 @@ urlpatterns = [
     path('admin_setup_attribute/', admin_setup_attribute, name='admin_setup_attribute'),
     path('tdameritrade_setup_w_attribute/', tdameritrade_setup_w_attribute, name='tdameritrade_setup_w_attribute'),
     path('analysis_setup_attribute/', analysis_setup_attribute, name='analysis_setup_attribute'),
+    path('activate_obj_function/', activate_obj_function, name='activate_obj_function'),
 
     path('sec/', sec, name='sec'),
     path('get_r/', get_r, name='get_r'),
@@ -53,5 +55,4 @@ urlpatterns = [
     path('create_company_by_ticker/', create_company_by_ticker, name='create_company_by_ticker'),
     # Valuation
     path('get_risk_premium/', get_risk_premium, name='get_risk_premium'),
-
 ]

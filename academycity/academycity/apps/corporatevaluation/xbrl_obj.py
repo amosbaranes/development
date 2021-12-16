@@ -14,6 +14,8 @@ from datetime import timedelta
 from django.db.models import Q
 from concurrent.futures import ThreadPoolExecutor
 import xml.etree.ElementTree as ET
+
+from numpy import dtype
 from six.moves import urllib
 import xlrd
 import numpy as np
@@ -86,7 +88,7 @@ class TDAmeriTrade(object):
 
         self.api_key = self.customer_key + "@AMER.OAUTHAP"
         try:
-            self.client = auth.client_from_token_file(self.token_path+"/token", self.api_key)
+            self.client = auth.client_from_token_file(self.token_path + "/token", self.api_key)
         except Exception as fex:
             # print(fex)
             try:
@@ -94,7 +96,8 @@ class TDAmeriTrade(object):
                 from webdriver_manager.chrome import ChromeDriverManager
                 with webdriver.Chrome(ChromeDriverManager().install()) as driver:
                     try:
-                        self.client = auth.client_from_login_flow(driver, self.api_key, self.callback_url, self.token_path+"/token")
+                        self.client = auth.client_from_login_flow(driver, self.api_key, self.callback_url,
+                                                                  self.token_path + "/token")
                     except Exception as ex:
                         print(ex)
             except Exception as eex:
@@ -136,7 +139,7 @@ class TDAmeriTrade(object):
         return {'status': 'ok'}
 
     def get_option_chain_new(self, ticker=None, start_date=None, end_date=None):
-        print("-1"*50)
+        print("-1" * 50)
         print("start td.get_option_chain for " + ticker)
         dic = {'status': 'ko'}
         try:
@@ -161,7 +164,7 @@ class TDAmeriTrade(object):
             for d in options_.json()['putExpDateMap']:
                 for p in options_.json()['putExpDateMap'][d]:
                     p_ = options_.json()['putExpDateMap'][d][p][0]
-                    p_p = (p_['bid'] + p_['ask'])/2
+                    p_p = (p_['bid'] + p_['ask']) / 2
                     # print(d, p, p_p, p_['bid'], p_['ask'])
                     llp.append(p_p)
         except Exception as ex:
@@ -172,7 +175,7 @@ class TDAmeriTrade(object):
             for d in options_.json()['callExpDateMap']:
                 for c in options_.json()['callExpDateMap'][d]:
                     c_ = options_.json()['callExpDateMap'][d][c][0]
-                    c_p = (c_['bid'] + c_['ask'])/2
+                    c_p = (c_['bid'] + c_['ask']) / 2
                     # print(d, c, c_p, c_['bid'], c_['ask'])
                     llc.append(c_p)
         except Exception as ex:
@@ -188,9 +191,9 @@ class TDAmeriTrade(object):
         # print('---')
         # print('td.get_option_chain 124')
         # print('---')
-        straddle_price = round(100*(llp[2] + llc[2]))/100
-        butterfly_c = round(100*(-2*llc[2] + llc[1] + llc[3]))/100
-        butterfly_p = round(100*(-2*llp[2] + llp[1] + llp[3]))/100
+        straddle_price = round(100 * (llp[2] + llc[2])) / 100
+        butterfly_c = round(100 * (-2 * llc[2] + llc[1] + llc[3])) / 100
+        butterfly_p = round(100 * (-2 * llp[2] + llp[1] + llp[3])) / 100
         dic = {'status': 'ok', 'straddle_price': straddle_price, "butterfly_c": butterfly_c, "butterfly_p": butterfly_p,
                'llc': llc, 'llp': llp}
         # log_debug("End get_option_chain: " + ticker)
@@ -198,33 +201,34 @@ class TDAmeriTrade(object):
 
     def get_butterfly_price(self, strike_num, strikes, llc, llp):
         p0 = llc['calls']['date']['strikes'][strikes[strike_num]]
-        pl = llc['calls']['date']['strikes'][strikes[strike_num-1]]
-        pr = llc['calls']['date']['strikes'][strikes[strike_num+1]]
-        bfc = round(100*(-2*p0 + pl + pr))/100
+        pl = llc['calls']['date']['strikes'][strikes[strike_num - 1]]
+        pr = llc['calls']['date']['strikes'][strikes[strike_num + 1]]
+        bfc = round(100 * (-2 * p0 + pl + pr)) / 100
         p0 = llp['puts']['date']['strikes'][strikes[strike_num]]
-        pl = llp['puts']['date']['strikes'][strikes[strike_num-1]]
-        pr = llp['puts']['date']['strikes'][strikes[strike_num+1]]
-        bfp = round(100*(-2*p0 + pl + pr))/100
+        pl = llp['puts']['date']['strikes'][strikes[strike_num - 1]]
+        pr = llp['puts']['date']['strikes'][strikes[strike_num + 1]]
+        bfp = round(100 * (-2 * p0 + pl + pr)) / 100
         return bfc, bfp
 
     def get_option_chain(self, ticker=None, start_date=None, end_date=None):
-        print("-1"*50)
-        print("start td.get_option_chain for " + ticker)
+        # print("start td.get_option_chain for 111 " + ticker)
         if not start_date:
             start_date = datetime.datetime.now().date()
             end_date = (datetime.datetime.now() + datetime.timedelta(days=6)).date()
         dic = {'status': 'ko'}
-        # log_debug("in get_option_chain api options pull for : " + ticker)
+        # print('-'*20)
+        # print("in get_option_chain api options pull for : " + ticker)
+        # print('-'*20)
         try:
             options_ = self.client.get_option_chain(ticker, contract_type=self.client.Options.ContractType.ALL,
                                                     strike_count=5, from_date=start_date, to_date=end_date)
         except Exception as ex:
-            log_debug("Error in get_option_chain api options pull for : " + ticker)
+            print("Error in get_option_chain api options pull for : " + ticker)
             return dic
 
         # print('------options_----')
         # print(json.dumps(options_.json(), indent=4))
-        # print('-----')
+        # print(123)
         try:
             llp = {'puts': {}}
             for d_ in options_.json()['putExpDateMap']:
@@ -233,12 +237,12 @@ class TDAmeriTrade(object):
                 llp['puts']['date']['strikes'] = {}
                 for p in options_.json()['putExpDateMap'][d_]:
                     p_ = options_.json()['putExpDateMap'][d_][p][0]
-                    p_p = (p_['bid'] + p_['ask'])/2
-                    llp['puts']['date']['strikes'][p] = round(100*p_p)/100
+                    p_p = (p_['bid'] + p_['ask']) / 2
+                    llp['puts']['date']['strikes'][p] = round(100 * p_p) / 100
         except Exception as ex:
             print("puts: " + str(ex))
             return dic
-
+        # print(1234)
         try:
             llc = {'calls': {}}
             for d_ in options_.json()['callExpDateMap']:
@@ -247,9 +251,9 @@ class TDAmeriTrade(object):
                 llc['calls']['date']['strikes'] = {}
                 for c in options_.json()['callExpDateMap'][d_]:
                     c_ = options_.json()['callExpDateMap'][d_][c][0]
-                    c_p = (c_['bid'] + c_['ask'])/2
+                    c_p = (c_['bid'] + c_['ask']) / 2
                     # print(d, c, c_p, c_['bid'], c_['ask'])
-                    llc['calls']['date']['strikes'][c] = round(100*c_p)/100
+                    llc['calls']['date']['strikes'][c] = round(100 * c_p) / 100
         except Exception as ex:
             print("calls: " + str(ex))
             return dic
@@ -257,23 +261,29 @@ class TDAmeriTrade(object):
         for k in llp['puts']['date']['strikes']:
             if k not in strikes:
                 strikes.append(k)
-        straddle_price = round(100*(llp['puts']['date']['strikes'][strikes[2]] +
-                                    llc['calls']['date']['strikes'][strikes[2]]))/100
-        bfcl, bfpl = self.get_butterfly_price(strike_num=1, strikes=strikes, llc=llc, llp=llp)
-        bfc0, bfp0 = self.get_butterfly_price(strike_num=2, strikes=strikes, llc=llc, llp=llp)
-        bfcr, bfpr = self.get_butterfly_price(strike_num=3, strikes=strikes, llc=llc, llp=llp)
-        llc_ = [bfcl, bfc0, bfcr]
-        llp_ = [bfpl, bfp0, bfpr]
-        #
-        price_data = self.get_quote(ticker)['data'][ticker]
-        # print(price_data)
-        share_price = (price_data['bidPrice'] + price_data['askPrice'])/2
-        # print(price_data['bidPrice'], price_data['askPrice'], price)
+        # print(12345)
+        try:
+            straddle_price = round(100 * (llp['puts']['date']['strikes'][strikes[2]] +
+                                          llc['calls']['date']['strikes'][strikes[2]])) / 100
+            bfcl, bfpl = self.get_butterfly_price(strike_num=1, strikes=strikes, llc=llc, llp=llp)
+            bfc0, bfp0 = self.get_butterfly_price(strike_num=2, strikes=strikes, llc=llc, llp=llp)
+            bfcr, bfpr = self.get_butterfly_price(strike_num=3, strikes=strikes, llc=llc, llp=llp)
+            llc_ = [bfcl, bfc0, bfcr]
+            llp_ = [bfpl, bfp0, bfpr]
+            #
+            dic = '{"ticker": "' + ticker + '"}'
+            price_data = self.get_quote(dic)['data'][ticker]
+            # print(price_data)
+            share_price = (price_data['bidPrice'] + price_data['askPrice']) / 2
+            # print(price_data['bidPrice'], price_data['askPrice'], price)
 
-        # self.get_quote(ticker="GOOG"):
-        dic = {'status': 'ok', 'share_price': share_price, 'straddle_price': straddle_price, 'strikes': strikes, "llc_": llc_, "llp_": llp_, 'llc': llc, 'llp': llp}
-        # log_debug("End get_option_chain: " + ticker)
-        # print(dic)
+            # self.get_quote(ticker="GOOG"):
+            dic = {'status': 'ok', 'share_price': share_price, 'straddle_price': straddle_price, 'strikes': strikes,
+                   "llc_": llc_, "llp_": llp_, 'llc': llc, 'llp': llp}
+            # log_debug("End get_option_chain: " + ticker)
+            # print(dic)
+        except Exception as ex:
+            dic = {'status': 'ko'}
         return dic
 
     def get_option_strategy_lh_(self, options_, dic, option_type, l_=0.1, h_=0.9, ticker=""):
@@ -281,7 +291,7 @@ class TDAmeriTrade(object):
         # print(ticker)
         # print(dic)
         try:
-            for d in options_.json()[option_type+'ExpDateMap']:
+            for d in options_.json()[option_type + 'ExpDateMap']:
                 if 'date' not in dic:
                     dic['date'] = str(d).split(":")[0]
                     dic['tickers'] = {}
@@ -290,17 +300,21 @@ class TDAmeriTrade(object):
                     dic['underlyingPrice'] = options_.json()['underlyingPrice']
                     dic['date'] = str(d).split(":")[0]
                     dic['tickers'] = {}
-                for t in options_.json()[option_type+'ExpDateMap'][d]:
+                for t in options_.json()[option_type + 'ExpDateMap'][d]:
                     # print(t)
                     # print(options_.json()[option_type+'ExpDateMap'][d][t][0]['delta'])
-                    if options_.json()[option_type+'ExpDateMap'][d][t][0]['delta'] != "NaN":
-                        if l_ < abs(options_.json()[option_type+'ExpDateMap'][d][t][0]['delta']) < h_:
+                    if options_.json()[option_type + 'ExpDateMap'][d][t][0]['delta'] != "NaN":
+                        if l_ < abs(options_.json()[option_type + 'ExpDateMap'][d][t][0]['delta']) < h_:
                             if t not in dic['tickers']:
                                 dic['tickers'][t] = {}
                             dic['tickers'][t][option_type] = {}
-                            dic['tickers'][t][option_type]['price'] = round(100*(options_.json()[option_type+'ExpDateMap'][d][t][0]['bid'] + options_.json()[option_type+'ExpDateMap'][d][t][0]['ask'])/2)/100
-                            dic['tickers'][t][option_type]['delta'] = round(100*options_.json()[option_type+'ExpDateMap'][d][t][0]['delta'])/100
-                            dic['tickers'][t][option_type]['theta'] = round(100*options_.json()[option_type+'ExpDateMap'][d][t][0]['theta'])/100
+                            dic['tickers'][t][option_type]['price'] = round(100 * (
+                                        options_.json()[option_type + 'ExpDateMap'][d][t][0]['bid'] +
+                                        options_.json()[option_type + 'ExpDateMap'][d][t][0]['ask']) / 2) / 100
+                            dic['tickers'][t][option_type]['delta'] = round(
+                                100 * options_.json()[option_type + 'ExpDateMap'][d][t][0]['delta']) / 100
+                            dic['tickers'][t][option_type]['theta'] = round(
+                                100 * options_.json()[option_type + 'ExpDateMap'][d][t][0]['theta']) / 100
                             # print(options_.json()[option_type+'ExpDateMap'][d][t][0])
         except Exception as ex:
             log_debug("Error 201 in get_option_chain api options pull for : " + ticker + " = " + str(ex))
@@ -351,59 +365,183 @@ class TDAmeriTrade(object):
         # print(options_)
 
         dic = {'ticker': ticker, 'underlyingPrice': options_.json()['underlyingPrice']}
-        dic = self.get_option_strategy_lh_(options_=options_, dic=dic, option_type='call', l_=0.1, h_=0.9, ticker=ticker)
+        dic = self.get_option_strategy_lh_(options_=options_, dic=dic, option_type='call', l_=0.1, h_=0.9,
+                                           ticker=ticker)
         dic = self.get_option_strategy_lh_(options_=options_, dic=dic, option_type='put', l_=0.1, h_=0.9, ticker=ticker)
         dic = {'status': 'ok', 'option_data_ticker': dic}
         print(dic)
         log_debug("End in get_option_statistics_for_ticker : " + ticker)
         return dic
 
-    def get_prices(self):
-        r = self.client.get_price_history('GOOGL',
-                                period_type=client.Client.PriceHistory.PeriodType.YEAR,
-                                period=client.Client.PriceHistory.Period.TWO_DAYS,
-                                frequency_type=client.Client.PriceHistory.FrequencyType.DAILY,
-                                frequency=client.Client.PriceHistory.Frequency.DAILY)
+    def get_prices(self, dic):
+        # print(dic)
+        dic = eval(dic)
+        # print(dic)
+        ticker_ = dic['ticker']
+        r = self.client.get_price_history(ticker_,
+                                          period_type=client.Client.PriceHistory.PeriodType.DAY,
+                                          period=client.Client.PriceHistory.Period.ONE_DAY,
+                                          frequency_type=client.Client.PriceHistory.FrequencyType.MINUTE,
+                                          frequency=client.Client.PriceHistory.Frequency.EVERY_MINUTE)
         assert r.status_code == 200, r.raise_for_status()
-        print(json.dumps(r.json(), indent=4))
-
-        dic = {'status': 'ok'}
-        log_debug("End get_prices.")
-        return dic
-
-    def get_quote(self, ticker="GOOG"):
-        url = r"https://api.tdameritrade.com/v1/marketdata/{}/quotes".format(ticker.upper())
-        print(url)
-        pay_load = {'apikey': self.customer_key + '@AMER.OAUTHAP'}
-        # print(pay_load)
-        try:
-            res = requests.get(url=url, params=pay_load)
-            data = res.json()
-            # print(data)
-            epoch_date = data[ticker]['quoteTimeInLong']
-            epoch_url = "https://showcase.api.linx.twenty57.net/UnixTime/fromunix?timestamp=" + str(epoch_date)
-            # print(epoch_url)
-        #     convert Epoch
-        #     https://showcase.api.linx.twenty57.net/UnixTime/fromunix?timestamp=1549892280
-        except Exception as ex:
-            print(ex)
-
-        dic = {'status': 'ok', 'data': data}
+        # print(json.dumps(r.json(), indent=4))
+        dic = {'data': r}
         # print(dic)
         log_debug("End get_prices.")
         return dic
 
-    def get_quotes(self, tickers):
-        url = r"https://api.tdameritrade.com/v1/marketdata/quotes"
-        print(url)
-        pay_load = {'apikey': self.customer_key + "@AMER.OAUTHAP", 'symbol': tickers}
+    def get_quote(self, dic):
+        dic = eval(dic)
+        ticker_ = dic['ticker']
+        url = r"https://api.tdameritrade.com/v1/marketdata/{}/quotes".format(ticker_.upper())
+        # print(url)
+        pay_load = {'apikey': self.customer_key + '@AMER.OAUTHAP'}
+        # print(pay_load)
+        try:
+            r = requests.get(url=url, params=pay_load).json()
+        except Exception as ex:
+            print(ex)
+        return {'data': r}
 
-        print(pay_load)
-        res = requests.get(url=url, params=pay_load)
-        data = res.json()
-        print(data)
-        dic = {'status': 'ok', 'data': data}
-        log_debug("End get_prices.")
+    def get_iron_condor(self, rdic):
+        try:
+            ticker = rdic['ticker']
+            rdic['is_success'] = False
+            start_date_ = datetime.datetime.now().date()
+            end_date_ = (datetime.datetime.now() + datetime.timedelta(days=6)).date()
+            options_ = self.client.get_option_chain(ticker, contract_type=self.client.Options.ContractType.ALL,
+                                                    from_date=start_date_, to_date=end_date_)
+            # print(options_.json())
+            dicd = {}
+            dicd = self.get_option_strategy_lh_(options_=options_, dic=dicd, option_type='call', l_=0.1, h_=0.4)
+            # print('dicd -1- call')
+            # print(dicd)
+            delta_call_low = strike_call_low = price_call_low = delta_put_high = strike_put_high = price_put_high = -1
+            d_ = sk = sk1 = -1
+            for k in dicd['tickers']:
+                if sk == -1:
+                    sk = float(k)
+                else:
+                    sk1 = float(k)
+                    d_ = abs(sk1 - sk)
+                    sk = sk1
+                delta_ = dicd['tickers'][k]['call']['delta']
+                price_ = dicd['tickers'][k]['call']['price']
+                if 0.3 >= delta_ >= 0.2:
+                    if delta_ > delta_call_low:
+                        delta_call_low = delta_
+                        strike_call_low = k
+                        price_call_low = price_
+            # print('call delta_call_low, strike_call_low, price_call_low, d_')
+            # print(delta_call_low, strike_call_low, price_call_low, d_)
+
+            strike_call_high = str(float(strike_call_low) + d_)
+            if float(strike_call_low) < rdic['p']:
+                print("float(strike_call_low) < rdic['p']")
+                return rdic
+
+            delta_call_high = dicd['tickers'][strike_call_high]['call']['delta']
+            price_call_high = dicd['tickers'][strike_call_high]['call']['price']
+            # print('call delta_call_high, strike_call_high, price_call_high, d_')
+            # print(delta_call_high, strike_call_high, price_call_high, d_)
+
+            dicd = {}
+            dicd = self.get_option_strategy_lh_(options_=options_, dic=dicd, option_type='put', l_=0.1, h_=0.4)
+            # print('dicd -1- put')
+            # print(dicd)
+            for k in dicd['tickers']:
+                delta_ = abs(dicd['tickers'][k]['put']['delta'])
+                price_ = dicd['tickers'][k]['put']['price']
+                if 0.3 >= delta_ >= 0.2:
+                    if delta_ > delta_put_high:
+                        delta_put_high = delta_
+                        strike_put_high = k
+                        price_put_high = price_
+            # print('put - delta_put_high, strike_put_high, price_put_high, d_')
+            # print(delta_put_high, strike_put_high, price_put_high, d_)
+            if delta_put_high == -1:
+                # print("delta_put_high == -1")
+                return rdic
+
+            strike_put_low = str(float(strike_put_high) - d_)
+            # print(strike_put_low)
+            delta_put_low = abs(dicd['tickers'][strike_put_low]['put']['delta'])
+            price_put_low = dicd['tickers'][strike_put_low]['put']['price']
+            # print('put - low')
+            # print(delta_put_low, strike_put_low, price_put_low, d_)
+            if delta_put_low == -1:
+                # print("delta_put_low == -1")
+                return rdic
+            condor_price = round(100 * (price_call_low - price_call_high + price_put_high - price_put_low)) / 100
+            result = {'call': {'low': {'delta': delta_call_low, 'strike': strike_call_low, 'price': price_call_low},
+                               'high': {'delta': delta_call_high, 'strike': strike_call_high,
+                                        'price': price_call_high}},
+                      'put': {'low': {'delta': delta_put_low, 'strike': strike_put_low, 'price': price_put_low},
+                              'high': {'delta': delta_put_high, 'strike': strike_put_high, 'price': price_put_high}}}
+            rdic['condor_price'] = condor_price
+            rdic['condor'] = result
+            rdic['is_success'] = True
+            # print(rdic)
+        except Exception as ex:
+            print("Error in get_option_chain api options pull for : " + str(ex))
+            return rdic
+        return rdic
+
+    def get_quotes(self, dic):
+        dic = eval(dic)
+        ticker_ = dic['ticker']
+        #
+        # need to pull the list of all stocks
+        if ticker_ == "ALL":
+            ticker_ = "AAPL,GOOG,TSLA"
+        #
+        url = r"https://api.tdameritrade.com/v1/marketdata/quotes"
+        pay_load = {'apikey': self.customer_key + "@AMER.OAUTHAP", 'symbol': ticker_}
+        # print(pay_load)
+        r = requests.get(url=url, params=pay_load)
+        data = r.json()
+        # print(data)
+        rdic = {}
+        for k in data:
+            print(k)
+            d = datetime.datetime.fromtimestamp(data[k]['quoteTimeInLong'] / 999.999451)
+            m = d.minute
+            h = d.hour
+            date_ = d.date()
+            rdic[k] = {"ticker": k, "date": date_, "h": h, "m": m, "p": data[k]['lastPrice']}
+            # print('rdic 1')
+            # print(rdic)
+
+            result = self.get_iron_condor(rdic[k])
+            if result['is_success']:
+                print('result')
+                print(result)
+                cld = result['condor']['call']['low']['delta']
+                cls = float(result['condor']['call']['low']['strike'])
+                clp = result['condor']['call']['low']['price']
+                chd = result['condor']['call']['high']['delta']
+                chs = float(result['condor']['call']['high']['strike'])
+                chp = result['condor']['call']['high']['price']
+
+                pld = result['condor']['put']['low']['delta']
+                pls = float(result['condor']['put']['low']['strike'])
+                plp = result['condor']['put']['low']['price']
+
+                phd = result['condor']['put']['high']['delta']
+                phs = float(result['condor']['put']['high']['strike'])
+                php = result['condor']['put']['high']['price']
+
+                ep = round(100*((clp - chp) + (php - plp)))/100
+                elc = round(100*((chs - cls) * (cld - chd) / 2 + chd * (chs - cls)))/100
+                elp = round(100*((phs - pls) * (phd - pld) / 2 + pld * (phs - pls)))/100
+                print(ep, elc, elp)
+                print('-' * 100)
+                result['expected_profit'] = ep - elc - elp
+            else:
+                continue
+
+        dic = {'data': result}
+        print("End get_Quotes.")
         return dic
 
 
@@ -815,7 +953,7 @@ class AcademyCityXBRL(object):
 
     def get_data_for_years(self, dic_data_year):
         # print(dic_data_year)
-        log_debug("start get_data_for_years: "+dic_data_year[3]+", "+str(dic_data_year[0]))
+        log_debug("start get_data_for_years: " + dic_data_year[3] + ", " + str(dic_data_year[0]))
         # print("Current Time Start get data = " + str(dic_data_year[0]), datetime.datetime.now().strftime("%H:%M:%S"))
         # dic_data_year[3] = ticker
         # dic_data_year[0] = year
@@ -1030,7 +1168,7 @@ class AcademyCityXBRL(object):
 
         dic_data_year[1]['year_data'] = year_data
 
-        log_debug("End get_data_for_years: "+dic_data_year[3]+", "+str(dic_data_year[0]))
+        log_debug("End get_data_for_years: " + dic_data_year[3] + ", " + str(dic_data_year[0]))
         # print("Current Time End get data = " + str(dic_data_year[0]), datetime.datetime.now().strftime("%H:%M:%S"))
         return dic_data_year
 
@@ -1229,9 +1367,9 @@ class AcademyCityXBRL(object):
 
                 # print(end_date[1])
                 if 12 >= int(end_date[1]) > 4:
-                    start_date_should = end_date[0] + '-' + self.add_zero(str(int(end_date[1])-3))
-                    start_date0_should = end_date[0] + '-' + self.add_zero(str(int(end_date[1])-2))
-                    start_date1_should = end_date[0] + '-' + self.add_zero(str(int(end_date[1])-4))
+                    start_date_should = end_date[0] + '-' + self.add_zero(str(int(end_date[1]) - 3))
+                    start_date0_should = end_date[0] + '-' + self.add_zero(str(int(end_date[1]) - 2))
+                    start_date1_should = end_date[0] + '-' + self.add_zero(str(int(end_date[1]) - 4))
                     start_date2_should = "none"
                     # print(start_date_should)
                 elif int(end_date[1]) <= 4:
@@ -1359,7 +1497,7 @@ class AcademyCityXBRL(object):
 
         dic_data_year[2]['year_data'] = year_data
 
-        log_debug("End get_data_for_years: "+dic_data_year[3]+", "+str(dic_data_year[0]))
+        log_debug("End get_data_for_years: " + dic_data_year[3] + ", " + str(dic_data_year[0]))
         # print("Current Time End get data = " + str(dic_data_year[0]), datetime.datetime.now().strftime("%H:%M:%S"))
         return dic_data_year
 
@@ -1754,7 +1892,7 @@ class AcademyCityXBRL(object):
         try:
             s_from = "2021-01-01"
             s_to = "2021-12-31"
-            url = "https://finance.yahoo.com/calendar/earnings?from="+s_from+"&to="+s_to+"&day=" + s_day
+            url = "https://finance.yahoo.com/calendar/earnings?from=" + s_from + "&to=" + s_to + "&day=" + s_day
             log_debug(url)
             headers = {'User-Agent': 'amos@drbaranes.com'}
             sp_resp = requests.get(url, headers=headers, timeout=30)
@@ -1812,7 +1950,7 @@ class AcademyCityXBRL(object):
             sm = self.add_zero(str(m))
             for d in range(1, nd):
                 sd = self.add_zero(str(d))
-                s_day = "2021-"+sm+"-"+sd
+                s_day = "2021-" + sm + "-" + sd
                 # print(s_day)
                 log_debug("Start day: " + s_day)
                 # print('-----------')
@@ -1898,8 +2036,8 @@ class AcademyCityXBRL(object):
         d = {}
         for r in XBRLSPEarningForecast.objects.filter(company__ticker=ticker).order_by('-year', 'quarter').all():
             try:
-                d[str(int(r.year)*10 + int(r.quarter))] = [r.year, r.quarter, float(r.forecast), float(r.actual),
-                                                           float(r.today_price), float(r.yesterday_price)]
+                d[str(int(r.year) * 10 + int(r.quarter))] = [r.year, r.quarter, float(r.forecast), float(r.actual),
+                                                             float(r.today_price), float(r.yesterday_price)]
             except Exception as ex:
                 pass
                 # print('error get_earning_forecast_sp500_view_main')
@@ -2259,6 +2397,7 @@ class AcademyCityXBRL(object):
             XBRLIndustryInfo.objects.get_or_create(sic_code=sic_code_, main_sic=main_sic_,
                                                    sic_description=sic_description_)
         return {'status': 'ok'}
+
     # # #
 
     def load_tax_rates_by_country_year(self):
@@ -2567,7 +2706,8 @@ class AcademyCityXBRL(object):
         return dic
 
     def update_region_risk_premium(self, request):
-        project = Project.objects.filter(translations__language_code=get_language()).get(id=request.session['cv_project_id'])
+        project = Project.objects.filter(translations__language_code=get_language()).get(
+            id=request.session['cv_project_id'])
         XBRLCountryYearData.project = project
         XBRLRegionYearData.project = project
         for r in XBRLRegion.objects.filter(updated_adamodar=True).all():
@@ -2590,7 +2730,8 @@ class AcademyCityXBRL(object):
                     pass
                     # print(c, ex)
             try:
-                tx, ds, rp = round(100*sum(ltx) / len(ltx))/100, round(100*sum(lds) / len(lds))/100, round(100*sum(lrp) / len(lrp))/100
+                tx, ds, rp = round(100 * sum(ltx) / len(ltx)) / 100, round(100 * sum(lds) / len(lds)) / 100, round(
+                    100 * sum(lrp) / len(lrp)) / 100
                 # print(tx, ds, rp)
                 rr, c = XBRLRegionYearData.objects.get_or_create(region=r, year=project.year)
                 rr.tax_rate = tx
@@ -2674,8 +2815,6 @@ class AcademyCityXBRL(object):
 
     def test1(self):
         for k in XBRLCountryYearData.objects.filter(year=2020).all():
-
-
             print(k.cds)
     #
 
@@ -2689,7 +2828,7 @@ class FinancialAnalysis(object):
 
     def update_chart_of_accounts(self, **kwargs):
         for account in XBRLValuationAccounts.objects.all():
-            print('-'*50)
+            print('-' * 50)
             print(account.id, account.order, account.statement.id, account.statement.statement, account.sic,
                   account.account, account.type, account.scale)
 
@@ -2704,14 +2843,14 @@ class FinancialAnalysis(object):
         print("update_companies")
         for company in XBRLCompanyInfo.objects.all():
             if company.is_active:
-                # print('-'*10)
+                print('-'*10)
                 # print(company.id, company.industry.main_sic.sic_code, company.industry.main_sic.sic_description,
                 #       company.industry.sic_code, company.industry.sic_description,
                 #       company.ticker, company.cik, company.company_name, company.exchange,
                 #       company.is_active, company.city, company.state, company.zip)
                 log_debug(company.ticker)
                 # print(company.country_of_incorporation.name)
-
+                print(company)
                 a, c = XBRLDimCompany.objects.get_or_create(id=company.id,
                                                             main_sic_code=company.industry.main_sic.sic_code,
                                                             main_sic_description=company.industry.main_sic.sic_description,
@@ -2729,12 +2868,12 @@ class FinancialAnalysis(object):
 
     def update_time(self, **kwargs):
         print("update_time")
-        up_to_year = datetime.datetime.now().year+2
+        up_to_year = datetime.datetime.now().year + 2
 
         for y in range(2012, up_to_year):
             for q in range(0, 5):
-                ind = y*10+q
-                log_debug(str(ind) +" "+ str(y)+" "+ str(q))
+                ind = y * 10 + q
+                log_debug(str(ind) + " " + str(y) + " " + str(q))
                 a, c = XBRLDimTime.objects.get_or_create(id=ind, year=y, quarter=q)
         result = {'status': "ok"}
         # print(result)
@@ -2744,16 +2883,21 @@ class FinancialAnalysis(object):
     # https://github.com/nicolaskruchten/pivottable
     def update_fact_table(self, **kwargs):
         log_debug("--update_chart_of_accounts--")
-        # request = kwargs['request']
         ticker_ = kwargs['ticker']
         log_debug(ticker_)
+        # print("--update_chart_of_accounts--")
+        # request = kwargs['request']
+        # print(ticker_)
         company = XBRLCompanyInfo.objects.get(ticker=ticker_.upper())
+        # print(company)
         company_ = XBRLDimCompany.objects.get(ticker=company.ticker.upper())
+        # print(company_)
+
         for y in company.financial_data['data']:
             yd = company.financial_data['data'][y]
             if int(yd['dei']['documentfiscalyearfocus']) < 2012:
                 continue
-            yq = int(yd['dei']['documentfiscalyearfocus']+"0")
+            yq = int(yd['dei']['documentfiscalyearfocus'] + "0")
             time_ = XBRLDimTime.objects.get(id=yq)
             log_debug("start update fact table for " + ticker_ + " year: " + str(y))
             for account in yd['year_data']:
@@ -2764,7 +2908,7 @@ class FinancialAnalysis(object):
                     f.amount = amount_
                     f.save()
                 except Exception as ex:
-                    print(ex)
+                    log_debug(str(ex))
             log_debug("End update fact table for " + ticker_ + " year: " + str(y))
 
         for y in company.financial_dataq['data']:
@@ -2784,18 +2928,24 @@ class FinancialAnalysis(object):
                         f.amount = amount_
                         f.save()
                     except Exception as ex:
-                        print(ex)
+                        log_debug(str(ex))
                 log_debug("End update fact table for ticker=" + ticker_ + " year=" + str(y) + " q=" + str(q))
         result = {'status': "ok"}
         # print(result)
         return result
 
     def get_data_for_ticker(self, **kwargs):
-        # print('get_data_for_ticker')
-        ticker_ = kwargs['ticker']
-        # print(ticker_)
-        qsv = XBRLFactCompany.objects.filter(company__ticker=ticker_, time__quarter__gt=0).all().values("time_id", "account_id", "amount")
-        # print(qsv)
+        print('get_data_for_ticker 1')
+        ticker_ = kwargs['ticker'].upper()
+        print('-' * 50)
+        print(ticker_)
+        qsv = XBRLFactCompany.objects.filter(company__ticker=ticker_, time__quarter__lte=0).all().values("company_id",
+                                                                                                         "time_id",
+                                                                                                         "account_id",
+                                                                                                         "amount")
+
+        # qsv = XBRLFactCompany.objects.filter(company__ticker=ticker_, time__quarter__gt=0).all().values("time_id", "account_id", "amount")
+        print(qsv)
 
         df = pd.DataFrame(qsv)
         print(df)
@@ -2806,3 +2956,25 @@ class FinancialAnalysis(object):
         # print(result)
         return result
 
+    def get_pivot_data(self, dic):
+        dic = eval(dic)
+        # print('get_data_for_ticker 1')
+        ticker_=dic['ticker']
+        company_id = []
+        time_id = []
+        account_id = []
+        amount = []
+        qsv = XBRLFactCompany.objects.filter(company__ticker=ticker_, time__quarter__lte=0).all().values("company_id", "time_id", "account_id", "amount")
+        for q in qsv:
+            # print(q, q['time_id'], q['account_id'],q['amount'])
+            company_id.append(q['company_id'])
+            time_id.append(q['time_id'])
+            account_id.append(q['account_id'])
+            amount.append(float(q['amount']))
+
+        data_ = {"company_id": company_id, "time_id": time_id, "account_id": account_id, "amount": amount}
+        # print(data_)
+        result = {'status': "ok", "data": data_}
+
+        # print(result)
+        return result

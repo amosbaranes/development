@@ -1,34 +1,49 @@
 {% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
 
 <div id="valuationsetup" class="tabcontent">
+    <table>
+        <tr>
+            <td onclick="activate_obj_function_pivot(event)">
+                <button style="width: 80px;">GetData</button>
+            </td>
+        </tr>
+    </table>
 
+<div id="wdr-component"></div>
+<link href="https://cdn.webdatarocks.com/latest/webdatarocks.min.css" rel="stylesheet"/>
+<script src="https://cdn.webdatarocks.com/latest/webdatarocks.toolbar.min.js"></script>
+<script src="https://cdn.webdatarocks.com/latest/webdatarocks.js"></script>
 
-<style>
-.duration_account
+<!-- https://www.webdatarocks.com/doc/ -->
+<!--  activate_obj_function_pivot  -->
+<script>
+function activate_obj_function_pivot(event)
 {
- color: red;
+ var e=event.target;
+ var obj_="FinancialAnalysis";var fun_="get_pivot_data";var dic_={};
+ dic_['ticker']=document.getElementById('search_ticker').value;
+
+ $.post('{% url "corporatevaluation:activate_obj_function" %}',
+      {obj: obj_, fun: fun_, dic: JSON.stringify(dic_),},
+      function(data){
+                data_=[]
+                for(var i=0; i<data['data']['data']['time_id'].length;i++)
+                {
+                 d_ = {"company_id": data['data']['data']['company_id'][i],
+                       "time_id": data['data']['data']['time_id'][i],
+                       "account_id": data['data']['data']['account_id'][i],
+                       "amount": data['data']['data']['amount'][i]}
+                 data_.push(d_)
+                }
+                var pivot = new WebDataRocks({
+                    container: "#wdr-component",
+                    toolbar: true,
+                    report: {dataSource: {data:data_}}
+                });
+            }
+    );
 }
-</style>
-
-
-<select onchange="onchange_account(event)"><option value="-1">------------</option>
-    <option value="1" ma="RevenueFromContractWithCustomerExcludingAssessedTax" class="duration_account" hidden="hidden">Revenue</option>
-    <option value="3" ma="CostOfGoodsAndServicesSold" class="duration_account">Cost of Revenue</option>
-    <option value="7" ma="GrossProfit" class="duration_account">Gross margin</option>
-    <option value="11" ma="ResearchAndDevelopmentExpense" class="duration_account">Research and development</option>
-    <option value="15" ma="SellingGeneralAndAdministrativeExpense" class="duration_account">Selling, general and administrative</option>
-    <option value="8" ma="OperatingIncomeLoss" class="duration_account">Operating Income</option>
-    <option value="9" ma="NetIncomeLoss" class="duration_account">Net Income</option>
-    <option value="2" ma="CashAndCashEquivalentsAtCarryingValue">Cas &amp; Cash Equivalent</option>
-    <option value="10" ma="MarketableSecuritiesCurrent">Marketable securities</option>
-    <option value="12" ma="InventoryNet">Inventories</option><option value="13" ma="AccountsReceivableNetCurrent">Accounts receivable, net</option>
-    <option value="14" ma="PropertyPlantAndEquipmentNet" hidden="hidden">Property, plant and equipment, net</option>
-    <option value="4" ma="AssetsNoncurrent" hidden="hidden">Long Term Assets</option>
-    <option value="5" ma="PaymentsOfDividends" class="duration_account" hidden="hidden">Dividend</option
-><option value="6" ma="ProceedsFromIssuanceOfCommonStock" class="duration_account"  hidden="hidden">Proceeds from issuance of common stock</option>
-</select>
-
-
-</body>
+</script>
 
 </div>
+

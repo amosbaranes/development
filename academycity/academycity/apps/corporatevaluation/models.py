@@ -592,10 +592,10 @@ class XBRLCompanyInfo(TruncateTableMixin, models.Model):
     def tax_rate(self):
         try:
             if not self.country_of_incorporation:
-                print('-6'*50)
+                # print('-6'*50)
                 self.country_of_incorporation = XBRLCountry.objects.get(name="United States")
                 self.save()
-                print('-7'*50)
+                # print('-7'*50)
                 log_debug("You need to setup country_of_incorporation: default is United States of America.")
             t_ = XBRLCountryYearData.project_objects.get(country=self.country_of_incorporation).tax_rate
         except Exception as ex:
@@ -1209,6 +1209,33 @@ class XBRLSPStatistics(TruncateTableMixin, models.Model):
             log_debug("Error 201 save mp for: " + self.company.ticker)
         # print("End set_company_statistics: " + self.company.ticker)
         # log_debug("End set_company_statistics: " + self.company.ticker)
+
+
+class XBRLSPStrategies(TruncateTableMixin, models.Model):
+    class Meta:
+        verbose_name = _('XBRLSPStrategy')
+        verbose_name_plural = _('XBRLSPStrategies')
+        ordering = ['company']
+    #
+    created = models.DateTimeField(auto_now_add=True)
+    company = models.ForeignKey(XBRLCompanyInfo, on_delete=models.CASCADE, default=None,
+                                related_name='company_strategies')
+    previous_price = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    current_price = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    condor_price = models.DecimalField(max_digits=6, decimal_places=2, blank=True, null=True)
+    call_delta_low = models.DecimalField(max_digits=4, decimal_places=2, blank=True, null=True)
+    call_strike_low = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    call_price_low = models.DecimalField(max_digits=6, decimal_places=2, blank=True, null=True)
+    call_delta_high = models.DecimalField(max_digits=4, decimal_places=2, blank=True, null=True)
+    call_strike_high = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    call_price_high = models.DecimalField(max_digits=6, decimal_places=2, blank=True, null=True)
+
+    put_delta_low = models.DecimalField(max_digits=4, decimal_places=2, blank=True, null=True)
+    put_strike_low = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    put_price_low = models.DecimalField(max_digits=6, decimal_places=2, blank=True, null=True)
+    put_delta_high = models.DecimalField(max_digits=4, decimal_places=2, blank=True, null=True)
+    put_strike_high = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    put_price_high = models.DecimalField(max_digits=6, decimal_places=2, blank=True, null=True)
 
 
 class XBRLSPEarningForecast(TruncateTableMixin, models.Model):

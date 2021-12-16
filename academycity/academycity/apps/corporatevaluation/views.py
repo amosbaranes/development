@@ -25,6 +25,7 @@ from ..webcompanies.WebCompanies import WebSiteCompany
 from .xbrl_obj import AcademyCityXBRL, TDAmeriTrade, FinancialAnalysis
 import datetime
 import requests
+import json
 from bs4 import BeautifulSoup
 import re
 from ..core.utils import log_debug, clear_log_debug
@@ -590,15 +591,14 @@ def tdameritrade_setup_w_attribute(request):
         fun_ = request.POST.get('fun')
         attribute_ = request.POST.get('attribute')
         attribute_value_ = request.POST.get('attribute_value')
-        # print(fun_)
         if attribute_ != "":
-            print('TDAmeriTrade().' + fun_ + '('+attribute_+'="'+attribute_value_+'")')
+            # print('TDAmeriTrade().' + fun_ + '('+attribute_+'="'+attribute_value_+'")')
             dic = eval('TDAmeriTrade().' + fun_ + '('+attribute_+'="'+attribute_value_+'")')
         else:
             dic = eval('TDAmeriTrade().' + fun_ + '()')
         # print(dic)
     except Exception as ex:
-        # print(fun_ + '(request)')
+        print(fun_ + '(request)')
         dic = eval(fun_+'(request)')
     return JsonResponse(dic)
 
@@ -643,21 +643,65 @@ def update_statistics(request):
 
 
 def analysis_setup_attribute(request):
+    fun_ = request.POST.get('fun')
+    attribute_ = request.POST.get('attribute')
+    attribute_value_ = request.POST.get('attribute_value')
+    print(fun_, attribute_, attribute_value_)
     try:
-        fun_ = request.POST.get('fun')
-        attribute_ = request.POST.get('attribute')
-        attribute_value_ = request.POST.get('attribute_value')
-        # print(fun_, attribute_, attribute_value_)
-        try:
-            s_ = 'FinancialAnalysis().' + fun_ + '(request=request,'+attribute_+'="'+attribute_value_+'")'
-            print(s_)
-            dic = eval(s_)
-        except Exception as ex:
-            print("Error analysis_setup_attribute.")
-        return JsonResponse(dic)
-
+        s_ = 'FinancialAnalysis().' + fun_ + '(request=request,'+attribute_+'="'+attribute_value_+'")'
+        dic = eval(s_)
     except Exception as ex:
-        return JsonResponse({'status': 'error: '+str(ex)})
+        print("Error analysis_setup_attribute.")
+    return JsonResponse(dic)
+
+
+def activate_obj_function(request):
+    try:
+        obj_ = request.POST.get('obj')
+        fun_ = request.POST.get('fun')
+        dic_ = request.POST.get('dic')
+        # print(dic_)
+        s_ = obj_+'().' + fun_ + '(dic_)'
+        # print(s_)
+        dic = eval(s_)
+        # print(dic)
+
+        # data = dic['data'].json()
+        # print(data)
+        #
+        # # dic = json.dumps(dic['data'].json(), indent=4)
+        # dic_ = eval(dic_)
+        # ticker_ = dic_['ticker']
+        # epoch_date = data[ticker_]['quoteTimeInLong']
+        # last_price = data[ticker_]['lastPrice']
+        # print(epoch_date, last_price, datetime.datetime.fromtimestamp(round(epoch_date / 999.999451)))
+
+        # epoch_url = "https://showcase.api.linx.twenty57.net/UnixTime/fromunix?timestamp=" + str(epoch_date)
+        #     convert Epoch
+        #     https://showcase.api.linx.twenty57.net/UnixTime/fromunix?timestamp=1549892280
+
+        # try:
+        #     for i in dic['data'].json()['candles']:
+        #         print('-'*10)
+        #         print(i)
+        #         print(i['close'], datetime.datetime.fromtimestamp(i['datetime']/1000))
+        #
+        #         # t = datetime.datetime.fromtimestamp(1284286794)
+        #         # print(t)
+        #         # print(t.date())
+        #         # print(t.minute)
+        # except Exception as ex:
+        #     print(ex)
+
+        # try:
+        #     for k in dic:
+        #         print(dic[k])
+        # except Exception as ex:
+        #     print(ex)
+        return JsonResponse({'status': 'ok', 'data': dic})
+    except Exception as ex:
+        print(ex)
+        return JsonResponse({'status': 'ko'})
 
 
 def admin_setup_attribute(request):
@@ -1028,7 +1072,12 @@ def get_data_ticker(request):
     acx = AcademyCityXBRL()
     data = acx.get_data_ticker(ticker=ticker_, is_update=is_update_, is_updateq=is_updateq_)
     # print(data)
-    # request.session['cv_statements'] = data['statements']
+    request.session['cv_statements'] = data['dic_company_info']['statements']
+    # print("request.session['cv_statements']")
+    # print(request.session['cv_statements'])
+    # print("data['dic_company_info']['statements']")
+    # print(data['dic_company_info']['statements'])
+
     return JsonResponse(data)
 
 
@@ -1060,7 +1109,9 @@ def onchange_account(request):
     ticker = request.POST.get('ticker')
     year_ = request.POST.get('year')
     sic_ = request.POST.get('sic')
+    # print(ticker, year_, " sic_=", sic_, " account_order=", account_order, " match_account_=", match_account_, accounting_standard_)
     # print('-2'*20)
+
     company_ = XBRLCompanyInfo.objects.get(ticker=ticker)
     # print(company_)
     # print('-13'*20)
@@ -1068,30 +1119,18 @@ def onchange_account(request):
     # print('account_order')
     # print(account_order)
     if account_order != "-1":
-        # print('account_id')
         account_ = XBRLValuationAccounts.objects.get(order=account_order)
-        # print('account_')
-        # print(account_)
-        # print('account_')
+        try:
+            account_to_delete = XBRLValuationAccountsMatch.objects.get(year=year_, company=company_,
+                                                                       match_account=match_account_,
+                                                                       accounting_standard=accounting_standard_)
+            account_to_delete.delete()
+        except Exception as ex:
+            pass
+            # print("error 101: " + str(ex))
 
-    try:
-        # print('-1'*10)
-        # print('match_account_')
-        # print(company_)
-        # print(year_)
-        # print(match_account_)
-        # print(accounting_standard_)
-        # print('match_account_')
-
-        account_to_delete = XBRLValuationAccountsMatch.objects.get(year=year_, company=company_,
-                                                                   match_account=match_account_,
-                                                                   accounting_standard=accounting_standard_)
-        account_to_delete.delete()
-
-        # print('-11'*10)
-    except Exception as ex:
-        pass
-        # print("error 101: " + str(ex))
+    # print("request.session['cv_statements']")
+    # print(request.session['cv_statements'])
 
     try:
         # print('-22'*10)
@@ -1100,9 +1139,7 @@ def onchange_account(request):
                                                                           match_account=match_account_,
                                                                           accounting_standard=accounting_standard_)
         # print('-21'*10)
-        # print(i)
-        # print('-22'*10)
-        # print(created)
+        # print(i, created)
         # print('-23'*10)
 
         acx = AcademyCityXBRL()
