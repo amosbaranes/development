@@ -2840,17 +2840,17 @@ class FinancialAnalysis(object):
         return result
 
     def update_companies(self, **kwargs):
-        print("update_companies")
+        # print("update_companies")
         for company in XBRLCompanyInfo.objects.all():
             if company.is_active:
-                print('-'*10)
+                # print('-'*10)
                 # print(company.id, company.industry.main_sic.sic_code, company.industry.main_sic.sic_description,
                 #       company.industry.sic_code, company.industry.sic_description,
                 #       company.ticker, company.cik, company.company_name, company.exchange,
                 #       company.is_active, company.city, company.state, company.zip)
                 log_debug(company.ticker)
                 # print(company.country_of_incorporation.name)
-                print(company)
+                # print(company)
                 a, c = XBRLDimCompany.objects.get_or_create(id=company.id,
                                                             main_sic_code=company.industry.main_sic.sic_code,
                                                             main_sic_description=company.industry.main_sic.sic_description,
@@ -2883,16 +2883,19 @@ class FinancialAnalysis(object):
     # https://github.com/nicolaskruchten/pivottable
     def update_fact_table(self, **kwargs):
         log_debug("--update_chart_of_accounts--")
-        ticker_ = kwargs['ticker']
+        ticker_ = kwargs['ticker'].upper()
         log_debug(ticker_)
         # print("--update_chart_of_accounts--")
         # request = kwargs['request']
         # print(ticker_)
-        company = XBRLCompanyInfo.objects.get(ticker=ticker_.upper())
-        # print(company)
-        company_ = XBRLDimCompany.objects.get(ticker=company.ticker.upper())
-        # print(company_)
+        company = XBRLCompanyInfo.objects.get(ticker=ticker_)
+        log_debug("got company: " + ticker_)
+        try:
+            company_ = XBRLDimCompany.objects.get(ticker=ticker_)
+        except Exception as ex:
+            log_debug("Error 9876: " + ticker_ + str(ex))
 
+        log_debug("Start yearly data")
         for y in company.financial_data['data']:
             yd = company.financial_data['data'][y]
             if int(yd['dei']['documentfiscalyearfocus']) < 2012:
@@ -2911,6 +2914,7 @@ class FinancialAnalysis(object):
                     log_debug(str(ex))
             log_debug("End update fact table for " + ticker_ + " year: " + str(y))
 
+        log_debug("Start quarterly data")
         for y in company.financial_dataq['data']:
             for sq in company.financial_dataq['data'][y]:
                 yd = company.financial_dataq['data'][y][sq]
@@ -2930,6 +2934,7 @@ class FinancialAnalysis(object):
                     except Exception as ex:
                         log_debug(str(ex))
                 log_debug("End update fact table for ticker=" + ticker_ + " year=" + str(y) + " q=" + str(q))
+        log_debug("End quarterly data")
         result = {'status': "ok"}
         # print(result)
         return result
@@ -2959,12 +2964,17 @@ class FinancialAnalysis(object):
     def get_pivot_data(self, dic):
         dic = eval(dic)
         # print('get_data_for_ticker 1')
-        ticker_=dic['ticker']
+        ticker_ = dic['ticker']
+        sic_ = XBRLDimCompany.objects.get(ticker=ticker_).sic_code
+        companies = XBRLDimCompany.objects.filter(sic_code=sic_).all()
+        companies_dic = {}
+        for c in companies:
+            companies_dic[c.id] = c.company_name
+        qsv = XBRLFactCompany.objects.filter(company__sic_code=sic_, time__quarter__lte=0).all().values("company_id", "time_id", "account_id", "amount")
         company_id = []
         time_id = []
         account_id = []
         amount = []
-        qsv = XBRLFactCompany.objects.filter(company__ticker=ticker_, time__quarter__lte=0).all().values("company_id", "time_id", "account_id", "amount")
         for q in qsv:
             # print(q, q['time_id'], q['account_id'],q['amount'])
             company_id.append(q['company_id'])
@@ -2972,7 +2982,7 @@ class FinancialAnalysis(object):
             account_id.append(q['account_id'])
             amount.append(float(q['amount']))
 
-        data_ = {"company_id": company_id, "time_id": time_id, "account_id": account_id, "amount": amount}
+        data_ = {"company_id": company_id, "time_id": time_id, "account_id": account_id, "amount": amount, "companies_dic": companies_dic}
         # print(data_)
         result = {'status': "ok", "data": data_}
 

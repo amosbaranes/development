@@ -10,6 +10,7 @@
     </table>
 
 <div id="wdr-component"></div>
+
 <link href="https://cdn.webdatarocks.com/latest/webdatarocks.min.css" rel="stylesheet"/>
 <script src="https://cdn.webdatarocks.com/latest/webdatarocks.toolbar.min.js"></script>
 <script src="https://cdn.webdatarocks.com/latest/webdatarocks.js"></script>
@@ -21,6 +22,7 @@ function activate_obj_function_pivot(event)
 {
  var e=event.target;
  var obj_="FinancialAnalysis";var fun_="get_pivot_data";var dic_={};
+
  dic_['ticker']=document.getElementById('search_ticker').value;
 
  $.post('{% url "corporatevaluation:activate_obj_function" %}',
@@ -29,10 +31,10 @@ function activate_obj_function_pivot(event)
                 data_=[]
                 for(var i=0; i<data['data']['data']['time_id'].length;i++)
                 {
-                 d_ = {"company_id": data['data']['data']['company_id'][i],
-                       "time_id": data['data']['data']['time_id'][i],
-                       "account_id": data['data']['data']['account_id'][i],
-                       "amount": data['data']['data']['amount'][i]}
+                 d_ = {"Company": data['data']['data']["companies_dic"][data['data']['data']['company_id'][i]],
+                       "Time": data['data']['data']['time_id'][i],
+                       "Account": get_account_properties(data['data']['data']['account_id'][i])[0],
+                       "Amount": data['data']['data']['amount'][i]}
                  data_.push(d_)
                 }
                 var pivot = new WebDataRocks({
