@@ -555,15 +555,15 @@ def update_data(request):
 
 # Admin
 # load sic numbers from the SEC
-# def set_sic_code(request):
-#     acx = AcademyCityXBRL()
-#     return acx.set_sic_code()
+def set_sic_code(request):
+    acx = AcademyCityXBRL()
+    return acx.set_sic_code()
 
 #
-# def get_all_companies(request):
-#     acx = AcademyCityXBRL()
-#     dic = acx.get_all_companies()
-#     return dic
+def get_all_companies(request):
+    acx = AcademyCityXBRL()
+    dic = acx.get_all_companies()
+    return dic
 
 def get_option_bf_detail_for_ticker(request):
     ticker_ = request.POST.get('ticker')
@@ -1175,6 +1175,7 @@ def save_industry_default(request):
 
 
 def get_duplications_tickers(request):
+    log_debug("Start get_duplications_tickers")
     dic = {'status': 'ok'}
     for q in XBRLCompanyInfo.objects.values('ticker').annotate(count=Count('id')).values('ticker').order_by().filter(count__gt=1):
         # print('q')
@@ -1194,6 +1195,7 @@ def get_duplications_tickers(request):
         except Exception as ex:
             print("Error 200: "+str(ex))
     # print(dic)
+    log_debug("End get_duplications_tickers")
     return dic
 
 #

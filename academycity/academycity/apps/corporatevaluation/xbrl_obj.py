@@ -2154,7 +2154,7 @@ class AcademyCityXBRL(object):
         return {'status': 'ok', 'id': company_id, 'company_name': company_name_}
 
     def clean_data_for_all_companies(self):
-
+        log_debug("Start clean_data_for_all_companies")
         companies_ = XBRLCompanyInfoInProcess.objects.all()
         for company in companies_:
             ticker = company.ticker
@@ -2256,9 +2256,11 @@ class AcademyCityXBRL(object):
             # print('--9--'*5)
             company.save()
             # print('--10--'*5)
+        log_debug("End clean_data_for_all_companies")
         return {'status': 'ok'}
 
     def copy_processed_companies(self):
+        log_debug("Start copy_processed_companies")
         companies_ = XBRLCompanyInfoInProcess.objects.filter(is_error=False).all()
         for c in companies_:
             try:
@@ -2268,10 +2270,12 @@ class AcademyCityXBRL(object):
                                                       ticker=c.ticker, company_letter=c.company_letter, cik=c.cik)
             except Exception as exc:
                 print(str(exc))
+        log_debug("End copy_processed_companies")
         dic = {'status': 'ok'}
         return dic
 
     def get_all_companies(self):
+        log_debug("Start get_all_companies")
         exchanges = {
             'nyse': 'nyse/newyorkstockexchange',
             'nasdaq': 'nasdaq/nasdaq',
@@ -2321,7 +2325,7 @@ class AcademyCityXBRL(object):
         # self.companies.reset_index(drop=True, inplace=True)
         # self.companies.to_excel(writer, sheet_name='all')
         # writer.save()
-
+        log_debug("End get_all_companies")
         dic = {'status': 'ok'}
         return dic
 
@@ -2359,6 +2363,7 @@ class AcademyCityXBRL(object):
         return company_name, company_ticker, company_letter
 
     def set_sic_code(self):
+        log_debug("Start set_sic_code")
         url = 'https://en.wikipedia.org/wiki/Standard_Industrial_Classification'
         headers = {'User-Agent': 'amos@drbaranes.com'}
         page = requests.get(url, headers=headers, timeout=30)
@@ -2396,6 +2401,7 @@ class AcademyCityXBRL(object):
                     break
             XBRLIndustryInfo.objects.get_or_create(sic_code=sic_code_, main_sic=main_sic_,
                                                    sic_description=sic_description_)
+        log_debug("End set_sic_code")
         return {'status': 'ok'}
 
     # # #
