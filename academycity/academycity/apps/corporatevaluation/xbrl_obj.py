@@ -2827,16 +2827,19 @@ class FinancialAnalysis(object):
             pass
 
     def update_chart_of_accounts(self, **kwargs):
+        log_debug('start: update_chart_of_accounts')
         for account in XBRLValuationAccounts.objects.all():
-            print('-' * 50)
-            print(account.id, account.order, account.statement.id, account.statement.statement, account.sic,
-                  account.account, account.type, account.scale)
-
-            a, c = XBRLDimAccount.objects.get_or_create(order=account.order, account=account.account,
+            # print('-' * 50)
+            # print(account.id, account.order, account.statement.id, account.statement.statement, account.sic,
+            #       account.account, account.type, account.scale)
+            try:
+                a, c = XBRLDimAccount.objects.get_or_create(order=account.order, account=account.account,
                                                         statement_order=account.statement.order,
                                                         statement=account.statement.statement)
+            except Exception as ex:
+                print('Error 5432: '+str(ex))
+        log_debug('End: update_chart_of_accounts')
         result = {'status': "ok"}
-        # print(result)
         return result
 
     def update_companies(self, **kwargs):
@@ -2897,43 +2900,60 @@ class FinancialAnalysis(object):
 
         log_debug("Start yearly data")
         for y in company.financial_data['data']:
-            yd = company.financial_data['data'][y]
-            if int(yd['dei']['documentfiscalyearfocus']) < 2012:
+            try:
+                yd = company.financial_data['data'][y]
+                if int(yd['dei']['documentfiscalyearfocus']) < 2012:
+                    continue
+                yq = int(yd['dei']['documentfiscalyearfocus'] + "0")
+                time_ = XBRLDimTime.objects.get(id=yq)
+                log_debug("start update fact table for " + ticker_ + " year: " + str(y))
+                for account in yd['year_data']:
+                    # print(account)
+                    account_ = XBRLDimAccount.objects.get(order=int(account))
+                    amount_ = yd['year_data'][account]
+                    # print('account_')
+                    # print(account_)
+                    # print('amount_')
+                    # print(amount_)
+                    try:
+                        f, c = XBRLFactCompany.objects.get_or_create(company=company_, time=time_, account=account_)
+                        # print(f)
+                        f.amount = amount_
+                        f.save()
+                        # print('--saved--')
+                    except Exception as ex:
+                        log_debug(str(ex))
+                        # print(str(account_) + "  " + str(ex))
+                log_debug("End update fact table for " + ticker_ + " year: " + str(y))
+            except Exception as ex:
+                log_debug("Err 9123: "+str(ex))
                 continue
-            yq = int(yd['dei']['documentfiscalyearfocus'] + "0")
-            time_ = XBRLDimTime.objects.get(id=yq)
-            log_debug("start update fact table for " + ticker_ + " year: " + str(y))
-            for account in yd['year_data']:
-                account_ = XBRLDimAccount.objects.get(order=int(account))
-                amount_ = yd['year_data'][account]
-                try:
-                    f, c = XBRLFactCompany.objects.get_or_create(company=company_, time=time_, account=account_)
-                    f.amount = amount_
-                    f.save()
-                except Exception as ex:
-                    log_debug(str(ex))
-            log_debug("End update fact table for " + ticker_ + " year: " + str(y))
 
         log_debug("Start quarterly data")
         for y in company.financial_dataq['data']:
-            for sq in company.financial_dataq['data'][y]:
-                yd = company.financial_dataq['data'][y][sq]
-                if int(yd['dei']['documentfiscalyearfocus']) < 2012:
-                    continue
-                q = yd['dei']['documentfiscalperiodfocus'][1]
-                log_debug("start update fact table for ticker=" + ticker_ + " year=" + str(y) + " q=" + str(q))
-                yq = int(yd['dei']['documentfiscalyearfocus'] + str(q))
-                time_ = XBRLDimTime.objects.get(id=yq)
-                for account in yd['year_data']:
-                    account_ = XBRLDimAccount.objects.get(order=int(account))
-                    amount_ = yd['year_data'][account]
-                    try:
-                        f, c = XBRLFactCompany.objects.get_or_create(company=company_, time=time_, account=account_)
-                        f.amount = amount_
-                        f.save()
-                    except Exception as ex:
-                        log_debug(str(ex))
-                log_debug("End update fact table for ticker=" + ticker_ + " year=" + str(y) + " q=" + str(q))
+            try:
+                for sq in company.financial_dataq['data'][y]:
+                    yd = company.financial_dataq['data'][y][sq]
+                    if int(yd['dei']['documentfiscalyearfocus']) < 2012:
+                        continue
+                    q = yd['dei']['documentfiscalperiodfocus'][1]
+                    log_debug("start update fact table for ticker=" + ticker_ + " year=" + str(y) + " q=" + str(q))
+                    yq = int(yd['dei']['documentfiscalyearfocus'] + str(q))
+                    time_ = XBRLDimTime.objects.get(id=yq)
+                    for account in yd['year_data']:
+                        account_ = XBRLDimAccount.objects.get(order=int(account))
+                        amount_ = yd['year_data'][account]
+                        try:
+                            f, c = XBRLFactCompany.objects.get_or_create(company=company_, time=time_, account=account_)
+                            f.amount = amount_
+                            f.save()
+                        except Exception as ex:
+                            log_debug(str(ex))
+                    log_debug("End update fact table for ticker=" + ticker_ + " year=" + str(y) + " q=" + str(q))
+            except Exception as ex:
+                log_debug("Err 6537: "+str(ex))
+                continue
+
         log_debug("End quarterly data")
         result = {'status': "ok"}
         # print(result)
@@ -2965,6 +2985,7 @@ class FinancialAnalysis(object):
         dic = eval(dic)
         # print('get_data_for_ticker 1')
         ticker_ = dic['ticker']
+        # print(ticker_)
         sic_ = XBRLDimCompany.objects.get(ticker=ticker_).sic_code
         companies = XBRLDimCompany.objects.filter(sic_code=sic_).all()
         companies_dic = {}

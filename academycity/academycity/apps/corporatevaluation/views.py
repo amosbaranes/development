@@ -646,12 +646,15 @@ def analysis_setup_attribute(request):
     fun_ = request.POST.get('fun')
     attribute_ = request.POST.get('attribute')
     attribute_value_ = request.POST.get('attribute_value')
-    print(fun_, attribute_, attribute_value_)
+    log_debug("fun: " + fun_+" attribute: " + attribute_ + " " + attribute_value_)
     try:
         s_ = 'FinancialAnalysis().' + fun_ + '(request=request,'+attribute_+'="'+attribute_value_+'")'
         dic = eval(s_)
+        # print('dic')
+        # print(dic)
     except Exception as ex:
-        print("Error analysis_setup_attribute.")
+        # print("Error analysis_setup_attribute.")
+        log_debug("Error 333 fun: " + fun_+" attribute: " + attribute_ + " " + attribute_value_)
     return JsonResponse(dic)
 
 
