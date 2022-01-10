@@ -1,5 +1,8 @@
 from django.urls import path
-from .views import (home, get_companies_valuation_actual, wacc_ebit_roic, team, update_data, update_data_year,
+from .views import (home, candle,
+                    home_chat_working,
+                    # get_companies_valuation_actual,
+                    wacc_ebit_roic, team, update_data, update_data_year,
                     update_account, get_industry_detail,
                     # get_company_detail,
                     get_interest_coverage_ratio,
@@ -7,6 +10,8 @@ from .views import (home, get_companies_valuation_actual, wacc_ebit_roic, team, 
                     get_accounts, get_data_ticker,
                     admin_setup, admin_setup_attribute, tdameritrade_setup_w_attribute, analysis_setup_attribute,
                     activate_obj_function,
+                    stream, sse,
+                    # streama,
                     sec, get_r, get_sec, onchange_account, get_matching_accounts,
                     save_industry_default,
                     create_company_by_ticker,
@@ -18,14 +23,17 @@ from .views import (home, get_companies_valuation_actual, wacc_ebit_roic, team, 
 app_name = "corporatevaluation"
 
 urlpatterns = [
+    path('candle/', candle, name='candle'),
     path('home/<int:obj_id>/', home, name='home'),
+    path('home_chat_working/<int:obj_id>/', home_chat_working, name='home_chat_working'),
+
     path('wacc_ebit_roic/', wacc_ebit_roic, name='wacc_ebit_roic'),
     path('team/', team, name='team'),
     path('update_data/', update_data, name='update_data'),
     path('update_account/', update_account, name='update_account'),
     path('update_data_year/', update_data_year, name='update_data_year'),
     path('get_industry_detail/', get_industry_detail, name='get_industry_detail'),
-    path('get_companies_valuation_actual/', get_companies_valuation_actual, name='get_companies_valuation_actual'),
+    # path('get_companies_valuation_actual/', get_companies_valuation_actual, name='get_companies_valuation_actual'),
     # path('get_company_detail/', get_company_detail, name='get_company_detail'),
     path('get_interest_coverage_ratio/', get_interest_coverage_ratio, name='get_interest_coverage_ratio'),
 
@@ -46,6 +54,9 @@ urlpatterns = [
     path('sec/', sec, name='sec'),
     path('get_r/', get_r, name='get_r'),
     path('get_sec/', get_sec, name='get_sec'),
+    path(r'stream/', stream, name='stream'),
+    path(r'sse/', sse, name='sse'),
+    # path(r'streama/', streama, name='streama'),
 
     # Data_Processing
     path('get_matching_accounts/', get_matching_accounts, name='get_matching_accounts'),

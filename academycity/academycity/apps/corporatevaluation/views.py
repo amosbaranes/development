@@ -1,3 +1,5 @@
+import random
+
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from django.utils.translation import ugettext_lazy as _
@@ -20,17 +22,47 @@ from .models import (RBOIC, CountryRegion, CountryRating, Country, GlobalIndustr
                      XBRLRegion, XBRLRegionYearData, XBRLRegionsOfOperations, XBRLIndustryBetasOfOperations)
 # --
 
-from ..core.sql import SQL
 from ..webcompanies.WebCompanies import WebSiteCompany
 from .xbrl_obj import AcademyCityXBRL, TDAmeriTrade, FinancialAnalysis
 import datetime
+import time
+
+# need to remove this.
 import requests
+import asyncio
 import json
 from bs4 import BeautifulSoup
 import re
-from ..core.utils import log_debug, clear_log_debug
 from django.db.models import Count
 from ..core.templatetags.core_tags import has_group
+from ..core.utils import log_debug, clear_log_debug
+from ..core.sql import SQL
+
+# need to remove this also in core application
+# from ..core.StreamPrintToClient import (Printer, Steamer)
+
+from django.http import StreamingHttpResponse
+
+from django.http import HttpResponse
+
+
+class AysncStreamingHttpResponse(HttpResponse):
+    async_streaming = True
+    streaming = True
+
+    def __init__(self, streaming_content=(), *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.streaming_content = (self.make_bytes(chunk) async for chunk in streaming_content)
+
+    def __aiter__(self):
+        return self.streaming_content
+
+    async def getvalue(self):
+        return b''.join(chunk async for chunk in self.streaming_content)
+
+
+def candle(request):
+    return render(request, 'corporatevaluation/candle9.html',  {})
 
 
 # Fix game_id.  should use project_id
@@ -58,6 +90,41 @@ def home(request, obj_id):
 
     todolist = ToDoList.objects.filter().all()
     return render(request, 'corporatevaluation/home.html',
+                  {'institution_obj': company_obj,
+                   'industry': industry,
+                   'global_industry_averages': global_industry_averages,
+                   'project': project,
+                   'countries_data': countries_data,
+                   'regions_data': regions_data,
+                   'companies': companies,
+                   'todolist': todolist,
+                   })
+
+
+def home_chat_working(request, obj_id):
+    clear_log_debug()
+    log_debug("cv_home")
+    wsc = WebSiteCompany(request, web_company_id=7)
+    company_obj = wsc.site_company()
+    industry = XBRLIndustryInfo.objects.exclude(sic_description='0').all()
+    global_industry_averages = GlobalIndustryAverages.objects.all()
+    project = Project.objects.filter(translations__language_code=get_language()).get(id=obj_id)
+    XBRLCountryYearData.project = project
+    XBRLRegionYearData.project = project
+
+    request.session['cv_project_id'] = project.id
+
+    countries_data = XBRLCountryYearData.project_objects.all()
+    regions_data = XBRLRegionYearData.project_objects.all()
+
+    companies = XBRLCompanyInfo.objects.filter(ticker__gte='9')
+    if not has_group(request.user, "admins"):
+        companies = companies.filter(is_active=True)
+    companies = companies.all()
+    log_debug("cv_home 21")
+
+    todolist = ToDoList.objects.filter().all()
+    return render(request, 'corporatevaluation/home_chat_working.html',
                   {'institution_obj': company_obj,
                    'industry': industry,
                    'global_industry_averages': global_industry_averages,
@@ -168,32 +235,6 @@ def update_country_risk(request):
 
     dic = {'status': 'ok', 'id': co.id}
     return JsonResponse(dic)
-
-
-def get_companies_valuation_actual(request):
-    clear_log_debug()
-    sic_code=request.POST.get('sic_code')
-    year=request.POST.get('year')
-    i = None
-    if int(sic_code) == 1:
-        companies_ = CompanyData.objects.exclude(year=year, company_name='0').all()
-    else:
-        i = Industry.objects.get(sic_code=sic_code)
-        # print(i)
-        companies_ = CompanyData.objects.filter(year=year, company__industry_id=i).select_related('company').all()
-
-    # for c in companies_:
-    #     print('----')
-    #     print(c.company.company_name, c.iv_per_share)
-    #     print('----')
-
-    # q = cs.values('iv_per_share')
-    # df = pd.DataFrame.from_records(q)
-
-    return render(request, 'corporatevaluation/simulation/companies_valuation_vs_actual.html',
-                  {'industry': i,
-                   'companies': companies_
-                   })
 
 
 def configure_corporatevaluation_project(request, game):
@@ -664,8 +705,9 @@ def activate_obj_function(request):
         fun_ = request.POST.get('fun')
         dic_ = request.POST.get('dic')
         # print(dic_)
+        # print(type(dic_))
         s_ = obj_+'().' + fun_ + '(dic_)'
-        # print(s_)
+        print(s_)
         dic = eval(s_)
         # print(dic)
 
@@ -982,7 +1024,71 @@ def get_screens(request):
     return eval(sr)
 
 
-# SEC
+# ----
+# def job(times):
+#     print("amos")
+#
+#
+# def stream_print(request):
+#     printer_streamer = PrinterStreamer(job, (1, ))
+#     sys.stdout = printer_streamer
+#     return StreamingHttpResponse(printer_streamer.start(), content_type='text/event-stream')
+#
+
+# ---
+def sse(request):
+
+    def stream_():
+        counter = random.randint(1, 20)
+        dic = {"counter100": str(counter)}
+        dic = json.dumps(dic)
+        print(dic)
+        k_ = "data:%s\n\n" % dic
+        print(k_)
+        yield k_
+
+    return StreamingHttpResponse(stream_(), content_type='text/event-stream')
+
+
+# -------------------------
+def stream(request):
+    td = TDAmeriTrade()
+    td.set_sp500_dic()
+    # td.run_stream_options_data()
+
+    def event_stream():
+        while True:
+            dic_ = '{"ticker": "ALL"}'
+            dic = td.get_quotes(dic_)["data"]
+            dic = json.dumps(dic)
+            # print(dic)
+            k_ = "data:%s\n\n" % dic
+            # print(k_)
+            yield k_
+            time.sleep(1)
+            # yield 'data:{"data":"%s"}\n\n' % datetime.datetime.now()
+
+    return StreamingHttpResponse(event_stream(), content_type='text/event-stream')
+
+
+#  ----
+# printer = Printer()
+# sys.stdout = printer
+
+
+# def job(times, td):
+#     td.run_stream_options_dataa()
+
+
+# def streama(request):
+#     td = TDAmeriTrade()
+#     td.set_sp500_dic()
+    # streamer = Steamer(job, printer, (1, td))
+    # return StreamingHttpResponse(streamer.start(), content_type='text/event-stream')
+# -------------------------------------
+
+
+# SEC --------------------
 def sec(request):
     # cik = '320193'
     # accession_number = '000032019320000096'
@@ -1075,7 +1181,8 @@ def get_data_ticker(request):
     acx = AcademyCityXBRL()
     data = acx.get_data_ticker(ticker=ticker_, is_update=is_update_, is_updateq=is_updateq_)
     # print(data)
-    request.session['cv_statements'] = data['dic_company_info']['statements']
+    if len(data["dic_company_info"]["data"]) > 0:
+        request.session['cv_statements'] = data['dic_company_info']['statements']
     # print("request.session['cv_statements']")
     # print(request.session['cv_statements'])
     # print("data['dic_company_info']['statements']")

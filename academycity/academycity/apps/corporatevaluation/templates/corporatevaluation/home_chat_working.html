@@ -1,0 +1,135 @@
+{% extends "base_education0.html" %}
+{% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
+{% load core_tags %}
+
+{% block title %}<title>Corporate Valuation</title>{% endblock title %}
+
+{% block links %}
+{% endblock %}
+
+{% block add_js %}
+ <script src="{% static 'js/reconnecting-websocket.js' %}"></script>
+{% endblock add_js %}
+
+
+{% block add_css %}
+{% endblock add_css %}
+
+{% block nav_bar %}
+{% endblock %}
+
+{% block body_content %}
+
+<div>
+    <button onclick="generate_socket(event)">Generate Socket</button>
+    <button onclick="call_socket(event)">call socket</button>
+    <button onclick="send_message(event)">send message</button>
+    <div id="msgs">Messages: </div>
+  <br/><br/><br/>
+</div>
+
+<script>
+
+
+function send_message(event)
+{
+    var dic_ = {'type': 'chat_message', 'message': 'test test 5 test'}
+    try{
+         alert(dic_.type +" : " +dic_.message)
+         sObj.socket__.send(JSON.stringify(dic_))
+    } catch (err) {alert(err.message)}
+}
+
+var msgs = document.getElementById("msgs")
+var sObj = null;
+function generate_socket(event)
+{
+// ------------------------------------------------
+  sObj = new SocketObj()
+// ------------------------------------------------
+}
+
+function SocketObj()
+{
+  console.log("SocketObj - created the object: ")
+  this.socket__ = null
+}
+SocketObj.prototype.getSocket = function (id)
+{
+    var loc = window.location
+    var webStart = "ws://"
+    if (loc.protocol == "https:"){webStart = "wss://"}
+    var pathname_ = loc.pathname.substring(3, 10000)
+    var lung_ = loc.pathname.substring(0, 3)
+    var endpoint = webStart + loc.host + lung_ + "/ws/option/6/"
+    console.log("endpoint 200: ", endpoint)
+    try{
+       var socket_ = null;
+       socket_ = new ReconnectingWebSocket(endpoint);
+       console.log("is socket == null? if false socket is on: ", socket_ == null)
+
+        socket_.onmessage = function(e){
+         var msg_ = JSON.parse(e.data)
+         msgs.innerHTML += "  " + msg_.type + "  " + msg_.msg
+
+         console.log("  onmessage - 1 : ", "got home")
+         console.log("  onmessage - msg : ", msg_.msg)
+         console.log("  onmessage - type : ", msg_.type)
+
+        }
+
+        socket_.onopen = function(e){
+            alert('open')
+         msgs.innerHTML += "  on open was called  "
+            console.log("open ", 1)
+            console.log("open ", 2)
+            console.log("open ", 3)
+        }
+
+        socket_.onerror = function(e){
+         msgs.innerHTML += "  Error:  " + e.message
+         console.log("error", 1)
+         console.log("error", e)
+         console.log("error", 1)
+        }
+        socket_.onclose = function(e){
+         msgs.innerHTML += "  closed was called  "
+         console.log("close", e)
+        }
+
+
+    } catch (err) {console.log("socket 321", err.message)}
+
+
+ return socket_
+}
+
+function call_socket(event)
+{
+// ------------------------------------------------
+  sObj.socket__ = sObj.getSocket("Asio")
+// ------------------------------------------------
+}
+</script>
+
+
+
+<script>
+
+function start_messaging_(event)
+{
+alert(99)
+var dic_ = {'type': 'chat_message', 'message': 'test'}
+        alert(dic_.type +" : " +dic_.message)
+         socket.send(JSON.stringify(dic_))
+}
+
+</script>
+
+
+{% endblock body_content %}
+
+{% block domready %}
+
+
+{% endblock %}

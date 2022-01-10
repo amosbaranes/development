@@ -105,4 +105,3 @@ def create_db_backup():
 def clean_registrations(request):
     clean_accounting_registrations()
 
-

@@ -31,11 +31,15 @@
     <hr/>
     <h4>TDAmeriTrade</h4>
     <table>
-        <tbody obj="TDAmeriTrade" attributes_id="tdameritrade_attributes">
+        <tbody obj="TDAmeriTrade" attributes_id="tdameritrade_attributes" message_id="result_message_tdameritrade">
         <tr id="buttons" onclick="activate_obj_function(event)">
             <td><button fun="get_prices" style="width: 60px;">hdata</button>
                 <button fun="get_quote" style="width: 60px;">quote</button>
-                <button fun="get_quotes" style="width: 60px;">quotes</button></td>
+                <button fun="get_quotes" style="width: 60px;">quotes</button>
+                <button fun="run_all_pages" style="width: 110px;">run_all_pages</button>
+                <button fun="run_stream_options_data" style="width: 65px;">workers</button>
+                <button fun="activate_streaming" style="width: 110px;">Option Stream</button>
+            </td>
         </tr>
         <tr id="tdameritrade_attributes">
             <td>
@@ -47,7 +51,23 @@
     </table>
     <div id="result_message_tdameritrade"></div><br/>
     <hr/>
-
+    <h4>AcademyCityXBRL</h4>
+    <table>
+        <tbody obj="AcademyCityXBRL" attributes_id="tdameritrade_attributes" message_id="result_message_academycityxbrl">
+        <tr id="buttons" onclick="activate_obj_function(event)">
+            <td>
+                <button fun="run_all_pages" style="width: 60px;">run_all_pages</button></td>
+        </tr>
+        <tr id="tdameritrade_attributes">
+            <td>
+                <input type="text" value="ticker" size="4" placeholder="name"/>
+                <input type="text" value="AAPL" size="4" placeholder="value"/>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+    <div id="result_message_academycityxbrl"></div><br/>
+    <hr/>
 
     <table>
         <tr>
@@ -360,6 +380,7 @@ function activate_obj_function(event)
  var e=event.target;var p=e.parentNode.parentNode;var g=e.parentNode.parentNode.parentNode;
  // alert(e.outerHTML);alert(p.outerHTML);alert(g.outerHTML)
  var attributes=document.getElementById(g.getAttribute("attributes_id"))
+ var message_id_=g.getAttribute("message_id")
 
  var obj_=g.getAttribute("obj");var fun_=e.getAttribute("fun");var dic_={};
  //alert(attributes.outerHTML)
@@ -367,7 +388,7 @@ function activate_obj_function(event)
  for(var k=0;k<attributes.children.length;k++)
  {dic_[attributes.children[k].children[0].value]=attributes.children[k].children[1].value}
 
- var message_div = document.getElementById("result_message_tdameritrade");message_div.innerHTML = 'In process for: '+dic_['ticker']
+  var message_div = document.getElementById(message_id_);message_div.innerHTML = 'In process for: '+dic_['ticker']
  //for(k in dic_){alert(k);alert(dic_[k]);}
 
  $.post('{% url "corporatevaluation:activate_obj_function" %}',

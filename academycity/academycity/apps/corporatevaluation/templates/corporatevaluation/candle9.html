@@ -1,0 +1,65 @@
+{% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>Financial | Chart.js</title>
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/luxon/2.3.0/luxon.min.js" integrity="sha512-2j5fkjQ4q5ceXgfxi+kqrU2Oz234MrpyywZsQz1F5OGnfat7mOhjRr0oz5cpQ+YwwWB+hhDBSyxNGuL/tKWMFw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+        <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon@0.2.1"></script>
+
+        <script src="{% static 'js/chartjs/chartjs-chart-financial.js' %}" crossorigin="anonymous"></script>
+
+        <script src="{% static 'js/chartjs/ac_candle_stick.js' %}" crossorigin="anonymous"></script>
+
+        <style>
+                * {
+                        font-family: Sans-Serif;
+                   }
+
+                h1 {
+                    font-size: 1.5em;
+                }
+
+                h2 {
+                    font-size: 1.25em;
+                }
+        </style>
+		<link rel="icon" href="{% static 'images/favicon.ico' %}"/>
+
+	</head>
+	<body>
+		<h2>Object to create Financial chart with Chart.js</h2>
+
+		<div>
+			Enter tickers to follow<input id="tickers_to_follow"><button id="run" onclick="run(event)">Run</button>
+			<button id="randomizeData">Randomize Data</button>
+			<button id="add_data_point">Add data point</button>
+		</div>
+		<table>
+			<thead><th>Ticker</th><th>Chart</th><th>Strategy</th></thead>
+			<tbody id="tickers_analysis"></tbody>
+		</table>
+
+		<script>
+			var csm = null;
+			run = function(event){
+			  var ll = document.getElementById("tickers_to_follow").value
+			  var ll = ll.split(",")
+			  csm = new CandlestickChartManager(tickers=ll);
+			}
+
+			document.getElementById('randomizeData').onclick = function(event) {
+					for (k in csm.objs){ getRandomData(csm.objs[k]);}
+			};
+
+			document.getElementById('add_data_point').addEventListener('click', function() {
+					for (k in csm.objs)
+					{csm.objs[k].lastDate = csm.objs[k].lastDate.plus({days: 1});
+					 csm.objs[k].add_data_point(randomBar(csm.objs[k].lastDate));
+					}
+			});
+        </script>
+	</body>
+</html>

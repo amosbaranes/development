@@ -2,28 +2,67 @@
 {% load core_tags %}
 
 <div id="comparablecompanies" class="tabcontent">
-    <div id="valuation_vs_actual">Valuation vs. Actual</div>
+<!--    <div id="valuation_vs_actual">Valuation vs. Actual</div>-->
+
+    <table>
+        <tr>
+            <td onclick="activate_obj_function_pivot_(event)">
+                <button style="width: 80px;">GetData</button>
+            </td>
+        </tr>
+    </table>
+
+<div id="wdr-component"></div>
+
+<link href="https://cdn.webdatarocks.com/latest/webdatarocks.min.css" rel="stylesheet"/>
+<script src="https://cdn.webdatarocks.com/latest/webdatarocks.toolbar.min.js"></script>
+<script src="https://cdn.webdatarocks.com/latest/webdatarocks.js"></script>
+
+<!-- https://www.webdatarocks.com/doc/ -->
+<!--  activate_obj_function_pivot  -->
+
+<script>
+function activate_obj_function_pivot_()
+{
+ vObj["corporatevaluation_sic"]=-1;
+ activate_obj_function_pivot();
+}
+</script>
+
+<!-- activate_obj_function_pivot(event) -->
+<script>
+function activate_obj_function_pivot()
+{
+ var obj_="FinancialAnalysis";var fun_="get_pivot_data";var dic_={};
+ dic_['ticker']=document.getElementById('search_ticker').value;
+ var sic_=document.getElementById('sic_code_').value;
+ var c_sic_=vObj["corporatevaluation_sic"];
+ if(dic_['ticker']==""){alert("You need to chose company.");var event = new Event("click", {bubbles: true});sm.TabObjects["inputs"].tabTitle.dispatchEvent(event); return;}
+ if(c_sic_!=-1 && sic_==c_sic_){return;}
+
+ $.post('{% url "corporatevaluation:activate_obj_function" %}',
+      {obj: obj_, fun: fun_, dic: JSON.stringify(dic_),},
+      function(data){
+                data_=[]
+                for(var i=0; i<data['data']['data']['time_id'].length;i++)
+                {
+                 d_ = {"Company": data['data']['data']["companies_dic"][data['data']['data']['company_id'][i]],
+                       "Time": data['data']['data']['time_id'][i],
+                       "Account": get_account_properties(data['data']['data']['account_id'][i])[0],
+                       "Amount": data['data']['data']['amount'][i]}
+                 data_.push(d_)
+                }
+                var pivot = new WebDataRocks({
+                    container: "#wdr-component",
+                    toolbar: true,
+                    report: {dataSource: {data:data_}}
+                });
+                vObj["corporatevaluation_sic"]=data['data']['data']["sic"]
+            }
+    );
+}
+</script>
+
 </div>
 
-<!-- valuation vs actual -->
-<script>
-function valuation_vs_actual(tab_obj)
-{
- if(vObj["sic_code"] != vObj["valuation_actual_sic_code"])
- {
-    sic_code_ = vObj["sic_code"]
-    year_ = vObj["valuation_year"]
-    $.post('{% url "corporatevaluation:get_companies_valuation_actual" %}',
-      {
-        sic_code: sic_code_,
-        year: year_,
-      },
-      function(data){
-        sm.TabObjects["comparablecompanies"].tabDoc.innerHTML = data ;
-      }
-    )
- }
-}
 
-
-</script>

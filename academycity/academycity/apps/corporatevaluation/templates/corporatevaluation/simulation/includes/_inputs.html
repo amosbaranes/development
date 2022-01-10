@@ -650,14 +650,24 @@ function companies_fun(event)
 <script>
 function process_get_data_ticker(data)
 {
+  if(Object.keys(data["data"]).length === 0)
+  {alert("There are no records for this company. Check the link (or its 10-K version): "+data["company_info"]["10k_url"]); return;}
+
+
     var d = document.getElementById('valuationsetup_xbrl_data');
     console.log("get_data_ticker: ", "in post get_data_ticker 1");
     vObj["company_info"] = data['company_info'];
     vObj["marginal_tax_rate"] = data['company_info']["marginal_tax_rate"];
     document.getElementById("marginal_tax_rate_").value = vObj["marginal_tax_rate"];
+
+    //alert(2)
+    //alert(data['company_info']["sic_code"])
+
     vObj["sic_code"] = data['company_info']["sic_code"];
     document.getElementById("industries").value = vObj["sic_code"];
     document.getElementById('sic_code_').value = vObj["sic_code"];
+
+
     vObj["countries_regions"] = data['countries_regions'];
     vObj["regions_of_operations"] = data['regions_of_operations'];
     if (!data['data']){alert("There is no data for this company."); return;}

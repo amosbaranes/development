@@ -1,9 +1,8 @@
 # https://www.codeproject.com/Articles/1227268/Accessing-Financial-Reports-in-the-EDGAR-Database
 # https://www.codeproject.com/Articles/1227765/Parsing-XBRL-with-Python
+
 from bs4 import BeautifulSoup
-import requests
 import re
-import sys
 import os
 from django.conf import settings
 import pandas as pd
@@ -23,12 +22,22 @@ import statistics
 from django.utils.translation import get_language
 import math
 from django.utils.dateparse import parse_date
-from tda import auth, client
 import json
+import asyncio
+import requests
+import aiohttp
+from asgiref import sync
+import random
+import calendar
+from tda import auth, client
+from tda.streaming import StreamClient
+
+
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
 
 # import yfinance as yf
 from yahoofinancials import YahooFinancials
-
 from ..core.utils import log_debug, clear_log_debug
 
 from django.db.models import Avg
@@ -45,52 +54,49 @@ from .models import (XBRLMainIndustryInfo, XBRLIndustryInfo, XBRLCompanyInfoInPr
 # type = '10-K'
 # dateb = '20160101'
 
-# https://github.com/alexgolec/tda-api
-class TDAmeriTrade(object):
+class GetAllUrlsProcessed(object):
     def __init__(self):
-        # Should remove it later on
-        clear_log_debug()
-        self.PROJECT_ROOT_DIR = os.path.join(settings.WEB_DIR, "data", "corporatevaluation")
-        os.makedirs(self.PROJECT_ROOT_DIR, exist_ok=True)
+        self.session = None
+        self.agent = 'amos@drbaranes.com'
 
-        self.TO_DATA_PATH = os.path.join(self.PROJECT_ROOT_DIR, "datasets")
-        os.makedirs(self.TO_DATA_PATH, exist_ok=True)
-        # print(self.TO_DATA_PATH)
+    async def get_page(self, url):
+        headers = {'User-Agent': self.agent}
+        async with self.session.get(url, headers=headers, timeout=30) as r:
+            return await r.text()
 
-        self.OPTIONS_PATH = os.path.join(self.PROJECT_ROOT_DIR, "options")
-        os.makedirs(self.OPTIONS_PATH, exist_ok=True)
-        # print(self.OPTIONS_PATH)
-        #
-        # need to move to env file
-        self.password = "Sigal2105Shir"
-        self.user_name = "amosbaranes"
-        self.callback_url = "https://academycity.org/en/corporatevaluation/options"
-        self.app_name = "academycity"
-        self.customer_key = "LLGYGYRSAMWGZJNMXY8B8KGTOYG9BNDU"
-        #
-        self.token_path = os.path.join(self.OPTIONS_PATH, "token")
-        os.makedirs(self.token_path, exist_ok=True)
+    async def get_all_pages(self, urls, func, dic):
+        tasks = []
+        for url in urls:
+            txt = await self.get_page(url)
+            task = asyncio.create_task(func(self, txt, url, dic))
+            tasks.append(task)
+        results = await asyncio.gather(*tasks)
+        return results
 
-        try:
-            import shutil
-            BIN_DIR = "/tmp/bin"
-            CURR_BIN_DIR = self.token_path
-            executable_name = "chromedriver"
+    async def process_all_pages(self, urls, func, dic):
+        async with aiohttp.ClientSession() as session:
+            self.session = session
+            return await self.get_all_pages(urls, func, dic)
 
-            if not os.path.exists(BIN_DIR):
-                os.makedirs(BIN_DIR)
-            currfile = os.path.join(CURR_BIN_DIR, executable_name)
-            newfile = os.path.join(BIN_DIR, executable_name)
-            shutil.copy2(currfile, newfile)
-            os.chmod(newfile, 0o775)
-        except Exception as ex:
-            print(ex)
 
-        self.api_key = self.customer_key + "@AMER.OAUTHAP"
+# https://github.com/alexgolec/tda-api
+
+
+from ..core.OptionsAmeriTrade import BaseTDAmeriTrade
+
+
+class TDAmeriTrade(BaseTDAmeriTrade):
+    def __init__(self):
+        super().__init__()
+        self.client = None
+        self.get_client()
+        self.dic_share_prices = {}
+
+    def get_client(self):
         try:
             self.client = auth.client_from_token_file(self.token_path + "/token", self.api_key)
         except Exception as fex:
-            # print(fex)
+            print(fex)
             try:
                 from selenium import webdriver
                 from webdriver_manager.chrome import ChromeDriverManager
@@ -103,9 +109,77 @@ class TDAmeriTrade(object):
             except Exception as eex:
                 print(eex)
 
+    # ------ Queue example --
+    def run_stream_options_data(self, dic):
+        asyncio.run(self.stream_options_data())
+
+    async def worker(self, name, queue):
+        l = []
+        while True:
+            # Get a "work item" out of the queue.
+            k_ = await queue.get()
+            sleep_for = k_["sleep_for"]
+            n = str(k_["n"])
+            l.append(n)
+            # Sleep for the "sleep_for" seconds.
+            await asyncio.sleep(sleep_for)
+
+            # Notify the queue that the "work item" has been processed.
+            queue.task_done()
+            print(f'{n}-{name} has slept for {sleep_for:.2f} seconds')
+        return l
+
+    async def stream_options_data(self):
+        # Create a queue that we will use to store our "workload".
+        queue = asyncio.Queue()
+
+        # Generate random timings and put them into the queue.
+        total_sleep_time = 0
+        for _ in range(20):
+            sleep_for = random.uniform(0.05, 1.0)
+            total_sleep_time += sleep_for
+            queue.put_nowait({"n": _, "sleep_for": sleep_for})
+
+        # Create three worker tasks to process the queue concurrently.
+        tasks = []
+        for i in range(3):
+            task = asyncio.create_task(self.worker(f'worker-{i}', queue))
+            tasks.append(task)
+
+        # Wait until the queue is fully processed.
+        started_at = time.monotonic()
+        await queue.join()
+        total_slept_for = time.monotonic() - started_at
+
+        # Cancel our worker tasks.
+        for task in tasks:
+            task.cancel()
+        # Wait until all worker tasks are cancelled.
+        ll = await asyncio.gather(*tasks, return_exceptions=True)
+        print(ll)
+        print('====')
+        print(f'3 workers slept in parallel for {total_slept_for:.2f} seconds')
+        print(f'total expected sleep time: {total_sleep_time:.2f} seconds')
+    # ----
+
+    def set_sp500_dic(self):
+        sp500_url = 'https://en.wikipedia.org/wiki/List_of_S%26P_500_companies'
+        self.sp_tickers = list(pd.read_html(sp500_url)[0]['Symbol'].values)
+        self.sp_tickers_list = [x.split('.')[0] for x in self.sp_tickers]
+        self.sp_tickers_str = ""
+        n_ = 0
+        for ticker in self.sp_tickers:
+            if n_ == 0:
+                self.sp_tickers_str = ticker
+                n_ += 1
+            else:
+                self.sp_tickers_str += ","+ticker
+        # print(self.sp_tickers_str)
+        return self.sp_tickers_str
+
     def update_options_statistics(self):
         log_debug("Start update_options_statistics: " + datetime.datetime.now().strftime("%H:%M:%S"))
-        print("Start update_options_statistics: " + datetime.datetime.now().strftime("%H:%M:%S"))
+        # print("Start update_options_statistics: " + datetime.datetime.now().strftime("%H:%M:%S"))
         start_date_ = datetime.datetime.now().date()
         end_date_ = (datetime.datetime.now() + datetime.timedelta(days=6)).date()
         # print(s.company.ticker, start_date_, end_date_)
@@ -139,8 +213,8 @@ class TDAmeriTrade(object):
         return {'status': 'ok'}
 
     def get_option_chain_new(self, ticker=None, start_date=None, end_date=None):
-        print("-1" * 50)
-        print("start td.get_option_chain for " + ticker)
+        # print("-1" * 50)
+        # print("start td.get_option_chain for " + ticker)
         dic = {'status': 'ko'}
         try:
             options_ = self.client.get_option_chain(ticker, contract_type=self.client.Options.ContractType.ALL,
@@ -152,10 +226,10 @@ class TDAmeriTrade(object):
             log_debug("Error in get_option_chain api options pull for : " + ticker)
             return dic
 
-        print('------options_---- ' + ticker)
+        # print('------options_---- ' + ticker)
         if len(options_['"putExpDateMap']) > 0 or len(options_['"callExpDateMap']) > 0:
             print(json.dumps(options_.json(), indent=4))
-        print('-----')
+        # print('-----')
 
         return
 
@@ -223,9 +297,8 @@ class TDAmeriTrade(object):
             options_ = self.client.get_option_chain(ticker, contract_type=self.client.Options.ContractType.ALL,
                                                     strike_count=5, from_date=start_date, to_date=end_date)
         except Exception as ex:
-            print("Error in get_option_chain api options pull for : " + ticker)
+            print("Error 3456 in get_option_chain api options pull for : " + ticker + str(ex))
             return dic
-
         # print('------options_----')
         # print(json.dumps(options_.json(), indent=4))
         # print(123)
@@ -334,7 +407,7 @@ class TDAmeriTrade(object):
             options_ = self.client.get_option_chain(ticker, contract_type=self.client.Options.ContractType.ALL,
                                                     from_date=start_date_, to_date=end_date_)
         except Exception as ex:
-            log_debug("Error in get_option_chain api options pull for : " + ticker + " = " + str(ex))
+            log_debug(" 7896 : " + ticker + " = " + str(ex))
             return dic
 
         # print("in get_option_statistics_for_ticker 2 : " + ticker)
@@ -358,18 +431,18 @@ class TDAmeriTrade(object):
             options_ = self.client.get_option_chain(ticker, contract_type=self.client.Options.ContractType.ALL,
                                                     from_date=start_date_, to_date=end_date_)
         except Exception as ex:
-            log_debug("Error in get_option_chain api options pull for : " + ticker + " = " + str(ex))
+            log_debug("Error 2345 in get_option_chain api options pull for : " + ticker + " = " + str(ex))
             return dic
 
         print("in get_option_statistics_for_ticker 2 : " + ticker)
-        # print(options_)
+        print(options_.json())
 
         dic = {'ticker': ticker, 'underlyingPrice': options_.json()['underlyingPrice']}
         dic = self.get_option_strategy_lh_(options_=options_, dic=dic, option_type='call', l_=0.1, h_=0.9,
                                            ticker=ticker)
         dic = self.get_option_strategy_lh_(options_=options_, dic=dic, option_type='put', l_=0.1, h_=0.9, ticker=ticker)
         dic = {'status': 'ok', 'option_data_ticker': dic}
-        print(dic)
+        # print(dic)
         log_debug("End in get_option_statistics_for_ticker : " + ticker)
         return dic
 
@@ -399,123 +472,146 @@ class TDAmeriTrade(object):
         # print(pay_load)
         try:
             r = requests.get(url=url, params=pay_load).json()
+            print(r)
         except Exception as ex:
             print(ex)
         return {'data': r}
 
     def get_iron_condor(self, rdic):
+        ticker = rdic['ticker']
         try:
-            ticker = rdic['ticker']
+            log_debug("Start ICondor for: " + ticker)
             rdic['is_success'] = False
             start_date_ = datetime.datetime.now().date()
             end_date_ = (datetime.datetime.now() + datetime.timedelta(days=6)).date()
             options_ = self.client.get_option_chain(ticker, contract_type=self.client.Options.ContractType.ALL,
                                                     from_date=start_date_, to_date=end_date_)
+            # print('options_.json()')
             # print(options_.json())
             dicd = {}
             dicd = self.get_option_strategy_lh_(options_=options_, dic=dicd, option_type='call', l_=0.1, h_=0.4)
-            # print('dicd -1- call')
             # print(dicd)
-            delta_call_low = strike_call_low = price_call_low = delta_put_high = strike_put_high = price_put_high = -1
-            d_ = sk = sk1 = -1
-            for k in dicd['tickers']:
-                if sk == -1:
-                    sk = float(k)
-                else:
-                    sk1 = float(k)
-                    d_ = abs(sk1 - sk)
-                    sk = sk1
-                delta_ = dicd['tickers'][k]['call']['delta']
-                price_ = dicd['tickers'][k]['call']['price']
-                if 0.3 >= delta_ >= 0.2:
-                    if delta_ > delta_call_low:
-                        delta_call_low = delta_
-                        strike_call_low = k
-                        price_call_low = price_
-            # print('call delta_call_low, strike_call_low, price_call_low, d_')
-            # print(delta_call_low, strike_call_low, price_call_low, d_)
-
-            strike_call_high = str(float(strike_call_low) + d_)
-            if float(strike_call_low) < rdic['p']:
-                print("float(strike_call_low) < rdic['p']")
+            delta_call_low = -1
+            strike_call_low = -1
+            price_call_low = -1
+            delta_put_high = -1
+            strike_put_high = -1
+            price_put_high = -1
+            d_ = -1
+            sk = -1
+            sk1 = -1
+            try:
+                for k in dicd['tickers']:
+                    if sk == -1:
+                        sk = float(k)
+                    else:
+                        sk1 = float(k)
+                        d_ = abs(sk1 - sk)
+                        sk = sk1
+                    delta_ = dicd['tickers'][k]['call']['delta']
+                    price_ = dicd['tickers'][k]['call']['price']
+                    if 0.3 >= delta_ >= 0.2:
+                        if delta_ > delta_call_low:
+                            delta_call_low = delta_
+                            strike_call_low = k
+                            price_call_low = price_
+            except Exception as ex:
+                log_debug(str(ex)+ " 1 " + ticker)
                 return rdic
-
-            delta_call_high = dicd['tickers'][strike_call_high]['call']['delta']
-            price_call_high = dicd['tickers'][strike_call_high]['call']['price']
-            # print('call delta_call_high, strike_call_high, price_call_high, d_')
-            # print(delta_call_high, strike_call_high, price_call_high, d_)
-
-            dicd = {}
-            dicd = self.get_option_strategy_lh_(options_=options_, dic=dicd, option_type='put', l_=0.1, h_=0.4)
-            # print('dicd -1- put')
-            # print(dicd)
-            for k in dicd['tickers']:
-                delta_ = abs(dicd['tickers'][k]['put']['delta'])
-                price_ = dicd['tickers'][k]['put']['price']
-                if 0.3 >= delta_ >= 0.2:
-                    if delta_ > delta_put_high:
-                        delta_put_high = delta_
-                        strike_put_high = k
-                        price_put_high = price_
-            # print('put - delta_put_high, strike_put_high, price_put_high, d_')
+            try:
+                strike_call_high = str(float(strike_call_low) + d_)
+                if float(strike_call_low) < rdic['p']:
+                    log_debug("float(strike_call_low) < rdic['p'] "+ticker)
+                    return rdic
+                delta_call_high = dicd['tickers'][strike_call_high]['call']['delta']
+                price_call_high = dicd['tickers'][strike_call_high]['call']['price']
+                dicd = {}
+                dicd = self.get_option_strategy_lh_(options_=options_, dic=dicd, option_type='put', l_=0.1, h_=0.4)
+            except Exception as ex:
+                log_debug(str(ex) + " 2 " + ticker)
+                return rdic
+            try:
+                for k in dicd['tickers']:
+                    delta_ = abs(dicd['tickers'][k]['put']['delta'])
+                    price_ = dicd['tickers'][k]['put']['price']
+                    if 0.3 >= delta_ >= 0.2:
+                        if delta_ > delta_put_high:
+                            delta_put_high = delta_
+                            strike_put_high = k
+                            price_put_high = price_
+            except Exception as ex:
+                log_debug(str(ex) + " 3 " + ticker)
+                return rdic
             # print(delta_put_high, strike_put_high, price_put_high, d_)
             if delta_put_high == -1:
-                # print("delta_put_high == -1")
+                log_debug("delta_put_high == -1")
                 return rdic
-
-            strike_put_low = str(float(strike_put_high) - d_)
-            # print(strike_put_low)
-            delta_put_low = abs(dicd['tickers'][strike_put_low]['put']['delta'])
-            price_put_low = dicd['tickers'][strike_put_low]['put']['price']
-            # print('put - low')
-            # print(delta_put_low, strike_put_low, price_put_low, d_)
+            try:
+                strike_put_low = str(float(strike_put_high) - d_)
+                # print(strike_put_low)
+                delta_put_low = abs(dicd['tickers'][strike_put_low]['put']['delta'])
+                price_put_low = dicd['tickers'][strike_put_low]['put']['price']
+                # print(delta_put_low, strike_put_low, price_put_low, d_)
+            except Exception as ex:
+                log_debug(str(ex) + " 4 " + ticker)
+                return rdic
             if delta_put_low == -1:
-                # print("delta_put_low == -1")
+                log_debug("delta_put_low == -1")
                 return rdic
-            condor_price = round(100 * (price_call_low - price_call_high + price_put_high - price_put_low)) / 100
-            result = {'call': {'low': {'delta': delta_call_low, 'strike': strike_call_low, 'price': price_call_low},
-                               'high': {'delta': delta_call_high, 'strike': strike_call_high,
-                                        'price': price_call_high}},
-                      'put': {'low': {'delta': delta_put_low, 'strike': strike_put_low, 'price': price_put_low},
-                              'high': {'delta': delta_put_high, 'strike': strike_put_high, 'price': price_put_high}}}
-            rdic['condor_price'] = condor_price
-            rdic['condor'] = result
-            rdic['is_success'] = True
+            try:
+                condor_price = round(100 * (price_call_low - price_call_high + price_put_high - price_put_low)) / 100
+                result = {'call': {'low': {'delta': delta_call_low, 'strike': strike_call_low, 'price': price_call_low},
+                                   'high': {'delta': delta_call_high, 'strike': strike_call_high,
+                                            'price': price_call_high}},
+                          'put': {'low': {'delta': delta_put_low, 'strike': strike_put_low, 'price': price_put_low},
+                                  'high': {'delta': delta_put_high, 'strike': strike_put_high, 'price': price_put_high}}}
+                rdic['condor_price'] = condor_price
+                rdic['condor'] = result
+                rdic['is_success'] = True
+            except Exception as ex:
+                log_debug(str(ex) + " 5 " + ticker)
+                return rdic
             # print(rdic)
         except Exception as ex:
-            print("Error in get_option_chain api options pull for : " + str(ex))
+            print("Error 7891 in get_option_chain api options pull for : " + str(ex) + " " + ticker)
             return rdic
+        # print('End -5000  ' + ticker)
         return rdic
 
     def get_quotes(self, dic):
+        # print(dic)
+        # print(type(dic))
         dic = eval(dic)
         ticker_ = dic['ticker']
         #
         # need to pull the list of all stocks
+        list1 = "SPX,RUT,IWM,QQQ,NDX,SPY,TSLAS,PYPL,AMZN,BABA,FB" # "MMM,ABT,ABBV,ABMD,ACN,ATVI,ADBE"
+
         if ticker_ == "ALL":
-            ticker_ = "AAPL,GOOG,TSLA"
-        #
+            ticker_ = list1
+
+        # print(self.sp_tickers_str)
+        log_debug("get_quotes: " + ticker_)
         url = r"https://api.tdameritrade.com/v1/marketdata/quotes"
         pay_load = {'apikey': self.customer_key + "@AMER.OAUTHAP", 'symbol': ticker_}
         # print(pay_load)
         r = requests.get(url=url, params=pay_load)
         data = r.json()
         # print(data)
-        rdic = {}
+        log_debug("get_quotes 100: data pulled")
+        results = {}
         for k in data:
-            print(k)
+            # print(k)
+            log_debug("Start ticker: "+k)
             d = datetime.datetime.fromtimestamp(data[k]['quoteTimeInLong'] / 999.999451)
             m = d.minute
             h = d.hour
             date_ = d.date()
-            rdic[k] = {"ticker": k, "date": date_, "h": h, "m": m, "p": data[k]['lastPrice']}
-            # print('rdic 1')
-            # print(rdic)
-
-            result = self.get_iron_condor(rdic[k])
+            dic_k = {"ticker": k, "date": str(date_), "h": h, "m": m, "p": data[k]['lastPrice']}
+            result = self.get_iron_condor(dic_k)
             if result['is_success']:
-                print('result')
-                print(result)
+                # print('result')
+                # print(result)
                 cld = result['condor']['call']['low']['delta']
                 cls = float(result['condor']['call']['low']['strike'])
                 clp = result['condor']['call']['low']['price']
@@ -534,15 +630,407 @@ class TDAmeriTrade(object):
                 ep = round(100*((clp - chp) + (php - plp)))/100
                 elc = round(100*((chs - cls) * (cld - chd) / 2 + chd * (chs - cls)))/100
                 elp = round(100*((phs - pls) * (phd - pld) / 2 + pld * (phs - pls)))/100
-                print(ep, elc, elp)
-                print('-' * 100)
+                # print(ep, elc, elp)
+                # print('-' * 100)
                 result['expected_profit'] = ep - elc - elp
+                results[k] = result
             else:
                 continue
 
-        dic = {'data': result}
-        print("End get_Quotes.")
+        dic = {'data': results}
+        # print(dic)
+        # print("End get_Quotes.")
         return dic
+
+    # ------
+    async def get_iron_condora(self, rdic):
+        ticker = rdic['ticker']
+        try:
+            rdic['is_success'] = False
+            start_date_ = datetime.datetime.now().date()
+            end_date_ = (datetime.datetime.now() + datetime.timedelta(days=6)).date()
+            options_ = self.client.get_option_chain(ticker, contract_type=self.client.Options.ContractType.ALL,
+                                                    from_date=start_date_, to_date=end_date_)
+            # print('options_.json()')
+            # print(options_.json())
+            dicd = {}
+            dicd = self.get_option_strategy_lh_(options_=options_, dic=dicd, option_type='call', l_=0.1, h_=0.4)
+            # print(dicd)
+            delta_call_low = -1
+            strike_call_low = -1
+            price_call_low = -1
+            delta_put_high = -1
+            strike_put_high = -1
+            price_put_high = -1
+            d_ = -1
+            sk = -1
+            sk1 = -1
+            try:
+                for k in dicd['tickers']:
+                    if sk == -1:
+                        sk = float(k)
+                    else:
+                        sk1 = float(k)
+                        d_ = abs(sk1 - sk)
+                        sk = sk1
+                    delta_ = dicd['tickers'][k]['call']['delta']
+                    price_ = dicd['tickers'][k]['call']['price']
+                    if 0.3 >= delta_ >= 0.2:
+                        if delta_ > delta_call_low:
+                            delta_call_low = delta_
+                            strike_call_low = k
+                            price_call_low = price_
+            except Exception as ex:
+                return rdic
+            try:
+                strike_call_high = str(float(strike_call_low) + d_)
+                if float(strike_call_low) < rdic['p']:
+                    return rdic
+                delta_call_high = dicd['tickers'][strike_call_high]['call']['delta']
+                price_call_high = dicd['tickers'][strike_call_high]['call']['price']
+                dicd = {}
+                dicd = self.get_option_strategy_lh_(options_=options_, dic=dicd, option_type='put', l_=0.1, h_=0.4)
+            except Exception as ex:
+                return rdic
+            try:
+                for k in dicd['tickers']:
+                    delta_ = abs(dicd['tickers'][k]['put']['delta'])
+                    price_ = dicd['tickers'][k]['put']['price']
+                    if 0.3 >= delta_ >= 0.2:
+                        if delta_ > delta_put_high:
+                            delta_put_high = delta_
+                            strike_put_high = k
+                            price_put_high = price_
+            except Exception as ex:
+                return rdic
+            # print(delta_put_high, strike_put_high, price_put_high, d_)
+            if delta_put_high == -1:
+                return rdic
+            try:
+                strike_put_low = str(float(strike_put_high) - d_)
+                # print(strike_put_low)
+                delta_put_low = abs(dicd['tickers'][strike_put_low]['put']['delta'])
+                price_put_low = dicd['tickers'][strike_put_low]['put']['price']
+                # print(delta_put_low, strike_put_low, price_put_low, d_)
+            except Exception as ex:
+                return rdic
+            if delta_put_low == -1:
+                return rdic
+            try:
+                condor_price = round(100 * (price_call_low - price_call_high + price_put_high - price_put_low)) / 100
+                result = {'call': {'low': {'delta': delta_call_low, 'strike': strike_call_low, 'price': price_call_low},
+                                   'high': {'delta': delta_call_high, 'strike': strike_call_high,
+                                            'price': price_call_high}},
+                          'put': {'low': {'delta': delta_put_low, 'strike': strike_put_low, 'price': price_put_low},
+                                  'high': {'delta': delta_put_high, 'strike': strike_put_high, 'price': price_put_high}}}
+                rdic['condor_price'] = condor_price
+                rdic['condor'] = result
+                rdic['is_success'] = True
+            except Exception as ex:
+                return rdic
+        except Exception as ex:
+            print("Error 7891 in get_option_chain api options pull for : " + str(ex) + " " + ticker)
+            return rdic
+        return rdic
+
+    async def get_quotesa(self, i):
+        # print(dic)
+        # print(type(dic))
+        ticker_ = self.get_tickers(i)
+        #
+        print(ticker_)
+
+        url = r"https://api.tdameritrade.com/v1/marketdata/quotes"
+        pay_load = {'apikey': self.customer_key + "@AMER.OAUTHAP", 'symbol': ticker_}
+        url = url+"?apikey="+self.customer_key+"@AMER.OAUTHAP&symbol="+ticker_
+        async with aiohttp.ClientSession as session:
+            r = await aiohttp.get(url=url, params=pay_load)
+
+        data = await r.json()
+        # print(json.dumps(data))
+
+        for k in data:
+            print(k)
+            d = datetime.datetime.fromtimestamp(data[k]['quoteTimeInLong'] / 999.999451)
+            m = d.minute
+            h = d.hour
+            date_ = d.date()
+            dic_k = {"ticker": k, "date": str(date_), "h": h, "m": m, "p": data[k]['lastPrice']}
+            try:
+                print(datetime.datetime.now().strftime("%H:%M:%S"))
+                result = await self.get_iron_condora(dic_k)
+                print(datetime.datetime.now().strftime("%H:%M:%S"))
+                print(result['is_success'])
+            except Exception as ex:
+                print(str(ex))
+            if result['is_success']:
+                # print('result')
+                # print(result)
+                cld = result['condor']['call']['low']['delta']
+                cls = float(result['condor']['call']['low']['strike'])
+                clp = result['condor']['call']['low']['price']
+                chd = result['condor']['call']['high']['delta']
+                chs = float(result['condor']['call']['high']['strike'])
+                chp = result['condor']['call']['high']['price']
+
+                pld = result['condor']['put']['low']['delta']
+                pls = float(result['condor']['put']['low']['strike'])
+                plp = result['condor']['put']['low']['price']
+
+                phd = result['condor']['put']['high']['delta']
+                phs = float(result['condor']['put']['high']['strike'])
+                php = result['condor']['put']['high']['price']
+
+                ep = round(100*((clp - chp) + (php - plp)))/100
+                elc = round(100*((chs - cls) * (cld - chd) / 2 + chd * (chs - cls)))/100
+                elp = round(100*((phs - pls) * (phd - pld) / 2 + pld * (phs - pls)))/100
+                # print(ep, elc, elp)
+                # print('-' * 100)
+                result['expected_profit'] = ep - elc - elp
+                print(json.dumps(result))
+            else:
+                continue
+        # print("End get_Quotes.")
+        return dic
+
+    def get_tickers(self, i):
+        n = 1
+        k_ = self.sp_tickers_list[i*n: (i+1)*n]
+        k = ""
+        n_ = 0
+        for ticker in k_:
+            if n_ == 0:
+                k = ticker
+                n_ += 1
+            else:
+                k += ","+ticker
+        return k
+
+    def run_stream_options_dataa(self):
+        asyncio.run(self.stream_options_dataa())
+
+    async def workera(self, name, queue):
+        while True:
+            # Get a "work item" out of the queue.
+            k_ = await queue.get()
+            queue.task_done()
+            n = str(k_["n"])
+            await self.get_quotesa(int(n))
+
+            # Notify the queue that the "work item" has been processed.
+            # print(f'{n}-{name} has slept for {sleep_for:.2f} seconds')
+
+    async def stream_options_dataa(self):
+        # Create a queue that we will use to store our "workload".
+        queue = asyncio.Queue()
+
+        # Generate random timings and put them into the queue.
+        n_sets_of_tickers = 11
+        total_sleep_time = 0
+        for sleep_for in range(n_sets_of_tickers):
+            # sleep_for = random.uniform(0.05, 1.0)
+            total_sleep_time += sleep_for
+            queue.put_nowait({"n": sleep_for, "sleep_for": sleep_for})
+
+        # Create three worker tasks to process the queue concurrently.
+        tasks = []
+        for i in range(n_sets_of_tickers):
+            task = asyncio.create_task(self.workera(f'worker-{i}', queue))
+            tasks.append(task)
+
+        # Wait until the queue is fully processed.
+        started_at = time.monotonic()
+        await queue.join()
+        total_slept_for = time.monotonic() - started_at
+
+        # Cancel our worker tasks.
+        for task in tasks:
+            task.cancel()
+        # Wait until all worker tasks are cancelled.
+        await asyncio.gather(*tasks, return_exceptions=True)
+        await self.stream_options_dataa()
+
+        # print('====')
+        # print(f'3 workers slept in parallel for {total_slept_for:.2f} seconds')
+        # print(f'total expected sleep time: {total_sleep_time:.2f} seconds')
+
+    # ----
+    async def nasdaq_order_book_handler(self, msg):
+        print("="*50)
+        print("nasdaq_order_book_handler")
+        print("-"*40)
+        print(msg)
+        print("="*50)
+
+        for t_ in msg["content"]:
+            bb = []
+            aa = []
+            for b in t_["BIDS"]:
+                bb.append(b["BID_PRICE"])
+            if len(bb) == 0:
+                bb = 0
+            else:
+                bb = sum(bb)/len(bb)
+            for a in t_["ASKS"]:
+                aa.append(a["ASK_PRICE"])
+            if len(aa) == 0:
+                aa = 0
+            else:
+                aa = sum(aa)/len(aa)
+            price = round(100*(bb+aa)/2)/100
+            # print(price)
+
+            if not t_["key"] in self.dic_share_prices:
+                self.dic_share_prices["n__"] = 0
+                self.dic_share_prices[t_["key"]] = {}
+
+                d = datetime.datetime.fromtimestamp(t_["BOOK_TIME"] / 999.999451)
+                h = d.hour
+                m = d.minute
+                date_ = d.date()
+                time_ = str(date_) + ":" + str(h) + ":" + str(m)
+
+                self.dic_share_prices[t_["key"]]["BOOK_TIME"] = time_
+                self.dic_share_prices[t_["key"]]["LOW_PRICE"] = price
+                self.dic_share_prices[t_["key"]]["HIGH_PRICE"] = price
+                self.dic_share_prices[t_["key"]]["OPEN_PRICE"] = price
+                self.dic_share_prices[t_["key"]]["CLOSE_PRICE"] = 0
+            self.dic_share_prices[t_["key"]]["CLOSE_PRICE"] = price
+
+            if price < self.dic_share_prices[t_["key"]]["LOW_PRICE"]:
+                self.dic_share_prices[t_["key"]]["LOW_PRICE"] = price
+            elif price > self.dic_share_prices[t_["key"]]["LOW_PRICE"]:
+                self.dic_share_prices[t_["key"]]["HIGH_PRICE"] = price
+        # print(self.dic_share_prices)
+        n__ = self.dic_share_prices["n__"]
+        n__ += 1
+        self.dic_share_prices["n__"] = n__
+        if n__ < 2:
+            return
+        n__ = self.dic_share_prices.pop("n__")
+
+        print("="*30)
+        print("processed nasdaq_order_book_handler")
+        print("-"*20)
+        print(self.dic_share_prices)
+        print("="*50)
+
+        return
+
+        try:
+            msg = json.dumps(self.dic_share_prices)
+            print(json.dumps(self.dic_share_prices, indent=4))
+            response_ = {
+                'msg': msg,
+                'type': "data_received_nasdaq_order_book"
+            }
+            channel_layer = get_channel_layer()
+            await channel_layer.group_send(
+                'option1', {
+                    'type': 'chat_message',
+                    'text': json.dumps(response_)
+                })
+        except Exception as ex:
+            pass
+            # print(ex)
+        self.dic_share_prices = {}
+
+    async def option_order_book_handler(self, msg):
+        print(msg)
+
+    async def chart_equity_handler(self, msg):
+        # print("="*50)
+        # print("chart_equity_handler")
+        # print("-"*40)
+        # print(msg)
+        # print("="*50)
+        dic = {}
+        for t_ in msg["content"]:
+            d = datetime.datetime.fromtimestamp(t_["CHART_TIME"] / 999.999451)
+            h = d.hour
+            m = d.minute
+            # date_ = d.date()
+            time_ = str(d.day) + " " + calendar.month_abbr[d.month] + " " + str(d.year)+" "+str(h)+":"+str(m)+" GMT"
+
+            # '06 Nov 1994 20:49 GMT'
+            o = t_["OPEN_PRICE"]
+            h = t_["HIGH_PRICE"]
+            l = t_["LOW_PRICE"]
+            c = t_["CLOSE_PRICE"]
+            v = t_["VOLUME"]
+            dic[t_["key"]] = [time_, o, h, l, c, v]
+        # print("processed chart_equity_handler")
+        # print("-"*20)
+        # print(dic)
+        # print("="*50)
+
+        try:
+            msg = json.dumps(dic)
+            # print(json.dumps(dic, indent=4))
+            response_ = {
+                'msg': msg,
+                'type': "data_received_chart_equity"
+            }
+            channel_layer = get_channel_layer()
+            await channel_layer.group_send(
+                'option1', {
+                    'type': 'chat_message',
+                    'text': json.dumps(response_)
+                })
+        except Exception as ex:
+            pass
+            # print(ex)
+
+    async def level_one_equity_handler(self, msg):
+        print("="*50)
+        print("level_one_equity_handler")
+        print("-"*40)
+        print(msg)
+        print("="*50)
+
+    # async def read_stream(self, add_func, func, subs_func, tickers):
+    #     try:
+    #         stream_client = self.get_stream_client()
+    #     except Exception as ex:
+    #         print(ex)
+    #     # print("-"*50)
+    #     # print(add_func, func, subs_func, tickers)
+    #     # print("-1"*50)
+    #     try:
+    #         await stream_client.login()
+    #     except Exception as ex:
+    #         print("Error Login: "+str(ex))
+    #     await stream_client.quality_of_service(StreamClient.QOSLevel.EXPRESS)
+    #
+    #     # Always add handlers before subscribing because many streams start sending
+    #     # data immediately after success, and messages with no handlers are dropped.
+    #
+    #     log_debug("-4"*10)
+    #     log_debug("stream_client." + add_func + "("+func+")")
+    #     eval("stream_client." + add_func + "("+func+")")
+    #
+    #     print("await stream_client." + subs_func + "(['"+tickers+"'])")
+    #     await eval("stream_client." + subs_func + "(['"+tickers+"'])")
+    #     print("-41"*10)
+    #
+    #     while True:
+    #         await stream_client.handle_message()
+    #
+    # def activate_streaming(self, dic):
+    #     dic = eval(dic)
+    #     ticker_ = dic['ticker']
+    #     # print('-22222-')
+    #     # print(ticker_)
+    #     # print('-22222-')
+    #
+    #     asyncio.run(self.read_stream(add_func='add_nasdaq_book_handler',
+    #                                  func="self.nasdaq_order_book_handler",
+    #                                  subs_func="nasdaq_book_subs",
+    #                                  tickers=ticker_))
+
+    def activate_several_stream(self, dic):
+        services = eval(dic)
+        asyncio.run(self.read_several_stream(services))
 
 
 class AcademyCityXBRL(object):
@@ -587,6 +1075,7 @@ class AcademyCityXBRL(object):
         self.xbrl_start_year = 2012
         self.today_year = datetime.datetime.now().year
         # log_debug("AcademyCityXBRL was created")`
+        self.matching_accounts = None
 
     # Valuation Functions
     def get_risk_premium(self, year10=1928, year50=1928, cv_project_id=None, is_update='no'):
@@ -743,139 +1232,74 @@ class AcademyCityXBRL(object):
         # print(statements)
         return statements
 
+    # --
+    async def process_page(self, text):
+        print("process_page")
+        print(text)
+        asyncio.sleep(1)
+        return {"k1": "amosb"}
+
+    def run_all_pages(self, dic):
+        dic = eval(dic)
+        print(dic["ticker"])
+
+        urls = ["https://www.sec.gov/Archives/edgar/data/320193/000119312512444068/0001193125-12-444068-index.htm"]
+
+        gaup = GetAllUrlsProcessed()
+        k = asyncio.run(gaup.process_all_pages(urls, func=self.process_page))
+        print('k')
+        print(k)
+    # --
+
     def get_data_ticker(self, ticker, is_update='no', is_updateq='no'):
-        # print('get_data_for_cik')
-        # print('is_update', is_update, 'is_updateq', is_updateq)
-        # print("Start get_data_for_cik.")
         try:
             company = XBRLCompanyInfo.objects.get(ticker=ticker)
         except Exception as ex:
             print("Error 666" + str(ex))
-            log_debug("Error 666" + str(ex))
         dataq = ""
-        # print('get_data_for_cik 1')
         if is_update == "no" and company.financial_data:
             dic_company_info = company.financial_data
-            # print('dic_company_info 1')
-            # print(dic_company_info)
-            # quarterly data
             if is_updateq == "no" and company.financial_dataq:
                 # print('dic_company_info q 2')
                 dataq = company.financial_dataq
             elif is_updateq == "yes":
-                log_debug("self.get_dic_company_info_q 1")
-                # print('self.get_dic_company_info_q 1')
-                dataq = self.get_dic_company_info_q(company, dic_company_info)
+                dataq = self.get_dic_company_info_q_(company, dic_company_info)
                 company.financial_dataq = dataq
                 company.save()
-                log_debug("self.get_dic_company_info_q 2")
-                # print('self.get_dic_company_info_q 2')
         else:
-            # print("self.get_dic_company_info 1")
-            log_debug("self.get_dic_company_info 1")
             dic_company_info = self.get_dic_company_info(company)
             company.financial_data = dic_company_info
             company.save()
-            # print("self.get_dic_company_info 2")
-            log_debug("self.get_dic_company_info 2")
-        # print('get_data_for_cik 2')
-
         try:
             countries_regions_ = company.get_countries_regions()
             dic_company_info["countries_regions"] = countries_regions_
-            # log_debug(countries_regions_)
         except Exception as ex:
             log_debug("get_dic_company_info ex1: " + str(ex))
-
-        # print('get_data_for_cik 3')
-        # print(dic_company_info)
-
         result = {'dic_company_info': dic_company_info, 'dataq': dataq}
         # print(result)
         return result
 
     def get_dic_company_info(self, company, type_="10-K"):
         dic_company_info = self.get_dic_company_info_(company, type_)
-        # print(dic_company_info)
         dic_data = dic_company_info['data']
-        # print(len(dic_data))
         if len(dic_data) == 0:
-            # print("Couldn't find the document link trying 20-F")
-            dic_company_info = self.get_dic_company_info_(company, "20-F")
-            dic_data = dic_company_info['data']
+            try:
+                dic_company_info = self.get_dic_company_info_(company, "20-F")
+                dic_data = dic_company_info['data']
+            except Exception as ex:
+                pass
             if len(dic_data) == 0:
-                # print("Couldn't find the document link FOR 20-F")
-                log_debug("Couldn't find the document link FOR 20-F")
                 return dic_company_info
-
         if 'statements' not in dic_company_info:
             dic_company_info['statements'] = self.get_statements(company=company)
-
-        # #  ---- Replaced ----
-        # dic_data_list = []
-        # for key, value in dic_data.items():
-        #     temp = [key, value,
-        #             dic_company_info['company_info']['SIC'],
-        #             dic_company_info['company_info']['ticker'], statements
-        #             ]
-        #     dic_data_list.append(temp)
-        #
-        # # Exit if document link couldn't be found
-        # # print('-13' * 10)
-        # # print(len(dic_data))
-        # # print(dic_company_info['company_info'])
-        # # print(dic_data)
-        # # print(dic_data_list)
-        # # print('-13' * 10)
-        #
-        # results = []
-        # # print("Current Time Before ThreadPoolExecutor =", datetime.datetime.now().strftime("%H:%M:%S"))
-        #
-        # log_debug("Start ThreadPoolExecutor.")
-        # with ThreadPoolExecutor(max_workers=len(dic_data)) as pool:
-        #     results = pool.map(self.get_data_for_years, dic_data_list)
-        # # print("Current Time After ThreadPoolExecutor =", datetime.datetime.now().strftime("%H:%M:%S"))
-        # log_debug("End ThreadPoolExecutor.")
-        # for r in results:
-        #     dic_data[r[0]] = r[1]
-        #     # statements = r[4]
-        # log_debug("End collect data from ThreadPoolExecutor.")
-        #
-        # # print("Current Time After process result ThreadPoolExecutor =", datetime.datetime.now().strftime("%H:%M:%S"))
-        # dic_company_info['data'] = dic_data
-        #
-        #  ---- End Replaced ----
-
-        # print("Current Time start =", datetime.datetime.now().strftime("%H:%M:%S"))
-
-        for key in dic_company_info['data']:
-            # print(key, len(dic_company_info['data'][key]))
-            if len(dic_company_info['data'][key]) != 0:
-                dic_company_info = self.get_data_for_one_year(key, dic_company_info)
-
-        log_debug("get_dic_company_info")
+        dic_company_info = self.process_dic_company_info_(dic_company_info)
         return dic_company_info
 
     def get_dic_company_info_(self, company, type_="10-K"):
-        # if is_update != 'yes':
-        #     if company.financial_data:
-        #         # print('company.financial_data')
-        #         # for r in XBRLRegion.region_objects.averages():
-        #         #     print(r.name)
-        #         #     print(r.num_countries)
-        #         # print(company.financial_data)
-        #         dic_company_info = company.financial_data
-        #         dic_company_info["countries_regions"] = company.get_countries_regions()
-        #         # print(dic_company_info)
-        #         if is_update == 'q':
-        #             dic_company_info = self.get_dic_company_info_q(company, dic_company_info)
-        #         return dic_company_info
         clear_log_debug()
         # print("get_dic_company_info_ 1")
         base_url = "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK={}&type={}&count=100"  # &dateb={}"
         url = base_url.format(company.cik, type_)
-        # print("get_dic_company_info_ 3: ", company.ticker, company.cik, str(company.tax_rate), url)
-        # print('-'*10)
         dic_company_info = {"company_info": {'ticker': company.ticker,
                                              'cik': company.cik,
                                              'sic_code': company.industry.sic_code,
@@ -883,12 +1307,7 @@ class AcademyCityXBRL(object):
                                              '10k_url': url,
                                              },
                             'data': {}}
-        #
-        # print('--'*10)
-        # print("get_dic_company_info_ 32 ", dic_company_info)
-        # print('-1'*10)
-        #
-        # print("Current Time 1 =", datetime.datetime.now().strftime("%H:%M:%S"))
+        # print(dic_company_info)
         headers = {'User-Agent': 'amos@drbaranes.com'}
         edgar_resp = requests.get(url, headers=headers, timeout=30)
         # print("Current Time 11 =", datetime.datetime.now().strftime("%H:%M:%S"))
@@ -928,20 +1347,465 @@ class AcademyCityXBRL(object):
                         continue
                     # for filing_year in range(2019, 2020):
                     for filing_year in range(self.xbrl_start_year, self.today_year + 1):
-                        if filing_year not in dic_data:
-                            dic_data[filing_year] = {}
-                        # print(str(filing_year), cells[3].text)
                         if str(filing_year) in cells[3].text:
-                            dic_data[filing_year]['href'] = 'https://www.sec.gov' + cells[1].a['href']
+                            # print(str(filing_year), cells[3].text, cells[1].a['href'], cells[0].text)
+                            if filing_year not in dic_data and cells[0].text == "10-K":
+                                dic_data[filing_year] = {}
+                                dic_data[filing_year]['href'] = 'https://www.sec.gov' + cells[1].a['href']
             except Exception as ex:
                 pass
-                # print(ex)
 
         dic_company_info['data'] = dic_data
-        # print('dic_company_info')
         # print(dic_company_info)
         return dic_company_info
 
+    def process_dic_company_info_(self, dic_company_info):
+        urls = []
+        max_y = 0
+        for y in dic_company_info['data']:
+            # print(dic_company_info['data'][y])
+            urls.append(dic_company_info['data'][y]["href"])
+            if max_y < y:
+                max_y = y
+        max_y += 1
+        dic_matching_accounts = self.get_matching_accounts_(dic_company_info, max_y)
+        dic_ = {"dic_company_info": dic_company_info, "dic_matching_accounts": dic_matching_accounts}
+        # --
+        gaup = GetAllUrlsProcessed()
+        k = asyncio.run(gaup.process_all_pages(urls, func=self.get_data_for_years_async, dic=dic_))
+        # --
+        dic_company_info = dic_["dic_company_info"]
+        return dic_company_info
+
+    async def get_data_for_years_async(self, obj, txt, url, dic):
+        dic_company_info = dic["dic_company_info"]
+        dic_matching_accounts = dic["dic_matching_accounts"]
+        value = None
+        key = None
+        for y in dic_company_info["data"]:
+            if dic_company_info["data"][y]["href"] == url:
+                value = dic_company_info["data"][y]
+                key = y
+        doc_str = txt
+        xbrl_link = ''
+        soup = BeautifulSoup(doc_str, 'html.parser')
+        table_tag = soup.find('table', class_='tableFile', summary='Data Files')
+        try:
+            rows = table_tag.find_all('tr')
+            for row in rows:
+                cells = row.find_all('td')
+                if len(cells) > 3:
+                    if 'INS' in cells[3].text or 'XML' in cells[3].text:
+                        #
+                        # print(cells[3].text)
+                        #
+                        xbrl_link = cells[2].a['href']
+
+            value['xbrl_link'] = 'https://www.sec.gov' + xbrl_link
+            accession_number = xbrl_link.split('/')
+
+            view_link = 'https://www.sec.gov/cgi-bin/viewer?action=view&cik='
+            view_link += accession_number[4] + '&accession_number=' + accession_number[5] + '&xbrl_type=v#'
+
+            r_link = "https://www.sec.gov/Archives/edgar/data/" + accession_number[4] + "/" + accession_number[5] + "/R"
+            value['r_link'] = r_link
+            value['view_link'] = view_link
+
+        except Exception as ex:
+            return dic_data_year
+        xbrl_str = await obj.get_page(value['xbrl_link'])
+        soup = BeautifulSoup(xbrl_str, 'lxml')
+        value['dei'] = {}
+        for tag in soup.find_all(re.compile("dei:")):
+            name_ = tag.name.split(":")
+            value['dei'][name_[1]] = tag.text
+
+        documentperiodenddate = value['dei']['documentperiodenddate']
+        entitycentralindexkey = value['dei']['entitycentralindexkey']
+
+        flow_context_id = ""
+        for tag in soup.find_all(name=re.compile('enddate'), string=documentperiodenddate):
+            # print(tag.name)
+            try:
+                context = tag.find_parent(re.compile('context'))
+                context_name = context.name.split(":")
+                if len(context_name) > 1:
+                    identifier = context.find(context_name[0] + ':identifier')
+                    segment = context.find(context_name[0] + ':segment')
+                    startdate = context.find(context_name[0] + ':startdate')
+                else:
+                    identifier = context.find('identifier')
+                    segment = context.find('segment')
+                    startdate = context.find('startdate')
+
+                end_date = tag.text.split('-')
+                start_date = startdate.text.split('-')
+                start_date = start_date[0] + '-' + start_date[1]
+
+                start_date_should = str((int(end_date[0]) - 1)) + '-' + end_date[1]
+                start_date0_should = str((int(end_date[0]) - 2)) + '-12'
+                if int(end_date[1]) > 10 or int(end_date[1]) < 3:
+                    start_date1_should = end_date[0] + '-01'
+                else:
+                    start_date1_should = 0
+                start_date2_should = str((int(end_date[0]) - 1)) + '-' + self.add_zero(str((int(end_date[1]) + 1)))
+                start_date3_should = str((int(end_date[0]) - 1)) + '-' + self.add_zero(str((int(end_date[1]) - 1)))
+
+                if (not segment) and (identifier.text == entitycentralindexkey) \
+                        and (
+                        start_date == start_date_should or start_date == start_date0_should or
+                        start_date == start_date1_should or start_date == start_date2_should or
+                        start_date == start_date3_should):
+                    flow_context_id = context['id']
+
+            except Exception as ex:
+                # print(ex)
+                continue
+
+        for tag in soup.find_all(name=re.compile('instant'), string=documentperiodenddate):
+            context = tag.find_parent(re.compile('context'))
+
+            context_name = context.name.split(":")
+
+            if len(context_name) > 1:
+                identifier = context.find(context_name[0] + ':identifier')
+                segment = context.find(context_name[0] + ':segment')
+            else:
+                identifier = context.find('identifier')
+                segment = context.find('segment')
+            if not segment and identifier.text == entitycentralindexkey:
+                # print(context)
+                instant_context_id = context['id']
+
+        y_ = int(value['dei']['documentfiscalyearfocus'])
+
+        # if int(y_) == 2020:
+            # print("="*20)
+            # print('flow_context_id')
+            # print(flow_context_id)
+            # print('instant_context_id')
+            # print(instant_context_id)
+
+        matching_accounts = dic_matching_accounts[y_]["matching_accounts"]
+        accounts_ = dic_matching_accounts[y_]["accounts_"]
+        used_accounting_standards = dic_matching_accounts[y_]["used_accounting_standards"]
+
+        value['matching_accounts'] = matching_accounts
+        year_data = {}
+
+        accounts_flow = {}
+        for k in accounts_['flow']:
+            accounts_flow[k[0:92]] = accounts_['flow'][k]
+
+        accounts_instant = {}
+        for k in accounts_['instant']:
+            accounts_instant[k[0:92]] = accounts_['instant'][k]
+
+        for std in used_accounting_standards:
+            tag_list = soup.find_all(re.compile(std + ":"))
+            for tag in tag_list:
+                name_ = tag.name.split(":")
+                try:
+                    if name_[1][0:92] in accounts_instant and tag['contextref'] == instant_context_id:
+                        if accounts_instant[name_[1][0:92]][2] == std:
+                            order = accounts_instant[name_[1][0:92]][0]
+                            scale = accounts_instant[name_[1][0:92]][1]
+                            if scale == 1:
+                                year_data[order] = tag.text
+                            else:
+                                year_data[order] = int(round(float(tag.text))) / scale
+                    if name_[1][0:92] in accounts_flow and tag['contextref'] == flow_context_id:
+                        if accounts_flow[name_[1][0:92]][2] == std:
+                            order = accounts_flow[name_[1][0:92]][0]
+                            scale = accounts_flow[name_[1][0:92]][1]
+                            # if int(y_) == 2020:
+                            #     print("="*30)
+                            #     print(order, name_[1][0:92], scale, tag.text)
+
+                            if scale == 1:
+                                year_data[order] = tag.text
+                            else:
+                                year_data[order] = int(round(float(tag.text))) / scale
+
+                            # if int(y_) == 2020:
+                            #     print(year_data)
+                            #     print("="*30)
+
+                except Exception as ex:
+                    print(str(ex))
+        value['year_data'] = year_data
+        dic_company_info['data'][key] = value
+        return value
+
+    def get_matching_accounts_(self, dic_company_info, max_y):
+        ticker = dic_company_info['company_info']['ticker']
+        sic = dic_company_info['company_info']['SIC']
+        statements = dic_company_info['statements']
+        dic = {}
+        for year in range(2011, max_y):
+            dic[year] = {}
+            try:
+                if year <= self.xbrl_base_year:
+                    years = sorted(range(year, self.xbrl_base_year + 1), reverse=True)
+                else:
+                    years = range(self.xbrl_base_year, year + 1)
+            except Exception as ex:
+                print(ex)
+            matches = XBRLValuationAccountsMatch.objects.filter((Q(year=0) & Q(company__industry__sic_code=sic)) |
+                                                                (Q(year__in=years) & Q(company__ticker=ticker))).all()
+            used_accounting_standards = []
+            dic_matches = {}
+            for m in matches:
+                if m.year == 0:
+                    dic_matches[m.account.order] = [m.match_account, m.accounting_standard]
+                    if m.accounting_standard not in used_accounting_standards:
+                        used_accounting_standards.append(m.accounting_standard)
+
+            for y in years:
+                for m in matches:
+                    if m.year == y:
+                        dic_matches[m.account.order] = [m.match_account, m.accounting_standard]
+                        if m.accounting_standard not in used_accounting_standards:
+                            used_accounting_standards.append(m.accounting_standard)
+
+            matching_accounts = {}
+            accounts_ = {'instant': {}, 'flow': {}}
+
+            for st_ in statements:
+                for a_order in statements[st_]['accounts']:
+                    try:
+                        if int(a_order) in dic_matches:
+                            ma_, ma_std = dic_matches[int(a_order)][0].lower(), dic_matches[int(a_order)][1].lower()
+                        else:
+                            ma_, ma_std = "", ""
+                    except Exception as ex:
+                        pass
+
+                    if ma_ != '':
+                        if statements[st_]['accounts'][a_order][1] == 1:
+                            accounts_['instant'][ma_] = (a_order, statements[st_]['accounts'][a_order][2], ma_std)
+                        else:
+                            accounts_['flow'][ma_] = (a_order, statements[st_]['accounts'][a_order][2], ma_std)
+                    matching_accounts[a_order] = [ma_, ma_std]
+            dic[year]["matching_accounts"] = matching_accounts
+            dic[year]["accounts_"] = accounts_
+            dic[year]["used_accounting_standards"] = used_accounting_standards
+        return dic
+
+    #  --
+    def get_dic_company_info_q_(self, company, dic_company_info):
+
+        headers = {'User-Agent': 'amos@drbaranes.com'}
+        base_url = "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK={}&type={}&count=100"  # &dateb={}"
+        type_ = '10-Q'
+        url_q = base_url.format(company.cik, type_)
+        dic_data = {'10q_url': url_q, 'data': {}}
+        try:
+            edgar_resp_q = requests.get(url_q, headers=headers, timeout=30)
+        except Exception as ex:
+            print(str(ex))
+        edgar_str_q = edgar_resp_q.text
+        soup_q = BeautifulSoup(edgar_str_q, 'html.parser')
+        table_tag_q = soup_q.find('table', class_='tableFile2')
+        try:
+            rows = table_tag_q.find_all('tr')
+        except Exception as ex:
+            return dic_company_info
+        for row in rows:
+            try:
+                cells = row.find_all('td')
+                if len(cells) > 3:
+                    if cells[0].text.lower() != type_.lower():
+                        continue
+                    for filing_year in range(self.xbrl_start_year, self.today_year + 1):
+                        if str(filing_year) in cells[3].text:
+                            m = cells[3].text.split("-")[1]
+                            try:
+                                if filing_year not in dic_data['data']:
+                                    dic_data['data'][filing_year] = {}
+                            except Exception as exx:
+                                print(str(exx))
+                            dic_data['data'][filing_year][m] = {'href': 'https://www.sec.gov' + cells[1].a['href']}
+            except Exception as ex:
+                pass
+        urls = []
+        max_y = 0
+        for key in dic_data['data']:
+            if max_y<key:
+                max_y=key
+            try:
+                url_ = dic_company_info['data'][str(key)]['href']
+                dic_data['data'][key]['Q4'] = {'href': url_}
+            except Exception as ex:
+                dic_data['data'][key]['Q4'] = {'href': ""}
+            for m in dic_data['data'][key]:
+                if dic_data['data'][key][m]['href'] == "":
+                    continue
+                else:
+                    urls.append(dic_data['data'][key][m]['href'])
+        max_y += 1
+        dic_matching_accounts = self.get_matching_accounts_(dic_company_info, max_y)
+        dic_ = {"dic_data": dic_data, "dic_matching_accounts": dic_matching_accounts}
+        # --
+        gaup = GetAllUrlsProcessed()
+        k = asyncio.run(gaup.process_all_pages(urls, func=self.get_data_for_one_year_q_async, dic=dic_))
+        return dic_["dic_data"]
+
+    async def get_data_for_one_year_q_async(self, obj, txt, url, dic):
+        dic_data = dic["dic_data"]
+        dic_matching_accounts = dic["dic_matching_accounts"]
+        value = None
+        key = None
+        m = None
+        for y in dic_data["data"]:
+            for m_ in dic_data["data"][y]:
+                try:
+                    if dic_data["data"][y][m_]["href"] == url:
+                        value = dic_data["data"][y][m_]
+                        key = y
+                        m = m_
+                except Exception as ex:
+                    continue
+        xbrl_link = ''
+        soup = BeautifulSoup(txt, 'html.parser')
+        table_tag = soup.find('table', class_='tableFile', summary='Data Files')
+        # print(table_tag)
+        try:
+            rows = table_tag.find_all('tr')
+            for row in rows:
+                cells = row.find_all('td')
+                if len(cells) > 3:
+                    if 'INS' in cells[3].text or 'XML' in cells[3].text:
+                        # print(cells[3].text)
+                        xbrl_link = cells[2].a['href']
+            value['xbrl_link'] = 'https://www.sec.gov' + xbrl_link
+            accession_number = xbrl_link.split('/')
+            view_link = 'https://www.sec.gov/cgi-bin/viewer?action=view&cik='
+            view_link += accession_number[4] + '&accession_number=' + accession_number[5] + '&xbrl_type=v#'
+
+            r_link = "https://www.sec.gov/Archives/edgar/data/" + accession_number[4] + "/" + accession_number[5] + "/R"
+            value['r_link'] = r_link
+            value['view_link'] = view_link
+        except Exception as ex:
+            return value
+
+        # xbrl_resp = requests.get(value['xbrl_link'], headers=headers, timeout=30)
+        # xbrl_str = xbrl_resp.text
+        xbrl_str = await obj.get_page(value['xbrl_link'])
+
+        soup = BeautifulSoup(xbrl_str, 'lxml')
+        value['dei'] = {}
+        for tag in soup.find_all(re.compile("dei:")):
+            name_ = tag.name.split(":")
+            value['dei'][name_[1]] = tag.text
+
+        documentperiodenddate = value['dei']['documentperiodenddate']
+        entitycentralindexkey = value['dei']['entitycentralindexkey']
+        if m == "Q4":
+            documentfiscalperiodfocus = "Q4"
+            value['dei']['documentfiscalperiodfocus'] = "Q4"
+        else:
+            documentfiscalperiodfocus = value['dei']['documentfiscalperiodfocus']
+
+        flow_context_id = ""
+        for tag in soup.find_all(name=re.compile('enddate'), string=documentperiodenddate):
+            try:
+                context = tag.find_parent(re.compile('context'))
+                # print(context)
+                context_name = context.name.split(":")
+
+                if len(context_name) > 1:
+                    identifier = context.find(context_name[0] + ':identifier')
+                    segment = context.find(context_name[0] + ':segment')
+                    startdate = context.find(context_name[0] + ':startdate')
+                else:
+                    identifier = context.find('identifier')
+                    segment = context.find('segment')
+                    startdate = context.find('startdate')
+
+                end_date = tag.text.split('-')
+                start_date = startdate.text.split('-')
+                start_date = start_date[0] + '-' + start_date[1]
+
+                if 12 >= int(end_date[1]) > 4:
+                    start_date_should = end_date[0] + '-' + self.add_zero(str(int(end_date[1]) - 3))
+                    start_date0_should = end_date[0] + '-' + self.add_zero(str(int(end_date[1]) - 2))
+                    start_date1_should = end_date[0] + '-' + self.add_zero(str(int(end_date[1]) - 4))
+                    start_date2_should = "none"
+                    # print(start_date_should)
+                elif int(end_date[1]) <= 4:
+                    start_date_should = end_date[0] + '-01'
+                    start_date0_should = end_date[0] + '-02'
+                    start_date1_should = str((int(end_date[0]) - 1)) + '-12'
+                    start_date2_should = str((int(end_date[0]) - 1)) + '-11'
+
+                if (not segment) and (identifier.text == entitycentralindexkey) \
+                        and (start_date == start_date_should or start_date == start_date0_should or
+                             start_date == start_date1_should or start_date == start_date2_should):
+                    flow_context_id = context['id']
+
+            except Exception as ex:
+                # print(ex)
+                continue
+
+        for tag in soup.find_all(name=re.compile('instant'), string=documentperiodenddate):
+            context = tag.find_parent(re.compile('context'))
+            context_name = context.name.split(":")
+            if len(context_name) > 1:
+                identifier = context.find(context_name[0] + ':identifier')
+                segment = context.find(context_name[0] + ':segment')
+            else:
+                identifier = context.find('identifier')
+                segment = context.find('segment')
+            if not segment and identifier.text == entitycentralindexkey:
+                # print(context)
+                instant_context_id = context['id']
+
+        matching_accounts = dic_matching_accounts[key]["matching_accounts"]
+        accounts_ = dic_matching_accounts[key]["accounts_"]
+        used_accounting_standards = dic_matching_accounts[key]["used_accounting_standards"]
+
+        value['matching_accounts'] = matching_accounts
+        year_data = {}
+        accounts_flow = {}
+        for k in accounts_['flow']:
+            accounts_flow[k[0:92]] = accounts_['flow'][k]
+
+        accounts_instant = {}
+        for k in accounts_['instant']:
+            accounts_instant[k[0:92]] = accounts_['instant'][k]
+
+        for std in used_accounting_standards:
+            tag_list = soup.find_all(re.compile(std + ":"))
+            for tag in tag_list:
+                name_ = tag.name.split(":")
+                try:
+                    if name_[1][0:92] in accounts_instant and tag['contextref'] == instant_context_id:
+                        if accounts_instant[name_[1][0:92]][2] == std:
+                            order = accounts_instant[name_[1][0:92]][0]
+                            scale = accounts_instant[name_[1][0:92]][1]
+                            if scale == 1:
+                                year_data[order] = tag.text
+                            else:
+                                year_data[order] = int(round(float(tag.text))) / scale
+                    if name_[1][0:92] in accounts_flow and tag['contextref'] == flow_context_id:
+                        if accounts_flow[name_[1][0:92]][2] == std:
+                            order = accounts_flow[name_[1][0:92]][0]
+                            scale = accounts_flow[name_[1][0:92]][1]
+                            if scale == 1:
+                                year_data[order] = tag.text
+                            else:
+                                year_data[order] = int(round(float(tag.text))) / scale
+                except Exception as ex:
+                    pass
+                    # print("Error: year=" + str(dic_data_year[0]) + "   dic=" + dic_data_year[1]['href'] + "   " + str(ex) + tag.text)
+
+        value['year_data'] = year_data
+        dic_data['data'][key][m] = value
+        return value
+
+    # --
+    # to be deleted
     def get_data_for_one_year(self, key, dic_company_info):
         value = dic_company_info['data'][key]
         temp = [key, value,
@@ -951,6 +1815,7 @@ class AcademyCityXBRL(object):
         dic_company_info['data'][key] = self.get_data_for_years(dic_data_year=temp)[1]
         return dic_company_info
 
+    # to be deleted
     def get_data_for_years(self, dic_data_year):
         # print(dic_data_year)
         log_debug("start get_data_for_years: " + dic_data_year[3] + ", " + str(dic_data_year[0]))
@@ -1501,6 +2366,7 @@ class AcademyCityXBRL(object):
         # print("Current Time End get data = " + str(dic_data_year[0]), datetime.datetime.now().strftime("%H:%M:%S"))
         return dic_data_year
 
+    # to be deleted --
     def get_matching_accounts(self, ticker, year, sic, statements):
         try:
             if year <= self.xbrl_base_year:
@@ -3009,7 +3875,7 @@ class FinancialAnalysis(object):
             account_id.append(q['account_id'])
             amount.append(float(q['amount']))
 
-        data_ = {"company_id": company_id, "time_id": time_id, "account_id": account_id, "amount": amount, "companies_dic": companies_dic}
+        data_ = {"company_id": company_id, "time_id": time_id, "account_id": account_id, "amount": amount, "companies_dic": companies_dic, "sic":sic_}
         # print(data_)
         result = {'status': "ok", "data": data_}
 

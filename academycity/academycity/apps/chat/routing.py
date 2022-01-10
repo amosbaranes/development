@@ -2,7 +2,7 @@
 from django.urls import re_path, path
 from django.conf.urls import url
 
-from .consumers import ChatWhiteBaordConsumer
+from .consumers import ChatWhiteBaordConsumer, OptionsConsumer
     # ChatConsumer
 
 websocket_urlpatterns = [
@@ -11,4 +11,5 @@ websocket_urlpatterns = [
 
     # url(r'ws/chat/(?P<group>\w+)/$', ChatConsumer),
     url(r'ws/chat/(?P<group>\w+)/$', ChatWhiteBaordConsumer),
+    url(r'ws/option/(?P<group>\w+)/$', OptionsConsumer),
 ]
