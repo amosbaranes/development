@@ -5,9 +5,10 @@ from django.contrib.auth import get_user_model
 from channels.consumer import AsyncConsumer
 from channels.db import database_sync_to_async
 from .models import Thread, Whiteboard, WhiteboardData
+from ..corporatevaluation.models import XBRLCompanyInfo, XBRLRealEquityPrices
 from ..courses.models import Section, CourseSchedule
 from ..core.OptionsAmeriTrade import BaseTDAmeriTrade
-import time
+from ..core.utils import log_debug
 
 
 class OptionsConsumer(AsyncConsumer):
@@ -69,9 +70,9 @@ class OptionsConsumer(AsyncConsumer):
                 for n in range(3):
                     msg = "   from start_stream: : " + str(n)
                     await self.send_stream(msg, n)
-            else:
-                # if type == "wm":
-                #     await self.record_whiteboard_movment(msg)
+            # else:
+                # if type == "data_received_chart_equity":
+                #     await self.record_data_received_chart_equity(msg)
 
                 response_ = {
                     'msg': msg,
@@ -111,8 +112,11 @@ class OptionsConsumer(AsyncConsumer):
             })
 
     async def chat_message(self, event):
-        # sender_channel_name = json.loads(event['text'])['sender_channel_name']
-        # type = json.loads(event['text'])['type']
+        type_ = json.loads(event['text'])['type']
+        msg_ = json.loads(event['text'])['msg']
+
+        if type_ == "data_received_chart_equity":
+            await self.record_data_received_chart_equity(msg_)
 
         # if (self.channel_name != sender_channel_name) or (type == "chat_message"):
         await self.send({
@@ -134,25 +138,12 @@ class OptionsConsumer(AsyncConsumer):
         )
 
     @database_sync_to_async
-    def record_whiteboard_movment(self, msg):
-        ll = msg.split(",")
-        # print('-'*150)
-        # print(ll)
-        # print(ll[7])
-        # print('-'*100)
-        wb = Whiteboard.objects.get(id=ll[7])
-        # print(wb)
-        u = get_user_model().objects.get(id=ll[8])
-        # print(u)
-        # print('-'*150)
-        WhiteboardData.objects.create(whiteboard=wb, painter=u, color=ll[0], xf=ll[1], yf=ll[2], xt=ll[3],
-                                      yt=ll[4], mode=ll[5], pen_size=ll[6])
-        # print('---saved----')
-        # print('-'*150)
-
-    @database_sync_to_async
-    def get_whiteboard(self):
-        return Thread.objects.get_or_new(user, other_username)
+    def record_data_received_chart_equity(self, msg):
+        for k in msg:
+            ll = msg[k]
+            log_debug("before data update for " + k)
+            XBRLRealEquityPrices.objects.create(ticker=k, t=ll[0], o=ll[1], h=ll[2], l=ll[3], c=ll[4], v=ll[5])
+            log_debug("data for " + k + " was updated")
 
 
 class ChatWhiteBaordConsumer(AsyncConsumer):

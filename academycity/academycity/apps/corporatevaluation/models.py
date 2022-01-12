@@ -1257,6 +1257,21 @@ class XBRLSPEarningForecast(TruncateTableMixin, models.Model):
     yesterday_price = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
 
 
+class XBRLRealEquityPrices(TruncateTableMixin, models.Model):
+    class Meta:
+        verbose_name = _('XBRLRealEquityPrices')
+        verbose_name_plural = _('XBRLRealEquityPrices')
+        ordering = ['ticker']
+    #
+    ticker = models.CharField(max_length=10, null=False)
+    t = models.PositiveBigIntegerField(default=0)
+    o = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    h = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    l = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    c = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    v = models.PositiveBigIntegerField(default=0)
+
+
 # -- Business Intelligence --
 # -- The Accounting Cube --
 class XBRLDimCompany(TruncateTableMixin, models.Model):

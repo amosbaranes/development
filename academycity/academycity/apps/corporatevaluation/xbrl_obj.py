@@ -434,8 +434,8 @@ class TDAmeriTrade(BaseTDAmeriTrade):
             log_debug("Error 2345 in get_option_chain api options pull for : " + ticker + " = " + str(ex))
             return dic
 
-        print("in get_option_statistics_for_ticker 2 : " + ticker)
-        print(options_.json())
+        # print("in get_option_statistics_for_ticker 2 : " + ticker)
+        # print(options_.json())
 
         dic = {'ticker': ticker, 'underlyingPrice': options_.json()['underlyingPrice']}
         dic = self.get_option_strategy_lh_(options_=options_, dic=dic, option_type='call', l_=0.1, h_=0.9,
@@ -946,18 +946,21 @@ class TDAmeriTrade(BaseTDAmeriTrade):
         # print("="*50)
         dic = {}
         for t_ in msg["content"]:
-            d = datetime.datetime.fromtimestamp(t_["CHART_TIME"] / 999.999451)
-            h = d.hour
-            m = d.minute
-            # date_ = d.date()
-            time_ = str(d.day) + " " + calendar.month_abbr[d.month] + " " + str(d.year)+" "+str(h)+":"+str(m)+" GMT"
+            # d = datetime.datetime.fromtimestamp(t_["CHART_TIME"] / 999.999451)
+            # h = d.hour
+            # m = d.minute
+            # # date_ = d.date()
+            # time_ = str(d.day) + " " + calendar.month_abbr[d.month] + " " + str(d.year)+" "
+            # time_ += self.add_zero(str(h)) + ":" + self.add_zero(str(m)) + " GMT"
+
+            time_ = t_["CHART_TIME"]
 
             # '06 Nov 1994 20:49 GMT'
             o = t_["OPEN_PRICE"]
             h = t_["HIGH_PRICE"]
             l = t_["LOW_PRICE"]
             c = t_["CLOSE_PRICE"]
-            v = t_["VOLUME"]
+            v = round(t_["VOLUME"])
             dic[t_["key"]] = [time_, o, h, l, c, v]
         # print("processed chart_equity_handler")
         # print("-"*20)
@@ -965,12 +968,12 @@ class TDAmeriTrade(BaseTDAmeriTrade):
         # print("="*50)
 
         try:
-            msg = json.dumps(dic)
             # print(json.dumps(dic, indent=4))
             response_ = {
-                'msg': msg,
+                'msg': dic,
                 'type': "data_received_chart_equity"
             }
+            # print(response_)
             channel_layer = get_channel_layer()
             await channel_layer.group_send(
                 'option1', {

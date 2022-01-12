@@ -266,7 +266,8 @@ function StreamerWin(my_name_, win_name_, win_title_, use_id, tab_obj_, right, t
   this.link_to_activate_obj_function=link_to_activate_obj_function;this.onmessage_callback=onmessage_callback;
    // course_schedule_id
   this.user_id=user_id; var is_scroll_=true;
-  acWin.call(this, my_name_=my_name_, win_name=this.name, win_title=win_title_, right=right, top=top, is_scroll=is_scroll_, zindex=20, tab_obj_=tab_obj_, is_nav_panel=true)
+  if (vObj["user_group"] == "admin"){is_nav_panel_=true} else {is_nav_panel_=false}
+  acWin.call(this, my_name_=my_name_, win_name=this.name, win_title=win_title_, right=right, top=top, is_scroll=is_scroll_, zindex=20, tab_obj_=tab_obj_, is_nav_panel=is_nav_panel_)
 }
 StreamerWin.prototype = Object.create(acWin.prototype)
 
@@ -287,63 +288,77 @@ function OptionStreamerWin(my_name_, win_name_, win_title_, use_id, tab_obj_, on
   this.initialDate = luxon.DateTime.fromRFC2822(this.initialDateStr);
   this.lastDate = this.initialDate;
   this.set_options_input_tickers();
-  this.csm = new CandlestickChartManager(option_streamer=this)
-  this.options_button_get_tickers.onclick = function (event) {
-    var owner_my_name_ = event.target.getAttribute("owner_my_name")
-    var my_streamer = eval(owner_my_name_)
-    $.post(my_streamer.link_to_activate_obj_function,
-    {obj: "TDAmeriTrade", fun: "activate_several_stream", dic: my_streamer.funcs_to_activate},
-     function(data){
-        for (k in data){if (k == 'status'){alert(data['status'])} else{}}
-     });
- }
-
 }
 OptionStreamerWin.prototype = Object.create(StreamerWin.prototype)
 
 OptionStreamerWin.prototype.set_options_input_tickers = function()
 {
- this.options_input_tickers = document.createElement("input");
- this.options_input_tickers.setAttribute("id", "options_input_tickers");
- this.options_input_tickers.setAttribute("value", this.tickers);
- this.options_input_tickers.setAttribute("style", "width:70%;");
- this.options_button_get_tickers = document.createElement("button");
- this.options_button_get_tickers.setAttribute("id", "options_button_get_tickers");
- this.options_button_get_tickers.setAttribute("style", "width:10%;");
- this.options_button_get_tickers.innerHTML = "Get Data"
- this.options_button_get_tickers.setAttribute("owner_my_name", this.my_name);
- this.win_nav_panel.appendChild(this.options_input_tickers);
- this.win_nav_panel.appendChild(this.options_button_get_tickers);
-
- // ----
- this.options_button_data = document.createElement("button");
- this.options_button_data.setAttribute("id", "options_button_data");
- this.options_button_data.setAttribute("style", "width:10%;");
- this.options_button_data.innerHTML = "TestData"
- this.options_button_data.setAttribute("owner_my_name", this.my_name);
- this.win_nav_panel.appendChild(this.options_button_data);
- this.options_button_data.onclick = function (event) {
-    var owner_my_name_ = event.target.getAttribute("owner_my_name")
-    var my_streamer = eval(owner_my_name_);
-    my_streamer.set_data_for_tickers();
- }
- //--
- this.options_button_one_data = document.createElement("button");
- this.options_button_one_data.setAttribute("id", "options_button_one_data");
- this.options_button_one_data.setAttribute("style", "width:10%;");
- this.options_button_one_data.innerHTML = "OneData"
- this.options_button_one_data.setAttribute("owner_my_name", this.my_name);
- this.win_nav_panel.appendChild(this.options_button_one_data);
- this.options_button_one_data.onclick = function (event) {
-    var owner_my_name_ = event.target.getAttribute("owner_my_name")
-    var my_streamer = eval(owner_my_name_);
-    my_streamer.process_message(msg="{'local':'empty'}");
- }
-
+  if(this.is_nav_panel==true)
+  {
+     this.options_input_tickers = document.createElement("input");
+     this.options_input_tickers.setAttribute("id", "options_input_tickers");
+     this.options_input_tickers.setAttribute("value", this.tickers);
+     this.options_input_tickers.setAttribute("style", "width:70%;");
+     this.options_button_get_tickers = document.createElement("button");
+     this.options_button_get_tickers.setAttribute("id", "options_button_get_tickers");
+     this.options_button_get_tickers.setAttribute("style", "width:10%;");
+     this.options_button_get_tickers.innerHTML = "Get Data"
+     this.options_button_get_tickers.setAttribute("owner_my_name", this.my_name);
+     this.win_nav_panel.appendChild(this.options_input_tickers);
+     this.win_nav_panel.appendChild(this.options_button_get_tickers);
+     this.options_button_get_tickers.onclick = function (event) {
+       var owner_my_name_ = event.target.getAttribute("owner_my_name")
+       var my_streamer = eval(owner_my_name_)
+       $.post(my_streamer.link_to_activate_obj_function,
+       {obj: "TDAmeriTrade", fun: "activate_several_stream", dic: my_streamer.funcs_to_activate},
+        function(data){
+         for (k in data){if (k == 'status'){alert(data['status'])} else{}}
+       });
+    }
+     // ----
+     this.options_button_data = document.createElement("button");
+     this.options_button_data.setAttribute("id", "options_button_data");
+     this.options_button_data.setAttribute("style", "width:10%;");
+     this.options_button_data.innerHTML = "TestData"
+     this.options_button_data.setAttribute("owner_my_name", this.my_name);
+     this.win_nav_panel.appendChild(this.options_button_data);
+     this.options_button_data.onclick = function (event) {
+        var owner_my_name_ = event.target.getAttribute("owner_my_name")
+        var my_streamer = eval(owner_my_name_);
+        my_streamer.set_data_for_tickers();
+     }
+     //-
+     this.options_button_one_data = document.createElement("button");
+     this.options_button_one_data.setAttribute("id", "options_button_one_data");
+     this.options_button_one_data.setAttribute("style", "width:10%;");
+     this.options_button_one_data.innerHTML = "OneData"
+     this.options_button_one_data.setAttribute("owner_my_name", this.my_name);
+     this.win_nav_panel.appendChild(this.options_button_one_data);
+     this.options_button_one_data.onclick = function (event) {
+        var owner_my_name_ = event.target.getAttribute("owner_my_name")
+        var my_streamer = eval(owner_my_name_);
+        var msg_ = {}
+        my_streamer.lastDate = my_streamer.lastDate.plus({minutes: 1});
+            for (var j in my_streamer.csm.objs)
+            {
+             var d = randomBar(my_streamer.lastDate);
+             var ll = [d['x'],d['o'],d['h'],d['l'],d['c']]
+             msg_[j] = ll
+            }
+        msg__ = {"type": "data_received_chart_equity", "msg": msg_}
+        //alert(JSON.stringify(msg__))
+        my_streamer.process_message(msg=msg__);
+     }
+  }
 
  // --
  this.win_content.innerHTML = "<table><thead><th>Chart</th><th>Strategy</th></thead><tbody id='"+this.my_name+"_options'></tbody></table>"
  this.container = document.getElementById(this.my_name+"_options")
+
+  this.csm = new CandlestickChartManager(option_streamer=this)
+
+
+
 }
 
 // -- for testing --
@@ -371,24 +386,23 @@ chart_obj.data = data
 
 function CandlestickChartManager(option_streamer)
 {
- this.parent = option_streamer;
- this.objs = {};
+ this.parent=option_streamer; this.objs={};
  var ll_tickers = this.parent.tickers.split(",")
  for(i in ll_tickers)
  {
   var t = ll_tickers[i];
   var tr_ = document.createElement("tr");
+  tr_.setAttribute("id", "host_row_"+t);
   var td = document.createElement("td");
   var td_div = document.createElement("div");
   td_div.setAttribute("id", "host_div_"+t);
-  td_div.setAttribute("style", "width:500px;height:250px");
+  td_div.setAttribute("style", "width:500px;height:150px");
   td.appendChild(td_div);
   tr_.appendChild(td);
   td = document.createElement("td");td.setAttribute("id", "analysis_"+t);td.innerHTML=t;tr_.appendChild(td);
   this.parent.container.appendChild(tr_);
   this.objs[t] = new CandlestickChart(this, t, td_div)
  }
- //alert("End CandlestickChartManager")
 }
 
 function CandlestickChart(csm, t, td_div)
@@ -400,36 +414,16 @@ function CandlestickChart(csm, t, td_div)
  this.ctx = this.canvas.getContext('2d');
  this.ctx.canvas.width = this.host_div.style.width;
  this.ctx.canvas.height = this.host_div.style.height;
-
  this.data = []
- // this.parent.parent.data_function(this);
  this.label = 'Chart for '+this.ticker
  this.chart = new Chart(this.ctx, {type: 'candlestick', data: {datasets: [{label: this.label, data: this.data}]}});
  this.chart.update()
- //alert("End CandlestickChart")
 }
 
 OptionStreamerWin.prototype.process_message = function(msg)
 {
-  //alert('JSON.stringify(msg)')
+  //alert(msg)
   //alert(JSON.stringify(msg))
-
-  var local = 1;
-  if(local == 1)
-  {
-    //alert(1)
-    var msg = {}
-    this.lastDate = this.lastDate.plus({minutes: 1});
-        for (var j in this.csm.objs)
-        {
-         var d = randomBar(this.lastDate);
-         var ll = [d['x'],d['o'],d['h'],d['l'],d['c']]
-         msg[j] = JSON.stringify(ll)
-        }
-    msg = {"type": "data_received_chart_equity", "msg": JSON.stringify(msg)}
-  }
-  alert('JSON.stringify(msg)')
-  alert(JSON.stringify(msg))
 
  // if(msg.type=="data_received_nasdaq_order_book")
  // {var msg=JSON.parse(msg.msg);
@@ -441,15 +435,10 @@ OptionStreamerWin.prototype.process_message = function(msg)
 
   if (msg.type=="data_received_chart_equity")
   {
-  //alert(1)
-  //alert(msg.msg)
-    var msg=JSON.parse(msg.msg)
+    var msg=msg.msg
     for(k in msg){
-
-    //alert(k)
-    //alert(msg[k])
-    msg[k] = JSON.parse(msg[k])
-     var date_ = this.lastDate //luxon.DateTime.fromRFC2822(msg.msg[k][0]);
+     var date_ = msg[k][0]
+     //var date_ = luxon.DateTime.fromRFC2822(msg[k][0]);
      var point_data={x: date_.valueOf(), o: msg[k][1], h: msg[k][2], l: msg[k][3], c: msg[k][4]};
      //alert(JSON.stringify(point_data))
      //alert('JSON.stringify(this.csm.objs[k].data)')
@@ -460,23 +449,12 @@ OptionStreamerWin.prototype.process_message = function(msg)
      this.csm.objs[k].chart.update()
     };
   }
-  else if (msg.type=="data_received_chart_equity1")
-  {
-    for(k in msg){
-     var date_ = luxon.DateTime.fromRFC2822(msg[k][0]);
-     var point_data={x: date_.valueOf(), o: msg[k][1], h: msg[k][2], l: msg[k][3], c: msg[k][4]};
-     //dic[t_["key"]] = [time_, o, h, l, c, v]
-     this.csm.objs(k).data.push(point_data);
-     this.csm.objs(k).chart.config.data.datasets = [{label: this.csm.objs(k).label, data: point_data}]
-     this.csm.objs(k).chart.update()
-    };
-    //this.add_info_by_ticker("<br/>", "Option Stream - Data Arrived")
+  else if (msg.type=="connected"){
+    //this.add_info_by_ticker("", "Option Stream - Connected")
   }
-
-  else if (msg.type=="connected"){this.add_info_by_ticker("", "Option Stream - Connected")}
   else
   {
-    this.add_info_by_ticker(msg.type + " " + msg.msg + "<br/>", "Option Stream - Connected")
+    // this.add_info_by_ticker(msg.type + " " + msg.msg + "<br/>", "Option Stream - Connected")
   }
 
  // alert(88)

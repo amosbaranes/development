@@ -10,7 +10,8 @@ from .models import (Project, RBOIC, CountryRegion, CountryRating, Industry,
                      XBRLSPEarningForecast, XBRLSPStatistics,
                      XBRLCountriesOfOperations, XBRLRegionsOfOperations, XBRLYearsCompanyOperations,
                      XBRLIndustryBetasOfOperations,
-                     XBRLDimTime, XBRLDimCompany, XBRLDimAccount, XBRLFactCompany)
+                     XBRLDimTime, XBRLDimCompany, XBRLDimAccount, XBRLFactCompany,
+                     XBRLRealEquityPrices)
 
 # -*- coding: utf-8 -*-
 from cms.admin.placeholderadmin import PlaceholderAdminMixin
@@ -246,4 +247,10 @@ class XBRLDimAccountAdmin(admin.ModelAdmin):
 class XBRLFactCompanyAdmin(admin.ModelAdmin):
     list_display = ('id', 'company', 'time', 'account', 'amount')
     list_filter = ('company', 'time', 'account')
+
+
+@admin.register(XBRLRealEquityPrices)
+class XBRLRealEquityPricesAdmin(admin.ModelAdmin):
+    list_display = ('id', 'ticker', 't', 'c', 'v')
+    list_filter = ('ticker', )
 

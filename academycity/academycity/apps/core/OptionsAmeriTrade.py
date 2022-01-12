@@ -24,7 +24,7 @@ class BaseTDAmeriTrade(object):
         os.makedirs(self.token_path, exist_ok=True)
         #
         self.sp_tickers = None
-        self.sp_tickers_list = ["SPX", "RUT", "IWM", "QQQ", "NDX", "SPY", "TSLAS", "PYPL", "AMZN", "BABA", "FB"]
+        self.sp_tickers_list = ["SPX", "RUT", "IWM", "QQQ", "NDX", "SPY", "TSLA", "PYPL", "AMZN", "BABA", "FB"]
         self.sp_tickers_str = None
         # need to move to env file
         self.password = "Sigal2105Shir930"

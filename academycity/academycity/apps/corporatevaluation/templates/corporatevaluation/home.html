@@ -168,7 +168,7 @@ data {
             <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon@0.2.1"></script>
             <script src="{% static 'js/chartjs/chartjs-chart-financial.js' %}" crossorigin="anonymous"></script>
 
-            <script src="{% static 'js/basic_pop_windows_v16.js' %}" crossorigin="anonymous"></script>
+            <script src="{% static 'js/basic_pop_windows_v32.js' %}" crossorigin="anonymous"></script>
             <script>var ef = '';</script>
         {% endif %}
 
@@ -270,7 +270,17 @@ function get_account_value_tq(y=2020, account="20800"){var lq=1*vObj["last_quart
 <script>
 
 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Working_with_Objects
+
+
 var vObj = new Object();
+vObj["user_group"] = "none"
+{%if user.is_staff %}
+vObj["user_group"] = "staff"
+{% endif %}
+{%if request.user|has_group:"admins"%}
+vObj["user_group"] = "admin"
+{% endif %}
+
 vObj["rf"] = {{ project.rf }};
 vObj["volatility_ratio"] = {{ project.volatility_ratio }};
 vObj["mature_marker_risk_premium"] = {{ project.mature_marker_risk_premium }};

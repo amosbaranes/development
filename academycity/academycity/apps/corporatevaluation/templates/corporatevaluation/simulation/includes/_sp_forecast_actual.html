@@ -3,9 +3,8 @@
 
 <div id="sp_forecast_actual" class="tabcontent">
 
-<button onclick='start_streamer(event)'>StartStreamer</button>
-<button onclick='end_streamer(event)'>EndStreamer</button>
-<button onclick='open_streamer_win(event)'>ShowStreamerWin</button>
+<!--<button onclick='end_streamer(event)'>EndStreamer</button>-->
+<!--<button onclick='open_streamer_win(event)'>ShowStreamerWin</button>-->
 <!--<button onclick='send_message(event)'>send_message</button>-->
 <!--<button onclick='start_stream(event)'>Send message: start_stream</button>-->
 <hr/>
@@ -17,6 +16,8 @@
 <div id="result"></div>
 
 <input type="text" id="search_input" onkeyup="search_function()" n="2" placeholder="Search for Tickers.." title="Type in a name">
+
+<button onclick='start_streamer(event)'>Price Streams</button>
 <div id="sp_forecast_actual_data" class="data">
 </div>
 </div>
@@ -354,8 +355,8 @@ function options_w01_bf(event, ticker)
  clean_marked_chosen_field(e);
  // alert(fun_); alert(ticker);
 
- if (!(ticker in vObj["options_bf"]))
- {
+ //if (!(ticker in vObj["options_bf"]))
+ //{
      bf.set_info_by_ticker(content="In Process ... please wait. ...  <i class='fa fa-spinner fa-spin'></i>", win_titles="Butterfly details for ticker: "+ticker +" ...  <i class='fa fa-spinner fa-spin'></i>");
      $.post('{% url "corporatevaluation:tdameritrade_setup_w_attribute" %}',
           {fun: fun_, attribute: 'ticker', attribute_value: ticker},
@@ -366,7 +367,7 @@ function options_w01_bf(event, ticker)
             } else {bf.set_info_by_ticker(content=" No data for "+ticker, win_titles="Butterfly details for ticker: "+ticker);}
           }
         );
- } else{create_table_options_w01_bf(vObj["options_bf"][ticker], ticker)}
+ //} else{create_table_options_w01_bf(vObj["options_bf"][ticker], ticker)}
 }
 
 </script>
@@ -377,8 +378,8 @@ function options_w01_delta(event, ticker)
 {var e=event.target;var fun_=e.getAttribute("fun");clean_marked_chosen_field(e);
  //alert(fun_)
  //alert(ticker)
- if (!(ticker in vObj["options_delta"]))
- {
+ //if (!(ticker in vObj["options_delta"]))
+ //{
      delta.set_info_by_ticker(content="In Process ... please wait. ...  <i class='fa fa-spinner fa-spin'></i>", win_titles="Delta for ticker: "+ticker +" ...  <i class='fa fa-spinner fa-spin'></i>");
      $.post('{% url "corporatevaluation:tdameritrade_setup_w_attribute" %}',
           {
@@ -392,7 +393,7 @@ function options_w01_delta(event, ticker)
             create_table_options_w01_delta(vObj["options_delta"][ticker], ticker);
           }
         );
- } else {create_table_options_w01_delta(vObj["options_delta"][ticker], ticker)}
+ //} else {create_table_options_w01_delta(vObj["options_delta"][ticker], ticker)}
 }
 </script>
 
@@ -432,6 +433,7 @@ function clean_marked_chosen_field(e)
 </script>
 
 <!-- create_table_for_earning_forecast_sp500_view_main(data) -->
+<!-- This function creates the main table for the sp500 companies -->
 <script>
 function create_table_for_earning_forecast_sp500_view_main(data)
 {
@@ -548,18 +550,18 @@ function get_earning_forecast_sp500_view_main_title(tab_obj)
         );
       try{
            ef = new EarningForecast(my_name_="ef", win_name_="earning_forecast", win_title_="Earning Forecast", user_id=vObj["user_id"], tab_obj_=tab_obj);
-           ef.set_win_frame_style("20", "505", "500", "5%", "30%", "white")
+           ef.set_win_frame_style("20", "505", "500", "45%", "45%", "white")
            ef.set_acWinStatEventListeners(ef);
            tab_obj.PopWinObjects['ef'] = ef;
            // --
            delta = new EarningForecast(my_name_="delta", win_name_="delta", win_title_="Delta", user_id=vObj["user_id"], tab_obj_=tab_obj);
-           delta.set_win_frame_style("21", "345", "450", "2%", "35%", "white")
+           delta.set_win_frame_style("21", "345", "450", "60%", "35%", "white")
            delta.set_title_colors("#fff", "#000080");
            delta.set_acWinStatEventListeners(delta);
            tab_obj.PopWinObjects['delta'] = delta;
            // --
            bf = new EarningForecast(my_name_="bf", win_name_="bf", win_title_="Butterfly", user_id=vObj["user_id"], tab_obj_=tab_obj);
-           bf.set_win_frame_style("22", "250", "900", "2%", "35%", "white")
+           bf.set_win_frame_style("22", "250", "900", "50%", "73%", "white")
            bf.set_title_colors("#fff", "#00AFF0");
            bf.set_acWinStatEventListeners(bf);
            tab_obj.PopWinObjects['bf'] = bf;
@@ -577,7 +579,7 @@ function get_earning_forecast_sp500_view_main_title(tab_obj)
            //tab_obj.PopWinObjects['strategya'] = strategya;
            // --
 
-    var tickers_ =  "IWM,AMZN"   //  "QQQ,NDX,SPY,TSLAS,SPX,RUT,IWM,QQQ,NDX,SPY,TSLAS,PYPL,AMZN,BABA,FB,MMM,ABT,ABBV,ABMD,ACN,ATVI,ADBE"
+    var tickers_ =  "IWM,QQQ,NDX,SPY,SPX,RUT,TSLA,PYPL,AMZN,BABA,FB"
 
     var funcs_to_activate_ = '['
     //funcs_to_activate_ += '{"add_func": "add_nasdaq_book_handler", "func": "self.nasdaq_order_book_handler",'
@@ -604,7 +606,7 @@ function get_earning_forecast_sp500_view_main_title(tab_obj)
               link_to_activate_obj_function = '{% url "corporatevaluation:activate_obj_function" %}',
               router="option", group="option1", tickers=tickers_, funcs_to_activate=funcs_to_activate_)
 
-           streamer.set_win_frame_style("22", "500", "900", "2%", "15%", "white")
+           streamer.set_win_frame_style("22", "900", "860", "0.5%", "5%", "white")
            streamer.set_title_colors("#fff", "#00AFF0");
            streamer.set_acWinStatEventListeners(streamer);
            tab_obj.PopWinObjects['streamer'] = streamer;
@@ -831,7 +833,7 @@ function show_detailed_forecast_data(event)
 <!-- Streamer functions -->
 <!-- start_stream, end_streamer, open_streamer_win -->
 <script>
-function start_streamer(event){streamer.getSocket();}
+function start_streamer(event){if(streamer.socket==null){streamer.getSocket()}; streamer.set_acWinStat('block');}
 function end_streamer(event){streamer.socket.close(code="1000", reason="end session");}
 function open_streamer_win(event){streamer.set_acWinStat('block');}
 </script>

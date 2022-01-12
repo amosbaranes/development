@@ -56,7 +56,10 @@
         <tbody obj="AcademyCityXBRL" attributes_id="tdameritrade_attributes" message_id="result_message_academycityxbrl">
         <tr id="buttons" onclick="activate_obj_function(event)">
             <td>
-                <button fun="run_all_pages" style="width: 60px;">run_all_pages</button></td>
+                <button fun="run_all_pages" style="width: 120px;">run_all_pages</button><br/>
+                This is an example of how to use the object GetAllUrlsProcessed.<br/>
+                To download several pages at the same time and process them.
+            </td>
         </tr>
         <tr id="tdameritrade_attributes">
             <td>
@@ -69,6 +72,7 @@
     <div id="result_message_academycityxbrl"></div><br/>
     <hr/>
 
+    <h3>Stage 2</h3>
     <table>
         <tr>
             <td>
@@ -103,6 +107,7 @@
             </td>
         </tr>
     </table>
+    <h3>Resulte</h3>
     <div id="result_message_options"></div><br/>
     <hr/>
 
@@ -190,7 +195,9 @@
         </tr>
 -->
     </table>
+
     <hr/>
+    <h3>Stage 1</h3>
     <table>
         <tr>
             <td>
@@ -315,10 +322,12 @@ function tdameritrade_setup_w_attribute(event)
 function admin_setup(event)
 {
  e = event.target; fun_ = e.getAttribute("fun");
- //var ss = prompt("are you sure you want to run function: " + fun_ + "\nType Yes to run", 'No')
- //if(ss == '' || ss == 'No') { return;}
  message_div = document.getElementById("result_message")
  message_div.innerHTML = 'In process .. '
+
+ //var ss = prompt("are you sure you want to run function: " + fun_ + "\nType Yes to run", 'No')
+ //if(ss == '' || ss == 'No') { return;}
+
  $.post('{% url "corporatevaluation:admin_setup" %}',
       {
         fun: fun_,
