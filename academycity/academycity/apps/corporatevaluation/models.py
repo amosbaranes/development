@@ -1272,6 +1272,20 @@ class XBRLRealEquityPrices(TruncateTableMixin, models.Model):
     v = models.PositiveBigIntegerField(default=0)
 
 
+class XBRLRealEquityPricesArchive(TruncateTableMixin, models.Model):
+    class Meta:
+        verbose_name = _('XBRLRealEquityPricesArchive')
+        verbose_name_plural = _('XBRLRealEquityPricesArchive')
+        ordering = ['ticker']
+    #
+    ticker = models.CharField(max_length=10, null=False)
+    t = models.PositiveBigIntegerField(default=0)
+    o = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    h = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    l = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    c = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    v = models.PositiveBigIntegerField(default=0)
+
 # -- Business Intelligence --
 # -- The Accounting Cube --
 class XBRLDimCompany(TruncateTableMixin, models.Model):

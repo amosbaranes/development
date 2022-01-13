@@ -168,7 +168,7 @@ data {
             <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon@0.2.1"></script>
             <script src="{% static 'js/chartjs/chartjs-chart-financial.js' %}" crossorigin="anonymous"></script>
 
-            <script src="{% static 'js/basic_pop_windows_v32.js' %}" crossorigin="anonymous"></script>
+            <script src="{% static 'js/basic_pop_windows_v33.js' %}" crossorigin="anonymous"></script>
             <script>var ef = '';</script>
         {% endif %}
 
@@ -279,6 +279,9 @@ vObj["user_group"] = "staff"
 {% endif %}
 {%if request.user|has_group:"admins"%}
 vObj["user_group"] = "admin"
+{% endif %}
+{%if request.user|has_group:"optionsadmin"%}
+vObj["user_group"] = "optionsadmin"
 {% endif %}
 
 vObj["rf"] = {{ project.rf }};

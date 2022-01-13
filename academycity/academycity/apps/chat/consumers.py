@@ -139,11 +139,17 @@ class OptionsConsumer(AsyncConsumer):
 
     @database_sync_to_async
     def record_data_received_chart_equity(self, msg):
-        for k in msg:
-            ll = msg[k]
-            log_debug("before data update for " + k)
-            XBRLRealEquityPrices.objects.create(ticker=k, t=ll[0], o=ll[1], h=ll[2], l=ll[3], c=ll[4], v=ll[5])
-            log_debug("data for " + k + " was updated")
+        nday = datetime.today().weekday()  # Monday = 0
+        h = datetime.today().hour
+        m = datetime.today().minute
+        # print(h)
+        # print(nday)
+        if nday < 6 and 23 >= h >= 16 and m >= 30:
+            for k in msg:
+                ll = msg[k]
+                log_debug("before data update for " + k)
+                XBRLRealEquityPrices.objects.create(ticker=k, t=ll[0], o=ll[1], h=ll[2], l=ll[3], c=ll[4], v=ll[5])
+                log_debug("data for " + k + " was updated")
 
 
 class ChatWhiteBaordConsumer(AsyncConsumer):
@@ -264,7 +270,6 @@ class ChatWhiteBaordConsumer(AsyncConsumer):
     @database_sync_to_async
     def get_whiteboard(self):
         return Thread.objects.get_or_new(user, other_username)
-
 
 # class ChatConsumer(AsyncConsumer):
 #     async def websocket_connect(self, event):

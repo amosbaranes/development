@@ -435,7 +435,7 @@ class TDAmeriTrade(BaseTDAmeriTrade):
             return dic
 
         # print("in get_option_statistics_for_ticker 2 : " + ticker)
-        # print(options_.json())
+        print(options_.json())
 
         dic = {'ticker': ticker, 'underlyingPrice': options_.json()['underlyingPrice']}
         dic = self.get_option_strategy_lh_(options_=options_, dic=dic, option_type='call', l_=0.1, h_=0.9,

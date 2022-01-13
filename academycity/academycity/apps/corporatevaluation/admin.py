@@ -11,7 +11,7 @@ from .models import (Project, RBOIC, CountryRegion, CountryRating, Industry,
                      XBRLCountriesOfOperations, XBRLRegionsOfOperations, XBRLYearsCompanyOperations,
                      XBRLIndustryBetasOfOperations,
                      XBRLDimTime, XBRLDimCompany, XBRLDimAccount, XBRLFactCompany,
-                     XBRLRealEquityPrices)
+                     XBRLRealEquityPrices, XBRLRealEquityPricesArchive)
 
 # -*- coding: utf-8 -*-
 from cms.admin.placeholderadmin import PlaceholderAdminMixin
@@ -251,6 +251,12 @@ class XBRLFactCompanyAdmin(admin.ModelAdmin):
 
 @admin.register(XBRLRealEquityPrices)
 class XBRLRealEquityPricesAdmin(admin.ModelAdmin):
+    list_display = ('id', 'ticker', 't', 'c', 'v')
+    list_filter = ('ticker', )
+
+
+@admin.register(XBRLRealEquityPricesArchive)
+class XBRLRealEquityPricesArchiveAdmin(admin.ModelAdmin):
     list_display = ('id', 'ticker', 't', 'c', 'v')
     list_filter = ('ticker', )
 

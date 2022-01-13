@@ -32,7 +32,6 @@ class WhiteboardData(models.Model):
         return self.whiteboard.board_name
 
 
-
 class ThreadManager(models.Manager):
     def by_user(self, user):
         qlookup = Q(first=user) | Q(second=user)

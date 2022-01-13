@@ -266,7 +266,7 @@ function StreamerWin(my_name_, win_name_, win_title_, use_id, tab_obj_, right, t
   this.link_to_activate_obj_function=link_to_activate_obj_function;this.onmessage_callback=onmessage_callback;
    // course_schedule_id
   this.user_id=user_id; var is_scroll_=true;
-  if (vObj["user_group"] == "admin"){is_nav_panel_=true} else {is_nav_panel_=false}
+  if (vObj["user_group"] == "optionsadmin"){is_nav_panel_=true} else {is_nav_panel_=false}
   acWin.call(this, my_name_=my_name_, win_name=this.name, win_title=win_title_, right=right, top=top, is_scroll=is_scroll_, zindex=20, tab_obj_=tab_obj_, is_nav_panel=is_nav_panel_)
 }
 StreamerWin.prototype = Object.create(acWin.prototype)
@@ -423,8 +423,10 @@ function CandlestickChart(csm, t, td_div)
 OptionStreamerWin.prototype.process_message = function(msg)
 {
   //alert(msg)
-  //alert(JSON.stringify(msg))
-
+  if(vObj["user_group"] == "optionsadmin")
+  {
+    alert(JSON.stringify(msg))
+  }
  // if(msg.type=="data_received_nasdaq_order_book")
  // {var msg=JSON.parse(msg.msg);
  //  for(k in msg) {
