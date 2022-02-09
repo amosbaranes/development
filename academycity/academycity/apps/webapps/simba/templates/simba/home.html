@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>SIMBA</title>
+    <style>
+        .btn{
+            margin-left : 550px;
+        }
+        .btn button{
+            padding : 8px;
+            border-radius : 10px;
+            background-color : grey;
+        }
+
+        .btn button a{
+            font-size : 15px;
+            color : orange;
+        }
+    </style>
+</head>
+<body style="background-color:lightblue;">
+  <div class="btn">
+        <button><a class="nav-link" href="{% url 'simba:candle_'%}">Candle</a></button>
+        <button><a class="nav-link" href="{% url 'simba:candle1'%}">Candle1</a></button>
+        <button><a class="nav-link" href="{% url 'simba:candle2'%}">Candle2</a></button>
+        <button><a class="nav-link" href="{% url 'simba:candle3'%}">Candle3</a></button>
+        <button><a class="nav-link" href="{% url 'simba:candle4'%}">Candle4</a></button>
+        <button><a class="nav-link" href="{% url 'simba:candle5'%}">Candle5</a></button>
+        <button><a class="nav-link" href="{% url 'simba:candle6'%}">Candle6</a></button>
+        <button><a class="nav-link" href="{% url 'simba:candle7'%}">Candle7</a></button>
+        <button><a class="nav-link" href="{% url 'simba:candle8'%}">Candle8</a></button>
+        <button><a class="nav-link" href="{% url 'simba:candle9'%}">Candle9</a></button>
+  </div>
+<div style="color:blue; font-size:20px; text-align:center; margin-top:200px; position:relative;" id="demo" >WELCOME TO SIMBA- APP. ONLY FOR THOSE WHO CAN'NT GIVE UP:</div>
+</body>
+<script>
+    setInterval(range, 20)
+    var z = 0;
+    var y = 1;
+    function range(event){
+    document.getElementById("demo").style.left = z + "px"
+    if(z==0)
+    {
+       y=1
+    }
+    if(z==300)
+    {
+       y=-1
+    }
+    z = y + z
+    }
+</script>
+</html>

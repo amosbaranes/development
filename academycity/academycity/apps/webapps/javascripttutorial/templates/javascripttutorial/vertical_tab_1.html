@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+    *{box-sizing:border-box;}
+    body {font-family: "Lato", sans-serif;}
+        .tabs{
+        float: left;
+        background-color:lightblue;
+        height:300px;
+        width:10%;
+        border:1px solid blue;
+        }
+        .tabs button {
+        display : block;
+        padding:35px 8px;
+        border:none;
+        background-color: inherit;
+        color:blue;
+        font-size:16px;
+        cursor:pointer;
+        width:100%
+
+        }
+        .tabs button:hover {
+        background-color: grey;
+        transition: 0.3s;
+        }
+
+        /* Create an active/current "tab button" class */
+        .tabs button.active {
+          background-color: #ccc;
+        }
+        /* Style the tab content */
+        .tabcontent {
+          float: left;
+          padding: 0px 12px;
+          border: 1px solid #ccc;
+          width: 90%;
+          border-left: none;
+          height: 300px;
+        }
+    </style>
+</head>
+
+<body>
+<div class="tabs">
+<button class="tablinks" onclick="cap_info(event, 'kampala')" id="defaultOpen">Kampala</button>
+<button class="tablinks" onclick="cap_info(event, 'nairobi')">Nairobi</button>
+<button class="tablinks" onclick="cap_info(event, 'dodoma')">Dodoma</button>
+</div>
+
+<div class="tabcontent" id="kampala">
+    <h3>Kampala</h3>
+    <p>Kampala is the capital city of Uganda</p>
+</div>
+
+<div class="tabcontent" id="nairobi">
+    <h3>Nairobi</h3>
+    <p>Nairobi is the capital city of Kenya</p>
+</div>
+
+<div class="tabcontent" id="dodoma">
+    <h3>Dodoma</h3>
+    <p>Dodoma is the capital city of Tanzania</p>
+</div>
+
+
+<script>
+   function cap_info(event, cityName)
+   {
+   var i, tabcontent, tablinks;
+   //alert(cityName.innerHTML)
+   tabcontent = document.getElementsByClassName("tabcontent");
+   for (i = 0; i < tabcontent.length; i++){
+   //alert(tabcontent[i].innerHTML)
+    tabcontent[i].style.display = "none";
+   }
+   tablinks = document.getElementsByClassName("tablinks");
+   for (i = 0; i < tablinks.length; i++){
+   //alert(tablinks[i].innerHTML)
+    //alert(tablinks[i].className)
+    tablinks[i].className = tablinks[i].className.replace(" active", "");
+    //alert(tablinks[i].className)
+   }
+    document.getElementById(cityName).style.display = "block";
+    event.currentTarget.className = event.currentTarget.className + " active";
+    //alert(event.currentTarget.className)
+   }
+   document.getElementById("defaultOpen").click()
+</script>
+</body>
+</html>

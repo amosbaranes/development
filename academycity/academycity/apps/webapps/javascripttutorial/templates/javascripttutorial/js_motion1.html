@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+<div id="demo" style="position:relative">
+    Nabwire
+</div>
+
+
+
+<script>
+setInterval(range, 20)
+var p = 0
+var z = 1
+function range()
+{
+document.getElementById('demo').style.left = p.toString() + 'px'
+var name = document.getElementById('demo')
+name.innerHTML = name.innerHTML + ' - ' + p.toString()
+name.style.transform = " rotate( "+i+"2deg) ";
+if(p==0)
+{
+z = 1
+}
+if(p==100)
+{
+z = -1
+}
+p = p + z
+}
+</script>
+</body>
+</html>

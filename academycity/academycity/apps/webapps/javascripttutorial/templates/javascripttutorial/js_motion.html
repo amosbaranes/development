@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+
+    <style>
+        #my_container{
+        height : 400px;
+        width : 400px;
+        background-color : grey;
+        position:relative;
+        }
+        #my_motion{
+        height : 50px;
+        width : 50px;
+        background-color : black;
+        position : absolute;
+        }
+    </style>
+</head>
+<body>
+<button onclick="allow_motion(event)" >Click To Move</button>
+<br><br>
+<div id="my_container">
+    <div id="my_motion"></div>
+</div>
+
+<script>
+function allow_motion(event){
+setInterval(range, 10)
+var i = 0;
+var elm = document.getElementById('my_motion')
+function range(event){
+elm.style.left = i + 'px';
+elm.style.top = i + 'px';
+elm.style.transform = " rotate( "+i+"2deg) ";
+//alert(elm.outerHTML)
+if(i==0)
+{
+d = 1
+}
+
+if(i== 350)
+{
+d = -1
+}
+i = i + d
+
+}
+
+
+}
+
+</script>
+</body>
+</html>

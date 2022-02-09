@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+<style>
+    .tab button:hover {
+     background-color: blue;
+     transition: 0.3s;
+     }
+     .tab button.active {
+     background-color: green;
+     }
+</style>
+</head>
+<body>
+<div id="tab_container" class="tab">
+</div>
+
+<div id="tab_contents">
+
+<div class="tabcontent" id="tab_content_id_1">
+    <h4>Kampala</h4>
+    <p>Kampala is the capital city of Uganda</p>
+</div>
+
+<div class="tabcontent" id="tab_content_id_2">
+    <h4>Nairobi</h4>
+    <p>Nairobi is the capital city of Kenya</p>
+</div>
+
+<div class="tabcontent" id="tab_content_id_3">
+    <h4>Dodoma</h4>
+    <p>Dodoma is the capital city of Tanzania</p>
+</div>
+
+</div>
+
+<!-- makebtndiv = function(tab_name, tab_id, tab_txt) -->
+<script>
+    makebtndiv = function(tab_name, tab_id)
+    {
+      var btn = document.createElement("button");
+      btn.setAttribute("id", "tab_btn_"+tab_id);
+      btn.setAttribute("class", "tablinks");
+      btn.setAttribute("tab_name_id", tab_id);
+      btn.innerHTML = tab_name
+      btn.onclick = function openCity(event)
+                    {
+                    var elm = event.target
+                    var tab_name_id = elm.getAttribute('tab_name_id')
+                    var i, tabcontent, tablinks;
+
+                    tabcontent = document.getElementsByClassName("tabcontent");
+                    for(i=0; i<tabcontent.length; i++){tabcontent[i].style.display = 'none';}
+
+                    tablinks = document.getElementsByClassName("tablinks");
+                    for (i = 0; i < tablinks.length; i++) {tablinks[i].className = tablinks[i].className.replace(" active", "");}
+
+                    document.getElementById("tab_content_id_"+tab_name_id).style.display = "block";
+                    event.currentTarget.className += " active";
+                    }
+      var tab_container = document.getElementById("tab_container")
+      tab_container.appendChild(btn)
+    }
+    makebtndiv(tab_name='kampala', tab_id=1)
+    makebtndiv(tab_name='kenya', tab_id=2)
+    makebtndiv(tab_name='tanzania', tab_id=3)
+    document.getElementById("tab_container").children[0].click();
+</script>
+</body>
+</html>

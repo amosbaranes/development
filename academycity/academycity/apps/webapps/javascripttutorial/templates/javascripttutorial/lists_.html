@@ -1,0 +1,131 @@
+{% load static %}
+<html>
+<head>
+    <style>
+
+.pencil {
+  cursor: crosshair;
+<!--  cursor: url({% static "main/pencil.png" %}) 5 5, pointer;-->
+}
+
+.button {
+  border: none;
+  color: white;
+  padding: 20px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 2px;
+  cursor: pointer;
+}
+
+.button3 {border-radius: 30%;}
+.button5 {border-radius: 50%;}
+.buttonadd {border-radius: 50%;padding: 8px;margin: 10px 20px;}
+
+
+    </style>
+</head>
+
+<body id="body0">
+    <div id="box">
+    Amos
+    </div><br/>
+
+    <div id="box1">
+       Daniel
+    </div><br/>
+
+    <hr/>
+    <button id="bt_change_name" onclick="change_name(event)">Change Amos to Brenda</button><br/><br/>
+    <button id="bt_change_name" onclick="create_button(event)">Create New button</button><br/>
+    <button id="bt_change_name" onclick="create_uol(event)">Create uol button</button><br/>
+    <button id="bt_change_name" onclick="create_ol(event)">Create ol button</button><br/>
+    <hr/>
+
+    <ol>
+      <li>google.com</li>
+      <li>Tea</li>
+      <li>Milk</li>
+    </ol>
+
+    <dl>
+      <dt>Coffee</dt>
+      <dd>- black hot drink</dd>
+      <dt>Milk</dt>
+      <dd>- white cold drink</dd>
+    </dl>
+
+
+    <script>
+        change_name = function (event)
+        {
+
+            var t = event.target
+            //alert(t.outerHTML)
+
+            var b = document.getElementById("box")
+            b.innerHTML =  "Brenda"
+        }
+
+        create_button = function (event)
+        {
+            var b = document.getElementById("box1")
+            b.innerHTML =  "<button onclick='change_name(event)'>change name 2</bottun>"
+        }
+
+        create_uol = function (event)
+        {
+            var div = document.createElement("div")
+            div.setAttribute("id", "uol")
+
+            var body_= document.getElementById("body0")
+            body_.appendChild(div)
+
+            var ul = document.createElement("ul")
+            div.appendChild(ul)
+
+            var l1 = document.createElement("li")
+            l1.innerHTML = 'google.com'
+            ul.appendChild(l1)
+
+            var l2 = document.createElement("li")
+            l2.innerHTML = 'Tea'
+            ul.appendChild(l2)
+
+            var l3 = document.createElement("li")
+            l3.innerHTML = 'Milk'
+            ul.appendChild(l3)
+            //alert(div.outerHTML)
+        }
+
+
+
+           create_ol = function (event)
+            {
+            var div = document.createElement("div")
+            div.setAttribute("id", "ol")
+
+            var body_ = document.getElementById("body0")
+            body_.appendChild(div)
+
+            var ol = document.createElement("ol")
+            div.appendChild(ol)
+
+            var l1 = document.createElement("li")
+            l1.innerHTML = '<a href="https://google.com" targte="blank_">google.com</a>'
+            ol.appendChild(l1)
+
+            var l2 = document.createElement("li")
+            l2.innerHTML = 'Tea'
+            ol.appendChild(l2)
+
+            var l3 = document.createElement("li")
+            l3.innerHTML = 'Milk'
+            ol.appendChild(l3)
+            //alert(div.outerHTML)
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+<style>
+
+    .tab button:hover {
+
+     background-color: red;
+     transition: 0.3s;
+     }
+
+     .tab button.active {
+     background-color: purple;
+
+     }
+</style>
+</head>
+<body>
+<div class="tab">
+
+<button class="tablinks" onclick="openCity(event, 'kampala')" id="defaultOpen">Uganda</button>
+
+<button class="tablinks" onclick="openCity(event, 'Nairobi')">Kenya</button>
+<button  class="tablinks" onclick="openCity(event, 'Dodoma')">Tanzania</button>
+
+    <button id="tab_title_35" class="tablinks" city_name="kampala" onclick="openCity(event)">kampala</button>
+    <button id="tab_title_36" class="tablinks" city_name="kenya" onclick="openCity(event)">kenya</button>
+    <button id="tab_title_37" class="tablinks" city_name="tanzania" onclick="openCity(event)">tanzania</button>
+</div>
+
+<div id="tab_contents">
+
+<div class="tabcontent" id="kampala">
+    <h4>Kampala</h4>
+    <p>Kampala is the capital city of Uganda</p>
+</div>
+
+<div class="tabcontent" id="Nairobi">
+    <h4>Nairobi</h4>
+    <p>Nairobi is the capital city of Kenya</p>
+</div>
+
+<div class="tabcontent" id="Dodoma">
+    <h4>Dodoma</h4>
+    <p>Dodoma is the capital city of Tanzania</p>
+</div>
+
+    <div id="tab_div_35" class="tabcontent">
+
+        <text id="tab_txt_+35" tab_id="35" rows="4" cols="62"></text>
+
+    </div>
+
+</div>
+
+
+<script>
+
+    var i;
+    function openCity(event, cityName)
+    {
+    var tabcontent = document.getElementsByClassName("tabcontent");
+    for(i=0; i<tabcontent.length; i++){
+    //alert(tabcontent[i].outerHTML)
+    tabcontent[i].style.display = 'none';
+    }
+
+    var tablinks = document.getElementsByClassName("tablinks");
+    for (i = 0; i < tablinks.length; i++) {
+    tablinks[i].className = tablinks[i].className.replace(" active", "");
+    }
+
+    document.getElementById(cityName).style.display = "block";
+
+     event.currentTarget.className += " active";
+
+
+    }
+
+    document.getElementById("defaultOpen").click();
+</script>
+</body>
+</html>

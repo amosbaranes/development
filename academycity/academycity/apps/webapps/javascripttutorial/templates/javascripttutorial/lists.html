@@ -1,0 +1,186 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+
+<body id="bdy">
+
+<button onclick="change_name(event)">Change Name</button>
+<button onclick="change_name_(event)">Change Name To Button</button><br><br>
+
+<div id="name">
+    Comboni
+</div><br><br>
+
+<div id="name_">
+    Daniel
+</div>
+
+<h4 style="color:green" >Ordered Lists</h4>
+<div>
+    <ol>
+        <li>tea</li>
+        <li>coffee</li>
+        <li>milk</li>
+        <li>Yorghurt</li>
+    </ol>
+</div>
+
+<h4>Un Ordered Lists</h4>
+
+<div>
+    <ul>
+        <li>tea</li>
+        <li>coffee</li>
+        <li>milk</li>
+        <li>Yoghurt</li>
+    </ul>
+</div>
+
+
+<button onclick="ordered_list(event)">Ordered Lists</button>
+
+<button onclick="unordered_list(event)">UnOrdered Lists</button>
+
+<button ondblclick="create_image(event)">CreateIMAGE</button>
+
+<button onmouseover="move_in(event)" onmouseout="move_out(event)" onclick="remove_image(event)">CreateIMAGE1111111</button><br><br><br><br>
+
+
+
+
+<script>
+    function move_in_(event){
+
+     var img = document.createElement('img')
+     img.setAttribute('src', '{% static 'apewives/img/anna3.jpg' %}')
+     var bdy = document.getElementById('bdy')
+     bdy.appendChild(img)
+
+    }
+
+    function move_out(event){
+    var img = document.createElement('img')
+    img.setAttribute('id', 'img_')
+    img.setAttribute('src', '{% static 'apewives/img/police-woman-pdjumftfn2nl3745bf9q4wgtyontnc4eztufgtbtbo.png' %}')
+    img.setAttribute('style', 'height:300px; width:300px')
+    var bdy = document.getElementById('bdy')
+     bdy.appendChild(img)
+    }
+
+    function remove_image(event){
+    var elm = document.getElementById('img_')
+    elm.setAttribute('style','display:none')
+
+    }
+
+</script>
+
+
+<script>
+    function create_image(event){
+    var div_ = document.createElement('div')
+    //alert(div_.outerHTML)
+
+    var img = document.createElement('img')
+    //alert(img.outerHTML)
+
+    div_.appendChild(img)
+
+    img.setAttribute('src', '{% static 'apewives/img/anna3.jpg' %}')
+    var bdy = document.getElementById('bdy')
+    bdy.appendChild(div_)
+    //alert(div_.outerHTML)
+
+    }
+</script>
+<script>
+    function ordered_list(event){
+    var h4 = document.createElement('h4')
+    h4.setAttribute('style','color:blue')
+    h4.innerHTML = 'ORDERED LISTS'
+    var div = document.createElement('div')
+    var ol = document.createElement('ol')
+    div.appendChild(ol)
+    var li = document.createElement('li')
+    ol.appendChild(li)
+    li.innerHTML = 'Tea'
+
+    var li_ = document.createElement('li')
+    ol.appendChild(li_)
+    li_.innerHTML = 'Coffee'
+
+
+    var li_1 = document.createElement('li')
+    ol.appendChild(li_1)
+    li_1.innerHTML = 'Yoghurt'
+
+
+    var li_2 = document.createElement('li')
+    ol.appendChild(li_2)
+    li_2.innerHTML = 'Milk'
+
+    var bdy = document.getElementById('bdy')
+    bdy.appendChild(h4)
+    bdy.appendChild(div)
+
+    //alert(h4.outerHTML)
+
+    }
+
+    function unordered_list(event){
+    var h3 = document.createElement('h3')
+    h3.innerHTML = 'UNORDERED LIST'
+    h3.setAttribute('style', 'color:green')
+    var div = document.createElement('div')
+    var ul = document.createElement('ul')
+    div.appendChild(ul)
+
+    var li = document.createElement('li')
+    ul.appendChild(li)
+    li.innerHTML = 'TEA'
+
+    var li_ = document.createElement('li')
+    ul.appendChild(li_)
+    li_.innerHTML = 'MILK'
+
+    var li_1 = document.createElement('li')
+    ul.appendChild(li_1)
+    li_1.innerHTML = 'Yoghurt'
+
+  var bdy = document.getElementById('bdy')
+  bdy.appendChild(h3)
+  bdy.appendChild(div)
+  //alert(h3.outerHTML)
+
+    }
+
+</script>
+<script>
+    function change_name(event){
+    var elm = document.getElementById('name')
+    elm.innerHTML = 'Jacob';
+    elm.style.color = 'red';
+    elm.style.fontSize = '40px';
+    }
+
+    function change_name_(event){
+    var elm_ = document.getElementById('name_')
+    elm_.innerHTML = '<button onclick="changecurrentname(event)">ChangeCurrentName</button>'
+    }
+
+    function changecurrentname(event){
+    var demo = document.getElementById('name')
+    demo.innerHTML = 'Daniel'
+    demo.style.color = 'orange'
+    elm.style.fontSize = '40px';
+    }
+</script>
+</body>
+</html>

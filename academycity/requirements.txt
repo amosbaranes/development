@@ -126,7 +126,7 @@ Markdown==2.6.11
 MarkupSafe==2.0.1
 matplotlib==3.3.0
 Mesa==0.8.9
-migrate==0.3.8
+migrate==0.3.7
 more-itertools==8.5.0
 msgpack==0.6.2
 multidict==5.2.0

@@ -246,6 +246,7 @@ img.emoji {
 }
 </style>
 
+
 <link rel='stylesheet' id='wp-block-library-css'  href="{% static 'apewives/css/style.min.css' %}" media='all' />
 <link rel='stylesheet' id='astra-theme-css-css'  href="{% static 'apewives/css/main.min.css' %}" media='all' />
 <style id='astra-theme-css-inline-css'>
@@ -304,13 +305,16 @@ var monsterinsights_frontend = {"js_events_tracking":"true","download_extensions
   {% block js %}
   {% endblock %}
 
+<link rel='stylesheet' id='e-animations-css'  href="{% static 'apewives/css/animations.min.css' %}" media='all' />
+
 <script id='astra-theme-js-js-extra'>
 var astra = {"break_point":"921","isRtl":""};
 </script>
-<script src="{% static 'apewives/js/frontend.min.js' %}" id='astra-theme-js-js'></script>
+<script src="{% static 'apewives/js/frontend.min1.js' %}" id='astra-theme-js-js'></script>
 <script id='astra-addon-js-js-extra'>
 var astraAddon = {"sticky_active":"","svgIconClose":"<span class=\"ast-icon icon-close\"><svg viewBox=\"0 0 512 512\" aria-hidden=\"true\" role=\"img\" version=\"1.1\" xmlns=\"http:\/\/www.w3.org\/2000\/svg\" xmlns:xlink=\"http:\/\/www.w3.org\/1999\/xlink\" width=\"18px\" height=\"18px\">\n                                <path d=\"M71.029 71.029c9.373-9.372 24.569-9.372 33.942 0L256 222.059l151.029-151.03c9.373-9.372 24.569-9.372 33.942 0 9.372 9.373 9.372 24.569 0 33.942L289.941 256l151.03 151.029c9.372 9.373 9.372 24.569 0 33.942-9.373 9.372-24.569 9.372-33.942 0L256 289.941l-151.029 151.03c-9.373 9.372-24.569 9.372-33.942 0-9.372-9.373-9.372-24.569 0-33.942L222.059 256 71.029 104.971c-9.372-9.373-9.372-24.569 0-33.942z\" \/>\n                            <\/svg><\/span>","is_header_builder_active":"1"};
 </script>
+
 <script src="{% static 'apewives/js/astra-addon-6167c03c72ec90-51478653.js' %}" id='astra-addon-js-js'></script>
 <script src="{% static 'apewives/js/wp-embed.min.js' %}" id='wp-embed-js'></script>
 <script src="{% static 'apewives/js/jquery.smartmenus.min.js' %}" id='smartmenus-js'></script>
@@ -318,36 +322,46 @@ var astraAddon = {"sticky_active":"","svgIconClose":"<span class=\"ast-icon icon
 <script src="{% static 'apewives/js/imagesloaded.min.js' %}" id='imagesloaded-js'></script>
 <script src="{% static 'apewives/js/timeline.min.js' %}" id='ee-timeline-js'></script>
 <script src="{% static 'apewives/js/webpack-pro.runtime.min.js' %}" id='elementor-pro-webpack-runtime-js'></script>
+
 <script src="{% static 'apewives/js/webpack.runtime.min.js' %}" id='elementor-webpack-runtime-js'></script>
 <script src="{% static 'apewives/js/frontend-modules.min.js' %}" id='elementor-frontend-modules-js'></script>
 <script id='elementor-pro-frontend-js-before'>
 var ElementorProFrontendConfig = {"ajaxurl":"https:\/\/desperateapewives.com\/wp-admin\/admin-ajax.php","nonce":"fbd42d4297","urls":{"assets":"https:\/\/desperateapewives.com\/wp-content\/plugins\/elementor-pro\/assets\/","rest":"https:\/\/desperateapewives.com\/wp-json\/"},"i18n":{"toc_no_headings_found":"No headings were found on this page."},"shareButtonsNetworks":{"facebook":{"title":"Facebook","has_counter":true},"twitter":{"title":"Twitter"},"google":{"title":"Google+","has_counter":true},"linkedin":{"title":"LinkedIn","has_counter":true},"pinterest":{"title":"Pinterest","has_counter":true},"reddit":{"title":"Reddit","has_counter":true},"vk":{"title":"VK","has_counter":true},"odnoklassniki":{"title":"OK","has_counter":true},"tumblr":{"title":"Tumblr"},"digg":{"title":"Digg"},"skype":{"title":"Skype"},"stumbleupon":{"title":"StumbleUpon","has_counter":true},"mix":{"title":"Mix"},"telegram":{"title":"Telegram"},"pocket":{"title":"Pocket","has_counter":true},"xing":{"title":"XING","has_counter":true},"whatsapp":{"title":"WhatsApp"},"email":{"title":"Email"},"print":{"title":"Print"}},"facebook_sdk":{"lang":"en_US","app_id":""},"lottie":{"defaultAnimationUrl":"https:\/\/desperateapewives.com\/wp-content\/plugins\/elementor-pro\/modules\/lottie\/assets\/animations\/default.json"}};
 </script>
+
 <script src="{% static 'apewives/js/frontend.min_.js' %}" id='elementor-pro-frontend-js'></script>
 <script src="{% static 'apewives/js/waypoints.min.js' %}" id='elementor-waypoints-js'></script>
 <script src="{% static 'apewives/js/core.min.js' %}" id='jquery-ui-core-js'></script>
+
 <script src="{% static 'apewives/js/swiper.min.js' %}" id='swiper-js'></script>
 <script src="{% static 'apewives/js/share-link.min.js' %}" id='share-link-js'></script>
 <script src="{% static 'apewives/js/dialog.min.js' %}" id='elementor-dialog-js'></script>
+
 <script id='elementor-frontend-js-before'>
 var elementorFrontendConfig = {"environmentMode":{"edit":false,"wpPreview":false,"isScriptDebug":false},"i18n":{"shareOnFacebook":"Share on Facebook","shareOnTwitter":"Share on Twitter","pinIt":"Pin it","download":"Download","downloadImage":"Download image","fullscreen":"Fullscreen","zoom":"Zoom","share":"Share","playVideo":"Play Video","previous":"Previous","next":"Next","close":"Close"},"is_rtl":false,"breakpoints":{"xs":0,"sm":480,"md":768,"lg":1025,"xl":1440,"xxl":1600},"responsive":{"breakpoints":{"mobile":{"label":"Mobile","value":767,"default_value":767,"direction":"max","is_enabled":true},"mobile_extra":{"label":"Mobile Extra","value":880,"default_value":880,"direction":"max","is_enabled":false},"tablet":{"label":"Tablet","value":1024,"default_value":1024,"direction":"max","is_enabled":true},"tablet_extra":{"label":"Tablet Extra","value":1200,"default_value":1200,"direction":"max","is_enabled":false},"laptop":{"label":"Laptop","value":1366,"default_value":1366,"direction":"max","is_enabled":false},"widescreen":{"label":"Widescreen","value":2400,"default_value":2400,"direction":"min","is_enabled":false}}},"version":"3.4.4","is_static":false,"experimentalFeatures":{"e_dom_optimization":true,"a11y_improvements":true,"e_import_export":true,"landing-pages":true,"elements-color-picker":true,"admin-top-bar":true,"form-submissions":true},"urls":{"assets":"https:\/\/desperateapewives.com\/wp-content\/plugins\/elementor\/assets\/"},"settings":{"page":[],"editorPreferences":[]},"kit":{"active_breakpoints":["viewport_mobile","viewport_tablet"],"global_image_lightbox":"yes","lightbox_enable_counter":"yes","lightbox_enable_fullscreen":"yes","lightbox_enable_zoom":"yes","lightbox_enable_share":"yes","lightbox_title_src":"title","lightbox_description_src":"description"},"post":{"id":9,"title":"DAW%20%E2%80%93%20THE%20DESPERATE%20APEWIVES","excerpt":"","featuredImage":"https:\/\/desperateapewives.com\/wp-content\/uploads\/WONDER-WOMAN-Main2-714x1024.png"}};
 </script>
 <script src="{% static 'apewives/js/frontend.min_e.js' %}" id='elementor-frontend-js'></script>
 <script src="{% static 'apewives/js/preloaded-elements-handlers.min.js' %}" id='pro-preloaded-elements-handlers-js'></script>
+
 <script src="{% static 'apewives/js/preloaded-modules.min.js' %}" id='preloaded-modules-js'></script>
 <script src="{% static 'apewives/js/jquery.sticky.min.js' %}" id='e-sticky-js'></script>
 <script src="{% static 'apewives/js/TweenMax.min.js' %}" id='gsap-js-js'></script>
+
 <script id='elementor-extras-frontend-js-extra'>
 var elementorExtrasFrontendConfig = {"urls":{"assets":"https:\/\/desperateapewives.com\/wp-content\/plugins\/elementor-extras\/assets\/"},"refreshableWidgets":["ee-offcanvas.classic","ee-popup.classic","gallery-slider.default","media-carousel.default","image-carousel.default","slides.default"]};
 </script>
-<script src="{% static 'apewives/js/frontend.min.js' %}" id='elementor-extras-frontend-js'></script>
+
+<!--<script src="{% static 'apewives/js/frontend.min.js' %}" id='elementor-extras-frontend-js'></script>-->
+<script src='https://desperateapewives.com/wp-content/plugins/elementor-extras/assets/js/frontend.min.js?ver=2.2.51' id='elementor-extras-frontend-js'></script>
+
 <script src="{% static 'apewives/js/parallax-gallery.min.js' %}" id='parallax-gallery-js'></script>
 <script src="{% static 'apewives/js/hotips.min.js' %}" id='hotips-js'></script>
-<link rel='stylesheet' id='e-animations-css'  href="{% static 'apewives/js/animations.min.css' %}" media='all' />
 
 <script>
 /(trident|msie)/i.test(navigator.userAgent)&&document.getElementById&&window.addEventListener&&window.addEventListener("hashchange",function(){var t,e=location.hash.substring(1);/^[A-z0-9_-]+$/.test(e)&&(t=document.getElementById(e))&&(/^(?:a|select|input|button|textarea)$/i.test(t.tagName)||(t.tabIndex=-1),t.focus())},!1);
 </script>
+
+
 <!-- academy city -->
 <script src="{% static 'js/npm/cookie/js.cookie.min.js' %}"></script>
 <script>

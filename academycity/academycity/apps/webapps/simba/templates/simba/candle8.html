@@ -1,0 +1,153 @@
+{% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>Financial | Chart.js</title>
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/luxon/2.3.0/luxon.min.js" integrity="sha512-2j5fkjQ4q5ceXgfxi+kqrU2Oz234MrpyywZsQz1F5OGnfat7mOhjRr0oz5cpQ+YwwWB+hhDBSyxNGuL/tKWMFw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+        <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon@0.2.1"></script>
+
+        <script src="{% static 'js/chartjs/chartjs-chart-financial.js' %}" crossorigin="anonymous"></script>
+        <style>
+                * {
+                        font-family: Sans-Serif;
+                   }
+
+                h1 {
+                    font-size: 1.5em;
+                }
+
+                h2 {
+                    font-size: 1.25em;
+                }
+        </style>
+		<link rel="icon" href="{% static 'images/favicon.ico' %}"/>
+
+	</head>
+	<body>
+	<button>
+    <a href="{% url 'simba:home' %}">Home</a>
+</button>
+		<h2>Object to create Financial chart with Chart.js</h2>
+
+		<div>
+			Enter tickers to follow<input id="tickers_to_follow"><button id="run" onclick="run(event)">Run</button>
+			<button id="randomizeData">Randomize Data</button>
+			<button id="add_data_point">Add data point</button>
+		</div>
+		<table>
+			<thead><th>Ticker</th><th>Chart</th><th>Strategy</th></thead>
+			<tbody id="tickers_analysis"></tbody>
+		</table>
+
+<script>
+
+function CandlestickChartManager(tickers=null)
+{
+ this.tickers = tickers;
+ this.container = document.getElementById("tickers_analysis");
+ this.objs = {};
+ for(i in this.tickers)
+ {
+  var t = this.tickers[i];
+  var tr_ = document.createElement("tr");
+  var td = document.createElement("td");td.innerHTML=t;tr_.appendChild(td);
+  td = document.createElement("td");var td_div = document.createElement("div");td_div.setAttribute("id", "host_div_"+t);
+  td_div.setAttribute("style", "width:500px;height=250px");
+  td.appendChild(td_div);
+  tr_.appendChild(td);
+  td = document.createElement("td");td.setAttribute("id", "analysis_"+t);td.innerHTML=t;tr_.appendChild(td);
+  this.container.appendChild(tr_);
+  this.objs[t] = new CandlestickChart(ticker=t, data_function=getRandomData)
+ }
+}
+
+function CandlestickChart(ticker="aapl", data_function=null)
+{
+ this.ticker = ticker;
+ this.data_function = data_function;
+ this.host_div = document.getElementById("host_div_"+this.ticker);
+ this.canvas = document.createElement("canvas");
+ this.canvas.setAttribute("id", "canvas_"+this.ticker);
+ this.canvas.setAttribute("style", "canvas_"+this.ticker);
+ this.host_div.appendChild(this.canvas);
+ this.ctx = this.canvas.getContext('2d');
+ this.ctx.canvas.width = this.host_div.style.width;
+ this.ctx.canvas.height = this.host_div.style.height;
+
+ this.initialDateStr = '01 Jan 2020 00:00 Z';
+ this.initialDate = luxon.DateTime.fromRFC2822(this.initialDateStr);
+ this.lastDate = this.initialDate;
+
+ this.data = []
+ this.label = 'Chart for '+this.ticker
+ this.chart = new Chart(this.ctx, {type: 'candlestick', data: {datasets: [{label: this.label, data: this.data}]}});
+ this.data_function(this);
+}
+CandlestickChart.prototype.add_data_point = function(d)
+{
+		this.data.push(d);
+	    this.chart.config.data.datasets = [{label: this.label, data: this.data}]
+		this.chart.update()
+}
+
+
+document.getElementById('randomizeData').onclick = function(event) {
+		for (k in csm.objs){ getRandomData(csm.objs[k]);}
+};
+
+document.getElementById('add_data_point').addEventListener('click', function() {
+		for (k in csm.objs)
+		{
+		  csm.objs[k].lastDate = csm.objs[k].lastDate.plus({days: 1});
+		  csm.objs[k].add_data_point(randomBar(csm.objs[k].lastDate));
+		}
+});
+
+
+var csm = null;
+
+run = function(event){
+  var ll = document.getElementById("tickers_to_follow").value
+  var ll = ll.split(",")
+  csm = new CandlestickChartManager(tickers=ll);
+}
+
+                function randomNumber(min, max) {
+                    return Math.random() * (max - min) + min;
+                }
+
+				function randomBar(date) {
+					var basePrice = 30
+					var open = +randomNumber(basePrice * 0.95, basePrice * 1.05).toFixed(2);
+					var close = +randomNumber(open * 0.95, open * 1.05).toFixed(2);
+					var high = +randomNumber(Math.max(open, close), Math.max(open, close) * 1.05).toFixed(2);
+					var low = +randomNumber(Math.min(open, close) * 0.95, Math.min(open, close)).toFixed(2);
+					return {
+						x: date.valueOf(),
+						o: open,
+						h: high,
+						l: low,
+						c: close
+					};
+				}
+
+                function getRandomData(chart_obj, count=60) {
+                    var data = [randomBar(chart_obj.initialDate)];
+                    while (data.length < count) {
+                        chart_obj.lastDate = chart_obj.lastDate.plus({days: 1});
+                        if (chart_obj.lastDate.weekday <= 5) {
+                            data.push(randomBar(chart_obj.lastDate));
+                        }
+                    }
+                    // alert(JSON.stringify(data))
+                    chart_obj.data = data
+                    chart_obj.chart.config.data.datasets = [{label: chart_obj.label, data: chart_obj.data}]
+                    chart_obj.chart.update();
+                }
+
+        </script>
+	</body>
+</html>

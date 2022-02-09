@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+
+<body id="bd">
+
+<div id="tab">
+<button onclick="change_name(event)">ChangeName</button>
+<button onclick="change_name_(event)">ChangeName_</button>
+
+<button onclick="ol(event)">DisplayOrderedLists</button>
+<button onclick="uol(event)">DisplayUnorderedLists</button>
+</div>
+
+<div id="name">
+    daniel
+</div><br><br>
+
+<div id="name_">
+    Comboni
+</div><br><br>
+
+<h4 id="h_" style="color:green">Unordered Lists</h4>
+<ul>
+    <li>item1</li>
+    <li>item2</li>
+    <li>item3</li>
+    <li>item4</li>
+</ul>
+
+<h4 style="color:green">Ordered Lists</h4>
+<ol>
+    <li>item1</li>
+    <li>item2</li>
+    <li>item3</li>
+    <li>item4</li>
+</ol>
+
+
+<script>
+function change_name(event){
+var elm = document.getElementById('name')
+elm.innerHTML = 'Mara';
+elm.style.color = 'blue';
+elm.style.fontSize = "150px";
+}
+
+function change_name_(event){
+var elm = document.getElementById('name_')
+elm.innerHTML = '<button onclick="change_name_b(event)" style="color:blue;">ChangeCurrentName</button>';
+
+}
+
+function change_name_b(event){
+var elm = document.getElementById('name')
+elm.innerHTML = 'James';
+elm.style.color = 'green';
+elm.style.fontSize = "150px";
+}
+</script>
+<script>
+    function ol(event){
+    var h4 = document.createElement('h4')
+    h4.setAttribute('style', 'color:orange')
+    h4.innerHTML = 'Unordered Lists'
+    //alert(h4.outerHTML)
+    var div = document.createElement('div')
+    var ol = document.createElement('ul')
+    div.appendChild(ol)
+    var li = document.createElement('li')
+    li.innerHTML = 'item1'
+    ol.appendChild(li)
+
+
+    var li_ = document.createElement('li')
+    li_.innerHTML = 'item2'
+    ol.appendChild(li_)
+
+
+    var li = document.createElement('li')
+    li.innerHTML = 'item3'
+    ol.appendChild(li)
+
+
+    var bd = document.getElementById('bd')
+    bd.appendChild(h4)
+    bd.appendChild(div)
+
+    }
+
+    function uol(event){
+    var h4 = document.createElement('h4')
+    h4.setAttribute('style', 'color:purple')
+    h4.innerHTML = 'Ordered Lists'
+    //alert(h4.outerHTML)
+    var div = document.createElement('div')
+    var ol = document.createElement('ol')
+    div.appendChild(ol)
+    var li = document.createElement('li')
+    ol.appendChild(li)
+    li.innerHTML = 'item1'
+
+    var li = document.createElement('li')
+    ol.appendChild(li)
+    li.innerHTML = 'item2'
+
+    var li = document.createElement('li')
+    ol.appendChild(li)
+    li.innerHTML = 'item3'
+
+    var bd = document.getElementById('bd')
+    bd.appendChild(h4)
+    bd.appendChild(div)
+    }
+</script>
+</body>
+</html>
+
+function unordered_list(event){
+    var elm = document.createElement('img')
+    elm.setAttribute('src','{%static 'apewives/img/anna3.jpg'%}')
+    var bdy = document.getElementById('bdy')
+    bdy.appendChild(elm)
+    //alert(elm.outerHTML)
+    }

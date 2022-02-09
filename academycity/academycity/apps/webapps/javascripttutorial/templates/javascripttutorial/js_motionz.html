@@ -1,0 +1,115 @@
+<html>
+<head>
+</head>
+<body>
+
+<div>
+<span id="title" style="position: absolute;font-size:100px; left:0px"
+ onmouseover="move()" onmouseout="moveout()" 
+>Amos</span>
+</div>
+
+<script>
+
+var t = document.getElementById('title')
+
+var inner_title = "Daniel";
+move = function()
+{
+ t.style.left = "200px"
+ t.style.color = "purple"
+ inner_title = 'Brenda'
+ t.innerHTML = inner_title
+}
+
+moveout = function()
+{
+ t.style.left = "0px"
+ t.style.color = "yellow"
+ inner_title = 'Amos'
+ t.innerHTML = inner_title
+}
+
+setInterval(myTimer1, 10);
+
+var i = 0
+var d = 1
+function myTimer1() {
+  document.getElementById("title").style.left = i.toString() + "px"
+  document.getElementById("title").innerHTML = inner_title + " - " + i.toString()
+
+  if (i == 300)
+  {
+    d = -1
+  }
+  if (i == 0)
+  {
+    d = 1
+  }
+
+  i += d
+//i = i + d
+}
+
+</script>
+
+</body>
+</html>
+
+
+
+
+<!--<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Motions</title>
+</head>
+<body>
+<div id="demo" onmouseover="move_in(event)"  onmouseout="move_out(event)" style="position:relative; font-size:40px;">
+    Elizabeth
+</div>
+
+
+<script>
+var inner_name = 'Mark'
+function move_in(event){
+    var elm = document.getElementById('demo')
+    elm.style.left = '200px'
+    elm.style.color = 'blue'
+    elm.innerHTML= 'James'
+    inner_name = elm.innerHTML
+}
+
+function move_out(event){
+    var elm = document.getElementById('demo')
+    elm.style.left = '0px'
+    elm.style.color = 'green'
+     elm.innerHTML= 'Jacob'
+    inner_name = elm.innerHTML
+}
+
+setInterval(range, 20);
+var z = 0
+var p = 1
+function range(event){
+document.getElementById("demo").style.left = z + "px"
+document.getElementById('demo').innerHTML = inner_name + ' - ' + z
+ if (z == 0)
+  {
+    p = 1
+  }
+
+ if (z == 800)
+  {
+    p = -1
+  }
+
+  z = z + p
+}
+</script>
+</body>
+</html> -->

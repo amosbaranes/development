@@ -188,6 +188,8 @@ WebApps = [
     'academycity.apps.webapps.apewives',
     'academycity.apps.webapps.radiusfood',
     'academycity.apps.webapps.swotclock',
+    'academycity.apps.webapps.javascripttutorial',
+    'academycity.apps.webapps.simba',
 ]
 
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps

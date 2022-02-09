@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+<style>
+    .tab button:hover {
+     background-color: blue;
+     transition: 0.3s;
+     }
+     .tab button.active {
+     background-color: green;
+     }
+</style>
+</head>
+<body>
+<div id="tab_container" class="tab">
+</div>
+
+<div id="tab_contents">
+</div>
+
+<!-- makebtndiv = function(tab_name, tab_id, tab_txt) -->
+<script>
+    makebtndiv = function(tab_name, tab_id, tab_text)
+    {
+      var btn = document.createElement("button");
+      btn.setAttribute("id", "tab_btn_"+tab_id);
+      btn.setAttribute("class", "tablinks");
+      btn.setAttribute("tab_name_id", tab_id);
+      btn.innerHTML = tab_name
+      btn.onclick = function openCity(event)
+                    {
+                    var elm = event.target
+                    var tab_name_id = elm.getAttribute('tab_name_id')
+                    var i, tabcontent, tablinks;
+
+                    tabcontent = document.getElementsByClassName("tabcontent");
+                    for(i=0; i<tabcontent.length; i++){tabcontent[i].style.display = 'none';}
+
+                    tablinks = document.getElementsByClassName("tablinks");
+                    for (i = 0; i < tablinks.length; i++) {tablinks[i].className = tablinks[i].className.replace(" active", "");}
+
+                    document.getElementById("tab_content_id_"+tab_name_id).style.display = "block";
+                    event.currentTarget.className += " active";
+                    }
+      var tab_container = document.getElementById("tab_container")
+      tab_container.appendChild(btn)
+
+      var div = document.createElement("div");
+      div.setAttribute("id", "tab_content_id_"+tab_id);
+      div.setAttribute("class", "tabcontent");
+      div.innerHTML = tab_text
+      var tab_contents = document.getElementById("tab_contents")
+      tab_contents.appendChild(div)
+    }
+</script>
+
+<script>
+    var dic = {}
+        dic["1"] = {"tab_name": "kampala", "tab_text": "My home town"}
+        dic["2"] = {"tab_name": "kenya", "tab_text": "I love kenya"}
+        dic["3"] = {"tab_name": "tanzania", "tab_text": "Tanzania is a beautiful city"}
+
+     //var dic = {"1": {"tab_name": "Kampala", "tab_text": "My home town"},
+     //          "2": {"tab_name": "kenya", "tab_text": "I love kenya"},
+     //          "3": {"tab_name": "tanzania", "tab_text": "Tanzania is a beautiful city"}}
+    for(id in dic)
+    {
+    makebtndiv(tab_name=dic[id]["tab_name"], tab_id=id, tab_txt=dic[id]["tab_text"])
+     }
+    document.getElementById("tab_container").children[0].click();
+</script>
+</body>
+</html>

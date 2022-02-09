@@ -66,6 +66,8 @@ urlpatterns += i18n_patterns(
     url(r'r/', include('academycity.apps.webapps.radiusfood.urls')),
     url(r'b/', include('academycity.apps.webapps.bizland.urls')),
     url(r'a/', include('academycity.apps.webapps.apewives.urls')),
+    url(r'j/', include('academycity.apps.webapps.javascripttutorial.urls')),
+    url(r's/', include('academycity.apps.webapps.simba.urls')),
     url(r'^swotclock/', include('academycity.apps.webapps.swotclock.urls')),
     #
     url(r'^allauth/', include('allauth.urls')),

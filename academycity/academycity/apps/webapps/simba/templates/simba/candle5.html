@@ -1,0 +1,109 @@
+{% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>Financial | Chart.js</title>
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/luxon/2.3.0/luxon.min.js" integrity="sha512-2j5fkjQ4q5ceXgfxi+kqrU2Oz234MrpyywZsQz1F5OGnfat7mOhjRr0oz5cpQ+YwwWB+hhDBSyxNGuL/tKWMFw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+        <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon@0.2.1"></script>
+
+        <script src="{% static 'js/chartjs/chartjs-chart-financial.js' %}" crossorigin="anonymous"></script>
+        <style>
+                * {
+                        font-family: Sans-Serif;
+                   }
+
+                h1 {
+                    font-size: 1.5em;
+                }
+
+                h2 {
+                    font-size: 1.25em;
+                }
+        </style>
+		<link rel="icon" href="{% static 'images/favicon.ico' %}"/>
+
+	</head>
+	<body>
+	<button>
+    <a href="{% url 'simba:home' %}">Home</a>
+</button>
+		<h1>Object to create Financial chart with Chart.js</h1>
+		<div id="host_div_aapl" style="width:500px;height=250px"></div>
+		<div id="host_div_msft" style="width:500px;height=250px"></div>
+
+		<div>
+			<button id="randomizeData">Randomize Data</button>
+		</div>
+
+		<script>
+
+function CandlestickChart(ticker="aapl", data_function=null)
+{
+ this.ticker = ticker;
+ this.data_function = data_function;
+ this.host_div = document.getElementById("host_div_"+this.ticker);
+ this.canvas = document.createElement("canvas");
+ this.canvas.setAttribute("id", "canvas_"+this.ticker);
+ this.canvas.setAttribute("style", "canvas_"+this.ticker);
+ this.host_div.appendChild(this.canvas);
+ this.ctx = this.canvas.getContext('2d');
+ this.ctx.canvas.width = this.host_div.style.width;
+ this.ctx.canvas.height = this.host_div.style.height;
+
+ this.initialDateStr = '01 Jan 2020 00:00 Z';
+ this.initialDate = luxon.DateTime.fromRFC2822(this.initialDateStr);
+ this.lastDate = this.initialDate;
+
+ this.data = []
+ this.label = 'Chart for '+this.ticker
+ this.chart = new Chart(this.ctx, {type: 'candlestick', data: {datasets: [{label: this.label, data: this.data}]}});
+ this.data_function(this);
+}
+
+var aapl = new CandlestickChart(ticker="aapl", data_function=getRandomData)
+var msft = new CandlestickChart(ticker="msft", data_function=getRandomData)
+
+document.getElementById('randomizeData').addEventListener('click', function() {
+		getRandomData(aapl);getRandomData(msft);
+});
+
+
+                function randomNumber(min, max) {
+                    return Math.random() * (max - min) + min;
+                }
+
+                function randomBar(date, lastClose) {
+                    var open = +randomNumber(lastClose * 0.95, lastClose * 1.05).toFixed(2);
+                    var close = +randomNumber(open * 0.95, open * 1.05).toFixed(2);
+                    var high = +randomNumber(Math.max(open, close), Math.max(open, close) * 1.1).toFixed(2);
+                    var low = +randomNumber(Math.min(open, close) * 0.9, Math.min(open, close)).toFixed(2);
+                    return {
+                        x: date.valueOf(),
+                        o: open,
+                        h: high,
+                        l: low,
+                        c: close
+                    };
+                }
+
+                function getRandomData(chart_obj, count=60) {
+                    var data = [randomBar(chart_obj.initialDate, 30)];
+                    while (data.length < count) {
+                        chart_obj.lastDate = chart_obj.lastDate.plus({days: 1});
+                        if (chart_obj.lastDate.weekday <= 5) {
+                            data.push(randomBar(chart_obj.lastDate, data[data.length - 1].c));
+                        }
+                    }
+                    // alert(JSON.stringify(data))
+                    chart_obj.data = data
+                    chart_obj.chart.config.data.datasets = [{label: chart_obj.label, data: chart_obj.data}]
+                    chart_obj.chart.update();
+                }
+
+
+        </script>
+	</body>
+</html>
