@@ -14,7 +14,6 @@ from django.db.models import Q
 from concurrent.futures import ThreadPoolExecutor
 import xml.etree.ElementTree as ET
 
-from numpy import dtype
 from six.moves import urllib
 import xlrd
 import numpy as np
@@ -26,12 +25,10 @@ import json
 import asyncio
 import requests
 import aiohttp
-from asgiref import sync
 import random
-import calendar
-from tda import auth, client
-from tda.streaming import StreamClient
+from tda import auth, client, orders
 
+from channels.db import database_sync_to_async
 
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
@@ -39,6 +36,8 @@ from asgiref.sync import async_to_sync
 # import yfinance as yf
 from yahoofinancials import YahooFinancials
 from ..core.utils import log_debug, clear_log_debug
+from ..core.sql import SQL
+from ..core.OptionsAmeriTrade import BaseTDAmeriTrade
 
 from django.db.models import Avg
 from .models import (XBRLMainIndustryInfo, XBRLIndustryInfo, XBRLCompanyInfoInProcess,
@@ -47,15 +46,22 @@ from .models import (XBRLMainIndustryInfo, XBRLIndustryInfo, XBRLCompanyInfoInPr
                      XBRLRegion, XBRLCountry, XBRLCountryYearData,
                      XBRLHistoricalReturnsSP, XBRLSPMoodys, Project,
                      XBRLRegion, XBRLRegionYearData, XBRLSPEarningForecast, XBRLSPStatistics,
-                     XBRLDimTime, XBRLDimCompany, XBRLDimAccount, XBRLFactCompany)
+                     XBRLDimTime, XBRLDimCompany, XBRLDimAccount, XBRLFactCompany,
+                     XBRLRealEquityPrices, XBRLRealEquityPricesArchive)
 
 
 # cik = '0000051143'
 # type = '10-K'
 # dateb = '20160101'
 
+# https://github.com/alexgolec/tda-api
+from tda.orders.options import (OptionSymbol,
+                                bear_call_vertical_open, bear_call_vertical_close,
+                                bear_put_vertical_open, bear_put_vertical_close)
+
 class GetAllUrlsProcessed(object):
     def __init__(self):
+        self.name = 'GetAllUrlsProcessed'
         self.session = None
         self.agent = 'amos@drbaranes.com'
 
@@ -77,12 +83,6 @@ class GetAllUrlsProcessed(object):
         async with aiohttp.ClientSession() as session:
             self.session = session
             return await self.get_all_pages(urls, func, dic)
-
-
-# https://github.com/alexgolec/tda-api
-
-
-from ..core.OptionsAmeriTrade import BaseTDAmeriTrade
 
 
 class TDAmeriTrade(BaseTDAmeriTrade):
@@ -109,7 +109,7 @@ class TDAmeriTrade(BaseTDAmeriTrade):
             except Exception as eex:
                 print(eex)
 
-    # ------ Queue example --
+    # ------ Queue example Should be removed --
     def run_stream_options_data(self, dic):
         asyncio.run(self.stream_options_data())
 
@@ -160,7 +160,7 @@ class TDAmeriTrade(BaseTDAmeriTrade):
         print('====')
         print(f'3 workers slept in parallel for {total_slept_for:.2f} seconds')
         print(f'total expected sleep time: {total_sleep_time:.2f} seconds')
-    # ----
+    # ----------------------------------------
 
     def set_sp500_dic(self):
         sp500_url = 'https://en.wikipedia.org/wiki/List_of_S%26P_500_companies'
@@ -274,25 +274,22 @@ class TDAmeriTrade(BaseTDAmeriTrade):
         return dic
 
     def get_butterfly_price(self, strike_num, strikes, llc, llp):
-        p0 = llc['calls']['date']['strikes'][strikes[strike_num]]
-        pl = llc['calls']['date']['strikes'][strikes[strike_num - 1]]
-        pr = llc['calls']['date']['strikes'][strikes[strike_num + 1]]
+        p0 = llc['calls']['date']['strikes'][strikes[strike_num]]["price"]
+        pl = llc['calls']['date']['strikes'][strikes[strike_num - 1]]["price"]
+        pr = llc['calls']['date']['strikes'][strikes[strike_num + 1]]["price"]
         bfc = round(100 * (-2 * p0 + pl + pr)) / 100
-        p0 = llp['puts']['date']['strikes'][strikes[strike_num]]
-        pl = llp['puts']['date']['strikes'][strikes[strike_num - 1]]
-        pr = llp['puts']['date']['strikes'][strikes[strike_num + 1]]
+        p0 = llp['puts']['date']['strikes'][strikes[strike_num]]["price"]
+        pl = llp['puts']['date']['strikes'][strikes[strike_num - 1]]["price"]
+        pr = llp['puts']['date']['strikes'][strikes[strike_num + 1]]["price"]
         bfp = round(100 * (-2 * p0 + pl + pr)) / 100
         return bfc, bfp
 
-    def get_option_chain(self, ticker=None, start_date=None, end_date=None):
-        # print("start td.get_option_chain for 111 " + ticker)
+    def get_complete_option_chain(self, ticker=None, start_date=None, end_date=None):
+        print("start td.get_option_chain for 111 " + ticker)
         if not start_date:
             start_date = datetime.datetime.now().date()
-            end_date = (datetime.datetime.now() + datetime.timedelta(days=6)).date()
+            end_date = (datetime.datetime.now() + datetime.timedelta(days=360)).date()
         dic = {'status': 'ko'}
-        # print('-'*20)
-        # print("in get_option_chain api options pull for : " + ticker)
-        # print('-'*20)
         try:
             options_ = self.client.get_option_chain(ticker, contract_type=self.client.Options.ContractType.ALL,
                                                     strike_count=5, from_date=start_date, to_date=end_date)
@@ -303,19 +300,113 @@ class TDAmeriTrade(BaseTDAmeriTrade):
         # print(json.dumps(options_.json(), indent=4))
         # print(123)
         try:
+            llp = {'puts': {"dates": {}}}
+            for d_ in options_.json()['putExpDateMap']:
+                d = d_.split(":")[0]
+                llp['puts']['dates'][d] = {}
+                for p in options_.json()['putExpDateMap'][d_]:
+                    p_ = options_.json()['putExpDateMap'][d_][p][0]
+                    p_p = round(100*(p_['bid'] + p_['ask']) / 2)/100
+                    llp['puts']['dates'][d][p] = {"price":p_p, "symbol":p_['symbol']}
+        except Exception as ex:
+            print("puts: " + str(ex))
+            return dic
+        # print(llp)
+        # print(1234)
+        try:
+            llc = {'calls': {"dates": {}}}
+            for d_ in options_.json()['callExpDateMap']:
+                d = d_.split(":")[0]
+                llc['calls']['dates'][d] = {}
+                for c in options_.json()['callExpDateMap'][d_]:
+                    c_ = options_.json()['callExpDateMap'][d_][c][0]
+                    c_p = round(100 * (c_['bid'] + c_['ask']) / 2) / 100
+                    llc['calls']['dates'][d][c] = {"price": c_p, "symbol": c_['symbol']}
+
+        except Exception as ex:
+            print("calls: " + str(ex))
+            return dic
+        # print(llc)
+        # print(12345)
+        pstrikes = []
+        for d in llp['puts']['dates']:
+            for k in llp['puts']['dates'][d]:
+                if k not in pstrikes:
+                    pstrikes.append(k)
+        cstrikes = []
+        for d in llc['calls']['dates']:
+            for k in llc['calls']['dates'][d]:
+                if k not in cstrikes:
+                    cstrikes.append(k)
+        # print(123456)
+        try:
+            #
+            dic = '{"ticker": "' + ticker + '"}'
+            price_data = self.get_quote(dic)['data'][ticker]
+            # print(1234567)
+            share_price = (price_data['bidPrice'] + price_data['askPrice']) / 2
+            # print(share_price)
+            # print(12345678)
+            dic = {'status': 'ok', 'share_price': share_price, 'pstrikes': pstrikes, 'cstrikes': cstrikes,
+                   'llc': llc, 'llp': llp}
+            print(123456789)
+            print(dic)
+
+            print(1234567891)
+        except Exception as ex:
+            dic = {'status': 'ko'}
+        return dic
+
+    def get_option_chain_vertical(self, ticker=None, start_date=None, end_date=None):
+        pass
+
+    def get_option_chain(self, ticker=None, start_date=None, end_date=None):
+        # print("start td.get_option_chain for 111 " + ticker)
+        if not start_date:
+            n_ = 6
+            if ticker in ["SPY", "QQQ", "IWM"]:
+                n_ = 2
+                nday = datetime.datetime.today().weekday()  # Monday = 0
+                if nday in [0, 2, 4]:
+                    n_ = 1
+                elif nday in [1, 3, 6]:
+                    n_ = 2
+                else:
+                    n_ = 3
+            start_date = datetime.datetime.now().date()
+            end_date = (datetime.datetime.now() + datetime.timedelta(days=n_)).date()
+        dic = {'status': 'ko'}
+        # print('-'*20)
+        # print("in get_option_chain api options pull for : " + ticker)
+        # print('-'*20)
+        try:
+            options_ = self.client.get_option_chain(ticker, contract_type=self.client.Options.ContractType.ALL,
+                                                    strike_count=5, from_date=start_date, to_date=end_date)
+        except Exception as ex:
+            # print("Error 3456 in get_option_chain api options pull for : " + ticker + str(ex))
+            return dic
+        # print('------options_----')
+        # print(json.dumps(options_.json(), indent=4))
+        # print(123)
+        try:
             llp = {'puts': {}}
             for d_ in options_.json()['putExpDateMap']:
+                # print("="*100)
+                # print(d_)
+                # print("="*100)
                 d = d_.split(":")[0]
                 llp['puts']['date'] = {'date': d}
                 llp['puts']['date']['strikes'] = {}
                 for p in options_.json()['putExpDateMap'][d_]:
                     p_ = options_.json()['putExpDateMap'][d_][p][0]
                     p_p = (p_['bid'] + p_['ask']) / 2
-                    llp['puts']['date']['strikes'][p] = round(100 * p_p) / 100
+                    symbol = p_['symbol']
+                    llp['puts']['date']['strikes'][p] = {"price": round(100 * p_p) / 100, "symbol": symbol}
         except Exception as ex:
-            print("puts: " + str(ex))
+            # print("puts: " + str(ex))
             return dic
         # print(1234)
+        # print(llp)
         try:
             llc = {'calls': {}}
             for d_ in options_.json()['callExpDateMap']:
@@ -325,19 +416,22 @@ class TDAmeriTrade(BaseTDAmeriTrade):
                 for c in options_.json()['callExpDateMap'][d_]:
                     c_ = options_.json()['callExpDateMap'][d_][c][0]
                     c_p = (c_['bid'] + c_['ask']) / 2
-                    # print(d, c, c_p, c_['bid'], c_['ask'])
-                    llc['calls']['date']['strikes'][c] = round(100 * c_p) / 100
+                    symbol = c_['symbol']
+                    llc['calls']['date']['strikes'][c] = {"price": round(100 * c_p) / 100, "symbol": symbol}
         except Exception as ex:
-            print("calls: " + str(ex))
+            # print("calls: " + str(ex))
             return dic
         strikes = []
         for k in llp['puts']['date']['strikes']:
             if k not in strikes:
                 strikes.append(k)
+        for k in llc['calls']['date']['strikes']:
+            if k not in strikes:
+                strikes.append(k)
         # print(12345)
         try:
-            straddle_price = round(100 * (llp['puts']['date']['strikes'][strikes[2]] +
-                                          llc['calls']['date']['strikes'][strikes[2]])) / 100
+            straddle_price = round(100 * (llp['puts']['date']['strikes'][strikes[2]]["price"] +
+                                          llc['calls']['date']['strikes'][strikes[2]]["price"])) / 100
             bfcl, bfpl = self.get_butterfly_price(strike_num=1, strikes=strikes, llc=llc, llp=llp)
             bfc0, bfp0 = self.get_butterfly_price(strike_num=2, strikes=strikes, llc=llc, llp=llp)
             bfcr, bfpr = self.get_butterfly_price(strike_num=3, strikes=strikes, llc=llc, llp=llp)
@@ -347,24 +441,30 @@ class TDAmeriTrade(BaseTDAmeriTrade):
             dic = '{"ticker": "' + ticker + '"}'
             price_data = self.get_quote(dic)['data'][ticker]
             # print(price_data)
-            share_price = (price_data['bidPrice'] + price_data['askPrice']) / 2
+            share_price = round(100*(price_data['bidPrice'] + price_data['askPrice']) / 2)/100
             # print(price_data['bidPrice'], price_data['askPrice'], price)
 
             # self.get_quote(ticker="GOOG"):
-            dic = {'status': 'ok', 'share_price': share_price, 'straddle_price': straddle_price, 'strikes': strikes,
+            dic = {'status': 'ok', 'ticker': ticker, 'share_price': share_price, 'straddle_price': straddle_price, 'strikes': strikes,
                    "llc_": llc_, "llp_": llp_, 'llc': llc, 'llp': llp}
             # log_debug("End get_option_chain: " + ticker)
+            # print('-3'*100)
             # print(dic)
+            # print('-3'*100)
         except Exception as ex:
             dic = {'status': 'ko'}
+        # print(dic)
         return dic
 
+    # Not used to be deleted --
+    # pull data for all strikes of contract for type=(put or call)
     def get_option_strategy_lh_(self, options_, dic, option_type, l_=0.1, h_=0.9, ticker=""):
         # print(option_type)
         # print(ticker)
         # print(dic)
         try:
             for d in options_.json()[option_type + 'ExpDateMap']:
+                # print(d)
                 if 'date' not in dic:
                     dic['date'] = str(d).split(":")[0]
                     dic['tickers'] = {}
@@ -374,7 +474,6 @@ class TDAmeriTrade(BaseTDAmeriTrade):
                     dic['date'] = str(d).split(":")[0]
                     dic['tickers'] = {}
                 for t in options_.json()[option_type + 'ExpDateMap'][d]:
-                    # print(t)
                     # print(options_.json()[option_type+'ExpDateMap'][d][t][0]['delta'])
                     if options_.json()[option_type + 'ExpDateMap'][d][t][0]['delta'] != "NaN":
                         if l_ < abs(options_.json()[option_type + 'ExpDateMap'][d][t][0]['delta']) < h_:
@@ -388,6 +487,7 @@ class TDAmeriTrade(BaseTDAmeriTrade):
                                 100 * options_.json()[option_type + 'ExpDateMap'][d][t][0]['delta']) / 100
                             dic['tickers'][t][option_type]['theta'] = round(
                                 100 * options_.json()[option_type + 'ExpDateMap'][d][t][0]['theta']) / 100
+                            dic['tickers'][t][option_type]['symbol'] = options_.json()[option_type + 'ExpDateMap'][d][t][0]['symbol']
                             # print(options_.json()[option_type+'ExpDateMap'][d][t][0])
         except Exception as ex:
             log_debug("Error 201 in get_option_chain api options pull for : " + ticker + " = " + str(ex))
@@ -395,56 +495,30 @@ class TDAmeriTrade(BaseTDAmeriTrade):
         # print("in get_option_statistics_for_ticker 211 : for options: " + option_type)
         return dic
 
-    def get_option_strategy_lh(self, ticker):
-        dic = {'status': 'ko'}
-        # ticker = "^SPX"  #
-        # ticker = "^GSPC"
-        log_debug("in get_option_statistics_for_ticker : " + ticker)
-        # print("in get_option_statistics_for_ticker 1 : " + ticker)
-        try:
-            start_date_ = datetime.datetime.now().date()
-            end_date_ = (datetime.datetime.now() + datetime.timedelta(days=6)).date()
-            options_ = self.client.get_option_chain(ticker, contract_type=self.client.Options.ContractType.ALL,
-                                                    from_date=start_date_, to_date=end_date_)
-        except Exception as ex:
-            log_debug(" 7896 : " + ticker + " = " + str(ex))
-            return dic
-
-        # print("in get_option_statistics_for_ticker 2 : " + ticker)
-        # print(options_)
-
-        dic = {'ticker': ticker, 'underlyingPrice': options_.json()['underlyingPrice']}
-        dic = self.get_option_strategy_lh_(options_=options_, dic=dic, option_type='call', l_=0.1, h_=0.9)
-        dic = self.get_option_strategy_lh_(options_=options_, dic=dic, option_type='put', l_=0.1, h_=0.9)
-        dic = {'status': 'ok', 'option_data_ticker': dic}
-        log_debug("End in get_option_statistics_for_ticker : " + ticker)
-
     def get_option_statistics_for_ticker(self, ticker):
         dic = {'status': 'ko'}
-        # ticker = "^SPX"  #
-        # ticker = "^GSPC"
-        log_debug("in get_option_statistics_for_ticker : " + ticker)
-        # print("in get_option_statistics_for_ticker 1 : " + ticker)
+        # ticker = "^SPX" ticker = "^GSPC" print("="*100)
+        n_ = 6
+        if ticker in ["SPY", "QQQ", "IWM"]:
+            n_ = 2
+            nday = datetime.datetime.today().weekday()  # Monday = 0
+            if nday in [0, 2, 4]:
+                n_ = 1
+            elif nday in [1, 3, 6]:
+                n_ = 2
+            else:
+                n_ = 3
+        # print("nday=", n_, "ticker=", ticker)
         try:
             start_date_ = datetime.datetime.now().date()
-            end_date_ = (datetime.datetime.now() + datetime.timedelta(days=6)).date()
+            end_date_ = (datetime.datetime.now() + datetime.timedelta(days=n_)).date()
+            # print(start_date_, end_date_)
             options_ = self.client.get_option_chain(ticker, contract_type=self.client.Options.ContractType.ALL,
                                                     from_date=start_date_, to_date=end_date_)
         except Exception as ex:
             log_debug("Error 2345 in get_option_chain api options pull for : " + ticker + " = " + str(ex))
             return dic
-
-        # print("in get_option_statistics_for_ticker 2 : " + ticker)
-        print(options_.json())
-
-        dic = {'ticker': ticker, 'underlyingPrice': options_.json()['underlyingPrice']}
-        dic = self.get_option_strategy_lh_(options_=options_, dic=dic, option_type='call', l_=0.1, h_=0.9,
-                                           ticker=ticker)
-        dic = self.get_option_strategy_lh_(options_=options_, dic=dic, option_type='put', l_=0.1, h_=0.9, ticker=ticker)
-        dic = {'status': 'ok', 'option_data_ticker': dic}
-        # print(dic)
-        log_debug("End in get_option_statistics_for_ticker : " + ticker)
-        return dic
+        return {'status': 'ok', 'option_data_ticker': options_.json()}
 
     def get_prices(self, dic):
         # print(dic)
@@ -472,7 +546,7 @@ class TDAmeriTrade(BaseTDAmeriTrade):
         # print(pay_load)
         try:
             r = requests.get(url=url, params=pay_load).json()
-            print(r)
+            # print(r)
         except Exception as ex:
             print(ex)
         return {'data': r}
@@ -854,7 +928,8 @@ class TDAmeriTrade(BaseTDAmeriTrade):
         # print(f'3 workers slept in parallel for {total_slept_for:.2f} seconds')
         # print(f'total expected sleep time: {total_sleep_time:.2f} seconds')
 
-    # ----
+
+    # ------  SP Option streaming handlers ---
     async def nasdaq_order_book_handler(self, msg):
         print("="*50)
         print("nasdaq_order_book_handler")
@@ -936,6 +1011,21 @@ class TDAmeriTrade(BaseTDAmeriTrade):
         self.dic_share_prices = {}
 
     async def option_order_book_handler(self, msg):
+        print("="*50)
+        print("option_order_book_handler")
+        print("="*50)
+        print(msg)
+
+    async def level_one_option_handler(self, msg):
+        print("="*50)
+        print("level_one_option_handler")
+        print("="*50)
+        print(msg)
+
+    async def timesale_options(self, msg):
+        print("="*50)
+        print("timesale_options_subs")
+        print("="*50)
         print(msg)
 
     async def chart_equity_handler(self, msg):
@@ -962,27 +1052,43 @@ class TDAmeriTrade(BaseTDAmeriTrade):
             c = t_["CLOSE_PRICE"]
             v = round(t_["VOLUME"])
             dic[t_["key"]] = [time_, o, h, l, c, v]
-        # print("processed chart_equity_handler")
-        # print("-"*20)
-        # print(dic)
-        # print("="*50)
-
         try:
-            # print(json.dumps(dic, indent=4))
             response_ = {
                 'msg': dic,
                 'type': "data_received_chart_equity"
             }
-            # print(response_)
             channel_layer = get_channel_layer()
             await channel_layer.group_send(
                 'option1', {
                     'type': 'chat_message',
                     'text': json.dumps(response_)
                 })
+            await self.record_data_received_chart_equity(dic)
         except Exception as ex:
             pass
             # print(ex)
+
+    @database_sync_to_async
+    def record_data_received_chart_equity(self, dic):
+        for k in dic:
+            ll = dic[k]
+            try:
+                r = XBRLRealEquityPrices.objects.create(ticker=k, t=ll[0], o=ll[1], h=ll[2], l=ll[3], c=ll[4], v=ll[5])
+            except Exception as ex:
+                pass
+
+    def get_archived_data_from_db(self):
+        msg_ = {}
+        for q in XBRLRealEquityPrices.objects.all():
+            try:
+                if q.ticker not in msg_:
+                    msg_[q.ticker] = []
+                point_data = {'x': q.t, 'o': float(q.o), 'h': float(q.h), 'l': float(q.l), 'c': float(q.c)};
+                msg_[q.ticker].append(point_data)
+            except Exception as ex:
+                log_debug("DataPointError: " + str() + str(ex))
+        log_debug("get_archived_data_from_db 222")
+        return msg_
 
     async def level_one_equity_handler(self, msg):
         print("="*50)
@@ -991,49 +1097,50 @@ class TDAmeriTrade(BaseTDAmeriTrade):
         print(msg)
         print("="*50)
 
-    # async def read_stream(self, add_func, func, subs_func, tickers):
-    #     try:
-    #         stream_client = self.get_stream_client()
-    #     except Exception as ex:
-    #         print(ex)
-    #     # print("-"*50)
-    #     # print(add_func, func, subs_func, tickers)
-    #     # print("-1"*50)
-    #     try:
-    #         await stream_client.login()
-    #     except Exception as ex:
-    #         print("Error Login: "+str(ex))
-    #     await stream_client.quality_of_service(StreamClient.QOSLevel.EXPRESS)
-    #
-    #     # Always add handlers before subscribing because many streams start sending
-    #     # data immediately after success, and messages with no handlers are dropped.
-    #
-    #     log_debug("-4"*10)
-    #     log_debug("stream_client." + add_func + "("+func+")")
-    #     eval("stream_client." + add_func + "("+func+")")
-    #
-    #     print("await stream_client." + subs_func + "(['"+tickers+"'])")
-    #     await eval("stream_client." + subs_func + "(['"+tickers+"'])")
-    #     print("-41"*10)
-    #
-    #     while True:
-    #         await stream_client.handle_message()
-    #
-    # def activate_streaming(self, dic):
-    #     dic = eval(dic)
-    #     ticker_ = dic['ticker']
-    #     # print('-22222-')
-    #     # print(ticker_)
-    #     # print('-22222-')
-    #
-    #     asyncio.run(self.read_stream(add_func='add_nasdaq_book_handler',
-    #                                  func="self.nasdaq_order_book_handler",
-    #                                  subs_func="nasdaq_book_subs",
-    #                                  tickers=ticker_))
-
+    # ---
     def activate_several_stream(self, dic):
         services = eval(dic)
         asyncio.run(self.read_several_stream(services))
+
+    # -------------------------------------------------
+    def place_order(self, dic):
+        from tda.orders.common import Duration
+        print(dic)
+        print("="*50)
+        # a = orders.options.option_buy_to_open_market("TSLA_021122P840", 1)
+        ca = orders.options.bear_call_vertical_open("TSLA_021122C985", "TSLA_021122C990", 100, 1.3)
+        ca.set_duration(Duration.GOOD_TILL_CANCEL)
+        # ac.set_quantity(10)
+        print(ca.build())
+        print("-"*30)
+        cb = orders.options.bear_call_vertical_close("TSLA_021122C985", "TSLA_021122C990", 100, 0.8)
+        cb.set_duration(Duration.GOOD_TILL_CANCEL)
+        print(cb.build())
+
+        print("="*40)
+        pa = orders.options.bull_put_vertical_open("TSLA_021122P845", "TSLA_021122P850", 10, 1.1)
+        pa.set_duration(Duration.GOOD_TILL_CANCEL)
+        print(pa.build())
+        print("-"*30)
+        pb = orders.options.bull_put_vertical_close("TSLA_021122P845", "TSLA_021122P850", 10, 0.95)
+        pb.set_duration(Duration.GOOD_TILL_CANCEL)
+        print(pb.build())
+        # self.client.place_order(self.account_id, order_spec=a.build())
+
+        print("="*100)
+        cab = orders.common.first_triggers_second(ca, cb)
+        print(cab.build())
+        print("="*100)
+        pab = orders.common.first_triggers_second(pa, pb)
+        print(pab.build())
+        print("="*100)
+
+        return {'status': 'ok'}
+
+
+    def create_option_symbol(self, ticker):
+        symbol = ticker
+        return symbol
 
 
 class AcademyCityXBRL(object):
@@ -1236,20 +1343,31 @@ class AcademyCityXBRL(object):
         return statements
 
     # --
-    async def process_page(self, text):
+    async def process_page(self, obj, text, url, dic):
         print("process_page")
-        print(text)
+        print(obj.name)
+        # print(text)
+        print(url)
+        print(dic)
+        n = np.random.randn()
+        dic['url'+str(n)] = url
         asyncio.sleep(1)
-        return {"k1": "amosb"}
+        return {"k1": "amob"}
 
     def run_all_pages(self, dic):
+        print('='*50)
         dic = eval(dic)
-        print(dic["ticker"])
+        print(dic)
+        print('='*50)
 
-        urls = ["https://www.sec.gov/Archives/edgar/data/320193/000119312512444068/0001193125-12-444068-index.htm"]
+        urls = ['https://www.sec.gov/Archives/edgar/data/320193/000119312512444068/aapl-20120929.xml',
+                'https://www.sec.gov/Archives/edgar/data/320193/000119312513416534/aapl-20130928.xml']
 
         gaup = GetAllUrlsProcessed()
-        k = asyncio.run(gaup.process_all_pages(urls, func=self.process_page))
+        k = asyncio.run(gaup.process_all_pages(urls, func=self.process_page, dic=dic))
+        print('='*50)
+        print(dic)
+        print('='*50)
         print('k')
         print(k)
     # --
@@ -1262,6 +1380,7 @@ class AcademyCityXBRL(object):
         dataq = ""
         if is_update == "no" and company.financial_data:
             dic_company_info = company.financial_data
+            print(dic_company_info)
             if is_updateq == "no" and company.financial_dataq:
                 # print('dic_company_info q 2')
                 dataq = company.financial_dataq
@@ -1284,6 +1403,7 @@ class AcademyCityXBRL(object):
 
     def get_dic_company_info(self, company, type_="10-K"):
         dic_company_info = self.get_dic_company_info_(company, type_)
+        # print(dic_company_info)
         dic_data = dic_company_info['data']
         if len(dic_data) == 0:
             try:
@@ -1296,6 +1416,7 @@ class AcademyCityXBRL(object):
         if 'statements' not in dic_company_info:
             dic_company_info['statements'] = self.get_statements(company=company)
         dic_company_info = self.process_dic_company_info_(dic_company_info)
+        print(dic_company_info)
         return dic_company_info
 
     def get_dic_company_info_(self, company, type_="10-K"):
@@ -1383,16 +1504,19 @@ class AcademyCityXBRL(object):
     async def get_data_for_years_async(self, obj, txt, url, dic):
         dic_company_info = dic["dic_company_info"]
         dic_matching_accounts = dic["dic_matching_accounts"]
-        value = None
-        key = None
-        for y in dic_company_info["data"]:
-            if dic_company_info["data"][y]["href"] == url:
-                value = dic_company_info["data"][y]
-                key = y
-        doc_str = txt
-        xbrl_link = ''
-        soup = BeautifulSoup(doc_str, 'html.parser')
-        table_tag = soup.find('table', class_='tableFile', summary='Data Files')
+        try:
+            value = None
+            key = None
+            for y in dic_company_info["data"]:
+                if dic_company_info["data"][y]["href"] == url:
+                    value = dic_company_info["data"][y]
+                    key = y
+            doc_str = txt
+            xbrl_link = ''
+            soup = BeautifulSoup(doc_str, 'html.parser')
+            table_tag = soup.find('table', class_='tableFile', summary='Data Files')
+        except Exception as ex:
+            print("Error 22: " + str(ex))
         try:
             rows = table_tag.find_all('tr')
             for row in rows:
@@ -1403,19 +1527,18 @@ class AcademyCityXBRL(object):
                         # print(cells[3].text)
                         #
                         xbrl_link = cells[2].a['href']
-
             value['xbrl_link'] = 'https://www.sec.gov' + xbrl_link
             accession_number = xbrl_link.split('/')
-
             view_link = 'https://www.sec.gov/cgi-bin/viewer?action=view&cik='
             view_link += accession_number[4] + '&accession_number=' + accession_number[5] + '&xbrl_type=v#'
 
             r_link = "https://www.sec.gov/Archives/edgar/data/" + accession_number[4] + "/" + accession_number[5] + "/R"
             value['r_link'] = r_link
             value['view_link'] = view_link
-
         except Exception as ex:
-            return dic_data_year
+            # print("Error 67: " + str(ex))
+            return value
+
         xbrl_str = await obj.get_page(value['xbrl_link'])
         soup = BeautifulSoup(xbrl_str, 'lxml')
         value['dei'] = {}
@@ -1423,121 +1546,155 @@ class AcademyCityXBRL(object):
             name_ = tag.name.split(":")
             value['dei'][name_[1]] = tag.text
 
+        # print(str(key) + '-11'*20)
+        # print(str(key) + '-11'*20)
+        # print(str(key) + '-11'*20)
+        # print(str(key) + '-11'*20)
+        # print(str(key) + '-11'*20)
+        # print(str(key) + '-11'*20)
+        # print(value)
+        # print(key)
+        # # print(txt)
+        # print(str(key) + '-11'*20)
+        # print(str(key) + '-11'*20)
+        # print(str(key) + '-11'*20)
+        # print(str(key) + '-11'*20)
+        # print(str(key) + '-11'*20)
+        # print(str(key) + '-11'*20)
+
         documentperiodenddate = value['dei']['documentperiodenddate']
         entitycentralindexkey = value['dei']['entitycentralindexkey']
+        y_ = int(value['dei']['documentfiscalyearfocus'])
+        # For ticker ANTM there is a problem for year 2014 it shows documentfiscalyearfocus=2013 when it should be 2014
+        # I left that error, so I miss data for 2014
+        # y_ = int(str(documentperiodenddate).split("-")[0])
+        try:
+            s_cik = "NA"
+            flow_context_id = ""
+            for tag in soup.find_all(name=re.compile('enddate'), string=documentperiodenddate):
+                # print(tag.name)
+                try:
+                    context = tag.find_parent(re.compile('context'))
+                    context_name = context.name.split(":")
+                    if len(context_name) > 1:
+                        identifier = context.find(context_name[0] + ':identifier')
+                        segment = context.find(context_name[0] + ':segment')
+                        startdate = context.find(context_name[0] + ':startdate')
+                    else:
+                        identifier = context.find('identifier')
+                        segment = context.find('segment')
+                        startdate = context.find('startdate')
 
-        flow_context_id = ""
-        for tag in soup.find_all(name=re.compile('enddate'), string=documentperiodenddate):
-            # print(tag.name)
-            try:
+                    end_date = tag.text.split('-')
+                    start_date = startdate.text.split('-')
+                    start_date = start_date[0] + '-' + start_date[1]
+
+                    start_date_should = str((int(end_date[0]) - 1)) + '-' + end_date[1]
+                    start_date0_should = str((int(end_date[0]) - 2)) + '-12'
+                    if int(end_date[1]) > 10 or int(end_date[1]) < 3:
+                        start_date1_should = end_date[0] + '-01'
+                    else:
+                        start_date1_should = 0
+                    start_date2_should = str((int(end_date[0]) - 1)) + '-' + self.add_zero(str((int(end_date[1]) + 1)))
+                    start_date3_should = str((int(end_date[0]) - 1)) + '-' + self.add_zero(str((int(end_date[1]) - 1)))
+
+                    if (not segment) and (identifier.text == entitycentralindexkey) \
+                            and (
+                            start_date == start_date_should or start_date == start_date0_should or
+                            start_date == start_date1_should or start_date == start_date2_should or
+                            start_date == start_date3_should):
+                        # if int(y_) == 2014:
+                        #     print("-=3"*3)
+                        #     print(end_date, context['id'], start_date_should, start_date0_should, start_date1_should,start_date2_should,start_date3_should)
+                        #     print(context)
+                        flow_context_id = context['id']
+                    if flow_context_id == "":
+                        s_cik = dic_company_info['company_info']['cik']
+                        while len(s_cik) < 10:
+                            s_cik = "0" + s_cik
+                        if (not segment) and (identifier.text == s_cik) and (
+                                start_date == start_date_should or start_date == start_date0_should or
+                                start_date == start_date1_should or start_date == start_date2_should or
+                                start_date == start_date3_should
+                        ):
+                            flow_context_id = context['id']
+                    else:
+                        break
+
+                except Exception as ex:
+                    # print(ex)
+                    continue
+
+            instant_context_id = ""
+            for tag in soup.find_all(name=re.compile('instant'), string=documentperiodenddate):
                 context = tag.find_parent(re.compile('context'))
+
                 context_name = context.name.split(":")
+
                 if len(context_name) > 1:
                     identifier = context.find(context_name[0] + ':identifier')
                     segment = context.find(context_name[0] + ':segment')
-                    startdate = context.find(context_name[0] + ':startdate')
                 else:
                     identifier = context.find('identifier')
                     segment = context.find('segment')
-                    startdate = context.find('startdate')
+                if not segment and identifier.text == entitycentralindexkey:
+                    # print(context)
+                    instant_context_id = context['id']
 
-                end_date = tag.text.split('-')
-                start_date = startdate.text.split('-')
-                start_date = start_date[0] + '-' + start_date[1]
+                if instant_context_id == "":
+                    s_cik = dic_company_info['company_info']['cik']
+                    while len(s_cik) < 10:
+                        s_cik = "0" + s_cik
+                    if not segment and identifier.text == s_cik:
+                        # print(context)
+                        instant_context_id = context['id']
+        except Exception as ex:
+            return value
+        try:
+            matching_accounts = dic_matching_accounts[y_]["matching_accounts"]
+            accounts_ = dic_matching_accounts[y_]["accounts_"]
+            used_accounting_standards = dic_matching_accounts[y_]["used_accounting_standards"]
 
-                start_date_should = str((int(end_date[0]) - 1)) + '-' + end_date[1]
-                start_date0_should = str((int(end_date[0]) - 2)) + '-12'
-                if int(end_date[1]) > 10 or int(end_date[1]) < 3:
-                    start_date1_should = end_date[0] + '-01'
-                else:
-                    start_date1_should = 0
-                start_date2_should = str((int(end_date[0]) - 1)) + '-' + self.add_zero(str((int(end_date[1]) + 1)))
-                start_date3_should = str((int(end_date[0]) - 1)) + '-' + self.add_zero(str((int(end_date[1]) - 1)))
+            value['matching_accounts'] = matching_accounts
+            year_data = {}
 
-                if (not segment) and (identifier.text == entitycentralindexkey) \
-                        and (
-                        start_date == start_date_should or start_date == start_date0_should or
-                        start_date == start_date1_should or start_date == start_date2_should or
-                        start_date == start_date3_should):
-                    flow_context_id = context['id']
+            accounts_flow = {}
+            for k in accounts_['flow']:
+                accounts_flow[k[0:92]] = accounts_['flow'][k]
 
-            except Exception as ex:
-                # print(ex)
-                continue
+            accounts_instant = {}
+            for k in accounts_['instant']:
+                accounts_instant[k[0:92]] = accounts_['instant'][k]
 
-        for tag in soup.find_all(name=re.compile('instant'), string=documentperiodenddate):
-            context = tag.find_parent(re.compile('context'))
-
-            context_name = context.name.split(":")
-
-            if len(context_name) > 1:
-                identifier = context.find(context_name[0] + ':identifier')
-                segment = context.find(context_name[0] + ':segment')
-            else:
-                identifier = context.find('identifier')
-                segment = context.find('segment')
-            if not segment and identifier.text == entitycentralindexkey:
-                # print(context)
-                instant_context_id = context['id']
-
-        y_ = int(value['dei']['documentfiscalyearfocus'])
-
-        # if int(y_) == 2020:
-            # print("="*20)
-            # print('flow_context_id')
-            # print(flow_context_id)
-            # print('instant_context_id')
-            # print(instant_context_id)
-
-        matching_accounts = dic_matching_accounts[y_]["matching_accounts"]
-        accounts_ = dic_matching_accounts[y_]["accounts_"]
-        used_accounting_standards = dic_matching_accounts[y_]["used_accounting_standards"]
-
-        value['matching_accounts'] = matching_accounts
-        year_data = {}
-
-        accounts_flow = {}
-        for k in accounts_['flow']:
-            accounts_flow[k[0:92]] = accounts_['flow'][k]
-
-        accounts_instant = {}
-        for k in accounts_['instant']:
-            accounts_instant[k[0:92]] = accounts_['instant'][k]
-
-        for std in used_accounting_standards:
-            tag_list = soup.find_all(re.compile(std + ":"))
-            for tag in tag_list:
-                name_ = tag.name.split(":")
-                try:
-                    if name_[1][0:92] in accounts_instant and tag['contextref'] == instant_context_id:
-                        if accounts_instant[name_[1][0:92]][2] == std:
-                            order = accounts_instant[name_[1][0:92]][0]
-                            scale = accounts_instant[name_[1][0:92]][1]
-                            if scale == 1:
-                                year_data[order] = tag.text
-                            else:
-                                year_data[order] = int(round(float(tag.text))) / scale
-                    if name_[1][0:92] in accounts_flow and tag['contextref'] == flow_context_id:
-                        if accounts_flow[name_[1][0:92]][2] == std:
-                            order = accounts_flow[name_[1][0:92]][0]
-                            scale = accounts_flow[name_[1][0:92]][1]
-                            # if int(y_) == 2020:
-                            #     print("="*30)
-                            #     print(order, name_[1][0:92], scale, tag.text)
-
-                            if scale == 1:
-                                year_data[order] = tag.text
-                            else:
-                                year_data[order] = int(round(float(tag.text))) / scale
-
-                            # if int(y_) == 2020:
-                            #     print(year_data)
-                            #     print("="*30)
-
-                except Exception as ex:
-                    print(str(ex))
-        value['year_data'] = year_data
-        dic_company_info['data'][key] = value
+            for std in used_accounting_standards:
+                tag_list = soup.find_all(re.compile(std + ":"))
+                for tag in tag_list:
+                    name_ = tag.name.split(":")
+                    try:
+                        if instant_context_id != "":
+                            if name_[1][0:92] in accounts_instant and tag['contextref'] == instant_context_id:
+                                if accounts_instant[name_[1][0:92]][2] == std:
+                                    order = accounts_instant[name_[1][0:92]][0]
+                                    scale = accounts_instant[name_[1][0:92]][1]
+                                    if scale == 1:
+                                        year_data[order] = tag.text
+                                    else:
+                                        year_data[order] = int(round(float(tag.text))) / scale
+                        if name_[1][0:92] in accounts_flow:
+                            if tag['contextref'] == flow_context_id and accounts_flow[name_[1][0:92]][2] == std:
+                                order = accounts_flow[name_[1][0:92]][0]
+                                scale = accounts_flow[name_[1][0:92]][1]
+                                if scale == 1:
+                                    year_data[order] = tag.text
+                                else:
+                                    year_data[order] = int(round(float(tag.text))) / scale
+                    except Exception as ex:
+                        pass
+                        # print("Error: " + str(ex))
+            value['year_data'] = year_data
+            dic_company_info['data'][key] = value
+        except Exception as ex:
+            return value
         return value
 
     def get_matching_accounts_(self, dic_company_info, max_y):
@@ -1648,7 +1805,10 @@ class AcademyCityXBRL(object):
                     urls.append(dic_data['data'][key][m]['href'])
         max_y += 1
         dic_matching_accounts = self.get_matching_accounts_(dic_company_info, max_y)
-        dic_ = {"dic_data": dic_data, "dic_matching_accounts": dic_matching_accounts}
+        s_cik = str(company.cik)
+        while len(s_cik) < 10:
+            s_cik = "0" + s_cik
+        dic_ = {"dic_data": dic_data, "dic_matching_accounts": dic_matching_accounts, "cik": s_cik}
         # --
         gaup = GetAllUrlsProcessed()
         k = asyncio.run(gaup.process_all_pages(urls, func=self.get_data_for_one_year_q_async, dic=dic_))
@@ -1656,6 +1816,8 @@ class AcademyCityXBRL(object):
 
     async def get_data_for_one_year_q_async(self, obj, txt, url, dic):
         dic_data = dic["dic_data"]
+        s_cik = dic["cik"]
+        # print(s_cik)
         dic_matching_accounts = dic["dic_matching_accounts"]
         value = None
         key = None
@@ -1694,6 +1856,7 @@ class AcademyCityXBRL(object):
 
         # xbrl_resp = requests.get(value['xbrl_link'], headers=headers, timeout=30)
         # xbrl_str = xbrl_resp.text
+        # print(value['xbrl_link'])
         xbrl_str = await obj.get_page(value['xbrl_link'])
 
         soup = BeautifulSoup(xbrl_str, 'lxml')
@@ -1746,11 +1909,24 @@ class AcademyCityXBRL(object):
                         and (start_date == start_date_should or start_date == start_date0_should or
                              start_date == start_date1_should or start_date == start_date2_should):
                     flow_context_id = context['id']
+                if flow_context_id == "":
+                    if (not segment) and (identifier.text == s_cik) \
+                            and (start_date == start_date_should or start_date == start_date0_should or
+                                 start_date == start_date1_should or start_date == start_date2_should):
+                        flow_context_id = context['id']
 
             except Exception as ex:
                 # print(ex)
                 continue
 
+        # print('flow_context_id')
+        # print(flow_context_id)
+        # print('entitycentralindexkey')
+        # print(entitycentralindexkey)
+        # print('s_cik')
+        # print(s_cik)
+
+        instant_context_id = ""
         for tag in soup.find_all(name=re.compile('instant'), string=documentperiodenddate):
             context = tag.find_parent(re.compile('context'))
             context_name = context.name.split(":")
@@ -1763,6 +1939,10 @@ class AcademyCityXBRL(object):
             if not segment and identifier.text == entitycentralindexkey:
                 # print(context)
                 instant_context_id = context['id']
+                if instant_context_id == "":
+                    if not segment and identifier.text == s_cik:
+                        instant_context_id = context['id']
+        # print(instant_context_id)
 
         matching_accounts = dic_matching_accounts[key]["matching_accounts"]
         accounts_ = dic_matching_accounts[key]["accounts_"]
@@ -3678,20 +3858,37 @@ class AcademyCityXBRL(object):
 
     # general purpose functions for testing
     def test(self):
-        print('test')
-        text = "<us-gaap:IncomeLossFromContinuingOperationsBeforeIncomeTaxesMinorityInterestAndIncomeLossFromEquityMethodInvestments>a</us-gaap:IncomeLossFromContinuingOperationsBeforeIncomeTaxesMinorityInterestAndIncomeLossFromEquityMethodInvestments><td:k>b</td:k><td:k>c</td:k><td:k>d</td:k>"
-        soup = BeautifulSoup(text, 'lxml')
-        tag_list = soup.find_all(re.compile("us-gaap:"))
-        for tag in tag_list:
-            name_ = tag.name.split(":")
-            print(name_[1])
-        dic = {'status': 'ok'}
-        return dic
+        try:
+            today_ = datetime.datetime.today()
+            nday = today_.weekday()  # Monday = 0
+            h = today_.hour
+            m = today_.minute
+            log_debug(str(nday)+" : "+str(h)+" : "+str(m))
+
+            data = ()
+            ssql = " insert into corporatevaluation_XBRLRealEquityPricesArchive(ticker,t,o,h,l,c,v) "
+            ssql += "select ticker,t,o,h,l,c,v from corporatevaluation_XBRLRealEquityPrices"
+            # print(ssql)
+
+            count = SQL().exc_sql(ssql, data)
+            # print(count)
+            XBRLRealEquityPrices.truncate()
+
+        except Exception as ex:
+            print("Error200: "+str(ex))
+            pass
+        result = {'status': "ok"}
+        return result
 
     def test1(self):
-        for k in XBRLCountryYearData.objects.filter(year=2020).all():
-            print(k.cds)
-    #
+        XBRLRealEquityPrices.truncate()
+        result = {'status': "ok"}
+        return result
+
+    def test2(self):
+        XBRLRealEquityPricesArchive.truncate()
+        result = {'status': "ok"}
+        return result
 
 
 class FinancialAnalysis(object):

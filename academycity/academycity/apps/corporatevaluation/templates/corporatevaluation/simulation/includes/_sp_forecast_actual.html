@@ -8,10 +8,6 @@
 <!--<button onclick='send_message(event)'>send_message</button>-->
 <!--<button onclick='start_stream(event)'>Send message: start_stream</button>-->
 <hr/>
-<!--
-<button onclick="start()">Start</button><button onclick="stop()">Stop</button><br/>
-<button onclick="start_event_source()">---Start view---</button><button onclick="stop_view_for_event_source()">Stop_view</button>
--->
 
 <div id="result"></div>
 
@@ -68,87 +64,6 @@ function starta()
 function create_table_options_w01_strategya(s)
 {
   strategya.add_info_by_ticker(content=s, win_titles="Strategies");
-}
-
-</script>
-
-<!-- start_event_source() -->
-<script>
-function start_event_source()
-{
-    if(typeof(EventSource) !== "undefined") {
-        const evtSource = new EventSource("{% url 'corporatevaluation:sse' %}");
-        evtSource.onmessage = function(event) {
-
-        //alert(event.data)
-        var data = JSON.parse(event.data);
-            var n__=0
-            for(k in data)
-            {
-            var s = "<h1>" + data[k] + " n=" + n__ +"</h1>" ;
-            n__ += 1
-            document.getElementById("result").innerHTML = s
-            }
-
-        };
-
-    } else {
-      document.getElementById("result").innerHTML = "Sorry, your browser does not support server-sent events...";
-    }
-
-}
-</script>
-
-<!-- start() stop() -->
-<script>
-var source = undefined;
-function stop() {source.close();}
-
-function start()
-{
-    if(typeof(EventSource) !== "undefined") {
-      source = new EventSource("{% url 'corporatevaluation:stream' %}");
-      source.onmessage = function(event) {
-        //alert(event.data)
-        //alert(event.data)
-        var data = JSON.parse(event.data);
-        //alert(data)
-
-        var s=""
-        s+="<tr><td style='text-align:center'>Ticker</td><td style='text-align:center'>Date</td><td>H</td><td>M</td><td style='text-align:center'>Condor price</td>"
-        s+="<td style='text-align:center'>Options(<span id='time_now'></span>)</td>"
-        for (k in data)
-        {
-         var k_=data[k];
-         s+="<tr><td>"+k_["ticker"]+"</td><td>"+k_["date"]+"</td><td>"+k_["h"]+"</td><td>"+k_["m"]+"</td><td style='text-align:center'>"+k_["condor_price"]+"</td>"
-         var s_="<table><tr><th></th><th>Delta</th><th>Strike</th><th>Price</th></tr>"
-         var kcl_=k_["condor"]["call"]["low"];
-         s_+="<tr><td>Call 1</td><td>"+kcl_["delta"]+"</td><td>"+kcl_["strike"]+"</td><td>"+kcl_["price"]+"</td></tr>"
-         var kch_=k_["condor"]["call"]["high"];
-         s_+="<tr><td>Call 2</td><td>"+kch_["delta"]+"</td><td>"+kch_["strike"]+"</td><td>"+kch_["price"]+"</td></tr>"
-         var kpl_=k_["condor"]["put"]["low"];
-         s_+="<tr><td>Put 1</td><td>"+kpl_["delta"]+"</td><td>"+kpl_["strike"]+"</td><td>"+kpl_["price"]+"</td></tr>"
-         var kph_=k_["condor"]["put"]["high"];
-         s_+="<tr><td>Put 2</td><td>"+kph_["delta"]+"</td><td>"+kph_["strike"]+"</td><td>"+kph_["price"]+"</td></tr>"
-         s_+="</table>"
-         s+="<td>"+s_+"</td>"
-         s+="</tr>"
-        }
-        s = "<div class='data'><table>"+s+"</table></div>"
-        create_table_options_w01_strategy(s)
-      };
-    } else {
-      document.getElementById("result").innerHTML = "Sorry, your browser does not support server-sent events...";
-    }
-}
-</script>
-
-<!-- create_table_options_w01_strategy -->
-<script>
-function create_table_options_w01_strategy(s)
-{
-  strategy.set_info_by_ticker(content=s, win_titles="Strategies");
-  const d = new Date(); document.getElementById("time_now").innerHTML = d.toLocaleTimeString();
 }
 
 </script>
@@ -234,36 +149,14 @@ function search_today_or_tomorrow_announcements_function(event) {
 <script>
 function get_earning_forecast_sp500_view_main_detail(event)
 {
-  var e = event.target;
-  clean_marked_chosen_field(e)
-  ticker_ = e.innerHTML;
-  // alert(ticker_)
-  $.post('{% url "corporatevaluation:admin_setup" %}',
-      {
-        fun: "get_earning_forecast_sp500_view_main_detail",
-        ticker: ticker_,
-      },
-      function(data){
-         create_table_earning_forecast_sp500_view_main_detail(data, ticker_);
-      }
+  var e=event.target;clean_marked_chosen_field(e); var ticker_=e.innerHTML;
+  if (event.ctrlKey){Orders.set_orders_screen(ticker_); return;}
+  else if (event.altKey)
+  {$.post('{% url "corporatevaluation:admin_setup" %}',
+      {fun: "get_earning_forecast_sp500_view_main_detail",ticker: ticker_,},
+      function(data){create_table_earning_forecast_sp500_view_main_detail(data, ticker_);}
     );
-}
-</script>
-
-<!-- create_table_options_w01_bf_ -->
-<script>
-function get_row_bf_(num=1, nump=1, strikes, llc, llp, share_price=0)
-{
- share_price = two_decimal_points(share_price);
- var nl=num-1;var nr=num+1; var s = "";
- s += "<tr><td><span>"+strikes[nl]+"</span></td><td style='text-align: right;'><span>"+nump+"*"+two_decimal_points(llc[strikes[nl]])+"</span></td>"
- s += "<td><span>"+strikes[num]+"</span></td><td style='text-align: right;'><span>"+nump+"*"+two_decimal_points(llc[strikes[num]])+"</span></td>"
- s += "<td><span>"+strikes[nr]+"</span></td><td style='text-align: right;'><span>"+nump+"*"+two_decimal_points(llc[strikes[nr]])+"</span></td>"
- s += "<td style='text-align: right;'>"+share_price+"</td>"
- s += "<td><span>"+strikes[nl]+"</span></td><td style='text-align: right;'><span>"+nump+"*"+two_decimal_points(llp[strikes[nl]])+"</span></td>"
- s += "<td><span>"+strikes[num]+"</span></td><td style='text-align: right;'><span>"+nump+"*"+two_decimal_points(llp[strikes[num]])+"</span></td>"
- s += "<td><span>"+strikes[nr]+"</span></td><td style='text-align: right;'><span>"+nump+"*"+two_decimal_points(llp[strikes[nr]])+"</span></td></tr>"
- return s
+  }
 }
 </script>
 
@@ -299,6 +192,7 @@ function create_table_options_w01_bf(data, ticker)
 .inTheMoney{background-color:blue; color:white;}
 </style>
 
+<!-- create_table_options_w01_delta(data, ticker) -->
 <script>
 function create_table_options_w01_delta(data, ticker)
 {
@@ -342,12 +236,12 @@ function create_table_options_w01_delta(data, ticker)
     }
     s = "<table class='data'>" + s + "</table>";
     //alert(s)
-    delta.set_info_by_ticker(content=s, win_titles="Delta for ticker: "+ticker);
+    //delta.set_info_by_ticker(content=s, win_titles="Delta for ticker: "+ticker);
 }
 
 </script>
 
-<!--  options_w01_bf  -->
+<!-- options_w01_bf(event, ticker) -->
 <script>
 function options_w01_bf(event, ticker)
 {
@@ -476,8 +370,12 @@ function create_table_for_earning_forecast_sp500_view_main(data)
    sb += "<td>" + data[k]['cafp'] + "</td>";
 
    sb += "<td>" + data[k]['a'] + "</td>";
-   sb += "<td onclick='options_w01_bf(event, \""+k+"\")' fun='get_option_chain' style='cursor:pointer;'>" + data[k]['bfp'] + "</td>";
-   sb += "<td onclick='options_w01_delta(event, \""+k+"\")' fun='get_option_statistics_for_ticker' style='cursor:pointer;'>" + data[k]['stp'] + "</td>";
+   sb += "<td>" + data[k]['bfp'] + "</td>";
+   sb += "<td>" + data[k]['stp'] + "</td>";
+
+   //sb += "<td onclick='options_w01_bf(event, \""+k+"\")' fun='get_option_chain' style='cursor:pointer;'>" + data[k]['bfp'] + "</td>";
+   //sb += "<td onclick='options_w01_delta(event, \""+k+"\")' fun='get_option_statistics_for_ticker' style='cursor:pointer;'>" + data[k]['stp'] + "</td>";
+
    sb += "</tr>";
  }
  s = "<table>" + st + "<tbody id='all_tickers_data'>" + sb + "</tbody>" + "</table><br/><br/><br/><br/>"
@@ -554,23 +452,17 @@ function get_earning_forecast_sp500_view_main_title(tab_obj)
            ef.set_acWinStatEventListeners(ef);
            tab_obj.PopWinObjects['ef'] = ef;
            // --
-           delta = new EarningForecast(my_name_="delta", win_name_="delta", win_title_="Delta", user_id=vObj["user_id"], tab_obj_=tab_obj);
-           delta.set_win_frame_style("21", "345", "450", "60%", "35%", "white")
-           delta.set_title_colors("#fff", "#000080");
-           delta.set_acWinStatEventListeners(delta);
-           tab_obj.PopWinObjects['delta'] = delta;
+           //delta = new EarningForecast(my_name_="delta", win_name_="delta", win_title_="Delta", user_id=vObj["user_id"], tab_obj_=tab_obj);
+           //delta.set_win_frame_style("21", "345", "450", "60%", "35%", "white")
+           //delta.set_title_colors("#fff", "#000080");
+           //delta.set_acWinStatEventListeners(delta);
+           //tab_obj.PopWinObjects['delta'] = delta;
            // --
-           bf = new EarningForecast(my_name_="bf", win_name_="bf", win_title_="Butterfly", user_id=vObj["user_id"], tab_obj_=tab_obj);
-           bf.set_win_frame_style("22", "250", "900", "50%", "73%", "white")
-           bf.set_title_colors("#fff", "#00AFF0");
-           bf.set_acWinStatEventListeners(bf);
-           tab_obj.PopWinObjects['bf'] = bf;
-           // --
-           strategy = new EarningForecast(my_name_="strategy", win_name_="strategy", win_title_="Strategy", user_id=vObj["user_id"], tab_obj_=tab_obj);
-           strategy.set_win_frame_style("22", "00", "900", "2%", "20%", "white")
-           strategy.set_title_colors("#fff", "#00AFF0");
-           strategy.set_acWinStatEventListeners(strategy);
-           tab_obj.PopWinObjects['strategy'] = strategy;
+           //bf = new EarningForecast(my_name_="bf", win_name_="bf", win_title_="Butterfly", user_id=vObj["user_id"], tab_obj_=tab_obj);
+           //bf.set_win_frame_style("22", "250", "900", "50%", "73%", "white")
+           //bf.set_title_colors("#fff", "#00AFF0");
+           //bf.set_acWinStatEventListeners(bf);
+           //tab_obj.PopWinObjects['bf'] = bf;
            // --
            //strategya = new EarningForecast(my_name_="strategya", win_name_="strategya", win_title_="Strategya", user_id=vObj["user_id"], tab_obj_=tab_obj);
            //strategya.set_win_frame_style("22", "400", "900", "2%", "20%", "white")
@@ -578,25 +470,42 @@ function get_earning_forecast_sp500_view_main_title(tab_obj)
            //strategya.set_acWinStatEventListeners(strategya);
            //tab_obj.PopWinObjects['strategya'] = strategya;
            // --
+           Orders = new OrderStreamerWin(my_name_="Orders", win_name_="Orders", win_title_="Orders", user_id=vObj["user_id"],
+              tab_obj_=tab_obj, data_link='{% url "corporatevaluation:tdameritrade_setup_w_attribute" %}',
+              order_link='{% url "corporatevaluation:tdameritrade_setup_w_attribute" %}')
+           Orders.set_win_frame_style("22", "750", "1400", "10%", "20%", "white")
+           Orders.set_title_colors("#fff", "#00AFF0");
+           Orders.set_acWinStatEventListeners(Orders);
+           tab_obj.PopWinObjects['Orders'] = Orders;
 
     var tickers_ =  "SPY,IWM,QQQ,TSLA,PYPL,AMZN,BABA,FB"
 
     var funcs_to_activate_ = '['
-    //funcs_to_activate_ += '{"add_func": "add_nasdaq_book_handler", "func": "self.nasdaq_order_book_handler",'
-    //funcs_to_activate_ += '"subs_func": "nasdaq_book_subs", "tickers": "' + tickers_ +'"}'
-    //funcs_to_activate_ += ','
-
     funcs_to_activate_ += '{"add_func": "add_chart_equity_handler", "func": "self.chart_equity_handler",'
     funcs_to_activate_ += '"subs_func": "chart_equity_subs", "tickers": "' + tickers_ +'"}'
+
+    // it does not work
+    //funcs_to_activate_ += '{"add_func": "add_level_one_option_handler", "func": "self.level_one_option_handle",'
+    //funcs_to_activate_ += '"subs_func": "level_one_option_subs", "tickers": "' + tickers_ +'"}'
     //funcs_to_activate_ += ','
 
-    //funcs_to_activate_ = '[{"add_func": "add_options_book_handler", "func": "self.option_order_book_handler",'
+    // it does not give any data
+    //funcs_to_activate_ += '{"add_func": "add_options_book_handler", "func": "self.option_order_book_handler",'
     //funcs_to_activate_ += '"subs_func": "options_book_subs", "tickers": "' + tickers_ +'"}'
     //funcs_to_activate_ += ','
 
+    // it does not give any data
+    //funcs_to_activate_ += '{"add_func": "add_timesale_options_handler", "func": "self.timesale_options",'
+    //funcs_to_activate_ += '"subs_func": "timesale_options_subs", "tickers": "' + tickers_ +'"}'
+
+    // it does not give any data
+    //funcs_to_activate_ += ','
     //funcs_to_activate_ += '{"add_func": "add_level_one_equity_handler", "func": "self.level_one_equity_handler",'
     //funcs_to_activate_ += '"subs_func": "level_one_equity_subs", "tickers": "' + tickers_ +'"}'
 
+    //funcs_to_activate_ += ','
+    //funcs_to_activate_ += '{"add_func": "add_nasdaq_book_handler", "func": "self.nasdaq_order_book_handler",'
+    //funcs_to_activate_ += '"subs_func": "nasdaq_book_subs", "tickers": "' + tickers_ +'"}'
     funcs_to_activate_ += ']'
 
     //alert(funcs_to_activate_)
@@ -606,7 +515,7 @@ function get_earning_forecast_sp500_view_main_title(tab_obj)
               link_to_activate_obj_function = '{% url "corporatevaluation:activate_obj_function" %}',
               router="option", group="option1", tickers=tickers_, funcs_to_activate=funcs_to_activate_)
 
-           streamer.set_win_frame_style("22", "900", "860", "0.5%", "5%", "white")
+           streamer.set_win_frame_style("22", "850", "1200", "0.5%", "5%", "white")
            streamer.set_title_colors("#fff", "#00AFF0");
            streamer.set_acWinStatEventListeners(streamer);
            tab_obj.PopWinObjects['streamer'] = streamer;
@@ -833,9 +742,61 @@ function show_detailed_forecast_data(event)
 <!-- Streamer functions -->
 <!-- start_stream, end_streamer, open_streamer_win -->
 <script>
-function start_streamer(event){if(streamer.socket==null){streamer.getSocket()}; streamer.set_acWinStat('block');}
+function start_streamer(event){
+    try{
+        get_today_data_chart_equity();
+        streamer.set_acWinStat('block');
+        //streamer.getSocket();
+
+        // should delete the next two lines
+        // var msg = {'type': 'get_today_data_chart_equity'}
+        // streamer.send_msg(JSON.stringify(msg));
+    } catch(er) {alert(er)}
+}
+
 function end_streamer(event){streamer.socket.close(code="1000", reason="end session");}
 function open_streamer_win(event){streamer.set_acWinStat('block');}
+</script>
+
+<script>
+function get_today_data_chart_equity()
+{
+     $.post('{% url "corporatevaluation:tdameritrade_setup_w_attribute" %}',
+      {
+        fun: "get_archived_data_from_db",
+        attribute: "",
+        attribute_value: ""
+      },
+      function(msg)
+      {
+         for(k in msg){
+          //alert(k)
+          //alert(JSON.stringify(msg[k]))
+          for (i in msg[k])
+          {
+            try{
+                  d_ = msg[k][i]
+                  d_['x'] = d_['x'].valueOf();
+                  streamer.csm.objs[k].data.push(d_);
+               } catch (er) {
+                  alert(er);
+                  alert(JSON.stringify(d_))
+               }
+          }
+         };
+
+         for(k in streamer.csm.objs)
+         {
+          //alert(streamer.csm.objs[k].label)
+          //alert(JSON.stringify(streamer.csm.objs[k].data))
+
+           streamer.csm.objs[k].chart.config.data.datasets = [{label: streamer.csm.objs[k].label, data: streamer.csm.objs[k].data}];
+           streamer.csm.objs[k].chart.update();
+         }
+      }
+    );
+}
+
 </script>
 
 <!-- for testing-->
@@ -851,13 +812,17 @@ function start_stream(event)
 </script>
 
 <script>
+Orders_onmessage_callback = function (msg)
+{
+  alert("Orders_onmessage_callback")
+  alert(msg)
+}
+</script>
+
+<script>
 streamer_onmessage_callback = function (msg)
 {
-
-
+//alert("streamer_onmessage_callback")
+// alert(msg)
 }
-
-
-
-
 </script>

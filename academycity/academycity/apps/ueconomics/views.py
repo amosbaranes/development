@@ -7,7 +7,6 @@ def index(request):
     title = 'UBOS Export and Import'
     sources_ = Source.objects.all()
     return render(request, 'ueconomics/index_ajax.html', {'title': title, 'sources': sources_,})
-    # return render(request, 'home_djanjo.html', {})
 
 
 # To update database from excel

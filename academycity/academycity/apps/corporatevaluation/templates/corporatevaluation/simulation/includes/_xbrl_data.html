@@ -33,7 +33,7 @@ function get_select_accounts(year='2020', ticker='', type='1')
 
    var data = vObj["xbrl_data"][year]['matching_accounts']
    // onchange_account is in _sec file
-   var s = "<select onchange='onchange_account(event)'><option value='-1'>------------</option>"
+   var s = "<select onchange='onchange_account(event)' onfocus='onfocus_account(event)'><option value='-1'>------------</option>"
    for (var key in data){account_properties=get_account_properties(key);
      if(type=="-1"||account_properties[1]==type)
      {s+="<option value='"+key+"' ma='"+data[key][0].toLowerCase()+"'";

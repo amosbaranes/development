@@ -141,7 +141,6 @@ def get_option_chain(request):
 
 
 def create_arbitrage_on_symbol_option_chain(args):
-    # ('TEVA', 'CBOE', ci, ib_server, ib_port, file_path)
     time.sleep(1)
     print('------create_arbitrage_on_symbol_option_chain 1-----------')
     print(args[0])

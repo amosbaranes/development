@@ -415,17 +415,21 @@ function highlightAllMenuItems()
 </script>
 
 <script>
+
+function onfocus_account(event)
+{
+ var elm = event.target; vObj["xbrl_previous_account"] = elm.value
+}
+
     function onchange_account(event)
     {
       var elm = event.target
-      var previous = elm.getAttribute("previous")
       var elmp = elm.parentNode.parentNode
       var a = elmp.children[0].children[0]
       onclick_ = a.getAttribute("onclick")
       l = onclick_.split("'")
       l=l[1]
       l=l.split("_")
-
       $.post("{% url 'corporatevaluation:onchange_account' %}",
         {
           accounting_standard: l[1],
@@ -433,7 +437,8 @@ function highlightAllMenuItems()
           account_order: elm.value,
           ticker: vObj["ticker"],
           year: vObj["reporting_year"],
-          sic: vObj["sic_code"]
+          sic: vObj["sic_code"],
+          previous_account: vObj["xbrl_previous_account"]
         },
         function(data){
             if (data['status'] == "ok")

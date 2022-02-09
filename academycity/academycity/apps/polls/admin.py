@@ -1,7 +1,12 @@
 #-*- coding: utf-8 -*-
 from django.contrib import admin
 
-from .models import Choice, Poll
+from .models import Choice, Poll, ToDoForSamuel
+
+
+@admin.register(ToDoForSamuel)
+class ToDoForSamuelAdmin(admin.ModelAdmin):
+    list_display = ('id', 'task')
 
 
 class ChoiceInline(admin.TabularInline):

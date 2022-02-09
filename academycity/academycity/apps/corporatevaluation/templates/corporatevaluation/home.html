@@ -136,9 +136,8 @@ data {
         <a href="/" >
             <img src="{{ institution_obj.logo_image.url }}" width="25px" height="36px" alt="HOME">
         </a>
-        <span>Financial Statements, Corporate Valuation & Options Trading</span>
+        <span>Financial Statements, Corporate Valuation & Options Trading </span><span id="main_page_time"></span>
     </div>
-
 
     <!-- Location for tabs.  The management tabs has to be entered manually  -->
     <div id="tab_titles" class="tab">
@@ -168,7 +167,7 @@ data {
             <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon@0.2.1"></script>
             <script src="{% static 'js/chartjs/chartjs-chart-financial.js' %}" crossorigin="anonymous"></script>
 
-            <script src="{% static 'js/basic_pop_windows_v33.js' %}" crossorigin="anonymous"></script>
+            <script src="{% static 'js/basic_pop_windows_v69.js' %}" crossorigin="anonymous"></script>
             <script>var ef = '';</script>
         {% endif %}
 
@@ -189,7 +188,8 @@ tabs_m="valuationsetup:{% trans "Setup" %};pull_screen,valuationadmin:{% trans "
 tabs_options = "sp_forecast_actual:{% trans "S&P500" %};local"
 accounts_structure="{'11990': {'star_other': [11100, 11800], 'total':0}, '12990': {'star_other': [12500, 12900], 'total':0}, '13990': {'star_other': [13100, 13200], 'total':0},'14990': {'star_other': [14100, 14200], 'total':0},'15390': {'star_other': [15000, 15350], 'total':0}}"
 accounting_equality="
-        {'12998': {'1': {'account': '11990', 'data': 0}, '2': {'account': '12990', 'data': 0}, '3': {'account': '12999', 'data': 0}},
+        {'14145': {'1': {'account': '14142', 'data': 0}, '2': {'account': '14144', 'data': 0}, '3': {'account': '14145', 'data': 0}},
+         '12998': {'1': {'account': '11990', 'data': 0}, '2': {'account': '12990', 'data': 0}, '3': {'account': '12999', 'data': 0}},
          '12999': {'1': {'account': '14999', 'data': 0}, '2': {'account': '15990', 'data': 0}, '3': {'account': '12999', 'data': 0}},
          '14999': {'1': {'account': '13990', 'data': 0}, '2': {'account': '14990', 'data': 0}, '3': {'account': '14999', 'data': 0}},
          '012999': {'1': {'account': '14999', 'data': 0}, '2': {'account': '15990', 'data': 0}, '3': {'account': '12999', 'data': 0}},
@@ -263,7 +263,18 @@ function get_reporting_years_q()
 {var cd = vObj["xbrl_dataq"];if(Object.keys(cd).length==0){return -1};var from_year=2012;var to_year=new Date().getFullYear();ys="";zn=0;zz="";for(let y in cd){for(let z in cd[y]){try {z_=cd[y][z]['dei']['documentfiscalyearfocus'];if(zn!=0){zz=", "};ys+=zz+z_;zn+=1;} catch (err){}}};eval('z_max=Math.max('+ys+')');eval('z_min=Math.min('+ys+')');from_year=Math.max(z_min,from_year);to_year=z_max+1;return [from_year, to_year];}
 
 // need to fix it to pull balance sheet accounts
-function get_account_value_tq(y=2020, account="20800"){var lq=1*vObj["last_quarter_of_data"];var ly=1*vObj["last_year_of_data"];if(lq==-1){return -1;} else {var v=get_account_value(y=y,account=account,q="");if(lq!=-1){for(q=1;q<=lq;q++){var vq=1*get_account_value(y=ly+1,account=account,q=q);var vq1=1*get_account_value(y=ly,account=account,q=q);v+=vq-vq1}}};return Math.round(100*v)/100}
+function get_account_value_tq(y=2020, account="20800")
+{var lq=1*vObj["last_quarter_of_data"];
+  var ly=1*vObj["last_year_of_data"];
+  if(lq==-1){return -1;} else {
+    var v=get_account_value(y=y,account=account,q="");
+ //if (account=="20850" & y == "2020") {alert(v + "  ::  " + y + ": " + lq + " : " + ly); }
+    if(lq!=-1)
+    {for(q=1;q<=lq;q++){var vq=1*get_account_value(y=ly+1,account=account,q=q);
+    var vq1=1*get_account_value(y=ly,account=account,q=q);v+=vq-vq1}}
+    };
+  return Math.round(100*v)/100;
+}
 </script>
 
 <!-- PARAMETERS IN vObj -->
@@ -330,6 +341,9 @@ vObj["short_number_of_years"] = 5;
 // --
 vObj["last_year_of_data"] = -1;
 vObj["last_quarter_of_data"] = -1;
+//--
+vObj["xbrl_previous_account"] = "-1";
+vObj["ids_for_timer"] = ["main_page_time", "orders_timer"]
 //--
 
 set_framework()
@@ -555,6 +569,7 @@ function SimManager(valuation_id)
       this.TabObjects["inputs"].tabTitle.dispatchEvent(event);
     } catch (err) {alert(err)}
     this.vObj = new ValuationObject(this);
+    startTime();
 }
 
 SimManager.prototype.titleWasClicked = function() {
@@ -658,6 +673,15 @@ function sleep(ms) {
 function sigmoid(t) {
     return 1/(1+Math.pow(Math.E, -t));
 }
+
+// == Timer ==
+function startTime() {const today=new Date();let h=today.getHours();let m=today.getMinutes();
+  let s=today.getSeconds();m=checkTime(m);s=checkTime(s);
+  for(var i in vObj["ids_for_timer"]){
+        try{document.getElementById(vObj["ids_for_timer"][i]).innerHTML= h+":"+m+":"+s} catch(er){}
+        };setTimeout(startTime, 1000);
+}
+function checkTime(i) {if (i < 10) {i = "0" + i}; return i;}
 
 // ------------------------------------------------
 sm = new SimManager(valuation_id=0)

@@ -74,7 +74,7 @@ class BaseTDAmeriTrade(object):
         except Exception as ex:
             pass
             # print("Error Login: "+str(ex))
-
+        # print(services)
         for s_ in services:
             try:
                 # print(s_)
@@ -86,20 +86,12 @@ class BaseTDAmeriTrade(object):
                 eval("stream_client." + add_func + "("+func+")")
                 # print("Running:  await stream_client." + subs_func + "(['"+tickers+"'])")
                 await eval("stream_client." + subs_func + "(['"+tickers+"'])")
+                # print("-"*10)
             except Exception as ex:
-                print(str(ex))
+                pass
+                # print(str(ex))
 
-        # print("Start streaming")
-        n_ = 2
-        i = 0
-        d = datetime.datetime.now()
-        date_string_start = str(d.year)+"-"+self.add_zero(str(d.month))+"-" + self.add_zero(str(d.day))+" 16:30:00"
-        date_string_end = str(d.year)+"-"+self.add_zero(str(d.month))+"-" + self.add_zero(str(d.day))+" 23:00:00"
-        # print(datetime.datetime.fromisoformat(date_string_start), datetime.datetime.fromisoformat(date_string_end))
-
-        d1 = datetime.datetime.now()
         # while datetime.datetime.fromisoformat(date_string_start) < d < datetime.datetime.fromisoformat(date_string_end):
         while True:
             await stream_client.handle_message()
             await asyncio.sleep(6)
-            d = datetime.datetime.now()

@@ -128,6 +128,12 @@ function set_cost_of_debt()
   document.getElementById("cofd_ebit").innerHTML=toCommas(ve);
   var vi=get_account_value_tq(y=vObj["valuation_year"], account="20850",0);
 
+//alert('vObj["valuation_year"]')
+//alert(vObj["valuation_year"])
+//alert('vObj["last_year_of_data"]')
+//alert(vObj["last_year_of_data"])
+  //alert(vi)
+
   document.getElementById("cofd_interest_expense").innerHTML=toCommas(vi)
   var icr_=ve/vi;if(icr_<=-100000.0){icr_=-1000.0};if(icr_>=100000.0){icr_ = 1000.0}
   if(vi < 1)

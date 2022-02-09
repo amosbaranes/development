@@ -8,7 +8,7 @@ from django.conf import settings
 from django.http import HttpResponse
 from django.template.loader import render_to_string
 from django.contrib.admin.views.decorators import staff_member_required
-# import weasyprint
+import weasyprint
 from .models import Order
 
 
@@ -17,8 +17,8 @@ def admin_order_pdf(request, order_id):
     html = render_to_string('orders/order/pdf.html', {'order': order})
     response = HttpResponse(content_type='application/pdf')
     response['Content-Disposition'] = 'filename="order_{}.pdf"'.format(order.id)
-    # weasyprint.HTML(string=html).write_pdf(response,
-    #                                        stylesheets=[weasyprint.CSS(settings.STATIC_ROOT + '/css/shop_pdf.css')])
+    weasyprint.HTML(string=html).write_pdf(response,
+                                           stylesheets=[weasyprint.CSS(settings.STATIC_ROOT + '/css/shop_pdf.css')])
     return response
 
 

@@ -19,7 +19,8 @@ from .models import (RBOIC, CountryRegion, CountryRating, Country, GlobalIndustr
                      XBRLCompanyInfo, CompanyInfo,
                      XBRLCountryYearData, XBRLSPStatistics,
                      XBRLCountry, XBRLYearsCompanyOperations, XBRLCountriesOfOperations,
-                     XBRLRegion, XBRLRegionYearData, XBRLRegionsOfOperations, XBRLIndustryBetasOfOperations)
+                     XBRLRegion, XBRLRegionYearData, XBRLRegionsOfOperations, XBRLIndustryBetasOfOperations,
+                     XBRLRealEquityPrices)
 # --
 
 from ..webcompanies.WebCompanies import WebSiteCompany
@@ -749,14 +750,21 @@ def activate_obj_function(request):
         return JsonResponse({'status': 'ko'})
 
 
+def truncate_table(request):
+    try:
+        attribute_ = request.POST.get('attribute')
+        eval(attribute_+".truncate()")
+        dic = {'status': 'ok'}
+    except Exception as ex:
+        dic = {'status': 'ko'}
+    return dic
+
+
 def admin_setup_attribute(request):
     try:
         fun_ = request.POST.get('fun')
         attribute_ = request.POST.get('attribute')
         attribute_value_ = request.POST.get('attribute_value')
-        # print(fun_)
-        # print(attribute_)
-        # print(attribute_value_)
         try:
             # print('AcademyCityXBRL().' + fun_ + '('+attribute_+'="'+attribute_value_+'")')
             dic = eval('AcademyCityXBRL().' + fun_ + '('+attribute_+'="'+attribute_value_+'")')
@@ -1212,32 +1220,25 @@ def get_matching_accounts(request):
 
 
 def onchange_account(request):
-    # print('-1'*20)
     accounting_standard_ = request.POST.get('accounting_standard')
     match_account_ = request.POST.get('match_account')
     account_order = request.POST.get('account_order')
     ticker = request.POST.get('ticker')
     year_ = request.POST.get('year')
     sic_ = request.POST.get('sic')
+    previous_account = request.POST.get('previous_account')
     # print(ticker, year_, " sic_=", sic_, " account_order=", account_order, " match_account_=", match_account_, accounting_standard_)
-    # print('-2'*20)
 
     company_ = XBRLCompanyInfo.objects.get(ticker=ticker)
-    # print(company_)
-    # print('-13'*20)
-
-    # print('account_order')
-    # print(account_order)
-    if account_order != "-1":
-        account_ = XBRLValuationAccounts.objects.get(order=account_order)
-        try:
+    try:
+        if previous_account != "-1":
             account_to_delete = XBRLValuationAccountsMatch.objects.get(year=year_, company=company_,
                                                                        match_account=match_account_,
                                                                        accounting_standard=accounting_standard_)
             account_to_delete.delete()
-        except Exception as ex:
-            pass
-            # print("error 101: " + str(ex))
+    except Exception as ex:
+        pass
+        # print("error 101: " + str(ex))
 
     # print("request.session['cv_statements']")
     # print(request.session['cv_statements'])
@@ -1245,13 +1246,10 @@ def onchange_account(request):
     try:
         # print('-22'*10)
         if account_order != "-1":
+            account_ = XBRLValuationAccounts.objects.get(order=account_order)
             i, created = XBRLValuationAccountsMatch.objects.get_or_create(year=year_, company=company_, account=account_,
                                                                           match_account=match_account_,
                                                                           accounting_standard=accounting_standard_)
-        # print('-21'*10)
-        # print(i, created)
-        # print('-23'*10)
-
         acx = AcademyCityXBRL()
         matching_accounts, accounts, used_accounting_standards = \
             acx.get_matching_accounts(ticker=ticker, year=int(year_), sic=sic_,
@@ -1265,10 +1263,9 @@ def onchange_account(request):
         return JsonResponse(dic)
 
     except Exception as ex:
-        print("error 102: " + str(ex))
+        # print("error 102: " + str(ex))
         dic = {'status': 'not ok'}
 
-    # print('-2'*20)
     return JsonResponse(dic)
 
 

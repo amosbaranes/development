@@ -1271,6 +1271,10 @@ class XBRLRealEquityPrices(TruncateTableMixin, models.Model):
     c = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     v = models.PositiveBigIntegerField(default=0)
 
+    def __str__(self):
+        return self.ticker
+
+
 
 class XBRLRealEquityPricesArchive(TruncateTableMixin, models.Model):
     class Meta:

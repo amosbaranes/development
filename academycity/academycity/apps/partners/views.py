@@ -20,6 +20,7 @@ from ..webcompanies.WebCompanies import WebSiteCompany
 
 
 def home(request):
+    # return render(request, 'partners/home_test.html', {})
     # print('partners home0: ')
     # log_debug('partners home0: ')
     host = request.META["HTTP_HOST"]

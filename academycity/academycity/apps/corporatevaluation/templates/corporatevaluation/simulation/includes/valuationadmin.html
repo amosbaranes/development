@@ -1,55 +1,113 @@
 {% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
 <div id="valuationadmin" class="tabcontent">
-    <table>
-        <tr><td>
-            <label for="myCheck">Update Data For Companies:</label>
-            <input type="checkbox" id="update_data_for_companies" onclick="update_data_for_companies()">
-        </td></tr>
-        <tr><td>
-            <label for="myCheck">Update Quarterly Data:</label>
-            <input type="checkbox" id="update_data_for_companiesq" onclick="update_data_for_companiesq(event)">
-        </td></tr>
-    </table><br/>
-    <hr/>
-    <h4>Fill cube data</h4>
+<!--    Accounting -->
     <table>
         <tr>
-            <td onclick="analysis_setup_attribute(event)">
-                <button fun="update_chart_of_accounts" style="width: 50px;">CofA</button>
-                <button fun="update_companies" style="width: 50px;">Com</button>
-                <button fun="update_time" style="width: 50px;">Time</button>
-                <button fun="update_fact_table" style="width: 50px;">Fact</button>
-                <button fun="get_data_for_ticker" style="width: 50px;">Pivot</button>
-            </td><td>
-                <input id="bi_attribute_name" type="text" value="ticker" size="4" placeholder="attribute name"/>
-                <input id="bi_attribute_value" type="text" value="AAPL" size="4" placeholder="attribute value"/>
-            </td>
-        </tr>
-    </table>
-    <div id="result_message"></div><br/>
-
-    <hr/>
-    <h4>TDAmeriTrade</h4>
-    <table>
-        <tbody obj="TDAmeriTrade" attributes_id="tdameritrade_attributes" message_id="result_message_tdameritrade">
-        <tr id="buttons" onclick="activate_obj_function(event)">
-            <td><button fun="get_prices" style="width: 60px;">hdata</button>
-                <button fun="get_quote" style="width: 60px;">quote</button>
-                <button fun="get_quotes" style="width: 60px;">quotes</button>
-                <button fun="run_all_pages" style="width: 110px;">run_all_pages</button>
-                <button fun="run_stream_options_data" style="width: 65px;">workers</button>
-                <button fun="activate_streaming" style="width: 110px;">Option Stream</button>
-            </td>
-        </tr>
-        <tr id="tdameritrade_attributes">
             <td>
-                <input type="text" value="ticker" size="4" placeholder="name"/>
-                <input type="text" value="AAPL" size="4" placeholder="value"/>
+                <table>
+                    <tr><td>
+                        <label for="myCheck">Update Data For Companies:</label>
+                        <input type="checkbox" id="update_data_for_companies" onclick="update_data_for_companies()">
+                    </td></tr>
+                    <tr><td>
+                        <label for="myCheck">Update Quarterly Data:</label>
+                        <input type="checkbox" id="update_data_for_companiesq" onclick="update_data_for_companiesq(event)">
+                    </td></tr>
+                </table><br/>
+            </td>
+            <td>
+                <h4>Fill cube data</h4>
+                <table>
+                    <tr>
+                        <td onclick="analysis_setup_attribute(event)">
+                            <button fun="update_chart_of_accounts" style="width: 50px;">CofA</button>
+                            <button fun="update_companies" style="width: 50px;">Com</button>
+                            <button fun="update_time" style="width: 50px;">Time</button>
+                            <button fun="update_fact_table" style="width: 50px;">Fact</button>
+                            <button fun="get_data_for_ticker" style="width: 50px;">Pivot</button>
+                        </td><td>
+                            <input id="bi_attribute_name" type="text" value="ticker" size="4" placeholder="attribute name"/>
+                            <input id="bi_attribute_value" type="text" value="AAPL" size="4" placeholder="attribute value"/>
+                        </td>
+                    </tr>
+                </table>
+                <div id="result_message"></div>
             </td>
         </tr>
-        </tbody>
+
     </table>
-    <div id="result_message_tdameritrade"></div><br/>
+    <hr/>
+    <table>
+        <tr>
+            <td>
+                <h4>TDAmeriTrade</h4>
+                <table>
+                    <tbody obj="TDAmeriTrade" attributes_id="tdameritrade_attributes" message_id="result_message_tdameritrade">
+                    <tr id="buttons" onclick="activate_obj_function(event)">
+                        <td><button fun="get_prices" style="width: 60px;">hdata</button>
+                            <button fun="get_quote" style="width: 60px;">quote</button>
+                            <button fun="get_quotes" style="width: 60px;">quotes</button>
+                            <button fun="run_stream_options_data" style="width: 65px;">workers</button>
+                            <button fun="activate_streaming" style="width: 110px;">Option Stream</button>
+                            <button fun="place_order" style="width: 160px;">place_order</button>
+                        </td>
+                    </tr>
+                    <tr id="tdameritrade_attributes">
+                        <td>
+                            <input type="text" value="ticker" size="4" placeholder="name"/>
+                            <input type="text" value="AAPL" size="4" placeholder="value"/>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+                <div id="result_message_tdameritrade"></div><br/>
+            </td>
+            <td>
+                <h4>Option Chain</h4>
+                <table>
+                    <tr>
+                        <td>
+                            <button onclick="tdameritrade_setup_w_attribute(event)" fun="get_complete_option_chain" style="width: 250px;">
+                                get_option_chain
+                            </button><br/>
+                            <input id="attribute_name_option_chain" type="text" value="ticker" size="4" placeholder="Enter attribute name"/>
+                            <input id="attribute_value_option_chain" type="text" value="AMZN" size="4" placeholder="Enter value"/>
+                        </td>
+                    </tr>
+                </table>
+                <div id="result_message_option_chain"></div>
+            </td>
+            <td>
+                <h4>Streamed Stock Prices</h4>
+                <table>
+                    <tr>
+                        <td>
+                            <button onclick="admin_setup(event)" fun="test" style="width: 250px;">MovePricesToArchive(test)</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Truncate: <button onclick="admin_setup(event)" fun="test1" style="width: 110px;">Prices</button>
+                            <button onclick="admin_setup(event)" fun="test2" style="width: 110px;">PricesArchive</button><br/>
+
+                            <button onclick="admin_setup_truncate(event)" fun="truncate_table" attribute="m" attribute_value="5"
+                                    style="width: 122px;">Truncate Table</button>
+                            <input id="table_name" type="text" value="" size="20" placeholder="name" aria-placeholder="Enter table name"/>
+                        </td>
+                    </tr>
+
+                    <!--  in calculation tab
+                    <tr>
+                        <td>
+                            <button onclick="get_risk_premium()" style="width: 250px;">Get Risk Premium</button>
+                        </td>
+                    </tr>
+                     -->
+                </table>
+            </td>
+        </tr>
+    </table>
+
     <hr/>
     <h4>AcademyCityXBRL</h4>
     <table>
@@ -70,8 +128,8 @@
         </tbody>
     </table>
     <div id="result_message_academycityxbrl"></div><br/>
-    <hr/>
 
+    <hr/>
     <h3>Stage 2</h3>
     <table>
         <tr>
@@ -107,33 +165,8 @@
             </td>
         </tr>
     </table>
-    <h3>Resulte</h3>
+    <h4>Resulte</h4>
     <div id="result_message_options"></div><br/>
-    <hr/>
-
-    <table>
-        <tr>
-            <td>
-                <button onclick="tdameritrade_setup_w_attribute(event)" fun="get_option_chain" style="width: 250px;">
-                    get_option_chain
-                </button>
-            </td>
-        </tr>
-    </table>
-    <hr/>
-    <table>
-        <tr>
-            <td>
-                <button onclick="admin_setup(event)" fun="test" style="width: 250px;">test</button>
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <!--  in calculation tab -->
-                <button onclick="get_risk_premium()" style="width: 250px;">Get Risk Premium</button>
-            </td>
-        </tr>
-    </table>
     <hr/>
     <table>
         <tr>
@@ -148,7 +181,9 @@
             </td>
         </tr>
     </table>
+
     <hr/>
+    <h5>S&P Functions</h5>
     <table>
         <tr>
             <td>
@@ -164,6 +199,13 @@
                 </button>
             </td>
         </tr>
+<!--
+        <tr>
+            <td>
+                <button onclick="admin_setup(event)" fun="test1" style="width: 250px;">test1</button>
+            </td>
+        </tr>
+-->
 <!--  Get data for s&p500 forcast/actual
         <tr>
             <td>
@@ -187,13 +229,8 @@
             </td>
         </tr>
 -->
-<!--
-        <tr>
-            <td>
-                <button onclick="admin_setup(event)" fun="test1" style="width: 250px;">test1</button>
-            </td>
-        </tr>
--->
+
+
     </table>
 
     <hr/>
@@ -239,6 +276,7 @@
             </td>
         </tr>
     </table>
+
 <!--
         <tr>
             <td>
@@ -287,11 +325,11 @@ function update_data_for_companiesq() {
 function tdameritrade_setup_w_attribute(event)
 {
  e = event.target; fun_ = e.getAttribute("fun");
- attribute_ = "";
- attribute_value_ = "";
+ var attribute_ = document.getElementById("attribute_name_option_chain").value;
+ attribute_value_ = document.getElementById("attribute_value_option_chain").value;
  //var ss = prompt("are you sure you want to run function: " + fun_ + "\nType Yes to run", 'No')
  //if(ss == '' || ss == 'No') { return;}
- message_div = document.getElementById("result_message")
+ message_div = document.getElementById("result_message_option_chain")
  message_div.innerHTML = 'In process .. '
  $.post('{% url "corporatevaluation:tdameritrade_setup_w_attribute" %}',
       {
@@ -422,6 +460,33 @@ function activate_obj_function(event)
 }
 </script>
 
+<!-- admin_setup_truncate(event) -->
+<script>
+function admin_setup_truncate(event)
+{
+ var e=event.target;var fun_=e.getAttribute("fun");
+ message_div=document.getElementById("result_message");message_div.innerHTML='In process .. '
+ try{
+      var attribute_name_=document.getElementById("table_name").value;
+      var attribute_value_ = "";
+      alert(attribute_name_)
+      alert(fun_)
+
+      $.post('{% url "corporatevaluation:admin_setup_attribute" %}',
+          {
+            fun: fun_,
+            attribute: attribute_name_,
+            attribute_value: attribute_value_
+          },
+          function(data){
+              message_div.innerHTML='Process done with status: '+data['status']
+          }
+        );
+ } catch(er){}
+}
+</script>
+
+
 <!-- admin_setup_attribute -->
 <script>
 function admin_setup_attribute(event)
@@ -447,6 +512,38 @@ function admin_setup_attribute(event)
         fun: fun_,
         attribute: attribute_,
         attribute_value: attribute_value_
+      },
+      function(data){
+        for (k in data)
+        {
+          if (k == 'status')
+           {
+            message_div.innerHTML = 'Process done with status: ' + data['status']
+           }
+           else
+           {
+                // alert(k + " : " + data[k])
+                vObj[k] = data[k];
+                // alert(vObj[k])
+           }
+        }
+      }
+    );
+}
+</script>
+
+
+<script>
+function truncate_table(event)
+{
+
+alert(1111)
+ var e = event.target; table_ = e.innerHTML;
+ var message_div = document.getElementById("result_message"); message_div.innerHTML = 'In process .. '
+
+ $.post('{% url "corporatevaluation:admin_setup_attribute" %}',
+      {
+        table: fun_,
       },
       function(data){
         for (k in data)

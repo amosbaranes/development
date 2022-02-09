@@ -66,14 +66,24 @@ class OptionsConsumer(AsyncConsumer):
             except Exception as ex:
                 pass
 
+            # if type == "get_today_data_chart_equity":
+            #     msg_ = await self.get_archived_data_from_db()
+            #     response_ = {
+            #         'msg': msg_,
+            #         'type': "get_today_data_chart_equity",
+            #     }
+            #     await self.channel_layer.group_send(
+            #         self.chat_room,
+            #         {
+            #             'type': 'chat_message',
+            #             'text': json.dumps(response_)
+            #         })
+
             if type == "start_stream":
                 for n in range(3):
                     msg = "   from start_stream: : " + str(n)
                     await self.send_stream(msg, n)
-            # else:
-                # if type == "data_received_chart_equity":
-                #     await self.record_data_received_chart_equity(msg)
-
+            else:
                 response_ = {
                     'msg': msg,
                     'ticker': ticker,
@@ -90,6 +100,8 @@ class OptionsConsumer(AsyncConsumer):
                         'type': 'chat_message',
                         'text': json.dumps(response_)
                     })
+                # if type == "data_received_chart_equity":
+                #     await self.record_data_received_chart_equity(msg)
 
     async def send_stream(self, msg, n):
         # await asyncio.sleep(n)
@@ -115,8 +127,8 @@ class OptionsConsumer(AsyncConsumer):
         type_ = json.loads(event['text'])['type']
         msg_ = json.loads(event['text'])['msg']
 
-        if type_ == "data_received_chart_equity":
-            await self.record_data_received_chart_equity(msg_)
+        # if type_ == "data_received_chart_equity":
+        #     await self.record_data_received_chart_equity(msg_)
 
         # if (self.channel_name != sender_channel_name) or (type == "chat_message"):
         await self.send({
@@ -137,19 +149,28 @@ class OptionsConsumer(AsyncConsumer):
             self.channel_name
         )
 
-    @database_sync_to_async
-    def record_data_received_chart_equity(self, msg):
-        nday = datetime.today().weekday()  # Monday = 0
-        h = datetime.today().hour
-        m = datetime.today().minute
-        # print(h)
-        # print(nday)
-        if nday < 6 and 23 >= h >= 16 and m >= 30:
-            for k in msg:
-                ll = msg[k]
-                log_debug("before data update for " + k)
-                XBRLRealEquityPrices.objects.create(ticker=k, t=ll[0], o=ll[1], h=ll[2], l=ll[3], c=ll[4], v=ll[5])
-                log_debug("data for " + k + " was updated")
+    # @database_sync_to_async
+    # def get_archived_data_from_db(self):
+    #     msg_ = {}
+    #     log_debug("get_archived_data_from_db3")
+    #     today_ = datetime.datetime.today()
+    #     nday = today_.weekday()  # Monday = 0
+    #     h = today_.hour
+    #     m = today_.minute
+    #     log_debug(str(nday)+":"+str(h)+":"+str(m))
+    #     try:
+    #         for q in XBRLRealEquityPrices.objects.all():
+    #             try:
+    #                 if q.ticker not in msg_:
+    #                     msg_[q.ticker] = []
+    #                 point_data = {'x': q.t, 'o': float(q.o), 'h': float(q.h), 'l': float(q.l), 'c': float(q.c)};
+    #                 msg_[q.ticker].append(point_data)
+    #             except Exception as ex:
+    #                 log_debug("DataPointError: " + str() + str(ex))
+    #     except Exception as ex:
+    #         log_debug("Error 303: " + str(ex))
+    #     log_debug("get_archived_data_from_db 222")
+    #     return msg_
 
 
 class ChatWhiteBaordConsumer(AsyncConsumer):

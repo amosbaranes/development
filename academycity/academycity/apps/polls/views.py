@@ -4,7 +4,12 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
 from django.views import generic
 
-from .models import Choice, Poll
+from .models import Choice, Poll, ToDoForSamuel
+
+
+def samuel(request):
+    print(ToDoForSamuel.objects.all())
+    return render(request, 'polls/samuel.html', {})
 
 
 class IndexView(generic.ListView):

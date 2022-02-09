@@ -30,7 +30,7 @@
             <tr>
                 <td>Year:</td>
                 <td>
-                    <select id="valuation_year" name="valuation_year" onChange="valuation_year_fun(event)"
+                    <select id="valuation_year" name="valuation_year" onchange="valuation_year_fun(event)"
                             style="width: 80px;">
                         <option value='0'>--------------------</option>
                     </select>
@@ -463,11 +463,13 @@ function calc_rp_()
 function valuation_year_fun(event)
 {
   //alert('valuation_year_fun 1');
-  e = event.target; value = e.options[e.selectedIndex].value;
+  e = event.target;
+  value = e.options[e.selectedIndex].value;
   if(vObj["last_year_of_data"] >= value){vObj["valuation_year"] = value;}
   else {if(1*vObj["last_year_of_data"]!=-1){alert("there are annual data only for " + vObj["last_year_of_data"] + " and up to quarter "+vObj["last_quarter_of_data"])}}
   try{get_countries_regions_for_year();} catch(er){}
   try{s="valuation_year_fun"; calculate_all();} catch(er){alert("calculate_all() - error in function "+s)}
+  //alert(96)
 };
 </script>
 
@@ -623,6 +625,7 @@ function companies_fun(event)
   try{clean_rp_for_country_or_region();} catch(er){}
   var e=event.target;var id_=e.options[e.selectedIndex].value;ticker_=e.options[e.selectedIndex].getAttribute("ticker");
   document.getElementById('search_ticker').value=ticker_;vObj["ticker"]=ticker_;
+  document.getElementById('bi_attribute_value').value=ticker_;
   if(!vObj["sec_company_data"][ticker_]){vObj["sec_company_data"][ticker_]={}}
   console.log("get_data_ticker: ", "before post get_data_ticker");
   if(vObj["sec_company_data"][ticker_]['company_info'])

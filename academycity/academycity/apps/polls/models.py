@@ -5,6 +5,7 @@ from django.urls import reverse
 
 
 class Poll(models.Model):
+
     question = models.CharField(max_length=200)
 
     def get_absolute_url(self):
@@ -29,3 +30,9 @@ class PollPluginModel(CMSPlugin):
 
     def __str__(self):
         return self.poll.question
+
+
+class ToDoForSamuel(models.Model):
+
+    task = models.CharField(max_length=500)
+
