@@ -472,7 +472,8 @@ function get_earning_forecast_sp500_view_main_title(tab_obj)
            // --
            Orders = new OrderStreamerWin(my_name_="Orders", win_name_="Orders", win_title_="Orders", user_id=vObj["user_id"],
               tab_obj_=tab_obj, data_link='{% url "corporatevaluation:tdameritrade_setup_w_attribute" %}',
-              order_link='{% url "corporatevaluation:tdameritrade_setup_w_attribute" %}')
+              order_link='{% url "corporatevaluation:tdameritrade_setup_w_attribute" %}',
+              link_to_activate_obj_function='{% url "corporatevaluation:activate_obj_function" %}')
            Orders.set_win_frame_style("22", "750", "1400", "10%", "20%", "white")
            Orders.set_title_colors("#fff", "#00AFF0");
            Orders.set_acWinStatEventListeners(Orders);

@@ -1,0 +1,55 @@
+{% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>AdvancedTabs</title>
+<style>
+
+    .tab button:hover {
+
+     background-color: red;
+     transition: 0.3s;
+     }
+
+     .tab button.active {
+     background-color: purple;
+
+     }
+</style>
+</head>
+<body id="body_">
+
+<script src="{% static 'js/core/advanced_tabs_v7.js' %}"></script>
+
+<script src="{% static 'vendor/jquery/jquery.min.js' %}"></script>
+<script src="{% static 'js/npm/cookie/js.cookie.min.js' %}"></script>
+
+<script>
+var csrftoken = Cookies.get('csrftoken');
+function csrfSafeMethod(method) {
+// these HTTP methods do not require CSRF protection
+return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+}
+$.ajaxSetup({
+beforeSend: function(xhr, settings) {
+  if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+    xhr.setRequestHeader("X-CSRFToken", csrftoken);
+  }
+}
+});
+
+$(document).ready(function(){
+
+var {{atm_name}}=new AdvancedTabsManager(my_name="{{atm_name}}", body_=document.getElementById("body_"),
+activate_function_link='{% url "core:activate_function" %}', is_show_btns=false)
+
+{% block domready %}
+{% endblock %}
+});
+</script>
+</body>
+</html>

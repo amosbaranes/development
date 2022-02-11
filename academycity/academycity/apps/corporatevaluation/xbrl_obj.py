@@ -11,8 +11,6 @@ import datetime
 import time
 from datetime import timedelta
 from django.db.models import Q
-from concurrent.futures import ThreadPoolExecutor
-import xml.etree.ElementTree as ET
 
 from six.moves import urllib
 import xlrd
@@ -31,7 +29,6 @@ from tda import auth, client, orders
 from channels.db import database_sync_to_async
 
 from channels.layers import get_channel_layer
-from asgiref.sync import async_to_sync
 
 # import yfinance as yf
 from yahoofinancials import YahooFinancials
@@ -39,11 +36,10 @@ from ..core.utils import log_debug, clear_log_debug
 from ..core.sql import SQL
 from ..core.OptionsAmeriTrade import BaseTDAmeriTrade
 
-from django.db.models import Avg
 from .models import (XBRLMainIndustryInfo, XBRLIndustryInfo, XBRLCompanyInfoInProcess,
                      XBRLCompanyInfo, XBRLValuationStatementsAccounts, XBRLValuationAccounts,
                      XBRLValuationAccountsMatch,
-                     XBRLRegion, XBRLCountry, XBRLCountryYearData,
+                     XBRLCountry, XBRLCountryYearData,
                      XBRLHistoricalReturnsSP, XBRLSPMoodys, Project,
                      XBRLRegion, XBRLRegionYearData, XBRLSPEarningForecast, XBRLSPStatistics,
                      XBRLDimTime, XBRLDimCompany, XBRLDimAccount, XBRLFactCompany,
@@ -1104,6 +1100,54 @@ class TDAmeriTrade(BaseTDAmeriTrade):
 
     # -------------------------------------------------
     def place_order(self, dic):
+        from tda.orders.common import Duration
+        dic = json.loads(dic)
+        print("="*100)
+        print(dic)
+        print("-"*50)
+        order = {
+            "orderStrategyType": "TRIGGER",
+            "orderType": "LIMIT",
+            "price": dic['sell_limit'],
+            "duration": "GOOD_TILL_CANCEL",
+            "session": "NORMAL",
+            "complexOrderStrategyType": "CUSTOM",
+            "orderLegCollection": [],
+            "childOrderStrategies": [
+                {
+                    "orderStrategyType": "SINGLE",
+                    "orderType": "LIMIT",
+                    "price": dic['buy_limit'],
+                    "duration": "GOOD_TILL_CANCEL",
+                    "session": "NORMAL",
+                    "complexOrderStrategyType": "CUSTOM",
+                    "orderLegCollection": []
+                }
+            ]
+        }
+        for type_ in dic:
+            if type_ in ["put", "call"]:
+                for s_ in dic[type_]:
+                    if dic[type_][s_]["q"] > 0:
+                        order["orderLegCollection"].append(
+                            {"instrument": {"assetType": "OPTION", "symbol": s_},
+                             "instruction": "SELL_TO_OPEN", "quantity": dic[type_][s_]["q"]})
+                        order["childOrderStrategies"][0]["orderLegCollection"].append(
+                            {"instrument": {"assetType": "OPTION", "symbol": s_},
+                             "instruction": "BUY_TO_CLOSE", "quantity": dic[type_][s_]["q"]})
+                    else:
+                        order["orderLegCollection"].append(
+                            {"instrument": {"assetType": "OPTION", "symbol": s_},
+                             "instruction": "BUY_TO_OPEN", "quantity": -dic[type_][s_]["q"]})
+                        order["childOrderStrategies"][0]["orderLegCollection"].append(
+                            {"instrument": {"assetType": "OPTION", "symbol": s_},
+                             "instruction": "SELL_TO_CLOSE", "quantity": -dic[type_][s_]["q"]})
+
+        print(order)
+        print("="*100)
+        return {'data': '123'}
+
+    def place_order_(self, dic):
         from tda.orders.common import Duration
         print(dic)
         print("="*50)

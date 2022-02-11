@@ -6,6 +6,7 @@ from django.http import JsonResponse
 from django.utils.dateparse import parse_date
 from django.contrib.auth.models import User
 from ..actions.utils import create_action
+from .AdvancedTabes import AdvancedTabs
 
 
 def home(request):
@@ -105,3 +106,15 @@ def create_db_backup():
 def clean_registrations(request):
     clean_accounting_registrations()
 
+
+def activate_function(request):
+    dic_ = request.POST["dic"]
+    dic_ = eval(dic_)
+    obj_ = dic_["obj"]
+    atm_ = dic_["atm"]
+    fun_ = dic_["fun"]
+    params_ = dic_["params"]
+    s = obj_ + "('"+atm_+"')." + fun_ + "(params_)"
+    result = eval(s)
+    dic = {'status': 'ok', 'result': result}
+    return JsonResponse(dic)

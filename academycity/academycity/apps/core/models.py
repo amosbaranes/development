@@ -4,6 +4,16 @@ from .fields import OrderField
 from .sql import TruncateTableMixin
 
 
+class DataAdvancedTabs(models.Model):
+    at_name = models.CharField(max_length=10, null=True)
+    tab_name = models.CharField(max_length=50, null=True)
+    tab_text = models.TextField(null=True)
+    tab_functions = models.TextField(null=True)
+
+    def __str__(self):
+        return str(self.tab_name) + ":" + str(self.tab_name)
+
+
 class ModifyModel(object):
 
     @classmethod
@@ -53,3 +63,5 @@ class Debug(TruncateTableMixin, models.Model):
 
     def __str__(self):
         return self.value
+
+

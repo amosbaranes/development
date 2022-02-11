@@ -316,13 +316,14 @@ StreamerWin.prototype.send_msg = function (msg){
 
 
 // -- Orders --
-function OrderStreamerWin(my_name_, win_name_, win_title_, use_id, tab_obj_, data_link, order_link)
+function OrderStreamerWin(my_name_, win_name_, win_title_, use_id, tab_obj_, data_link, order_link, link_to_activate_obj_function)
 {
   acWin.call(this, my_name_, win_name_, win_title_, right="2%", top="20%", is_scroll=true, zindex=21, tab_obj_=tab_obj_, is_nav_panel=true)
   this.my_name=my_name_;
   this.user_id=user_id;
   this.ticker=null; this.myInterval_d=null;this.data=null;
   this.data_link=data_link; this.order_link=order_link; this.link_execute_order="";
+  this.link_to_activate_obj_function = link_to_activate_obj_function
 
   this.content_table=document.createElement("table");
   this.win_content.appendChild(this.content_table);
@@ -429,10 +430,13 @@ OrderStreamerWin.prototype.set_win_nav_panel = function()
        var my_order = eval(owner_my_name_)
        //alert(my_order.my_name)
        //alert(JSON.stringify(my_order.order_dic))
-       alert(JSON.stringify(my_order.order_dic["order"]))
+       //alert(JSON.stringify(my_order.order_dic["order"]))
 
-       //alert(my_order.my_name)
-       //alert(btn.innerHTML)
+         $.post(my_order.link_to_activate_obj_function,
+         {obj: "TDAmeriTrade", fun: "place_order", dic: JSON.stringify(my_order.order_dic["order"])},
+          function(data){
+           if (data['status'] == 'ok'){alert(JSON.stringify(data['data']))} else{}
+         });
     }
      this.execute_order = document.createElement("button");
      this.execute_order.setAttribute("id", this.my_name+"_execute_order");
@@ -994,8 +998,8 @@ OptionStreamerWin.prototype.process_message = function(msg)
 {
 try{
 
-//alert(JSON.stringify(msg))
-//alert(msg.type)
+alert(JSON.stringify(msg))
+alert(msg.type)
 
   //if(vObj["user_group"] == "optionsadmin")
   //{
@@ -1020,7 +1024,7 @@ try{
          var date_ = msg[k][0]
          //var date_ = luxon.DateTime.fromRFC2822(msg[k][0]);
          var point_data={x: date_.valueOf(), o: msg[k][1], h: msg[k][2], l: msg[k][3], c: msg[k][4]};
-         //alert(JSON.stringify(point_data))
+         alert(JSON.stringify(point_data))
          //alert('JSON.stringify(this.csm.objs[k].data)')
          //alert(JSON.stringify(this.csm.objs[k].data))
          this.csm.objs[k].data.push(point_data);

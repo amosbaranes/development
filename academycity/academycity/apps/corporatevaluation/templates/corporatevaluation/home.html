@@ -167,7 +167,7 @@ data {
             <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon@0.2.1"></script>
             <script src="{% static 'js/chartjs/chartjs-chart-financial.js' %}" crossorigin="anonymous"></script>
 
-            <script src="{% static 'js/basic_pop_windows_v69.js' %}" crossorigin="anonymous"></script>
+            <script src="{% static 'js/basic_pop_windows_v70.js' %}" crossorigin="anonymous"></script>
             <script>var ef = '';</script>
         {% endif %}
 
@@ -510,11 +510,13 @@ function SimManagementTab(parent, name, title, valuation_id, url_get_screens, sc
     ed = document.createElement("div"); ed.setAttribute("class", "tabcontent");
     ed.setAttribute("id", this.name); this.parent.tabContents.appendChild(ed);
   } else{try{ed = document.getElementById(this.name);} catch (er) {alert('Error1: ' + er)}}
- // --
+
+  // --
   e = document.createElement("button");e.setAttribute("class", "tablinks ");e.setAttribute("id", "tab-"+name);
   e.setAttribute("obj_name", name); e.innerHTML = title;
 
   this.parent.tabTitles.insertBefore(e, this.parent.tabTitles.childNodes[0])
+
   e.addEventListener("click", function(){
     event.preventDefault(); obj_name = this.getAttribute('obj_name'); obj = parent.TabObjects[obj_name];
     // --
@@ -595,6 +597,7 @@ SimManager.prototype.setTabs = function() {
     var tabs_options_all = tabs_options.split(",");
     var tabs_m = tabs_.getAttribute("tabs_m");
     var tans_all_m = tabs_m.split(",");
+
     var tabs_management = {};
     for (const property in tans_all_m) {
       var ss = tans_all_m[property]; var ss_ = ss.split(":"); var ss__ = ss_[1].split(";");

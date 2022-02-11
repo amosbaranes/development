@@ -705,15 +705,17 @@ def activate_obj_function(request):
         obj_ = request.POST.get('obj')
         fun_ = request.POST.get('fun')
         dic_ = request.POST.get('dic')
+        # print('dic_')
         # print(dic_)
+        # print('dic_')
         # print(type(dic_))
         s_ = obj_+'().' + fun_ + '(dic_)'
-        print(s_)
+        # print(s_)
         dic = eval(s_)
+        # print('-'*10)
         # print(dic)
+        # print('-'*10)
 
-        # data = dic['data'].json()
-        # print(data)
         #
         # # dic = json.dumps(dic['data'].json(), indent=4)
         # dic_ = eval(dic_)
@@ -744,6 +746,7 @@ def activate_obj_function(request):
         #         print(dic[k])
         # except Exception as ex:
         #     print(ex)
+
         return JsonResponse({'status': 'ok', 'data': dic})
     except Exception as ex:
         print(ex)
