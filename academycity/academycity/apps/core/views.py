@@ -108,13 +108,22 @@ def clean_registrations(request):
 
 
 def activate_function(request):
+    # var dic_ = {"obj": "AdvancedTabs", "atm": atm_.my_name, "fun": "add_tab", "params": {"tab_name": tab_name_}}
+
     dic_ = request.POST["dic"]
+    # print(dic_)
     dic_ = eval(dic_)
+
     obj_ = dic_["obj"]
     atm_ = dic_["atm"]
     fun_ = dic_["fun"]
     params_ = dic_["params"]
+
+    # print('-1'*20)
     s = obj_ + "('"+atm_+"')." + fun_ + "(params_)"
+    print(s)
+    # print('-1'*20)
     result = eval(s)
+    # print('-3'*20)
     dic = {'status': 'ok', 'result': result}
     return JsonResponse(dic)

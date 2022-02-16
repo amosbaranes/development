@@ -39,3 +39,31 @@ class AdvancedTabs(object):
         except Exception as ex:
             result = {"error": "-1"}
         return result
+
+    def save_html_functions_of_active_tab(self, params):
+        try:
+            print('='*50)
+            # print(params)
+            print('functions')
+            print(params["tab_functions"])
+            print('-'*30)
+            print('html')
+            print(params["tab_text"])
+            print('-'*30)
+            print('tab_name')
+            print(params["tab_name"])
+            print('='*50)
+            try:
+                tab = DataAdvancedTabs.objects.get(at_name=self.manager_name, tab_name=params["tab_name"])
+                tab.tab_text = params["tab_text"]
+                tab.tab_functions = params["tab_functions"]
+                tab.save()
+            except Exception as ex:
+                print(ex)
+            print(tab)
+            print('='*50)
+            result = {"saved": "ok"}
+
+        except Exception as ex:
+            result = {"error": "-1"}
+        return result
