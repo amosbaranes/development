@@ -68,6 +68,10 @@ urlpatterns += i18n_patterns(
     url(r'a/', include('academycity.apps.webapps.apewives.urls')),
     url(r'j/', include('academycity.apps.webapps.javascripttutorial.urls')),
     url(r's/', include('academycity.apps.webapps.simba.urls')),
+    #
+    url(r'm/', include('academycity.apps.acapps.macroeconomics.urls')),
+    url(r'k/', include('academycity.apps.acapps.businesssim.urls')),
+    #
     url(r'^swotclock/', include('academycity.apps.webapps.swotclock.urls')),
     #
     url(r'^allauth/', include('allauth.urls')),

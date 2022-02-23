@@ -1,9 +1,9 @@
 import asyncio
-import datetime
+from channels.db import database_sync_to_async
 
 from tda import auth, client
 from tda.streaming import StreamClient
-from ..core.utils import log_debug, clear_log_debug
+from ..core.models import Debug
 import os
 from django.conf import settings
 
@@ -68,6 +68,7 @@ class BaseTDAmeriTrade(object):
 
     async def read_several_stream(self, services):
         try:
+            await self.log_debug_async("1010 - read_several_stream")
             stream_client = self.get_stream_client()
             await stream_client.login()
             await stream_client.quality_of_service(StreamClient.QOSLevel.FAST)
@@ -75,9 +76,12 @@ class BaseTDAmeriTrade(object):
             pass
             # print("Error Login: "+str(ex))
         # print(services)
+        await self.log_debug_async("1011 - read_several_stream")
         for s_ in services:
             try:
+                # print('-='*30)
                 # print(s_)
+                # print('-='*30)
                 add_func = s_["add_func"]
                 func = s_["func"]
                 subs_func = s_["subs_func"]
@@ -90,8 +94,13 @@ class BaseTDAmeriTrade(object):
             except Exception as ex:
                 pass
                 # print(str(ex))
+        await self.log_debug_async("1012 - read_several_stream")
 
         # while datetime.datetime.fromisoformat(date_string_start) < d < datetime.datetime.fromisoformat(date_string_end):
         while True:
             await stream_client.handle_message()
             await asyncio.sleep(6)
+
+    @database_sync_to_async
+    def log_debug_async(self, value):
+        Debug.objects.create(value=value)

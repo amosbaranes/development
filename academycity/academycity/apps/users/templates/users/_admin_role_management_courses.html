@@ -174,7 +174,6 @@ tr {
 
 <script>
 
-
 function btnClickDepCourse(event)
 {
    var elm = event.target.parentNode
@@ -277,6 +276,7 @@ function btnClickDepCourse(event)
       alert("U")
       var nn = elm.getAttribute("link_app")
       nn = nn.split(' ').join('').toLowerCase()
+      alert('{% url "corporatevaluation:update_data" %}')
       if (nn == "corporatevaluation")
       {
          $.post('{% url "corporatevaluation:update_data" %}',

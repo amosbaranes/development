@@ -126,12 +126,13 @@ function set_cost_of_debt()
   document.getElementById("cofd_rf").innerHTML = Math.round(100*vObj["rf"]*100)/100;
   var ve = get_account_value_tq(y=vObj["valuation_year"], account="20800");
   document.getElementById("cofd_ebit").innerHTML=toCommas(ve);
-  var vi=get_account_value_tq(y=vObj["valuation_year"], account="20850",0);
+  var vi=Math.abs(get_account_value_tq(y=vObj["valuation_year"], account="20850",0));
 
 //alert('vObj["valuation_year"]')
 //alert(vObj["valuation_year"])
 //alert('vObj["last_year_of_data"]')
 //alert(vObj["last_year_of_data"])
+  //alert(ve)
   //alert(vi)
 
   document.getElementById("cofd_interest_expense").innerHTML=toCommas(vi)
@@ -146,6 +147,7 @@ function set_cost_of_debt()
     $.post('{% url "corporatevaluation:get_interest_coverage_ratio" %}',
       {a: "a" },
       function(data){
+      // alert(JSON.stringify(data))
         vObj["interest_coverage_ratio_table"]=data;
         set_cost_of_debt_(icr_);
       })
@@ -555,7 +557,7 @@ function set_roic_effective_tax_rate(y)
     oiat += "<td style='text-align:right'>"+noiat+"</td></tr>";
     ltd += "<td style='text-align:right'>"+nltd+"</td></tr>";
     she += "<td style='text-align:right'><u>"+nshe+"</u></td></tr>";
-    ta += "<td style='text-align:right'><u>"+nta+"</u></td></tr>";
+    ta += "<td style='text-align:right'><u>"+Math.round(100*nta)/100+"</u></td></tr>";
 
     st = year + oiat + ltd + she + ta + "<tr><td style='text-align:right' colspan='"+(1+1*roic_effective_tax_rate_periods_)+"'>ROIC</td><td id='calc_roic' style='text-align:right'>"+roic_st+"%</td></tr>"
 

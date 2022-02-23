@@ -24,7 +24,8 @@ class AdvancedTabs(object):
     def add_tab(self, params):
         try:
             tab_name_ = params["tab_name"]
-            new_tab, is_new_row = DataAdvancedTabs.objects.get_or_create(at_name=self.manager_name, tab_name=tab_name_)
+            new_tab, is_new_row = DataAdvancedTabs.objects.get_or_create(at_name=self.manager_name, tab_name=tab_name_,
+                                                                         tab_title=tab_name_.capitalize())
             result = {'tab_id': new_tab.id}
         except Exception as ex:
             result = {'tab_id': "-1"}
@@ -35,24 +36,24 @@ class AdvancedTabs(object):
             tabs = DataAdvancedTabs.objects.filter(at_name=self.manager_name).all()
             result = {}
             for t in tabs:
-                result[t.id] = {"tab_name": t.tab_name, "tab_text": t.tab_text, "tab_functions": t.tab_functions}
+                result[t.id] = {"tab_name": t.tab_name, "tab_title": t.tab_title, "tab_text": t.tab_text, "tab_functions": t.tab_functions}
         except Exception as ex:
             result = {"error": "-1"}
         return result
 
     def save_html_functions_of_active_tab(self, params):
         try:
-            print('='*50)
+            # print('='*50)
             # print(params)
-            print('functions')
-            print(params["tab_functions"])
-            print('-'*30)
-            print('html')
-            print(params["tab_text"])
-            print('-'*30)
-            print('tab_name')
-            print(params["tab_name"])
-            print('='*50)
+            # print('functions')
+            # print(params["tab_functions"])
+            # print('-'*30)
+            # print('html')
+            # print(params["tab_text"])
+            # print('-'*30)
+            # print('tab_name')
+            # print(params["tab_name"])
+            # print('='*50)
             try:
                 tab = DataAdvancedTabs.objects.get(at_name=self.manager_name, tab_name=params["tab_name"])
                 tab.tab_text = params["tab_text"]
@@ -60,8 +61,8 @@ class AdvancedTabs(object):
                 tab.save()
             except Exception as ex:
                 print(ex)
-            print(tab)
-            print('='*50)
+            # print(tab)
+            # print('='*50)
             result = {"saved": "ok"}
 
         except Exception as ex:

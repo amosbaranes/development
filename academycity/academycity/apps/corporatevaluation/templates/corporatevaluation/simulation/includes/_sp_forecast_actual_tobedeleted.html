@@ -1,0 +1,835 @@
+{% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
+{% load core_tags %}
+
+<div id="sp_forecast_actual" class="tabcontent">
+
+<!--<button onclick='end_streamer(event)'>EndStreamer</button>-->
+<!--<button onclick='open_streamer_win(event)'>ShowStreamerWin</button>-->
+<!--<button onclick='send_message(event)'>send_message</button>-->
+<!--<button onclick='start_stream(event)'>Send message: start_stream</button>-->
+<hr/>
+
+<div id="result"></div>
+
+<input type="text" id="search_input" onkeyup="search_function()" n="2" placeholder="Search for Tickers.." title="Type in a name">
+
+<button onclick='alert(125);start_streamer(event)'>Price Streams</button>
+<div id="sp_forecast_actual_data" class="data">
+</div>
+</div>
+
+<!-- starta() to be deleted not activated from any were-->
+<!-- remove from views and urls -->
+<script>
+var sourcea = undefined;
+function stopa(){sourcea.close();}
+
+function starta()
+{
+  create_table_options_w01_strategya("<div class='data'><table id='options_data_'></table></div>")
+  var edata=document.getElementById("options_data_")
+  if(typeof(EventSource)!=="undefined")
+  {var sourcea=new EventSource("url 'corporatevaluation:streama'");
+   sourcea.onmessage = function(event)
+   {
+
+   //alert(event.data)
+       create_table_options_w01_strategya(event.data+"<br/>")
+       return;
+
+     var k_=JSON.parse(event.data);var ll=[];var ticker=k_["ticker"]
+     var s="";
+     s+="<tr id='"+ticker+"_condor'><td style='text-align:center'>Ticker</td><td style='text-align:center'>Date</td><td>H</td><td>M</td><td style='text-align:center'>Condor price</td>"
+     s+="<td style='text-align:center'>Options(<span id='"+ticker+"_time_now'></span>)</td>"
+
+     s+="<tr><td>"+k_["ticker"]+"</td><td>"+k_["date"]+"</td><td>"+k_["h"]+"</td><td>"+k_["m"]+"</td><td style='text-align:center'>"+k_["condor_price"]+"</td>"
+     var s_="<table><tr><th></th><th>Delta</th><th>Strike</th><th>Price</th></tr>"
+     var kcl_=k_["condor"]["call"]["low"];
+     s_+="<tr><td>Call 1</td><td>"+kcl_["delta"]+"</td><td>"+kcl_["strike"]+"</td><td>"+kcl_["price"]+"</td></tr>"
+     var kch_=k_["condor"]["call"]["high"];
+     s_+="<tr><td>Call 2</td><td>"+kch_["delta"]+"</td><td>"+kch_["strike"]+"</td><td>"+kch_["price"]+"</td></tr>"
+     var kpl_=k_["condor"]["put"]["low"];
+     s_+="<tr><td>Put 1</td><td>"+kpl_["delta"]+"</td><td>"+kpl_["strike"]+"</td><td>"+kpl_["price"]+"</td></tr>"
+     var kph_=k_["condor"]["put"]["high"];
+     s_+="<tr><td>Put 2</td><td>"+kph_["delta"]+"</td><td>"+kph_["strike"]+"</td><td>"+kph_["price"]+"</td></tr>"
+     s_+="</table>"
+     s+="<td>"+s_+"</td>"
+     s+="</tr>"
+     if(ll.indexOf(ticker)<0){ll.push(ticker);edata.innerHTML+=s}else{document.getElementById(ticker+"_condor").outerHTML=s;}
+     const d=new Date();document.getElementById(ticker+"_time_now").innerHTML = d.toLocaleTimeString();
+   }
+  } else {document.getElementById("result").innerHTML = "Sorry, your browser does not support server-sent events..."}
+}
+
+function create_table_options_w01_strategya(s)
+{
+  strategya.add_info_by_ticker(content=s, win_titles="Strategies");
+}
+
+</script>
+
+<!-- function search_function() -->
+<script>
+function search_function() {
+  var input_elm = document.getElementById("search_input")
+  n_ = input_elm.getAttribute("n");
+  var input, filter, table, tr, td, i, txtValue;
+  input = document.getElementById("search_input");
+  filter = input.value.toUpperCase();
+  table = document.getElementById("all_tickers_data");
+  tr = table.getElementsByTagName("tr");
+  for (i = 0; i < tr.length; i++) {
+    td = tr[i].getElementsByTagName("td")[n_];
+    if (td) {
+      txtValue = td.textContent || td.innerText;
+      if (txtValue.toUpperCase().indexOf(filter) > -1) {
+        tr[i].style.display = "";
+      } else {
+        tr[i].style.display = "none";
+      }
+    }
+  }
+}
+</script>
+
+<!-- function search_today_or_tomorrow_announcements_function(event) -->
+<script>
+function search_today_or_tomorrow_announcements_function(event) {
+  var input_elm = document.getElementById("search_input")
+  n_ = input_elm.getAttribute("n");
+  var input, filter, table, tr, td, i, txtValue;
+  table = document.getElementById("all_tickers_data");
+  tr = table.getElementsByTagName("tr");
+
+  if (event.altKey)
+  {
+     var today = new Date(); today.setHours(today.getHours() - 7);
+     var tomorrow = new Date(today); tomorrow.setDate(tomorrow.getDate() + 1);
+     var dd = String(tomorrow.getDate()).padStart(2, '0');
+     var mm = String(tomorrow.getMonth() + 1).padStart(2, '0'); //January is 0!
+     var yyyy = tomorrow.getFullYear();
+     filter = yyyy + '-' + mm + '-' + dd
+     if (event.ctrlKey)
+     {
+         ll = []
+         for(i = 0; i < 7 ;i++)
+         {
+             var today = new Date(); today.setHours(today.getHours() - 7);
+             var tomorrow = new Date(today); tomorrow.setDate(tomorrow.getDate() + i);
+             var dd = String(tomorrow.getDate()).padStart(2, '0');
+             var mm = String(tomorrow.getMonth() + 1).padStart(2, '0'); //January is 0!
+             var yyyy = tomorrow.getFullYear();
+             filter = yyyy + '-' + mm + '-' + dd
+             ll.push(filter)
+         }
+     }
+  }
+
+  for (i = 0; i < tr.length; i++) {
+    td = tr[i].getElementsByTagName("td")[n_];
+    if (td) {
+
+        if (event.ctrlKey && event.altKey)
+        {
+          txtValue = td.textContent || td.innerText;
+          const isLargeNumber = (element) => element == txtValue;
+          if (ll.findIndex(isLargeNumber) > -1) {tr[i].style.display = "";} else {tr[i].style.display = "none";}
+        } else if (event.ctrlKey)
+        {
+          if (td.style.color == "blue") {tr[i].style.display = "";} else {tr[i].style.display = "none";}
+        } else if (event.altKey)
+        {
+           txtValue = td.textContent || td.innerText;if (txtValue.toUpperCase().indexOf(filter) > -1) {tr[i].style.display = "";} else {tr[i].style.display = "none";}
+        }
+    }
+  }
+}
+</script>
+<!-- get_earning_forecast_sp500_view_main_detail(event) -->
+<script>
+function get_earning_forecast_sp500_view_main_detail(event)
+{
+  var e=event.target;clean_marked_chosen_field(e); var ticker_=e.innerHTML;
+  if (event.ctrlKey){Orders.set_orders_screen(ticker_); return;}
+  else if (event.altKey)
+  {$.post('{% url "corporatevaluation:admin_setup" %}',
+      {fun: "get_earning_forecast_sp500_view_main_detail",ticker: ticker_,},
+      function(data){create_table_earning_forecast_sp500_view_main_detail(data, ticker_);}
+    );
+  }
+}
+</script>
+
+<!-- create_table_options_w01_bf -->
+<script>
+function create_table_options_w01_bf(data, ticker)
+{
+  var strikes = data['strikes'];
+  var expiration_date_call = data['llc']['calls']['date']['date'];
+  var expiration_date_put = data['llp']['puts']['date']['date'];
+
+  var share_price = Math.round(100*data['share_price'])/100
+
+  var llc = data['llc']['calls']['date']['strikes']; var llp = data['llp']['puts']['date']['strikes'];
+  var llc_=data['llc_'];var llp_=data['llp_'];
+  //alert(llc_)
+    s = "<tr><th colspan='6' style='text-align: center'>Call("+expiration_date_call+")</th><th></th><th colspan='6' style='text-align: center'>Put("+expiration_date_put+")</th></tr>"
+    s += "<tr><th>BF(-1)</th><th>price</th><th>BF(0)</th><th>price</th><th>BF(+1)</th><th>price</th>"
+    s += "<th>SharePrice</th>";
+    s += "<th>BF(-1)</th><th>price</th><th>BF(0)</th><th>price</th><th>BF(+1)</th><th>price</th></tr>";
+    s += get_row_bf_(num=1, nump=1, strikes, llc, llp, share_price);
+    s += get_row_bf_(num=2, nump=-2, strikes, llc, llp, share_price);
+    s += get_row_bf_(num=3, nump=1, strikes, llc, llp, share_price);
+    s += "<tr><td></td><td style='text-align:right;'>"+two_decimal_points(llc_[0])+"</td><td></td><td style='text-align:right;'>"+two_decimal_points(llc_[1])+"</td><td></td><td style='text-align:right;'>"+two_decimal_points(llc_[2])+"</td>"
+    s += "<td style='text-align: right;'>"+two_decimal_points(share_price)+"</td>";
+    s += "<td></td><td style='text-align:right;'>"+two_decimal_points(llp_[0])+"</td><td></td><td style='text-align:right;'>"+two_decimal_points(llp_[1])+"</td><td></td><td style='text-align:right;'>"+two_decimal_points(llp_[2])+"</td>"
+    s = "<table class='data'>" + s + "</table>";
+    bf.set_info_by_ticker(content=s, win_titles="Butterfly details for ticker: "+ticker);
+}
+</script>
+
+<style>
+.inTheMoney{background-color:blue; color:white;}
+</style>
+
+<!-- create_table_options_w01_delta(data, ticker) -->
+<script>
+function create_table_options_w01_delta(data, ticker)
+{
+    var expiration_date = data['date']
+    var underlyingPrice = two_decimal_points(Math.round(100*data['underlyingPrice'])/100)
+
+    s = "<tr><th colspan='3' rowspan='2' style='text-align: center'>Call</th><th>"+expiration_date+"</th><th colspan='3' rowspan='2' style='text-align: center'>Put</th></tr>"
+
+    s += "<tr><th style='background-color:green'>"+underlyingPrice+"</th></tr>"
+    //s += "<tr><th colspan='3'style='text-align: center'>Call</th><th>"+expiration_date+"</th><th colspan='3' style='text-align: center'>Put</th></tr>"
+
+    s += "<tr><th>Delta</th><th>Theta</th><th>Price</th><th>Strike</th><th>Price</th><th>Theta</th><th>Delta</th></tr>"
+    for (z in data['tickers'])
+    {
+        st = ""
+        //alert(data[k]['tickers'][z])
+        st += "<td style='text-align: right;'>" + z + "</td>"
+        try{
+            d = two_decimal_points(data['tickers'][z]['call']['delta'])
+            t = two_decimal_points(data['tickers'][z]['call']['theta'])
+            p = two_decimal_points(data['tickers'][z]['call']['price'])
+
+            if(1*underlyingPrice>1*z){ var zz= " class = 'inTheMoney'"}else {var zz=""}
+            st = "<td style='text-align: right;'"+zz+">"+d+"</td><td style='text-align: right;'"+zz+">"+t+"</td><td style='text-align: right;'"+zz+">"+p+"</td>" + st
+
+            //alert(st)
+            } catch(er){
+            //alert(er)
+            st = "<td></td><td></td><td></td>" + st}
+        try{
+            d = two_decimal_points(data['tickers'][z]['put']['delta'])
+            t = two_decimal_points(data['tickers'][z]['put']['theta'])
+            p = two_decimal_points(data['tickers'][z]['put']['price'])
+            if(1*underlyingPrice<=1*z){ var zz= " class = 'inTheMoney'"} else {var zz=""}
+            st += "<td style='text-align: right;'"+zz+">"+p+"</td><td style='text-align: right;'"+zz+">"+t+"</td><td style='text-align: right;'"+zz+">"+d+"</td>"
+            //alert(st)
+            } catch(er){
+            //alert(er);
+            st += "<td></td><td></td><td></td>"}
+            s += "<tr>" + st + "</tr>"
+    }
+    s = "<table class='data'>" + s + "</table>";
+    //alert(s)
+    //delta.set_info_by_ticker(content=s, win_titles="Delta for ticker: "+ticker);
+}
+
+</script>
+
+<!-- options_w01_bf(event, ticker) -->
+<script>
+function options_w01_bf(event, ticker)
+{
+ var e = event.target; var fun_ = e.getAttribute("fun");
+ clean_marked_chosen_field(e);
+ // alert(fun_); alert(ticker);
+
+ //if (!(ticker in vObj["options_bf"]))
+ //{
+     bf.set_info_by_ticker(content="In Process ... please wait. ...  <i class='fa fa-spinner fa-spin'></i>", win_titles="Butterfly details for ticker: "+ticker +" ...  <i class='fa fa-spinner fa-spin'></i>");
+     $.post('{% url "corporatevaluation:tdameritrade_setup_w_attribute" %}',
+          {fun: fun_, attribute: 'ticker', attribute_value: ticker},
+          function(data)
+          {
+            if(data['status']=="ok")
+            {vObj["options_bf"][ticker]=data;create_table_options_w01_bf(vObj["options_bf"][ticker], ticker)
+            } else {bf.set_info_by_ticker(content=" No data for "+ticker, win_titles="Butterfly details for ticker: "+ticker);}
+          }
+        );
+ //} else{create_table_options_w01_bf(vObj["options_bf"][ticker], ticker)}
+}
+
+</script>
+
+<!--  options_w01_delta  -->
+<script>
+function options_w01_delta(event, ticker)
+{var e=event.target;var fun_=e.getAttribute("fun");clean_marked_chosen_field(e);
+ //alert(fun_)
+ //alert(ticker)
+ //if (!(ticker in vObj["options_delta"]))
+ //{
+     delta.set_info_by_ticker(content="In Process ... please wait. ...  <i class='fa fa-spinner fa-spin'></i>", win_titles="Delta for ticker: "+ticker +" ...  <i class='fa fa-spinner fa-spin'></i>");
+     $.post('{% url "corporatevaluation:tdameritrade_setup_w_attribute" %}',
+          {
+            fun: fun_,
+            attribute: 'ticker',
+            attribute_value: ticker
+          },
+          function(data)
+          {
+            vObj["options_delta"][ticker] = data['option_data_ticker'];
+            create_table_options_w01_delta(vObj["options_delta"][ticker], ticker);
+          }
+        );
+ //} else {create_table_options_w01_delta(vObj["options_delta"][ticker], ticker)}
+}
+</script>
+
+<!-- create_table_earning_forecast_sp500_view_main_detail(data) -->
+<script>
+function create_table_earning_forecast_sp500_view_main_detail(data, ticker)
+{
+  var s = "<tr><th>Y</th><th>Q</th><th>Act.</th><th>For.</th><th>AF%</th><th>P</th><th>P(-1)</th><th>D</th><th>D%</th></tr>"
+  data = data['get_earning_forecast_sp500_view_main_detail']
+  aa = Object.keys(data)
+  for (i = aa.length-1; i >= 0; i--)
+  {
+   var d = data[aa[i]];
+    daf = ""; dp = "--";
+     s += "<tr><td>" + d[0] + "</td><td>" + d[1] + "</td>"
+     try{daf = Math.round(10000*(d[3]-d[2])/d[2])/100} catch (er){alert(er)}
+     s += "<td>" + d[3] + "</td><td>" + d[2] + "</td><td>" + daf + "</td>"
+     try{dp = Math.round(100*(d[4]-d[5]))/100; dpp = Math.round(10000*(d[4]-d[5])/d[5])/100;} catch (er) {alert(er);}
+     s += "<td>" + d[4] + "</td><td>" + d[5] + "</td><td>" + dp + "</td><td>" + dpp + "</td></tr>"
+   }
+   s = "<table class='data'>" + s + "</table>"
+   //alert(s)
+   ef.set_info_by_ticker(content=s, win_titles="Data of ticker: "+ticker)
+}
+</script>
+
+<!-- clean_marked_chosen_field(event) -->
+<script>
+function clean_marked_chosen_field(e)
+{
+ var n=-1; pe = e.parentNode;
+ for (let i = 0; i < pe.children.length; i++){if( e.innerHTML == pe.children[i].innerHTML){n=i;break};}
+ var pelm = document.getElementById("all_tickers_data");
+ try{for (let i = 0; i < pelm.children.length; i++){var elm = pelm.children[i].children[n];elm.classList.remove("chosen");}} catch(er){alert(er)}
+ e.classList.add("chosen")
+}
+</script>
+
+<!-- create_table_for_earning_forecast_sp500_view_main(data) -->
+<!-- This function creates the main table for the sp500 companies -->
+<script>
+function create_table_for_earning_forecast_sp500_view_main(data)
+{
+ st = "<tr onclick='get_earning_forecast_sp500_view_main(event)' style='cursor:pointer;'>";
+ st += "<th order_by='company__industry__sic_code'>sic</th>";
+ st += "<th order_by='company__industry__main_sic__sic_code'>msic</th>";
+ st += "<th order_by='company__ticker'>Ticker</th>" + "<th order_by='company__company_name'>Company</th>";
+ st += "<th order_by='next_release_date'>N.R. Date</th><th order_by='-mean_abs_price_change'>D$PC</th>";
+
+ st += "<th order_by='-mean_abs_actual_forecast_change'>D$AFC</th>";
+
+ st += "<th order_by='-mean_abs_actual_forecast_change'>D%AFC</th>";
+ st += "<th order_by='-correlation_afp'>Corr</th>";
+ st += "<th order_by='announcement_time'>A</th>";
+ st += "<th order_by='-butterfly_price'>bfp</th>";
+ st += "<th order_by='-straddle_price'>stp</th>";
+ st += "</tr>"
+
+ var today = new Date();
+ today.setHours(today.getHours() - 7);
+ var dd = String(today.getDate()).padStart(2, '0');
+ var mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
+ var yyyy = today.getFullYear();
+ s_today = yyyy + '-' + mm + '-' + dd
+ sb = ""
+ for (k in data)
+ {
+   sb += "<tr>"
+   sb += "<td>" + data[k]['sic'] + "</td>"
+   sb += "<td>" + data[k]['msic'] + "</td>"
+   sb += "<td onclick='get_earning_forecast_sp500_view_main_detail(event)' style='cursor:pointer;' >" + k + "</td>"
+   sb += "<td onclick='set_ticker_to_valuation(event, \""+k+"\")' style='cursor:pointer;'>" + data[k]['cn'] + "</td>"
+   sc = ""; if(data[k]['ud'] == s_today){sc = "style='color:blue'"}
+   sb += "<td "+sc+">" + data[k]['nrd'] + "</td>";
+   sb += "<td>" + data[k]['mapc'] + "</td>";
+
+   sb += "<td>" + data[k]['maafcm'] + "</td>";
+
+   sb += "<td>" + data[k]['maafc'] + "</td>";
+   sb += "<td>" + data[k]['cafp'] + "</td>";
+
+   sb += "<td>" + data[k]['a'] + "</td>";
+   sb += "<td>" + data[k]['bfp'] + "</td>";
+   sb += "<td>" + data[k]['stp'] + "</td>";
+
+   //sb += "<td onclick='options_w01_bf(event, \""+k+"\")' fun='get_option_chain' style='cursor:pointer;'>" + data[k]['bfp'] + "</td>";
+   //sb += "<td onclick='options_w01_delta(event, \""+k+"\")' fun='get_option_statistics_for_ticker' style='cursor:pointer;'>" + data[k]['stp'] + "</td>";
+
+   sb += "</tr>";
+ }
+ s = "<table>" + st + "<tbody id='all_tickers_data'>" + sb + "</tbody>" + "</table><br/><br/><br/><br/>"
+ document.getElementById("sp_forecast_actual_data").innerHTML = s;
+}
+</script>
+
+<!-- get_earning_forecast_sp500_view_main(event) -->
+<script>
+function get_earning_forecast_sp500_view_main(event)
+{
+  try{
+     var e = event.target;pe_ = e.parentNode; var n_=-1;
+     for (let i = 0; i < pe_.children.length; i++){if( e.innerHTML == pe_.children[i].innerHTML){n_=i;break};}
+     var input_elm = document.getElementById("search_input")
+     input_elm.setAttribute("placeholder", "Search for "+e.innerHTML+"...");
+     input_elm.setAttribute("n", n_);
+     input_elm.value = "";
+  } catch (er) {}
+  // event.altKey
+  if (event.ctrlKey || event.altKey)
+  {
+   search_today_or_tomorrow_announcements_function(event); return;
+  }
+
+ var order_by_ = "next_release_date"
+ try{ order_by_ = e.getAttribute("order_by");
+     if(order_by_ == vObj["earning_forecast_sp500_view_main_order_by"]){return;}
+     } catch(er){ if (vObj["earning_forecast_sp500_view_main_downloaded"] == 1){return;} }
+  message_div = document.getElementById("sp_forecast_actual_data")
+  message_div.innerHTML = " ...  <i class='fa fa-spinner fa-spin'></i>";
+
+  $.post('{% url "corporatevaluation:admin_setup" %}',
+      {
+        fun: "get_earning_forecast_sp500_view_main",
+        order_by: order_by_,
+      },
+      function(data){
+            message_div.innerHTML = 'Process done with status: ' + data['status']
+            vObj["earning_forecast_sp500_view_main_downloaded"] = 1;
+            vObj["earning_forecast_sp500_view_main_order_by"] = order_by_;
+            create_table_for_earning_forecast_sp500_view_main(data=data['earning_forecast_sp500_view_main']) ;
+      }
+    );
+}
+</script>
+
+<!--  get_earning_forecast_sp500_view_main_title (tab_obj) -->
+<!--  Activated every time the user click the tab -->
+<script>
+function get_earning_forecast_sp500_view_main_title(tab_obj)
+{
+alert129)
+
+  // this is activated only first time the use click the tab.
+  if ( vObj["earning_forecast_sp500_view_main_downloaded"] == 0 )
+  {
+      var order_by_ = "next_release_date"
+      message_div = document.getElementById("sp_forecast_actual_data")
+      message_div.innerHTML = 'In process ... '
+      $.post('{% url "corporatevaluation:admin_setup" %}',
+          {
+            fun: "get_earning_forecast_sp500_view_main",
+            order_by: order_by_,
+          },
+          function(data){
+            message_div.innerHTML = 'Process done with status: ' + data['status']
+            vObj["earning_forecast_sp500_view_main_downloaded"] = 1;
+            vObj["earning_forecast_sp500_view_main_order_by"] = order_by_;
+            create_table_for_earning_forecast_sp500_view_main(data=data['earning_forecast_sp500_view_main']) ;
+          }
+        );
+      try{
+           ef = new EarningForecast(my_name_="ef", win_name_="earning_forecast", win_title_="Earning Forecast", user_id=vObj["user_id"], tab_obj_=tab_obj);
+           ef.set_win_frame_style("20", "505", "500", "45%", "45%", "white")
+           ef.set_acWinStatEventListeners(ef);
+           tab_obj.PopWinObjects['ef'] = ef;
+           // --
+           //delta = new EarningForecast(my_name_="delta", win_name_="delta", win_title_="Delta", user_id=vObj["user_id"], tab_obj_=tab_obj);
+           //delta.set_win_frame_style("21", "345", "450", "60%", "35%", "white")
+           //delta.set_title_colors("#fff", "#000080");
+           //delta.set_acWinStatEventListeners(delta);
+           //tab_obj.PopWinObjects['delta'] = delta;
+           // --
+           //bf = new EarningForecast(my_name_="bf", win_name_="bf", win_title_="Butterfly", user_id=vObj["user_id"], tab_obj_=tab_obj);
+           //bf.set_win_frame_style("22", "250", "900", "50%", "73%", "white")
+           //bf.set_title_colors("#fff", "#00AFF0");
+           //bf.set_acWinStatEventListeners(bf);
+           //tab_obj.PopWinObjects['bf'] = bf;
+           // --
+           //strategya = new EarningForecast(my_name_="strategya", win_name_="strategya", win_title_="Strategya", user_id=vObj["user_id"], tab_obj_=tab_obj);
+           //strategya.set_win_frame_style("22", "400", "900", "2%", "20%", "white")
+           //strategya.set_title_colors("#fff", "#00AFF0");
+           //strategya.set_acWinStatEventListeners(strategya);
+           //tab_obj.PopWinObjects['strategya'] = strategya;
+           // --
+           Orders = new OrderStreamerWin(my_name_="Orders", win_name_="Orders", win_title_="Orders", user_id=vObj["user_id"],
+              tab_obj_=tab_obj, data_link='{% url "corporatevaluation:tdameritrade_setup_w_attribute" %}',
+              order_link='{% url "corporatevaluation:tdameritrade_setup_w_attribute" %}',
+              link_to_activate_obj_function='{% url "corporatevaluation:activate_obj_function" %}')
+           Orders.set_win_frame_style("22", "750", "1400", "10%", "20%", "white")
+           Orders.set_title_colors("#fff", "#00AFF0");
+           Orders.set_acWinStatEventListeners(Orders);
+           tab_obj.PopWinObjects['Orders'] = Orders;
+
+    var tickers_ =  "SPY,IWM,QQQ,TSLA,PYPL,AMZN,BABA,FB"
+
+    var funcs_to_activate_ = '['
+    funcs_to_activate_ += '{"add_func": "add_chart_equity_handler", "func": "self.chart_equity_handler",'
+    funcs_to_activate_ += '"subs_func": "chart_equity_subs", "tickers": "' + tickers_ +'"}'
+
+    // it does not work
+    //funcs_to_activate_ += '{"add_func": "add_level_one_option_handler", "func": "self.level_one_option_handle",'
+    //funcs_to_activate_ += '"subs_func": "level_one_option_subs", "tickers": "' + tickers_ +'"}'
+    //funcs_to_activate_ += ','
+
+    // it does not give any data
+    //funcs_to_activate_ += '{"add_func": "add_options_book_handler", "func": "self.option_order_book_handler",'
+    //funcs_to_activate_ += '"subs_func": "options_book_subs", "tickers": "' + tickers_ +'"}'
+    //funcs_to_activate_ += ','
+
+    // it does not give any data
+    //funcs_to_activate_ += '{"add_func": "add_timesale_options_handler", "func": "self.timesale_options",'
+    //funcs_to_activate_ += '"subs_func": "timesale_options_subs", "tickers": "' + tickers_ +'"}'
+
+    // it does not give any data
+    //funcs_to_activate_ += ','
+    //funcs_to_activate_ += '{"add_func": "add_level_one_equity_handler", "func": "self.level_one_equity_handler",'
+    //funcs_to_activate_ += '"subs_func": "level_one_equity_subs", "tickers": "' + tickers_ +'"}'
+
+    //funcs_to_activate_ += ','
+    //funcs_to_activate_ += '{"add_func": "add_nasdaq_book_handler", "func": "self.nasdaq_order_book_handler",'
+    //funcs_to_activate_ += '"subs_func": "nasdaq_book_subs", "tickers": "' + tickers_ +'"}'
+    funcs_to_activate_ += ']'
+
+    //alert(funcs_to_activate_)
+alert(124)
+           streamer = new OptionStreamerWin(my_name_="streamer", win_name_="streamer", win_title_="streamer", user_id=vObj["user_id"],
+              tab_obj_=tab_obj, onmessage_callback = streamer_onmessage_callback,
+              link_to_activate_obj_function = '{% url "corporatevaluation:activate_obj_function" %}',
+              router="option", group="option1", tickers=tickers_, funcs_to_activate=funcs_to_activate_)
+alert(125)
+           streamer.set_win_frame_style("22", "850", "1200", "0.5%", "5%", "white")
+           streamer.set_title_colors("#fff", "#00AFF0");
+           streamer.set_acWinStatEventListeners(streamer);
+           tab_obj.PopWinObjects['streamer'] = streamer;
+
+           //streamer.set_info_by_ticker("opened", "Option Stream.")
+      } catch (err) {console.log("Error Earning Forecast 100: ",err.message)}
+  }
+}
+</script>
+
+<!-- stat functions -->
+<script>
+function Mean(numbersArr) {
+    var total = 0;
+    for(var key in numbersArr)
+       total += numbersArr[key];
+    var meanVal = total / numbersArr.length;
+    return meanVal;
+}
+
+function StandardDeviation(numbersArr) {
+    //--CALCULATE AVAREGE--
+    var total = 0;
+    for(var key in numbersArr)
+       total += numbersArr[key];
+    var meanVal = total / numbersArr.length;
+    //--CALCULATE AVAREGE--
+
+    //--CALCULATE STANDARD DEVIATION--
+    var SDprep = 0;
+    for(var key in numbersArr)
+       SDprep += Math.pow((parseFloat(numbersArr[key]) - meanVal),2);
+    var SDresult = Math.sqrt(SDprep/numbersArr.length);
+    //--CALCULATE STANDARD DEVIATION--
+    return SDresult
+}
+const pcorr = (x, y) => {
+  let sumX = 0,
+    sumY = 0,
+    sumXY = 0,
+    sumX2 = 0,
+    sumY2 = 0;
+  const minLength = x.length = y.length = Math.min(x.length, y.length),
+    reduce = (xi, idx) => {
+      const yi = y[idx];
+      sumX += xi;
+      sumY += yi;
+      sumXY += xi * yi;
+      sumX2 += xi * xi;
+      sumY2 += yi * yi;
+    }
+  x.forEach(reduce);
+  return (minLength * sumXY - sumX * sumY) / Math.sqrt((minLength * sumX2 - sumX * sumX) * (minLength * sumY2 - sumY * sumY));
+};
+</script>
+
+<!-- set_ticker_to_valuation(ticker) -->
+<script>
+function set_ticker_to_valuation(event, ticker)
+{
+ clean_marked_chosen_field(event.target);
+ let search_ticker = document.getElementById("search_ticker");
+ search_ticker.value = ticker;
+ var event = new Event("change", {bubbles: true}); search_ticker.dispatchEvent(event);
+}
+</script>
+
+<!--  get_earning_forecast_sp500_view SHOULD DELETE this function-->
+<script>
+function get_earning_forecast_sp500_view()
+{
+  if (vObj["earning_forecast_sp500_view_downloaded"] == 1){return;}
+  message_div = document.getElementById("sp_forecast_actual_data")
+  message_div.innerHTML = " ...  <i class='fa fa-spinner fa-spin'></i>"
+
+  $.post('{% url "corporatevaluation:admin_setup" %}',
+      {
+        fun: "get_earning_forecast_sp500_view",
+      },
+      function(data){
+            message_div.innerHTML = 'Process done with status: ' + data['status']
+            vObj["earning_forecast_sp500_view_downloaded"] = 1;
+            create_table_for_earning_forecast_sp500(data=data['earning_forecast_sp500_view']) ;
+      }
+    );
+}
+</script>
+
+<!-- create_table_for_earning_forecast_sp500  SHOULD DELETE this function-->
+<script>
+function create_table_for_earning_forecast_sp500(data)
+{
+ //first_ticker = Object.keys(data)[0]
+ var s_title1 = "<tr><td style='text-align:center' colspan='3'>Year</td>";
+ var s_title2 = "<tr><td style='text-align:center' colspan='3'>Qt</td>";
+ var s_title3 = "<tr><td>NextR.Date</td><td>#</td><td style='text-align:center'>Ticker</td>";
+ var s_body = "";
+ var y_max = 0; var q_max = 0; var y_min = 10000; var q_min = 4;
+ for (t in data)
+ {
+     for (y in data[t])
+     {
+       if(y >= y_max){y_max = y;for (q in data[t][y]){if(q > q_max){q_max = q}}}
+       if(y <= y_min){y_min = y;for (q in data[t][y]){if(q < q_min){q_min = q}}}
+     }
+ }
+
+//alert(y_max); alert(q_max);alert(y_min); alert(q_min)
+
+ for (y = y_max; y >= y_min ; y--)
+ {
+   if(y==y_max){nq=q_max*6;q_t=q_max;q_b=1} else if (y==y_min){nq=(4-q_min+1)*6;;q_t=4;q_b=q_min} else {nq = 24;q_t=4;q_b=1}
+   //alert(nq); alert(q_t); alert(q_b)
+    s_title1 += "<td colspan='"+nq+"' style='text-align:center'>" + y + "</td>"
+    for (q = q_t; q >= q_b ; q--)
+    {
+      s_title2 += "<td  colspan='6' style='text-align:center'>"+q+"</td>";
+      s_title3 += "<td style='text-align:center'>For.</td><td style='text-align:center'>Act.</td><td style='text-align:center'>Price</td><td style='text-align:center'>Price(-1)</td><td style='text-align:center'>D</td><td style='text-align:center'>D%</td>"
+    }
+ }
+
+ //alert(s_title1 + s_title2 + s_title3)
+  n=0
+ for (t in data)
+ {
+   n += 1
+   var s_body_t = "<td onclick=show_detailed_forecast_data(event) style='cursor:pointer;'>"+n+"</td>"
+   s_body_t += "<td onclick='set_ticker_to_valuation(event)' style='cursor:pointer;'>"+t+"</td>" ;
+
+       var s_release = ""
+       for (y = y_max; y >= y_min ; y--)
+        {
+              if(y==y_max){q_t=q_max;q_b=1} else if (y==y_min){q_t=4;q_b=q_min} else {q_t=4;q_b=1}
+              for (q = q_t; q >= q_b ; q--)
+              {
+                  try{
+                         if ((data[t][y][q][4] != undefined) && (data[t][y][q][4] != "undefined") && (data[t][y][q][4] != 'None'))
+                         {
+                           //alert(t + " " + y + " " + q)
+                           //alert(data[t][y][q][4])
+                            s_release = "<td>"+data[t][y][q][4]+"</td>"
+                         }
+                         else
+                         {
+                           if (s_release == ""){s_release = "<td>----</td>"}
+                         }
+                  } catch (er) {}
+                  try{
+                     s_body_t += "<td y='"+y+"' q='"+q+"'>"+data[t][y][q][0]+"</td>"
+                     s_body_t += "<td>"+data[t][y][q][1]+"</td>"
+                     s_body_t += "<td>"+data[t][y][q][2]+"</td>"
+                     s_body_t += "<td>"+data[t][y][q][3]+"</td>"
+                     nn = parseFloat(data[t][y][q][2]) - parseFloat(data[t][y][q][3])
+                     //alert(nn)
+                     s_body_t += "<td>"+Math.round(100*nn)/100+"</td>"
+                     nn = parseFloat(data[t][y][q][2])/parseFloat(data[t][y][q][3])-1
+                     s_body_t += "<td>"+Math.round(10000*nn)/100+"</td>"
+                  } catch (er) {s_body_t += "<td></td><td></td><td></td><td></td><td></td><td></td>"}
+              }
+        }
+      s_body += "<tr>" + s_release + s_body_t + "</tr>"
+ }
+ //alert(s_body)
+
+ s_title1 += "</tr>"
+ s_title2 += "</tr>"
+
+ s = "<table>"+s_title1 + s_title2 + s_title3 + s_body + "</table><br/><br/><br/><br/><br/>"
+ //alert(s)
+ document.getElementById("sp_forecast_actual_data").innerHTML = s;
+}
+
+</script>
+
+<!--  show_detailed_forecast_data.  SHOULD DELETE  -->
+<script>
+function show_detailed_forecast_data(event)
+{
+ elm = event.target; //alert(elm.outerHTML)
+ pelm = elm.parentNode; //alert(pelm.outerHTML)
+ s1 = "";
+ s2 = "<tr><td>Y</td><td>Q</td><td>For.</td><td>Act.</td><td>AF%</td><td>P</td><td>P(-1)</td><td>D</td><td>D%</td></tr>";
+
+ var n = 0; var afl_ = []; var pl_ = [];
+ for (let i = 1; i < pelm.children.length; i++)
+ {
+    if(i==1){s1+= "<h3>" +pelm.children[i].innerHTML; continue;}
+    if(i==2){s1+= ": "+pelm.children[i].innerHTML; continue;}
+    k = (i - 3 - n*6)
+    if (i==3) { var q = pelm.children[i].getAttribute("q"); var y = pelm.children[i].getAttribute("y"); }
+    if(k>5){k=0; y = pelm.children[i].getAttribute("y"); q = pelm.children[i].getAttribute("q");n+=1; }
+    if (y != null)
+    {
+       d_ = ""
+       if(k==0){ s2 += "<tr><td>" + y + "</td><td>" + q + "</td>"; var f_=parseFloat(pelm.children[i].innerHTML);}
+       s2+="<td>"+pelm.children[i].innerHTML+"</td>"
+       if(k==1)
+       {
+           if(!isNaN(f_))
+           {
+              var a_=parseFloat(pelm.children[i].innerHTML);
+              var d_ = Math.round(10000*(parseFloat(a_) - parseFloat(f_))/parseFloat(a_))/100;
+              afl_.push(d_)
+           }
+           s2+="<td>"+d_+"</td>";
+       }
+   if(k==5){ k_ = pelm.children[i].innerHTML; if(!isNaN(k_)){pl_.push(parseFloat(k_));}}
+   if(k==5){s2 += "</tr>"}
+  }
+ }
+ //std = Math.round(100*StandardDeviation(pl_))/100;
+ // alert(pl_); alert(afl_)
+ pl_ = pl_.map(Math.abs)
+ Mpl_ = Math.round(100*Mean(pl_))/100;
+ let r = Math.round(100*pcorr(afl_, pl_))/100;
+ s1 += ";   R= "+r+";   MAbs(D%)= "+Mpl_+"</h3>"
+ s_all = s1 + "<table>" +  s2 + "</table>"
+ //alert(s_all)
+ ef.set_info_by_ticker(s_all)
+}
+
+</script>
+
+<!-- Streamer functions -->
+<!-- start_stream, end_streamer, open_streamer_win -->
+<script>
+function start_streamer(event){
+    try{
+
+    alert(126)
+
+        //streamer.getSocket();
+
+        // should delete the next two lines
+        // var msg = {'type': 'get_today_data_chart_equity'}
+        // streamer.send_msg(JSON.stringify(msg));
+    } catch(er) {alert(er)}
+}
+
+function end_streamer(event){streamer.socket.close(code="1000", reason="end session");}
+function open_streamer_win(event){streamer.set_acWinStat('block');}
+</script>
+
+<script>
+function get_today_data_chart_equity()
+{
+
+alert(123)
+
+     $.post('{% url "corporatevaluation:tdameritrade_setup_w_attribute" %}',
+      {
+        fun: "get_archived_data_from_db",
+        attribute: "",
+        attribute_value: ""
+      },
+      function(msg)
+      {
+         for(k in msg){
+          //alert(k)
+          //alert(JSON.stringify(msg[k]))
+          for (i in msg[k])
+          {
+            try{
+                  d_ = msg[k][i]
+                  d_['x'] = d_['x'].valueOf();
+                  streamer.csm.objs[k].data.push(d_);
+               } catch (er) {
+                  alert(er);
+                  alert(JSON.stringify(d_))
+               }
+          }
+         };
+
+         for(k in streamer.csm.objs)
+         {
+          //alert(streamer.csm.objs[k].label)
+          //alert(JSON.stringify(streamer.csm.objs[k].data))
+
+           streamer.csm.objs[k].chart.config.data.datasets = [{label: streamer.csm.objs[k].label, data: streamer.csm.objs[k].data}];
+           streamer.csm.objs[k].chart.update();
+         }
+      }
+    );
+}
+
+</script>
+
+<!-- for testing-->
+<script>
+function send_message(event)
+{var dic_ = {'type': 'start_option_stream', 'message': "option stream message"}
+ try{streamer.socket.send(JSON.stringify(dic_))} catch (err) {console.log("err.message 33");console.log(err.message)}
+}
+function start_stream(event)
+{var dic_ = {'type': 'start_stream', 'ticker': "GOOG"}
+ try{streamer.socket.send(JSON.stringify(dic_))} catch (err) {console.log("err.message 33");console.log(err.message)}
+}
+</script>
+
+<script>
+Orders_onmessage_callback = function (msg)
+{
+  alert("Orders_onmessage_callback")
+  alert(msg)
+}
+</script>
+
+<script>
+streamer_onmessage_callback = function (msg)
+{
+//alert("streamer_onmessage_callback")
+// alert(msg)
+}
+</script>

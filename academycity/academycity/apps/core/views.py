@@ -121,7 +121,7 @@ def activate_function(request):
 
     # print('-1'*20)
     s = obj_ + "('"+atm_+"')." + fun_ + "(params_)"
-    print(s)
+    # print(s)
     # print('-1'*20)
     result = eval(s)
     # print('-3'*20)

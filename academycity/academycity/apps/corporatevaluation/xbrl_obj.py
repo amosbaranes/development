@@ -25,6 +25,7 @@ import requests
 import aiohttp
 import random
 from tda import auth, client, orders
+from tda.orders.common import Duration, Session
 
 from channels.db import database_sync_to_async
 
@@ -34,6 +35,7 @@ from channels.layers import get_channel_layer
 from yahoofinancials import YahooFinancials
 from ..core.utils import log_debug, clear_log_debug
 from ..core.sql import SQL
+from ..core.models import Debug
 from ..core.OptionsAmeriTrade import BaseTDAmeriTrade
 
 from .models import (XBRLMainIndustryInfo, XBRLIndustryInfo, XBRLCompanyInfoInProcess,
@@ -51,9 +53,7 @@ from .models import (XBRLMainIndustryInfo, XBRLIndustryInfo, XBRLCompanyInfoInPr
 # dateb = '20160101'
 
 # https://github.com/alexgolec/tda-api
-from tda.orders.options import (OptionSymbol,
-                                bear_call_vertical_open, bear_call_vertical_close,
-                                bear_put_vertical_open, bear_put_vertical_close)
+
 
 class GetAllUrlsProcessed(object):
     def __init__(self):
@@ -104,6 +104,7 @@ class TDAmeriTrade(BaseTDAmeriTrade):
                         print(ex)
             except Exception as eex:
                 print(eex)
+        return self.client
 
     # ------ Queue example Should be removed --
     def run_stream_options_data(self, dic):
@@ -1024,12 +1025,14 @@ class TDAmeriTrade(BaseTDAmeriTrade):
         print("="*50)
         print(msg)
 
+    # for now this is the only function I use.
     async def chart_equity_handler(self, msg):
-        # print("="*50)
+        # print("="*100)
         # print("chart_equity_handler")
+        # await self.log_debug_async("1000 - chart_equity_handler")
         # print("-"*40)
         # print(msg)
-        # print("="*50)
+        # print("="*100)
         dic = {}
         for t_ in msg["content"]:
             # d = datetime.datetime.fromtimestamp(t_["CHART_TIME"] / 999.999451)
@@ -1053,6 +1056,11 @@ class TDAmeriTrade(BaseTDAmeriTrade):
                 'msg': dic,
                 'type': "data_received_chart_equity"
             }
+
+            # print(response_)
+
+            await self.log_debug_async("1100 - chart_equity_handler - sending response")
+
             channel_layer = get_channel_layer()
             await channel_layer.group_send(
                 'option1', {
@@ -1100,16 +1108,19 @@ class TDAmeriTrade(BaseTDAmeriTrade):
 
     # -------------------------------------------------
     def place_order(self, dic):
-        from tda.orders.common import Duration
         dic = json.loads(dic)
-        print("="*100)
-        print(dic)
-        print("-"*50)
+        # print("="*100)
+        # print(dic)
+        # print("-"*10)
+        # print(dic["dic"]["q"])
+        # print("-"*50)
+
         order = {
             "orderStrategyType": "TRIGGER",
             "orderType": "LIMIT",
-            "price": dic['sell_limit'],
-            "duration": "GOOD_TILL_CANCEL",
+            "quantity": dic["dic"]["q"],
+            "price": dic['limits']['sell_limit'],
+            "duration": "DAY",
             "session": "NORMAL",
             "complexOrderStrategyType": "CUSTOM",
             "orderLegCollection": [],
@@ -1117,7 +1128,8 @@ class TDAmeriTrade(BaseTDAmeriTrade):
                 {
                     "orderStrategyType": "SINGLE",
                     "orderType": "LIMIT",
-                    "price": dic['buy_limit'],
+                    "quantity": dic["dic"]["q"],
+                    "price": dic['limits']['buy_limit'],
                     "duration": "GOOD_TILL_CANCEL",
                     "session": "NORMAL",
                     "complexOrderStrategyType": "CUSTOM",
@@ -1125,6 +1137,8 @@ class TDAmeriTrade(BaseTDAmeriTrade):
                 }
             ]
         }
+        # print(order)
+        dic = dic["order"]
         for type_ in dic:
             if type_ in ["put", "call"]:
                 for s_ in dic[type_]:
@@ -1143,12 +1157,37 @@ class TDAmeriTrade(BaseTDAmeriTrade):
                             {"instrument": {"assetType": "OPTION", "symbol": s_},
                              "instruction": "SELL_TO_CLOSE", "quantity": -dic[type_][s_]["q"]})
 
-        print(order)
+        # print("-1"*50)
+        # print(order)
+        # print("-1"*50)
+        return {'data': order}
+
+    def place_order_test(self, dic):
+        dic = json.loads(dic)
         print("="*100)
-        return {'data': '123'}
+        print(dic)
+        print("-"*50)
+
+        # from tda.orders.equities import equity_buy_limit
+        eq = orders.equities.equity_buy_limit(dic["ticker"], 2, 1250.0).set_duration(Duration.GOOD_TILL_CANCEL).set_session(Session.SEAMLESS).build()
+        print(eq)
+        print(type(eq))
+        print("-"*50)
+        o = orders.options.option_buy_to_open_limit("TSLA_022522C985", 1,5).build()
+        print(o)
+        print("-"*50)
+        ca = orders.options.bear_call_vertical_open("TSLA_022522C985", "TSLA_022522C990", 5, 1.3)
+        ca.set_duration(Duration.GOOD_TILL_CANCEL)
+        ca.set_quantity(10)
+        print(ca.build())
+        print("-"*50)
+
+        # c = self.get_stream_client()
+        # c.place_order(self.account_id, ca.build())
+
+        return {'data': order}
 
     def place_order_(self, dic):
-        from tda.orders.common import Duration
         print(dic)
         print("="*50)
         # a = orders.options.option_buy_to_open_market("TSLA_021122P840", 1)
@@ -1181,6 +1220,83 @@ class TDAmeriTrade(BaseTDAmeriTrade):
 
         return {'status': 'ok'}
 
+    def place_order_test(self, dic):
+        dic = json.loads(dic)
+        print("="*100)
+        print(dic)
+        print("-"*50)
+
+        o = orders.options.option_buy_to_open_limit("TSLA_022522C985", 1, 5).build()
+        print(o)
+        print("-"*50)
+        ca = orders.options.bear_call_vertical_open("TSLA_022522C985", "TSLA_022522C990", 5, 1.3)
+        ca.set_duration(Duration.GOOD_TILL_CANCEL)
+        ca.set_quantity(10)
+        print(ca.build())
+        print("-"*50)
+
+        # c = self.get_stream_client()
+        # c.place_order(self.account_id, ca.build())
+
+        return {'data': order}
+
+    def account_test(self, dic):
+        dic = json.loads(dic)
+        # print("="*100)
+        # print(dic)
+        result = {}
+        try:
+            c = self.get_client()
+            a = c.get_account(self.account_id)
+            a = a.json()
+            # print(a)
+            # print("="*50)
+            current_balances = a['securitiesAccount']['currentBalances']
+            # print("="*50)
+            # print(current_balances)
+            result['buyingPowerNonMarginableTrade'] = current_balances['buyingPowerNonMarginableTrade']
+            # print(result)
+            # print("="*50)
+
+            so_ = {
+                "orderType": "NET_CREDIT",
+                "session": "NORMAL",
+                "quantity": 1,
+                "price": "1.20",
+                "duration": "DAY",
+                "orderStrategyType": "SINGLE",
+                "orderLegCollection": [
+                    {
+                        "instruction": "BUY_TO_OPEN",
+                        "quantity": 1,
+                        "instrument": {
+                            "symbol": "TSLA_022522C990",
+                            "assetType": "OPTION"
+                        }
+                    },
+                    {
+                        "instruction": "SELL_TO_OPEN",
+                        "quantity": 1,
+                        "instrument": {
+                            "symbol": "TSLA_022522C985",
+                            "assetType": "OPTION"
+                        }
+                    }
+                ]
+            }
+            # print(so_)
+            so = c.create_saved_order(self.account_id, so_)
+            # print(so.json())
+
+            # print("="*50)
+            co = c.get_saved_orders_by_path(self.account_id)
+            # print(co.json())
+        except Exception as ex:
+            print(ex)
+        # print("-"*50)
+        # print("-"*50)
+
+        return {'data': result}
 
     def create_option_symbol(self, ticker):
         symbol = ticker
@@ -1424,7 +1540,7 @@ class AcademyCityXBRL(object):
         dataq = ""
         if is_update == "no" and company.financial_data:
             dic_company_info = company.financial_data
-            print(dic_company_info)
+            # print(dic_company_info)
             if is_updateq == "no" and company.financial_dataq:
                 # print('dic_company_info q 2')
                 dataq = company.financial_dataq
@@ -1460,7 +1576,7 @@ class AcademyCityXBRL(object):
         if 'statements' not in dic_company_info:
             dic_company_info['statements'] = self.get_statements(company=company)
         dic_company_info = self.process_dic_company_info_(dic_company_info)
-        print(dic_company_info)
+        # print(dic_company_info)
         return dic_company_info
 
     def get_dic_company_info_(self, company, type_="10-K"):
@@ -2751,12 +2867,12 @@ class AcademyCityXBRL(object):
                 s, c = XBRLSPStatistics.objects.get_or_create(company=company_)
             except Exception as eex:
                 pass
-                # print("error sp_tickers: " + ticker_ + " : " + str(eex))
-
+                # print("error sp_tickers: 111" + ticker_ + " : " + str(eex))
+        # print("End check sp500")
         for file in os.listdir(self.TEXT_PATH):
-            log_debug("Start Processing file: " + file)
+            # log_debug("Start Processing file: " + file)
             # print(file)
-            log_debug("Start file: " + file)
+            log_debug("Start file: " + file +" wait for it to finish/")
             file_path = f"{self.TEXT_PATH}/{file}"
             with open(file_path, 'r') as f:
                 text = f.read()
@@ -2783,7 +2899,7 @@ class AcademyCityXBRL(object):
                                 # print('in sp')
                                 # print(date_str)
                                 # print(ticker)
-                                log_debug("Ticker: " + ticker)
+                                # log_debug("Ticker: " + ticker)
                                 # print('-'*5)
                                 actual = cells[2].text
                                 forecast = cells[3].text.split('/')[1].lstrip()
@@ -2805,7 +2921,7 @@ class AcademyCityXBRL(object):
                                     ef.save()
                                     # print("forecast saved")
                                 except Exception as eex:
-                                    # print("error forecast: " + str(eex))
+                                    # print("error forecast 123: " + str(eex))
                                     pass
 
                                 try:
@@ -2814,7 +2930,7 @@ class AcademyCityXBRL(object):
                                     ef.save()
                                     # print("Actual saved")
                                 except Exception as eex:
-                                    # print("error actual: " + str(eex))
+                                    # print("error actual 234: " + str(eex))
                                     ef.actual = None
                                     # pass
 
@@ -2824,7 +2940,7 @@ class AcademyCityXBRL(object):
                                     # print("Date saved")
                                 except Exception as eex:
                                     pass
-                                    # print("error Date act for: " + str(eex))
+                                    # print("error Date act for 444: " + str(eex))
 
                                 # try:
                                 #     ef.save()
@@ -2837,7 +2953,7 @@ class AcademyCityXBRL(object):
                                     self.get_ticker_prices(earning_forecast=ef)
                                 except Exception as eex:
                                     pass
-                                    # print("error Price act for: " + str(eex))
+                                    # print("error Price act for 555: " + str(eex))
 
                                 try:
                                     next_release_date = self.get_next_relealse_date(cells[1], date_)
@@ -2859,7 +2975,7 @@ class AcademyCityXBRL(object):
                                     company.company_statistic.set_company_statistics()
                                 except Exception as eex:
                                     pass
-                                    # print("error company.set_company_statisitcs: " + str(eex))
+                                    # print("error company.set_company_statisitcs 666: " + str(eex))
                     except Exception as ex:
                         # if ticker in sp_tickers:
                         # print('ex')
@@ -2868,6 +2984,7 @@ class AcademyCityXBRL(object):
                         # print(cells[2].text)
                         # print('ex')
                         pass
+            print("End Processing file: " + file)
             log_debug("End Processing file: " + file)
         log_debug("End Processing all files1: ")
         log_debug("End Processing all files2: ")
@@ -2918,10 +3035,14 @@ class AcademyCityXBRL(object):
         sp_tickers = self.get_sp500()['sp_tickers']
         for ticker_ in sp_tickers:
             try:
-                s, c = XBRLSPStatistics.objects.get_or_create(company__ticker=ticker_)
+                # print(ticker_)
+                company_ = XBRLCompanyInfo.objects.get(ticker=ticker_)
+                # print(company_)
+                s, c = XBRLSPStatistics.objects.get_or_create(company=company_)
+                # print(c)
             except Exception as eex:
                 pass
-                # print("error sp_tickers: " + ticker_ + " : " + str(eex))
+                # print("error 345 sp_tickers: " + ticker_ + " : " + str(eex))
         headers = {'User-Agent': 'amos@drbaranes.com'}
         url = "https://www.investing.com/earnings-calendar/"
         sp_resp = requests.get(url, headers=headers, timeout=30)
@@ -3246,6 +3367,172 @@ class AcademyCityXBRL(object):
             # print('error 108: '+str(ex))
         return {'status': 'ok', 'id': company_id, 'company_name': company_name_}
 
+    def get_companies_for_exchange(self, exchange, exchange_url):
+        companies = pd.DataFrame(columns=['exchange', 'name', 'ticker', 'letter'])
+        company_name = []
+        company_ticker = []
+        company_letter = []
+        letters = string.ascii_uppercase
+        for letter in letters:
+            company_name, company_ticker, company_letter = self.get_companies_for_letter(
+                letter, exchange_url + letter, company_name, company_ticker, company_letter)
+        companies['name'] = company_name
+        companies['ticker'] = company_ticker
+        companies['exchange'] = exchange
+        companies['letter'] = company_letter
+        companies = companies[companies['ticker'] != '']
+        return companies
+
+    def get_companies_for_letter(self, letter, url, company_name, company_ticker, company_letter):
+        page = requests.get(url, timeout=30)
+        soup = BeautifulSoup(page.text, 'html.parser')
+        odd_rows = soup.find_all('tr', attrs={'class': 'ts0'})
+        even_rows = soup.find_all('tr', attrs={'class': 'ts1'})
+        for r in odd_rows:
+            cs = r.find_all('td')
+            company_name.append(cs[0].text.strip())
+            company_ticker.append(cs[1].text.strip())
+            company_letter.append(letter)
+        for r in even_rows:
+            cs = r.find_all('td')
+            company_name.append(cs[0].text.strip())
+            company_ticker.append(cs[1].text.strip())
+            company_letter.append(letter)
+        return company_name, company_ticker, company_letter
+    #
+
+    # general purpose functions for testing
+    def test(self):
+        try:
+            today_ = datetime.datetime.today()
+            nday = today_.weekday()  # Monday = 0
+            h = today_.hour
+            m = today_.minute
+            log_debug(str(nday)+" : "+str(h)+" : "+str(m))
+
+            data = ()
+            ssql = " insert into corporatevaluation_XBRLRealEquityPricesArchive(ticker,t,o,h,l,c,v) "
+            ssql += "select ticker,t,o,h,l,c,v from corporatevaluation_XBRLRealEquityPrices"
+            # print(ssql)
+
+            count = SQL().exc_sql(ssql, data)
+            # print(count)
+            XBRLRealEquityPrices.truncate()
+
+        except Exception as ex:
+            print("Error200: "+str(ex))
+            pass
+        result = {'status': "ok"}
+        return result
+
+    def test1(self):
+        XBRLRealEquityPrices.truncate()
+        result = {'status': "ok"}
+        return result
+
+    def test2(self):
+        XBRLRealEquityPricesArchive.truncate()
+        result = {'status': "ok"}
+        return result
+
+#   --- Stage 1 get list of companies ---
+    def set_sic_code(self):
+        log_debug("Start set_sic_code")
+        url = 'https://en.wikipedia.org/wiki/Standard_Industrial_Classification'
+        headers = {'User-Agent': 'amos@drbaranes.com'}
+        page = requests.get(url, headers=headers, timeout=30)
+        soup = BeautifulSoup(page.text, 'html.parser')
+        tables = soup.find_all('table')
+        rows = tables[0].find_all('tr')
+        z = 0
+        for r in rows:
+            if z == 0:
+                z = 1
+                continue
+            cs = r.find_all('td')
+            sic_code_ = int(cs[0].text.strip().split('-')[1])
+            sic_description_ = cs[1].text.strip()
+            XBRLMainIndustryInfo.objects.get_or_create(sic_code=sic_code_, sic_description=sic_description_)
+        url = 'https://www.sec.gov/corpfin/division-of-corporation-finance-standard-industrial-classification-sic-code-list'
+        page = requests.get(url, headers=headers, timeout=30)
+        soup = BeautifulSoup(page.text, 'html.parser')
+        rows = soup.find_all('tr')
+        main_sics = XBRLMainIndustryInfo.objects.all()
+        z = 0
+        for r in rows:
+            if z == 0:
+                z = 1
+                continue
+            cs = r.find_all('td')
+            # print(cs[0].text.strip() + ':' + cs[2].text.strip())
+
+            sic_code_ = int(cs[0].text.strip())
+            sic_description_ = cs[2].text.strip()
+            main_sic_ = 1999
+            for main_sic in main_sics:
+                if sic_code_ < main_sic.sic_code:
+                    main_sic_ = main_sic
+                    break
+            XBRLIndustryInfo.objects.get_or_create(sic_code=sic_code_, main_sic=main_sic_,
+                                                   sic_description=sic_description_)
+        log_debug("End set_sic_code")
+        return {'status': 'ok'}
+
+    def get_all_companies(self):
+        log_debug("Start get_all_companies")
+        exchanges = {
+            'nyse': 'nyse/newyorkstockexchange',
+            'nasdaq': 'nasdaq/nasdaq',
+            'amex': 'amex/americanstockexchange'}
+
+        # writer = pd.ExcelWriter(self.EXCEL_PATH+'/all_companies.xlsx', engine='xlsxwriter')
+        n = 0
+        companies = None
+        for exchange in exchanges:
+            # print(exchange)
+            url = 'https://www.advfn.com/' + exchanges[exchange] + '.asp?companies='
+            df = self.get_companies_for_exchange(exchange=exchange, exchange_url=url)
+            if n == 0:
+                companies = df
+                n += 1
+            else:
+                frames = [companies, df]
+                companies = pd.concat(frames)
+            # df.to_excel(writer, sheet_name=exchange)
+            # Close the Pandas Excel writer and output the Excel file.
+        try:
+            XBRLCompanyInfoInProcess.truncate()
+        except Exception as ex:
+            print("Error 107:  " + str(ex))
+
+        # print('done collecting data on companies')
+
+        try:
+            # print(companies)
+            for i, c in companies.iterrows():
+                # print(c)
+                # print(c['exchange'])
+                # print(c['name'])
+
+                # print(c['ticker'])
+
+                # print(c['letter'])
+                a, created = XBRLCompanyInfoInProcess.objects.get_or_create(exchange=c['exchange'],
+                                                                            company_name=c['name'],
+                                                                            ticker=c['ticker'],
+                                                                            company_letter=c['letter'])
+        except Exception as ex:
+            print("Error 2:  " + str(ex))
+
+        # print('done loading data to XBRLCompanyInfoInProcess')
+
+        # self.companies.reset_index(drop=True, inplace=True)
+        # self.companies.to_excel(writer, sheet_name='all')
+        # writer.save()
+        log_debug("End get_all_companies")
+        dic = {'status': 'ok'}
+        return dic
+
     def clean_data_for_all_companies(self):
         log_debug("Start clean_data_for_all_companies")
         companies_ = XBRLCompanyInfoInProcess.objects.all()
@@ -3367,138 +3654,7 @@ class AcademyCityXBRL(object):
         dic = {'status': 'ok'}
         return dic
 
-    def get_all_companies(self):
-        log_debug("Start get_all_companies")
-        exchanges = {
-            'nyse': 'nyse/newyorkstockexchange',
-            'nasdaq': 'nasdaq/nasdaq',
-            'amex': 'amex/americanstockexchange'}
-
-        # writer = pd.ExcelWriter(self.EXCEL_PATH+'/all_companies.xlsx', engine='xlsxwriter')
-        n = 0
-        companies = None
-        for exchange in exchanges:
-            # print(exchange)
-            url = 'https://www.advfn.com/' + exchanges[exchange] + '.asp?companies='
-            df = self.get_companies_for_exchange(exchange=exchange, exchange_url=url)
-            if n == 0:
-                companies = df
-                n += 1
-            else:
-                frames = [companies, df]
-                companies = pd.concat(frames)
-            # df.to_excel(writer, sheet_name=exchange)
-            # Close the Pandas Excel writer and output the Excel file.
-        try:
-            XBRLCompanyInfoInProcess.truncate()
-        except Exception as ex:
-            print("Error 107:  " + str(ex))
-
-        # print('done collecting data on companies')
-
-        try:
-            # print(companies)
-            for i, c in companies.iterrows():
-                # print(c)
-                # print(c['exchange'])
-                # print(c['name'])
-
-                # print(c['ticker'])
-
-                # print(c['letter'])
-                a, created = XBRLCompanyInfoInProcess.objects.get_or_create(exchange=c['exchange'],
-                                                                            company_name=c['name'],
-                                                                            ticker=c['ticker'],
-                                                                            company_letter=c['letter'])
-        except Exception as ex:
-            print("Error 2:  " + str(ex))
-
-        # print('done loading data to XBRLCompanyInfoInProcess')
-
-        # self.companies.reset_index(drop=True, inplace=True)
-        # self.companies.to_excel(writer, sheet_name='all')
-        # writer.save()
-        log_debug("End get_all_companies")
-        dic = {'status': 'ok'}
-        return dic
-
-    def get_companies_for_exchange(self, exchange, exchange_url):
-        companies = pd.DataFrame(columns=['exchange', 'name', 'ticker', 'letter'])
-        company_name = []
-        company_ticker = []
-        company_letter = []
-        letters = string.ascii_uppercase
-        for letter in letters:
-            company_name, company_ticker, company_letter = self.get_companies_for_letter(
-                letter, exchange_url + letter, company_name, company_ticker, company_letter)
-        companies['name'] = company_name
-        companies['ticker'] = company_ticker
-        companies['exchange'] = exchange
-        companies['letter'] = company_letter
-        companies = companies[companies['ticker'] != '']
-        return companies
-
-    def get_companies_for_letter(self, letter, url, company_name, company_ticker, company_letter):
-        page = requests.get(url, timeout=30)
-        soup = BeautifulSoup(page.text, 'html.parser')
-        odd_rows = soup.find_all('tr', attrs={'class': 'ts0'})
-        even_rows = soup.find_all('tr', attrs={'class': 'ts1'})
-        for r in odd_rows:
-            cs = r.find_all('td')
-            company_name.append(cs[0].text.strip())
-            company_ticker.append(cs[1].text.strip())
-            company_letter.append(letter)
-        for r in even_rows:
-            cs = r.find_all('td')
-            company_name.append(cs[0].text.strip())
-            company_ticker.append(cs[1].text.strip())
-            company_letter.append(letter)
-        return company_name, company_ticker, company_letter
-
-    def set_sic_code(self):
-        log_debug("Start set_sic_code")
-        url = 'https://en.wikipedia.org/wiki/Standard_Industrial_Classification'
-        headers = {'User-Agent': 'amos@drbaranes.com'}
-        page = requests.get(url, headers=headers, timeout=30)
-        soup = BeautifulSoup(page.text, 'html.parser')
-        tables = soup.find_all('table')
-        rows = tables[0].find_all('tr')
-        z = 0
-        for r in rows:
-            if z == 0:
-                z = 1
-                continue
-            cs = r.find_all('td')
-            sic_code_ = int(cs[0].text.strip().split('-')[1])
-            sic_description_ = cs[1].text.strip()
-            XBRLMainIndustryInfo.objects.get_or_create(sic_code=sic_code_, sic_description=sic_description_)
-        url = 'https://www.sec.gov/corpfin/division-of-corporation-finance-standard-industrial-classification-sic-code-list'
-        page = requests.get(url, headers=headers, timeout=30)
-        soup = BeautifulSoup(page.text, 'html.parser')
-        rows = soup.find_all('tr')
-        main_sics = XBRLMainIndustryInfo.objects.all()
-        z = 0
-        for r in rows:
-            if z == 0:
-                z = 1
-                continue
-            cs = r.find_all('td')
-            # print(cs[0].text.strip() + ':' + cs[2].text.strip())
-
-            sic_code_ = int(cs[0].text.strip())
-            sic_description_ = cs[2].text.strip()
-            main_sic_ = 1999
-            for main_sic in main_sics:
-                if sic_code_ < main_sic.sic_code:
-                    main_sic_ = main_sic
-                    break
-            XBRLIndustryInfo.objects.get_or_create(sic_code=sic_code_, main_sic=main_sic_,
-                                                   sic_description=sic_description_)
-        log_debug("End set_sic_code")
-        return {'status': 'ok'}
-
-    # # #
-
+#   --- Stage 2 Regions, countries, ----
     def load_tax_rates_by_country_year(self):
         dic = {'status': 'ko'}
         log_debug("Start load_tax_rates_by_country_year.")
@@ -3843,6 +3999,8 @@ class AcademyCityXBRL(object):
         log_debug("End update_region_risk_premium.")
         return dic
 
+#   --- Stage 3 - SP500 ---
+#     loading excel file to XBRLHistoricalReturnsSP.
     def load_sp_returns(self):
         log_debug("Start load_sp_returns.")
         # https://github.com/7astro7/full_fred
@@ -3899,40 +4057,6 @@ class AcademyCityXBRL(object):
         dic = {'status': 'ok'}
         log_debug("End load_sp_returns.")
         return dic
-
-    # general purpose functions for testing
-    def test(self):
-        try:
-            today_ = datetime.datetime.today()
-            nday = today_.weekday()  # Monday = 0
-            h = today_.hour
-            m = today_.minute
-            log_debug(str(nday)+" : "+str(h)+" : "+str(m))
-
-            data = ()
-            ssql = " insert into corporatevaluation_XBRLRealEquityPricesArchive(ticker,t,o,h,l,c,v) "
-            ssql += "select ticker,t,o,h,l,c,v from corporatevaluation_XBRLRealEquityPrices"
-            # print(ssql)
-
-            count = SQL().exc_sql(ssql, data)
-            # print(count)
-            XBRLRealEquityPrices.truncate()
-
-        except Exception as ex:
-            print("Error200: "+str(ex))
-            pass
-        result = {'status': "ok"}
-        return result
-
-    def test1(self):
-        XBRLRealEquityPrices.truncate()
-        result = {'status': "ok"}
-        return result
-
-    def test2(self):
-        XBRLRealEquityPricesArchive.truncate()
-        result = {'status': "ok"}
-        return result
 
 
 class FinancialAnalysis(object):

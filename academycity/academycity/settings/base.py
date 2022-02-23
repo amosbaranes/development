@@ -192,8 +192,13 @@ WebApps = [
     'academycity.apps.webapps.simba',
 ]
 
+acApps = [
+    'academycity.apps.acapps.businesssim',
+    'academycity.apps.acapps.macroeconomics',
+]
+
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
-INSTALLED_APPS = THIRD_PARTY_APPS + LOCAL_APPS + WebApps + BOOTSTRAP_APPS + DJANGO_APPS
+INSTALLED_APPS = THIRD_PARTY_APPS + LOCAL_APPS + WebApps + acApps + BOOTSTRAP_APPS + DJANGO_APPS
 
 MIDDLEWARE = [
     # 'django_cookies_samesite.middleware.CookiesSameSite',
@@ -250,7 +255,6 @@ TEMPLATES = [
 ]
 
 # ----
-
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
     'allauth.account.auth_backends.AuthenticationBackend',

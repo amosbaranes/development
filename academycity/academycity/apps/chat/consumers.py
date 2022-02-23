@@ -5,21 +5,19 @@ from django.contrib.auth import get_user_model
 from channels.consumer import AsyncConsumer
 from channels.db import database_sync_to_async
 from .models import Thread, Whiteboard, WhiteboardData
-from ..corporatevaluation.models import XBRLCompanyInfo, XBRLRealEquityPrices
-from ..courses.models import Section, CourseSchedule
-from ..core.OptionsAmeriTrade import BaseTDAmeriTrade
-from ..core.utils import log_debug
+from ..core.models import Debug
 
 
 class OptionsConsumer(AsyncConsumer):
     async def websocket_connect(self, event):
-        # print("connected", event)
+        await self.log_debug_async("100 connected")
         await self.send({
             'type': 'websocket.accept'
         })
 
         self.chat_room = self.scope['url_route']['kwargs']['group']
         me = self.scope['user']
+        await self.log_debug_async("200"+self.chat_room)
 
         await self.channel_layer.group_add(
             self.chat_room,
@@ -31,6 +29,8 @@ class OptionsConsumer(AsyncConsumer):
             'type': 'connected',
             'sender_channel_name': self.channel_name
         }
+
+        await self.log_debug_async("300 before self.channel_layer.group_send")
         await self.channel_layer.group_send(
             self.chat_room,
             {
@@ -39,6 +39,7 @@ class OptionsConsumer(AsyncConsumer):
             })
 
     async def websocket_receive(self, event, white=None):
+        await self.log_debug_async("1021 - websocket_receive")
         data = event.get("text", None)
         if data is not None:
             text_data = json.loads(data)
@@ -100,11 +101,10 @@ class OptionsConsumer(AsyncConsumer):
                         'type': 'chat_message',
                         'text': json.dumps(response_)
                     })
-                # if type == "data_received_chart_equity":
-                #     await self.record_data_received_chart_equity(msg)
 
     async def send_stream(self, msg, n):
         # await asyncio.sleep(n)
+        await self.log_debug_async("1200 - in send_stream")
         s__ = str(datetime.datetime.now())
         response_ = {
             'msg': msg + " == " + s__,
@@ -127,8 +127,7 @@ class OptionsConsumer(AsyncConsumer):
         type_ = json.loads(event['text'])['type']
         msg_ = json.loads(event['text'])['msg']
 
-        # if type_ == "data_received_chart_equity":
-        #     await self.record_data_received_chart_equity(msg_)
+        await self.log_debug_async("500 chat_message type: "+type_)
 
         # if (self.channel_name != sender_channel_name) or (type == "chat_message"):
         await self.send({
@@ -148,6 +147,11 @@ class OptionsConsumer(AsyncConsumer):
             self.chat_room,
             self.channel_name
         )
+
+    @database_sync_to_async
+    def log_debug_async(self, value):
+        Debug.objects.create(value=value)
+
 
     # @database_sync_to_async
     # def get_archived_data_from_db(self):

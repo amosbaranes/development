@@ -531,82 +531,17 @@ def truncate_and_get_df_from_excel(table=None, file_name=None):
     wd = os.getcwd()
     s_dir = wd + '/academycity/apps/corporatevaluation/data/'
     sr = s_dir + file_name
-    df = pd.read_excel(sr, 'Data')
-    return dataframe_to_rows(df, index=False, header=False)
-
-
-def update_data(request):
-    # print('update_data 1')
-    dic = {'status': 'ok'}
-
-    # print(1)
-
+    print(sr)
     try:
-        for r in truncate_and_get_df_from_excel(table=RBOIC, file_name='RatingBasedOnInterestCoverage.xlsx'):
-            RBOIC.objects.create(from_ic=float(r[0]),
-                                 to_ic=float(r[1]), rating=r[2], spread=float(r[3]))
-
-        for r in truncate_and_get_df_from_excel(table=CountryRegion, file_name='CountryRegion.xlsx'):
-            CountryRegion.objects.create(region=r[0])
-
-        for r in truncate_and_get_df_from_excel(table=CountryRating, file_name='CountryRating.xlsx'):
-            CountryRating.objects.create(country_rating=r[0], default_spread=float(r[1]))
-
-        for r in truncate_and_get_df_from_excel(table=Country, file_name='Country.xlsx'):
-            try:
-                cr = CountryRating.objects.filter(country_rating=r[2]).all()[0]
-                cre = CountryRegion.objects.filter(region=r[3]).all()[0]
-                Country.objects.create(country=r[0], marginal_tax_rate=float(r[1]), long_term_rating=cr, region=cre)
-            except Exception as e:
-                print(e)
-
-        for r in truncate_and_get_df_from_excel(table=GlobalIndustryAverages, file_name='GlobalIndustryAverages.xlsx'):
-            try:
-                GlobalIndustryAverages.objects.create(industry_name=r[0], number_of_firms=float(r[1]),
-                                                      unlevered_beta_corrected_for_cash=r[2],
-                                                      market_d_over_e_ratio=r[3], market_debt_to_capital=r[4],
-                                                      effective_tax_rate=r[5], dividend_payout=r[6], net_margin=r[7],
-                                                      pre_tax_operating_margin=r[8],
-                                                      roe=r[9], roic=r[10], SalesOverCapital=r[11], ev_over_sales=r[12],
-                                                      revenue_growth_rateLast_5_years=r[13],
-                                                      expected_earnings_growth_next_5_years=r[14]
-                                                      )
-            except Exception as e:
-                print(e)
-
-        Industry.truncate()
-        CompanyInfo.truncate()
-        for r in truncate_and_get_df_from_excel(table=CompanyData, file_name='Companies.xlsx'):
-            try:
-                industry_, created = Industry.objects.get_or_create(sic_code=r[2])
-                if created:
-                    industry_.sic_description = r[3]
-                    industry_.save()
-                CompanyInfo.objects.create(ticker=r[0], cik=r[1], industry=industry_, company_name=r[4],
-                                           city=r[5], state=r[6], zip=r[7])
-            except Exception as e:
-                print(e)
-
-    except Exception as exc:
-        print(exc)
-
-    # print(1000)
-
-    return JsonResponse(dic)
+        df = pd.read_excel(sr, 'Data')
+    except Exception as ex:
+        print(ex)
+    print(13)
+    return dataframe_to_rows(df, index=False, header=False)
 
 
 # Admin
 # load sic numbers from the SEC
-def set_sic_code(request):
-    acx = AcademyCityXBRL()
-    return acx.set_sic_code()
-
-#
-def get_all_companies(request):
-    acx = AcademyCityXBRL()
-    dic = acx.get_all_companies()
-    return dic
-
 def get_option_bf_detail_for_ticker(request):
     ticker_ = request.POST.get('ticker')
     dic = TDAmeriTrade().get_option_bf_detail_for_ticker(ticker=ticker_)
@@ -673,17 +608,6 @@ def get_earning_forecast_sp500_view_main(request):
     return dic
 
 
-def update_statistics(request):
-    try:
-        log_debug("Start update_statistics: " + datetime.datetime.now().strftime("%H:%M:%S"))
-        for s in XBRLSPStatistics.objects.all():
-            s.set_company_statistics(is_update=False)
-        log_debug("End update_statistics " + datetime.datetime.now().strftime("%H:%M:%S"))
-    except Exception as ex:
-        print(ex)
-    return {'status': 'ok'}
-
-
 def analysis_setup_attribute(request):
     fun_ = request.POST.get('fun')
     attribute_ = request.POST.get('attribute')
@@ -711,6 +635,7 @@ def activate_obj_function(request):
         # print(type(dic_))
         s_ = obj_+'().' + fun_ + '(dic_)'
         # print(s_)
+        log_debug("activate_obj_function: "+fun_)
         dic = eval(s_)
         # print('-'*10)
         # print(dic)
@@ -749,8 +674,9 @@ def activate_obj_function(request):
 
         return JsonResponse({'status': 'ok', 'data': dic})
     except Exception as ex:
-        print(ex)
-        return JsonResponse({'status': 'ko'})
+        # print(ex)
+        log_debug("Error activate_obj_function: "+str(ex))
+        return JsonResponse({'status': 'ko: activate_obj_function'})
 
 
 def truncate_table(request):
@@ -780,10 +706,6 @@ def admin_setup_attribute(request):
         return JsonResponse({'status': 'error: '+str(ex)})
 
 
-def update_region_risk_premium(request):
-    return AcademyCityXBRL().update_region_risk_premium(request)
-
-
 def admin_setup(request):
     try:
         fun_ = request.POST.get('fun')
@@ -798,26 +720,6 @@ def admin_setup(request):
     except Exception as ex:
         return JsonResponse({'status': 'error: '+str(ex)})
 
-#
-# def load_tax_rates_by_country_year(request):
-#     try:
-#         acx = AcademyCityXBRL()
-#         dic = acx.load_tax_rates_by_country_year()
-#         return dic
-#     except Exception as ex:
-#         return JsonResponse({'status': 'error: '+str(ex)})
-
-#
-# def load_sp_returns(request):
-#     acx = AcademyCityXBRL()
-#     dic = acx.load_sp_returns()
-#     return dic
-
-
-def load_country_premium(request):
-    acx = AcademyCityXBRL()
-    dic = acx.load_country_premium(request)
-    return dic
 
 # End Admin
 
@@ -1158,12 +1060,6 @@ def get_r(request):
     dic = {'html': edgar_resp.text}
     return JsonResponse(dic)
 
-#
-# def clean_data_for_all_companies(request):
-#     acx = AcademyCityXBRL()
-#     dic = acx.clean_data_for_all_companies()
-#     return dic
-
 
 def create_company_by_ticker(request):
     ticker = request.POST.get('ticker')
@@ -1173,12 +1069,6 @@ def create_company_by_ticker(request):
     acx = AcademyCityXBRL()
     response = acx.create_company_by_ticker(ticker)
     return JsonResponse(response)
-
-#
-# def copy_processed_companies(request):
-#     acx = AcademyCityXBRL()
-#     dic = acx.copy_processed_companies()
-#     return dic
 
 
 def get_data_ticker(request):
@@ -1281,6 +1171,108 @@ def save_industry_default(request):
     return JsonResponse(dic)
 
 
+# -- Stage 1 update: XBRLRegion XBRLCountry XBRLCountryYearData XBRLSPMoodys XBRLRegionYearData --
+def load_tax_rates_by_country_year(request):
+    try:
+        acx = AcademyCityXBRL()
+        dic = acx.load_tax_rates_by_country_year()
+        return dic
+    except Exception as ex:
+        return JsonResponse({'status': 'error: '+str(ex)})
+
+
+def load_country_premium(request):
+    acx = AcademyCityXBRL()
+    dic = acx.load_country_premium(request)
+    return dic
+
+
+def update_region_risk_premium(request):
+    return AcademyCityXBRL().update_region_risk_premium(request)
+
+
+# Should revise this function
+def update_data(request):
+    # print('update_data 1')
+    dic = {'status': 'ok'}
+    try:
+        for r in truncate_and_get_df_from_excel(table=RBOIC, file_name='RatingBasedOnInterestCoverage.xlsx'):
+            RBOIC.objects.create(from_ic=float(r[0]),
+                                 to_ic=float(r[1]), rating=r[2], spread=float(r[3]))
+
+        # for r in truncate_and_get_df_from_excel(table=CountryRegion, file_name='CountryRegion.xlsx'):
+        #     CountryRegion.objects.create(region=r[0])
+        #
+        # for r in truncate_and_get_df_from_excel(table=CountryRating, file_name='CountryRating.xlsx'):
+        #     CountryRating.objects.create(country_rating=r[0], default_spread=float(r[1]))
+        #
+        # for r in truncate_and_get_df_from_excel(table=Country, file_name='Country.xlsx'):
+        #     try:
+        #         cr = CountryRating.objects.filter(country_rating=r[2]).all()[0]
+        #         cre = CountryRegion.objects.filter(region=r[3]).all()[0]
+        #         Country.objects.create(country=r[0], marginal_tax_rate=float(r[1]), long_term_rating=cr, region=cre)
+        #     except Exception as e:
+        #         print(e)
+        #
+        # for r in truncate_and_get_df_from_excel(table=GlobalIndustryAverages, file_name='GlobalIndustryAverages.xlsx'):
+        #     try:
+        #         GlobalIndustryAverages.objects.create(industry_name=r[0], number_of_firms=float(r[1]),
+        #                                               unlevered_beta_corrected_for_cash=r[2],
+        #                                               market_d_over_e_ratio=r[3], market_debt_to_capital=r[4],
+        #                                               effective_tax_rate=r[5], dividend_payout=r[6], net_margin=r[7],
+        #                                               pre_tax_operating_margin=r[8],
+        #                                               roe=r[9], roic=r[10], SalesOverCapital=r[11], ev_over_sales=r[12],
+        #                                               revenue_growth_rateLast_5_years=r[13],
+        #                                               expected_earnings_growth_next_5_years=r[14]
+        #                                               )
+        #     except Exception as e:
+        #         print(e)
+        #
+        # Industry.truncate()
+        # CompanyInfo.truncate()
+        # for r in truncate_and_get_df_from_excel(table=CompanyData, file_name='Companies.xlsx'):
+        #     try:
+        #         industry_, created = Industry.objects.get_or_create(sic_code=r[2])
+        #         if created:
+        #             industry_.sic_description = r[3]
+        #             industry_.save()
+        #         CompanyInfo.objects.create(ticker=r[0], cik=r[1], industry=industry_, company_name=r[4],
+        #                                    city=r[5], state=r[6], zip=r[7])
+        #     except Exception as e:
+        #         print(e)
+
+    except Exception as exc:
+        print(exc)
+
+    # print(1000)
+
+    return dic
+
+
+# -- Stage 2 get list of companies --
+def set_sic_code(request):
+    acx = AcademyCityXBRL()
+    return acx.set_sic_code()
+
+
+def get_all_companies(request):
+    acx = AcademyCityXBRL()
+    dic = acx.get_all_companies()
+    return dic
+
+
+def clean_data_for_all_companies(request):
+    acx = AcademyCityXBRL()
+    dic = acx.clean_data_for_all_companies()
+    return dic
+
+
+def copy_processed_companies(request):
+    acx = AcademyCityXBRL()
+    dic = acx.copy_processed_companies()
+    return dic
+
+
 def get_duplications_tickers(request):
     log_debug("Start get_duplications_tickers")
     dic = {'status': 'ok'}
@@ -1305,12 +1297,24 @@ def get_duplications_tickers(request):
     log_debug("End get_duplications_tickers")
     return dic
 
-#
-# def test(request):
-#     acx = AcademyCityXBRL()
-#     return acx.test()
 
-#
-# def test1(request):
-#     acx = AcademyCityXBRL()
-#     acx.test1()
+# -- Stage 3 - SP500 --
+# loading excel file to XBRLHistoricalReturnsSP.
+def load_sp_returns(request):
+    return AcademyCityXBRL().load_sp_returns()
+
+
+def upload_old_earning_forecast_sp500(request):
+    return AcademyCityXBRL().upload_old_earning_forecast_sp500()
+
+
+def update_statistics(request):
+    try:
+        log_debug("Start update_statistics: " + datetime.datetime.now().strftime("%H:%M:%S"))
+        for s in XBRLSPStatistics.objects.all():
+            s.set_company_statistics(is_update=False)
+        log_debug("End update_statistics " + datetime.datetime.now().strftime("%H:%M:%S"))
+    except Exception as ex:
+        print(ex)
+    return {'status': 'ok'}
+

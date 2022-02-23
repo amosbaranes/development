@@ -22,4 +22,4 @@ def data_tab(request):
 
 
 def tab(request):
-    return render(request, 'javascripttutorial/at.html', {"atm_name": "atm"})
+    return render(request, 'javascripttutorial/at.html', {"atm_name": "atm", "title": "Business Sim"})

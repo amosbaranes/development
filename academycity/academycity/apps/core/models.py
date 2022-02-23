@@ -7,6 +7,7 @@ from .sql import TruncateTableMixin
 class DataAdvancedTabs(models.Model):
     at_name = models.CharField(max_length=10, null=True)
     tab_name = models.CharField(max_length=50, null=True)
+    tab_title = models.CharField(max_length=50, null=True)
     tab_text = models.TextField(null=True)
     tab_functions = models.JSONField(null=True)   # relate to functions in the page
 
