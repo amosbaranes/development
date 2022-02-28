@@ -1530,8 +1530,8 @@ class AcademyCityXBRL(object):
         print('='*50)
         print('k')
         print(k)
-    # --
 
+    # --
     def get_data_ticker(self, ticker, is_update='no', is_updateq='no'):
         try:
             company = XBRLCompanyInfo.objects.get(ticker=ticker)
@@ -1550,7 +1550,9 @@ class AcademyCityXBRL(object):
                 company.save()
         else:
             dic_company_info = self.get_dic_company_info(company)
+            # print('-2'*50)
             company.financial_data = dic_company_info
+            # print('-3'*50)
             company.save()
         try:
             countries_regions_ = company.get_countries_regions()
@@ -1584,6 +1586,8 @@ class AcademyCityXBRL(object):
         # print("get_dic_company_info_ 1")
         base_url = "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK={}&type={}&count=100"  # &dateb={}"
         url = base_url.format(company.cik, type_)
+        # print('-1'*10)
+        # print(url)
         dic_company_info = {"company_info": {'ticker': company.ticker,
                                              'cik': company.cik,
                                              'sic_code': company.industry.sic_code,
@@ -1596,6 +1600,7 @@ class AcademyCityXBRL(object):
         edgar_resp = requests.get(url, headers=headers, timeout=30)
         # print("Current Time 11 =", datetime.datetime.now().strftime("%H:%M:%S"))
         edgar_str = edgar_resp.text
+        # print(edgar_str)
         #
         cik0 = ''
         cik_re = re.compile(r'.*CIK=(\d{10}).*')
@@ -1612,6 +1617,9 @@ class AcademyCityXBRL(object):
             results[0] = int(re.sub('\.[0]*', '.', results[0]))
             sic0 = str(results[0])
         dic_company_info['company_info']['SIC'] = sic0
+        # print('-3'*10)
+        # print(dic_company_info)
+        # print('-3'*10)
         #
         # Find the document links
         soup = BeautifulSoup(edgar_str, 'html.parser')
@@ -1633,7 +1641,7 @@ class AcademyCityXBRL(object):
                     for filing_year in range(self.xbrl_start_year, self.today_year + 1):
                         if str(filing_year) in cells[3].text:
                             # print(str(filing_year), cells[3].text, cells[1].a['href'], cells[0].text)
-                            if filing_year not in dic_data and cells[0].text == "10-K":
+                            if filing_year not in dic_data and (cells[0].text == "10-K" or cells[0].text == "20-F"):
                                 dic_data[filing_year] = {}
                                 dic_data[filing_year]['href'] = 'https://www.sec.gov' + cells[1].a['href']
             except Exception as ex:

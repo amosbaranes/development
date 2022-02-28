@@ -32,9 +32,149 @@
                     </tr>
                 </table>
             </td>
+            <td>
+                <div id="result_message">result_message</div>
+            </td>
         </tr>
-
     </table>
+    <hr/>
+    <h5>Setup for Corporate Valuation</h5>
+    <table>
+        <tr>
+            <td>
+                <h3>Stage 1 - Regions, Countries, Moodys, ROBIC</h3>
+                <table>
+                    <tr>
+                        <td>
+                            <button onclick="admin_setup(event)" fun="load_tax_rates_by_country_year" style="width: 250px;">Load Tax Rates By Country, Year</button>
+                            <br/><span>from https://files.taxfoundation.org/20210125115215/io1980-2020-Corporate-Tax-Rates-Around-the-World.csv.xlsx</span>
+                            <br/><span>load data to XBRLRegion XBRLCountry XBRLCountryYearData</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <button onclick="admin_setup(event)" fun="load_country_premium" style="width: 250px;">Load Country Premium</button>
+                            <br/><span>Update XBRLSPMoodys XBRLRegionYearData</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <button onclick="admin_setup(event)" fun="update_region_risk_premium" style="width: 250px;">Update Region Risk Premium</button>
+                            <br/><span>Update risk premium in the above tables</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <button onclick="admin_setup(event)" fun="update_data" style="width: 250px;">update_data</button>
+                            <br/><span>update_data (for RBOIC. need to clean it)</span>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+            <td>
+                <h3>Stage 2 get list of companies</h3>
+                <table>
+                    <tr>
+                        <td>
+                            <button onclick="admin_setup(event)" fun="set_sic_code" style="width: 250px;">(1) Load SIC Codes from SEC</button>
+                            <span> update XBRLMainIndustryInfo and XBRLIndustryInfo</span>
+                            <br/>
+                            <a href="https://en.wikipedia.org/wiki/Standard_Industrial_Classification" targte="_blank">
+                                https://en.wikipedia.org/wiki/Standard_Industrial_Classificatio
+                            </a>
+                            <br/>
+                            <a href="https://www.sec.gov/corpfin/division-of-corporation-finance-standard-industrial-classification-sic-code-list" targte="_blank">
+                                https://www.sec.gov/corpfin/division-of-corporation-finance-standard-industrial-classification-sic-code-list
+                            </a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <button onclick="admin_setup(event)" fun="get_all_companies" style="width: 250px;">(2) Get All Companies</button>
+                            <span> update XBRLCompanyInfoInProcess</span>
+                            <br/>
+                            <a href="https://www.advfn.com/nyse/newyorkstockexchange.asp?companies=A" targte="_blank">
+                                Using the link: https://www.advfn.com/nyse/newyorkstockexchange.asp?companies=A    with all letters A-Z
+                            </a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <button onclick="admin_setup(event)" fun="clean_data_for_all_companies" style="width: 250px;">(3) Clean data for all companies</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <button onclick="admin_setup(event)" fun="copy_processed_companies" style="width: 250px;">(4) Copy processed companies</button><br/>
+                            Copy data from XBRLCompanyInfoInProcess table to XBRLCompanyInfo table
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <button onclick="admin_setup(event)" fun="get_duplications_tickers" style="width: 250px;">(5) get_duplications_tickers</button><br/>
+                            Remove duplicate companies that trade in more than one exchange.
+                        </td>
+                    </tr>
+                </table>
+            </td>
+            <td>
+                <h3>Stage 3 - SP500</h3>
+                <table>
+                    <tr>
+                        <td>
+                            <button onclick="admin_setup(event)" fun="load_sp_returns" style="width: 300px;">Load S&P 500 Returns</button>
+                            <br/><span>from file histretSP to table XBRLHistoricalReturnsSP</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <button onclick="admin_setup(event)" fun="get_earning_forecast_sp500" style="width: 250px;">
+                                get_earning_forecast_sp500</button>
+                            <br/><span>can run it to find companies in S&P500 not in XBRPCompanyInfo(see error 345)</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <button onclick="admin_setup(event)" fun="upload_old_earning_forecast_sp500" style="width: 300px;">
+                                upload_old_earning_forecast_sp500
+                            </button>
+                            <br/><span>Update tables XBRLSPStatistics XBRLSPEarningForecast (need the .txt files)</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <button onclick="admin_setup(event)" fun="update_statistics" style="width: 300px;">updateStatics</button>
+                            <span>update table XBRLSPStatistics</span>
+                        </td>
+                    </tr>
+
+                </table>
+            </td>
+            <td>
+                <h3>Stage 4</h3>
+                <table>
+                    <tr>
+                        <td>
+                            <button onclick="admin_setup_attribute(event)" fun="get_announcement_time" attribute="m" attribute_value="5"
+                                    style="width: 122px;">annuacTime</button>
+                            <input id="attribute_name" type="text" value="m" size="4" placeholder="name"/>
+                            <input id="attribute_value" type="text" value="9" size="4" placeholder="value"/>
+                            <br/><span>update table XBRLSPStatistics (time of announcements After or before trade)</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <button onclick="tdameritrade_setup_w_attribute(event)" fun="update_options_statistics" style="width: 122px;">
+                                UpOptionsStat</button>
+                            <br/><span>update table XBRLSPStatistics (options values)</span>
+                        </td>
+                    </tr>
+                </table>
+                <div id="result_message_options"></div><br/>
+            </td>
+        </tr>
+    </table>
+
     <hr/>
     <table>
         <tr>
@@ -143,7 +283,6 @@
                     </td>
                 </tr>
     </table>
-    <hr/>
 
     <hr/>
     <h5>S&P Functions</h5>
@@ -183,144 +322,6 @@
 
     </table>
 
-    <hr/>
-    <table>
-        <tr>
-            <td>
-                <h3>Stage 1 - Regions, Countries, Moodys, ROBIC</h3>
-                <table>
-                    <tr>
-                        <td>
-                            <button onclick="admin_setup(event)" fun="load_tax_rates_by_country_year" style="width: 250px;">Load Tax Rates By Country, Year</button>
-                            <br/><span>from https://files.taxfoundation.org/20210125115215/io1980-2020-Corporate-Tax-Rates-Around-the-World.csv.xlsx</span>
-                            <br/><span>load data to XBRLRegion XBRLCountry XBRLCountryYearData</span>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <button onclick="admin_setup(event)" fun="load_country_premium" style="width: 250px;">Load Country Premium</button>
-                            <br/><span>Update XBRLSPMoodys XBRLRegionYearData</span>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <button onclick="admin_setup(event)" fun="update_region_risk_premium" style="width: 250px;">Update Region Risk Premium</button>
-                            <br/><span>Update risk premium in the above tables</span>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <button onclick="admin_setup(event)" fun="update_data" style="width: 250px;">update_data</button>
-                            <br/><span>update_data (for RBOIC. need to clean it)</span>
-                        </td>
-                    </tr>
-                </table>
-                <div id="result_message">result_message</div>
-            </td>
-            <td>
-                <h3>Stage 2 get list of companies</h3>
-                <table>
-                    <tr>
-                        <td>
-                            <button onclick="admin_setup(event)" fun="set_sic_code" style="width: 250px;">(1) Load SIC Codes from SEC</button>
-                            <span> update XBRLMainIndustryInfo and XBRLIndustryInfo</span>
-                            <br/>
-                            <a href="https://en.wikipedia.org/wiki/Standard_Industrial_Classification" targte="_blank">
-                                https://en.wikipedia.org/wiki/Standard_Industrial_Classificatio
-                            </a>
-                            <br/>
-                            <a href="https://www.sec.gov/corpfin/division-of-corporation-finance-standard-industrial-classification-sic-code-list" targte="_blank">
-                                https://www.sec.gov/corpfin/division-of-corporation-finance-standard-industrial-classification-sic-code-list
-                            </a>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <button onclick="admin_setup(event)" fun="get_all_companies" style="width: 250px;">(2) Get All Companies</button>
-                            <span> update XBRLCompanyInfoInProcess</span>
-                            <br/>
-                            <a href="https://www.advfn.com/nyse/newyorkstockexchange.asp?companies=A" targte="_blank">
-                                Using the link: https://www.advfn.com/nyse/newyorkstockexchange.asp?companies=A    with all letters A-Z
-                            </a>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <button onclick="admin_setup(event)" fun="clean_data_for_all_companies" style="width: 250px;">(3) Clean data for all companies</button>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <button onclick="admin_setup(event)" fun="copy_processed_companies" style="width: 250px;">(4) Copy processed companies</button><br/>
-                            Copy data from XBRLCompanyInfoInProcess table to XBRLCompanyInfo table
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <button onclick="admin_setup(event)" fun="get_duplications_tickers" style="width: 250px;">(5) get_duplications_tickers</button><br/>
-                            Remove duplicate companies that trade in more than one exchange.
-                        </td>
-                    </tr>
-                </table>
-            </td>
-            <td>
-                <h3>Stage 3 - SP500</h3>
-                <table>
-                    <tr>
-                        <td>
-                            <button onclick="admin_setup(event)" fun="load_sp_returns" style="width: 300px;">Load S&P 500 Returns</button>
-                            <br/><span>from file histretSP to table XBRLHistoricalReturnsSP</span>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <button onclick="admin_setup(event)" fun="get_earning_forecast_sp500" style="width: 250px;">
-                                get_earning_forecast_sp500</button>
-                            <br/><span>can run it to find companies in S&P500 not in XBRPCompanyInfo(see error 345)</span>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <button onclick="admin_setup(event)" fun="upload_old_earning_forecast_sp500" style="width: 300px;">
-                                upload_old_earning_forecast_sp500
-                            </button>
-                            <br/><span>Update tables XBRLSPStatistics XBRLSPEarningForecast (need the .txt files)</span>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <button onclick="admin_setup(event)" fun="update_statistics" style="width: 300px;">updateStatics</button>
-                            <span>update table XBRLSPStatistics</span>
-                        </td>
-                    </tr>
-
-                </table>
-            </td>
-            <td>
-                <h3>Stage 4</h3>
-                <table>
-                    <tr>
-                        <td>
-                            <button onclick="admin_setup_attribute(event)" fun="get_announcement_time" attribute="m" attribute_value="5"
-                                    style="width: 122px;">annuacTime</button>
-                            <input id="attribute_name" type="text" value="m" size="4" placeholder="name"/>
-                            <input id="attribute_value" type="text" value="9" size="4" placeholder="value"/>
-                            <br/><span>update table XBRLSPStatistics (time of announcements After or before trade)</span>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <button onclick="tdameritrade_setup_w_attribute(event)" fun="update_options_statistics" style="width: 122px;">
-                                UpOptionsStat</button>
-                            <br/><span>update table XBRLSPStatistics (options values)</span>
-                        </td>
-                    </tr>
-                </table>
-                <div id="result_message_options"></div><br/>
-            </td>
-
-        </tr>
-    </table>
 
 <!--
         <tr>

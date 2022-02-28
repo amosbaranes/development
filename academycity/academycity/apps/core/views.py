@@ -127,3 +127,5 @@ def activate_function(request):
     # print('-3'*20)
     dic = {'status': 'ok', 'result': result}
     return JsonResponse(dic)
+
+

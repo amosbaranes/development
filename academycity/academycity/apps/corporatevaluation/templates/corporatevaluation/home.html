@@ -167,7 +167,7 @@ data {
             <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon@0.2.1"></script>
             <script src="{% static 'js/chartjs/chartjs-chart-financial.js' %}" crossorigin="anonymous"></script>
 
-            <script src="{% static 'js/academycity/corporatevaluation/basic_pop_windows_v80.js' %}" crossorigin="anonymous"></script>
+            <script src="{% static 'js/academycity/corporatevaluation/basic_pop_windows_v82.js' %}" crossorigin="anonymous"></script>
             <script>var ef = '';</script>
         {% endif %}
 
@@ -658,11 +658,8 @@ SimManager.prototype.getSocket = function (obj)
             n__ += 1
         var sd = new Date().toLocaleTimeString();
         this.owner_.socket_onmessage({"msg": " Arrived: " + n__ + " on " + sd})
-
-        alert(msg_)
-
+       // alert(msg_)
         this.owner_.socket_onmessage(msg_)
-
         //setTimeout(() => { this.owner_.socket_onmessage(msg_) }, 1000*n__);
         } catch (er){alert(er)}}
    socket_.onopen=function(e){try{this.owner_.socket_onopen(e)} catch (er){alert(er)}}

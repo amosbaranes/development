@@ -24,11 +24,12 @@ class AdvancedTabs(object):
     def add_tab(self, params):
         try:
             tab_name_ = params["tab_name"]
-            new_tab, is_new_row = DataAdvancedTabs.objects.get_or_create(at_name=self.manager_name, tab_name=tab_name_,
-                                                                         tab_title=tab_name_.capitalize())
-            result = {'tab_id': new_tab.id}
+            result = {}
+            t, is_new_row = DataAdvancedTabs.objects.get_or_create(at_name=self.manager_name, tab_name=tab_name_,
+                                                                   tab_title=tab_name_.capitalize())
+            result = self.add_record_to_result(t, result)
         except Exception as ex:
-            result = {'tab_id': "-1"}
+            result = {'error': "-1"}
         return result
 
     def get_tabs_from_table(self, params):
@@ -36,9 +37,14 @@ class AdvancedTabs(object):
             tabs = DataAdvancedTabs.objects.filter(at_name=self.manager_name).all()
             result = {}
             for t in tabs:
-                result[t.id] = {"tab_name": t.tab_name, "tab_title": t.tab_title, "tab_text": t.tab_text, "tab_functions": t.tab_functions}
+                result = self.add_record_to_result(t, result)
         except Exception as ex:
             result = {"error": "-1"}
+        return result
+
+    def add_record_to_result(self, t, result):
+        result[t.id] = {"tab_name": t.tab_name, "tab_title": t.tab_title, "tab_text": t.tab_text,
+                        "tab_functions": t.tab_functions}
         return result
 
     def save_html_functions_of_active_tab(self, params):
