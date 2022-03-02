@@ -149,8 +149,17 @@ function search_today_or_tomorrow_announcements_function(event) {
 <script>
 function get_earning_forecast_sp500_view_main_detail(event)
 {
-  var e=event.target;clean_marked_chosen_field(e); var ticker_=e.innerHTML;
-  if (event.ctrlKey){Orders.set_orders_screen(ticker_); return;}
+ try{
+   var e=event.target;
+   try{clean_marked_chosen_field(e);} catch(er){};
+   var ticker_=e.innerHTML;
+   get_earning_forecast_sp500_view_main_detail__(event, ticker_)
+ } catch(er){}
+}
+
+function get_earning_forecast_sp500_view_main_detail__(event, ticker_)
+{
+  if (event.ctrlKey){Orders.set_orders_screen(ticker_);return;}
   else if (event.altKey)
   {$.post('{% url "corporatevaluation:admin_setup" %}',
       {fun: "get_earning_forecast_sp500_view_main_detail",ticker: ticker_,},

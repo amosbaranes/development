@@ -24,7 +24,9 @@
                         {% endfor %}
                     </select>
                     <span id="ticker_">Ticker: </span>
-                    <input id="search_ticker" onchange="ticker_onchange(event)" style="width:50px;line-height: 10px;" value="">
+                    <input id="search_ticker"
+                            onclick='get_earning_forecast_sp500_view_main_detail1(event)'
+                           onchange="ticker_onchange(event)" style="width:50px;line-height: 10px;" value="">
                 </td>
             </tr>
             <tr>
@@ -170,7 +172,16 @@
     </div>
 </div>
 
-<!--  Beta by industries  -->
+<script>
+function get_earning_forecast_sp500_view_main_detail1(event)
+{
+ try{var e=event.target;var ticker_=e.value;
+   if (event.ctrlKey){var evt=new Event("click", {bubbles: true});
+       sm.TabObjects["sp_forecast_actual"].tabTitle.dispatchEvent(evt);
+       get_earning_forecast_sp500_view_main_detail__(event, ticker_)}
+ } catch(er){}
+}
+</script>
 
 <!-- cofe_business_fun(event) -->
 <script>

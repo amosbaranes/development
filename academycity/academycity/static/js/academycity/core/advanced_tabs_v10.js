@@ -117,7 +117,7 @@ AdvancedTabsManager.prototype.set_active_tab = function(btn)
     try{
       var click_event = new Event("click", {bubbles: true});
       this.editor_btn.dispatchEvent(click_event);
-      this.editor.main_menus["code"].btn.dispatchEvent(click_event);
+      this.editor.main_menus["Code"].btn.dispatchEvent(click_event);
       this.editor.set_title(this.editor.win_title_+this.active_tab.tab_name);
     } catch(er){}
   } catch(er){}
@@ -179,7 +179,7 @@ Tab.prototype.set_max_zindex = function(win) {
 }
 
 
-// -- basic acWin popup window --
+// -- acWin popup window --
 function acWin(my_name_="none", win_name="none", win_title="none", right= "0%", top="0%",is_scroll=true, zindex="11", tab_obj_=null, is_nav_panel=false)
 {
 //alert(7)
@@ -418,7 +418,7 @@ function PopWin(my_name_, win_name_, win_title_, user_id, tab_obj_)
   this.buttons = {"Code":{"NewFunction":"", "DeleteFunction":""},
                   "Html":{},
                   "Save":{},
-                  "Setting":{"Basic":""}};
+                  "Setting":{"Button":""}};
   //--
   this.my_name=my_name_;this.name="win_"+win_name_;
   this.user_id=user_id; var is_scroll_=true;
@@ -500,7 +500,7 @@ MenuBtn.prototype.get_sub_button_obj = function(s_name)
 // -- SubMenuBtn --
 function SubMenuBtn(parent, my_name_, container, width="width:10%;")
 {
- this.parent=parent;this.my_name=this.my_name+my_name_;
+ this.parent=parent;this.my_name=parent.my_name+my_name_;
  this.btn = document.createElement("button");
  this.btn.parent=this;
  this.btn.setAttribute("id", this.parent.my_name+"_"+this.my_name);
@@ -610,11 +610,11 @@ Save_create_main_content = function()
 // -- MenuBtnSetting --
 Setting_create_main_content = function()
 {
- //alert("setting")
+  alert(this.my_name)
 }
 
 
-SettingBasic_click = function()
+SettingButton_click = function()
 {
-  alert("New")
+  alert(this.my_name)
 }

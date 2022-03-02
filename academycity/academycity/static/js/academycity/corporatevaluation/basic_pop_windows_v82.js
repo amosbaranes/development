@@ -494,12 +494,11 @@ OrderStreamerWin.prototype.set_data = function(data)
 
 OrderStreamerWin.prototype.set_orders_screen = function(ticker="")
 {
- try{if(this.myInterval_d !== null){
-        this.order_content.innerHTML = "";
+ try{if(this.myInterval_d !== null){this.order_content.innerHTML = "";
         clearInterval(this.myInterval_d); this.myInterval_d = null; //this.set_msg("");
     }} catch(er){}
  this.ticker = ticker; Orders.set_ticker(ticker); Orders.set_price("");
- try{get_orders_data_();this.myInterval_d = setInterval(get_orders_data_, 3000)} catch (er) {alert(er)}
+ try{get_orders_data_();this.myInterval_d = setInterval(get_orders_data_, 3000);} catch (er) {alert(er)}
 }
 
 function get_orders_data_()

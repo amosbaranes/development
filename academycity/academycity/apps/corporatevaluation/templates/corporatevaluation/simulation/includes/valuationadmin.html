@@ -37,6 +37,81 @@
             </td>
         </tr>
     </table>
+
+    <hr/>
+    <h5>Options</h5>
+    <table>
+        <tr>
+            <td>
+                <h4>TDAmeriTrade</h4>
+                <table>
+                    <tbody obj="TDAmeriTrade" attributes_id="tdameritrade_attributes" message_id="result_message_tdameritrade">
+                    <tr id="buttons" onclick="activate_obj_function(event)">
+                        <td><button fun="get_prices" style="width: 60px;">hdata</button>
+                            <button fun="get_quote" style="width: 60px;">quote</button>
+                            <button fun="get_quotes" style="width: 60px;">quotes</button>
+                            <button fun="run_stream_options_data" style="width: 65px;">workers</button>
+                            <button fun="activate_streaming" style="width: 110px;">Option Stream</button>
+                            <button fun="place_order_test" style="width: 160px;">place_order test</button>
+                            <button fun="account_test" style="width: 160px;">account test</button>
+                        </td>
+                    </tr>
+                    <tr id="tdameritrade_attributes">
+                        <td>
+                            <input type="text" value="ticker" size="4" placeholder="name"/>
+                            <input type="text" value="AAPL" size="4" placeholder="value"/>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+                <div id="result_message_tdameritrade"></div><br/>
+            </td>
+            <td>
+                <h4>Option Chain</h4>
+                <table>
+                    <tr>
+                        <td>
+                            <button onclick="tdameritrade_setup_w_attribute(event)" fun="get_complete_option_chain" style="width: 250px;">
+                                get_option_chain
+                            </button><br/>
+                            <input id="attribute_name_option_chain" type="text" value="ticker" size="4" placeholder="Enter attribute name"/>
+                            <input id="attribute_value_option_chain" type="text" value="AMZN" size="4" placeholder="Enter value"/>
+                        </td>
+                    </tr>
+                </table>
+                <div id="result_message_option_chain"></div>
+            </td>
+            <td>
+                <h4>Streamed Stock Prices</h4>
+                <table>
+                    <tr>
+                        <td>
+                            <button onclick="admin_setup(event)" fun="test" style="width: 250px;">MovePricesToArchive(test)</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Truncate: <button onclick="admin_setup(event)" fun="test1" style="width: 110px;">Prices</button>
+                            <button onclick="admin_setup(event)" fun="test2" style="width: 110px;">PricesArchive</button><br/>
+
+                            <button onclick="admin_setup_truncate(event)" fun="truncate_table" attribute="m" attribute_value="5"
+                                    style="width: 122px;">Truncate Table</button>
+                            <input id="table_name" type="text" value="" size="20" placeholder="name" aria-placeholder="Enter table name"/>
+                        </td>
+                    </tr>
+
+                    <!--  in calculation tab
+                    <tr>
+                        <td>
+                            <button onclick="get_risk_premium()" style="width: 250px;">Get Risk Premium</button>
+                        </td>
+                    </tr>
+                     -->
+                </table>
+            </td>
+        </tr>
+    </table>
+
     <hr/>
     <h5>Setup for Corporate Valuation</h5>
     <table>
@@ -171,79 +246,6 @@
                     </tr>
                 </table>
                 <div id="result_message_options"></div><br/>
-            </td>
-        </tr>
-    </table>
-
-    <hr/>
-    <table>
-        <tr>
-            <td>
-                <h4>TDAmeriTrade</h4>
-                <table>
-                    <tbody obj="TDAmeriTrade" attributes_id="tdameritrade_attributes" message_id="result_message_tdameritrade">
-                    <tr id="buttons" onclick="activate_obj_function(event)">
-                        <td><button fun="get_prices" style="width: 60px;">hdata</button>
-                            <button fun="get_quote" style="width: 60px;">quote</button>
-                            <button fun="get_quotes" style="width: 60px;">quotes</button>
-                            <button fun="run_stream_options_data" style="width: 65px;">workers</button>
-                            <button fun="activate_streaming" style="width: 110px;">Option Stream</button>
-                            <button fun="place_order_test" style="width: 160px;">place_order test</button>
-                            <button fun="account_test" style="width: 160px;">account test</button>
-                        </td>
-                    </tr>
-                    <tr id="tdameritrade_attributes">
-                        <td>
-                            <input type="text" value="ticker" size="4" placeholder="name"/>
-                            <input type="text" value="AAPL" size="4" placeholder="value"/>
-                        </td>
-                    </tr>
-                    </tbody>
-                </table>
-                <div id="result_message_tdameritrade"></div><br/>
-            </td>
-            <td>
-                <h4>Option Chain</h4>
-                <table>
-                    <tr>
-                        <td>
-                            <button onclick="tdameritrade_setup_w_attribute(event)" fun="get_complete_option_chain" style="width: 250px;">
-                                get_option_chain
-                            </button><br/>
-                            <input id="attribute_name_option_chain" type="text" value="ticker" size="4" placeholder="Enter attribute name"/>
-                            <input id="attribute_value_option_chain" type="text" value="AMZN" size="4" placeholder="Enter value"/>
-                        </td>
-                    </tr>
-                </table>
-                <div id="result_message_option_chain"></div>
-            </td>
-            <td>
-                <h4>Streamed Stock Prices</h4>
-                <table>
-                    <tr>
-                        <td>
-                            <button onclick="admin_setup(event)" fun="test" style="width: 250px;">MovePricesToArchive(test)</button>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            Truncate: <button onclick="admin_setup(event)" fun="test1" style="width: 110px;">Prices</button>
-                            <button onclick="admin_setup(event)" fun="test2" style="width: 110px;">PricesArchive</button><br/>
-
-                            <button onclick="admin_setup_truncate(event)" fun="truncate_table" attribute="m" attribute_value="5"
-                                    style="width: 122px;">Truncate Table</button>
-                            <input id="table_name" type="text" value="" size="20" placeholder="name" aria-placeholder="Enter table name"/>
-                        </td>
-                    </tr>
-
-                    <!--  in calculation tab
-                    <tr>
-                        <td>
-                            <button onclick="get_risk_premium()" style="width: 250px;">Get Risk Premium</button>
-                        </td>
-                    </tr>
-                     -->
-                </table>
             </td>
         </tr>
     </table>
