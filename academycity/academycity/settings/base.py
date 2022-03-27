@@ -195,6 +195,7 @@ WebApps = [
 acApps = [
     'academycity.apps.acapps.businesssim',
     'academycity.apps.acapps.macroeconomics',
+    'academycity.apps.acapps.liongold',
 ]
 
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps

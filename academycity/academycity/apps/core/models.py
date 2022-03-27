@@ -4,15 +4,21 @@ from .fields import OrderField
 from .sql import TruncateTableMixin
 
 
-class DataAdvancedTabs(models.Model):
-    at_name = models.CharField(max_length=10, null=True)
-    tab_name = models.CharField(max_length=50, null=True)
-    tab_title = models.CharField(max_length=50, null=True)
-    tab_text = models.TextField(null=True)
-    tab_functions = models.JSONField(null=True)   # relate to functions in the page
+class DataAdvancedTabsManager(models.Model):
+    at_name = models.CharField(max_length=10, null=True, default="new")
+    manager_content = models.JSONField(null=True)
 
     def __str__(self):
-        return str(self.at_name) + ":" + str(self.tab_name)
+        return str(self.at_name)
+
+
+class DataAdvancedTabs(models.Model):
+    manager = models.ForeignKey(DataAdvancedTabsManager, on_delete=models.CASCADE, default=1)
+    tab_name = models.CharField(max_length=50, null=True, default="tab")
+    tab_content = models.JSONField(null=True)
+
+    def __str__(self):
+        return str(self.manager) + ":" + str(self.tab_name)
 
 
 class ModifyModel(object):

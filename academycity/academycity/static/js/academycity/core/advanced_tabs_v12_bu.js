@@ -4,12 +4,23 @@ function AdvancedTabsManager(my_name, body_,activate_function_link=activate_func
  this.my_name=my_name; this.elm_body=body_;
  this.activate_function_link_=activate_function_link;
  this.titles=null;this.container=null;
+ this.content={"last_obj_number":0};
  this.tabs={};
  this.init_create_containers();
  if(is_show_btns == true){this.create_add_delete_editor();}
  this.setTabs();
  this.active_tab=null;
  this.editor=null;
+ this.buttons = {"Code":{"NewFunction":{"title":"new func", "width":10},
+                         "DeleteFunction":{"title":"del func", "width":10}},
+                 "Html":{},
+                 "Setting":{"Button":{"title":"Btn", "width":5, "setting": [], "functions":[]},
+                            "Span":{"title":"span", "width":5},
+                            "Input":{"title":"input", "width":5, "setting": [], "functions":["onchange"]},
+                            "H":{"title":"h", "width":3},
+                            "H1":{"title":"h1", "width":3},
+                            "H2":{"title":"h2", "width":3},
+                            "H3":{"title":"h3", "width":3}}};
 }
 
 AdvancedTabsManager.prototype.init_create_containers = function()
@@ -36,8 +47,7 @@ AdvancedTabsManager.prototype.create_add_delete_editor = function()
                     for (id_ in result){atm.tabs[id_] = new Tab(atm, data=result[id_], id=id_);}
                     atm.tabs[id_].btn.click();
                     try{atm.set_active_tab(atm.tabs[id_].btn)} catch(er){alert(er)}
-                    var click_event = new Event("click", {bubbles: true});
-                    try{atm.editor.main_menus["save"].btn.dispatchEvent(click_event);} catch (er){alert(er)}
+                    atm.save();
                   }.bind(atm=atm_));
       }.bind(atm_=this, event))
   //--
@@ -64,7 +74,7 @@ AdvancedTabsManager.prototype.create_add_delete_editor = function()
   this.editor_btn.parent=this;
   this.editor_btn.addEventListener("click", function(){
     try{editor.set_tab(atm_.active_tab);} catch(er){
-    editor = new PopWin(my_name_="editor",win_name_="editor",win_title_="Code & HTML Editor for Tab: ",user_id=1,tab_obj_=atm_.active_tab)
+    editor = new PopWin(my_name_="editor",win_name_="editor",win_title_="Code & HTML Editor for Tab: ",user_id=1,atm=atm_)
     editor.set_win_frame_style("20", "650", "1000", "15%", "5%", "white")
     editor.set_acWinStatEventListeners(editor);
     }
@@ -81,17 +91,13 @@ AdvancedTabsManager.prototype.setTabs = function()
 {
   var dic_ = {"obj" : "AdvancedTabs", "atm": this.my_name, "fun": "get_tabs_from_table", "params": {"name": "amos"}}
   // alert(JSON.stringify(dic_))
-  $.post(this.activate_function_link_,
-      {
-         dic : JSON.stringify(dic_)
-      },
+  $.post(this.activate_function_link_,{dic : JSON.stringify(dic_)},
       function(dic){
           //alert(JSON.stringify(dic))
-          var result = dic["result"]
-          for (id_ in result)
-          {
-            atm_.tabs[id_] = new Tab(atm_, data=result[id_], id=id_);
-          }
+          var result = dic["result"];
+          if(result["manager"]==null){} else {atm_.content=result["manager"]}
+          //alert(JSON.stringify(atm_.content))
+          var tabs = result["tabs"];for (id_ in tabs){atm_.tabs[id_]=new Tab(atm_, data=tabs[id_], id=id_);}
           atm_.tabs[id_].btn.click();
      }.bind(atm_ = this)
  );
@@ -126,28 +132,164 @@ AdvancedTabsManager.prototype.set_active_tab = function(btn)
 AdvancedTabsManager.prototype.get_tab = function(tab_name)
 {for(id in this.tabs);{if (this.tabs[id].tab_name==tab_name){return this.tabs[id]}}}
 
+AdvancedTabsManager.prototype.get_acObj = function(dic)
+{
+ //alert(JSON.stringify(dic))
+ var s='function '+dic["obj_name"]+'(atm_, dic_)'
+ s+='{'
+ //s+='this.my_type="'+dic["obj_name"]+'";this.my_element="'+dic["element_name"]+'";';
+ s+='acObj.call(this);'
+ s+='this.atm=atm_;this.data=dic_;var ps=this.atm.get_obj_functions_settings(dic_);'
+ s+='this.obj_dic=dic_;';
+ s+='this.settings=ps["settings"];'
+ s+='this.functions=ps["functions"] ;'
+ s+='};'
+ //alert(s)
+ try{eval(s)} catch(er){alert(er)}
+ s=dic["obj_name"]+'.prototype = Object.create(acObj.prototype);'
+ //alert(s)
+ try{eval(s)} catch(er){alert(er)}
+ //alert(JSON.stringify(dic))
+ s = 'new '+dic["obj_name"]+'(atm_=this, dic_=dic)'
+ //alert(s)
+ return eval(s)
+}
+
+AdvancedTabsManager.prototype.get_obj_functions_settings = function(dic)
+{
+ var ps={"settings": ["width", "x", "y", "title"], "functions":["onclick"]};
+ dic_ = this.buttons["Setting"][dic["element_name"]]
+ //alert(JSON.stringify(dic_));
+ for (s in dic_["setting"]){if (!ps["settings"].includes(dic_["setting"][s])){ps["settings"].push(dic_["setting"][s])}};
+ for (f in dic_["functions"]){if (!ps["functions"].includes(dic_["functions"][f])){ps["functions"].push(dic_["functions"][f])}};
+ return ps;
+}
+
+AdvancedTabsManager.prototype.save = function()
+{
+  var dic_={"obj":"AdvancedTabs","atm":this.my_name,"fun":"save_html_functions_of_active_tab",
+           "params": {"atm_content":this.content,
+                      "tab_functions":this.active_tab.tab_functions,
+                      "tab_content":this.active_tab.tab_content,
+                      "tab_text":this.active_tab.html,
+                      "tab_name": this.active_tab.tab_name}}
+      //alert(JSON.stringify(dic_))
+
+     $.post(this.activate_function_link_,
+          {dic : JSON.stringify(dic_)},
+          function(dic){
+            if(dic["status"]!="ok"){alert(JSON.stringify(dic["result"]))}
+            else{ // alert("ok")
+            }
+          });
+}
+
+
+// -- acObj --
+function acObj()
+{
+}
+
+acObj.prototype.create_editor = function(){
+ this.atm.editor.setting_left_nav.innerHTML="";
+ this.atm.editor.setting_fun_editor.innerHTML="";
+ this.atm.editor.setting_properties.innerHTML="";
+ this.atm.editor.setting_left_nav.btns={}
+//alert("functions")
+// alert(JSON.stringify(this.functions));
+//alert("settings")
+// alert(JSON.stringify(this.settings));
+//alert("obj_dic")
+// alert(JSON.stringify(this.obj_dic))
+
+ for (i in this.functions)
+ {
+   var f=this.functions[i];
+   this.atm.editor.setting_left_nav.btns[f] = document.createElement("button");
+   this.atm.editor.setting_left_nav.btns[f].setAttribute("class", "comfuntablinks");
+ //  for(ff in this.obj_dic["functions"])
+ //  {
+ //   alert(ff)
+ //   if(ff==f){this.atm.editor.setting_left_nav.btns[f].setAttribute("style", "color:white");}
+ //  }
+   this.atm.editor.setting_left_nav.btns[f].innerHTML = f;
+   this.atm.editor.setting_left_nav.appendChild(editor.setting_left_nav.btns[f]);
+ }
+
+  var table = document.createElement("table");var tr=document.createElement("tr");table.appendChild(tr);
+  var thp=document.createElement("th");thp.innerHTML="Property";tr.appendChild(thp);thp.setAttribute("style","width:10%;text-align:center;")
+  var thv=document.createElement("th");thv.innerHTML="Value";tr.appendChild(thv);thv.setAttribute("style","width:10%;text-align:center;")
+  this.atm.editor.setting_properties.appendChild(table);
+
+ for (i in this.settings)
+ {
+   var s=this.settings[i];
+   var tr=document.createElement("tr");table.appendChild(tr);
+   var td=document.createElement("td");td.innerHTML=s;tr.appendChild(td);
+   var td=document.createElement("td");var input=document.createElement("input");
+   input.setAttribute("property",s);td.appendChild(input);
+   try{if(this.obj_dic["properties"][s]==null){} else{input.value=this.obj_dic["properties"][s]}} catch(er){alert(er)}
+   tr.appendChild(td);
+ }
+}
+
+acObj.prototype.create_obj = function(){
+ //alert(JSON.stringify(this.obj_dic))
+ var container = document.getElementById(this.obj_dic["container_id"])
+ var new_obj=document.createElement(this.obj_dic["element_name"]);
+ new_obj.setAttribute("id", this.obj_dic["obj_number"]);
+ new_obj.setAttribute("style", "position:absolute;left:"+this.obj_dic["properties"]["x"]+"px;top:"+this.obj_dic["properties"]["y"]+"px;width:"+this.obj_dic["properties"]["width"]+"px");
+ new_obj.innerHTML=this.obj_dic["properties"]["title"];
+
+  if(this.obj_dic["element_name"]=="Input")
+  {
+    var nx_=60
+    var x = 1*this.obj_dic["properties"]["x"]+nx_
+    new_obj.setAttribute("style", "position:absolute;left:"+x+"px;top:"+this.obj_dic["properties"]["y"]+"px;width:"+this.obj_dic["properties"]["width"]+"px");
+    var span=document.createElement("span");span.innerHTML=this.obj_dic["properties"]["title"];
+    var x = 1*this.obj_dic["properties"]["x"]
+    span.setAttribute("style", "position:absolute;left:"+x+"px;top:"+this.obj_dic["properties"]["y"]+"px;");
+    container.appendChild(span);
+  } else
+  {
+    new_obj.setAttribute("style", "position:absolute;left:"+this.obj_dic["properties"]["x"]+"px;top:"+this.obj_dic["properties"]["y"]+"px;width:"+this.obj_dic["properties"]["width"]+"px");
+  }
+
+  container.appendChild(new_obj)
+
+ for(f in this.obj_dic["functions"]){var s="new_obj."+f+"="+this.obj_dic["functions"][f];eval(s);}
+ //alert(new_obj.outerHTML)
+
+//alert(JSON.stringify(this.obj_properties));
+//this.obj_properties
+//this.functions
+//
+}
+
 
 // Tab obj ---
 //function Tab(parent, my_name, my_title, html, tab_functions, id)
 function Tab(parent, data, id)
 {
+ //alert(JSON.stringify(data))
+
  this.parent=parent; this.tab_id=id; this.tab_name=data["tab_name"];this.tab_title=data["tab_title"];
- var html=data["tab_text"];var tab_functions=data["tab_functions"];
+ var html=data["tab_text"];var tab_functions=data["tab_functions"];var tab_content=data["tab_content"];
  this.btn=null;this.content=null;this.PopWinObjects={}
  if(tab_functions==null){this.tab_functions={"functions": {}};
    this.tab_functions["functions"][this.tab_name+"__init__"]=this.tab_name+"__init__=function(obj){}";
    this.tab_functions["functions"][this.tab_name+"__myclick__"]=this.tab_name+"__myclick__=function(obj){}";
    this.tab_functions["functions"][this.tab_name+"__otherclick__"]=this.tab_name+"__otherclick__=function(obj){}";
  } else {this.tab_functions=tab_functions;};
-// alert(my_name+" html 3= "+html);
 
  this.process_functions()
  if(html==null){this.html=this.tab_name} else {this.html=html}
-
- //eval(tab_functions);
+ if(tab_content==null){this.tab_content={"objects":{}};} else {this.tab_content=tab_content}
  this.create_btn_container();
  this.init_tab();
- //alert(my_name+" html 9= "+html);
+ this.process_content();
+ this.new_obj_to_create = null;
+ this.active_obj=null;
 }
 
 Tab.prototype.create_btn_container = function()
@@ -160,16 +302,84 @@ Tab.prototype.create_btn_container = function()
   this.parent.titles.appendChild(this.btn)
 
   this.content = document.createElement("div");
-  this.content.parent=this;
-  this.content.setAttribute("class", "tabcontent");
-  this.parent.container.appendChild(this.content)
-  this.content.innerHTML = this.html;
+  this.content.setAttribute("id", this.tab_name+"_content");
+  this.content.setAttribute("style", "position: relative;");
+  this.content.setAttribute("type", "container");
+
+  try{
+      this.content.onclick=function()
+      {
+        var e=event.target;
+        if(e.getAttribute("type")==null){var obj_tab=e.parentNode.parent;} else {var obj_tab=e.parent;}
+        if(obj_tab.new_obj_to_create==null){
+        if(event.ctrlKey){
+           var obj_number=e.getAttribute("id")
+           //alert(JSON.stringify(obj_tab.tab_content["objects"][obj_number]));
+           var click_event = new Event("click", {bubbles: true});
+           obj_tab.parent.editor.main_menus["Setting"].btn.dispatchEvent(click_event);
+           obj_tab.active_obj=obj_tab.parent.get_acObj(obj_tab.tab_content["objects"][obj_number]);
+           obj_tab.active_obj.create_editor();
+         }
+        }
+        else {
+            //alert(JSON.stringify(this.new_obj_to_create));
+            var dic=obj_tab.new_obj_to_create;
+            var x=event.pageX-e.offsetLeft;var y=event.pageY-e.offsetTop;
+            var obj_number=obj_tab.get_next_obj_number();var container_id=e.getAttribute("id");
+            dic["obj_number"]=obj_number;dic["container_id"]=container_id;dic["functions"]={};
+            dic["properties"]["x"]=x;dic["properties"]["y"]=y;
+            //alert(JSON.stringify(dic));
+            obj_tab.active_obj=obj_tab.generate_acObj(dic=dic);
+            obj_tab.active_obj.create_editor();
+            var obj_number=obj_tab.active_obj.obj_dic["obj_number"]
+            obj_tab.tab_content["objects"][obj_number]=obj_tab.active_obj.obj_dic;
+            obj_tab.parent.save();
+        }
+      }.bind(event)
+    } catch(er) {alert("Error 22: "+er)}
+  this.content.setAttribute("class", "tabcontent");this.parent.container.appendChild(this.content);this.content.parent=this;
+}
+
+Tab.prototype.process_content = function()
+{
+  //alert("process_content")
+  // alert(JSON.stringify(this.tab_content));
+  for (i in this.tab_content["objects"])
+  {
+   //alert(JSON.stringify(this.tab_content["objects"][i]))
+   dic_=dic=this.tab_content["objects"][i]
+   this.generate_acObj(dic=dic_)
+  }
+  //alert(this.html)
+  // this.content.innerHTML = this.html;
 }
 
 Tab.prototype.process_functions = function()
 {for(f in this.tab_functions["functions"]){eval(this.tab_functions["functions"][f])}}
 
 Tab.prototype.init_tab=function(){try{eval(this.tab_name+"__init__(obj=this)");} catch(er) {}}
+
+Tab.prototype.get_next_obj_number=function(){
+this.parent.content["last_obj_number"]+=1;
+return this.parent.content["last_obj_number"]
+}
+
+Tab.prototype.set_to_create_acObj=function(dic){
+ //alert("set_to_create_acObj")
+ //alert(JSON.stringify(dic));
+ this.new_obj_to_create = dic;
+}
+
+Tab.prototype.generate_acObj=function(dic=null){
+ obj = this.parent.get_acObj(dic);
+ obj.create_obj();
+ // obj.create_editor();
+ //alert(JSON.stringify(obj.data));
+ //alert(JSON.stringify(obj.obj_dic));
+
+ this.new_obj_to_create = null;
+ return obj;
+}
 
 Tab.prototype.set_max_zindex = function(win) {
     var nmax = 0;
@@ -412,17 +622,13 @@ acWin.prototype.set_acWinStatEventListeners = function(ss_obj)
 
 
 // -- Pop win --
-function PopWin(my_name_, win_name_, win_title_, user_id, tab_obj_)
+function PopWin(my_name_, win_name_, win_title_, user_id, atm)
 {
-  //--
-  this.buttons = {"Code":{"NewFunction":"", "DeleteFunction":""},
-                  "Html":{},
-                  "Save":{},
-                  "Setting":{"Button":""}};
+  this.atm = atm;
   //--
   this.my_name=my_name_;this.name="win_"+win_name_;
   this.user_id=user_id; var is_scroll_=true;
-  acWin.call(this,my_name_=my_name_,win_name=this.name,win_title=win_title_,right="2%",top="30%",is_scroll=is_scroll_,zindex=20,tab_obj_=tab_obj_,is_nav_panel=true)
+  acWin.call(this,my_name_=my_name_,win_name=this.name,win_title=win_title_,right="2%",top="30%",is_scroll=is_scroll_,zindex=20,tab_obj_=atm.active_tab,is_nav_panel=true)
   this.set_title(this.win_title_+tab_obj_.tab_name);
   this.main_menus = {};this.sub_menus = {};
   this.tab_obj_.PopWinObjects[this.my_name]=this;
@@ -437,7 +643,7 @@ PopWin.prototype.set_panel = function()
   this.sub_menu = document.createElement("div");
   this.win_nav_panel.appendChild(this.main_menu);
   this.win_nav_panel.appendChild(this.sub_menu);
-  for (b in this.buttons){
+  for (b in this.atm.buttons){
   //alert('MenuBtn'+b+'=this.get_main_button_obj(b)')
    eval('MenuBtn'+b+'=this.get_main_button_obj(b)')
    eval('new MenuBtn'+b+'(parent=this)')
@@ -446,25 +652,25 @@ PopWin.prototype.set_panel = function()
 
 PopWin.prototype.get_main_button_obj = function(s_name)
 {
- var s = 'function MenuBtn'+s_name+'(parent)'
- s+='{MenuBtn.call(this,parent,my_name_="'+s_name+'",parent.main_menu,width="width:10%;");'
- s+='parent.main_menus[this.my_name]=this;};'
- eval(s)
- s = 'MenuBtn'+s_name+'.prototype = Object.create(MenuBtn.prototype);'
- eval(s)
- s='MenuBtn'+s_name+'.prototype.create_main_content = '+s_name+'_create_main_content;'
- eval(s)
+ var s = 'function MenuBtn'+s_name+'(parent)';
+ s+='{MenuBtn.call(this,parent,my_name_="'+s_name+'",parent.main_menu,width="width:10%;");';
+ s+='parent.main_menus[this.my_name]=this;};';
+ eval(s);
+ s = 'MenuBtn'+s_name+'.prototype = Object.create(MenuBtn.prototype);';
+ eval(s);
+ s='MenuBtn'+s_name+'.prototype.create_main_content = '+s_name+'_create_main_content;';
+ eval(s);
  //s='MenuBtn'+s_name+'.prototype.set_sub_menus = '+s_name+'_set_sub_menus;'
  //eval(s)
- s='MenuBtn'+s_name
- return eval(s)
+ s='MenuBtn'+s_name;
+ return eval(s);
 }
 
 // -- MenuBtn --
 function MenuBtn(parent, my_name_, container, width="width:10%;")
 {
  this.parent=parent;this.my_name=my_name_;
- this.buttons = this.parent.buttons[this.my_name];
+ this.buttons = this.parent.atm.buttons[this.my_name];
  //alert(JSON.stringify(this.buttons));
  this.btn = document.createElement("button");
  this.btn.parent=this;
@@ -478,35 +684,47 @@ function MenuBtn(parent, my_name_, container, width="width:10%;")
    this.parent.parent.sub_menus = {};
    // need to remove the alert in the catch part.
    try{this.parent.create_main_content();} catch(er){alert(er)}
-   try{for(b in this.parent.buttons){eval('SubMenuBtn'+this.my_name+b+'=this.parent.get_sub_button_obj(b)');eval('new SubMenuBtn'+this.my_namee+b+'(parent=this.parent)');}} catch(er){alert(er)}
+   try{for(b in this.parent.buttons){eval('SubMenuBtn'+this.my_name+b+'=this.parent.get_sub_button_obj(b,this.parent.buttons[b]["title"])');eval('new SubMenuBtn'+this.my_name+b+'(parent=this.parent)');}} catch(er){alert(er)}
  }
  container.appendChild(this.btn);
 }
 
-MenuBtn.prototype.get_sub_button_obj = function(s_name)
+MenuBtn.prototype.get_sub_button_obj = function(s_name, s_title)
 {
- var s = 'function SubMenuBtn'+this.my_name+s_name+'(parent)'
- s+='{SubMenuBtn.call(this,parent,my_name_="'+s_name+'",parent.parent.sub_menu,width="width:10%;");'
- s+='parent.parent.sub_menus[this.my_name]=this;};'
- eval(s)
- s = 'SubMenuBtn'+this.my_name+s_name+'.prototype = Object.create(SubMenuBtn.prototype);'
- eval(s)
- s='SubMenuBtn'+this.my_name+s_name+'.prototype.click = '+this.my_name+s_name+'_click;'
- eval(s)
- s='SubMenuBtn'+this.my_name+s_name
- return eval(s)
+ var s = 'function SubMenuBtn'+this.my_name+s_name+'(parent)';
+ s+='{';
+ s+='var width_=parent.buttons["'+s_name+'"]["width"];';
+ s+='SubMenuBtn.call(this,parent,my_name_="'+s_name+'",my_title_="'+s_title+'",parent.parent.sub_menu,width="width:"+width_+"%;");';
+ s+='parent.parent.sub_menus[this.my_name]=this;};';
+ eval(s);
+ s = 'SubMenuBtn'+this.my_name+s_name+'.prototype = Object.create(SubMenuBtn.prototype);';
+ eval(s);
+ //s='SubMenuBtn'+this.my_name+s_name+'.prototype.click = '+this.my_name+s_name+'_click;'
+ s='SubMenuBtn'+this.my_name+s_name+'.prototype.click = function (){';
+ s+='this.obj_name="ac'+ s_name+'";';
+
+ // s+='this.parent.get_acObj("ac'+s_name+'");'
+ //s+='alert(this.parent.parent.atm.my_name);'
+ //s+='this.parent.parent.atm.get_acObj(dic={"obj_name":"ac'+s_name+'"});'
+ s+='this.parent.parent.atm.active_tab.set_to_create_acObj(dic={"obj_name":"ac'+s_name+'", "element_name":"'+s_name+'", "properties":{"title":"'+s_title+'"}});'
+
+ s+='try{'+this.my_name+s_name+'_click(obj=this);} catch(er){}';
+ s+='}';
+ eval(s);
+ s='SubMenuBtn'+this.my_name+s_name;
+ return eval(s);
 }
 
 // -- SubMenuBtn --
-function SubMenuBtn(parent, my_name_, container, width="width:10%;")
+function SubMenuBtn(parent, my_name_, my_title_, container, width="width:10%;")
 {
- this.parent=parent;this.my_name=parent.my_name+my_name_;
+ this.parent=parent;this.my_title=my_title_;this.my_name=parent.my_name+my_name_;
  this.btn = document.createElement("button");
  this.btn.parent=this;
  this.btn.setAttribute("id", this.parent.my_name+"_"+this.my_name);
  this.btn.setAttribute("class", "main_menu_btn");
  this.btn.setAttribute("style", width);
- this.btn.innerHTML = my_name_;
+ this.btn.innerHTML = my_title_;
  this.btn.onclick=function(event){
    this.parent.click()
    }
@@ -520,6 +738,8 @@ Code_create_main_content = function()
     this.parent.nav=document.createElement("div");
     this.parent.nav.onclick=function(){
       //alert(JSON.stringify(editor_.tab_obj_.tab_functions["functions"]))
+      var e=event.target;
+      try{var cc=e.getAttribute("class");if(cc!="funtablinks"){return;}} catch(er){}
       var f=event.target.innerHTML;
       editor.tab_obj_.active_function=f;
       editor.code_content.innerHTML=editor.tab_obj_.tab_functions["functions"][f];
@@ -529,14 +749,17 @@ Code_create_main_content = function()
       event.target.className += " active";
        //alert(editor_.code_content.outerHTML)
     }.bind(editor=this.parent, event);
+
     this.parent.nav.setAttribute("class", "tab");
     this.parent.nav.btns={};
     this.parent.win_content.appendChild(this.parent.nav);
     this.parent.code_content = document.createElement("textarea");
-    this.parent.code_content.setAttribute("style", "width:68%;height:100%");
+    this.parent.code_content.setAttribute("style", "width:70%;height:100%");
     this.parent.code_content.onchange= function (){
-      editor.tab_obj_.tab_functions["functions"][event.target.getAttribute("fun_name")]=event.target.value
-      //alert(JSON.stringify(editor_.tab_obj_.tab_functions))
+      editor.tab_obj_.tab_functions["functions"][event.target.getAttribute("fun_name")]=event.target.value;
+      editor.tab_obj_.parent.save();
+      var click_event = new Event("click", {bubbles: true});
+      editor.main_menus["Code"].btn.dispatchEvent(click_event);
     }.bind(editor=this.parent, event)
     this.parent.win_content.appendChild(this.parent.code_content);
     for(f in this.parent.tab_obj_.tab_functions["functions"])
@@ -553,24 +776,25 @@ CodeNewFunction_click = function()
 {
   var fun_name_ = prompt("Enter name for new function:" , '');
   if(fun_name_ == '') {alert("Please enter a function name"); return;}
-  this.parent.parent.tab_obj_.tab_functions["functions"][this.parent.parent.tab_obj_.tab_name+"_"+fun_name_]=this.parent.parent.tab_obj_.tab_name+"_"+fun_name_+"=function(obj){}";
-  this.parent.parent.tab_obj_.active_function = this.parent.parent.tab_obj_.tab_name+"_"+fun_name_;
-  var click_event = new Event("click", {bubbles: true});
+  this.parent.tab_obj_.tab_functions["functions"][this.parent.tab_obj_.tab_name+"_"+fun_name_]=this.parent.tab_obj_.tab_name+"_"+fun_name_+"=function(obj){}";
+  // alert(JSON.stringify(this.parent.tab_obj_.tab_functions))
+  this.parent.tab_obj_.active_function = this.parent.tab_obj_.tab_name+"_"+fun_name_;
   try{
-    this.parent.parent.main_menus["Save"].btn.dispatchEvent(click_event);
-    this.parent.parent.main_menus["Code"].btn.dispatchEvent(click_event);
+    this.parent.tab_obj_.parent.save()
+    var click_event = new Event("click", {bubbles: true});
+    this.parent.main_menus["Code"].btn.dispatchEvent(click_event);
   } catch (er){alert(er)}
 }
 
 CodeDeleteFunction_click = function()
 {
-  var confirm_=prompt("Are you sure you want to delete the function(type Yes): "+this.parent.parent.tab_obj_.active_function, 'no');
+  var confirm_=prompt("Are you sure you want to delete the function(type Yes): "+this.parent.tab_obj_.active_function, 'no');
   if(confirm_!='Yes'){return;}
-  delete this.parent.parent.tab_obj_.tab_functions["functions"][this.parent.parent.tab_obj_.active_function];
+  delete this.parent.tab_obj_.tab_functions["functions"][this.parent.tab_obj_.active_function];
   try{
+    this.parent.tab_obj_.parent.save();
     var click_event = new Event("click", {bubbles: true});
-    this.parent.parent.main_menus["Save"].btn.dispatchEvent(click_event);
-    this.parent.parent.main_menus["Code"].btn.dispatchEvent(click_event);
+    this.parent.main_menus["Code"].btn.dispatchEvent(click_event);
   } catch (er){}
 }
 
@@ -589,32 +813,77 @@ Html_create_main_content = function()
 }
 
 
-// -- MenuBtnSave --
-Save_create_main_content = function()
-{
- var dic_={"obj":"AdvancedTabs","atm":this.parent.tab_obj_.parent.my_name,"fun":"save_html_functions_of_active_tab",
-           "params": {"tab_functions":this.parent.tab_obj_.tab_functions,"tab_text":this.parent.tab_obj_.html,
-                     "tab_name": this.parent.tab_obj_.tab_name}}
-     $.post(this.parent.tab_obj_.parent.activate_function_link_,
-          {dic : JSON.stringify(dic_)},
-          function(dic){
-            if(dic["status"]!="ok"){alert(JSON.stringify(dic["result"]))}
-          }.bind(atm=this));
-  this.parent.html_content = document.createElement("textarea");
-  this.parent.html_content.setAttribute("style", "width:100%;height:100%");
-  this.parent.win_content.appendChild(this.parent.html_content);
-  this.parent.html_content.innerHTML="Functions were saved.";
-}
-
-
 // -- MenuBtnSetting --
 Setting_create_main_content = function()
 {
-  alert(this.my_name)
+  //alert(this.my_name)
+  //alert(editor.my_name)
+  this.parent.setting_left_nav = document.createElement("div");
+  this.parent.setting_left_nav.setAttribute("class", "tab");
+  this.parent.setting_left_nav.btns={};
+  this.parent.setting_left_nav.onclick=function(){
+    var f=event.target.innerHTML;
+    editor.tab_obj_.active_component_function=f;
+    if(editor.tab_obj_.active_obj.obj_dic["functions"][f]==null)
+    {editor.setting_fun_editor.innerHTML="function (event){\n\n}";} else
+    {editor.setting_fun_editor.innerHTML=editor.tab_obj_.active_obj.obj_dic["functions"][f]}
+
+    var comfuntablinks = document.getElementsByClassName("comfuntablinks");
+    for (var i=0;i<comfuntablinks.length;i++){comfuntablinks[i].className=comfuntablinks[i].className.replace(" active","");};
+    event.target.className += " active";
+  }.bind(editor=this.parent, event);
+  this.parent.win_content.appendChild(this.parent.setting_left_nav);
+  //--
+  this.parent.setting_fun_editor = document.createElement("textarea");
+  this.parent.setting_fun_editor.setAttribute("class", "editor");
+  this.parent.setting_fun_editor.addEventListener("change", function(){
+    var f=event.target.value;
+    editor.tab_obj_.active_obj.obj_dic["functions"][editor.tab_obj_.active_component_function]=f;
+    var obj_number = editor.tab_obj_.active_obj.obj_dic["obj_number"];
+    editor.tab_obj_.tab_content["objects"][obj_number] = editor.tab_obj_.active_obj.obj_dic;
+    editor.tab_obj_.parent.save();
+  }.bind(editor=this.parent, event))
+  this.parent.win_content.appendChild(this.parent.setting_fun_editor);
+  // --
+  this.parent.setting_properties = document.createElement("div");
+  this.parent.setting_properties.addEventListener("change", function(){
+    var p=event.target; var property=p.getAttribute("property");var v=p.value;
+    editor.tab_obj_.active_obj.obj_dic["properties"][property]=v;
+    //--
+    var obj_number = editor.tab_obj_.active_obj.obj_dic["obj_number"];
+    editor.tab_obj_.tab_content["objects"][obj_number] = editor.tab_obj_.active_obj.obj_dic;
+    editor.tab_obj_.parent.save();
+    //--
+    //alert(JSON.stringify(editor.tab_obj_.tab_content))
+  }.bind(editor=this.parent, event))
+  this.parent.setting_properties.setAttribute("class", "com_setting");
+  this.parent.win_content.appendChild(this.parent.setting_properties);
 }
 
 
-SettingButton_click = function()
+SettingButton_click = function(obj)
 {
-  alert(this.my_name)
+  //alert(2223)
+  //alert(obj.parent.parent.tab_obj_.tab_name)
+  //alert(obj.parent.parent.my_name); // editor
+  //alert(obj.parent.parent.atm.my_name); // atm
+  //alert(obj.parent.my_name); // Setting
+
+  //alert(obj.obj_name)
+}
+
+SettingSpan_click = function(obj)
+{
+  //alert(obj.parent.parent.tab_obj_.tab_name)
+  //alert(obj.parent.parent.my_name)
+  //alert(obj.parent.my_name)
+  //alert(obj.obj_name)
+}
+
+SettingInput_click = function(obj)
+{
+  //alert(obj.parent.parent.tab_obj_.tab_name)
+  //alert(obj.parent.parent.my_name)
+  //alert(obj.parent.my_name)
+  //alert(obj.obj_name)
 }

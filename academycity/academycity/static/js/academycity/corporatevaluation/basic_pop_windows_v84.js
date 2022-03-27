@@ -841,7 +841,10 @@ VerticalStrategy.prototype.prepare_vertical_order = function(dic=null)
 VerticalStrategy.prototype.set_delta_range = function(event)
 {
   var elm = event.target;var p=elm.innerHTML;
-  if(p=="30"){p="40"} else{p="30"};elm.innerHTML=p;this.delta_percentage=p;
+  if(p=="30"){p="40"} else if (p=="40"){p="100"} else{p="30"};elm.innerHTML=p;this.delta_percentage=p;
+
+
+
 }
 
 // DeltaStrategy --

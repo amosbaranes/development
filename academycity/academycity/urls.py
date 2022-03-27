@@ -71,6 +71,7 @@ urlpatterns += i18n_patterns(
     #
     url(r'm/', include('academycity.apps.acapps.macroeconomics.urls')),
     url(r'k/', include('academycity.apps.acapps.businesssim.urls')),
+    url(r'l/', include('academycity.apps.acapps.liongold.urls')),
     #
     url(r'^swotclock/', include('academycity.apps.webapps.swotclock.urls')),
     #

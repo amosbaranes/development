@@ -108,7 +108,8 @@ def clean_registrations(request):
 
 
 def activate_function(request):
-    # var dic_ = {"obj": "AdvancedTabs", "atm": atm_.my_name, "fun": "add_tab", "params": {"tab_name": tab_name_}}
+    # var dic_ = {"obj": "AdvancedTabs", "atm": atm_.my_name, "app": atm_.my_app, "fun": "add_tab",
+    #             "params": {"tab_name": tab_name_}}
 
     dic_ = request.POST["dic"]
     # print(dic_)
@@ -116,11 +117,12 @@ def activate_function(request):
 
     obj_ = dic_["obj"]
     atm_ = dic_["atm"]
+    app_ = dic_["app"]
     fun_ = dic_["fun"]
     params_ = dic_["params"]
 
     # print('-1'*20)
-    s = obj_ + "('"+atm_+"')." + fun_ + "(params_)"
+    s = obj_ + "('"+atm_+"', '"+app_+"')." + fun_ + "(params_)"
     # print(s)
     # print('-1'*20)
     result = eval(s)

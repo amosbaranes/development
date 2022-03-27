@@ -18,6 +18,50 @@ body {font-family: "Lato", sans-serif;}
   height: 100%;
 }
 
+.tab_textarea {
+  float: left;
+  border: 1px solid #ccc;
+  background-color: white;
+  width: 39%;
+  height: 100%;
+}
+.tab_setting {
+  float: left;
+  border: 1px solid #ccc;
+  background-color: #f1f1f1;
+  width: 30%;
+  height: 100%;
+}
+
+.editor {
+  float: left;
+  border: 1px solid #ccc;
+  background-color: white;
+  width: 39%;
+  height: 100%;
+}
+.com_setting {
+  float: left;
+  border: 1px solid #ccc;
+  background-color: #f1f1f1;
+  width: 30%;
+  height: 100%;
+}
+.tab_nav {
+  float: left;
+  border: 1px solid #ccc;
+  background-color: #f1f1f1;
+  width: 10%;
+  height: 100%;
+}
+.tab_nav_content {
+  float: left;
+  border: 1px solid #ccc;
+  background-color: white;
+  width: 90%;
+  height: 100%;
+}
+
 /* Style the buttons inside the tab */
 .tab button {
   display: block;
@@ -48,7 +92,7 @@ body {font-family: "Lato", sans-serif;}
   float: left;
   padding: 0px 12px;
   border: 1px solid #ccc;
-  width: 70%;
+  width: 100%;
   border-left: none;
   height: 300px;
 }

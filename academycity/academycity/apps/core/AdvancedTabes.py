@@ -1,19 +1,20 @@
 from django.shortcuts import render
 from django.http import JsonResponse
-from .models import DataAdvancedTabs
+from .models import DataAdvancedTabs, DataAdvancedTabsManager
 
 
 class AdvancedTabs(object):
-    def __init__(self, manager_name):
+    def __init__(self, manager_name, app):
         self.manager_name = manager_name
+        self.app = app
 
     def delete_tab(self, params):
         try:
-            print('-'*10)
-            print(params)
-            print('-'*10)
+            # print('-2'*10)
+            # print(params)
+            # print('-2'*10)
             tab_name_ = params["tab_name"]
-            tab_to_delete = DataAdvancedTabs.objects.get(at_name=self.manager_name, tab_name=tab_name_)
+            tab_to_delete = DataAdvancedTabs.objects.get(manager__at_name=self.manager_name, tab_name=tab_name_)
             tab_id_ = tab_to_delete.id
             tab_to_delete.delete()
             result = {'tab_id': tab_id_}
@@ -23,48 +24,68 @@ class AdvancedTabs(object):
 
     def add_tab(self, params):
         try:
+            # print('-1'*10)
+            # print(params)
+            # print('-1'*10)
             tab_name_ = params["tab_name"]
-            result = {}
-            t, is_new_row = DataAdvancedTabs.objects.get_or_create(at_name=self.manager_name, tab_name=tab_name_,
-                                                                   tab_title=tab_name_.capitalize())
-            result = self.add_record_to_result(t, result)
+            manager_, n_ = DataAdvancedTabsManager.objects.get_or_create(at_name=self.manager_name)
+            if n_:
+                manager_.manager_content = {"last_obj_number": 0}
+                manager_.save()
+            t, n_ = DataAdvancedTabs.objects.get_or_create(manager=manager_, tab_name=tab_name_)
+            try:
+                content_ = {"properties": {"tab_name": params["tab_name"], "tab_title": params["tab_name"],
+                            "tab_type": "empty"}}
+                # print(content_)
+                t.tab_content = content_
+                t.save()
+            except Exception as ex:
+                print(ex)
+            result = {t.id: t.tab_content}
         except Exception as ex:
             result = {'error': "-1"}
         return result
 
     def get_tabs_from_table(self, params):
         try:
-            tabs = DataAdvancedTabs.objects.filter(at_name=self.manager_name).all()
+            manager_ = DataAdvancedTabsManager.objects.get(at_name=self.manager_name)
+            tabs = DataAdvancedTabs.objects.filter(manager=manager_).all()
             result = {}
             for t in tabs:
-                result = self.add_record_to_result(t, result)
+                # print(t.id)
+                # print('t.tab_content')
+                result[t.id] = t.tab_content
+            # print("ok")
+            result = {"manager": manager_.manager_content, "tabs": result}
+            # print(result)
         except Exception as ex:
             result = {"error": "-1"}
         return result
 
-    def add_record_to_result(self, t, result):
-        result[t.id] = {"tab_name": t.tab_name, "tab_title": t.tab_title, "tab_text": t.tab_text,
-                        "tab_functions": t.tab_functions}
-        return result
-
-    def save_html_functions_of_active_tab(self, params):
+    def save_content(self, params):
         try:
             # print('='*50)
+            # print('params')
             # print(params)
-            # print('functions')
-            # print(params["tab_functions"])
-            # print('-'*30)
-            # print('html')
-            # print(params["tab_text"])
-            # print('-'*30)
+            # print('='*20)
+            # print('atm_content')
+            # print(params["atm_content"])
+            # print('='*20)
+            # print('tab_content')
+            # print(params["tab_content"])
+            # print('='*20)
             # print('tab_name')
             # print(params["tab_name"])
             # print('='*50)
             try:
-                tab = DataAdvancedTabs.objects.get(at_name=self.manager_name, tab_name=params["tab_name"])
-                tab.tab_text = params["tab_text"]
-                tab.tab_functions = params["tab_functions"]
+                atm = DataAdvancedTabsManager.objects.get(at_name=self.manager_name)
+                atm.manager_content = params["atm_content"]
+                atm.save()
+                tab = DataAdvancedTabs.objects.get(manager=atm, id=params["tab_id"])
+                tab.tab_content = params["tab_content"]
+                tab.tab_name = params["tab_name"]
                 tab.save()
+                # print("saved")
             except Exception as ex:
                 print(ex)
             # print(tab)
