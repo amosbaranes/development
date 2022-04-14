@@ -31,6 +31,7 @@ AdvancedTabsManager.prototype.init_create_containers = function()
    this.titles = document.createElement("div");
    this.titles.setAttribute("class", "maintab");
    this.container = document.createElement("div");
+   this.container.setAttribute("style", "width: 100%;height: 100%;")
    this.elm_body.appendChild(this.add_delete_editor);this.elm_body.appendChild(this.titles);this.elm_body.appendChild(this.container);
 }
 
@@ -48,9 +49,14 @@ AdvancedTabsManager.prototype.create_add_delete_editor = function()
                     //alert(JSON.stringify('dic'))
                     //alert(JSON.stringify(dic))
                     var result = dic["result"]
-                    for (id_ in result){atm.tabs[id_] = new Tab(atm, data=result[id_], id=id_);}
+                    for (id_ in result){
+                     result[id_]["properties"]["link_number"]=this.get_next_obj_number();
+                     atm.tabs[id_] = new Tab(atm, data=result[id_], id=id_);
+                    }
+                    //alert(JSON.stringify(result))
                     atm.tabs[id_].btn.click();
                     try{atm.set_active_tab(atm.tabs[id_].btn)} catch(er){alert(er)}
+                    try{atm.save()} catch(er){alert(er)}
                     atm.save();
                   }.bind(atm=atm_));
       }.bind(atm_=this, event))
@@ -107,9 +113,13 @@ AdvancedTabsManager.prototype.setTabs = function()
           //alert(JSON.stringify(tabs))
           for (id_ in tabs)
           {
-            atm_.tabs[id_]=new Tab(atm_, data=tabs[id_], id=id_)
+          //alert(9)
+            //alert(id_);
+            atm_.tabs[id_]=new Tab(atm_, data=tabs[id_], id=id_);
+          //alert(91)
           }
-          try{atm_.tabs[id_].btn.click();} catch(er){}
+
+          try{atm_.tabs[id_].btn.click();} catch(er){alert(er)}
      }.bind(atm_ = this)
  );
 }
@@ -183,14 +193,18 @@ AdvancedTabsManager.prototype.get_obj_functions_settings_attributes = function(d
 
 AdvancedTabsManager.prototype.save = function()
 {
+try{
   var tab_content = {
                       "functions": this.active_tab.tab_functions,
+                      "nav_links": this.active_tab.tab_nav_links,
                       "properties": this.active_tab.tab_properties,
                       "objects": this.active_tab.tab_objects,
                       "tab_name": this.active_tab.tab_name,
                       "tab_title": this.active_tab.tab_title,
                       "tab_type": this.active_tab.tab_type
                     }
+} catch(er){alert(er)}
+//alert(JSON.stringify(tab_content))
 
   var dic_={"obj":"AdvancedTabs","atm":this.my_name, "app": this.my_app, "fun":"save_content",
             "params": {"atm_content": this.content,
@@ -205,6 +219,11 @@ AdvancedTabsManager.prototype.save = function()
             else{ // alert("ok")
             }
           });
+}
+
+AdvancedTabsManager.prototype.get_next_obj_number=function(){
+this.content["last_obj_number"]+=1;
+return this.content["last_obj_number"]
 }
 
 
@@ -269,17 +288,20 @@ acObj.prototype.create_editor = function(){
 }
 
 acObj.prototype.create_obj = function(){
- //alert(JSON.stringify(this.obj_dic))
- var container = document.getElementById(this.obj_dic["container_id"])
+ // alert(JSON.stringify(this.obj_dic))
+ //alert(this.obj_dic["container_id"])
+ var container = document.getElementById("content_"+this.obj_dic["container_id"])
+ //alert(container.outerHTML)
+ //alert(container) //alert(container.outerHTML)
+
  var new_obj=document.createElement(this.obj_dic["element_name"]);
+ new_obj.setAttribute("container_id", this.obj_dic["container_id"]);
  new_obj.setAttribute("id", this.obj_dic["obj_number"]);
  if("width" in this.obj_dic["properties"]){var width_=this.obj_dic["properties"]["width"]} else {var width_="10"}
   new_obj.innerHTML=this.obj_dic["properties"]["title"];
-
  for (i in this.attributes){var s=this.attributes[i];
   if(s in this.obj_dic["properties"]){new_obj.setAttribute(s, this.obj_dic["properties"][s])}
   else{new_obj.setAttribute(s, "")}}
-
   if(this.obj_dic["element_name"]=="Input")
   {
     var nx_=60;var x=1*this.obj_dic["properties"]["x"]+nx_;
@@ -292,154 +314,318 @@ acObj.prototype.create_obj = function(){
   {
     new_obj.setAttribute("style", "position:absolute;left:"+this.obj_dic["properties"]["x"]+"px;top:"+this.obj_dic["properties"]["y"]+"px;width:"+width_+"px");
   }
- //alert('new_obj.outerHTML 3')
- //alert(new_obj.outerHTML)
-
   container.appendChild(new_obj)
-
  for(f in this.obj_dic["functions"]){var s="new_obj."+f+"="+this.obj_dic["functions"][f];eval(s);}
  //alert(new_obj.outerHTML)
-
-//alert(JSON.stringify(this.obj_properties));
-//this.obj_properties
-//this.functions
-//
+ //alert(JSON.stringify(this.obj_properties));
+ //this.obj_properties
+ //this.functions
 }
 
+
+// -- TabContent --
+function TabContent(tab, container, link_dic, is_on_click=true, is_link=null){
+ this.tab=tab;
+ this.link_number=link_dic["link_number"];
+ this.content_type=link_dic["content_type"];
+ //-
+ this.link_content=document.createElement("div");
+ this.link_content.setAttribute("id", "content_"+this.link_number);
+ this.link_content.setAttribute("link_number", this.link_number);
+ //this.link_content.innerHTML=this.link_number;
+ this.link_content.setAttribute("type", "container");
+ this.link_content.setAttribute("class", "tabcontent");
+ this.link_content.tab=tab;
+ if(is_link){var width=100} else {var width=link_dic["width"];}
+ this.link_content.setAttribute("style", "position: relative;background-color:white;width: "+width+"%;height:1000px;");
+// border: 1px solid #ccc;
+ if(is_on_click){
+    //this.link_content.innerHTML=this.link_number;
+    this.link_content.onclick=function(event){
+      //alert(event.target.outerHTML)
+      var e=event.target;
+      if(this.tab.new_obj_to_create==null){
+         if(event.ctrlKey){
+           var obj_number=e.getAttribute("id")
+           var container_id=e.getAttribute("container_id")
+           var click_event=new Event("click", {bubbles: true});
+           this.tab.parent.editor.main_menus["Component"].btn.dispatchEvent(click_event);
+           this.tab.active_obj=this.tab.parent.get_acObj(this.tab.tab_objects[container_id][obj_number]);
+           this.tab.active_obj.create_editor();
+         }
+      } else {
+        // alert(JSON.stringify(this.tab.new_obj_to_create));
+        var dic=this.tab.new_obj_to_create;
+        var x=event.clientX-e.offsetLeft;
+        //alert(event.clientX)
+        //alert(e.offsetLeft)
+        //alert(x)
+
+        //alert(event.clientX)
+        //alert(event.pageX)
+        //-e.offsetLeft;
+
+if(e.parentNode.parentNode.offsetTop*1==0)
+{
+        var y=event.clientY-e.offsetTop;
+        }
+        else{
+        var y=event.clientY-e.parentNode.parentNode.offsetTop;
+        }
+//        alert('event.clientY')
+//        alert(event.clientY)
+//        alert('e.offsetTop')
+//        alert(e.offsetTop)
+       // alert(e.parentNode.offsetTop)
+//        alert('e.parentNode.parentNode.offsetTop')
+//        alert(e.parentNode.parentNode.offsetTop)
+//        alert('y')
+//        alert(y)
+
+
+        var obj_number=this.tab.get_next_obj_number();
+        var container_id=e.getAttribute("link_number");
+
+        dic["obj_number"]=obj_number;dic["container_id"]=container_id;dic["functions"]={};
+        dic["properties"]["x"]=x;dic["properties"]["y"]=y;
+         //alert(JSON.stringify(dic));
+        this.tab.active_obj=this.tab.generate_acObj(dic=dic);
+        this.tab.active_obj.create_editor();
+        //alert(JSON.stringify(this.tab.tab_objects));
+        //alert(JSON.stringify(this.tab.active_obj.obj_dic));
+        //alert(container_id)
+        //alert(obj_number)
+        this.tab.tab_objects[container_id][obj_number]=this.tab.active_obj.obj_dic;
+        this.tab.parent.save();
+      }
+    }
+ }
+ container.appendChild(this.link_content);
+ this.process_content();
+}
+
+TabContent.prototype.process_content = function()
+{
+  //alert("process_content")
+   //alert(JSON.stringify(this.tab.tab_objects[this.link_number]));
+
+  for (i in this.tab.tab_objects[this.link_number])
+  {
+   dic_=this.tab.tab_objects[this.link_number][i]
+   //alert('JSON.stringify(dic_)')
+   //alert(JSON.stringify(dic_))
+   this.tab.generate_acObj(dic=dic_)
+  }
+}
+
+
+// -- TabNavLink --
+function TabNavLink(tab_nav, link_dic){
+ this.tab_nav;
+ this.tab=tab_nav.tab;
+ this.nav=tab_nav.nav;
+ // alert(JSON.stringify(link_dic))
+ this.link_number=link_dic["link_number"];
+ this.nav.links[this.link_number]=this;
+ this.link=link_dic["link"];
+ this.link_btn=document.createElement("button");
+ this.link_btn.innerHTML=this.link;
+ this.link_btn.setAttribute("class","nav_button nav_button"+this.tab.tab_name);
+ this.link_btn.setAttribute("id","link_btn_"+this.link_number);
+ this.link_btn.setAttribute("link_number",this.link_number);
+ this.link_btn.setAttribute("tab_name",this.tab.tab_name);
+ this.link_btn.parent=this;
+ this.link_btn.onclick=function(event){
+   var e=event.target;
+   var tab_name=e.getAttribute("tab_name");
+   e.parent.nav.active_link=this.parent;
+   var tabcontent=document.getElementsByClassName("tabcontent"+tab_name+"_content");
+   for(i=0;i<tabcontent.length;i++){tabcontent[i].style.display='none';}
+   var btns=document.getElementsByClassName("nav_button"+tab_name);
+   for(i=0;i<btns.length;i++){btns[i].className=btns[i].className.replace(" active","")}
+
+   try{e.parent.link_content.style.display="block";this.parent.link_btn.className+=" active";}catch(er){alert(er)}
+ }
+
+ this.nav.appendChild(this.link_btn);
+ this.nav.links[this.link_number]=this;
+ this.content=new TabContent(this.tab, tab_nav.nav_content, link_dic, is_on_click=true, is_link=true);
+ this.link_content=this.content.link_content;
+ this.link_content.className+=this.tab.tab_name+"_content";
+}
+
+
+// -- TabNav --
+function TabNav(tab=null){
+  this.tab=tab;
+  this.nav=null;
+  this.active_link=null;
+  this.properties=this.tab.tab_nav_links["properties"]
+  this.is_show_btns=this.properties["is_show_btns"];
+  this.nav_width=this.properties["width"];
+  this.add_title=this.properties["add_title"];
+  this.remove_title=this.properties["remove_title"];
+  this.create_main_content();
+  this.process_data();
+}
+
+TabNav.prototype.create_main_content = function()
+{
+   this.nav_container=document.createElement("div");
+   this.nav_container.setAttribute("my_name", "TabNav.nav_container");
+   this.nav_container.setAttribute("style", "float:left;border:1px solid #ccc;background-color: #f1f1f1;width:"+this.nav_width+"%;");
+   // --
+   this.nav = document.createElement("div");
+   this.nav.links={};
+   //--
+   if(this.is_show_btns=="true")
+   {
+     this.nav_container_buttons=document.createElement("div");
+     this.nav_btn_add=document.createElement("button");
+     this.nav_container.appendChild(this.nav_container_buttons)
+     this.nav_container_buttons.appendChild(this.nav_btn_add)
+     this.nav_btn_add.parent=this;
+     this.nav_btn_add.innerHTML=this.add_title;
+     this.nav_btn_add.onclick=function(event){
+         //-
+         var link_ = prompt("Enter name for new link:",'');if(link_==''){alert("Please enter a link name");return}
+         var link_number=this.parent.tab.get_next_obj_number();
+         var width_=100-this.parent.nav_width;
+         var link_dic={"link_number":link_number, "link":link_, "content_type": "simple", "width":width_};
+         this.parent.tab.tab_objects[link_number]={};
+         this.parent.tab.tab_nav_links["nav_links"][link_number]=link_dic;
+         var tab_nav_links = new TabNavLink(this.parent, link_dic);
+         tab_nav_links.link_btn.click();
+         this.parent.tab.parent.save();
+
+         this.parent.nav_content.appendChild(tab_nav_links.link_content);
+         this.parent.nav.appendChild(tab_nav_links.link_btn);
+         this.parent.nav.links[link_number]=tab_nav_links;
+         tab_nav_links.link_btn.click();
+         //alert(JSON.stringify(this.parent.tab.tab_nav_links))
+         this.parent.tab.parent.save();
+     }
+     this.nav_btn_remove=document.createElement("button");
+     this.nav_container_buttons.appendChild(this.nav_btn_remove)
+     this.nav_btn_remove.parent=this;
+     this.nav_btn_remove.innerHTML=this.remove_title;
+     this.nav_btn_remove.onclick=function(event){
+         //-
+         var e=event.target;
+         //alert(e.outerHTML)
+         //alert(this.parent.nav.active_link)
+         var link_= this.parent.nav.active_link.link_btn.innerHTML;
+         var link_number= this.parent.nav.active_link.link_btn.getAttribute("link_number")
+         var link_ = prompt("Are you sure you want to remove link "+link_+"? if so type Yes:",'No');
+         if(link_=='Yes')
+         {
+          delete this.parent.tab.tab_nav_links["nav_links"][link_number];
+          this.parent.nav.active_link.link_btn.outerHTML="";
+          this.parent.nav.active_link.link_content.outerHTML="";
+          delete this.parent.nav.links[link_number];
+          this.parent.tab.parent.save();
+         }
+     }
+   }
+   this.nav_container.appendChild(this.nav)
+   this.tab.content.appendChild(this.nav_container)
+   this.nav_content = document.createElement("div");
+   this.nav_content.setAttribute("my_name", "TabNav.nav_content");
+   var width_=100-this.nav_width;
+   this.nav_content.setAttribute("style","float:left;background-color:#f1f1f1;width:"+width_+"%;height:100%;");
+   // border:1px solid #ccc;
+   this.tab.content.appendChild(this.nav_content)
+   this.nav.setAttribute("style","float:left;background-color:#f1f1f1;width:100%;");
+   // border:1px solid #ccc;
+}
+
+TabNav.prototype.process_data = function()
+{
+ var n1_obj=null;
+ for (n_ in this.tab.tab_nav_links["nav_links"])
+ {
+  var link_dic=this.tab.tab_nav_links["nav_links"][n_];
+  var nav_link_obj=new TabNavLink(this, link_dic);
+  if(n1_obj==null){n1_obj=nav_link_obj.link_btn}
+ }
+ try{n1_obj.click();} catch(er){}
+}
+
+
 // Tab obj ---
-//function Tab(parent, my_name, my_title, html, tab_functions, id)
 function Tab(parent, data, id)
 {
  //alert(JSON.stringify(data));
- this.parent=parent; this.tab_id=id;
+ this.parent=parent;
+ this.tab_id=id;
  this.btn=null;this.content=null;this.PopWinObjects={};
 
- // if(!("properties" in data)){this.tab_properties={}} else {
  this.tab_properties=data["properties"]
- //};
- this.tab_name=data["properties"]["tab_name"];this.tab_title=data["properties"]["tab_title"];this.tab_type=data["properties"]["tab_type"];
- //--
+ this.link_number=data["properties"]["link_number"];
+ this.tab_name=data["properties"]["tab_name"];
+ this.tab_title=data["properties"]["tab_title"];
+ this.tab_type=data["properties"]["tab_type"];
+  //--
  if(!("functions" in data)){this.tab_functions={};
    this.tab_functions[this.tab_name+"__init__"]=this.tab_name+"__init__=function(obj){}";
    this.tab_functions[this.tab_name+"__myclick__"]=this.tab_name+"__myclick__=function(obj){}";
    this.tab_functions[this.tab_name+"__otherclick__"]=this.tab_name+"__otherclick__=function(obj){}";
  } else {this.tab_functions=data["functions"]};
- //alert(JSON.stringify(this.tab_functions))
+ if(!("objects" in data))
+ {
+  this.tab_objects={};this.tab_objects[this.link_number]={};
+ }
+  else {this.tab_objects=data["objects"]};
 
- //alert(JSON.stringify(this.tab_properties))
- if(!("objects" in data)){this.tab_objects={}} else {this.tab_objects=data["objects"]};
+//alert(JSON.stringify(this.tab_objects));
+
+ this.create_btn_container();
+
  //alert(JSON.stringify(this.tab_objects))
  this.process_functions();
- this.create_btn_container();
  this.init_tab();
- this.process_content();
+ //this.process_content();
  this.new_obj_to_create = null;
  this.active_obj=null;
 }
 
 Tab.prototype.create_btn_container = function()
 {
-  var on_click_function=function()
-  {
-    var e=event.target;
-    if(e.getAttribute("type")==null){var obj_tab=e.parentNode.parent;} else {var obj_tab=e.parent;}
-    if(obj_tab.new_obj_to_create==null){
-     if(event.ctrlKey){
-       var obj_number=e.getAttribute("id")
-       var click_event = new Event("click", {bubbles: true});
-       obj_tab.parent.editor.main_menus["Component"].btn.dispatchEvent(click_event);
-       obj_tab.active_obj=obj_tab.parent.get_acObj(obj_tab.tab_objects[obj_number]);
-       obj_tab.active_obj.create_editor();
-     }
-    }
-    else {
-        //alert(JSON.stringify(this.new_obj_to_create));
-        var dic=obj_tab.new_obj_to_create;
-        var x=event.pageX-e.offsetLeft;var y=event.pageY-e.offsetTop;
-        var obj_number=obj_tab.get_next_obj_number();var container_id=e.getAttribute("id");
-        dic["obj_number"]=obj_number;dic["container_id"]=container_id;dic["functions"]={};
-        dic["properties"]["x"]=x;dic["properties"]["y"]=y;
-        // alert(JSON.stringify(dic));
-        obj_tab.active_obj=obj_tab.generate_acObj(dic=dic);
-        obj_tab.active_obj.create_editor();
-        var obj_number=obj_tab.active_obj.obj_dic["obj_number"]
-        obj_tab.tab_objects[obj_number]=obj_tab.active_obj.obj_dic;
-        obj_tab.parent.save();
-    }
-  }.bind(event)
-
-  this.btn=document.createElement("button");this.btn.parent=this;
+  this.btn=document.createElement("button");
+  this.btn.setAttribute("link_number", this.link_number);
+  this.btn.parent=this;
   this.btn.setAttribute("class", "tablinks");
-  this.btn.innerHTML=this.tab_title;
-
-  try{this.btn.onclick=function(event){
-  var btn=event.target;
-  btn.parent.parent.set_active_tab(btn)}
-  } catch(er) {alert("Error 22: "+er)}
-
   this.btn.className += " active";
+  this.btn.innerHTML=this.tab_title;
+  try{this.btn.onclick=function(event){var btn=event.target;btn.parent.parent.set_active_tab(btn)}} catch(er) {alert("Error 22: "+er)}
   this.parent.titles.appendChild(this.btn)
+  //--
+  var link_dic={"link_number":this.link_number, "content_type": "simple", "width":100};
+  if(this.tab_properties["tab_type"].includes("nav")) {var is_on_click=false;} else {var is_on_click=true;}
+  this.tab_content=new TabContent(tab=this, container=this.parent.container, link_dic, is_on_click=is_on_click, is_link=false);
+  this.content=this.tab_content.link_content;
+  this.content.parent=this;
 
-  this.content = document.createElement("div");
-  this.content.setAttribute("style", "position: relative;");
-
-  try{
-      if(this.tab_properties["tab_type"]=="nav")
-      {
-        this.nav = document.createElement("div");
-        this.nav.setAttribute("class", "tab_nav");
-        this.nav.innerHTML="Amosnav"
-        this.content.appendChild(this.nav)
-         this.nav_content = document.createElement("div");
-         this.nav.setAttribute("id", this.tab_name+"_content");
-         this.nav_content.setAttribute("class", "tab_nav_content");
-         this.nav_content.innerHTML="Amos cont"
-         this.nav_content.onclick =
-        this.content.appendChild(this.nav_content)
-      }
-      else{
-      alert(2)
-       this.content.setAttribute("id", this.tab_name+"_content");
-       this.content.setAttribute("type", "container");
-       this.content.onclick=on_click_function;
-      alert(200)
-      }
-
-    } catch(er) {alert("Error 22: "+er)}
-
-
-
-
-
-  this.content.setAttribute("class", "tabcontent");this.parent.container.appendChild(this.content);this.content.parent=this;
-
+     if(this.tab_properties["tab_type"].includes("nav"))
+     {
+       if(!("nav_links" in data))
+       {this.tab_nav_links={"properties":{"width":"10", "add_title":"Add", "remove_title":"Remove", "is_show_btns":"true"},
+                            "nav_links":{}};
+       } else {
+       this.tab_nav_links=data["nav_links"]
+       };
+        // alert(JSON.stringify(this.tab_nav_links))
+       this.tab_nav=new TabNav(tab=this);
+     }
 }
 
-Tab.prototype.process_content = function()
-{
-  //alert("process_content")
-  // alert(JSON.stringify(this.tab_objects));
-
-  for (i in this.tab_objects)
-  {
-   //alert('JSON.stringify(this.tab_objects[i])')
-   //alert(JSON.stringify(this.tab_objects[i]))
-   dic_=this.tab_objects[i]
-   this.generate_acObj(dic=dic_)
-  }
-  //alert(this.html)
-  // this.content.innerHTML = this.html;
-
-  //alert(5551)
-}
 
 Tab.prototype.process_functions = function(){for(f in this.tab_functions){eval(this.tab_functions[f])}}
 
 Tab.prototype.init_tab=function(){try{eval(this.tab_name+"__init__(obj=this)");} catch(er) {}}
 
 Tab.prototype.get_next_obj_number=function(){
-this.parent.content["last_obj_number"]+=1;
-return this.parent.content["last_obj_number"]
+  return this.parent.get_next_obj_number();
 }
 
 Tab.prototype.set_to_create_acObj=function(dic){
@@ -449,12 +635,14 @@ Tab.prototype.set_to_create_acObj=function(dic){
 }
 
 Tab.prototype.generate_acObj=function(dic=null){
+ //alert(JSON.stringify(dic));
  obj = this.parent.get_acObj(dic);
+         //alert(JSON.stringify(obj.obj_dic))
+
  obj.create_obj();
  // obj.create_editor();
  //alert(JSON.stringify(obj.data));
  //alert(JSON.stringify(obj.obj_dic));
-
  this.new_obj_to_create = null;
  return obj;
 }
@@ -730,7 +918,7 @@ PopWin.prototype.set_panel = function()
 PopWin.prototype.get_main_button_obj = function(s_name)
 {
  var s = 'function MenuBtn'+s_name+'(parent)';
- s+='{MenuBtn.call(this,parent,my_name_="'+s_name+'",parent.main_menu,width="width:10%;");';
+ s+='{MenuBtn.call(this,parent,my_name_="'+s_name+'",width="width:10%;");';
  s+='parent.main_menus[this.my_name]=this;};';
  eval(s);
  s = 'MenuBtn'+s_name+'.prototype = Object.create(MenuBtn.prototype);';
@@ -744,7 +932,7 @@ PopWin.prototype.get_main_button_obj = function(s_name)
 }
 
 // -- MenuBtn --
-function MenuBtn(parent, my_name_, container, width="width:10%;")
+function MenuBtn(parent, my_name_, width="width:10%;")
 {
  this.parent=parent;this.my_name=my_name_;
  this.buttons = this.parent.atm.buttons[this.my_name];
@@ -760,12 +948,10 @@ function MenuBtn(parent, my_name_, container, width="width:10%;")
    this.parent.parent.sub_menu.innerHTML="";
    this.parent.parent.sub_menus = {};
    // need to remove the alert in the catch part.
-
    try{this.parent.create_main_content();} catch(er){alert(er)}
-
    try{for(b in this.parent.buttons){eval('SubMenuBtn'+this.my_name+b+'=this.parent.get_sub_button_obj(b,this.parent.buttons[b]["title"])');eval('new SubMenuBtn'+this.my_name+b+'(parent=this.parent)');}} catch(er){alert(er)}
  }
- container.appendChild(this.btn);
+ this.parent.main_menu.appendChild(this.btn);
 }
 
 MenuBtn.prototype.get_sub_button_obj = function(s_name, s_title)
@@ -773,7 +959,7 @@ MenuBtn.prototype.get_sub_button_obj = function(s_name, s_title)
  var s = 'function SubMenuBtn'+this.my_name+s_name+'(parent)';
  s+='{';
  s+='var width_=parent.buttons["'+s_name+'"]["width"];';
- s+='SubMenuBtn.call(this,parent,my_name_="'+s_name+'",my_title_="'+s_title+'",parent.parent.sub_menu,width="width:"+width_+"%;");';
+ s+='SubMenuBtn.call(this,parent,my_name_="'+s_name+'",my_title_="'+s_title+'",width="width:"+width_+"%;");';
  s+='parent.parent.sub_menus[this.my_name]=this;};';
  eval(s);
  s = 'SubMenuBtn'+this.my_name+s_name+'.prototype = Object.create(SubMenuBtn.prototype);';
@@ -785,6 +971,7 @@ MenuBtn.prototype.get_sub_button_obj = function(s_name, s_title)
  // s+='this.parent.get_acObj("ac'+s_name+'");'
  //s+='alert(this.parent.parent.atm.my_name);'
  //s+='this.parent.parent.atm.get_acObj(dic={"obj_name":"ac'+s_name+'"});'
+
  s+='this.parent.parent.atm.active_tab.set_to_create_acObj(dic={"obj_name":"ac'+s_name+'", "element_name":"'+s_name+'", "properties":{"title":"'+s_title+'"}});'
 
  s+='try{'+this.my_name+s_name+'_click(obj=this);} catch(er){}';
@@ -795,21 +982,20 @@ MenuBtn.prototype.get_sub_button_obj = function(s_name, s_title)
 }
 
 // -- SubMenuBtn --
-function SubMenuBtn(parent, my_name_, my_title_, container, width="width:10%;")
+function SubMenuBtn(parent, my_name_, my_title_, width="width:10%;")
 {
  this.parent=parent;this.my_title=my_title_;this.my_name=parent.my_name+my_name_;
  this.btn = document.createElement("button");
  this.btn.parent=this;
- this.btn.setAttribute("id", this.parent.my_name+"_"+this.my_name);
+ this.btn.setAttribute("id", this.my_name);
  this.btn.setAttribute("class", "main_menu_btn");
  this.btn.setAttribute("style", width);
  this.btn.innerHTML = my_title_;
  this.btn.onclick=function(event){
    this.parent.click()
    }
- container.appendChild(this.btn);
+ parent.parent.sub_menu.appendChild(this.btn);
 }
-
 
 // -- MenuBtnTab --
 Tab_create_main_content = function()
@@ -852,8 +1038,10 @@ Tab_create_main_content = function()
   // -- need to complete
   this.parent.tab_properties_ = document.createElement("div");
   var table = document.createElement("table");var tr=document.createElement("tr");table.appendChild(tr);
-  var thp=document.createElement("th");thp.innerHTML="Property";tr.appendChild(thp);thp.setAttribute("style","width:10%;text-align:center;")
-  var thv=document.createElement("th");thv.innerHTML="Value";tr.appendChild(thv);thv.setAttribute("style","width:10%;text-align:center;")
+  var thp=document.createElement("th");thp.innerHTML="Property";thp.setAttribute("style","width:10%;text-align:center;");
+  tr.appendChild(thp);
+  var thv=document.createElement("th");thv.innerHTML="Value";thv.setAttribute("style","width:10%;text-align:center;");
+  tr.appendChild(thv);
   this.parent.tab_properties_.appendChild(table);
 
   for(i in this.parent.tab_obj_.tab_properties)

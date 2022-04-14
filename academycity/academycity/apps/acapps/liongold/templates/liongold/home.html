@@ -10,20 +10,9 @@
 
 
 <script>
-    var body_ = document.getElementById("main_body")
-    win = new acWin(my_name_="win", win_name="win", win_title="win", right= "0%", top="0%",is_scroll=true, zindex="11", is_nav_panel=false, elm_body=body_)
-    win.set_win_frame_style("20", "650", "1000", "15%", "5%", "white")
-    win.set_acWinStatEventListeners(win);
-
-
-    win1 = new acWin(my_name_="win1", win_name="win1", win_title="win1", right= "10%", top="10%",is_scroll=true, zindex="12", is_nav_panel=false, elm_body=body_)
-    win1.set_win_frame_style("20", "350", "500", "15%", "5%", "white")
-    win1.set_acWinStatEventListeners(win1);
-
-    opio = new acWin(my_name_="opio", win_name="opio", win_title="This is example", right= "20%", top="30%",is_scroll=true, zindex="10", is_nav_panel=true, elm_body=body_)
-    opio.set_win_frame_style("20", "550", "700", "15%", "5%", "red")
-    opio.set_acWinStatEventListeners(opio);
-
+    var body_ = document.getElementById("main_body");
+    var list_of_wins = [["asio", "red"], ["opio","white"], ["michael","blue"], ["amos","yellow"]];
+    var awm = new acWinManager(body_, list_of_wins)
 </script>
 
 

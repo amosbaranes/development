@@ -1109,11 +1109,11 @@ class TDAmeriTrade(BaseTDAmeriTrade):
     # -------------------------------------------------
     def place_order(self, dic):
         dic = json.loads(dic)
-        # print("="*100)
-        # print(dic)
-        # print("-"*10)
-        # print(dic["dic"]["q"])
-        # print("-"*50)
+        print("="*100)
+        print(dic)
+        print("-"*10)
+        print(dic["dic"]["q"])
+        print("-"*50)
 
         order = {
             "orderStrategyType": "TRIGGER",
@@ -1157,9 +1157,9 @@ class TDAmeriTrade(BaseTDAmeriTrade):
                             {"instrument": {"assetType": "OPTION", "symbol": s_},
                              "instruction": "SELL_TO_CLOSE", "quantity": -dic[type_][s_]["q"]})
 
-        # print("-1"*50)
-        # print(order)
-        # print("-1"*50)
+        print("-1"*50)
+        print(order)
+        print("-1"*50)
         return {'data': order}
 
     def place_order_test(self, dic):
@@ -1173,7 +1173,7 @@ class TDAmeriTrade(BaseTDAmeriTrade):
         print(eq)
         print(type(eq))
         print("-"*50)
-        o = orders.options.option_buy_to_open_limit("TSLA_022522C985", 1,5).build()
+        o = orders.options.option_buy_to_open_limit("TSLA_022522C985", 1, 5).build()
         print(o)
         print("-"*50)
         ca = orders.options.bear_call_vertical_open("TSLA_022522C985", "TSLA_022522C990", 5, 1.3)
@@ -1240,29 +1240,9 @@ class TDAmeriTrade(BaseTDAmeriTrade):
 
     def account_test(self, dic):
         dic = json.loads(dic)
-        print("="*20)
-        print("dic")
-        print(dic)
-        print("="*20)
         result = {}
         try:
             c = self.get_client()
-            a = c.get_account(self.account_id)
-            a = a.json()
-            print("="*50)
-            print("account")
-            print(a)
-            print("="*50)
-            print("current_balances")
-            current_balances = a['securitiesAccount']['currentBalances']
-            print("="*20)
-            print(current_balances)
-            print("="*50)
-            print("buyingPowerNonMarginableTrade")
-            result['buyingPowerNonMarginableTrade'] = current_balances['buyingPowerNonMarginableTrade']
-            print(result)
-            print("="*20)
-
             so_ = {
                 "orderType": "NET_CREDIT",
                 "session": "NORMAL",
@@ -1291,20 +1271,14 @@ class TDAmeriTrade(BaseTDAmeriTrade):
             }
             try:
                 so = c.create_saved_order(self.account_id, so_)
-                print("=1"*50)
-                print(so.json())
             except Exception as ex:
                 print(ex)
             try:
-                print("=2"*50)
                 co = c.get_saved_orders_by_path(self.account_id)
-                print(co.json())
             except Exception as ex:
                 print(ex)
         except Exception as ex:
             print(ex)
-        print("-"*50)
-        print("-"*50)
 
         return {'data': result}
 

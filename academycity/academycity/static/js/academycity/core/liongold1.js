@@ -1,27 +1,3 @@
-function acWinManager(body_, list_of_wins)
-{
- this.wins = {};
- for(i in list_of_wins)
- {
-    var win_name=list_of_wins[i][0];var color = list_of_wins[i][1];
-    //alert(win_name)
-    var s = 'this.wins["'+win_name+'"]=new acWin(my_name_="'+win_name+'", win_name="'+win_name+'", win_title="This is example", right= "20%", top="30%",is_scroll=true, zindex="10", is_nav_panel=true, elm_body=body_)'
-    //alert(s)
-    eval(s)
-    s='this.wins["'+win_name+'"].set_win_frame_style("20", "550", "700", "15%", "5%", "'+color+'")'
-    //alert(s)
-    try{eval(s)} catch(er){alert(er)}
-    s='this.wins["'+win_name+'"].set_acWinStatEventListeners(this.wins["'+win_name+'"]);'
-    //alert(s)
-    try{eval(s)} catch(er){alert(er)}
-
-    this.wins[win_name].set_acWinStat('block')
-
- }
-}
-
-
-
 // -- acWin popup window --
 function acWin(my_name_="none", win_name="none", win_title="none", right= "0%", top="0%",is_scroll=true, zindex="11", is_nav_panel=false, elm_body=null)
 {

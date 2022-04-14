@@ -112,9 +112,10 @@ def activate_function(request):
     #             "params": {"tab_name": tab_name_}}
 
     dic_ = request.POST["dic"]
+    # print('dic_')
     # print(dic_)
+    # print('dic_')
     dic_ = eval(dic_)
-
     obj_ = dic_["obj"]
     atm_ = dic_["atm"]
     app_ = dic_["app"]
