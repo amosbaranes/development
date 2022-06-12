@@ -21,6 +21,14 @@ class DataAdvancedTabs(models.Model):
         return str(self.manager) + ":" + str(self.tab_name)
 
 
+class DataAdvancedTabsCustomization(models.Model):
+    tab = models.ForeignKey(DataAdvancedTabs, on_delete=models.CASCADE, default=1)
+    tab_content = models.JSONField(null=True)
+
+    def __str__(self):
+        return str(self.manager) + ":" + str(self.tab_name)
+
+
 class ModifyModel(object):
 
     @classmethod
@@ -33,12 +41,25 @@ class Adjectives(models.Model):
     title = models.CharField(max_length=50)
 
     def __str__(self):
-        return self.adjective
+        return str(self.title)
+
+
+class AdjectiveQuerySet(models.QuerySet):
+    def adjectives(self, adjective_title):
+        return self.filter(adjective__title=adjective_title).order_by("order")
 
 
 class AdjectiveManager(models.Manager):
-    def get_queryset(self, adjective_title):
-        return super(AdjectiveManager, self).get_queryset().filter(adjective__title=adjective_title).orderby(self.order)
+    def get_queryset(self):
+        return AdjectiveQuerySet(self.model, self._db)
+
+    def adjectives(self, adjective_title):
+        return self.get_queryset().adjectives(adjective_title)
+
+#
+# class AdjectiveManager(models.Manager):
+#     def get_queryset(self, adjective_title):
+#         return super(AdjectiveManager, self).get_queryset().filter(adjective__title=adjective_title).orderby(self.order)
 
 
 class AdjectivesValues(models.Model):

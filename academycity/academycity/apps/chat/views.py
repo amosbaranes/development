@@ -91,5 +91,3 @@ def get_wb_of_section(request):
         print(e)
     return JsonResponse(data)
 
-
-

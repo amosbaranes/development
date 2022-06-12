@@ -20,6 +20,7 @@ class WebCompanies(models.Model):
     target_ct = models.ForeignKey(ContentType, blank=True, null=True, on_delete=models.CASCADE,
                                   related_name='webcompanies',
                                   limit_choices_to={'model__in': (
+                                      'accountingweb',
                                       'fabhoseafricaweb',
                                       # 'bizlandweb',
                                       'apewivesweb',

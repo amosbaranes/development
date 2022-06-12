@@ -59,6 +59,7 @@ urlpatterns += i18n_patterns(
     #
     url(r'^webcompanies/', include('academycity.apps.webcompanies.urls')),
     #
+    url(r'ac/', include('academycity.apps.acapps.accounting.urls')),
     url(r'c/', include('academycity.apps.webapps.checkcashingchicago.urls')),
     url(r'e/', include('academycity.apps.webapps.education.urls')),
     url(r'p/', include('academycity.apps.webapps.portfolio.urls')),

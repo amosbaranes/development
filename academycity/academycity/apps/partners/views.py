@@ -24,16 +24,18 @@ def home(request):
     # print('partners home0: ')
     # log_debug('partners home0: ')
     host = request.META["HTTP_HOST"]
-    # log_debug('partners host: ' + host)
+    log_debug('partners host0: ' + host)
     host = host.split(':')[0]
-    # log_debug('partners host1: ' + host)
+    log_debug('partners host1: ' + host)
     host_s = host.split('.')
     town = None
     host_ = None
 
-    # print('host_0')
+    log_debug('partners host_s: ' + str(host_s))
+
+    # print('partners host_2')
     # print(host_)
-    # print('host_0')
+    # print('partners host_2')
 
     if len(host_s) > 2:
         host_ = host_s[1]
@@ -41,7 +43,7 @@ def home(request):
         # log_debug('partners town: ' + town)
     else:
         host_ = host_s[0]
-    # log_debug('partners host_: ' + host_)
+    log_debug('partners host_3: ' + host_)
 
     # print('host_')
     # print(host_)
@@ -53,6 +55,8 @@ def home(request):
         wsc = WebSiteCompany(request, host_)
         if wsc.is_registered_domain():
             # print('wsc.is_registered_domain():wsc.is_registered_domain()')
+            kk = wsc.get_redirect_link()
+            log_debug(kk)
             return wsc.get_redirect_link()
     except Exception as ex:
         # log_debug('exception Partners:home error: ' + str(ex))
@@ -90,14 +94,14 @@ def home(request):
     # print('partners home3: ')
     return render(request, 'partners/home.html', {'host': host, 'host_': host_, 'town': town,
                                                   'current_site': current_site,
-        'partners': partners,
-        'user_counter': user_counter,
-        'form' : form_class,
-        'form_signup': form_signup,
-        'redirect_field_name': redirect_field_name
-        # ,
-        # 'user_ranking': user_ranking
-    })
+                                                  'partners': partners,
+                                                  'user_counter': user_counter,
+                                                  'form' : form_class,
+                                                  'form_signup': form_signup,
+                                                  'redirect_field_name': redirect_field_name
+                                                  # 'user_ranking': user_ranking
+                                                  }
+                  )
 
 
 # def ranking():

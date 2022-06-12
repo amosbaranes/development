@@ -9,8 +9,8 @@ class WebSiteCompany(object):
     def __init__(self, request, domain=None, web_company_id=None, is_test=False):
         # if web_company_id:
         #     log_debug("Create WebSiteCompany for: "+str(web_company_id))
-        # if domain:
-        #     log_debug("Create WebSiteCompany for domain: "+str(domain))
+        if domain:
+            log_debug("Create WebSiteCompany for domain0: "+str(domain))
         # print('-1 '*20)
         # print('WebSiteCompany--'*3)
         # print('-1'*20)
@@ -20,13 +20,13 @@ class WebSiteCompany(object):
             # print(domain)
             # print('-domain '*5)
             try:
-                # log_debug('WebSiteCompany domain: ' + domain)
+                # log_debug('WebSiteCompany domain1: ' + domain)
                 web_company_ = WebCompanies.objects.get(domain=domain)
-                # log_debug('WebSiteCompany web_company_ found: ')
+                log_debug('WebSiteCompany web_company_ found2: ')
                 self.web_company_id = web_company_.id
-                # log_debug('WebSiteCompany web_company_ found: ' + str(web_company_id))
+                log_debug('WebSiteCompany web_company_ found3: ' + str(web_company_id))
                 app_label_ = web_company_.target_ct.app_label
-                # log_debug('WebSiteCompany web_company_ found app_label_ : ' + app_label_)
+                log_debug('WebSiteCompany web_company_ found app_label_4 : ' + app_label_)
                 request.session[settings.WEB_SITE_COMPANY_ID] = {'domain': domain, 'web_company_id': self.web_company_id,
                                                                  'app_label': app_label_}
             except Exception as ex:
@@ -44,7 +44,7 @@ class WebSiteCompany(object):
 
         # print('WebSiteCompany-web_company_id')
 
-        # log_debug("WebSiteCompany created for: " + str(self.web_company_id))
+        log_debug("WebSiteCompany created for5: " + str(self.web_company_id))
         # print(web_company_id)
         # print('-' * 20)
 
