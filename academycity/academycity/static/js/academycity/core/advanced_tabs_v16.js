@@ -722,12 +722,15 @@ acSearchTableCreator.prototype.create_obj = function()
   var tr_h=document.createElement("tr");
   tr_h.setAttribute("style","cursor:pointer");
   this.thead.appendChild(tr_h);
+  var n__=0;
   for(f in dic["fields"])
   {
     var th_=document.createElement("th");
     th_.innerHTML=dic["fields"][f]["field_title"];
+    if(n__==0){th_.setAttribute("style", "border-top-left-radius: 15px")}; n__+=1;
     tr_h.appendChild(th_);
   }
+  th_.setAttribute("style", "border-top-right-radius: 15px");
   this.tbody=document.createElement("tbody");
   this.tbody.setAttribute("id", "tbody_"+dic["properties"]["obj_number"]);
   this.table_.appendChild(this.tbody);
@@ -925,52 +928,84 @@ acChartCreator.prototype.create_obj = function()
 
  container.appendChild(this.chart);
 
-   data={"type":"lines", "title":"abcd","x":{"data":[]},
-         "series": {
+   var chart_type={"type":"pies", "title":"abcde", "x":{"data":[]},"series":{
                     "y1":{"data":[], "color":[219, 64, 82], "name":"import"},
                     "y2":{"data":[], "color":[55, 128, 191], "name":"export"},
-                    "y3":{"data":[], "color":[5, 12, 491], "name":"other"}
-                    }
-        }
-   for(var i=0; i<10;i++)
+                    "y3":{"data":[], "color":[5, 12, 491], "name":"other"}}}
+  //alert(JSON.stringify(chart_type));
+
+   for(var i=0; i<3;i++)
    {
-     data["x"]["data"].push(i)
-     data["series"]["y1"]["data"].push(i+Math.random())
-     data["series"]["y2"]["data"].push(i*2+Math.random())
-     data["series"]["y3"]["data"].push(i*3+Math.random())
+     chart_type["x"]["data"].push(i)
+     chart_type["series"]["y1"]["data"].push(i+Math.random())
+     chart_type["series"]["y2"]["data"].push(i*2+Math.random())
+     chart_type["series"]["y3"]["data"].push(i*3+Math.random())
    }
-
- this.set_chart_data(data);
-
+  //alert(JSON.stringify(chart_type));
+ this.set_chart_data(chart_type);
 }
 
-acChartCreator.prototype.set_chart_data = function(data)
+acChartCreator.prototype.set_chart_data = function(chart_type)
 {
-  //alert(JSON.stringify(data));
-
+  //alert(JSON.stringify(chart_type));
   var data_=[]
+  chart_attributes={"lines":{"type_name":"mode", "type_value":"lines+markers", "marker_attribute":"size", "marker_attribute_value":"8"},
+                    "bars":{"type_name":"type", "type_value":"bar", "marker_attribute":"opacity", "marker_attribute_value":"0.7"},
+                    "pies":{"type_name":"type", "type_value":"pie", "marker_attribute":"opacity", "marker_attribute_value":"0.7"}
+                   }
+  //alert(JSON.stringify(chart_attributes));
+
+   data={"type":chart_type["type"],
+         "type_name":chart_attributes[chart_type["type"]]["type_name"],
+         "type_name_value":chart_attributes[chart_type["type"]]["type_value"],
+         "title":chart_type["title"],
+         "x":{"data":chart_type["x"]},
+         "series": chart_type["series"]
+        }
+
+   //alert(JSON.stringify(data));
+
+ if(chart_type["type"]=='pies')
+ {
+  var n_=0;
+  section=1/(Object.keys(data["series"]).length+1.5)
+  var k_=section*1.25;
+  var annotations_=[]
   for(y in data["series"]){
-    var trace = {
-      x: data["x"]["data"],
-      y: data["series"][y]["data"],
-      mode: data["type"]+"+markers",
-      marker: {
-        color: "rgb("+data["series"][y]["color"][0]+", "+data["series"][y]["color"][1]+", "+data["series"][y]["color"][2]+")",
-        size: 8
-      },
-      name: data["series"][y]["name"],
-      line: {
-        color: 'rgb('+data["series"][y]["color"][0]+', '+data["series"][y]["color"][1]+', '+data["series"][y]["color"][2]+')',
-        width: 1
-      }
-    };
+    var trace = {}
+    trace["values"]=data["series"][y]["data"];
+    trace["labels"]=data["x"]["data"];
+    trace["txt"]=data["series"][y]["name"];
+    trace["textposition"]='inside';
+    trace["domain"]={column: n_};n_+=1;
+    trace["name"]=data["series"][y]["name"];
+    trace["hoverinfo"]='lable';
+    trace["hole"]=.4;
+    trace[data["type_name"]]=data["type_name_value"];
+    data_.push(trace)
+    annotations_.push({font: {size: 20}, showarrow: false, text: data["series"][y]["name"], x: k_, y: 0.5});k_+=section;
+  };
+  var layout = {"title": data["title"],
+                "annotations": annotations_,
+                "height": 400, "width": 600, "showlegend": false,
+                "grid": {rows: 1, columns: n_}
+               }
+ } else {
+  for(y in data["series"]){
+    var trace = {}
+    trace["x"]=data["x"]["data"];
+    trace["y"]=data["series"][y]["data"];
+    trace[data["type_name"]]=data["type_name_value"];
+    trace["marker"]={"color":"rgb("+data["series"][y]["color"][0]+", "+data["series"][y]["color"][1]+", "+data["series"][y]["color"][2]+")"}
+    trace["marker"][data["marker_attribute"]]=data["marker_attribute_value"]
+    trace["name"]=data["series"][y]["name"]
+    trace["line"]={color: 'rgb('+data["series"][y]["color"][0]+', '+data["series"][y]["color"][1]+', '+data["series"][y]["color"][2]+')', width: 1}
     data_.push(trace)
   }
-
-  //alert(JSON.stringify(data_));
-
-    var layout = {title: data["title"]}
-	Plotly.newPlot(this.chart, data_, layout );
+  var layout = {title: data["title"]}
+ }
+ //alert(JSON.stringify(data_));
+ Plotly.newPlot(this.chart, data_, layout );
 }
 
 acChartCreator.prototype.get_data = function()
