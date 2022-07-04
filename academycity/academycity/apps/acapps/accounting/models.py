@@ -19,6 +19,8 @@ class Students(TruncateTableMixin, models.Model):
     email = models.CharField(max_length=50, default='', blank=True, null=True)
     phone = models.CharField(max_length=50, default='', blank=True, null=True)
     address = models.CharField(max_length=100, default='', blank=True, null=True)
+    user_id = models.CharField(max_length=100, default='', blank=True, null=True)
+    twitter = models.CharField(max_length=100, default='', blank=True, null=True)
 
     def __str__(self):
         return self.first_name+" "+self.last_name

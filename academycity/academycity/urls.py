@@ -23,7 +23,9 @@ urlpatterns = [
 urlpatterns += i18n_patterns(
     url(r'^admin/', admin.site.urls),  # NOQA
     url('^rosetta/', include('rosetta.urls')),
+
     url(r'core/', include('academycity.apps.core.urls')),
+
     url(r'actions/', include('academycity.apps.actions.urls')),
     url(r'images/', include('academycity.apps.images.urls')),
     url(r'ueconomics/', include('academycity.apps.ueconomics.urls')),
@@ -44,7 +46,6 @@ urlpatterns += i18n_patterns(
     url(r'blog/', include('academycity.apps.blog.urls')),
     url(r'globsim/', include('academycity.apps.globsim.urls')),
     url(r'corporatevaluation/', include('academycity.apps.corporatevaluation.urls')),
-    url(r'trades/', include('academycity.apps.trades.urls')),
     url(r'trading/', include('academycity.apps.trading.urls')),
     url(r'polls/', include('academycity.apps.polls.urls')),
     url(r'research/', include('academycity.apps.research.urls')),
@@ -59,7 +60,10 @@ urlpatterns += i18n_patterns(
     #
     url(r'^webcompanies/', include('academycity.apps.webcompanies.urls')),
     #
+    #
+    url(r'm/', include('academycity.apps.acapps.macroeconomics.urls')),
     url(r'ac/', include('academycity.apps.acapps.accounting.urls')),
+    url(r'tr/', include('academycity.apps.acapps.trades.urls')),
     url(r'c/', include('academycity.apps.webapps.checkcashingchicago.urls')),
     url(r'e/', include('academycity.apps.webapps.education.urls')),
     url(r'p/', include('academycity.apps.webapps.portfolio.urls')),
@@ -70,7 +74,6 @@ urlpatterns += i18n_patterns(
     url(r'j/', include('academycity.apps.webapps.javascripttutorial.urls')),
     url(r's/', include('academycity.apps.webapps.simba.urls')),
     #
-    url(r'm/', include('academycity.apps.acapps.macroeconomics.urls')),
     url(r'k/', include('academycity.apps.acapps.businesssim.urls')),
     url(r'l/', include('academycity.apps.acapps.liongold.urls')),
     #

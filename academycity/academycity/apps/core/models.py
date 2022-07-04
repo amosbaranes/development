@@ -13,9 +13,15 @@ class DataAdvancedTabsManager(models.Model):
 
 
 class DataAdvancedTabs(models.Model):
+    class Meta:
+        verbose_name = 'DataAdvancedTabs'
+        verbose_name_plural = 'DataAdvancedTabs'
+        ordering = ['order']
+
     manager = models.ForeignKey(DataAdvancedTabsManager, on_delete=models.CASCADE, default=1)
     tab_name = models.CharField(max_length=50, null=True, default="tab")
     tab_content = models.JSONField(null=True)
+    order = models.SmallIntegerField(blank=True, default=1)
 
     def __str__(self):
         return str(self.manager) + ":" + str(self.tab_name)
@@ -46,7 +52,7 @@ class Adjectives(models.Model):
 
 class AdjectiveQuerySet(models.QuerySet):
     def adjectives(self, adjective_title):
-        return self.filter(adjective__title=adjective_title).order_by("order")
+        return self.filter(adjective__title=adjective_title)
 
 
 class AdjectiveManager(models.Manager):
@@ -54,7 +60,7 @@ class AdjectiveManager(models.Manager):
         return AdjectiveQuerySet(self.model, self._db)
 
     def adjectives(self, adjective_title):
-        return self.get_queryset().adjectives(adjective_title)
+        return self.get_queryset().adjectives(adjective_title).order_by("order")
 
 #
 # class AdjectiveManager(models.Manager):
@@ -64,7 +70,7 @@ class AdjectiveManager(models.Manager):
 
 class AdjectivesValues(models.Model):
     adjective = models.ForeignKey(Adjectives, on_delete=models.CASCADE)
-    order = OrderField(blank=True, for_fields=[], default=1)
+    order = models.SmallIntegerField(blank=True, default=1)
     value = models.CharField(max_length=50)
 
     objects = models.Manager()  # The default manager.

@@ -165,7 +165,6 @@ LOCAL_APPS = [
     'academycity.apps.orders',
     'academycity.apps.payment',
     'academycity.apps.globsim',
-    'academycity.apps.trades',
     'academycity.apps.trading',
     'academycity.apps.research',
     'academycity.apps.polls',
@@ -196,6 +195,7 @@ acApps = [
     'academycity.apps.acapps.accounting',
     'academycity.apps.acapps.businesssim',
     'academycity.apps.acapps.macroeconomics',
+    'academycity.apps.acapps.trades',
     'academycity.apps.acapps.liongold',
 ]
 

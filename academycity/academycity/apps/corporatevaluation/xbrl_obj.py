@@ -4050,6 +4050,57 @@ class AcademyCityXBRL(object):
         log_debug("End load_sp_returns.")
         return dic
 
+    def get_etfs(self, params):
+        # print(55555)
+        # print(params)
+        # print(55555)
+        from selenium import webdriver
+        from selenium.webdriver.common.keys import Keys
+        from selenium.webdriver.common.by import By
+        driver = webdriver.Chrome()
+        url = "https://www.cnbc.com/sector-etfs/"
+        driver.get(url)
+
+        headers = {'User-Agent': 'amos@drbaranes.com'}
+        edgar_resp = requests.get(url, headers=headers, timeout=30)
+        edgar_str = edgar_resp.text
+        # print(edgar_str)
+
+        # Find the document links
+        soup = BeautifulSoup(edgar_str, 'html.parser')
+        table_tag = soup.find('table', class_='BasicTable-table')
+        print(table_tag)
+        try:
+            rows = table_tag.find_all('tr')
+            print(rows)
+        except Exception as ex:
+            return dic_company_info
+
+        # # Obtain HTML for document page
+        # dic_data = {}
+        # for row in rows:
+        #     try:
+        #         cells = row.find_all('td')
+        #         if len(cells) > 3:
+        #             if cells[0].text.lower() != type_.lower():
+        #                 continue
+        #             # for filing_year in range(2019, 2020):
+        #             for filing_year in range(self.xbrl_start_year, self.today_year + 1):
+        #                 if str(filing_year) in cells[3].text:
+        #                     # print(str(filing_year), cells[3].text, cells[1].a['href'], cells[0].text)
+        #                     if filing_year not in dic_data and (cells[0].text == "10-K" or cells[0].text == "20-F"):
+        #                         dic_data[filing_year] = {}
+        #                         dic_data[filing_year]['href'] = 'https://www.sec.gov' + cells[1].a['href']
+        #     except Exception as ex:
+        #         pass
+        #
+        # dic_company_info['data'] = dic_data
+        # # print(dic_company_info)
+        # return dic_company_info
+
+        result = {}
+        return result
+
 
 class FinancialAnalysis(object):
     def __init__(self):

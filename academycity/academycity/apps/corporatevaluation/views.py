@@ -38,6 +38,7 @@ from django.db.models import Count
 from ..core.templatetags.core_tags import has_group
 from ..core.utils import log_debug, clear_log_debug
 from ..core.sql import SQL
+from django.urls import reverse
 
 # need to remove this also in core application
 # from ..core.StreamPrintToClient import (Printer, Steamer)
@@ -64,6 +65,41 @@ class AysncStreamingHttpResponse(HttpResponse):
 
 def candle(request):
     return render(request, 'corporatevaluation/candle9.html',  {})
+
+
+def ac_home(request):
+    wsc = WebSiteCompany(request, web_company_id=15)
+    company_obj = wsc.site_company()
+    company_obj_id_ = company_obj.id
+    app_ = "corporatevaluation"
+    app_activate_function_link_ = reverse(app_+':activate_obj_function', kwargs={})
+    return render(request, 'corporatevaluation/ac_home.html', {"atm_name": "coatm",
+                                                               "app": app_,
+                                                               "app_activate_function_link": app_activate_function_link_,
+                                                               "company_obj_id": company_obj_id_,
+                                                               "title": "Corporatevaluation"}
+
+                  )
+
+
+# This function should be defined for every app
+def activate_obj_function(request):
+    try:
+        dic_ = request.POST.get('dic')
+        dic_ = eval(dic_)
+        obj_ = dic_['obj']
+        fun_ = dic_['fun']
+        params = dic_["params"]
+        # print(type(dic_))
+        s_ = obj_+'().' + fun_ + '(params)'
+        # print(s_)
+        log_debug("activate_obj_function: "+fun_)
+        dic = eval(s_)
+        return JsonResponse({'status': 'ok', 'result': dic})
+    except Exception as ex:
+        # print(ex)
+        log_debug("Error activate_obj_function: "+str(ex))
+        return JsonResponse({'status': 'ko: activate_obj_function'})
 
 
 # Fix game_id.  should use project_id
@@ -622,61 +658,6 @@ def analysis_setup_attribute(request):
         # print("Error analysis_setup_attribute.")
         log_debug("Error 333 fun: " + fun_+" attribute: " + attribute_ + " " + attribute_value_)
     return JsonResponse(dic)
-
-
-def activate_obj_function(request):
-    try:
-        obj_ = request.POST.get('obj')
-        fun_ = request.POST.get('fun')
-        dic_ = request.POST.get('dic')
-        # print('dic_')
-        # print(dic_)
-        # print('dic_')
-        # print(type(dic_))
-        s_ = obj_+'().' + fun_ + '(dic_)'
-        # print(s_)
-        log_debug("activate_obj_function: "+fun_)
-        dic = eval(s_)
-        # print('-'*10)
-        # print(dic)
-        # print('-'*10)
-
-        #
-        # # dic = json.dumps(dic['data'].json(), indent=4)
-        # dic_ = eval(dic_)
-        # ticker_ = dic_['ticker']
-        # epoch_date = data[ticker_]['quoteTimeInLong']
-        # last_price = data[ticker_]['lastPrice']
-        # print(epoch_date, last_price, datetime.datetime.fromtimestamp(round(epoch_date / 999.999451)))
-
-        # epoch_url = "https://showcase.api.linx.twenty57.net/UnixTime/fromunix?timestamp=" + str(epoch_date)
-        #     convert Epoch
-        #     https://showcase.api.linx.twenty57.net/UnixTime/fromunix?timestamp=1549892280
-
-        # try:
-        #     for i in dic['data'].json()['candles']:
-        #         print('-'*10)
-        #         print(i)
-        #         print(i['close'], datetime.datetime.fromtimestamp(i['datetime']/1000))
-        #
-        #         # t = datetime.datetime.fromtimestamp(1284286794)
-        #         # print(t)
-        #         # print(t.date())
-        #         # print(t.minute)
-        # except Exception as ex:
-        #     print(ex)
-
-        # try:
-        #     for k in dic:
-        #         print(dic[k])
-        # except Exception as ex:
-        #     print(ex)
-
-        return JsonResponse({'status': 'ok', 'data': dic})
-    except Exception as ex:
-        # print(ex)
-        log_debug("Error activate_obj_function: "+str(ex))
-        return JsonResponse({'status': 'ko: activate_obj_function'})
 
 
 def truncate_table(request):

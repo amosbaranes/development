@@ -60,10 +60,10 @@ company_obj_id, is_show_btns=true, user_id=0)
  this.tab_content = {"functions_list":["onclick", "onchange", "onmouseover", "onmouseout"],
                      "settings_list":["width", "color", "background_color"],
                      "attributes_list":["table", "parent_table", "link_number", "content_type"]}
- this.pop_win = {"functions_list":["onclick", "onmouseover", "onmouseout", "__init___","__set_panel___"],
-                 "settings_list":["width", "height", "color", "background_color"],
-                 "attributes_list":["name","top","right","title", "table", "link_number","tab_id","is_panel",
-                                    "title_color", "title_background_color", "content_type"]}
+ this.pop_win = {"functions_list":["onclick", "onmouseover", "onmouseout"],
+                     "settings_list":["width", "height", "color", "background_color"],
+                     "attributes_list":["name","top","right","title", "table", "link_number","tab_id","is_panel",
+                                        "title_color", "title_background_color", "content_type"]}
 }
 
 AdvancedTabsManager.prototype.init_create_containers = function()
@@ -79,7 +79,7 @@ AdvancedTabsManager.prototype.init_create_containers = function()
 AdvancedTabsManager.prototype.create_add_delete_editor = function()
 {
   this.add_btn=document.createElement("button");
-  this.add_btn.innerHTML="Add Tab";
+  this.add_btn.innerHTML="Add Tab"
   this.add_btn.addEventListener("click", function(){
       var tab_name_ = prompt("Enter name for new tab:",'');if(tab_name_==''){alert("Please enter a tab name"); return;}
       tab_name_=tab_name_.toLowerCase();
@@ -148,7 +148,6 @@ AdvancedTabsManager.prototype.setTabs = function()
           //alert(JSON.stringify(dic))
           var result = dic["result"];
           if(result["manager"]==null){} else {atm_.content=result["manager"]}
-
           //alert('JSON.stringify(atm_.content)')
           //alert(JSON.stringify(atm_.content))
           var tabs = result["tabs"];
@@ -156,13 +155,17 @@ AdvancedTabsManager.prototype.setTabs = function()
           //alert(JSON.stringify(tabs))
           for (jj in tabs)
           {
+          //alert(9)
             //alert(id_);
-            var k=tabs[jj]; var id_=k[0];
+            var k=tabs[jj]
+            var id_=k[0]
             atm_.tabs[id_]=new Tab(atm_, data=k[1], id=id_);
             atm_.set_active_tab(atm_.tabs[id_].btn)
             atm_.tabs[id_].create_tab_pop_wins();
+          //alert(91)
           }
-          try{atm_.tabs[id_].btn.click();} catch(er){}
+
+          try{atm_.tabs[id_].btn.click();} catch(er){alert(er)}
      }.bind(atm_ = this)
  );
 }
@@ -283,7 +286,7 @@ AdvancedTabsManager.prototype.save = function()
 AdvancedTabsManager.prototype.app_activate_function = function(call_back_fun, dic_, html_obj)
 {
   dic_["company_obj_id"]=this.company_obj_id;
-     //alert(JSON.stringify(dic_))
+     alert(JSON.stringify(dic_))
      $.post(this.app_activate_function_link_,
           {dic : JSON.stringify(dic_)},
           function(dic){
@@ -1095,16 +1098,14 @@ function TabContent(tab, container, link_dic, is_on_click=true, is_link=null){
  this.link_content.tab=tab;
  this.link_content.tab_content_id=this.link_number;
  if(is_link){var width=100} else {var width=link_dic["properties"]["width"];}
- this.link_content.setAttribute("style", "position: relative;background-color:white;width: "+width+"%;height:1000px;display:block;");
-
+ this.link_content.setAttribute("style", "position: relative;background-color:white;width: "+width+"%;height:1000px;");
 // border: 1px solid #ccc;
 
  if(is_on_click){
-
     //this.link_content.innerHTML=this.link_number;
     this.link_content.onclick=function(event){
 
-      //alert(event.target.outerHTML);
+      // alert(event.target.outerHTML)
 
       this.tab.parent.active_tab_content=this;
       var e=event.target;
@@ -1138,7 +1139,7 @@ function TabContent(tab, container, link_dic, is_on_click=true, is_link=null){
          }
       } else {
 
-        // alert(JSON.stringify(this.tab.new_obj_to_create));
+         //alert(JSON.stringify(this.tab.new_obj_to_create));
 
         var dic=this.tab.new_obj_to_create;
         var x=event.clientX-e.offsetLeft;
@@ -1156,8 +1157,13 @@ function TabContent(tab, container, link_dic, is_on_click=true, is_link=null){
         dic["properties"]["obj_number"]=obj_number;dic["container_id"]=container_id;
         dic["properties"]["x"]=x;dic["properties"]["y"]=y;
 
+       // alert(JSON.stringify(dic));
+
         this.tab.active_obj=this.tab.generate_obj(dic=dic);
         this.tab.active_obj.create_editor();
+        //alert(JSON.stringify(this.tab.tab_objects));
+        //alert(container_id)
+        //alert(obj_number)
         this.tab.tab_objects[container_id][obj_number]=this.tab.active_obj.data;
         this.tab.parent.save();
       }
@@ -1190,11 +1196,15 @@ function TabContent(tab, container, link_dic, is_on_click=true, is_link=null){
 
 TabContent.prototype.process_content = function()
 {
+  //alert("process_content")
+  //alert(JSON.stringify(this.tab.tab_objects[this.link_number]));
   //alert(JSON.stringify(this.link_dic["functions"]));
+
   for(f in this.link_dic["functions"])
   {
     if(f!="onclick"){var s='this.link_content.'+f+'='+this.link_dic["functions"][f];eval(s);}
   }
+
   //alert(this.tab.tab_name)
   for (i in this.tab.tab_objects[this.link_number])
   {
@@ -1283,7 +1293,9 @@ function TabNavLink(tab_nav, link_dic){
 
 // -- TabNav --
 function TabNav(tab_=null){
+
   //alert(JSON.stringify(tab_.tab_nav_links));
+
   this.tab=tab_;
   this.nav=null;
   this.active_link=null;
@@ -1307,8 +1319,8 @@ TabNav.prototype.create_main_tab_nav_content = function()
    this.nav = document.createElement("div");
    for(f in this.tab.tab_nav_links["functions"])
    {
-     eval(f+"_zz"+this.properties["obj_number"]+"="+this.tab.tab_nav_links["functions"][f]);
-     eval('this.nav.'+f+'='+f+'_zz'+this.properties["obj_number"]);
+     eval(f+"_zz="+this.tab.tab_nav_links["functions"][f]);
+     eval('this.nav.'+f+'='+f+'_zz');
    }
    this.nav.links={};
    //--
@@ -1423,7 +1435,7 @@ function Tab(parent, data, id)
  //--
  if(!("tab_content_link_dic" in data))
  {this.tab_content_link_dic={"properties":{"link_number":this.link_number, "content_type": "simple", "width":100,
-                             "table":"", "parent_table":""}, "functions":{} }}
+                             "table":"", "parent_table":""}, "functions":{}, }}
  else {this.tab_content_link_dic=data["tab_content_link_dic"]}
  //--
  if(!("objects" in data)) {this.tab_objects={};this.tab_objects[this.link_number]={};} else {this.tab_objects=data["objects"]};
@@ -1442,7 +1454,7 @@ function Tab(parent, data, id)
 Tab.prototype.int_objects_data = function()
 {
  if(this.is_int_objects_data==true){return};
- for(var z in this.tab_objects_created){try{var o = this.tab_objects_created[z];o.creator.get_data();} catch(er){}};
+ for(var z in this.tab_objects_created){try{var o = this.tab_objects_created[z];o.creator.get_data();} catch(er){}}
  this.is_int_objects_data=true;
 }
 
@@ -1456,9 +1468,7 @@ Tab.prototype.create_btn_container = function(data)
   this.btn.innerHTML=this.tab_title;
   this.btn.onclick=function(event)
   {
-    try{var btn=event.target;btn.parent.parent.set_active_tab(btn);
-    this.parent.int_objects_data();
-    } catch(er) {alert("Error 22: "+er)}
+    try{var btn=event.target;btn.parent.parent.set_active_tab(btn);this.parent.int_objects_data();} catch(er) {alert("Error 22: "+er)}
   }
   this.parent.titles.appendChild(this.btn)
   //--
@@ -1487,12 +1497,10 @@ Tab.prototype.create_tab_pop_wins = function(){
 try{
    for(i in this.tab_pop_win_buttons["pop_wins"]){
        var dic_=this.tab_pop_win_buttons["pop_wins"][i]
-       //alert(JSON.stringify(dic_["properties"]));
-       var win_obj=this.get_pop_win_obj(dic_);
-       win_obj.__init__();
+       //var obj_=this.get_pop_win_obj(dic_); var win_obj=new obj_(parent=this); win_obj.__init__();
+       var win_obj=this.get_pop_win_obj(dic_); win_obj.__init__();
        win_obj.set_win_frame_style(dic_["properties"]["zindex"], dic_["properties"]["height"], dic_["properties"]["width"], dic_["properties"]["right"], dic_["properties"]["top"], dic_["properties"]["background_color"])
        win_obj.set_acWinStatEventListeners(this.parent.editor);
-       win_obj.resume_win()
      }
    } catch(er) {alert(er)}
 }
@@ -1544,30 +1552,23 @@ Tab.prototype.set_max_zindex = function(win) {
 
 Tab.prototype.get_pop_win_obj = function(dic)
 {
- //alert("get_pop_win_obj");
- //alert(JSON.stringify(dic));
+ // alert(JSON.stringify(dic))
  var s_name=dic["properties"]["name"]; var s_title=dic["properties"]["title"];
  var title_color=dic["properties"]["title_color"];var title_background_color=dic["properties"]["title_background_color"]
- var link_number =dic["properties"]["id"]
- var s = 'function TabPopWin'+this.tab_name+s_name+'(parent,dic_)';
+ var s = 'function TabPopWin'+this.tab_name+s_name+'(parent)';
  s+='{'
  s+='this.my_name="'+this.tab_name+s_name+'";';
  s+='this.name="win_'+this.tab_name+s_name+'";';
  s+='var is_scroll_=true;';
  s+='acWin.call(this,my_name_=this.my_name, win_name=this.name, win_title="'+s_title+'",';
+
+ s+="alert(this.win_content.outerHTML);"
+
  s+='right= "2%", top="30%",'
  s+='is_scroll=is_scroll_, zindex="21", tab_obj_=parent, is_nav_panel=true, win_number='+dic["properties"]["id"]+');'
- s+='this.tab_obj_.tab_pop_win_buttons["pop_wins"]['+dic["properties"]["id"]+']=dic_;'
- s+='if(!("'+link_number+'" in this.tab_obj_.tab_objects)){this.tab_obj_.tab_objects["'+link_number+'"]={}};'
- s+='this.popwin_content=new TabContent(tab=parent, container=this.win_content, link_dic=dic_["popwin_content"], is_on_click=true, is_link=false);'
- s+='this.win_content=this.popwin_content.link_content;'
- s+='this.win_content.setAttribute("class", "tabcontent"+parent.tab_name);'
- s+='this.win_content.style.display="block";'
- s+='this.win_content.parent=this;'
  s+='};';
  //alert(s);
  eval(s);
-
  s = 'TabPopWin'+this.tab_name+s_name+'.prototype = Object.create(acWin.prototype);';
  eval(s);
  s = 'TabPopWin'+this.tab_name+s_name+'.prototype.constructor = TabPopWin'+this.tab_name+s_name;
@@ -1602,27 +1603,17 @@ Tab.prototype.get_pop_win_obj = function(dic)
  //alert(s);
  eval(s);
  //--
- //for(f in dic['functions']) {s_= f+"_"+dic["properties"]["id"]+ '='+dic['functions'][f];alert(s_);eval(s_);}
+ for(f in dic['functions']) {s_= 'var '+f+"_"+dic["properties"]["id"]+ '='+dic['functions'][f];   eval(s_);}
  //--
  s='TabPopWin'+this.tab_name+s_name+'.prototype.__init__ = function()'
  s+='{this.set_tab(this.tab_obj_);this.set_title_colors("'+title_color+'", "'+title_background_color+'");'
  s+='this.tab_obj_.PopWinObjects[this.my_name]=this;'
  s+='this.id='+dic["properties"]["id"]+';'
+ s+='this.tab_obj_.tab_pop_win_buttons["pop_wins"]['+dic["properties"]["id"]+']='+JSON.stringify(dic)+';'
  s+='this.set_title(this.win_title_);'
-
- s+='dic_fs=this.tab_obj_.tab_pop_win_buttons["pop_wins"]['+dic["properties"]["id"]+']["functions"];'
- s+='for(f in dic_fs) {var s_= "this."+f+"'+dic["properties"]["id"]+'="+dic_fs[f];eval(s_);};'
- s+='try{this.__init___'+dic["properties"]["id"]+'(this)} catch(er){alert(er)};';
- if(dic["properties"]["is_panel"]=="true")
- {
-  s+='this.main_menu = document.createElement("div");'
-  s+='this.sub_menu = document.createElement("div");'
-  s+='this.win_nav_panel.appendChild(this.main_menu);'
-  s+='this.win_nav_panel.appendChild(this.sub_menu);'
-  s+='try{this.__set_panel___'+dic["properties"]["id"]+'(this)} catch(er){alert(er)};';
- }
+ s+='__init___'+dic["properties"]["id"]+'(this);';
+ if(dic["properties"]["is_panel"]=="true"){s+='__set_panel___'+dic["properties"]["id"]+'(this)';}
  s+='}'
-
  //alert(s);
  eval(s);
 
@@ -1630,23 +1621,21 @@ Tab.prototype.get_pop_win_obj = function(dic)
 //  this.main_menus["Tab"].btn.click()
 
  //alert(eval('TabPopWin'+this.active_tab.tab_name+s_name+'.prototype.set_title_colors'))
- s='new TabPopWin'+this.tab_name+s_name+'(parent=this.parent.tabs[dic["properties"]["tab_id"]], dic_=dic)';
+ s='new TabPopWin'+this.tab_name+s_name+'(this.parent.tabs[dic["properties"]["tab_id"]])';
  //alert(s);
- //alert(10010)
- var result_obj=eval(s)
- //alert(10011)
- return result_obj;
+ return eval(s);
 }
+
 
 // -- acWin popup window --
 function acWin(my_name_="none", win_name="none", win_title="none", right= "0%", top="0%", is_scroll=true, zindex="11",
                tab_obj_=null, is_nav_panel=false, win_number=0)
 {
   //alert(7)
-  //alert(tab_obj_.tab_name)
-  //alert(win_name)
-  //alert(my_name_)
-  //create its div for window
+  // alert(tab_obj_.tab_name)
+  // alert(win_name)
+  // alert(my_name_)
+  // create its div for window
   this.win_number=win_number;
   this.tab_obj_=tab_obj_;
   this.is_nav_panel = is_nav_panel;
@@ -1658,7 +1647,7 @@ function acWin(my_name_="none", win_name="none", win_title="none", right= "0%", 
   this.win_frame = document.createElement("div");
   this.win_frame.setAttribute("win_number", this.win_number);
   this.win_frame.setAttribute("tab_id", this.tab_obj_.tab_id);
-  this.win_frame.setAttribute("id", "win_frame_"+this.win_name);
+  this.win_frame.setAttribute("id", this.win_number);
   this.win_frame.setAttribute("my_name", my_name_);
   // TITLE for window
   this.title_height = 25
@@ -1694,6 +1683,9 @@ function acWin(my_name_="none", win_name="none", win_title="none", right= "0%", 
   }
   // CONTENT --
   this.win_content = document.createElement("div");
+
+  alert(this.win_content.outerHTML)
+
   this.win_content.setAttribute("id", "win_content_"+this.win_name);
   // -- call it from outside --
   //this.set_win_frame_style(zindex, height="300px", width="300px", right, top, "white");
@@ -1750,7 +1742,7 @@ acWin.prototype.set_win_frame_style = function(zindex, height, width, right, top
   this.style_frame += "right:"+right+";top:"+top+";"
   this.win_frame.setAttribute("style", this.style_frame);
   this.style_content = "height:"+(height-this.title_height-7-this.nav_height)+"px;width:"+width+"px;"
-  if(this.is_scroll==true){this.style_content += "overflow: scroll;display:block;"}
+  if(this.is_scroll==true){this.style_content += "overflow: scroll;"}
   this.win_content.setAttribute("style", this.style_content);
 }
 acWin.prototype.set_acWinStat = function(ss)
@@ -1788,11 +1780,9 @@ acWin.prototype.move_frame = function(pos1, pos2, pos3, pos4)
 acWin.prototype.set_acWinStatEventListeners = function(ss_obj)
 {
   //console.log("set_acWinStatEventListeners :", "Check 0000");
-  //alert("var " +  ss_obj.my_name + '= ss_obj')
+  eval("var " +  ss_obj.my_name + '= ss_obj')
 
-  // Do we need this??
-  //eval("var " +  ss_obj.my_name + '= ss_obj')
-
+  //alert("var " +  ss_obj.my_name + '= ss_obj');
   var s = ''
   s += 'this.win_frame_ico.addEventListener("click", function(){'
   s += '  event.preventDefault();'
@@ -1829,8 +1819,7 @@ acWin.prototype.set_acWinStatEventListeners = function(ss_obj)
    //console.log("Good :set_acWinStatEventListeners: ", "eval 200")
    } catch (err) {console.log("Error 201", err.message)}
   //console.log("set_acWinStatEventListeners :", "Check 0200");
-
-  s = '';
+  s = ''
   s += 'this.win_frame_title.addEventListener("mousedown", function(){'
   //s += 'alert(this.outerHTML);'
   //s += 'elm_win_frame_title_'+this.win_name+'.setAttribute("pos3", event.clientX);'
@@ -2101,29 +2090,29 @@ Tab_create_main_content = function()
   this.parent.win_content.appendChild(this.parent.tab_properties_);
 }
 
-TabNewFunction_click = function(obj, event)
+TabNewFunction_click = function(obj)
 {
   var fun_name_ = prompt("Enter name for new function:" , '');
   if(fun_name_ == '') {alert("Please enter a function name"); return;}
-  var tab_name=obj.parent.parent.tab_obj_.tab_name;
-  obj.parent.parent.tab_obj_.tab_functions[tab_name+"_"+fun_name_]=tab_name+"_"+fun_name_+"=function(obj){\ntry{\n\n} catch(er){alert(er)}}";
-  obj.parent.parent.tab_obj_.active_function = obj.parent.parent.tab_obj_.tab_name+"_"+fun_name_;
+  this.parent.tab_obj_.tab_functions[this.parent.tab_obj_.tab_name+"_"+fun_name_]=this.parent.tab_obj_.tab_name+"_"+fun_name_+"=function(obj){\ntry{\n\n} catch(er){alert(er)}}";
+  // alert(JSON.stringify(this.parent.tab_obj_.tab_functions))
+  this.parent.tab_obj_.active_function = this.parent.tab_obj_.tab_name+"_"+fun_name_;
   try{
-    obj.parent.parent.tab_obj_.parent.save();
+    this.parent.tab_obj_.parent.save()
     var click_event = new Event("click", {bubbles: true});
-    obj.parent.parent.main_menus["Tab"].btn.dispatchEvent(click_event);
+    this.parent.main_menus["Tab"].btn.dispatchEvent(click_event);
   } catch (er){alert(er)}
 }
 
-TabDeleteFunction_click = function(obj, event)
+TabDeleteFunction_click = function(obj)
 {
-  var confirm_=prompt("Are you sure you want to delete the function(type Yes): "+obj.parent.parent.tab_obj_.active_function, 'no');
+  var confirm_=prompt("Are you sure you want to delete the function(type Yes): "+this.parent.tab_obj_.active_function, 'no');
   if(confirm_!='Yes'){return;}
-  delete obj.parent.parent.tab_obj_.tab_functions[obj.parent.parent.tab_obj_.active_function];
+  delete this.parent.tab_obj_.tab_functions[this.parent.tab_obj_.active_function];
   try{
-    obj.parent.parent.tab_obj_.parent.save();
+    this.parent.tab_obj_.parent.save();
     var click_event = new Event("click", {bubbles: true});
-    obj.parent.parent.main_menus["Tab"].btn.dispatchEvent(click_event);
+    this.parent.main_menus["Tab"].btn.dispatchEvent(click_event);
   } catch (er){}
 }
 
@@ -2279,19 +2268,12 @@ PopWinNewPopWin_click = function(obj, event)
  var n_=obj.parent.parent.tab_obj_.get_next_obj_number();
  var dic_={"properties":{"id":n_, "link_number":n_, "tab_id":obj.parent.parent.tab_obj_.tab_id,"name":popup_name_,"title":popup_name_,"zindex":50,"height":"500","width":"500","right":"25%","top":"25%",
            "background_color":"white", "title_color": "#fff", "title_background_color": "#2196F3", "is_panel":"true"},
-           "functions":{"__init___":"function(win_obj){\ntry{\n\n} catch(er){alert(er)}}",
-                        "__set_panel___":"function(win_obj){\ntry{\n\n} catch(er){alert(er)}}"},
-           "popwin_content":{"properties":{"link_number":n_, "content_type": "simple", "width":"400","table":""},
-                             "functions":{}}
-           };
-
- //alert('JSON.stringify(dic_)')
+           "functions":dic_functions};
  //alert(JSON.stringify(dic_))
  //var obj_ = obj.parent.parent.tab_obj_.get_pop_win_obj(dic_)
  var win_obj = obj.parent.parent.tab_obj_.get_pop_win_obj(dic_)
 
  //alert(win_obj);
- //alert(win_obj.win_content.outerHTML);
  //alert(win_obj.my_name)
  try{
    //var win_obj=new obj_(parent=obj.parent.parent.tab_obj_);

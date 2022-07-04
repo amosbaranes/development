@@ -11,7 +11,7 @@ class DebugAdmin(admin.ModelAdmin):
 
 @admin.register(DataAdvancedTabs)
 class DataAdvancedTabsAdmin(admin.ModelAdmin):
-    list_display = ['id', 'tab_name']
+    list_display = ['manager', 'id', 'tab_name', 'order']
 
 
 @admin.register(DataAdvancedTabsManager)

@@ -11,7 +11,9 @@ from .models import (Project, RBOIC, CountryRegion, CountryRating, Industry,
                      XBRLCountriesOfOperations, XBRLRegionsOfOperations, XBRLYearsCompanyOperations,
                      XBRLIndustryBetasOfOperations,
                      XBRLDimTime, XBRLDimCompany, XBRLDimAccount, XBRLFactCompany,
-                     XBRLRealEquityPrices, XBRLRealEquityPricesArchive)
+                     XBRLRealEquityPrices, XBRLRealEquityPricesArchive, Adjectives, AdjectivesValues,
+                     CorporateValuationWeb, ETFS, CompaniesPriceData)
+
 
 # -*- coding: utf-8 -*-
 from cms.admin.placeholderadmin import PlaceholderAdminMixin
@@ -259,4 +261,31 @@ class XBRLRealEquityPricesAdmin(admin.ModelAdmin):
 class XBRLRealEquityPricesArchiveAdmin(admin.ModelAdmin):
     list_display = ('id', 'ticker', 't', 'c', 'v')
     list_filter = ('ticker', )
+
+
+#
+@admin.register(CorporateValuationWeb)
+class CorporateValuationWebAdmin(admin.ModelAdmin):
+    list_display = ('id', 'company_name')
+
+
+@admin.register(Adjectives)
+class AdjectivesAdmin(admin.ModelAdmin):
+    list_display = ['id', 'title']
+
+
+@admin.register(AdjectivesValues)
+class AdjectivesValuesAdmin(admin.ModelAdmin):
+    list_display = ['id', 'adjective', 'order', 'value']
+
+
+@admin.register(ETFS)
+class ETFSAdmin(admin.ModelAdmin):
+    list_display = ['id', 'symbol', 'description']
+
+
+@admin.register(CompaniesPriceData)
+class CompaniesPriceDataAdmin(admin.ModelAdmin):
+    list_display = ['id', 'company', 'date', 'close_price']
+
 

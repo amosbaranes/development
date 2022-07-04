@@ -111,25 +111,27 @@ def clean_registrations(request):
 def activate_function(request):
     # var dic_ = {"obj": "AdvancedTabs", "atm": atm_.my_name, "app": atm_.my_app, "fun": "add_tab",
     #             "params": {"tab_name": tab_name_}}
+    try:
+        dic_ = request.POST["dic"]
+        dic_ = eval(dic_)
+        # print(dic_)
 
-    dic_ = request.POST["dic"]
-    # print('dic_')
-    # print(dic_)
-    # print('dic_')
-    dic_ = eval(dic_)
-    obj_ = dic_["obj"]
-    atm_ = dic_["atm"]
-    app_ = dic_["app"]
-    fun_ = dic_["fun"]
-    params_ = dic_["params"]
+        obj_ = dic_["obj"]
+        atm_ = dic_["atm"]
+        app_ = dic_["app"]
+        fun_ = dic_["fun"]
+        params_ = dic_["params"]
 
-    # print('-1'*20)
-    s = obj_ + "('"+atm_+"', '"+app_+"')." + fun_ + "(params_)"
-    # print(s)
-    # print('-1'*20)
-    result = eval(s)
-    # print('-3'*20)
-    dic = {'status': 'ok', 'result': result}
+        # print('-1'*20)
+        s = obj_ + "('"+atm_+"', '"+app_+"')." + fun_ + "(params_)"
+        # print(s)
+        # print('-1'*20)
+        result = eval(s)
+        # print('-3'*20)
+        dic = {'status': 'ok', 'result': result}
+        # print(dic)
+    except Exception as ex:
+        dic = {'status': 'ko', 'result': "{}"}
     return JsonResponse(dic)
 
 
@@ -255,33 +257,50 @@ def get_data_link(request):
         except Exception as ex:
             print(ex)
     fields_str = fields_str[:len(fields_str)-2]
-
     app_ = dic_['app']
     model_ = dic_['model']
-    company_obj_id_ = dic_['company_obj_id']
-    number_of_rows_ = int(dic_['number_of_rows'])
-    #
-    parent_model = apps.get_model(app_label=app_, model_name=app_+"web")
-    company_obj = parent_model.objects.get(id=company_obj_id_)
+    # print(model_)
     model = apps.get_model(app_label=app_, model_name=model_)
-    #
+    # print(model)
+    number_of_rows_ = int(dic_['number_of_rows'])
     parent_id_ = -1
     try:
         parent_id_ = int(dic_['parent_id'])
     except Exception as ex:
         pass
-        # print(ex)
-    if parent_id_ > -1:
-        parent_model_ = dic_['parent_model']
-        parent_pkey_ = parent_id_
-        parent_model__ = apps.get_model(app_label=app_, model_name=parent_model_)
-        parent_model_fk_name = parent_model_[:-1]
-        parent_obj__ = parent_model__.objects.get(id=parent_pkey_)
-        s = 'model.objects.filter(accounting_web=company_obj, ' + parent_model_fk_name
-        s += '=parent_obj__).all()[:number_of_rows_].values(' + fields_str + ')'
+        # print(e
+    # print(parent_id_)
+    company_obj_id_ = dic_['company_obj_id']
+    # print(company_obj_id_)
+    if company_obj_id_ != "-1":
+        parent_model = apps.get_model(app_label=app_, model_name=app_+"web")
+        print(parent_model)
+        company_obj = parent_model.objects.get(id=company_obj_id_)
+        if parent_id_ > -1:
+            parent_model_ = dic_['parent_model']
+            parent_pkey_ = parent_id_
+            parent_model__ = apps.get_model(app_label=app_, model_name=parent_model_)
+            parent_model_fk_name = parent_model_[:-1]
+            parent_obj__ = parent_model__.objects.get(id=parent_pkey_)
+            s = 'model.objects.filter(accounting_web=company_obj, ' + parent_model_fk_name
+            s += '=parent_obj__).all()[:number_of_rows_].values(' + fields_str + ')'
+        else:
+            s = 'model.objects.filter(accounting_web=company_obj).all()[:number_of_rows_].values('+fields_str+')'
     else:
-        s = 'model.objects.filter(accounting_web=company_obj).all()[:number_of_rows_].values('+fields_str+')'
-    data = eval(s)
+        if parent_id_ > -1:
+            parent_model_ = dic_['parent_model']
+            parent_pkey_ = parent_id_
+            parent_model__ = apps.get_model(app_label=app_, model_name=parent_model_)
+            parent_model_fk_name = parent_model_[:-1]
+            parent_obj__ = parent_model__.objects.get(id=parent_pkey_)
+            s = 'model.objects.filter(' + parent_model_fk_name
+            s += '=parent_obj__).all()[:number_of_rows_].values(' + fields_str + ')'
+        else:
+            s = 'model.objects.all()[:number_of_rows_].values('+fields_str+')'
+    try:
+        data = eval(s)
+    except Exception as ex:
+        pass
 
     for q in data:
         for f in dic_["fields"]:
@@ -298,22 +317,23 @@ def get_data_link(request):
     return JsonResponse(dic)
 
 
-def get_adjective_link(request):
-    dic_ = request.POST["dic"]
-    dic_ = eval(dic_)
-    # print('dic_')
-    # print(dic_)
-    # print('dic_')
-    app_ = dic_['app']
-    adjective_ = dic_['adjective']
-    model = apps.get_model(app_label=app_, model_name="AdjectivesValues")
-    data = model.adjectives.adjectives(adjective_title=adjective_)
-    dic = {}
-    for q in data:
-        dic[q.id] = q.value
-
-    dic = {'status': 'ok', "dic": dic}
-    # print(dic)
-    return JsonResponse(dic)
-
+# def get_adjective_link(request):
+#     dic_ = request.POST["dic"]
+#     dic_ = eval(dic_)
+#     # print('dic_')
+#     # print(dic_)
+#     # print('dic_')
+#     app_ = dic_['app']
+#     adjective_ = dic_['adjective']
+#     model = apps.get_model(app_label=app_, model_name="AdjectivesValues")
+#
+#     data = model.adjectives.adjectives(adjective_title=adjective_)
+#
+#     dic = {}
+#     for q in data:
+#         dic[q.id] = q.value
+#
+#     dic = {'status': 'ok', "dic": dic}
+#     # print(dic)
+#     return JsonResponse(dic)
 

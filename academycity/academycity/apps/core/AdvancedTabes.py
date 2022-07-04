@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django.http import JsonResponse
-from .models import DataAdvancedTabs, DataAdvancedTabsManager
+from django.apps import apps
+from .models import DataAdvancedTabs, DataAdvancedTabsManager, AdjectivesValues
 
 
 class AdvancedTabs(object):
@@ -50,11 +51,11 @@ class AdvancedTabs(object):
         try:
             manager_ = DataAdvancedTabsManager.objects.get(at_name=self.manager_name)
             tabs = DataAdvancedTabs.objects.filter(manager=manager_).all()
-            result = {}
+            result = []
             for t in tabs:
                 # print(t.id)
                 # print('t.tab_content')
-                result[t.id] = t.tab_content
+                result.append((t.id, t.tab_content))
             # print("ok")
             result = {"manager": manager_.manager_content, "tabs": result}
             # print(result)
@@ -95,3 +96,51 @@ class AdvancedTabs(object):
         except Exception as ex:
             result = {"error": "-1"}
         return result
+
+    def get_adjective(self, params):
+        # print('='*50)
+        # print('params')
+        # print(params)
+
+        app_ = params['app']
+        model_name_ = params['model_name']
+
+        field_value_ = params['field_value']
+
+        manager_name = params['manager_name']
+        manager_fun = params['manager_fun']
+
+        manager_fun_field = params['manager_fun_field']
+
+        model = apps.get_model(app_label=app_, model_name=model_name_)
+
+        s = "model." + manager_name + "." + manager_fun + "("+manager_fun_field+"=field_value_)"
+        data = eval(s)
+        # print(data)
+        result = []
+        for q in data:
+            # print(q.order, q.id)
+            result.append((q.id, q.value))
+        # print('result')
+        # print(result)
+        # print('result')
+        return result
+
+    def get_list_from_model(self, params):
+        # print('params')
+        # print(params)
+        app_ = params['app']
+        model_name_ = params['model_name']
+        field_name_ = params['field_name']
+        model = apps.get_model(app_label=app_, model_name=model_name_)
+        data = model.objects.all()
+        # print(data)
+        result = []
+        for q in data:
+            s = 'result.append((q.id, q.'+field_name_+'))'
+            eval(s)
+        # print('result')
+        # print(result)
+        # print('result')
+        return result
+

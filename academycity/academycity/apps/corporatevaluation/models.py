@@ -590,6 +590,20 @@ class XBRLRegionYearData(TruncateTableMixin, models.Model):
     project_objects = XBRLCountryYearDataProject()  # The project manager.
 
 
+#
+class ETFS(TruncateTableMixin, models.Model):
+    class Meta:
+        verbose_name = _('ETF')
+        verbose_name_plural = _('ETF')
+        ordering = ['symbol']
+
+    symbol = models.CharField(max_length=5, default='', blank=True, null=True)
+    description = models.CharField(max_length=128, default='', blank=True, null=True)
+
+    def __str__(self):
+        return str(self.symbol) + ': ' + str(self.description)
+
+
 class XBRLCompanyInfo(TruncateTableMixin, models.Model):
 
     class Meta:
@@ -600,6 +614,7 @@ class XBRLCompanyInfo(TruncateTableMixin, models.Model):
     industry = models.ForeignKey(XBRLIndustryInfo, on_delete=models.CASCADE, default=None, blank=True, null=True)
     country_of_incorporation = models.ForeignKey(XBRLCountry, on_delete=models.CASCADE, default=None, blank=True,
                                                  null=True, related_name="country_companies")
+    etf = models.ForeignKey(ETFS, on_delete=models.CASCADE, default=None, blank=True, null=True)
     exchange = models.CharField(max_length=10, default='nyse')
     company_name = models.CharField(max_length=128, default='', blank=True, null=True)
     ticker = models.CharField(max_length=10, null=False)
@@ -667,6 +682,20 @@ class XBRLCompanyInfo(TruncateTableMixin, models.Model):
     def __str__(self):
         return str(self.company_name) + " : " + str(self.ticker)
 
+
+class CompaniesPriceData(TruncateTableMixin, models.Model):
+    class Meta:
+        verbose_name = _('CompaniesPriceData')
+        verbose_name_plural = _('CompaniesPriceData')
+        ordering = ['company']
+
+    company = models.ForeignKey(XBRLCompanyInfo, on_delete=models.CASCADE, default=None, blank=True, null=True)
+    date = models.DateField(blank=True, null=True)
+    close_price = models.DecimalField(max_digits=18, decimal_places=2, default=0)
+
+    def __str__(self):
+        return str(self.company) + ' : ' + str(self.date) + ' : ' + str(self.close_price)
+#
 
 class XBRLHistoricalReturnsSP(TruncateTableMixin, models.Model):
     class Meta:
@@ -1363,3 +1392,46 @@ class ToDoList(TruncateTableMixin, models.Model):
 
     def __str__(self):
         return self.subject
+
+
+#
+class CorporateValuationWeb(TruncateTableMixin, models.Model):
+    company_name = models.CharField(max_length=100, default='', blank=True, null=True)
+    address = models.CharField(max_length=50, default='', blank=True, null=True)
+
+    def __str__(self):
+        return self.company_name
+
+
+#
+class Adjectives(models.Model):
+    title = models.CharField(max_length=50)
+
+    def __str__(self):
+        return str(self.title)
+
+
+class AdjectiveQuerySet(models.QuerySet):
+    def adjectives(self, adjective_title):
+        return self.filter(adjective__title=adjective_title)
+
+
+class AdjectiveManager(models.Manager):
+    def get_queryset(self):
+        return AdjectiveQuerySet(self.model, self._db)
+
+    def adjectives(self, adjective_title):
+        return self.get_queryset().adjectives(adjective_title).order_by("order")
+
+
+class AdjectivesValues(models.Model):
+    adjective = models.ForeignKey(Adjectives, on_delete=models.CASCADE)
+    order = models.SmallIntegerField(blank=True, default=1)
+    value = models.CharField(max_length=50)
+
+    objects = models.Manager()  # The default manager.
+    adjectives = AdjectiveManager()  # Our custom manager.
+
+    def __str__(self):
+        return self.value
+

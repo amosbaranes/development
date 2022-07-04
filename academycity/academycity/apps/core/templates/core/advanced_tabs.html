@@ -34,8 +34,9 @@ beforeSend: function(xhr, settings) {
 
 $(document).ready(function(){
  var {{atm_name}}=new AdvancedTabsManager(my_name="{{atm_name}}", my_app="{{app}}", body_=document.getElementById("body_"),
- activate_function_link='{% url "core:activate_function" %}',update_field_link='{% url "core:update_field_model_by_id" %}',
- get_data_link='{% url "core:get_data_link" %}',get_adjective_link='{% url "core:get_adjective_link" %}',
+ activate_function_link='{% url "core:activate_function" %}', app_activate_function_link='{{app_activate_function_link}}',
+ update_field_link='{% url "core:update_field_model_by_id" %}',
+ get_data_link='{% url "core:get_data_link" %}',
  company_obj_id={{company_obj_id}}, is_show_btns={%if request.user|has_group:"admins"%}true{% else %}false{%endif%},
  user_id={{ user.id }})
 {% block domready %}
