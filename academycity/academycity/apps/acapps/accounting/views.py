@@ -10,3 +10,4 @@ def home(request):
     return render(request, 'accounting/home.html', {"atm_name": "aatm", "app": "accounting",
                                                     "company_obj_id": company_obj_id_, "title": "Accounting"}
                   )
+

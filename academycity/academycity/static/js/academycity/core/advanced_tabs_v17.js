@@ -27,11 +27,12 @@ company_obj_id, is_show_btns=true, user_id=0)
                  "Component":{"title":"Component", "obj_type":"acObj",
                         "sub_buttons": {"Button":{"title":"Btn", "width":5, "setting": [], "attributes":[], "functions":[]},
                                         "Span":{"title":"Span", "width":5, "setting": [], "attributes":[], "functions":[]},
-                                        "Input":{"title":"Input", "width":5, "setting": ["text-align"], "attributes":["field"], "functions":["onchange"]},
+                                        "Input":{"title":"Input", "width":5, "setting": ["text-align"], "attributes":["field", "type"], "functions":["onchange"]},
                                         "Select":{"title":"Select", "width":5, "setting": ["options", "global_adjective", "app_adjective", "data_app", "data_model", "data_field", "data_filter_field", "data_filter_field_value"],
                                                   "attributes":["field", "size"], "functions":["onchange"]},
                                         "Table":{"title":"Table", "width":5, "setting": [], "attributes":[], "functions":["onchange"]},
-                                        "DIV":{"title":"div", "width":3, "setting": [], "attributes":[], "functions":[]},
+                                        "Textarea":{"title":"textarea", "width":7, "setting": ["overflow"], "attributes":["rows", "cols"], "functions":[]},
+                                        "DIV":{"title":"div", "width":3, "setting": ["overflow"], "attributes":[], "functions":[]},
                                         "A":{"title":"a", "width":3, "setting": [], "attributes":["href", "target"], "functions":[]},
                                         "H":{"title":"h", "width":3, "setting": [], "attributes":[], "functions":[]},
                                         "H1":{"title":"h1", "width":3, "setting": [], "attributes":[], "functions":[]},
@@ -60,7 +61,7 @@ company_obj_id, is_show_btns=true, user_id=0)
  this.tab_content = {"functions_list":["onclick", "onchange", "onmouseover", "onmouseout"],
                      "settings_list":["width", "color", "background_color"],
                      "attributes_list":["table", "parent_table", "link_number", "content_type"]}
- this.pop_win = {"functions_list":["onclick", "onmouseover", "onmouseout", "__init___","__set_panel___"],
+ this.pop_win = {"functions_list":["onclick","onmouseover","onmouseout","__init___","__get_panel_structure___","__set_panel___"],
                  "settings_list":["width", "height", "color", "background_color"],
                  "attributes_list":["name","top","right","title", "table", "link_number","tab_id","is_panel",
                                     "title_color", "title_background_color", "content_type"]}
@@ -624,10 +625,22 @@ acObj.prototype.create_obj = function(){
     var x = 1*this.data["properties"]["x"]
     span.setAttribute("style", "position:absolute;left:"+x+"px;top:"+this.data["properties"]["y"]+"px;");
     container.appendChild(span);
-  } else
-  {
-    this.new_obj.setAttribute("style", "position:absolute;left:"+this.data["properties"]["x"]+"px;top:"+this.data["properties"]["y"]+"px;width:"+width_+"px");
+  } else if (this.data["element_name"]=="DIV") {
+    var s_ = this.data["properties"]["overflow"]
+    if(s_!=null || s_!="")
+    {s_="overflow:"+s_}
+
+    alert(s_)
+    var u="px";if(width_.includes("%")){u=""};
+    var ss="position:absolute;left:"+this.data["properties"]["x"]+"px;top:"+this.data["properties"]["y"]+"px;width:"+width_+u+";"+s_
+    this.new_obj.setAttribute("style", ss);
+
+   //"overflow: scroll;
+  } else {
+    var u="px";if(width_.includes("%")){u=""};
+    this.new_obj.setAttribute("style", "position:absolute;left:"+this.data["properties"]["x"]+"px;top:"+this.data["properties"]["y"]+"px;width:"+width_+u);
   }
+
 
   if(this.data["element_name"]=="Select")
   {
@@ -1547,13 +1560,17 @@ Tab.prototype.get_pop_win_obj = function(dic)
  //alert("get_pop_win_obj");
  //alert(JSON.stringify(dic));
  var s_name=dic["properties"]["name"]; var s_title=dic["properties"]["title"];
- var title_color=dic["properties"]["title_color"];var title_background_color=dic["properties"]["title_background_color"]
- var link_number =dic["properties"]["id"]
+ var title_color=dic["properties"]["title_color"];var title_background_color=dic["properties"]["title_background_color"];
+ var link_number =dic["properties"]["id"];
+
  var s = 'function TabPopWin'+this.tab_name+s_name+'(parent,dic_)';
  s+='{'
  s+='this.my_name="'+this.tab_name+s_name+'";';
  s+='this.name="win_'+this.tab_name+s_name+'";';
  s+='var is_scroll_=true;';
+ s+='this.atm = parent.parent;'
+ s+='this.main_menus = {};this.sub_menus = {};'
+
  s+='acWin.call(this,my_name_=this.my_name, win_name=this.name, win_title="'+s_title+'",';
  s+='right= "2%", top="30%",'
  s+='is_scroll=is_scroll_, zindex="21", tab_obj_=parent, is_nav_panel=true, win_number='+dic["properties"]["id"]+');'
@@ -1612,6 +1629,7 @@ Tab.prototype.get_pop_win_obj = function(dic)
 
  s+='dic_fs=this.tab_obj_.tab_pop_win_buttons["pop_wins"]['+dic["properties"]["id"]+']["functions"];'
  s+='for(f in dic_fs) {var s_= "this."+f+"'+dic["properties"]["id"]+'="+dic_fs[f];eval(s_);};'
+
  s+='try{this.__init___'+dic["properties"]["id"]+'(this)} catch(er){alert(er)};';
  if(dic["properties"]["is_panel"]=="true")
  {
@@ -1619,16 +1637,23 @@ Tab.prototype.get_pop_win_obj = function(dic)
   s+='this.sub_menu = document.createElement("div");'
   s+='this.win_nav_panel.appendChild(this.main_menu);'
   s+='this.win_nav_panel.appendChild(this.sub_menu);'
+  s+='try{this.__get_panel_structure___'+dic["properties"]["id"]+'(this)} catch(er){alert(er)};';
+  //s+='alert(JSON.stringify(this.buttons));'
+
+  s+='for (b in this.buttons){'
+  s+=' eval("MenuBtnWin"+b+"=this.get_main_button_win_obj(b, this.buttons[b][\'width\'], this.buttons[b][\'title\'], this.buttons[b][\'sub_buttons\'], this.buttons[b][\'obj_type\'])");'
+  //s+=' alert(this.name+"--1-- "+b);'
+  s+=' eval("var nbw=new MenuBtnWin"+b+"(parent=this)");'
+  s+=' nbw.btn.click();'
+  s+='};'
+
   s+='try{this.__set_panel___'+dic["properties"]["id"]+'(this)} catch(er){alert(er)};';
  }
  s+='}'
-
  //alert(s);
  eval(s);
-
-//  this.set_panel();
-//  this.main_menus["Tab"].btn.click()
-
+ // this.set_panel();
+ // this.main_menus["Tab"].btn.click()
  //alert(eval('TabPopWin'+this.active_tab.tab_name+s_name+'.prototype.set_title_colors'))
  s='new TabPopWin'+this.tab_name+s_name+'(parent=this.parent.tabs[dic["properties"]["tab_id"]], dic_=dic)';
  //alert(s);
@@ -1885,6 +1910,21 @@ acWin.prototype.set_acWinStatEventListeners = function(ss_obj)
   // console.log("set_acWinStatEventListeners :", "Check 0400");
 }
 
+acWin.prototype.get_main_button_win_obj = function(s_name, width, s_title, button, obj_type)
+{
+ //alert(JSON.stringify(button));
+ var s = 'function MenuBtnWin'+s_name+'(parent)';
+ s+='{MenuBtnWin.call(this,parent,my_name_=s_name, my_title=s_title, buttons=button, obj_type, width="width:"+width+"%;");';
+ s+='parent.main_menus[this.my_name]=this};';
+  //alert(s)
+ eval(s);
+ s = 'MenuBtnWin'+s_name+'.prototype = Object.create(MenuBtnWin.prototype);';
+  //alert(s);
+ eval(s);
+ s='MenuBtnWin'+s_name;
+ return eval(s);
+}
+
 acWin.prototype.get_main_button_obj = function(s_name, s_title, button, obj_type)
 {
  var s = 'function MenuBtn'+s_name+'(parent)';
@@ -1894,7 +1934,7 @@ acWin.prototype.get_main_button_obj = function(s_name, s_title, button, obj_type
  eval(s);
  s = 'MenuBtn'+s_name+'.prototype = Object.create(MenuBtn.prototype);';
  eval(s);
- s='MenuBtn'+s_name+'.prototype.create_main_content = '+s_name+'_create_main_content;';
+ s='try{MenuBtn'+s_name+'.prototype.create_main_content = '+s_name+'_create_main_content} catch(er){};';
  //alert(s);
  eval(s);
  s='MenuBtn'+s_name;
@@ -1951,6 +1991,65 @@ PopWin.prototype.get_functions_properties_editor = function(tab_,functions_dic,f
 }
 
 
+// -- MenuBtnWin --
+function MenuBtnWin(parent, my_name_, my_title, buttons, obj_type, width="width:10%;")
+{
+try{
+ this.my_name=my_name_;
+ this.my_title = my_title;
+ this.buttons = buttons;
+ this.my_sub_objs={}
+ this.btn = document.createElement("button");
+ this.parent=parent;
+ this.btn.win=parent;
+ this.btn.menu_btn_win=this;
+ this.btn.setAttribute("id", parent.my_name+"_"+this.my_name);
+ this.btn.setAttribute("class", "main_menu_btn");
+ this.btn.setAttribute("style", width);
+ this.btn.innerHTML = this.my_title;
+ this.btn.onclick=function(event){
+   this.win.sub_menu.innerHTML="";
+   this.win.sub_menus = {};
+   try{
+      for(b in buttons){
+        eval('SubMenuBtn'+this.win.my_name+b+'=this.menu_btn_win.get_sub_button_obj_win(b,buttons[b]["title"],obj_type)');
+        eval('this.menu_btn_win.my_sub_objs[b] = new SubMenuBtn'+this.win.my_name+b+'(parent=this.menu_btn_win)');
+      }
+   } catch(er){alert("er202: "+er)}
+   try{
+      for(m in this.win.main_menus)
+      {this.win.main_menus[m].btn.className=this.win.main_menus[m].btn.className.replace(" active", "")}
+      try{this.className+=" active";  } catch(er){}
+   } catch(er){alert("er203: "+er)}
+ }
+ parent.main_menu.appendChild(this.btn);
+ } catch(er){alert("Error 101: "+er)}
+}
+
+
+MenuBtnWin.prototype.get_sub_button_obj_win = function(s_name, s_title, obj_type)
+{
+var s='function SubMenuBtn'+this.my_name+s_name+'(parent)';
+s+='{';
+s+='var width_=parent.buttons["'+s_name+'"]["width"];';
+s+='SubMenuBtn.call(this,parent,my_name_="'+s_name+'",my_title_="'+s_title+'",width="width:"+width_+"%;");';
+//s+='alert(parent.my_name+"--1--");alert(parent.parent.name+"--2--");'
+s+='parent.parent.sub_menus[s_name]=this;'
+s+='};';
+eval(s);
+s = 'SubMenuBtn'+this.my_name+s_name+'.prototype = Object.create(SubMenuBtn.prototype);';
+eval(s);
+//s='SubMenuBtn'+this.my_name+s_name+'.prototype.click = '+this.my_name+s_name+'_click;'
+s='SubMenuBtn'+this.my_name+s_name+'.prototype.click = function (event){';
+//s+='try{alert("'+this.my_name+s_name+'_click(obj=this, event)");} catch(er){alert(er)}';
+s+='try{eval("this.parent.parent.onclick"+'+this.parent.id+'+"(tab=this.parent.parent.tab_obj_,win=this.parent.parent, obj=this, event)");} catch(er){alert("err403: "+er)};';
+s+='}';
+eval(s);
+s='SubMenuBtn'+this.my_name+s_name;
+return eval(s);
+}
+
+
 // -- MenuBtn --
 function MenuBtn(parent, my_name_, my_title, buttons, obj_type, width="width:10%;")
 {
@@ -1978,12 +2077,12 @@ function MenuBtn(parent, my_name_, my_title, buttons, obj_type, width="width:10%
            //alert('this.parent.my_sub_objs[b] = new SubMenuBtn'+this.parent.my_name+b+'(parent=this.parent)');
            eval('this.parent.my_sub_objs[b] = new SubMenuBtn'+this.parent.my_name+b+'(parent=this.parent)');
          }
-   } catch(er){alert("er202: "+er)}
+   } catch(er){alert("er2021: "+er)}
    try{
          for(m in this.parent.parent.main_menus)
          {this.parent.parent.main_menus[m].btn.className=this.parent.parent.main_menus[m].btn.className.replace(" active", "")}
          try{this.className+=" active";  } catch(er){}
-   } catch(er){alert("er203: "+er)}
+   } catch(er){alert("er2031: "+er)}
    try{this.parent.create_main_content();} catch(er){alert("er201: "+er)}
  }
  this.parent.main_menu.appendChild(this.btn);
@@ -2026,6 +2125,7 @@ function SubMenuBtn(parent, my_name_, my_title_, width="width:10%;")
  this.btn.setAttribute("style", width);
  this.btn.innerHTML = my_title_;
  this.btn.onclick=function(event){
+   //alert(this.parent.click)
    this.parent.click(event)
    }
  parent.parent.sub_menu.appendChild(this.btn);
@@ -2280,6 +2380,7 @@ PopWinNewPopWin_click = function(obj, event)
  var dic_={"properties":{"id":n_, "link_number":n_, "tab_id":obj.parent.parent.tab_obj_.tab_id,"name":popup_name_,"title":popup_name_,"zindex":50,"height":"500","width":"500","right":"25%","top":"25%",
            "background_color":"white", "title_color": "#fff", "title_background_color": "#2196F3", "is_panel":"true"},
            "functions":{"__init___":"function(win_obj){\ntry{\n\n} catch(er){alert(er)}}",
+                        "__get_panel_structure___":"function(win_obj){\ntry{\nvar dic={};\n\nwin_obj.win_nav_panel.buttons=dic;\n} catch(er){alert(er)}}",
                         "__set_panel___":"function(win_obj){\ntry{\n\n} catch(er){alert(er)}}"},
            "popwin_content":{"properties":{"link_number":n_, "content_type": "simple", "width":"400","table":""},
                              "functions":{}}
