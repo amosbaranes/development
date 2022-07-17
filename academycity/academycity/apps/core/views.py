@@ -249,6 +249,13 @@ def get_data_link(request):
     # print(dic_["fields"])
     # print('dic_')
     dic_["fields"].insert(0, "id")
+    app_ = dic_['app']
+    model_ = dic_['model']
+    # print(model_)
+    if model_ == "":
+        dic = {'status': 'ko', "dic": {}}
+        return JsonResponse(dic)
+
     fields_str = '"'
     for f in dic_["fields"]:
         try:
@@ -257,24 +264,21 @@ def get_data_link(request):
         except Exception as ex:
             print(ex)
     fields_str = fields_str[:len(fields_str)-2]
-    app_ = dic_['app']
-    model_ = dic_['model']
-    # print(model_)
     model = apps.get_model(app_label=app_, model_name=model_)
     # print(model)
+
     number_of_rows_ = int(dic_['number_of_rows'])
     parent_id_ = -1
     try:
         parent_id_ = int(dic_['parent_id'])
     except Exception as ex:
         pass
-        # print(e
     # print(parent_id_)
     company_obj_id_ = dic_['company_obj_id']
     # print(company_obj_id_)
     if company_obj_id_ != "-1":
         parent_model = apps.get_model(app_label=app_, model_name=app_+"web")
-        print(parent_model)
+        # print(parent_model)
         company_obj = parent_model.objects.get(id=company_obj_id_)
         if parent_id_ > -1:
             parent_model_ = dic_['parent_model']
@@ -298,9 +302,13 @@ def get_data_link(request):
         else:
             s = 'model.objects.all()[:number_of_rows_].values('+fields_str+')'
     try:
+        # print(s)
         data = eval(s)
     except Exception as ex:
+        # print(ex)
         pass
+
+    # print(1000)
 
     for q in data:
         for f in dic_["fields"]:
@@ -313,7 +321,6 @@ def get_data_link(request):
         dic[ff] = eval(ff)
     dic={'status': 'ok', "dic": dic}
     # print(dic)
-
     return JsonResponse(dic)
 
 

@@ -97,8 +97,8 @@ AdvancedTabsManager.prototype.create_add_delete_editor = function()
                     }
                     //alert(JSON.stringify(result))
                     atm.tabs[id_].btn.click();
-                    try{atm.set_active_tab(atm.tabs[id_].btn)} catch(er){alert(er)}
-                    try{atm.save()} catch(er){alert(er)}
+                    try{atm.set_active_tab(atm.tabs[id_].btn)} catch(er){alert('er9037: '+ er)}
+                    try{atm.save()} catch(er){alert("er900: "+er)}
                     atm.save();
                   }.bind(atm=atm_));
       }.bind(atm_=this, event))
@@ -143,7 +143,8 @@ AdvancedTabsManager.prototype.create_add_delete_editor = function()
 AdvancedTabsManager.prototype.setTabs = function()
 {
   var dic_ = {"obj" : "AdvancedTabs", "atm": this.my_name, "app": this.my_app, "fun": "get_tabs_from_table", "params": {"name": ""}}
-   // alert(JSON.stringify(dic_))
+   //alert(JSON.stringify(dic_))
+   //alert(this.activate_function_link_)
   $.post(this.activate_function_link_,{dic : JSON.stringify(dic_)},
       function(dic){
           //alert(JSON.stringify(dic))
@@ -177,14 +178,14 @@ AdvancedTabsManager.prototype.set_active_tab = function(btn)
   for(i=0;i<tabcontent.length;i++){tabcontent[i].style.display='none';}
   var tablinks=document.getElementsByClassName("tablinks");
 
-  try{eval(btn.parent.tab_name+"__myclick__(called_tab=btn.parent, calling_tab=btn.parent)");} catch(er){alert(er)}
+  try{eval(btn.parent.tab_name+"__myclick__(called_tab=btn.parent, calling_tab=btn.parent)");} catch(er){alert("er9001: "+er)}
 
   for (i=0;i<tablinks.length;i++){
     try{
       tablinks[i].className=tablinks[i].className.replace(" active","");
       if(tablinks[i].parent.tab_name!=btn.parent.tab_name)
       {eval(tablinks[i].parent.tab_name+"__otherclick__(called_tab=tablinks[i].parent, calling_tab=btn.parent)");}
-    } catch(er){alert(er)}
+    } catch(er){alert('er9038: '+ er)}
   }
 
   try{for(w in this.active_tab.PopWinObjects){if(w=="editor"){ continue;};this.active_tab.PopWinObjects[w].temp_close_win()}} catch(er){}
@@ -221,10 +222,10 @@ AdvancedTabsManager.prototype.get_obj = function(tab, dic)
  s+='try{this.creator=new '+dic["obj_name"]+'Creator(this)} catch(er){};'
  s+='};'
  //alert(s)
- try{eval(s)} catch(er){alert(er)}
+ try{eval(s)} catch(er){alert("er9002: "+er)}
  s=dic["obj_name"]+dic["properties"]["obj_number"]+'.prototype = Object.create('+dic["obj_type"]+'.prototype);'
  //alert(s);
- try{eval(s)} catch(er){alert(er)}
+ try{eval(s)} catch(er){alert("er903: "+er)}
 
  s = 'new '+dic["obj_name"]+dic["properties"]["obj_number"]+'(atm_=this, tab_=tab, dic_=dic)'
  //alert(s)
@@ -264,7 +265,7 @@ AdvancedTabsManager.prototype.save = function()
                       "tab_type": this.active_tab.tab_type,
                       "tab_pop_win_buttons": this.active_tab.tab_pop_win_buttons
                     }
-  } catch(er){alert(er)}
+  } catch(er){alert("er9004: "+er)}
   var dic_={"obj":"AdvancedTabs","atm":this.my_name, "app": this.my_app, "fun":"save_content",
             "params": {"atm_content": this.content,
                        "tab_content": tab_content,
@@ -342,8 +343,8 @@ AdvancedTabsManager.prototype.get_data = function(call_back_fun, dic_, tbody_)
   dic_["app"]=this.my_app;
   var company_obj_id = dic_["company_obj_id"];
   if(dic_["company_obj_id"]==null){dic_["company_obj_id"]=this.company_obj_id;}
-
   //var temp_data = null;
+  //alert("calling get_data")
   //alert(JSON.stringify(dic_));
   //alert(tbody_.outerHTML)
   //alert(call_back_fun)
@@ -351,9 +352,12 @@ AdvancedTabsManager.prototype.get_data = function(call_back_fun, dic_, tbody_)
   $.post(this.get_data_link_,
           {dic : JSON.stringify(dic_)},
           function(data){
-          //alert(JSON.stringify(data));
+          try{
+           //alert(JSON.stringify(data));
+           if(data["status"]!="ok"){return}
            call_back_fun(data["dic"], tbody_)
            tbody_.data=data["dic"];
+           } catch(er){alert(er)}
           });
 }
 
@@ -407,7 +411,7 @@ function FunctionsPropertiesEditor(tab, functions_dic, functions_list_dic, prope
   new_btn.onclick= function (){
     var fun_name_ = prompt("Enter name for new function:" , '');
     if(fun_name_ == '') {alert("Please enter a function name"); return;}
-    functions[fun_name_]="function (obj){\ntry{\n\n} catch(er){alert(er)}}";
+    functions[fun_name_]="function (obj){\ntry{\n\n} catch(er){alert('er9005: '+er)}}";
     editor.tab_obj_.parent.save();
   }.bind(editor=tab.parent.editor, functions=functions_dic, event)
 
@@ -436,7 +440,7 @@ function FunctionsPropertiesEditor(tab, functions_dic, functions_list_dic, prope
     editor.tab_obj_.active_function=f;
     var fun=null;
     try{fun=functions_[f]} catch(er){}
-    if(fun==null){fun="function (event){\ntry{\n\n} catch(er){alert(er)}\n}";functions_[f]=fun;}
+    if(fun==null){fun="function (event){\ntry{\n\n} catch(er){alert('er9006: '+er)}\n}";functions_[f]=fun;}
       tab_content_.innerHTML=functions_[f];
       tab_content_.setAttribute("fun_name",f);
       var funtablinks = document.getElementsByClassName("funtablinks");
@@ -497,7 +501,7 @@ function FunctionsPropertiesEditor(tab, functions_dic, functions_list_dic, prope
      var td=document.createElement("td");var input=document.createElement("input");
      input.setAttribute("size","10");input.setAttribute("property",s);td.appendChild(input);
      //input.setAttribute("property",s);
-     try{if(properties_dic[s]==null){} else{input.value=properties_dic[s]}} catch(er){alert(er)}
+     try{if(properties_dic[s]==null){} else{input.value=properties_dic[s]}} catch(er){alert("er9008: "+er)}
      tr.appendChild(td);
    }
    for (i in attributes_list)
@@ -507,7 +511,7 @@ function FunctionsPropertiesEditor(tab, functions_dic, functions_list_dic, prope
      var td=document.createElement("td");td.innerHTML=s;tr.appendChild(td);
      var td=document.createElement("td");var input=document.createElement("input");
      input.setAttribute("size","10");input.setAttribute("property",s);td.appendChild(input);
-     try{if(properties_dic[s]==null){} else{input.value=properties_dic[s]}} catch(er){alert(er)}
+     try{if(properties_dic[s]==null){} else{input.value=properties_dic[s]}} catch(er){alert("er9009: "+er)}
      tr.appendChild(td);
    }
    tab_properties_.addEventListener("change", function(){
@@ -573,7 +577,7 @@ acObj.prototype.create_editor = function(){
    var td=document.createElement("td");td.innerHTML=s;tr.appendChild(td);
    var td=document.createElement("td");var input=document.createElement("input");
    input.setAttribute("property",s);td.appendChild(input);
-   try{if(this.data["properties"][s]==null){} else{input.value=this.data["properties"][s]}} catch(er){alert(er)}
+   try{if(this.data["properties"][s]==null){} else{input.value=this.data["properties"][s]}} catch(er){alert("er9010: "+er)}
    tr.appendChild(td);
  }
 
@@ -585,7 +589,7 @@ acObj.prototype.create_editor = function(){
    var td=document.createElement("td");td.innerHTML=s;tr.appendChild(td);
    var td=document.createElement("td");var input=document.createElement("input");
    input.setAttribute("property",s);td.appendChild(input);
-   try{if(this.data["properties"][s]==null){} else{input.value=this.data["properties"][s]}} catch(er){alert(er)}
+   try{if(this.data["properties"][s]==null){} else{input.value=this.data["properties"][s]}} catch(er){alert("er9011: "+er)}
    tr.appendChild(td);
  }
 }
@@ -787,6 +791,7 @@ acSearchTableCreator.prototype.create_obj = function()
   this.tbody=document.createElement("tbody");
   this.tbody.setAttribute("id", "tbody_"+dic["properties"]["obj_number"]);
   this.table_.appendChild(this.tbody);
+
   this.table_.my_creator_obj=this;
 
   //alert(5);
@@ -829,7 +834,7 @@ acSearchTableCreator.prototype.get_data = function(data_table_name=null,parent_m
     if(parent_id!=null){parent_id_=parent_id} else {parent_id_=container.getAttribute("parent_id")}
     if(parent_id_=="" || parent_id_==null){return}
     var dic_={"model":this.data_table_name, "number_of_rows":this.number_of_rows, "fields":this.fields}
-  } catch(er){alert(er)}
+  } catch(er){alert("er9012: "+er)}
 
   var fun=function(data, ttbody_){
     //alert(ttbody_.outerHTML)
@@ -884,7 +889,7 @@ acSearchTableCreator.prototype.row_click = function(event)
  var dic=this.my_creator_obj.tbody.data;
  for(f in dic){dic[f][n_row];result[f]=dic[f][n_row]}
  container.my_creator_obj.set_objects_data(result);
- try{eval('var zz='+this.my_creator_obj.parent.data["functions"]["onclick"]);zz(event)} catch(er) {alert(er)}
+ try{eval('var zz='+this.my_creator_obj.parent.data["functions"]["onclick"]);zz(event)} catch(er) {alert("er9013: "+er)}
 }
 
 acSearchTableCreator.prototype.editor_properties_func = function(tab, tab_properties_)
@@ -981,6 +986,7 @@ acChartCreator.prototype.create_obj = function()
  var style_="position:absolute;left:"+dic["properties"]["x"]+"px;top:"+dic["properties"]["y"]+"px;width:"+width_+"px;"
  style_+="height:"+height_+"px";
  this.chart.setAttribute("style", style_);
+
  this.chart.my_creator_obj=this;
 
  container.appendChild(this.chart);
@@ -1270,7 +1276,7 @@ function TabNavLink(tab_nav, link_dic){
    for(i=0;i<tabcontent.length;i++){tabcontent[i].style.display='none';}
    var btns=document.getElementsByClassName("nav_button"+tab_name);
    for(i=0;i<btns.length;i++){btns[i].className=btns[i].className.replace(" active","")}
-   try{e.parent.link_content.style.display="block";this.parent.link_btn.className+=" active";}catch(er){alert(er)}
+   try{e.parent.link_content.style.display="block";this.parent.link_btn.className+=" active";}catch(er){alert("er9014: "+er)}
  }
  for(f in this.nav_link_functions)
  {if(f != "onclick"){var fun=this.nav_link_functions[f]; eval("this.link_btn."+f+"="+fun)}}
@@ -1426,9 +1432,9 @@ function Tab(parent, data, id)
  this.tab_type=data["properties"]["tab_type"];
  //--
  if(!("functions" in data)){this.tab_functions={};
-   this.tab_functions[this.tab_name+"__init__"]=this.tab_name+"__init__=function(called_tab, calling_tab){\ntry{\n\n} catch(er){alert(er)}}";
-   this.tab_functions[this.tab_name+"__myclick__"]=this.tab_name+"__myclick__=function(called_tab, calling_tab){\ntry{\n\n} catch(er){alert(er)}}";
-   this.tab_functions[this.tab_name+"__otherclick__"]=this.tab_name+"__otherclick__=function(called_tab, calling_tab){\ntry{\n\n} catch(er){alert(er)}}";
+   this.tab_functions[this.tab_name+"__init__"]=this.tab_name+"__init__=function(called_tab, calling_tab){\ntry{\n\n} catch(er){alert('er9020: '+ er)}}";
+   this.tab_functions[this.tab_name+"__myclick__"]=this.tab_name+"__myclick__=function(called_tab, calling_tab){\ntry{\n\n} catch(er){alert('er9021: '+ er)}}";
+   this.tab_functions[this.tab_name+"__otherclick__"]=this.tab_name+"__otherclick__=function(called_tab, calling_tab){\ntry{\n\n} catch(er){alert('er9022: '+ er)}}";
  } else {this.tab_functions=data["functions"]};
  //--
  if(!("tab_pop_win_buttons" in data)){this.tab_pop_win_buttons={"properties":{},"pop_wins":{}}} else
@@ -1507,7 +1513,7 @@ try{
        win_obj.set_acWinStatEventListeners(this.parent.editor);
        win_obj.resume_win()
      }
-   } catch(er) {alert(er)}
+   } catch(er) {alert('er9023: '+ er)}
 }
 
 Tab.prototype.process_functions = function(){for(f in this.tab_functions){eval(this.tab_functions[f])}}
@@ -1559,12 +1565,15 @@ Tab.prototype.get_pop_win_obj = function(dic)
 {
  //alert("get_pop_win_obj");
  //alert(JSON.stringify(dic));
+
  var s_name=dic["properties"]["name"]; var s_title=dic["properties"]["title"];
  var title_color=dic["properties"]["title_color"];var title_background_color=dic["properties"]["title_background_color"];
  var link_number =dic["properties"]["id"];
-
  var s = 'function TabPopWin'+this.tab_name+s_name+'(parent,dic_)';
  s+='{'
+ //s+='alert(JSON.stringify(dic_));'
+ //s+='alert(parent.tab_name);'
+
  s+='this.my_name="'+this.tab_name+s_name+'";';
  s+='this.name="win_'+this.tab_name+s_name+'";';
  s+='var is_scroll_=true;';
@@ -1584,7 +1593,6 @@ Tab.prototype.get_pop_win_obj = function(dic)
  s+='};';
  //alert(s);
  eval(s);
-
  s = 'TabPopWin'+this.tab_name+s_name+'.prototype = Object.create(acWin.prototype);';
  eval(s);
  s = 'TabPopWin'+this.tab_name+s_name+'.prototype.constructor = TabPopWin'+this.tab_name+s_name;
@@ -1622,43 +1630,45 @@ Tab.prototype.get_pop_win_obj = function(dic)
  //for(f in dic['functions']) {s_= f+"_"+dic["properties"]["id"]+ '='+dic['functions'][f];alert(s_);eval(s_);}
  //--
  s='TabPopWin'+this.tab_name+s_name+'.prototype.__init__ = function()'
- s+='{this.set_tab(this.tab_obj_);this.set_title_colors("'+title_color+'", "'+title_background_color+'");'
+ s+='{'
+ s+='this.set_tab(this.tab_obj_);this.set_title_colors("'+title_color+'", "'+title_background_color+'");'
  s+='this.tab_obj_.PopWinObjects[this.my_name]=this;'
  s+='this.id='+dic["properties"]["id"]+';'
  s+='this.set_title(this.win_title_);'
-
  s+='dic_fs=this.tab_obj_.tab_pop_win_buttons["pop_wins"]['+dic["properties"]["id"]+']["functions"];'
+ //s+='alert(JSON.stringify(dic_fs));'
  s+='for(f in dic_fs) {var s_= "this."+f+"'+dic["properties"]["id"]+'="+dic_fs[f];eval(s_);};'
-
- s+='try{this.__init___'+dic["properties"]["id"]+'(this)} catch(er){alert(er)};';
+ s+='try{this.__init___'+dic["properties"]["id"]+'(this)} catch(er){alert("er9024: "+ er)};';
  if(dic["properties"]["is_panel"]=="true")
  {
   s+='this.main_menu = document.createElement("div");'
   s+='this.sub_menu = document.createElement("div");'
   s+='this.win_nav_panel.appendChild(this.main_menu);'
   s+='this.win_nav_panel.appendChild(this.sub_menu);'
-  s+='try{this.__get_panel_structure___'+dic["properties"]["id"]+'(this)} catch(er){alert(er)};';
+  s+='try{this.__get_panel_structure___'+dic["properties"]["id"]+'(this)} catch(er){alert("er9025: "+ er)};';
   //s+='alert(JSON.stringify(this.buttons));'
-
   s+='for (b in this.buttons){'
   s+=' eval("MenuBtnWin"+b+"=this.get_main_button_win_obj(b, this.buttons[b][\'width\'], this.buttons[b][\'title\'], this.buttons[b][\'sub_buttons\'], this.buttons[b][\'obj_type\'])");'
   //s+=' alert(this.name+"--1-- "+b);'
   s+=' eval("var nbw=new MenuBtnWin"+b+"(parent=this)");'
   s+=' nbw.btn.click();'
   s+='};'
-
-  s+='try{this.__set_panel___'+dic["properties"]["id"]+'(this)} catch(er){alert(er)};';
+  s+='try{this.__set_panel___'+dic["properties"]["id"]+'(this)} catch(er){alert("er9026: "+ er)};';
  }
  s+='}'
  //alert(s);
  eval(s);
+//alert(29)
  // this.set_panel();
  // this.main_menus["Tab"].btn.click()
  //alert(eval('TabPopWin'+this.active_tab.tab_name+s_name+'.prototype.set_title_colors'))
- s='new TabPopWin'+this.tab_name+s_name+'(parent=this.parent.tabs[dic["properties"]["tab_id"]], dic_=dic)';
+ var tab_id_=dic["properties"]["tab_id"]
+ var tab__=this.parent.tabs[tab_id_]
+ s='new TabPopWin'+this.tab_name+s_name+'(tab__, dic)';
  //alert(s);
- //alert(10010)
+ try{
  var result_obj=eval(s)
+ } catch (er) {alert("er4550: "+er)}
  //alert(10011)
  return result_obj;
 }
@@ -2041,7 +2051,7 @@ s = 'SubMenuBtn'+this.my_name+s_name+'.prototype = Object.create(SubMenuBtn.prot
 eval(s);
 //s='SubMenuBtn'+this.my_name+s_name+'.prototype.click = '+this.my_name+s_name+'_click;'
 s='SubMenuBtn'+this.my_name+s_name+'.prototype.click = function (event){';
-//s+='try{alert("'+this.my_name+s_name+'_click(obj=this, event)");} catch(er){alert(er)}';
+//s+='try{alert("'+this.my_name+s_name+'_click(obj=this, event)");} catch(er){alert("er9026: "+ er)}';
 s+='try{eval("this.parent.parent.onclick"+'+this.parent.id+'+"(tab=this.parent.parent.tab_obj_,win=this.parent.parent, obj=this, event)");} catch(er){alert("err403: "+er)};';
 s+='}';
 eval(s);
@@ -2185,7 +2195,7 @@ Tab_create_main_content = function()
    var td=document.createElement("td");td.innerHTML=i;tr.appendChild(td);
    var td=document.createElement("td");var input=document.createElement("input");
    input.setAttribute("property",i);td.appendChild(input);
-   try{if(s==null){}else{input.value=s}} catch(er){alert(er)}
+   try{if(s==null){}else{input.value=s}} catch(er){alert("er9027: "+ er)}
    tr.appendChild(td);
   }
 
@@ -2206,13 +2216,13 @@ TabNewFunction_click = function(obj, event)
   var fun_name_ = prompt("Enter name for new function:" , '');
   if(fun_name_ == '') {alert("Please enter a function name"); return;}
   var tab_name=obj.parent.parent.tab_obj_.tab_name;
-  obj.parent.parent.tab_obj_.tab_functions[tab_name+"_"+fun_name_]=tab_name+"_"+fun_name_+"=function(obj){\ntry{\n\n} catch(er){alert(er)}}";
+  obj.parent.parent.tab_obj_.tab_functions[tab_name+"_"+fun_name_]=tab_name+"_"+fun_name_+"=function(obj){\ntry{\n\n} catch(er){alert('er9026: '+ er)}}";
   obj.parent.parent.tab_obj_.active_function = obj.parent.parent.tab_obj_.tab_name+"_"+fun_name_;
   try{
     obj.parent.parent.tab_obj_.parent.save();
     var click_event = new Event("click", {bubbles: true});
     obj.parent.parent.main_menus["Tab"].btn.dispatchEvent(click_event);
-  } catch (er){alert(er)}
+  } catch (er){alert("er9029: "+ er)}
 }
 
 TabDeleteFunction_click = function(obj, event)
@@ -2240,7 +2250,7 @@ Component_create_main_content = function()
     var f=event.target.innerHTML;
     editor.tab_obj_.active_component_function=f;
     if(editor.tab_obj_.active_obj.data["functions"][f]==null)
-    {editor.component_fun_editor.innerHTML="function (event){\ntry{\n\n} catch(er){alert(er)}\n}";} else
+    {editor.component_fun_editor.innerHTML="function (event){\ntry{\n\n} catch(er){alert('er9026: '+ er)}\n}";} else
     {editor.component_fun_editor.innerHTML=editor.tab_obj_.active_obj.data["functions"][f]}
 
     var comfuntablinks = document.getElementsByClassName("comfuntablinks");
@@ -2331,7 +2341,7 @@ TabNavLinknav_click = function(obj, event)
             settings_list=obj.parent.parent.atm.tab_nav_links["settings_list"],
             attributes_list=obj.parent.parent.atm.tab_nav_links["attributes_list"],
             tab_btn_name="TabNavLink",null,
-            node_to_delete=".tab_nav_links")} catch(er) {alert(er)}
+            node_to_delete=".tab_nav_links")} catch(er) {alert("er9030: "+ er)}
 }
 
 //- item --
@@ -2354,7 +2364,7 @@ TabNavLinkitem_click = function(obj, event)
             settings_list=obj.parent.parent.atm.nav_link["settings_list"],
             attributes_list=obj.parent.parent.atm.nav_link["attributes_list"],
             tab_btn_name="TabNavLink",null,
-            node_to_delete='.tab_nav_links["nav_links"]['+link_number+']')} catch(er) {alert(er)}
+            node_to_delete='.tab_nav_links["nav_links"]['+link_number+']')} catch(er) {alert("er9031: "+ er)}
 }
 
 
@@ -2373,15 +2383,15 @@ PopWinNewPopWin_click = function(obj, event)
 {
  var popup_name_ = prompt("Enter name for new Popup win:",'');if(popup_name_==''){alert("Please enter a name for popup win"); return;}
  var dic_functions={}
- dic_functions["__init__"]="function (obj){\ntry{\n\n} catch(er){alert(er)}}";
- dic_functions["__set_panel__"]="function (obj){\ntry{\n\n} catch(er){alert(er)}}";
+ dic_functions["__init__"]="function (obj){\ntry{\n\n} catch(er){alert('er9032: '+ er)}}";
+ dic_functions["__set_panel__"]="function (obj){\ntry{\n\n} catch(er){alert('er903: '+ er)}}";
  //alert(JSON.stringify(dic_functions))
  var n_=obj.parent.parent.tab_obj_.get_next_obj_number();
  var dic_={"properties":{"id":n_, "link_number":n_, "tab_id":obj.parent.parent.tab_obj_.tab_id,"name":popup_name_,"title":popup_name_,"zindex":50,"height":"500","width":"500","right":"25%","top":"25%",
            "background_color":"white", "title_color": "#fff", "title_background_color": "#2196F3", "is_panel":"true"},
-           "functions":{"__init___":"function(win_obj){\ntry{\n\n} catch(er){alert(er)}}",
-                        "__get_panel_structure___":"function(win_obj){\ntry{\nvar dic={};\n\nwin_obj.win_nav_panel.buttons=dic;\n} catch(er){alert(er)}}",
-                        "__set_panel___":"function(win_obj){\ntry{\n\n} catch(er){alert(er)}}"},
+           "functions":{"__init___":"function(win_obj){\ntry{\n\n} catch(er){alert('er903: '+ er)}}",
+                        "__get_panel_structure___":"function(win_obj){\ntry{\nvar dic={};\n\nwin_obj.win_nav_panel.buttons=dic;\n} catch(er){alert('er903: '+ er)}}",
+                        "__set_panel___":"function(win_obj){\ntry{\n\n} catch(er){alert('er903: '+ er)}}"},
            "popwin_content":{"properties":{"link_number":n_, "content_type": "simple", "width":"400","table":""},
                              "functions":{}}
            };
@@ -2400,7 +2410,7 @@ PopWinNewPopWin_click = function(obj, event)
    win_obj.set_win_frame_style(dic_["properties"]["zindex"], dic_["properties"]["height"], dic_["properties"]["width"], dic_["properties"]["right"], dic_["properties"]["top"], dic_["properties"]["background_color"])
    win_obj.set_acWinStatEventListeners(obj.parent.parent.tab_obj_.parent.editor);
    obj.parent.parent.tab_obj_.parent.save()
- } catch(er){alert(er)}
+ } catch(er){alert('er9035: '+ er)}
 }
 
 PopWinDeletePopWin_click = function(obj, event)
@@ -2456,7 +2466,7 @@ TabContentcontent_click = function(obj, event)
             null,
             node_to_delete=null
         )
-  } catch(er) {alert(er)}
+  } catch(er) {alert('er9036: '+ er)}
 }
 
 

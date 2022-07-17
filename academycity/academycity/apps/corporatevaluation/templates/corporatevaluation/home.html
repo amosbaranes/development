@@ -158,7 +158,7 @@ data {
           {% include 'corporatevaluation/simulation/includes/_valuation.html' %}
           {% include 'corporatevaluation/simulation/includes/_comparablecompanies.html' %}
 
-        {%if user.is_staff or request.user|has_group:"options"%}
+        {%if user.is_staff or request.user|has_group:"options" or request.user|has_group:"fsa"%}
           {% include 'corporatevaluation/simulation/includes/_sp_forecast_actual.html' %}
             <!-- base win object -->
 
@@ -204,7 +204,7 @@ accounting_equality="
 user_id = "{{request.user.id}}"
 ></span>
 
-<span id="is_staff" is_staff="{{user.is_staff}}" is_instructor="{{user|has_group:'instructors'}}"  is_options="{{user|has_group:'options'}}"></span>
+<span id="is_staff" is_staff="{{user.is_staff}}" is_instructor="{{user|has_group:'instructors'}}"  is_options="{{user|has_group:'options'}}" is_fsa="{{user|has_group:'fsa'}}"></span>
 <div id="log_info"></div>
 
 <!-- corporate valuation -->
@@ -559,6 +559,7 @@ function SimManager(valuation_id)
     this.is_staff = document.getElementById("is_staff").getAttribute("is_staff");
     this.is_instructor = document.getElementById("is_staff").getAttribute("is_instructor");
     this.is_options = document.getElementById("is_staff").getAttribute("is_options");
+    this.is_fsa = document.getElementById("is_staff").getAttribute("is_fsa");
     this.valuation_id = valuation_id;
     this.url_get_screens = '{% url "corporatevaluation:get_screens" %}';
     this.name = "Corporate Valuation";
@@ -619,7 +620,7 @@ SimManager.prototype.setTabs = function() {
       { s = "this.TabObjects[name] = new SimManagementTab(this, name, '"+tabs_management[name][0]+"', this.valuation_id, this.url_get_screens, '"+tabs_management[name][1]+"')" ;eval(s) }
     }
 
-    if (this.is_staff == 'True' || this.is_options == 'True'){
+    if (this.is_staff == 'True' || this.is_options == 'True' || this.is_fsa == 'True'){
       for(var name in tabs_options)
       {s = "this.TabObjects[name] = new SimTab(this, name, tabs_options[name][0], this.valuation_id, this.url_get_screens, tabs_options[name][1])" ; eval(s)}
     }

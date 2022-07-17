@@ -22,20 +22,23 @@ from ..webcompanies.WebCompanies import WebSiteCompany
 def home(request):
     # return render(request, 'partners/home_test.html', {})
     # print('partners home0: ')
-    # log_debug('partners home0: ')
+    log_debug('partners home_0: ')
     host = request.META["HTTP_HOST"]
-    log_debug('partners host0: ' + host)
+    log_debug('partners host_1: ' + host)
     host = host.split(':')[0]
-    log_debug('partners host1: ' + host)
+    log_debug('partners host_2: ' + host)
     host_s = host.split('.')
     town = None
     host_ = None
 
-    log_debug('partners host_s: ' + str(host_s))
+    # print('partners host__s: ' + str(host_s))
+    log_debug('partners host__s: ' + str(host_s))
 
-    # print('partners host_2')
+    # print('partners host_21')
     # print(host_)
-    # print('partners host_2')
+    # print('partners host_22')
+    # print(host_s)
+    # print('partners host_33')
 
     if len(host_s) > 2:
         host_ = host_s[1]
@@ -43,15 +46,16 @@ def home(request):
         # log_debug('partners town: ' + town)
     else:
         host_ = host_s[0]
-    log_debug('partners host_3: ' + host_)
+    log_debug('partners host__3: ' + host_)
 
-    # print('host_')
+    # print('host_4')
     # print(host_)
-    # print('host_')
+    # print('host_4')
 
     # print('partners home1: ')
     try:
-        # log_debug('try1: ' + host_)
+        # print('try1: ' + host_)
+        log_debug('try1: ' + host_)
         wsc = WebSiteCompany(request, host_)
         if wsc.is_registered_domain():
             # print('wsc.is_registered_domain():wsc.is_registered_domain()')
