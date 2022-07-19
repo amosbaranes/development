@@ -33,6 +33,7 @@ class Payments(TruncateTableMixin, models.Model):
                                 related_name='student_payments')
     created = models.DateField(auto_now_add=True)
     amount = models.IntegerField(default=0, blank=True)
+    reason = models.CharField(max_length=50, default='', blank=True, null=True)
 
     def __str__(self):
         return str(self.student) + " - " + str(self.amount)
