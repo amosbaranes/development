@@ -159,7 +159,11 @@ function get_earning_forecast_sp500_view_main_detail(event)
 
 function get_earning_forecast_sp500_view_main_detail__(event, ticker_)
 {
-  if (event.ctrlKey){Orders.set_orders_screen(ticker_);return;}
+  if (event.ctrlKey & event.altKey) {
+    //s_yf_http = "https:\/\/finance.yahoo.com\/quote\/" + ticker_ + "\/financials?p=" + ticker_
+    s_yf_httpg = "https:\/\/finance.yahoo.com\/quote\/" + ticker_ + "?p=" + ticker_
+    window.open(s_yf_httpg, "_blank");
+  } else if (event.ctrlKey){Orders.set_orders_screen(ticker_);return;}
   else if (event.altKey)
   {$.post('{% url "corporatevaluation:admin_setup" %}',
       {fun: "get_earning_forecast_sp500_view_main_detail",ticker: ticker_,},

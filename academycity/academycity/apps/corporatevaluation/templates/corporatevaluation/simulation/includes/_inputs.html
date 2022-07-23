@@ -172,6 +172,7 @@
     </div>
 </div>
 
+<!-- input A1000-->
 <script>
 function get_earning_forecast_sp500_view_main_detail1(event)
 {
@@ -635,8 +636,14 @@ function companies_fun(event)
 {
   try{clean_rp_for_country_or_region();} catch(er){}
   var e=event.target;var id_=e.options[e.selectedIndex].value;ticker_=e.options[e.selectedIndex].getAttribute("ticker");
-  document.getElementById('search_ticker').value=ticker_;vObj["ticker"]=ticker_;
-  document.getElementById('bi_attribute_value').value=ticker_;
+  document.getElementById('search_ticker').value=ticker_;
+  vObj["ticker"]=ticker_;
+
+ // it seems that this line is only for admin.  need to check if it is needed.
+  try{document.getElementById('bi_attribute_value').value=ticker_;} catch (er){
+    //alert(er)
+  }
+
   if(!vObj["sec_company_data"][ticker_]){vObj["sec_company_data"][ticker_]={}}
   console.log("get_data_ticker: ", "before post get_data_ticker");
   if(vObj["sec_company_data"][ticker_]['company_info'])

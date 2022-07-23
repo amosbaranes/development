@@ -21,6 +21,7 @@ class WebCompanies(models.Model):
                                   related_name='webcompanies',
                                   limit_choices_to={'model__in': (
                                       'accountingweb',
+                                      'acmathweb',
                                       'corporatevaluationweb',
                                       'macroeconomicweb',
                                       'fabhoseafricaweb',

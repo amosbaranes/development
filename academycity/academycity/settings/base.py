@@ -192,6 +192,7 @@ WebApps = [
 ]
 
 acApps = [
+    'academycity.apps.acapps.acmath',
     'academycity.apps.acapps.accounting',
     'academycity.apps.acapps.businesssim',
     'academycity.apps.acapps.macroeconomics',
