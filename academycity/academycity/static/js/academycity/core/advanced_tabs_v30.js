@@ -158,7 +158,6 @@ AdvancedTabsManager.prototype.setTabs = function()
           //alert(JSON.stringify(tabs))
           for (jj in tabs)
           {
-            //alert(id_);
             var k=tabs[jj]; var id_=k[0];
             atm_.tabs[id_]=new Tab(atm_, data=k[1], id=id_);
             atm_.set_active_tab(atm_.tabs[id_].btn)
@@ -1012,12 +1011,13 @@ acChartCreator.prototype.set_chart_data = function(chart_type)
 {
   //alert(JSON.stringify(chart_type));
   var data_=[]
-  chart_attributes={"lines":{"type_name":"mode", "type_value":"lines+markers", "marker_attribute":"size", "marker_attribute_value":"8"},
+  chart_attributes={"lines":{"type_name":"mode", "type_value":"lines", "marker_attribute":"size", "marker_attribute_value":"8"},
                     "bars":{"type_name":"type", "type_value":"bar", "marker_attribute":"opacity", "marker_attribute_value":"0.7"},
                     "pies":{"type_name":"type", "type_value":"pie", "marker_attribute":"opacity", "marker_attribute_value":"0.7"},
-                    "areas":{"type_name":"type", "type_value":"scatter", "marker_attribute":"opacity", "marker_attribute_value":"0.7"}
+                    "areas":{"type_name":"type", "type_value":"scatter", "marker_attribute":"opacity", "marker_attribute_value":"0.7"},
+                    "scatter":{"type_name":"mode", "type_value":"markers", "marker_attribute":"opacity", "marker_attribute_value":"0.7"}
                    }
-  //alert(JSON.stringify(chart_attributes));
+   //alert(JSON.stringify(chart_attributes));
 
    data={"type":chart_type["type"],
          "type_name":chart_attributes[chart_type["type"]]["type_name"],
@@ -1054,7 +1054,7 @@ acChartCreator.prototype.set_chart_data = function(chart_type)
                 "height": 400, "width": 600, "showlegend": false,
                 "grid": {rows: 1, columns: n_}
                }
- } else if(chart_type["type"]=='areas') {
+ } else if (chart_type["type"]=='areas') {
    for(y in data["series"]){
     var trace = {}
     trace["x"]=data["x"]["data"];
@@ -1063,8 +1063,21 @@ acChartCreator.prototype.set_chart_data = function(chart_type)
     trace["fill"]='tozeroy';
     trace["mode"]='none';
     data_.push(trace);
-};
+   };
+ } else if(chart_type["type"]=='scatter') {
+    var trace = {}
+    trace["x"]=chart_type["x"];
+    trace["y"]=chart_type["y"];
+    trace[data["type_name"]]=data["type_name_value"];
+    trace["type"]="scatter";
+    trace["marker"] = { size: 3 }
+    data_.push(trace);
 
+   //alert(JSON.stringify(data_));
+
+   var layout = {title: data["title"],
+                 xaxis: {title: chart_type["x-axis-title"], range: chart_type["x-axis-range"]},
+                 yaxis: {title: chart_type["y-axis-title"], range: chart_type["y-axis-range"]}}
  } else {
   for(y in data["series"]){
     var trace = {}
@@ -1074,10 +1087,12 @@ acChartCreator.prototype.set_chart_data = function(chart_type)
     trace["marker"]={"color":"rgb("+data["series"][y]["color"][0]+", "+data["series"][y]["color"][1]+", "+data["series"][y]["color"][2]+")"}
     trace["marker"][data["marker_attribute"]]=data["marker_attribute_value"]
     trace["name"]=data["series"][y]["name"]
-    trace["line"]={color: 'rgb('+data["series"][y]["color"][0]+', '+data["series"][y]["color"][1]+', '+data["series"][y]["color"][2]+')', width: 1}
+    trace["line"]={color: 'rgb('+data["series"][y]["color"][0]+', '+data["series"][y]["color"][1]+', '+data["series"][y]["color"][2]+')', width: 2}
     data_.push(trace)
   }
-  var layout = {title: data["title"]}
+  var layout = {title: data["title"],
+                xaxis: {title: chart_type["x-axis-title"], range: chart_type["x-axis-range"]},
+                yaxis: {title: chart_type["y-axis-title"], range: chart_type["y-axis-range"]}}
  }
  //alert(JSON.stringify(data_));
  Plotly.newPlot(this.chart, data_, layout );

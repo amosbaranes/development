@@ -115,13 +115,11 @@ def activate_function(request):
         dic_ = request.POST["dic"]
         dic_ = eval(dic_)
         # print(dic_)
-
         obj_ = dic_["obj"]
         atm_ = dic_["atm"]
         app_ = dic_["app"]
         fun_ = dic_["fun"]
         params_ = dic_["params"]
-
         # print('-1'*20)
         s = obj_ + "('"+atm_+"', '"+app_+"')." + fun_ + "(params_)"
         # print(s)
@@ -137,9 +135,9 @@ def activate_function(request):
 
 def update_field_model_by_id(request):
     dic_ = request.POST["dic"]
-    print('dic_')
-    print(dic_)
-    print('dic_')
+    # print('dic_')
+    # print(dic_)
+    # print('dic_')
     dic_ = eval(dic_)
     app_ = dic_['app']
     model_ = dic_['model']

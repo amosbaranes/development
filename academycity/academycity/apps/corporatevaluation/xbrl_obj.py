@@ -6,6 +6,7 @@ import re
 import os
 from django.conf import settings
 import pandas as pd
+from pandas_datareader import data
 import string
 import datetime
 import time
@@ -4292,3 +4293,38 @@ class FinancialAnalysis(object):
 
         # print(result)
         return result
+
+    def get_market_portfolio(self, params):
+        list_of_tickers = params["tickers"]
+        XP = data.DataReader(list_of_tickers, 'yahoo', start='2020/01/01', end='2022/07/22')
+        X = XP['Adj Close'].pct_change().apply(lambda x: np.log(1 + x))
+        V = X.cov()
+        # print(V)
+        xr = XP['Adj Close'].resample('Y').last().pct_change().mean()
+        xsd = X.std().apply(lambda x: x * np.sqrt(250))
+        i_r = []  # Define an empty array for portfolio returns
+        i_sd = []  # Define an empty array for portfolio volatility
+        i_w = []  # Define an empty array for asset weights
+        ns = len(X.columns)
+        nb = 3000
+        for i in range(nb):
+            w = np.random.random(ns)
+            w = w / np.sum(w)
+            i_w.append(w)
+            r = round(np.dot(w, xr), 3)
+            i_r.append(r)
+            var = V.mul(w, axis=0).mul(w, axis=1).sum().sum()
+            sd = np.sqrt(var)  # Daily standard deviation
+            sd = round(sd * np.sqrt(250), 3)  # Annual standard deviation = volatility
+            i_sd.append(sd)
+        data_ = {"Returns": i_r, "Volatility": i_sd}
+        for counter, symbol in enumerate(X.columns.tolist()):
+            data_['w' + symbol] = [w[counter] for w in i_w]
+        portfolios = pd.DataFrame(data_)
+        # Finding the optimal portfolio
+        rf = 0.01  # risk factor
+        optimal_risky_port = portfolios.iloc[((portfolios['Returns'] - rf) / portfolios['Volatility']).idxmax()]
+        result = {"data": {"r": i_r, "sd": i_sd, "w": optimal_risky_port.tolist()}}
+        # print(result)
+        return result
+
