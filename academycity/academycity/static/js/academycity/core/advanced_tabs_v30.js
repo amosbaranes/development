@@ -45,8 +45,14 @@ company_obj_id, is_show_btns=true, user_id=0)
                         "sub_buttons": {"NewPopWin":{"title":"New Pop Win", "width":10},
                                         "DeletePopWin":{"title":"Del Pop Win", "width":10}}},
                  "Plugin":{"title":"Plugin", "obj_type":"acPlugin",
-                        "sub_buttons": {"SearchTable":{"title":"Search Table", "width":10, "setting": [], "attributes":["number_of_rows", "table_class"], "functions":["onchange"]},
-                                        "Chart":{"title":"Chart", "width":5, "setting": [], "attributes":["height"], "functions":[]}}}
+                        "sub_buttons": {"SearchTable":{"title":"Search Table", "width":10,
+                                                       "setting": [], "attributes":["number_of_rows", "table_class", "height"],
+                                                       "functions":["onchange"],
+                                                       "field_setting":["field_title","field_name","field_width"]},
+                                        "Chart":{"title":"Chart", "width":5, "setting": [], "attributes":["height"],
+                                                 "functions":[]},
+                                        "Heatmap":{"title":"Heatmap", "width":8, "setting": ["width", "height"], "attributes":[],
+                                                 "functions":[]}}}
                 }
  this.tab_nav_links = {"functions":["onclick", "onmouseover", "onmouseout"],
                        "settings_list":["width", "add_title", "remove_title", "is_show_btns", "obj_number", "background_color"],
@@ -757,7 +763,8 @@ function acSearchTableCreator(parent, container){
 acSearchTableCreator.prototype.create_obj = function()
 {
   var dic=this.parent.data;
-  if(!dic["fields"]){dic["fields"]={"1":{"field_title":"1", "field_name":""},"2":{"field_title":"2", "field_name":""}}}
+  if(!dic["fields"]){dic["fields"]={"1":{"field_title":"1", "field_name":"","field_width":"100"},
+                                    "2":{"field_title":"2", "field_name":"","field_width":"100"}}}
   //alert(JSON.stringify(dic));
   this.parent.data=dic;
   //--
@@ -772,9 +779,11 @@ acSearchTableCreator.prototype.create_obj = function()
   this.table_.setAttribute("id", dic["properties"]["obj_number"]);
   this.table_.setAttribute("obj_type", dic["obj_type"]);
   this.table_.setAttribute("type", dic["element_name"]);
-  if("width" in dic["properties"]){var width_=dic["properties"]["width"]} else {var width_="200"}
+  if("width" in dic["properties"]){var width_=dic["properties"]["width"]} else {var width_="400"}
   this.table_.setAttribute("style", "position:absolute;left:"+dic["properties"]["x"]+"px;top:"+dic["properties"]["y"]+"px;width:"+width_+"px");
-  this.thead=document.createElement("thead");this.table_.appendChild(this.thead);
+  this.thead=document.createElement("thead");
+  this.thead.setAttribute("style", "display: block;overflow-x: hidden;");
+  this.table_.appendChild(this.thead);
   var tr_h=document.createElement("tr");
   tr_h.setAttribute("style","cursor:pointer");
   this.thead.appendChild(tr_h);
@@ -783,14 +792,17 @@ acSearchTableCreator.prototype.create_obj = function()
   {
     var th_=document.createElement("th");
     th_.innerHTML=dic["fields"][f]["field_title"];
-    if(n__==0){th_.setAttribute("style", "border-top-left-radius: 15px")}; n__+=1;
+    var width_=100;try{width_=dic["fields"][f]["field_width"]} catch(er){}
+    if(n__==0){th_.setAttribute("style", "width:"+width_+"px;border-top-left-radius: 15px")}
+    else{th_.setAttribute("style", "width:"+width_+"px;")}; n__+=1;
     tr_h.appendChild(th_);
   }
-  th_.setAttribute("style", "border-top-right-radius: 15px");
+  th_.setAttribute("style", "width:"+width_+"px;border-top-right-radius: 15px");
   this.tbody=document.createElement("tbody");
   this.tbody.setAttribute("id", "tbody_"+dic["properties"]["obj_number"]);
-  this.table_.appendChild(this.tbody);
+  this.tbody.setAttribute("style", "display: block;height: "+dic["properties"]["height"]+"px;overflow-y: auto;overflow-x: hidden;");
 
+  this.table_.appendChild(this.tbody);
   this.table_.my_creator_obj=this;
 
   //alert(5);
@@ -814,6 +826,7 @@ acSearchTableCreator.prototype.create_obj = function()
 acSearchTableCreator.prototype.get_data = function(data_table_name=null,parent_model=null,parent_id=null,company_obj_id=null)
 {
   var dic=this.parent.data;
+  //alert(111)
   //alert(JSON.stringify(dic));
   var container = document.getElementById("content_"+dic["container_id"]);
   //alert(container.outerHTML);
@@ -836,8 +849,14 @@ acSearchTableCreator.prototype.get_data = function(data_table_name=null,parent_m
   } catch(er){alert("er9012: "+er)}
 
   var fun=function(data, ttbody_){
+//  alert(222)
+//  alert(JSON.stringify(dic));
+//  alert(223)
+
     //alert(ttbody_.outerHTML)
-    //alert(JSON.stringify(dic_["fields"]));
+//    alert(JSON.stringify(dic["fields"]));
+//    alert(224)
+//    alert(JSON.stringify(dic_["fields"]));
     //alert(JSON.stringify(data));
     //alert(JSON.stringify(data["dic"][dic_["fields"][0]]))
     //alert(JSON.stringify(data))
@@ -849,7 +868,16 @@ acSearchTableCreator.prototype.get_data = function(data_table_name=null,parent_m
     //alert(n_)
     var s='';
     for(i=0; i<n_; i++)
-    {s+='<tr id_="'+data["id"][i]+'" row="'+i+'"'+'>';for(j in dic_["fields"]){var f=dic_["fields"][j];s+='<td>'+data[f][i]+'</td>'};s+='</tr>';}
+    {
+     s+='<tr id_="'+data["id"][i]+'" row="'+i+'"'+'>';
+     for(j in dic_["fields"])
+     {
+       var f=dic_["fields"][j];
+       var width_=200;
+       for(z in dic["fields"]){if(dic["fields"][z]["field_name"]==f){width_=dic["fields"][z]["field_width"]}}
+       s+='<td style="width:'+width_+'px;">'+data[f][i]+'</td>'};
+       s+='</tr>';
+    }
     //alert(ttbody_.outerHTML);
     ttbody_.innerHTML=s;
   }
@@ -894,7 +922,14 @@ acSearchTableCreator.prototype.row_click = function(event)
 acSearchTableCreator.prototype.editor_properties_func = function(tab, tab_properties_)
 {
  //alert(tab.active_obj)
+
+ var field_setting=tab.parent.buttons[tab.active_obj.data["parent_obj_name"]]["sub_buttons"][tab.active_obj.data["element_name"]]["field_setting"]
+
+ //alert(field_setting)
+
  var fields=tab.active_obj.data["fields"];
+ //alert(JSON.stringify(fields));
+
  var nav=document.createElement("div");
  var add_del_btns=document.createElement("div");
  this.add_btn=document.createElement("button");this.del_btn=document.createElement("button");
@@ -902,7 +937,7 @@ acSearchTableCreator.prototype.editor_properties_func = function(tab, tab_proper
  this.del_btn.innerHTML="Delete"; this.del_btn.tab=tab; this.del_btn.nav=nav;
  this.add_btn.onclick=function (event){
    var n_=Object.keys(tab.active_obj.data["fields"]).length+1
-   tab.active_obj.data["fields"][n_]={"field_name":"","field_title":""};
+   tab.active_obj.data["fields"][n_]={"field_name":"","field_title":"","field_width":"100"};
    tab.parent.save();
  }
  this.del_btn.onclick=function (event){
@@ -910,13 +945,13 @@ acSearchTableCreator.prototype.editor_properties_func = function(tab, tab_proper
    delete tab.active_obj.data["fields"][this.nav.active_property_num];
    tab.parent.save();
  }
-
  add_del_btns.appendChild(add_btn);add_del_btns.appendChild(del_btn);
-
  nav.setAttribute("style","cursor:pointer");
  var nav_detail=document.createElement("div");
  nav.setAttribute("class", "scrollmenu");
+
  for(f in fields){var a=document.createElement("a");a.innerHTML=f;nav.appendChild(a);}
+
  nav.onclick=function(event)
  {
   var e=event.target;
@@ -928,19 +963,19 @@ acSearchTableCreator.prototype.editor_properties_func = function(tab, tab_proper
   var tr=document.createElement("tr");table.appendChild(tr);
   var th=document.createElement("th");tr.appendChild(th);th.innerHTML="property"
   var th=document.createElement("th");tr.appendChild(th);th.innerHTML="value"
-  for(p in this.fields[f])
+  for(p_ in field_setting) // this.fields[f])
   {
+   var p=field_setting[p_]
    var v=this.fields[f];var tr=document.createElement("tr");table.appendChild(tr);
    var td=document.createElement("td");tr.appendChild(td);td.innerHTML=p
    var td=document.createElement("td");tr.appendChild(td);var input=document.createElement("input");
    input.setAttribute("size","10");td.appendChild(input);
    input.setAttribute("field",f);input.setAttribute("property",p);
-   input.value=this.fields[f][p]
+   try{if(this.fields[f][p]!=null){input.value=this.fields[f][p]}} catch(er){}
   }
   nav_detail.appendChild(table);
  }
  nav.fields=fields;
-
  nav_detail.onchange=function(event){
    event.preventDefault();
    var e=event.target;
@@ -991,17 +1026,13 @@ acChartCreator.prototype.create_obj = function()
  container.appendChild(this.chart);
 
    var chart_type={"type":"pies", "title":"abcde", "x":{"data":[]},"series":{
-                    "y1":{"data":[], "color":[219, 64, 82], "name":"import"},
-                    "y2":{"data":[], "color":[55, 128, 191], "name":"export"},
-                    "y3":{"data":[], "color":[5, 12, 491], "name":"other"}}}
+                    "y1":{"data":[], "color":[219, 64, 82], "name":"import"}}}
   //alert(JSON.stringify(chart_type));
 
    for(var i=0; i<3;i++)
    {
      chart_type["x"]["data"].push(i)
      chart_type["series"]["y1"]["data"].push(i+Math.random())
-     chart_type["series"]["y2"]["data"].push(i*2+Math.random())
-     chart_type["series"]["y3"]["data"].push(i*3+Math.random())
    }
   //alert(JSON.stringify(chart_type));
  this.set_chart_data(chart_type);
@@ -1099,6 +1130,120 @@ acChartCreator.prototype.set_chart_data = function(chart_type)
 }
 
 acChartCreator.prototype.get_data = function()
+{
+  //alert("get Data")
+}
+
+// -- acHeatmapCreator --
+function acHeatmapCreator(parent){this.parent=parent;this.data=null;}
+
+acHeatmapCreator.prototype.create_obj = function()
+{
+  //alert("I am a creator of acPlugin Chart")
+  //--
+  var dic=this.parent.data;
+  //alert(JSON.stringify(dic));
+  //--
+  var container = document.getElementById("content_"+dic["container_id"]);
+  //--
+ this.heatmap=document.createElement("div");
+ this.heatmap.setAttribute("container_id", dic["container_id"]);
+ this.heatmap.setAttribute("id", dic["properties"]["obj_number"]);
+ this.heatmap.setAttribute("obj_type", dic["obj_type"]);
+ this.heatmap.setAttribute("type", dic["element_name"]);
+ if("width" in dic["properties"]){var width_=dic["properties"]["width"]} else {var width_="400"}
+ if("height" in dic["properties"]){var height_=dic["properties"]["height"]} else {var height_="400"}
+ var style_="position:absolute;left:"+dic["properties"]["x"]+"px;top:"+dic["properties"]["y"]+"px;width:"+width_+"px;"
+ style_+="height:"+height_+"px";
+ this.heatmap.setAttribute("style", style_);
+ this.heatmap.my_creator_obj=this;
+ container.appendChild(this.heatmap);
+
+   var chart_type={"x": ['A', 'B', 'C', 'D', 'E'], "y": ['W', 'X', 'Y', 'Z'], "z": [
+      [0.10, 0.20, 0.3, 0.4, 0.50],
+      [0.60, 0.70, 0.75, 0.75, 1.00],
+      [0.75, 0.75, 0.75, 0.75, 0.75],
+      [0.80, 0.90, 0.00, 0.75, 0.00]
+    ]}
+  //alert(JSON.stringify(chart_type));
+ this.set_chart_data(chart_type);
+}
+
+acHeatmapCreator.prototype.set_chart_data = function(chart_type)
+{
+var xValues = chart_type["x"];
+var yValues = chart_type["y"];
+var zValues = chart_type["z"];
+
+var colorscaleValue = [
+  [0, '#3D9970'],
+  [1, '#001f3f']
+];
+
+var data = [{
+  x: xValues,
+  y: yValues,
+  z: zValues,
+  type: 'heatmap',
+  colorscale: colorscaleValue,
+  showscale: false
+}];
+
+var layout = {
+  title: 'Annotated Heatmap',
+  annotations: [],
+  xaxis: {
+    ticks: '',
+    side: 'top'
+  },
+  yaxis: {
+    ticks: '',
+    ticksuffix: ' ',
+    width: 700,
+    height: 700,
+    autosize: false
+  }
+};
+
+for ( var i = 0; i < yValues.length; i++ ) {
+  for ( var j = 0; j < xValues.length; j++ ) {
+    var currentValue = zValues[i][j];
+    if (currentValue != 0.0) {
+      var textColor = 'white';
+    }else{
+      var textColor = 'black';
+    }
+    var result = {
+      xref: 'x1',
+      yref: 'y1',
+      x: xValues[j],
+      y: yValues[i],
+      text: zValues[i][j],
+      font: {
+        family: 'Arial',
+        size: 12,
+        color: 'rgb(50, 171, 96)'
+      },
+      showarrow: false,
+      font: {
+        color: textColor
+      }
+    };
+    layout.annotations.push(result);
+  }
+}
+
+ Plotly.newPlot(this.heatmap, data, layout );
+
+ try{
+ this.heatmap.on('plotly_click', function(){
+    alert('You clicked this Plotly chart!');
+});
+} catch(er) {alert(er)}
+
+}
+
+acHeatmapCreator.prototype.get_data = function()
 {
   //alert("get Data")
 }

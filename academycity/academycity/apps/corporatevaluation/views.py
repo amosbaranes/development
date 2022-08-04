@@ -82,6 +82,21 @@ def ac_home(request):
                   )
 
 
+def f_home(request):
+    wsc = WebSiteCompany(request, web_company_id=15)
+    company_obj = wsc.site_company()
+    company_obj_id_ = company_obj.id
+    app_ = "corporatevaluation"
+    app_activate_function_link_ = reverse(app_+':activate_obj_function', kwargs={})
+    return render(request, 'corporatevaluation/f_home.html', {"atm_name": "cofatm",
+                                                               "app": app_,
+                                                               "app_activate_function_link": app_activate_function_link_,
+                                                               "company_obj_id": company_obj_id_,
+                                                               "title": "Corporatevaluation-f"}
+
+                  )
+
+
 # This function should be defined for every app
 def activate_obj_function(request):
     try:

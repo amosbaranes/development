@@ -6,6 +6,7 @@ import re
 import os
 from django.conf import settings
 import pandas as pd
+import numpy as np
 from pandas_datareader import data
 import string
 import datetime
@@ -15,7 +16,6 @@ from django.db.models import Q
 
 from six.moves import urllib
 import xlrd
-import numpy as np
 import statistics
 from django.utils.translation import get_language
 import math
@@ -46,7 +46,8 @@ from .models import (XBRLMainIndustryInfo, XBRLIndustryInfo, XBRLCompanyInfoInPr
                      XBRLHistoricalReturnsSP, XBRLSPMoodys, Project,
                      XBRLRegion, XBRLRegionYearData, XBRLSPEarningForecast, XBRLSPStatistics,
                      XBRLDimTime, XBRLDimCompany, XBRLDimAccount, XBRLFactCompany,
-                     XBRLRealEquityPrices, XBRLRealEquityPricesArchive)
+                     XBRLRealEquityPrices, XBRLRealEquityPricesArchive,
+                     ETFS)
 
 
 # cik = '0000051143'
@@ -3992,6 +3993,35 @@ class AcademyCityXBRL(object):
         log_debug("End update_region_risk_premium.")
         return dic
 
+    def update_etfs_companies(self, params):
+        l = ["b", "c", "e", "f", "i", "k", "p", "re", "u", "v", "y"]
+
+        for f in l:
+            file = "etfs/index-holdings-xl"+f
+            # print(file)
+            df = self.load_excel_data(file, sheet_name="Sheet1")
+            df = df.reset_index()
+            # print(df)
+            try:
+                f_ = "XL"+f.upper()
+                # print(f_)
+                etf_obj = ETFS.objects.get(symbol=f_)
+                # print(etf_obj)
+            except Exception as ex:
+                print(ex)
+
+            exc = []
+            for i, r in df.iterrows():
+                try:
+                    # print(r['Symbol'])
+                    XBRLCompanyInfo.objects.filter(ticker=r['Symbol']).update(etf=etf_obj)
+                except Exception as ex:
+                    exc.append(f+": "+r['Symbol'])
+                    # print(ex)
+
+        result = {"exc": exc , "done": "ok"}
+        return result
+
 #   --- Stage 3 - SP500 ---
 #     loading excel file to XBRLHistoricalReturnsSP.
     def load_sp_returns(self):
@@ -4051,6 +4081,7 @@ class AcademyCityXBRL(object):
         log_debug("End load_sp_returns.")
         return dic
 
+    # not used
     def get_etfs(self, params):
         # print(55555)
         # print(params)
@@ -4076,7 +4107,6 @@ class AcademyCityXBRL(object):
             print(rows)
         except Exception as ex:
             return dic_company_info
-
         # # Obtain HTML for document page
         # dic_data = {}
         # for row in rows:
@@ -4098,7 +4128,6 @@ class AcademyCityXBRL(object):
         # dic_company_info['data'] = dic_data
         # # print(dic_company_info)
         # return dic_company_info
-
         result = {}
         return result
 
@@ -4296,16 +4325,42 @@ class FinancialAnalysis(object):
 
     def get_market_portfolio(self, params):
         list_of_tickers = params["tickers"]
-        XP = data.DataReader(list_of_tickers, 'yahoo', start='2020/01/01', end='2022/07/22')
-        X = XP['Adj Close'].pct_change().apply(lambda x: np.log(1 + x))
+        # print('='*20)
+        # print(list_of_tickers)
+        # print('='*20)
+
+        XP = data.DataReader(list_of_tickers, 'yahoo', start='2020/01/01', end='2022/08/03')
+        # print('=XP'*3)
+        # print(XP)
+
+        X = XP['Adj Close'].pct_change()      # .apply(lambda x: np.log(1 + x))
+        # print('=X'*3)
+        # print(X)
+
         V = X.cov()
+        # print('=V'*3)
         # print(V)
+
         xr = XP['Adj Close'].resample('Y').last().pct_change().mean()
-        xsd = X.std().apply(lambda x: x * np.sqrt(250))
+        # print('xr')
+        # print(xr)
+        # print('xr')
+
+        # dic = {"a": [1, 2, 3], "b": [3, 5, 1]}
+        # print(dic)
+        # df = pd.dataframe(dic)
+        # df.apply.(lambda w : w*w)
+        # xsd = X.std().apply(lambda x: x * np.sqrt(250))
+
         i_r = []  # Define an empty array for portfolio returns
         i_sd = []  # Define an empty array for portfolio volatility
         i_w = []  # Define an empty array for asset weights
         ns = len(X.columns)
+
+        # print('ns')
+        # print(ns)
+        # print('ns')
+
         nb = 3000
         for i in range(nb):
             w = np.random.random(ns)
@@ -4313,17 +4368,32 @@ class FinancialAnalysis(object):
             i_w.append(w)
             r = round(np.dot(w, xr), 3)
             i_r.append(r)
-            var = V.mul(w, axis=0).mul(w, axis=1).sum().sum()
+            # var = V.mul(w, axis=0).mul(w, axis=1).sum().sum()
+
+            var = V.mul(w, axis=0)
+            # print(var)
+            var = var.mul(w, axis=1)
+            # print(var)
+            var = var.sum()
+            # print(var)
+            var = var.sum()
+            # print(var)
+
             sd = np.sqrt(var)  # Daily standard deviation
             sd = round(sd * np.sqrt(250), 3)  # Annual standard deviation = volatility
             i_sd.append(sd)
+
         data_ = {"Returns": i_r, "Volatility": i_sd}
+
         for counter, symbol in enumerate(X.columns.tolist()):
             data_['w' + symbol] = [w[counter] for w in i_w]
+
         portfolios = pd.DataFrame(data_)
+
         # Finding the optimal portfolio
         rf = 0.01  # risk factor
         optimal_risky_port = portfolios.iloc[((portfolios['Returns'] - rf) / portfolios['Volatility']).idxmax()]
+
         result = {"data": {"r": i_r, "sd": i_sd, "w": optimal_risky_port.tolist()}}
         # print(result)
         return result

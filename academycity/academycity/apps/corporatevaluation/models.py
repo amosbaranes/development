@@ -593,8 +593,8 @@ class XBRLRegionYearData(TruncateTableMixin, models.Model):
 #
 class ETFS(TruncateTableMixin, models.Model):
     class Meta:
-        verbose_name = _('ETF')
-        verbose_name_plural = _('ETF')
+        verbose_name = _('ETFS')
+        verbose_name_plural = _('ETFS')
         ordering = ['symbol']
 
     symbol = models.CharField(max_length=5, default='', blank=True, null=True)
