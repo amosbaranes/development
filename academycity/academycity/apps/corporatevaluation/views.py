@@ -67,6 +67,21 @@ def candle(request):
     return render(request, 'corporatevaluation/candle9.html',  {})
 
 
+def app(request, app_name):
+    print(app_name)
+    wsc = WebSiteCompany(request, web_company_id=15)
+    company_obj = wsc.site_company()
+    company_obj_id_ = company_obj.id
+    app_ = "corporatevaluation"
+    app_activate_function_link_ = reverse(app_+':activate_obj_function', kwargs={})
+    return render(request, 'corporatevaluation/ac_home.html', {"atm_name": "co_"+app_name+"_tm",
+                                                               "app": app_,
+                                                               "app_activate_function_link": app_activate_function_link_,
+                                                               "company_obj_id": company_obj_id_,
+                                                               "title": "Corporatevaluation"}
+                  )
+
+
 def ac_home(request):
     wsc = WebSiteCompany(request, web_company_id=15)
     company_obj = wsc.site_company()
@@ -78,7 +93,6 @@ def ac_home(request):
                                                                "app_activate_function_link": app_activate_function_link_,
                                                                "company_obj_id": company_obj_id_,
                                                                "title": "Corporatevaluation"}
-
                   )
 
 
@@ -93,7 +107,6 @@ def f_home(request):
                                                                "app_activate_function_link": app_activate_function_link_,
                                                                "company_obj_id": company_obj_id_,
                                                                "title": "Corporatevaluation-f"}
-
                   )
 
 

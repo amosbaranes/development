@@ -4398,3 +4398,42 @@ class FinancialAnalysis(object):
         # print(result)
         return result
 
+    def get_market_portfolio_np(self, params):
+        list_of_tickers = params["tickers"]
+        XP = data.DataReader(list_of_tickers, 'yahoo', start='2020/01/01', end='2022/08/03')
+        X = XP['Adj Close'].pct_change().dropna().reset_index(drop=True)
+        XN = X.to_numpy()
+        # print('XN.T')
+        # print(XN.T)
+        V = np.cov(XN.T)
+        # print(V)
+        xr = XP['Adj Close'].resample('Y').last().pct_change().mean()
+        i_r = []  # Define an empty array for portfolio returns
+        i_sd = []  # Define an empty array for portfolio volatility
+        i_w = []  # Define an empty array for asset weights
+        ns = len(X.columns)
+        nb = 10000
+        for i in range(nb):
+            w = np.random.random(ns)
+            w = w / np.sum(w)
+            i_w.append(w)
+            r = round(np.dot(w, xr), 3)
+            i_r.append(r)
+            var = np.dot(w, np.dot(V, w))
+            sd = np.sqrt(var)
+            sd = round(sd * np.sqrt(250), 3)
+            i_sd.append(sd)
+        data_ = {"Returns": i_r, "Volatility": i_sd}
+
+        for counter, symbol in enumerate(X.columns.tolist()):
+            data_['w' + symbol] = [w[counter] for w in i_w]
+
+        portfolios = pd.DataFrame(data_)
+
+        # Finding the optimal portfolio
+        rf = 0.01
+        optimal_risky_port = portfolios.iloc[((portfolios['Returns'] - rf) / portfolios['Volatility']).idxmax()]
+
+        result = {"data": {"r": i_r, "sd": i_sd, "w": optimal_risky_port.tolist()}}
+        return result
+

@@ -23,7 +23,6 @@ urlpatterns = [
 urlpatterns += i18n_patterns(
     url(r'^admin/', admin.site.urls),  # NOQA
     url('^rosetta/', include('rosetta.urls')),
-
     url(r'core/', include('academycity.apps.core.urls')),
 
     url(r'actions/', include('academycity.apps.actions.urls')),

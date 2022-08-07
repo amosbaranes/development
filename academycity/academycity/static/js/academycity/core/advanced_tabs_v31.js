@@ -54,6 +54,12 @@ company_obj_id, is_show_btns=true, user_id=0)
                                         "Heatmap":{"title":"Heatmap", "width":8, "setting": ["width", "height"], "attributes":[],
                                                  "functions":[]}}}
                 }
+
+ this.tab = {"functions":[],
+             "settings_list":["button_color", "button_bg_color"],
+             "attributes_list":[]
+            }
+
  this.tab_nav_links = {"functions":["onclick", "onmouseover", "onmouseout"],
                        "settings_list":["width", "add_title", "remove_title", "is_show_btns", "obj_number", "background_color"],
                        "attributes_list":[]
@@ -196,9 +202,8 @@ AdvancedTabsManager.prototype.set_active_tab = function(btn)
   try{for(w in this.active_tab.PopWinObjects){if(w=="editor"){ continue;};this.active_tab.PopWinObjects[w].temp_close_win()}} catch(er){}
 
   try{
-     this.active_tab=btn.parent;this.active_tab.content.style.display="block";btn.className+=" active";
-
-  try{for(w in this.active_tab.PopWinObjects){if(w=="editor"){ continue;}; this.active_tab.PopWinObjects[w].resume_win()}} catch(er){}
+    this.active_tab=btn.parent;this.active_tab.content.style.display="block";btn.className+=" active";
+    try{for(w in this.active_tab.PopWinObjects){if(w=="editor"){ continue;}; this.active_tab.PopWinObjects[w].resume_win()}} catch(er){}
 
     try{
       var click_event = new Event("click", {bubbles: true});
@@ -266,6 +271,7 @@ AdvancedTabsManager.prototype.save = function()
                       "properties": this.active_tab.tab_properties,
                       "objects": this.active_tab.tab_objects,
                       "tab_name": this.active_tab.tab_name,
+                      "tab_order": this.active_tab.tab_order,
                       "tab_title": this.active_tab.tab_title,
                       "tab_type": this.active_tab.tab_type,
                       "tab_pop_win_buttons": this.active_tab.tab_pop_win_buttons
@@ -275,6 +281,7 @@ AdvancedTabsManager.prototype.save = function()
             "params": {"atm_content": this.content,
                        "tab_content": tab_content,
                        "tab_name": this.active_tab.tab_name,
+                       "tab_order": this.active_tab.tab_properties["tab_order"],
                        "tab_id": this.active_tab.tab_id}}
       //alert(JSON.stringify(dic_))
      $.post(this.activate_function_link_,
@@ -285,7 +292,6 @@ AdvancedTabsManager.prototype.save = function()
             }
           });
 }
-
 
 AdvancedTabsManager.prototype.app_activate_function = function(call_back_fun, dic_, html_obj)
 {
@@ -1236,8 +1242,17 @@ for ( var i = 0; i < yValues.length; i++ ) {
  Plotly.newPlot(this.heatmap, data, layout );
 
  try{
- this.heatmap.on('plotly_click', function(){
-    alert('You clicked this Plotly chart!');
+ this.heatmap.on('plotly_click', function(data){
+    //alert(event.target.outerHTML)
+    //alert("aaa")
+    alert(data)
+//    for(k in data["points"][0]){
+//     //alert("k: " + k);
+//     for(j in data["points"][0][k])
+//     {
+//       alert("k: " + k + " j: " + j + " = " +data["points"][0][k][j])
+//     }
+//    }
 });
 } catch(er) {alert(er)}
 
@@ -1588,6 +1603,7 @@ function Tab(parent, data, id)
 
  this.link_number=data["properties"]["link_number"];
  this.tab_name=data["properties"]["tab_name"];
+ this.tab_order=data["properties"]["tab_order"];
  this.tab_title=data["properties"]["tab_title"];
  this.tab_type=data["properties"]["tab_type"];
  //--
@@ -2330,13 +2346,17 @@ Tab_create_main_content = function()
       //editor.main_menus["Tab"].btn.dispatchEvent(click_event);
     }.bind(editor=this.parent, event)
     this.parent.win_content.appendChild(this.parent.tab_content);
-    for(f in this.parent.tab_obj_.tab_functions)
+
+    var tfs_ = Object.keys(this.parent.tab_obj_.tab_functions)
+    var fs_=[]; var fs__ = this.parent.tab_obj_.parent.tab["functions"]; for(i in fs__){fs_.push(fs__[i])}
+    for(i in tfs_){var f = tfs_[i];if(!(f in fs_)){fs_.push(f)}}
+    for(i in fs_)
     {
+      var f = fs_[i];
       this.parent.nav.btns[f] = document.createElement("button");
       this.parent.nav.btns[f].setAttribute("class", "funtablinks");
       this.parent.nav.btns[f].innerHTML = f;
       this.parent.nav.appendChild(this.parent.nav.btns[f]);
-      //alert(editor.tab_obj_.tab_functions[f])
     }
 
   // -- need to complete
@@ -2348,15 +2368,17 @@ Tab_create_main_content = function()
   tr.appendChild(thv);
   this.parent.tab_properties_.appendChild(table);
 
-  for(i in this.parent.tab_obj_.tab_properties)
+  // alert(this.parent.tab_obj_.tab_name);
+  var ps_=[];var ps__=this.parent.tab_obj_.parent.tab["settings_list"];for(i in ps__){ps_.push(ps__[i])}
+  var tps=this.parent.tab_obj_.tab_properties;var tps_=Object.keys(tps);for(i in tps_){var p=tps_[i];if(!(p in ps_)){ps_.push(p)}}
+  for(i in ps_)
   {
-   var s=this.parent.tab_obj_.tab_properties[i];
+   var s=ps_[i];
    var tr=document.createElement("tr");table.appendChild(tr);
-   var td=document.createElement("td");td.innerHTML=i;tr.appendChild(td);
+   var td=document.createElement("td");td.innerHTML=s;tr.appendChild(td);
    var td=document.createElement("td");var input=document.createElement("input");
-   input.setAttribute("property",i);td.appendChild(input);
-   try{if(s==null){}else{input.value=s}} catch(er){alert("er9027: "+ er)}
-   tr.appendChild(td);
+   input.setAttribute("property",s);td.appendChild(input);
+   var s_=tps[s];try{if(s_==null){}else{input.value=s_}} catch(er){alert("er9027: "+ er)};tr.appendChild(td);
   }
 
   this.parent.tab_properties_.addEventListener("change", function(){

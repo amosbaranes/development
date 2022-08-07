@@ -35,7 +35,8 @@ class AdvancedTabs(object):
                 manager_.save()
             t, n_ = DataAdvancedTabs.objects.get_or_create(manager=manager_, tab_name=tab_name_)
             try:
-                content_ = {"properties": {"tab_name": params["tab_name"], "tab_title": params["tab_name"],
+                content_ = {"properties": {"tab_name": params["tab_name"], 'tab_order': 1,
+                                           "tab_title": params["tab_name"],
                             "tab_type": "empty"}}
                 # print(content_)
                 t.tab_content = content_
@@ -55,8 +56,12 @@ class AdvancedTabs(object):
             for t in tabs:
                 # print(t.id)
                 # print('t.tab_content')
+                content_ = t.tab_content
+                content_["properties"]["tab_order"] = t.order
+                content_["tab_order"] = t.order
+                t.tab_content = content_
+                t.save()
                 result.append((t.id, t.tab_content))
-            # print("ok")
             result = {"manager": manager_.manager_content, "tabs": result}
             # print(result)
         except Exception as ex:
@@ -68,7 +73,6 @@ class AdvancedTabs(object):
             # print('='*50)
             # print('params')
             # print(params)
-            # print('='*20)
             # print('atm_content')
             # print(params["atm_content"])
             # print('='*20)
@@ -85,6 +89,7 @@ class AdvancedTabs(object):
                 tab = DataAdvancedTabs.objects.get(manager=atm, id=params["tab_id"])
                 tab.tab_content = params["tab_content"]
                 tab.tab_name = params["tab_name"]
+                tab.order = params["tab_order"]
                 tab.save()
                 # print("saved")
             except Exception as ex:
