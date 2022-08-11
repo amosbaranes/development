@@ -68,7 +68,7 @@ def candle(request):
 
 
 def app(request, app_name):
-    print(app_name)
+    # print(app_name)
     wsc = WebSiteCompany(request, web_company_id=15)
     company_obj = wsc.site_company()
     company_obj_id_ = company_obj.id

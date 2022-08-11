@@ -19,64 +19,92 @@ company_obj_id, is_show_btns=true, user_id=0)
  this.setTabs();
  this.active_tab=null;
  this.editor=null;
+
+// "Tab":{"title":"Tab", "obj_type":"none",
+//                        "sub_buttons": {"NewFunction":{"title":"new func", "width":10},
+//                                        "DeleteFunction":{"title":"del func", "width":10}}},
+
  this.buttons = {"Tab":{"title":"Tab", "obj_type":"none",
-                        "sub_buttons": {"NewFunction":{"title":"new func", "width":10},
-                                        "DeleteFunction":{"title":"del func", "width":10}}},
+                        "sub_buttons": {}},
+
                  "TabContent":{"title":"Tab Content", "obj_type":"none",
-                        "sub_buttons": {"content":{"title":"Content", "width":10, "setting": [], "attributes":[], "functions":[]}}},
+                        "sub_buttons": {"content":{"title":"Content", "width":10, "setting":[], "attributes":[], "functions":[]}}},
+
                  "Component":{"title":"Component", "obj_type":"acObj",
-                        "sub_buttons": {"Button":{"title":"Btn", "width":5, "setting": [], "attributes":[], "functions":[]},
-                                        "Span":{"title":"Span", "width":5, "setting": [], "attributes":[], "functions":[]},
-                                        "Input":{"title":"Input", "width":5, "setting": ["text-align"], "attributes":["field", "type"], "functions":["onchange"]},
-                                        "Select":{"title":"Select", "width":5, "setting": ["options", "global_adjective", "app_adjective", "data_app", "data_model", "data_field", "data_filter_field", "data_filter_field_value"],
-                                                  "attributes":["field", "size"], "functions":["onchange"]},
-                                        "Table":{"title":"Table", "width":5, "setting": [], "attributes":[], "functions":["onchange"]},
-                                        "Textarea":{"title":"textarea", "width":7, "setting": ["overflow"], "attributes":["rows", "cols"], "functions":[]},
-                                        "DIV":{"title":"div", "width":3, "setting": ["overflow"], "attributes":[], "functions":[]},
-                                        "A":{"title":"a", "width":3, "setting": [], "attributes":["href", "target"], "functions":[]},
-                                        "H":{"title":"h", "width":3, "setting": [], "attributes":[], "functions":[]},
-                                        "H1":{"title":"h1", "width":3, "setting": [], "attributes":[], "functions":[]},
-                                        "H2":{"title":"h2", "width":3, "setting": [], "attributes":[], "functions":[]},
-                                        "H3":{"title":"h3", "width":3, "setting": [], "attributes":[], "functions":[]}}},
+                        "sub_buttons": {"Button":{"title":"Button", "width":5, "setting": {}, "attributes":{}, "functions":[]},
+                                        "Span":{"title":"Span", "width":5, "setting": {}, "attributes":{}, "functions":[]},
+                                        "Input":{"title":"Input", "width":5,
+                                                 "setting": {"text-align":["left", "center", "right"]},
+                                                 "attributes":{"field":[],
+                                                               "type":["text","button","checkbox","color","date",
+                                                                       "datetime-local","email","file","hidden","image",
+                                                                       "month","number","password","radio","range","reset",
+                                                                       "search","submit","tel","time","url","week"]},
+                                                 "functions":["onchange"]},
+                                        "Select":{"title":"Select", "width":5, "setting": {"options":[], "global_adjective":[],
+                                                                                           "app_adjective":[], "data_app":[], "data_model":[],
+                                                                                           "data_field":[], "data_filter_field":[],
+                                                                                           "data_filter_field_value":[]},
+                                                                                "attributes":{"field":[], "size":[]},
+                                                                                "functions":["onchange"]},
+                                        "Table":{"title":"Table", "width":5, "setting": {}, "attributes":{}, "functions":["onchange"]},
+                                        "Textarea":{"title":"textarea", "width":7, "setting": {"overflow":[]},
+                                                                                   "attributes":{"rows":[], "cols":[]}, "functions":[]},
+                                        "DIV":{"title":"div", "width":3, "setting": {"overflow":[]}, "attributes":{}, "functions":[]},
+                                        "A":{"title":"a", "width":3, "setting": {}, "attributes":{"href":[], "target":[]}, "functions":[]},
+                                        "H":{"title":"h", "width":3, "setting": {}, "attributes":{}, "functions":[]},
+                                        "H1":{"title":"h1", "width":3, "setting": {}, "attributes":{}, "functions":[]},
+                                        "H2":{"title":"h2", "width":3, "setting": {}, "attributes":{}, "functions":[]},
+                                        "H3":{"title":"h3", "width":3, "setting": {}, "attributes":{}, "functions":[]}}},
                  "TabNavLink":{"title":"Tab Nav Link", "obj_type":"none",
                         "sub_buttons": {"nav":{"title":"Navigator", "width":10},
                                         "item":{"title":"Item", "width":10}}},
+
                  "PopWin":{"title":"Pop Win", "obj_type":"none",
                         "sub_buttons": {"NewPopWin":{"title":"New Pop Win", "width":10},
                                         "DeletePopWin":{"title":"Del Pop Win", "width":10}}},
                  "Plugin":{"title":"Plugin", "obj_type":"acPlugin",
                         "sub_buttons": {"SearchTable":{"title":"Search Table", "width":10,
-                                                       "setting": [], "attributes":["number_of_rows", "table_class", "height"],
+                                                       "setting": {},
+                                                       "attributes":{"number_of_rows":[], "table_class":["basic", "payment"], "height":[]},
                                                        "functions":["onchange"],
                                                        "field_setting":["field_title","field_name","field_width"]},
-                                        "Chart":{"title":"Chart", "width":5, "setting": [], "attributes":["height"],
+                                        "Chart":{"title":"Chart", "width":5,
+                                                 "setting": {},
+                                                 "attributes":{"height":[]},
                                                  "functions":[]},
-                                        "Heatmap":{"title":"Heatmap", "width":8, "setting": ["width", "height"], "attributes":[],
-                                                 "functions":[]}}}
+                                        "Heatmap":{"title":"Heatmap", "width":8,
+                                                   "setting": {"width":[], "height":[]},
+                                                   "attributes":{},
+                                                   "functions":[]}}}
                 }
 
  this.tab = {"functions":[],
-             "settings_list":["button_color", "button_bg_color"],
-             "attributes_list":[]
+             "settings_list":{"button_color":[],"button_bg_color":[],"tab_name":[],
+                              "tab_type":["simple", "navmulti", "navone"],
+                              "tab_order":[],"tab_title":[],"link_number":[]},
+             "attributes_list":{}
             }
 
  this.tab_nav_links = {"functions":["onclick", "onmouseover", "onmouseout"],
-                       "settings_list":["width", "add_title", "remove_title", "is_show_btns", "obj_number", "background_color"],
-                       "attributes_list":[]
+                       "settings_list":{"width":[], "add_title":[], "remove_title":[], "is_show_btns":[],
+                       "obj_number":[], "background_color":[]},
+                       "attributes_list":{}
                        }
 
  this.nav_link = {"functions":["onclick", "onmouseover", "onmouseout"],
-                  "settings_list":["link_number", "link", "title"],
-                  "attributes_list":[]
+                  "settings_list":{"link_number":[],"link":[],"title":[]},
+                  "attributes_list":{}
                   }
 
  this.tab_content = {"functions_list":["onclick", "onchange", "onmouseover", "onmouseout"],
-                     "settings_list":["width", "color", "background_color"],
-                     "attributes_list":["table", "parent_table", "link_number", "content_type"]}
+                     "settings_list":{"width":[], "color":[], "background_color":[]},
+                     "attributes_list":{"table":[], "parent_table":[], "link_number":[], "content_type":[]}
+                     }
  this.pop_win = {"functions_list":["onclick","onmouseover","onmouseout","__init___","__get_panel_structure___","__set_panel___"],
-                 "settings_list":["width", "height", "color", "background_color"],
-                 "attributes_list":["name","top","right","title", "table", "link_number","tab_id","is_panel",
-                                    "title_color", "title_background_color", "content_type"]}
+                 "settings_list":{"width":[], "height":[], "color":[], "background_color":[]},
+                 "attributes_list":{"name":[],"top":[],"right":[],"title":[], "table":[], "link_number":[],"tab_id":[],
+                                    "is_panel":["true", "false"],"title_color":[], "title_background_color":[], "content_type":[]}}
 }
 
 AdvancedTabsManager.prototype.init_create_containers = function()
@@ -137,14 +165,27 @@ AdvancedTabsManager.prototype.create_add_delete_editor = function()
   this.editor_btn.innerHTML = "Editor"
   this.editor_btn.parent=this;
   this.editor_btn.addEventListener("click", function(){
-    try{editor.set_tab(atm_.active_tab);} catch(er){
-    editor = new PopWin(my_name_="editor",win_name_="editor",win_title_="Editor for Tab: ",user_id=1, atm=atm_)
+  if(atm_.editor == null){
+    var editor = new PopWin(my_name_="editor",win_name_="editor",win_title_="Editor for Tab: ",user_id=1, atm=atm_)
     editor.__init__();
     editor.set_win_frame_style("20", "650", "1000", "15%", "5%", "white")
     editor.set_acWinStatEventListeners(editor);
-    }
     editor.set_acWinStat('block');
     atm_.editor=editor;
+  }
+    try{editor.set_tab(atm_.active_tab);} catch(er){
+        //    var editor = new PopWin(my_name_="editor",win_name_="editor",win_title_="Editor for Tab: ",user_id=1, atm=atm_)
+        //    editor.__init__();
+        //    editor.set_win_frame_style("20", "650", "1000", "15%", "5%", "white")
+        //    editor.set_acWinStatEventListeners(editor);
+        //    }
+        //    editor.set_acWinStat('block');
+        //    atm_.editor=editor;
+
+        //    alert(98765)
+        //    alert(atm_.editor)
+        //    alert(987651111111111111111)
+        }
   }.bind(atm_=this, event))
 
   this.add_delete_editor.appendChild(this.add_btn);
@@ -205,17 +246,29 @@ AdvancedTabsManager.prototype.set_active_tab = function(btn)
     this.active_tab=btn.parent;this.active_tab.content.style.display="block";btn.className+=" active";
     try{for(w in this.active_tab.PopWinObjects){if(w=="editor"){ continue;}; this.active_tab.PopWinObjects[w].resume_win()}} catch(er){}
 
-    try{
-      var click_event = new Event("click", {bubbles: true});
-      this.editor_btn.dispatchEvent(click_event);
       this.editor.main_menus["Tab"].btn.dispatchEvent(click_event);
       this.editor.set_title(this.editor.win_title_+this.active_tab.tab_name);
     } catch(er){}
-  } catch(er){}
+
+    try{
+       var click_event=new Event("click", {bubbles: true});
+       this.editor_btn.dispatchEvent(click_event);
+       var tab_fpe_=this.editor.get_functions_properties_editor(
+              this.active_tab,
+              functions_dic=this.active_tab.tab_functions,
+              functions_list_dic=this.tab["functions"],
+              dic_properties=this.active_tab.tab_properties,
+              settings_list=this.tab["settings_list"],
+              attributes_list=this.tab["attributes_list"],
+              tab_btn_name="Tab",properties_func=null,
+              node_to_delete=null)
+            } catch(er) {alert("er9031: "+ er)
+      }
 }
 
 AdvancedTabsManager.prototype.get_tab = function(tab_name){for(id in this.tabs){if (this.tabs[id].tab_name==tab_name){return this.tabs[id]}}}
 
+// this is a Factory function which return object based on the dic.
 AdvancedTabsManager.prototype.get_obj = function(tab, dic)
 {
  //alert(tab.tab_name)
@@ -236,7 +289,22 @@ AdvancedTabsManager.prototype.get_obj = function(tab, dic)
  s=dic["obj_name"]+dic["properties"]["obj_number"]+'.prototype = Object.create('+dic["obj_type"]+'.prototype);'
  //alert(s);
  try{eval(s)} catch(er){alert("er903: "+er)}
-
+ //--
+ s=dic["obj_name"]+dic["properties"]["obj_number"]+'.prototype.create_editor = function()'
+ s+='{'
+ s+=' var container_id=this.data["container_id"];';
+ s+=' var obj_number=this.data["properties"]["obj_number"];';
+ s+=' try{var properties_func_=null;properties_func_=this.creator.editor_properties_func}catch(er){};';
+ s+=' try{'
+ s+='  var fpe_=this.editor.get_functions_properties_editor(this.tab, this.data["functions"], this.functions,'
+ s+='   this.data["properties"], this.settings,this.attributes, tab_btn_name="Plugin", properties_func=properties_func_,'
+ s+='   node_to_delete=".tab_objects["+container_id+"]["+obj_number+"]"';
+ s+='  )';
+ s+=' } catch(er) {alert("er 207: "+er)};'
+ s+='}'
+ //alert(s);
+ eval(s);
+ //--
  s = 'new '+dic["obj_name"]+dic["properties"]["obj_number"]+'(atm_=this, tab_=tab, dic_=dic)'
  //alert(s)
  return eval(s)
@@ -245,18 +313,26 @@ AdvancedTabsManager.prototype.get_obj = function(tab, dic)
 AdvancedTabsManager.prototype.get_obj_functions_settings_attributes = function(dic_)
 {
  //alert(JSON.stringify(dic_));
- var ps={"settings": ["width", "x", "y", "title", "obj_number"], "attributes":[], "functions":["onclick"]};
+ var ps={"settings": {"width":[], "x":[], "y":[], "title":[], "obj_number":[]},
+         "attributes":{},
+         "functions":["onclick"]};
  var dic__=this.buttons[dic_["parent_obj_name"]]["sub_buttons"][dic_["element_name"]]
  //alert(JSON.stringify(dic_));
  //alert(JSON.stringify(dic__));
 
- for (a in dic_["attributes"]){if (!ps["attributes"].includes(a)){ps["attributes"].push(a)}};
- for (s in dic_["setting"]){if (!ps["settings"].includes(s)){ps["settings"].push(s)}};
- for (f in dic_["functions"]){if (!ps["functions"].includes(f)){ps["functions"].push(f)}};
+ //for (a in dic_["attributes"]){if (!ps["attributes"].includes(a)){ps["attributes"].push(a)}};
+ //for (s in dic_["setting"]){if (!ps["settings"].includes(s)){ps["settings"].push(s)}};
  //--
- for (i in dic__["attributes"]){if (!ps["attributes"].includes(dic__["attributes"][i])){ps["attributes"].push(dic__["attributes"][i])}};
- for (i in dic__["setting"]){if (!ps["settings"].includes(dic__["setting"][i])){ps["settings"].push(dic__["setting"][i])}};
+ for (k in dic__["attributes"]){if(!(k in ps["attributes"])){ps["attributes"][k]=dic__["attributes"][k]}}
+ for (k in dic__["setting"]){
+ if(!(k in ps["settings"])){ps["settings"][k]=dic__["setting"][k]}}
+ //for (i in dic__["setting"]){if (!ps["settings"].includes(dic__["setting"][i])){ps["settings"].push(dic__["setting"][i])}};
  for (i in dic__["functions"]){if (!ps["functions"].includes(dic__["functions"][i])){ps["functions"].push(dic__["functions"][i])}};
+ for (f in dic_["functions"]){if (!ps["functions"].includes(f)){ps["functions"].push(f)}};
+// alert(JSON.stringify(ps));
+ //if (!ps["attributes"].includes(dic__["attributes"][i]))
+ //{ps["attributes"].push(dic__["attributes"][i])}};
+ //--
  //alert(JSON.stringify(ps));
  return ps;
 }
@@ -310,7 +386,6 @@ AdvancedTabsManager.prototype.app_activate_function = function(call_back_fun, di
             } else {alert("Error getting data for select.")}
           });
 }
-
 
 AdvancedTabsManager.prototype.save_data = function(container, dic_)
 {
@@ -372,7 +447,6 @@ AdvancedTabsManager.prototype.get_data = function(call_back_fun, dic_, tbody_)
           });
 }
 
-
 AdvancedTabsManager.prototype.get_list = function(call_back_fun, dic_, html_obj)
 {
   dic_["company_obj_id"]=this.company_obj_id;
@@ -387,7 +461,6 @@ AdvancedTabsManager.prototype.get_list = function(call_back_fun, dic_, html_obj)
             } else {alert("Error getting data for select.")}
           });
 }
-
 
 AdvancedTabsManager.prototype.get_next_obj_number=function(){
 this.content["last_obj_number"]+=1;
@@ -422,24 +495,31 @@ function FunctionsPropertiesEditor(tab, functions_dic, functions_list_dic, prope
   new_btn.onclick= function (){
     var fun_name_ = prompt("Enter name for new function:" , '');
     if(fun_name_ == '') {alert("Please enter a function name"); return;}
-    functions[fun_name_]="function (obj){\ntry{\n\n} catch(er){alert('er9005: '+er)}}";
-    editor.tab_obj_.parent.save();
-  }.bind(editor=tab.parent.editor, functions=functions_dic, event)
-
+    if(tbn=="Tab")
+    {
+     var tab_name=tab_.tab_name;
+     functions[tab_name+"_"+fun_name_]=tab_name+"_"+fun_name_+"=function(obj){\ntry{\n\n} catch(er){alert('er9026: '+ er)}}";
+     tab_.active_function = tab_.tab_name+"_"+fun_name_;
+     try{
+        tab_.parent.save();
+        var click_event = new Event("click", {bubbles: true});tab_.btn.dispatchEvent(click_event);
+      } catch (er){alert("er9029: "+ er)}
+    } else {
+     functions[fun_name_]="function (obj){\ntry{\n\n} catch(er){alert('er9005: '+er)}}";
+     editor.tab_obj_.parent.save();
+    }
+  }.bind(tab_=tab, tbn=tab_btn_name, editor=tab.parent.editor, functions=functions_dic, event)
   del_btn.onclick= function (){
     event.preventDefault();
     var f=editor.tab_obj_.active_function;
     var fun_name_ = prompt("Are you sure you want to delete function "+f+". If so, type Yes:" , 'No');
     if(fun_name_ != 'Yes') {return;};
-
-    //var ll=editor.active_popup_win;
-    //alert(JSON.stringify(editor.tab_obj_.tab_pop_win_buttons["pop_wins"][ll[2]]["functions"]))
-    //delete editor.tab_obj_.tab_pop_win_buttons["pop_wins"][ll[2]]["functions"][f]
-
     delete functions[f]
-    this.tab_obj_.parent.save();
-    alert("function "+f+" was deleted.")
-  }.bind(editor=tab.parent.editor, functions=functions_dic, event)
+    tab_.parent.save();
+    if(tbn=="Tab")
+    {try{var click_event = new Event("click", {bubbles: true});tab_.btn.dispatchEvent(click_event);} catch (er){alert("er9029: "+ er)}
+    } else {alert("function "+f+" was deleted.")}
+  }.bind(tab_=tab, tbn=tab_btn_name, editor=tab.parent.editor, functions=functions_dic, event)
   //--
   var nav_div=document.createElement("div");
   var tab_content = document.createElement("textarea");
@@ -459,20 +539,23 @@ function FunctionsPropertiesEditor(tab, functions_dic, functions_list_dic, prope
       event.target.className += " active";
        //alert(editor_.tab_content.outerHTML)
     }.bind(editor=tab.parent.editor, tab_content_=tab_content, functions_=functions_dic, event);
-    nav_div.btns={};
-    for(i in functions_list_dic)
-    {
-      var f=functions_list_dic[i]
-      nav_div.btns[f] = document.createElement("button");
+  nav_div.btns={};
+
+  var fs__=functions_list_dic;var tfs_=Object.keys(functions_dic);var fs_=[];
+
+  for(i in fs__){if(!(fs_.includes(fs__[i]))){fs_.push(fs__[i])}}
+  for(i in tfs_){if(!(fs_.includes(tfs_[i]))){fs_.push(tfs_[i])}}
+  for(i in fs_)
+  {var f=fs_[i];nav_div.btns[f]=document.createElement("button");
       nav_div.btns[f].setAttribute("class", "funtablinks");
-      nav_div.btns[f].innerHTML = f;
-      nav_div.appendChild(nav_div.btns[f]);
-    }
-    lef_nav.appendChild(nav_div);
-    tab.parent.editor.win_content.appendChild(lef_nav);
-    //--
-    tab_content.setAttribute("class", "tab_textarea");
-    tab_content.onchange= function (){
+      nav_div.btns[f].innerHTML=f;nav_div.appendChild(nav_div.btns[f]);
+  }
+
+   lef_nav.appendChild(nav_div);
+   tab.parent.editor.win_content.appendChild(lef_nav);
+   //--
+   tab_content.setAttribute("class", "tab_textarea");
+   tab_content.onchange= function (){
     //alert(event.target.value)
     //alert(event.target.getAttribute("fun_name"))
     //alert(JSON.stringify(functions__))
@@ -480,10 +563,10 @@ function FunctionsPropertiesEditor(tab, functions_dic, functions_list_dic, prope
      functions__[event.target.getAttribute("fun_name")]=event.target.value;
      editor.tab_obj_.parent.save();
     }.bind(editor=tab.parent.editor, functions__=functions_dic, event)
-    tab.parent.editor.win_content.appendChild(tab_content);
-    //--
-    var tab_properties_ = document.createElement("div");
-    if(node_to_delete!=null){
+   tab.parent.editor.win_content.appendChild(tab_content);
+   //--
+   var tab_properties_ = document.createElement("div");
+   if(node_to_delete!=null){
       var btn=document.createElement("button");btn.innerHTML="Delete Obj";btn.tab=tab;
       btn.onclick=function(event){
         var link_ = prompt("Are you sure you want to remove link the obj? if so type Yes:",'No');
@@ -492,39 +575,45 @@ function FunctionsPropertiesEditor(tab, functions_dic, functions_list_dic, prope
          //alert(tab_)
          //alert(tab_.tab_name);
          try{var s='delete tab_'+node_to_delete_;eval(s)} catch(er) {}
+
          try{tab_.parent.save();} catch(er) {alert("error 2099: "+ er)}
         }
       }.bind(tab_=tab, node_to_delete_=node_to_delete)
       tab_properties_.appendChild(btn);
     }
+
    var table = document.createElement("table");var tr=document.createElement("tr");table.appendChild(tr);
    var thp=document.createElement("th");thp.innerHTML="Property";thp.setAttribute("style","width:10%;text-align:center;");
    tr.appendChild(thp);
    var thv=document.createElement("th");thv.innerHTML="Value";thv.setAttribute("style","width:10%;text-align:center;");
    tr.appendChild(thv);
    tab_properties_.appendChild(table);
+   var pp_={}
+   for (k in settings_list){if (!(k in pp_)){pp_[k]=settings_list[k]}}
+   for (k in attributes_list){if (!(k in pp_)){pp_[k]=attributes_list[k]}}
+   for (k in properties_dic){if (!(k in pp_)){pp_[k]=properties_dic[k]}}
 
-   for (i in settings_list)
+   //alert(JSON.stringify(pp_));
+
+   for (k in pp_)
    {
-     var s=settings_list[i];
      var tr=document.createElement("tr");table.appendChild(tr);
-     var td=document.createElement("td");td.innerHTML=s;tr.appendChild(td);
-     var td=document.createElement("td");var input=document.createElement("input");
-     input.setAttribute("size","10");input.setAttribute("property",s);td.appendChild(input);
+     var td=document.createElement("td");td.innerHTML=k;tr.appendChild(td);
+     var td=document.createElement("td");
+     var l=pp_[k];
+     if(l.length == 0){
+       var input=document.createElement("input");input.setAttribute("size","10");
+     } else {
+       var input=document.createElement("select");input.setAttribute("style", "width:100px;");
+       for (j in l){var o = document.createElement("option");o.value=l[j];o.innerHTML=l[j];input.appendChild(o);}
+     }
+     input.setAttribute("property",k);td.appendChild(input);
+     //input.setAttribute("size","10");
      //input.setAttribute("property",s);
-     try{if(properties_dic[s]==null){} else{input.value=properties_dic[s]}} catch(er){alert("er9008: "+er)}
+     try{if(properties_dic[k]==null){} else{input.value=properties_dic[k]}} catch(er){alert("er9008: "+er)}
      tr.appendChild(td);
    }
-   for (i in attributes_list)
-   {
-     var s=attributes_list[i];
-     var tr=document.createElement("tr");table.appendChild(tr);
-     var td=document.createElement("td");td.innerHTML=s;tr.appendChild(td);
-     var td=document.createElement("td");var input=document.createElement("input");
-     input.setAttribute("size","10");input.setAttribute("property",s);td.appendChild(input);
-     try{if(properties_dic[s]==null){} else{input.value=properties_dic[s]}} catch(er){alert("er9009: "+er)}
-     tr.appendChild(td);
-   }
+
    tab_properties_.addEventListener("change", function(){
      var p=event.target;var property=p.getAttribute("property");var v=p.value;
      //alert(property); alert(v); alert(JSON.stringify(properties));
@@ -541,92 +630,27 @@ function FunctionsPropertiesEditor(tab, functions_dic, functions_list_dic, prope
 // -- acObj --
 function acObj(){}
 
-acObj.prototype.create_editor = function(){
- this.editor.component_left_nav.innerHTML="";
- this.editor.component_fun_editor.innerHTML="";
- this.editor.component_properties.innerHTML="";
- this.editor.component_left_nav.btns={}
-  //alert("functions")
-  // alert(JSON.stringify(this.functions));
-  //alert("component)
-  // alert(JSON.stringify(this.settings));
- for (i in this.functions)
- {
-   var f=this.functions[i];
-   this.editor.component_left_nav.btns[f] = document.createElement("button");
-   this.editor.component_left_nav.btns[f].setAttribute("class", "comfuntablinks");
-   this.editor.component_left_nav.btns[f].innerHTML = f;
-   this.editor.component_left_nav.appendChild(editor.component_left_nav.btns[f]);
- }
-
- var btn=document.createElement("button");btn.innerHTML="Delete Obj";btn.tab=this.tab;btn.editor=this.editor;
- btn.onclick=function(event){
-   var link_ = prompt("Are you sure you want to remove link the obj? if so type Yes:",'No');
-   if(link_=='Yes')
-   {
-    //--
-    var obj_number=this.tab.active_obj.data["properties"]["obj_number"];
-    var container_id=this.tab.active_obj.data["container_id"];
-    //alert(JSON.stringify(tab.tab_objects))
-    delete this.tab.tab_objects[container_id][obj_number];
-    //alert(JSON.stringify(tab.tab_objects))
-    this.editor.tab_obj_.parent.save();
-    // --
-    //alert(JSON.stringify(editor.tab_obj_.tab_content))
-   }
-  }
- this.editor.component_properties.appendChild(btn);
- //--
- var table = document.createElement("table");var tr=document.createElement("tr");table.appendChild(tr);
- var thp=document.createElement("th");thp.innerHTML="Property";tr.appendChild(thp);thp.setAttribute("style","width:10%;text-align:center;")
- var thv=document.createElement("th");thv.innerHTML="Value";tr.appendChild(thv);thv.setAttribute("style","width:10%;text-align:center;")
- this.editor.component_properties.appendChild(table);
- for (i in this.settings)
- {
-   var s=this.settings[i];
-   var tr=document.createElement("tr");table.appendChild(tr);
-   var td=document.createElement("td");td.innerHTML=s;tr.appendChild(td);
-   var td=document.createElement("td");var input=document.createElement("input");
-   input.setAttribute("property",s);td.appendChild(input);
-   try{if(this.data["properties"][s]==null){} else{input.value=this.data["properties"][s]}} catch(er){alert("er9010: "+er)}
-   tr.appendChild(td);
- }
-
- //alert(JSON.stringify(this.attributes));
- for (i in this.attributes)
- {
-   var s=this.attributes[i];
-   var tr=document.createElement("tr");table.appendChild(tr);
-   var td=document.createElement("td");td.innerHTML=s;tr.appendChild(td);
-   var td=document.createElement("td");var input=document.createElement("input");
-   input.setAttribute("property",s);td.appendChild(input);
-   try{if(this.data["properties"][s]==null){} else{input.value=this.data["properties"][s]}} catch(er){alert("er9011: "+er)}
-   tr.appendChild(td);
- }
-}
-
 acObj.prototype.create_obj = function(){
   var container = document.getElementById("content_"+this.data["container_id"])
-
   //alert(JSON.stringify(this.data));
   //alert(container.outerHTML)
   //alert(container) //alert(container.outerHTML)
-
   this.new_obj=document.createElement(this.data["element_name"]);
   this.new_obj.my_creator_obj=this;
 
   this.new_obj.setAttribute("container_id", this.data["container_id"]);
   this.new_obj.setAttribute("id", this.data["properties"]["obj_number"]);
   this.new_obj.setAttribute("obj_type", this.data["obj_type"]);
-  this.new_obj.setAttribute("type", this.data["element_name"]);
+  this.new_obj.setAttribute("type_", this.data["element_name"]);
+
   if("width" in this.data["properties"]){var width_=this.data["properties"]["width"]} else {var width_="10"}
   this.new_obj.innerHTML=this.data["properties"]["title"];
   // -- attribute --
-  for (i in this.attributes){var s=this.attributes[i];
-   if(s in this.data["properties"]){this.new_obj.setAttribute(s, this.data["properties"][s])}
-   else{this.new_obj.setAttribute(s, "")}}
-
-  //alert(JSON.stringify(this.data["properties"]));
+  for (k in this.attributes)
+  {
+   if(k in this.data["properties"]){this.new_obj.setAttribute(k, this.data["properties"][k])}
+   else{this.new_obj.setAttribute(k, "")}
+  }
 
   if(this.data["element_name"]=="Input")
   {
@@ -655,7 +679,6 @@ acObj.prototype.create_obj = function(){
     var u="px";if(width_.includes("%")){u=""};
     this.new_obj.setAttribute("style", "position:absolute;left:"+this.data["properties"]["x"]+"px;top:"+this.data["properties"]["y"]+"px;width:"+width_+u);
   }
-
 
   if(this.data["element_name"]=="Select")
   {
@@ -744,18 +767,6 @@ acObj.prototype.get_select_data = function()
 
 // -- acPlugin --
 function acPlugin(){}
-
-acPlugin.prototype.create_editor = function(){
- var container_id=this.data["container_id"];
- var obj_number=this.data["properties"]["obj_number"];
- //alert(JSON.stringify(this.tab.tab_objects[container_id][obj_number]));
- try{
- tab_fpe=this.editor.get_functions_properties_editor(this.tab, this.data["functions"], this.functions,
-                                                     this.data["properties"],this.settings,this.attributes,
-                                                     tab_btn_name="Plugin", properties_func=this.creator.editor_properties_func,
-                                                     node_to_delete='.tab_objects['+container_id+']['+obj_number+']')
- } catch(er) {alert("er 207: "+er)}
-}
 
 acPlugin.prototype.create_obj = function(){this.creator.create_obj();}
 
@@ -1263,7 +1274,6 @@ acHeatmapCreator.prototype.get_data = function()
   //alert("get Data")
 }
 
-
 // -- TabContent --
 function TabContent(tab, container, link_dic, is_on_click=true, is_link=null){
  //alert("TabContent");
@@ -1297,13 +1307,10 @@ function TabContent(tab, container, link_dic, is_on_click=true, is_link=null){
 
     //this.link_content.innerHTML=this.link_number;
     this.link_content.onclick=function(event){
-
       //alert(event.target.outerHTML);
-
       this.tab.parent.active_tab_content=this;
       var e=event.target;
       //alert(e.outerHTML)
-
       if(this.tab.new_obj_to_create==null){
          var click_event=new Event("click", {bubbles: true});
          if(event.ctrlKey){
@@ -1331,9 +1338,7 @@ function TabContent(tab, container, link_dic, is_on_click=true, is_link=null){
                eval(f+this.link_number+'(event)');
          }
       } else {
-
         // alert(JSON.stringify(this.tab.new_obj_to_create));
-
         var dic=this.tab.new_obj_to_create;
         var x=event.clientX-e.offsetLeft;
         //alert(event.clientX); //alert(e.offsetLeft); //alert(x)
@@ -2111,22 +2116,24 @@ acWin.prototype.get_main_button_win_obj = function(s_name, width, s_title, butto
  return eval(s);
 }
 
-acWin.prototype.get_main_button_obj = function(s_name, s_title, button, obj_type)
+acWin.prototype.get_main_button_objs = function()
 {
- var s = 'function MenuBtn'+s_name+'(parent)';
- s+='{MenuBtn.call(this,parent,my_name_=s_name, my_title=s_title, buttons=button, obj_type, width="width:10%;");';
- s+='parent.main_menus[this.my_name]=this;};';
- //alert(s);
- eval(s);
- s = 'MenuBtn'+s_name+'.prototype = Object.create(MenuBtn.prototype);';
- eval(s);
- s='try{MenuBtn'+s_name+'.prototype.create_main_content = '+s_name+'_create_main_content} catch(er){};';
- //alert(s);
- eval(s);
- s='MenuBtn'+s_name;
- return eval(s);
+  for (b in this.buttons){
+   var s_title=this.buttons[b]["title"]
+   var button=this.buttons[b]["sub_buttons"]
+   var obj_type=this.buttons[b]["obj_type"]
+   var s = 'function MenuBtn'+b+'(parent)';
+   s+='{MenuBtn.call(this,parent,my_name_="'+b+'", my_title="'+s_title+'", buttons=button, obj_type="'+obj_type+'", width="width:10%;");';
+   s+='parent.main_menus[this.my_name]=this;};';
+   eval(s);
+   s = 'MenuBtn'+b+'.prototype = Object.create(MenuBtn.prototype);';
+   eval(s);
+   s='try{MenuBtn'+b+'.prototype.create_main_content = '+b+'_create_main_content} catch(er){};';
+   eval(s);
+   s='new MenuBtn'+b+'(parent=this)';
+   eval(s);
+  }
 }
-
 
 // -- Pop win --
 function PopWin(my_name_, win_name_, win_title_, user_id, atm)
@@ -2163,11 +2170,7 @@ PopWin.prototype.set_panel = function()
   this.win_nav_panel.appendChild(this.main_menu);
   this.win_nav_panel.appendChild(this.sub_menu);
   //alert(JSON.stringify(this.buttons));
-  for (b in this.buttons){
-   //alert('MenuBtn'+b+'=this.get_main_button_obj(b, this.buttons[b]["title"],this.buttons[b]["sub_buttons"])')
-   eval('MenuBtn'+b+'=this.get_main_button_obj(b, this.buttons[b]["title"], this.buttons[b]["sub_buttons"], this.buttons[b]["obj_type"])')
-   eval('new MenuBtn'+b+'(parent=this)')
-  }
+  this.get_main_button_objs();
 }
 
 
@@ -2269,7 +2272,8 @@ function MenuBtn(parent, my_name_, my_title, buttons, obj_type, width="width:10%
          {this.parent.parent.main_menus[m].btn.className=this.parent.parent.main_menus[m].btn.className.replace(" active", "")}
          try{this.className+=" active";  } catch(er){}
    } catch(er){alert("er2031: "+er)}
-   try{this.parent.create_main_content();} catch(er){alert("er201: "+er)}
+   try{this.parent.create_main_content();
+   } catch(er){alert("er201: "+er)}
  }
  this.parent.main_menu.appendChild(this.btn);
 }
@@ -2320,104 +2324,107 @@ function SubMenuBtn(parent, my_name_, my_title_, width="width:10%;")
 // -- MenuBtnTab --
 Tab_create_main_content = function()
 {
-    this.parent.nav=document.createElement("div");
-    this.parent.nav.onclick=function(){
-      //alert(JSON.stringify(editor_.tab_obj_.tab_functions))
-      var e=event.target;
-      try{var cc=e.getAttribute("class");if(cc!="funtablinks"){return;}} catch(er){}
-      var f=event.target.innerHTML;
-      editor.tab_obj_.active_function=f;
-      editor.tab_content.innerHTML=editor.tab_obj_.tab_functions[f];
-      editor.tab_content.setAttribute("fun_name",f);
-      var funtablinks = document.getElementsByClassName("funtablinks");
-      for (var i=0;i<funtablinks.length;i++){funtablinks[i].className=funtablinks[i].className.replace(" active","");};
-      event.target.className += " active";
-       //alert(editor_.tab_content.outerHTML)
-    }.bind(editor=this.parent, event);
-    this.parent.nav.setAttribute("class", "tab");
-    this.parent.nav.btns={};
-    this.parent.win_content.appendChild(this.parent.nav);
-    this.parent.tab_content = document.createElement("textarea");
-    this.parent.tab_content.setAttribute("class", "tab_textarea");
-    this.parent.tab_content.onchange= function (){
-      editor.tab_obj_.tab_functions[event.target.getAttribute("fun_name")]=event.target.value;
-      editor.tab_obj_.parent.save();
-      var click_event = new Event("click", {bubbles: true});
-      //editor.main_menus["Tab"].btn.dispatchEvent(click_event);
-    }.bind(editor=this.parent, event)
-    this.parent.win_content.appendChild(this.parent.tab_content);
+  //alert("1 Tab_create_main_content: " + this.parent.atm.active_tab.tab_name)
 
-    var tfs_ = Object.keys(this.parent.tab_obj_.tab_functions)
-    var fs_=[]; var fs__ = this.parent.tab_obj_.parent.tab["functions"]; for(i in fs__){fs_.push(fs__[i])}
-    for(i in tfs_){var f = tfs_[i];if(!(f in fs_)){fs_.push(f)}}
-    for(i in fs_)
-    {
-      var f = fs_[i];
-      this.parent.nav.btns[f] = document.createElement("button");
-      this.parent.nav.btns[f].setAttribute("class", "funtablinks");
-      this.parent.nav.btns[f].innerHTML = f;
-      this.parent.nav.appendChild(this.parent.nav.btns[f]);
-    }
-
-  // -- need to complete
-  this.parent.tab_properties_ = document.createElement("div");
-  var table = document.createElement("table");var tr=document.createElement("tr");table.appendChild(tr);
-  var thp=document.createElement("th");thp.innerHTML="Property";thp.setAttribute("style","width:10%;text-align:center;");
-  tr.appendChild(thp);
-  var thv=document.createElement("th");thv.innerHTML="Value";thv.setAttribute("style","width:10%;text-align:center;");
-  tr.appendChild(thv);
-  this.parent.tab_properties_.appendChild(table);
-
-  // alert(this.parent.tab_obj_.tab_name);
-  var ps_=[];var ps__=this.parent.tab_obj_.parent.tab["settings_list"];for(i in ps__){ps_.push(ps__[i])}
-  var tps=this.parent.tab_obj_.tab_properties;var tps_=Object.keys(tps);for(i in tps_){var p=tps_[i];if(!(p in ps_)){ps_.push(p)}}
-  for(i in ps_)
-  {
-   var s=ps_[i];
-   var tr=document.createElement("tr");table.appendChild(tr);
-   var td=document.createElement("td");td.innerHTML=s;tr.appendChild(td);
-   var td=document.createElement("td");var input=document.createElement("input");
-   input.setAttribute("property",s);td.appendChild(input);
-   var s_=tps[s];try{if(s_==null){}else{input.value=s_}} catch(er){alert("er9027: "+ er)};tr.appendChild(td);
-  }
-
-  this.parent.tab_properties_.addEventListener("change", function(){
-    var p=event.target;var property=p.getAttribute("property");var v=p.value;
-    editor.tab_obj_.tab_properties[property]=v;
-    //--
-    editor.tab_obj_.parent.save();
-    //--
-    // alert(JSON.stringify(editor.tab_obj_.tab_properties))
-  }.bind(editor=this.parent, event))
-  this.parent.tab_properties_.setAttribute("class", "com_setting");
-  this.parent.win_content.appendChild(this.parent.tab_properties_);
+//
+//    this.parent.nav=document.createElement("div");
+//    this.parent.nav.onclick=function(){
+//      //alert(JSON.stringify(editor_.tab_obj_.tab_functions))
+//      var e=event.target;
+//      try{var cc=e.getAttribute("class");if(cc!="funtablinks"){return;}} catch(er){}
+//      var f=event.target.innerHTML;
+//      editor.tab_obj_.active_function=f;
+//      editor.tab_content.innerHTML=editor.tab_obj_.tab_functions[f];
+//      editor.tab_content.setAttribute("fun_name",f);
+//      var funtablinks = document.getElementsByClassName("funtablinks");
+//      for (var i=0;i<funtablinks.length;i++){funtablinks[i].className=funtablinks[i].className.replace(" active","");};
+//      event.target.className += " active";
+//       //alert(editor_.tab_content.outerHTML)
+//    }.bind(editor=this.parent, event);
+//    this.parent.nav.setAttribute("class", "tab");
+//    this.parent.nav.btns={};
+//    this.parent.win_content.appendChild(this.parent.nav);
+//    this.parent.tab_content = document.createElement("textarea");
+//    this.parent.tab_content.setAttribute("class", "tab_textarea");
+//    this.parent.tab_content.onchange= function (){
+//      editor.tab_obj_.tab_functions[event.target.getAttribute("fun_name")]=event.target.value;
+//      editor.tab_obj_.parent.save();
+//      var click_event = new Event("click", {bubbles: true});
+//      //editor.main_menus["Tab"].btn.dispatchEvent(click_event);
+//    }.bind(editor=this.parent, event)
+//    this.parent.win_content.appendChild(this.parent.tab_content);
+//
+//    var tfs_ = Object.keys(this.parent.tab_obj_.tab_functions)
+//    var fs_=[]; var fs__ = this.parent.tab_obj_.parent.tab["functions"]; for(i in fs__){fs_.push(fs__[i])}
+//    for(i in tfs_){var f = tfs_[i];if(!(f in fs_)){fs_.push(f)}}
+//    for(i in fs_)
+//    {
+//      var f = fs_[i];
+//      this.parent.nav.btns[f] = document.createElement("button");
+//      this.parent.nav.btns[f].setAttribute("class", "funtablinks");
+//      this.parent.nav.btns[f].innerHTML = f;
+//      this.parent.nav.appendChild(this.parent.nav.btns[f]);
+//    }
+//
+//  // -- need to complete
+//  this.parent.tab_properties_ = document.createElement("div");
+//  var table = document.createElement("table");var tr=document.createElement("tr");table.appendChild(tr);
+//  var thp=document.createElement("th");thp.innerHTML="Property";thp.setAttribute("style","width:10%;text-align:center;");
+//  tr.appendChild(thp);
+//  var thv=document.createElement("th");thv.innerHTML="Value";thv.setAttribute("style","width:10%;text-align:center;");
+//  tr.appendChild(thv);
+//  this.parent.tab_properties_.appendChild(table);
+//
+//  // alert(this.parent.tab_obj_.tab_name);
+//  var ps_=[];var ps__=this.parent.tab_obj_.parent.tab["settings_list"];for(i in ps__){ps_.push(ps__[i])}
+//  var tps=this.parent.tab_obj_.tab_properties;var tps_=Object.keys(tps);for(i in tps_){var p=tps_[i];if(!(p in ps_)){ps_.push(p)}}
+//  for(i in ps_)
+//  {
+//   var s=ps_[i];
+//   var tr=document.createElement("tr");table.appendChild(tr);
+//   var td=document.createElement("td");td.innerHTML=s;tr.appendChild(td);
+//   var td=document.createElement("td");var input=document.createElement("input");
+//   input.setAttribute("property",s);td.appendChild(input);
+//   var s_=tps[s];try{if(s_==null){}else{input.value=s_}} catch(er){alert("er9027: "+ er)};tr.appendChild(td);
+//  }
+//
+//  this.parent.tab_properties_.addEventListener("change", function(){
+//    var p=event.target;var property=p.getAttribute("property");var v=p.value;
+//    editor.tab_obj_.tab_properties[property]=v;
+//    //--
+//    editor.tab_obj_.parent.save();
+//    //--
+//    // alert(JSON.stringify(editor.tab_obj_.tab_properties))
+//  }.bind(editor=this.parent, event))
+//  this.parent.tab_properties_.setAttribute("class", "com_setting");
+//  this.parent.win_content.appendChild(this.parent.tab_properties_);
 }
 
-TabNewFunction_click = function(obj, event)
-{
-  var fun_name_ = prompt("Enter name for new function:" , '');
-  if(fun_name_ == '') {alert("Please enter a function name"); return;}
-  var tab_name=obj.parent.parent.tab_obj_.tab_name;
-  obj.parent.parent.tab_obj_.tab_functions[tab_name+"_"+fun_name_]=tab_name+"_"+fun_name_+"=function(obj){\ntry{\n\n} catch(er){alert('er9026: '+ er)}}";
-  obj.parent.parent.tab_obj_.active_function = obj.parent.parent.tab_obj_.tab_name+"_"+fun_name_;
-  try{
-    obj.parent.parent.tab_obj_.parent.save();
-    var click_event = new Event("click", {bubbles: true});
-    obj.parent.parent.main_menus["Tab"].btn.dispatchEvent(click_event);
-  } catch (er){alert("er9029: "+ er)}
-}
-
-TabDeleteFunction_click = function(obj, event)
-{
-  var confirm_=prompt("Are you sure you want to delete the function(type Yes): "+obj.parent.parent.tab_obj_.active_function, 'no');
-  if(confirm_!='Yes'){return;}
-  delete obj.parent.parent.tab_obj_.tab_functions[obj.parent.parent.tab_obj_.active_function];
-  try{
-    obj.parent.parent.tab_obj_.parent.save();
-    var click_event = new Event("click", {bubbles: true});
-    obj.parent.parent.main_menus["Tab"].btn.dispatchEvent(click_event);
-  } catch (er){}
-}
+//TabNewFunction_click = function(obj, event)
+//{
+//  var fun_name_ = prompt("Enter name for new function:" , '');
+//  if(fun_name_ == '') {alert("Please enter a function name"); return;}
+//  var tab_name=obj.parent.parent.tab_obj_.tab_name;
+//  obj.parent.parent.tab_obj_.tab_functions[tab_name+"_"+fun_name_]=tab_name+"_"+fun_name_+"=function(obj){\ntry{\n\n} catch(er){alert('er9026: '+ er)}}";
+//  obj.parent.parent.tab_obj_.active_function = obj.parent.parent.tab_obj_.tab_name+"_"+fun_name_;
+//  try{
+//    obj.parent.parent.tab_obj_.parent.save();
+//    var click_event = new Event("click", {bubbles: true});
+//    obj.parent.parent.main_menus["Tab"].btn.dispatchEvent(click_event);
+//  } catch (er){alert("er9029: "+ er)}
+//}
+//
+//TabDeleteFunction_click = function(obj, event)
+//{
+//  var confirm_=prompt("Are you sure you want to delete the function(type Yes): "+obj.parent.parent.tab_obj_.active_function, 'no');
+//  if(confirm_!='Yes'){return;}
+//  delete obj.parent.parent.tab_obj_.tab_functions[obj.parent.parent.tab_obj_.active_function];
+//  try{
+//    obj.parent.parent.tab_obj_.parent.save();
+//    var click_event = new Event("click", {bubbles: true});
+//    obj.parent.parent.main_menus["Tab"].btn.dispatchEvent(click_event);
+//  } catch (er){}
+//}
 
 
 // -- MenuBtnComponent --
@@ -2546,7 +2553,8 @@ TabNavLinkitem_click = function(obj, event)
             settings_list=obj.parent.parent.atm.nav_link["settings_list"],
             attributes_list=obj.parent.parent.atm.nav_link["attributes_list"],
             tab_btn_name="TabNavLink",null,
-            node_to_delete='.tab_nav_links["nav_links"]['+link_number+']')} catch(er) {alert("er9031: "+ er)}
+            node_to_delete='.tab_nav_links["nav_links"]['+link_number+']')} catch(er) {alert("er9031: "+ er)
+      }
 }
 
 
@@ -2559,7 +2567,6 @@ PopWin_create_main_content = function()
   atm_.tabs[tab_id].PopWinObjects[win_name].create_editor_for_popwin(atm_.tabs[tab_id].tab_pop_win_buttons["pop_wins"][win_number]);
  } catch(er){}
 }
-
 
 PopWinNewPopWin_click = function(obj, event)
 {
@@ -2663,3 +2670,7 @@ PluginSearchTable_click = function(obj, event)
  //alert(333444)
   //var tab_=obj.parent.parent.atm.active_tab;
 }
+
+
+//-- General Functions --
+var getEBI = function(s){return document.getElementById(s)}

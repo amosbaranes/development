@@ -5,7 +5,7 @@ from .sql import TruncateTableMixin
 
 
 class DataAdvancedTabsManager(models.Model):
-    at_name = models.CharField(max_length=10, null=True, default="new")
+    at_name = models.CharField(max_length=50, null=True, default="new")
     manager_content = models.JSONField(null=True)
 
     def __str__(self):
