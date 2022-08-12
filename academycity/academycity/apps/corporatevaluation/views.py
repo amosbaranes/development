@@ -39,6 +39,7 @@ from ..core.templatetags.core_tags import has_group
 from ..core.utils import log_debug, clear_log_debug
 from ..core.sql import SQL
 from django.urls import reverse
+from ..core.apps_general_functions import activate_obj_function
 
 # need to remove this also in core application
 # from ..core.StreamPrintToClient import (Printer, Steamer)
@@ -108,28 +109,6 @@ def f_home(request):
                                                                "company_obj_id": company_obj_id_,
                                                                "title": "Corporatevaluation-f"}
                   )
-
-
-# This function should be defined for every app
-def activate_obj_function(request):
-    try:
-        dic_ = request.POST.get('dic')
-        dic_ = eval(dic_)
-        # print('dic_')
-        # print(dic_)
-        # print('dic_')
-        obj_ = dic_['obj']
-        fun_ = dic_['fun']
-        params = dic_["params"]
-        s_ = obj_+'().' + fun_ + '(params)'
-        # print(s_)
-        log_debug("activate_obj_function: "+fun_)
-        dic = eval(s_)
-        return JsonResponse({'status': 'ok', 'result': dic})
-    except Exception as ex:
-        # print(ex)
-        log_debug("Error activate_obj_function: "+str(ex))
-        return JsonResponse({'status': 'ko: activate_obj_function'})
 
 
 # Fix game_id.  should use project_id
