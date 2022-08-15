@@ -25,9 +25,10 @@ app_name = "corporatevaluation"
 
 urlpatterns = [
     path('', ac_home, name='ac_home'),
+    path('app/<str:app_name>/', app, name='app'),
+    path('activate_obj_function/', activate_obj_function, name='activate_obj_function'),
     path('f/', f_home, name='f_home'),
     path('candle/', candle, name='candle'),
-    path('app/<str:app_name>/', app, name='app'),
     path('home/<int:obj_id>/', home, name='home'),
     path('home_chat_working/<int:obj_id>/', home_chat_working, name='home_chat_working'),
 
@@ -53,7 +54,6 @@ urlpatterns = [
     path('admin_setup_attribute/', admin_setup_attribute, name='admin_setup_attribute'),
     path('tdameritrade_setup_w_attribute/', tdameritrade_setup_w_attribute, name='tdameritrade_setup_w_attribute'),
     path('analysis_setup_attribute/', analysis_setup_attribute, name='analysis_setup_attribute'),
-    path('activate_obj_function/', activate_obj_function, name='activate_obj_function'),
 
     path('sec/', sec, name='sec'),
     path('get_r/', get_r, name='get_r'),

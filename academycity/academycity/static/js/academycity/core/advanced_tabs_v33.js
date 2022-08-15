@@ -31,8 +31,11 @@ company_obj_id, is_show_btns=true, user_id=0)
                         "sub_buttons": {"content":{"title":"Content", "width":10, "setting":[], "attributes":[], "functions":[]}}},
 
                  "Component":{"title":"Component", "obj_type":"acObj",
-                        "sub_buttons": {"Button":{"title":"Button", "width":5, "setting": {}, "attributes":{}, "functions":[]},
-                                        "Span":{"title":"Span", "width":5, "setting": {}, "attributes":{}, "functions":[]},
+                        "sub_buttons": {"Button":{"title":"Button", "width":5,
+                                                  "setting": {},
+                                                  "attributes":{},
+                                                  "functions":["onmouseover", "onmouseout"]},
+                                        "Span":{"title":"Span", "width":5, "setting": {"color":[], "background-color":[]}, "attributes":{}, "functions":[]},
                                         "Input":{"title":"Input", "width":5,
                                                  "setting": {"text-align":["left", "center", "right"]},
                                                  "attributes":{"field":[],
@@ -80,7 +83,9 @@ company_obj_id, is_show_btns=true, user_id=0)
                 }
 
  this.tab = {"functions":[],
-             "settings_list":{"button_color":[],"button_bg_color":[],"tab_name":[],
+             "settings_list":{"button_color":[],"button_bg_color":[],
+                              "font-weight":["normal","lighter","bold","900"],
+                              "tab_name":[],
                               "tab_type":["simple", "navmulti", "navone"],
                               "tab_order":[],"tab_title":[],"link_number":[]},
              "attributes_list":{}
@@ -98,7 +103,7 @@ company_obj_id, is_show_btns=true, user_id=0)
                   }
 
  this.tab_content = {"functions_list":["onclick", "onchange", "onmouseover", "onmouseout"],
-                     "settings_list":{"width":[], "color":[], "background_color":[]},
+                     "settings_list":{"width":[], "color":[], "background-color":[]},
                      "attributes_list":{"table":[], "parent_table":[], "link_number":[], "content_type":[]}
                      }
  this.pop_win = {"functions_list":["onclick","onmouseover","onmouseout","__init___","__get_panel_structure___","__set_panel___"],
@@ -139,7 +144,6 @@ AdvancedTabsManager.prototype.create_add_delete_editor = function()
                     atm.tabs[id_].btn.click();
                     try{atm.set_active_tab(atm.tabs[id_].btn)} catch(er){alert('er9037: '+ er)}
                     try{atm.save()} catch(er){alert("er900: "+er)}
-                    atm.save();
                   }.bind(atm=atm_));
       }.bind(atm_=this, event))
   //--
@@ -296,6 +300,9 @@ AdvancedTabsManager.prototype.get_obj = function(tab, dic)
  s+=' var obj_number=this.data["properties"]["obj_number"];';
  s+=' try{var properties_func_=null;properties_func_=this.creator.editor_properties_func}catch(er){};';
  s+=' try{'
+
+ //s+='alert(JSON.stringify(this.data["properties"]));'
+
  s+='  var fpe_=this.editor.get_functions_properties_editor(this.tab, this.data["functions"], this.functions,'
  s+='   this.data["properties"], this.settings,this.attributes, tab_btn_name="Plugin", properties_func=properties_func_,'
  s+='   node_to_delete=".tab_objects["+container_id+"]["+obj_number+"]"';
@@ -588,11 +595,13 @@ function FunctionsPropertiesEditor(tab, functions_dic, functions_list_dic, prope
    var thv=document.createElement("th");thv.innerHTML="Value";thv.setAttribute("style","width:10%;text-align:center;");
    tr.appendChild(thv);
    tab_properties_.appendChild(table);
+
    var pp_={}
    for (k in settings_list){if (!(k in pp_)){pp_[k]=settings_list[k]}}
    for (k in attributes_list){if (!(k in pp_)){pp_[k]=attributes_list[k]}}
-   for (k in properties_dic){if (!(k in pp_)){pp_[k]=properties_dic[k]}}
 
+   //alert(JSON.stringify(properties_dic));
+   //for (k in properties_dic){if (!(k in pp_)){pp_[k]=properties_dic[k]}}
    //alert(JSON.stringify(pp_));
 
    for (k in pp_)
@@ -603,8 +612,10 @@ function FunctionsPropertiesEditor(tab, functions_dic, functions_list_dic, prope
      var l=pp_[k];
      if(l.length == 0){
        var input=document.createElement("input");input.setAttribute("size","10");
+       if(k.includes("color")){input.setAttribute("type","color")};
      } else {
        var input=document.createElement("select");input.setAttribute("style", "width:100px;");
+       //if(k.includes('color')){input.setAttribute("type","color")}
        for (j in l){var o = document.createElement("option");o.value=l[j];o.innerHTML=l[j];input.appendChild(o);}
      }
      input.setAttribute("property",k);td.appendChild(input);
@@ -643,7 +654,7 @@ acObj.prototype.create_obj = function(){
   this.new_obj.setAttribute("obj_type", this.data["obj_type"]);
   this.new_obj.setAttribute("type_", this.data["element_name"]);
 
-  if("width" in this.data["properties"]){var width_=this.data["properties"]["width"]} else {var width_="10"}
+  if("width" in this.data["properties"]){var width_=this.data["properties"]["width"]} else {var width_="100"}
   this.new_obj.innerHTML=this.data["properties"]["title"];
   // -- attribute --
   for (k in this.attributes)
@@ -654,15 +665,19 @@ acObj.prototype.create_obj = function(){
 
   if(this.data["element_name"]=="Input")
   {
-    var nx_=80;var x=1*this.data["properties"]["x"]+nx_;
+    var s_label=this.data["properties"]["title"]+":&nbsp;";
+    s_label_length=10*(1*s_label.length-5);
+    //alert(s_label+" : "+s_label_length)
+    var nx_=s_label_length;var x=1*this.data["properties"]["x"]+nx_;
     var align_=this.data["properties"]["text-align"];
     if(align_=="" || align_==null){var align="right";} else {var align=align_}
     //alert(JSON.stringify(this.data["properties"]));
     var s_style="position:absolute;left:"+x+"px;top:"+this.data["properties"]["y"]+"px;width:"+width_+"px;text-align:"+align+";";
     this.new_obj.setAttribute("style", s_style);
-    var span=document.createElement("span");span.innerHTML=this.data["properties"]["title"];
-    var x = 1*this.data["properties"]["x"]
-    span.setAttribute("style", "position:absolute;left:"+x+"px;top:"+this.data["properties"]["y"]+"px;");
+    var span=document.createElement("span");span.innerHTML=s_label;
+    var x = 1*this.data["properties"]["x"];
+    var s_="position:absolute;left:"+x+"px;top:"+this.data["properties"]["y"]+"px;text-align:right;display:inline-block;width:"+s_label_length+"px;"
+    span.setAttribute("style", s_);
     container.appendChild(span);
   } else if (this.data["element_name"]=="DIV") {
     var s_ = this.data["properties"]["overflow"]
@@ -1276,19 +1291,26 @@ acHeatmapCreator.prototype.get_data = function()
 
 // -- TabContent --
 function TabContent(tab, container, link_dic, is_on_click=true, is_link=null){
+
  //alert("TabContent");
+ //alert(tab.tab_name)
+ //alert('container.outerHTML')
+ //alert(container.outerHTML)
  //alert(JSON.stringify(link_dic));
+
+ var pp_=link_dic["properties"]
+ //alert(JSON.stringify(pp_));
  //alert(tab.tab_name)
  this.is_link=is_link;
  this.tab=tab;
  this.link_dic=link_dic;
- this.link_number=link_dic["properties"]["link_number"];
- this.content_type=link_dic["properties"]["content_type"];
+ this.link_number=pp_["link_number"];
+ this.content_type=pp_["content_type"];
  //-
  this.link_content=document.createElement("div");
  this.link_content.my_creator_obj=this
  this.link_content.setAttribute("id", "content_"+this.link_number);
- this.link_content.setAttribute("table", link_dic["properties"]["table"]);
+ this.link_content.setAttribute("table", pp_["table"]);
  this.link_content.setAttribute("record_id", "new");
  this.link_content.setAttribute("parent_id", "new");
  this.link_content.setAttribute("link_number", this.link_number);
@@ -1298,14 +1320,27 @@ function TabContent(tab, container, link_dic, is_on_click=true, is_link=null){
  this.link_content.setAttribute("class", "tabcontent");
  this.link_content.tab=tab;
  this.link_content.tab_content_id=this.link_number;
- if(is_link){var width=100} else {var width=link_dic["properties"]["width"];}
- this.link_content.setAttribute("style", "position: relative;background-color:white;width: "+width+"%;height:1000px;display:block;");
+ if(is_link){var width=100} else {var width=pp_["width"];}
+
+// alert('JSON.stringify(pp_)');
+// alert(JSON.stringify(pp_));
+var background_color_="white";
+var color_="black";
+// alert(pp_["background-color"])
+// alert(pp_["color"])
+
+ //if(!(pp_["background-color"]==null)){alert(9);background-color_=pp_["background-color"]}
+ //if(!(pp_["color"]==null)){alert(9);color_=pp_["color"]}
+
+ var ss_="position: relative;background-color:"+background_color_+";color:"+color_+";width: "+width+"%;height:1000px;display:block;"
+ //alert(ss_)
+ this.link_content.setAttribute("style", ss_);
 
 // border: 1px solid #ccc;
 
  if(is_on_click){
+    //alert(this.link_content.outerHTML)
 
-    //this.link_content.innerHTML=this.link_number;
     this.link_content.onclick=function(event){
       //alert(event.target.outerHTML);
       this.tab.parent.active_tab_content=this;
@@ -1382,7 +1417,6 @@ function TabContent(tab, container, link_dic, is_on_click=true, is_link=null){
   this.tab.parent.active_tab_content=this;
   this.tab.parent.save_data(this, dic_data)
  }
-
  container.appendChild(this.link_content);
  this.process_content();
 }
@@ -1648,7 +1682,11 @@ Tab.prototype.int_objects_data = function()
 
 Tab.prototype.create_btn_container = function(data)
 {
+ //alert(JSON.stringify(data["properties"]));
+ var pp=data["properties"]
   this.btn=document.createElement("button");
+  var s_style="color:"+pp["button_color"]+";background-color:"+pp["button_bg_color"]+";font-weight:"+pp["font-weight"]
+  this.btn.setAttribute("style", s_style);
   this.btn.setAttribute("link_number", this.link_number);
   this.btn.parent=this;
   this.btn.setAttribute("class", "tablinks");
@@ -1690,7 +1728,8 @@ try{
        //alert(JSON.stringify(dic_["properties"]));
        var win_obj=this.get_pop_win_obj(dic_);
        win_obj.__init__();
-       win_obj.set_win_frame_style(dic_["properties"]["zindex"], dic_["properties"]["height"], dic_["properties"]["width"], dic_["properties"]["right"], dic_["properties"]["top"], dic_["properties"]["background_color"])
+       var pp_=dic_["properties"]
+       win_obj.set_win_frame_style(pp_["zindex"], pp_["height"], pp_["width"], pp_["right"], pp_["top"], pp_["background_color"])
        win_obj.set_acWinStatEventListeners(this.parent.editor);
        win_obj.resume_win()
      }
@@ -1746,10 +1785,10 @@ Tab.prototype.get_pop_win_obj = function(dic)
 {
  //alert("get_pop_win_obj");
  //alert(JSON.stringify(dic));
-
- var s_name=dic["properties"]["name"]; var s_title=dic["properties"]["title"];
- var title_color=dic["properties"]["title_color"];var title_background_color=dic["properties"]["title_background_color"];
- var link_number =dic["properties"]["id"];
+ var pp_=dic["properties"];
+ var s_name=pp_["name"]; var s_title=pp_["title"];
+ var title_color=pp_["title_color"];var title_background_color=pp_["title_background_color"];
+ var link_number =pp_["id"];
  var s = 'function TabPopWin'+this.tab_name+s_name+'(parent,dic_)';
  s+='{'
  //s+='alert(JSON.stringify(dic_));'
@@ -1760,11 +1799,10 @@ Tab.prototype.get_pop_win_obj = function(dic)
  s+='var is_scroll_=true;';
  s+='this.atm = parent.parent;'
  s+='this.main_menus = {};this.sub_menus = {};'
-
  s+='acWin.call(this,my_name_=this.my_name, win_name=this.name, win_title="'+s_title+'",';
  s+='right= "2%", top="30%",'
- s+='is_scroll=is_scroll_, zindex="21", tab_obj_=parent, is_nav_panel=true, win_number='+dic["properties"]["id"]+');'
- s+='this.tab_obj_.tab_pop_win_buttons["pop_wins"]['+dic["properties"]["id"]+']=dic_;'
+ s+='is_scroll=is_scroll_, zindex="21", tab_obj_=parent, is_nav_panel=true, win_number='+link_number+');'
+ s+='this.tab_obj_.tab_pop_win_buttons["pop_wins"]['+link_number+']=dic_;'
  s+='if(!("'+link_number+'" in this.tab_obj_.tab_objects)){this.tab_obj_.tab_objects["'+link_number+'"]={}};'
  s+='this.popwin_content=new TabContent(tab=parent, container=this.win_content, link_dic=dic_["popwin_content"], is_on_click=true, is_link=false);'
  s+='this.win_content=this.popwin_content.link_content;'
@@ -1783,8 +1821,8 @@ Tab.prototype.get_pop_win_obj = function(dic)
  s+='{'
  //s+='alert(this.tab_obj_.parent);'
  //s+='alert(this.tab_obj_.parent.editor);'
-
  //s+='alert(JSON.stringify(dic));'
+
  s+='var tab_=this.tab_obj_.parent.tabs[dic["properties"]["tab_id"]];';
  s+='var pop_win=tab_.PopWinObjects[dic["properties"]["name"]];'
  s+='var pop_win_dic_=tab_.tab_pop_win_buttons["pop_wins"][dic["properties"]["id"]];'
@@ -1803,38 +1841,42 @@ Tab.prototype.get_pop_win_obj = function(dic)
  //--
  s='TabPopWin'+this.tab_name+s_name+'.prototype.get_my_tab = function()'
  s+='{'
- s+='return this.tab_obj_.parent.tabs['+dic["properties"]["tab_id"]+'];';
+ s+='return this.tab_obj_.parent.tabs['+pp_["tab_id"]+'];';
  s+='}'
  //alert(s);
  eval(s);
  //--
- //for(f in dic['functions']) {s_= f+"_"+dic["properties"]["id"]+ '='+dic['functions'][f];alert(s_);eval(s_);}
+ //for(f in dic['functions']) {s_= f+"_"+pp_["id"]+ '='+dic['functions'][f];alert(s_);eval(s_);}
  //--
  s='TabPopWin'+this.tab_name+s_name+'.prototype.__init__ = function()'
  s+='{'
  s+='this.set_tab(this.tab_obj_);this.set_title_colors("'+title_color+'", "'+title_background_color+'");'
  s+='this.tab_obj_.PopWinObjects[this.my_name]=this;'
- s+='this.id='+dic["properties"]["id"]+';'
+ s+='this.id='+link_number+';'
  s+='this.set_title(this.win_title_);'
- s+='dic_fs=this.tab_obj_.tab_pop_win_buttons["pop_wins"]['+dic["properties"]["id"]+']["functions"];'
+ s+='dic_fs=this.tab_obj_.tab_pop_win_buttons["pop_wins"]['+link_number+']["functions"];'
  //s+='alert(JSON.stringify(dic_fs));'
- s+='for(f in dic_fs) {var s_= "this."+f+"'+dic["properties"]["id"]+'="+dic_fs[f];eval(s_);};'
- s+='try{this.__init___'+dic["properties"]["id"]+'(this)} catch(er){alert("er9024: "+ er)};';
- if(dic["properties"]["is_panel"]=="true")
+ s+='for(f in dic_fs) {var s_= "this."+f+"'+link_number+'="+dic_fs[f];eval(s_);};'
+ s+='try{this.__init___'+link_number+'(this)} catch(er){alert("er9024: "+ er)};';
+ if(pp_["is_panel"]=="true")
  {
   s+='this.main_menu = document.createElement("div");'
   s+='this.sub_menu = document.createElement("div");'
   s+='this.win_nav_panel.appendChild(this.main_menu);'
   s+='this.win_nav_panel.appendChild(this.sub_menu);'
-  s+='try{this.__get_panel_structure___'+dic["properties"]["id"]+'(this)} catch(er){alert("er9025: "+ er)};';
+  s+='try{this.__get_panel_structure___'+link_number+'(this)} catch(er){alert("er9025: "+ er)};';
+
   //s+='alert(JSON.stringify(this.buttons));'
-  s+='for (b in this.buttons){'
-  s+=' eval("MenuBtnWin"+b+"=this.get_main_button_win_obj(b, this.buttons[b][\'width\'], this.buttons[b][\'title\'], this.buttons[b][\'sub_buttons\'], this.buttons[b][\'obj_type\'])");'
+
+  s+='var buttons_=this.buttons;'
+  s+='for (b in buttons_){'
+  s+=' eval("MenuBtnWin"+b+"=this.get_main_button_win_obj(b, buttons_[b][\'width\'], buttons_[b][\'title\'], buttons_[b][\'sub_buttons\'], buttons_[b][\'obj_type\'])");'
+
   //s+=' alert(this.name+"--1-- "+b);'
   s+=' eval("var nbw=new MenuBtnWin"+b+"(parent=this)");'
   s+=' nbw.btn.click();'
   s+='};'
-  s+='try{this.__set_panel___'+dic["properties"]["id"]+'(this)} catch(er){alert("er9026: "+ er)};';
+  s+='try{this.__set_panel___'+link_number+'(this)} catch(er){alert("er9026: "+ er)};';
  }
  s+='}'
  //alert(s);
@@ -1844,6 +1886,8 @@ Tab.prototype.get_pop_win_obj = function(dic)
  // this.main_menus["Tab"].btn.click()
  //alert(eval('TabPopWin'+this.active_tab.tab_name+s_name+'.prototype.set_title_colors'))
  var tab_id_=dic["properties"]["tab_id"]
+
+ //alert(JSON.stringify(this.parent.tabs));
  var tab__=this.parent.tabs[tab_id_]
  s='new TabPopWin'+this.tab_name+s_name+'(tab__, dic)';
  //alert(s);
@@ -2579,7 +2623,7 @@ PopWinNewPopWin_click = function(obj, event)
  var dic_={"properties":{"id":n_, "link_number":n_, "tab_id":obj.parent.parent.tab_obj_.tab_id,"name":popup_name_,"title":popup_name_,"zindex":50,"height":"500","width":"500","right":"25%","top":"25%",
            "background_color":"white", "title_color": "#fff", "title_background_color": "#2196F3", "is_panel":"true"},
            "functions":{"__init___":"function(win_obj){\ntry{\n\n} catch(er){alert('er903: '+ er)}}",
-                        "__get_panel_structure___":"function(win_obj){\ntry{\nvar dic={};\n\nwin_obj.win_nav_panel.buttons=dic;\n} catch(er){alert('er903: '+ er)}}",
+                        "__get_panel_structure___":"function(win_obj){\ntry{\nvar dic={};\n\nwin_obj.buttons=dic;\n} catch(er){alert('er903: '+ er)}}",
                         "__set_panel___":"function(win_obj){\ntry{\n\n} catch(er){alert('er903: '+ er)}}"},
            "popwin_content":{"properties":{"link_number":n_, "content_type": "simple", "width":"400","table":""},
                              "functions":{}}
