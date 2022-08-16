@@ -35,9 +35,11 @@ company_obj_id, is_show_btns=true, user_id=0)
                                                   "setting": {},
                                                   "attributes":{},
                                                   "functions":["onmouseover", "onmouseout"]},
-                                        "Span":{"title":"Span", "width":5, "setting": {"color":[], "background-color":[]}, "attributes":{}, "functions":[]},
+                                        "Span":{"title":"Span", "width":5,
+                                                "setting": {"color":[], "background-color":[]},
+                                                "attributes":{}, "functions":[]},
                                         "Input":{"title":"Input", "width":5,
-                                                 "setting": {"text-align":["left", "center", "right"]},
+                                                 "setting": {"color":[], "background-color":[], "text-align":["left", "center", "right"]},
                                                  "attributes":{"field":[],
                                                                "type":["text","button","checkbox","color","date",
                                                                        "datetime-local","email","file","hidden","image",
@@ -51,14 +53,27 @@ company_obj_id, is_show_btns=true, user_id=0)
                                                                                 "attributes":{"field":[], "size":[]},
                                                                                 "functions":["onchange"]},
                                         "Table":{"title":"Table", "width":5, "setting": {}, "attributes":{}, "functions":["onchange"]},
-                                        "Textarea":{"title":"textarea", "width":7, "setting": {"overflow":[]},
-                                                                                   "attributes":{"rows":[], "cols":[]}, "functions":[]},
+                                        "Textarea":{"title":"textarea", "width":7,
+                                                    "setting": {"overflow":[],"color":[],"background-color":[]},
+                                                    "attributes":{"rows":[], "cols":[]}, "functions":[]},
                                         "DIV":{"title":"div", "width":3, "setting": {"overflow":[]}, "attributes":{}, "functions":[]},
-                                        "A":{"title":"a", "width":3, "setting": {}, "attributes":{"href":[], "target":[]}, "functions":[]},
-                                        "H":{"title":"h", "width":3, "setting": {}, "attributes":{}, "functions":[]},
-                                        "H1":{"title":"h1", "width":3, "setting": {}, "attributes":{}, "functions":[]},
-                                        "H2":{"title":"h2", "width":3, "setting": {}, "attributes":{}, "functions":[]},
-                                        "H3":{"title":"h3", "width":3, "setting": {}, "attributes":{}, "functions":[]}}},
+                                        "A":{"title":"a", "width":3,
+                                             "setting": {"color":[], "background-color":[]},
+                                             "attributes":{"href":[], "target":[]},
+                                             "functions":[]},
+                                        "H":{"title":"h", "width":3,
+                                             "setting": {},
+                                             "attributes":{"color":[], "background-color":[]},
+                                             "functions":[]},
+                                        "H1":{"title":"h1", "width":3,
+                                              "setting": {"color":[], "background-color":[]},
+                                              "attributes":{}, "functions":[]},
+                                        "H2":{"title":"h2", "width":3,
+                                              "setting": {"color":[], "background-color":[]},
+                                              "attributes":{}, "functions":[]},
+                                        "H3":{"title":"h3", "width":3,
+                                              "setting": {"color":[], "background-color":[]},
+                                              "attributes":{}, "functions":[]}}},
                  "TabNavLink":{"title":"Tab Nav Link", "obj_type":"none",
                         "sub_buttons": {"nav":{"title":"Navigator", "width":10},
                                         "item":{"title":"Item", "width":10}}},
@@ -324,6 +339,7 @@ AdvancedTabsManager.prototype.get_obj_functions_settings_attributes = function(d
          "attributes":{},
          "functions":["onclick"]};
  var dic__=this.buttons[dic_["parent_obj_name"]]["sub_buttons"][dic_["element_name"]]
+
  //alert(JSON.stringify(dic_));
  //alert(JSON.stringify(dic__));
 
@@ -602,6 +618,8 @@ function FunctionsPropertiesEditor(tab, functions_dic, functions_list_dic, prope
 
    //alert(JSON.stringify(properties_dic));
    //for (k in properties_dic){if (!(k in pp_)){pp_[k]=properties_dic[k]}}
+   //alert(JSON.stringify(settings_list));
+   //alert(JSON.stringify(attributes_list));
    //alert(JSON.stringify(pp_));
 
    for (k in pp_)
@@ -653,8 +671,6 @@ acObj.prototype.create_obj = function(){
   this.new_obj.setAttribute("id", this.data["properties"]["obj_number"]);
   this.new_obj.setAttribute("obj_type", this.data["obj_type"]);
   this.new_obj.setAttribute("type_", this.data["element_name"]);
-
-  if("width" in this.data["properties"]){var width_=this.data["properties"]["width"]} else {var width_="100"}
   this.new_obj.innerHTML=this.data["properties"]["title"];
   // -- attribute --
   for (k in this.attributes)
@@ -663,20 +679,32 @@ acObj.prototype.create_obj = function(){
    else{this.new_obj.setAttribute(k, "")}
   }
 
+  if("width" in this.data["properties"]){var width_=this.data["properties"]["width"];}
+  else {var width_="100"}
+  var u="px";if(width_.includes("%")){u=""};
+
+  var align_=this.data["properties"]["text-align"];
+  if(align_=="" || align_==null){var align="right";} else {var align=align_}
+  var color_=this.data["properties"]["color"];
+  if(color_=="" || color_==null){var color="black";} else {var color=color_}
+  var background_color_=this.data["properties"]["background-color"];
+  if(background_color_=="" || background_color_==null){var background_color="";}
+  else {var background_color=";background-color:"+background_color_}
+
   if(this.data["element_name"]=="Input")
   {
     var s_label=this.data["properties"]["title"]+":&nbsp;";
     s_label_length=10*(1*s_label.length-5);
     //alert(s_label+" : "+s_label_length)
     var nx_=s_label_length;var x=1*this.data["properties"]["x"]+nx_;
-    var align_=this.data["properties"]["text-align"];
-    if(align_=="" || align_==null){var align="right";} else {var align=align_}
     //alert(JSON.stringify(this.data["properties"]));
     var s_style="position:absolute;left:"+x+"px;top:"+this.data["properties"]["y"]+"px;width:"+width_+"px;text-align:"+align+";";
+
     this.new_obj.setAttribute("style", s_style);
     var span=document.createElement("span");span.innerHTML=s_label;
     var x = 1*this.data["properties"]["x"];
     var s_="position:absolute;left:"+x+"px;top:"+this.data["properties"]["y"]+"px;text-align:right;display:inline-block;width:"+s_label_length+"px;"
+    s_+="color:"+color+background_color;
     span.setAttribute("style", s_);
     container.appendChild(span);
   } else if (this.data["element_name"]=="DIV") {
@@ -684,15 +712,15 @@ acObj.prototype.create_obj = function(){
     if(s_!=null || s_!="")
     {s_="overflow:"+s_}
 
-    alert(s_)
-    var u="px";if(width_.includes("%")){u=""};
+    alert(s_);
+
     var ss="position:absolute;left:"+this.data["properties"]["x"]+"px;top:"+this.data["properties"]["y"]+"px;width:"+width_+u+";"+s_
     this.new_obj.setAttribute("style", ss);
-
    //"overflow: scroll;
   } else {
-    var u="px";if(width_.includes("%")){u=""};
-    this.new_obj.setAttribute("style", "position:absolute;left:"+this.data["properties"]["x"]+"px;top:"+this.data["properties"]["y"]+"px;width:"+width_+u);
+    var s_="position:absolute;left:"+this.data["properties"]["x"]+"px;top:"+this.data["properties"]["y"]+"px;width:"+width_+u+";"
+    s_+="color:"+color+background_color;
+    this.new_obj.setAttribute("style", s_);
   }
 
   if(this.data["element_name"]=="Select")
@@ -2597,7 +2625,7 @@ TabNavLinkitem_click = function(obj, event)
             settings_list=obj.parent.parent.atm.nav_link["settings_list"],
             attributes_list=obj.parent.parent.atm.nav_link["attributes_list"],
             tab_btn_name="TabNavLink",null,
-            node_to_delete='.tab_nav_links["nav_links"]['+link_number+']')} catch(er) {alert("er9031: "+ er)
+            node_to_delete='.tab_nav_links["nav_links"]['+link_number+']')} catch(er) {//alert("er9031: "+ er)
       }
 }
 
