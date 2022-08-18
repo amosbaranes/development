@@ -156,15 +156,19 @@ def update_field_model_by_id(request):
     # print(field_)
     # print('2-'*20)
     # print(company_obj_id_)
-    # print('2-'*20)
+    # print('2--'*20)
     # print(parent_model_)
-    # print('2-'*20)
+    # print('2--'*20)
 
     parent_model = apps.get_model(app_label=app_, model_name=app_+"web")
     # print(parent_model)
     company_obj = parent_model.objects.get(id=company_obj_id_)
 
+    # print(app_, model_)
     model = apps.get_model(app_label=app_, model_name=model_)
+    # print('model')
+    # print(model)
+    # print('model')
     # try:
     #     model.truncate()
     # except Exception as ex:
@@ -172,25 +176,29 @@ def update_field_model_by_id(request):
     # Students
 
     if pkey_ == "new":
-        print("1"*20)
-        print(parent_model_)
-        print("1"*20)
+        # print("1"*20)
+        # print('parent_model_')
+        # print(parent_model_)
+        # print('parent_model_')
+        # print("1"*20)
         if parent_model_ != "":
             parent_pkey_ = dic_['parent_pkey']
-            print(parent_pkey_)
-            print("2"*20)
+            # print(parent_pkey_)
+            # print("2"*20)
             parent_model__ = apps.get_model(app_label=app_, model_name=parent_model_)
-            print("3"*20)
+            # print("3"*20)
             parent_model_fk_name = parent_model_[:-1]
-            print("4"*20)
-            print(parent_model_fk_name)
+            # print("4"*20)
+            # print(parent_model_fk_name)
             parent_obj__ = parent_model__.objects.get(id=parent_pkey_)
             s = 'model.objects.create('+app_+'_web=company_obj, '+parent_model_fk_name+'=parent_obj__)'
+            # print("no parent", s)
         else:
             s = 'model.objects.create('+app_+'_web=company_obj)'
-        print(s)
+            # print("parent is ''", s)
+        # print(s)
         obj = eval(s)
-        # print(obj)
+        # print(obj.id)
         # print('2'*30)
     else:
         try:
@@ -202,8 +210,11 @@ def update_field_model_by_id(request):
             obj = model.objects.get(id=pkey_)
 
     # print('6'*30)
-    # print(obj)
+    # print(obj.id)
     # print('7-'*20)
+    # print(type_)
+    # print('8-'*20)
+
     if type_ == "checkbox":
         if value_ == 'true':
             value_ = True
@@ -227,7 +238,9 @@ def update_field_model_by_id(request):
         # print('-'*30)
         exec(s)
         obj.save()
+        # print('obj.id')
         # print(obj.id)
+        # print('obj.id')
         return JsonResponse({'status': 'ok', "record_id": obj.id})
     except Exception as e:
         # print('-'*30)
@@ -264,8 +277,13 @@ def get_data_link(request):
     fields_str = fields_str[:len(fields_str)-2]
     model = apps.get_model(app_label=app_, model_name=model_)
     # print(model)
-
-    number_of_rows_ = int(dic_['number_of_rows'])
+    number_of_rows_ = 2
+    try:
+        number_of_rows_ = dic_['number_of_rows']
+        number_of_rows_ = int(number_of_rows_)
+    except Exception as ex:
+        pass
+        # print(ex)
     parent_id_ = -1
     try:
         parent_id_ = int(dic_['parent_id'])

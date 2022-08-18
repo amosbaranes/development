@@ -36,8 +36,9 @@ company_obj_id, is_show_btns=true, user_id=0)
                                                   "attributes":{},
                                                   "functions":["onmouseover", "onmouseout"]},
                                         "Span":{"title":"Span", "width":5,
-                                                "setting": {"color":[], "background-color":[]},
-                                                "attributes":{}, "functions":[]},
+                                                "setting": {"color":[], "background-color":[], "font-weight":["normal","lighter","bold","900"]},
+                                                "attributes":{},
+                                                "functions":["onmouseover", "onmouseout"]},
                                         "Input":{"title":"Input", "width":5,
                                                  "setting": {"color":[], "background-color":[], "text-align":["left", "center", "right"]},
                                                  "attributes":{"field":[],
@@ -45,7 +46,7 @@ company_obj_id, is_show_btns=true, user_id=0)
                                                                        "datetime-local","email","file","hidden","image",
                                                                        "month","number","password","radio","range","reset",
                                                                        "search","submit","tel","time","url","week"]},
-                                                 "functions":["onchange"]},
+                                                 "functions":["onchange", "onkeyup", "onkeydown"]},
                                         "Select":{"title":"Select", "width":5, "setting": {"options":[], "global_adjective":[],
                                                                                            "app_adjective":[], "data_app":[], "data_model":[],
                                                                                            "data_field":[], "data_filter_field":[],
@@ -281,8 +282,8 @@ AdvancedTabsManager.prototype.set_active_tab = function(btn)
               attributes_list=this.tab["attributes_list"],
               tab_btn_name="Tab",properties_func=null,
               node_to_delete=null)
-            } catch(er) {alert("er9031: "+ er)
-      }
+            } catch(er) {//alert("er9031: "+ er)
+    }
 }
 
 AdvancedTabsManager.prototype.get_tab = function(tab_name){for(id in this.tabs){if (this.tabs[id].tab_name==tab_name){return this.tabs[id]}}}
@@ -683,6 +684,9 @@ acObj.prototype.create_obj = function(){
   else {var width_="100"}
   var u="px";if(width_.includes("%")){u=""};
 
+
+  var font_weight_=this.data["properties"]["font-weight"];
+  if(font_weight_=="" || font_weight_==null){var font_weight="";} else {var font_weight=";font-weight:"+font_weight_}
   var align_=this.data["properties"]["text-align"];
   if(align_=="" || align_==null){var align="right";} else {var align=align_}
   var color_=this.data["properties"]["color"];
@@ -719,7 +723,7 @@ acObj.prototype.create_obj = function(){
    //"overflow: scroll;
   } else {
     var s_="position:absolute;left:"+this.data["properties"]["x"]+"px;top:"+this.data["properties"]["y"]+"px;width:"+width_+u+";"
-    s_+="color:"+color+background_color;
+    s_+="color:"+color+background_color+font_weight;
     this.new_obj.setAttribute("style", s_);
   }
 
@@ -825,6 +829,7 @@ acSearchTableCreator.prototype.create_obj = function()
   var dic=this.parent.data;
   if(!dic["fields"]){dic["fields"]={"1":{"field_title":"1", "field_name":"","field_width":"100"},
                                     "2":{"field_title":"2", "field_name":"","field_width":"100"}}}
+  if(!(dic["properties"]["table_class"])){dic["properties"]["table_class"]="basic"}
   //alert(JSON.stringify(dic));
   this.parent.data=dic;
   //--
@@ -874,10 +879,10 @@ acSearchTableCreator.prototype.create_obj = function()
    else{this.table_.setAttribute(s, "")}}
 
   container.appendChild(this.table_);
+  this.table_.onclick=this.row_click
   for(f in dic["functions"]){
-    if(f=="onclick"){
-     this.table_.onclick=this.row_click
-    } else{
+    if(f!="onclick")
+    {
       var s="this.table_."+f+"="+dic["functions"][f];eval(s);
     }
   }
@@ -886,7 +891,6 @@ acSearchTableCreator.prototype.create_obj = function()
 acSearchTableCreator.prototype.get_data = function(data_table_name=null,parent_model=null,parent_id=null,company_obj_id=null)
 {
   var dic=this.parent.data;
-  //alert(111)
   //alert(JSON.stringify(dic));
   var container = document.getElementById("content_"+dic["container_id"]);
   //alert(container.outerHTML);
@@ -956,7 +960,6 @@ acSearchTableCreator.prototype.get_data = function(data_table_name=null,parent_m
   var dic__={"model":this.data_table_name, "parent_model": parent_model_, "parent_id":parent_id_, "number_of_rows":this.number_of_rows, "fields":dic__}
 
   if(company_obj_id!=null){dic__["company_obj_id"]=company_obj_id}
-
   this.parent.atm.get_data(call_back_fun=fun, dic__, this.tbody)
 }
 
@@ -976,7 +979,9 @@ acSearchTableCreator.prototype.row_click = function(event)
  var dic=this.my_creator_obj.tbody.data;
  for(f in dic){dic[f][n_row];result[f]=dic[f][n_row]}
  container.my_creator_obj.set_objects_data(result);
- try{eval('var zz='+this.my_creator_obj.parent.data["functions"]["onclick"]);zz(event)} catch(er) {alert("er9013: "+er)}
+ try{eval('var zz='+this.my_creator_obj.parent.data["functions"]["onclick"]);zz(event)} catch(er)
+ {//alert("er9013: "+er)
+ }
 }
 
 acSearchTableCreator.prototype.editor_properties_func = function(tab, tab_properties_)
@@ -1350,12 +1355,12 @@ function TabContent(tab, container, link_dic, is_on_click=true, is_link=null){
  this.link_content.tab_content_id=this.link_number;
  if(is_link){var width=100} else {var width=pp_["width"];}
 
-// alert('JSON.stringify(pp_)');
-// alert(JSON.stringify(pp_));
-var background_color_="white";
-var color_="black";
-// alert(pp_["background-color"])
-// alert(pp_["color"])
+ // alert('JSON.stringify(pp_)');
+ // alert(JSON.stringify(pp_));
+ var background_color_="white";
+ var color_="black";
+ // alert(pp_["background-color"])
+ // alert(pp_["color"])
 
  //if(!(pp_["background-color"]==null)){alert(9);background-color_=pp_["background-color"]}
  //if(!(pp_["color"]==null)){alert(9);color_=pp_["color"]}
@@ -1364,7 +1369,7 @@ var color_="black";
  //alert(ss_)
  this.link_content.setAttribute("style", ss_);
 
-// border: 1px solid #ccc;
+ // border: 1px solid #ccc;
 
  if(is_on_click){
     //alert(this.link_content.outerHTML)
@@ -1429,6 +1434,13 @@ var color_="black";
   //alert(JSON.stringify(this.my_creator_obj.link_dic))
   var e=event.target;
   //alert(e.outerHTML)
+  var e_container_id_=e.getAttribute("container_id")
+  var c_container_id_=this.getAttribute("link_number")
+  if(e_container_id_!=c_container_id_)
+  {
+   //alert(e_container_id_+ " " +c_container_id_)
+   return;
+  }
   var field_=e.getAttribute("field");
   var model_=this.my_creator_obj.link_dic["properties"]["table"];
   try{var parent_model_=this.my_creator_obj.link_dic["properties"]["parent_table"]} catch(er){};
@@ -1440,10 +1452,9 @@ var color_="black";
   if(field_=="" || field_==null){return}
   var dic_data={"model":model_, "parent_model":parent_model_, "field":field_, "pkey":record_id_, "parent_pkey":parent_id_,
                 "value":e.value, "type":type_}
-  //alert(JSON.stringify(dic_data))
-  //alert(this.outerHTML)
   this.tab.parent.active_tab_content=this;
   this.tab.parent.save_data(this, dic_data)
+  event.preventDefault();
  }
  container.appendChild(this.link_content);
  this.process_content();
