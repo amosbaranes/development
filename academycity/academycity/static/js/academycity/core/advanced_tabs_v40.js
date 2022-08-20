@@ -1044,10 +1044,7 @@ acSearchTableCreator.prototype.row_click = function(event)
  //alert(JSON.stringify(this.my_creator_obj.tbody.data))
  var dic=this.my_creator_obj.tbody.data;
 
- for(f in dic){
-  // dic[f][n_row];
-  result[f]=dic[f][n_row]
- }
+ for(f in dic){result[f]=dic[f][n_row]}
 
  container.my_creator_obj.set_objects_data(result);
  container.my_creator_obj.current_record_data=result;
@@ -1548,7 +1545,7 @@ TabContent.prototype.set_objects_data = function(dic)
  this.link_content.setAttribute("record_id", dic["id"]);var container_dic=this.tab.tab_objects[this.link_number];
  for(o in container_dic)
  {
-   if(container_dic[o]["obj_type"]=="acObj" && container_dic[o]["obj_name"]=="acInput"){
+   if(container_dic[o]["obj_type"]=="acObj" && (container_dic[o]["obj_name"]=="acInput" || container_dic[o]["obj_name"]=="acSelect")){
      var eI=document.getElementById(o);var v=dic[container_dic[o]["properties"]["field"]];eI.value=v;
    }
  }
