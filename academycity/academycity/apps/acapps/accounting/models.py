@@ -50,3 +50,16 @@ class Charges(TruncateTableMixin, models.Model):
 
     def __str__(self):
         return str(self.student) + " - " + str(self.amount)
+
+
+class Expenses(TruncateTableMixin, models.Model):
+    accounting_web = models.ForeignKey(AccountingWeb, on_delete=models.CASCADE, default=1,
+                                       related_name='accounting_expenses')
+
+    created = models.DateField(auto_now_add=True)
+    amount = models.IntegerField(default=0, blank=True)
+    account = models.IntegerField(default=0, blank=True, null=True)
+    comment = models.CharField(max_length=256, default='', blank=True, null=True)
+
+    def __str__(self):
+        return str(self.account) + " - " + str(self.amount) + " - " + str(self.comment)

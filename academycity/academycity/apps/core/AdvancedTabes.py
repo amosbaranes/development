@@ -23,6 +23,18 @@ class AdvancedTabs(object):
             result = {'tab_id': "-1"}
         return result
 
+    def delete_record(self, params):
+        try:
+            # print(params)
+            model = apps.get_model(app_label=params["app"], model_name=params["model"])
+            obj = model.objects.get(id=params["id"])
+            obj.delete()
+            result = {'id': params["id"]}
+        except Exception as ex:
+            result = {'tab_id': "-1"}
+        return result
+
+
     def add_tab(self, params):
         try:
             # print('-1'*10)

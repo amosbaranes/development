@@ -291,6 +291,10 @@ def get_data_link(request):
         pass
     # print(parent_id_)
     company_obj_id_ = dic_['company_obj_id']
+
+    filter_value_ = dic_['filter_value']
+    filter_field_ = dic_['filter_field']
+
     # print(company_obj_id_)
     if company_obj_id_ != "-1":
         parent_model = apps.get_model(app_label=app_, model_name=app_+"web")
@@ -302,10 +306,9 @@ def get_data_link(request):
             parent_model__ = apps.get_model(app_label=app_, model_name=parent_model_)
             parent_model_fk_name = parent_model_[:-1]
             parent_obj__ = parent_model__.objects.get(id=parent_pkey_)
-            s = 'model.objects.filter(accounting_web=company_obj, ' + parent_model_fk_name
-            s += '=parent_obj__).all()[:number_of_rows_].values(' + fields_str + ')'
+            s = 'model.objects.filter(accounting_web=company_obj, ' + parent_model_fk_name+'=parent_obj__)'
         else:
-            s = 'model.objects.filter(accounting_web=company_obj).all()[:number_of_rows_].values('+fields_str+')'
+            s = 'model.objects.filter(accounting_web=company_obj)'
     else:
         if parent_id_ > -1:
             parent_model_ = dic_['parent_model']
@@ -313,11 +316,14 @@ def get_data_link(request):
             parent_model__ = apps.get_model(app_label=app_, model_name=parent_model_)
             parent_model_fk_name = parent_model_[:-1]
             parent_obj__ = parent_model__.objects.get(id=parent_pkey_)
-            s = 'model.objects.filter(' + parent_model_fk_name
-            s += '=parent_obj__).all()[:number_of_rows_].values(' + fields_str + ')'
+            s = 'model.objects.filter(' + parent_model_fk_name+'=parent_obj__)'
         else:
-            s = 'model.objects.all()[:number_of_rows_].values('+fields_str+')'
+            s = 'model.objects'
     try:
+        if filter_value_ != "":
+            s += '.filter('+filter_field_+'__icontains="'+filter_value_+'")'
+        s += '.order_by("'+filter_field_+'")'
+        s += '.all()[:number_of_rows_].values('+fields_str+')'
         # print(s)
         data = eval(s)
     except Exception as ex:
