@@ -1,7 +1,8 @@
 from __future__ import unicode_literals
 from django.contrib import admin
 from django.utils.translation import ugettext_lazy as _
-from .models import (Students, Payments, Charges, Expenses, AccountingWeb)
+from .models import (Students, Payments, Charges, Expenses, AccountingWeb,
+                     Locations, GeneralLedgers, GeneralLedgerDetail, TimeDim, TrialBalance)
 
 
 @admin.register(AccountingWeb)
@@ -27,4 +28,29 @@ class ChargesAdmin(admin.ModelAdmin):
 @admin.register(Expenses)
 class ExpensesAdmin(admin.ModelAdmin):
     list_display = ('id', 'account', 'amount', 'comment')
+
+
+@admin.register(Locations)
+class LocationsAdmin(admin.ModelAdmin):
+    list_display = ('id', 'location', 'name')
+
+
+@admin.register(GeneralLedgers)
+class GeneralLedgersAdmin(admin.ModelAdmin):
+    list_display = ('id', 'comment')
+
+
+@admin.register(GeneralLedgerDetail)
+class GeneralLedgerDetailAdmin(admin.ModelAdmin):
+    list_display = ('id', 'account', 'amount', 'comment')
+
+
+@admin.register(TimeDim)
+class TimeDimAdmin(admin.ModelAdmin):
+    list_display = ('id', 'year', 'quarter', 'month', 'day')
+
+
+@admin.register(TrialBalance)
+class TrialBalanceAdmin(admin.ModelAdmin):
+    list_display = ('id', "level", 'account', 'amount')
 

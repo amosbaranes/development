@@ -56,7 +56,7 @@ def home(request):
     try:
         # print('try1: ' + host_)
         log_debug('try1: ' + host_)
-        wsc = WebSiteCompany(request, host_)
+        wsc = WebSiteCompany(request, domain=host_)
         if wsc.is_registered_domain():
             # print('wsc.is_registered_domain():wsc.is_registered_domain()')
             kk = wsc.get_redirect_link()

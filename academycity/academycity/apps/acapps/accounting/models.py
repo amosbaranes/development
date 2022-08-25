@@ -63,3 +63,77 @@ class Expenses(TruncateTableMixin, models.Model):
 
     def __str__(self):
         return str(self.account) + " - " + str(self.amount) + " - " + str(self.comment)
+
+
+class Locations(TruncateTableMixin, models.Model):
+    accounting_web = models.ForeignKey(AccountingWeb, on_delete=models.CASCADE, default=1,
+                                       related_name='accounting_location')
+    created = models.DateField(auto_now_add=True)
+    location = models.CharField(max_length=256, default='', blank=True, null=True)
+    name = models.CharField(max_length=256, default='', blank=True, null=True)
+    address = models.CharField(max_length=256, default='', blank=True, null=True)
+    city = models.CharField(max_length=100, default='', blank=True, null=True)
+    state = models.CharField(max_length=10, default='', blank=True, null=True)
+    zip = models.CharField(max_length=15, default='', blank=True, null=True)
+
+    def __str__(self):
+        return str(self.location)  # + " - " + str(self.address) + " - " + str(self.city) + " - " + str(self.state)
+
+
+class GeneralLedgers(TruncateTableMixin, models.Model):
+    accounting_web = models.ForeignKey(AccountingWeb, on_delete=models.CASCADE, default=1,
+                                       related_name='accounting_general_ledger')
+    location = models.ForeignKey(Locations, on_delete=models.CASCADE, default=1,
+                                 related_name='location_general_ledger')
+    created = models.DateField(auto_now_add=True)
+    comment = models.CharField(max_length=256, default='', blank=True, null=True)
+
+    def __str__(self):
+        return str(self.id) + " - " + str(self.comment)
+
+
+class GeneralLedgerDetail(TruncateTableMixin, models.Model):
+    accounting_web = models.ForeignKey(AccountingWeb, on_delete=models.CASCADE, default=1,
+                                       related_name='accounting_general_ledger_detail')
+    location = models.ForeignKey(Locations, on_delete=models.CASCADE, default=1,
+                                 related_name='location_general_ledger_detail')
+    generalledger = models.ForeignKey(Locations, on_delete=models.CASCADE, default=1,
+                                      related_name='general_ledger_detail')
+    account = models.IntegerField(default=0, blank=True, null=True)
+    amount = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    comment = models.CharField(max_length=256, default='', blank=True, null=True)
+
+    def __str__(self):
+        return str(self.account) + " - " + str(self.amount) + " - " + str(self.comment)
+
+
+class TimeDim(TruncateTableMixin, models.Model):
+    accounting_web = models.ForeignKey(AccountingWeb, on_delete=models.CASCADE, default=1,
+                                       related_name='accounting_time_dim')
+    location = models.ForeignKey(Locations, on_delete=models.CASCADE, default=1,
+                                 related_name='location_time_dim')
+    id = models.PositiveIntegerField(primary_key=True)
+    year = models.PositiveSmallIntegerField(default=0)
+    quarter = models.PositiveSmallIntegerField(default=0)
+    month = models.PositiveSmallIntegerField(default=0)
+    day = models.PositiveSmallIntegerField(default=0)
+
+    def __str__(self):
+        return str(self.id)
+
+
+class TrialBalance(TruncateTableMixin, models.Model):
+    accounting_web = models.ForeignKey(AccountingWeb, on_delete=models.CASCADE, default=1,
+                                       related_name='accounting_trial_balance')
+    location = models.ForeignKey(Locations, on_delete=models.CASCADE, default=1,
+                                 related_name='location_trial_balance')
+    time_dim = models.ForeignKey(TimeDim, on_delete=models.CASCADE, default=1,
+                                 related_name='trial_balance_timedim')
+
+    level = models.SmallIntegerField(default=0, blank=True, null=True)
+    account = models.IntegerField(default=0, blank=True, null=True)
+    amount = models.DecimalField(max_digits=10, decimal_places=2, default=0, blank=True, null=True)
+
+    def __str__(self):
+        return str(self.account) + " - " + str(self.amount) + " - " + str(self.comment)
+

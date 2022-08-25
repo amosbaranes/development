@@ -7,6 +7,7 @@ from django.utils.dateparse import parse_date
 from django.contrib.auth.models import User
 from ..actions.utils import create_action
 from .AdvancedTabes import AdvancedTabs
+from ..acapps.accounting.models import Locations, TimeDim
 
 
 def home(request):
@@ -133,11 +134,11 @@ def activate_function(request):
     return JsonResponse(dic)
 
 
-def update_field_model_by_id(request):
+def update_field_model_by_id(request, foreign=None):
     dic_ = request.POST["dic"]
-    # print('dic_')
-    # print(dic_)
-    # print('dic_')
+    print('dic_')
+    print(dic_)
+    print('dic_')
     dic_ = eval(dic_)
     app_ = dic_['app']
     model_ = dic_['model']
@@ -194,8 +195,15 @@ def update_field_model_by_id(request):
             s = 'model.objects.create('+app_+'_web=company_obj, '+parent_model_fk_name+'=parent_obj__)'
             # print("no parent", s)
         else:
-            s = 'model.objects.create('+app_+'_web=company_obj)'
-            # print("parent is ''", s)
+            foreign_keys = dic_["foreign_keys"]
+            s = 'model.objects.create('+app_+'_web=company_obj'
+            for k in foreign_keys:
+                ss = foreign_keys[k]["foreign_table"]+'.objects.get(id='+foreign_keys[k]["value"]+')'
+                myVars = vars()
+                # myVars[k] = objs[k]
+                myVars[k] = eval(ss)
+                s += ', '+k+'='+k
+            s += ')'
         # print(s)
         obj = eval(s)
         # print(obj.id)

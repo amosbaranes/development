@@ -40,18 +40,20 @@ company_obj_id, is_show_btns=true, user_id=0)
                                                 "attributes":{},
                                                 "functions":["onmouseover", "onmouseout"]},
                                         "Input":{"title":"Input", "width":5,
-                                                 "setting": {"color":[], "background-color":[], "text-align":["left", "center", "right"]},
+                                                 "setting": {"color":[], "background-color":[], "text-align":["", "left", "center", "right"]},
                                                  "attributes":{"field":[],
                                                                "type":["text","button","checkbox","color","date",
                                                                        "datetime-local","email","file","hidden","image",
                                                                        "month","number","password","radio","range","reset",
-                                                                       "search","submit","tel","time","url","week"]},
+                                                                       "search","submit","tel","time","url","week"],
+                                                                       "foreign_table":[]},
                                                  "functions":["onchange", "onkeyup", "onkeydown"]},
                                         "Select":{"title":"Select", "width":5, "setting": {"options":[], "global_adjective":[],
                                                                                            "app_adjective":[], "data_app":[], "data_model":[],
                                                                                            "data_field":[], "data_filter_field":[],
                                                                                            "data_filter_field_value":[]},
-                                                                                "attributes":{"field":[], "size":[]},
+                                                                                "attributes":{"field":[], "size":[],
+                                                                                "foreign_table":[]},
                                                                                 "functions":["onchange"]},
                                         "Table":{"title":"Table", "width":5, "setting": {}, "attributes":{}, "functions":["onchange"]},
                                         "Textarea":{"title":"textarea", "width":7,
@@ -108,7 +110,7 @@ company_obj_id, is_show_btns=true, user_id=0)
             }
 
  this.tab_nav_links = {"functions":["onclick", "onmouseover", "onmouseout"],
-                       "settings_list":{"width":[], "add_title":[], "remove_title":[], "is_show_btns":[],
+                       "settings_list":{"width":[], "add_title":[], "remove_title":[], "is_show_btns":["", "true", "false"],
                        "obj_number":[], "background_color":[]},
                        "attributes_list":{}
                        }
@@ -656,6 +658,109 @@ function FunctionsPropertiesEditor(tab, functions_dic, functions_list_dic, prope
    //alert(properties_func)
    try{if(properties_func!=null){properties_func(tab, tab_properties_)}} catch(er) {alert("error 206: "+er)}
 }
+
+
+//-- AccountingObj --
+function AccountingObj(parent, cofa_dic=null)
+{
+ //alert(JSON.stringify(cofa_dic))
+ this.parent=parent;
+ this.cofa=null;
+ this.accounting_data=null;
+ this.data_for_report={};
+ if(cofa_dic!=null){this.set_cofa(cofa_dic)}
+}
+
+AccountingObj.prototype.set_cofa = function(cofa_dic)
+{
+ var f = function(result, dic, c=[])
+ {for(var k in dic)
+  {
+   if(!isNaN(parseInt(k)))
+      {
+        for(j in c)
+        {
+         if(!(c[j] in result)){result[c[j]]={}}
+         result[c[j]][k]=dic[k];
+        }
+      }
+   else{
+      var cc = [k].concat(c)
+      f(result,dic[k],cc);
+    }
+  }
+ }
+ this.cofa=cofa_dic;
+ this.accounts={};
+ f(this.accounts, this.cofa)
+
+// for(k in this.accounts)
+// {
+//  alert(k+"\n\n"+JSON.stringify(this.accounts[k]))
+// }
+
+}
+
+AccountingObj.prototype.set_accounting_data = function(data)
+{
+  this.accounting_data=data;
+  var ff = function(result, dic, data, total)
+  {
+   for(k in dic)
+   {if(!isNaN(parseInt(k))){result[k]=data[k];total["v"]+=data[k]}
+    else{result[k]={}; result["Total "+k]={"v":0};var t=ff(result[k],dic[k],data,result["Total "+k]);total["v"]+=t["v"]}
+   };return total;
+  }
+  for(i in data){this.data_for_report[i]={};ff(this.data_for_report[i],this.cofa,data[i],total={"v":0})}
+  //alert(JSON.stringify(this.data_for_report))
+}
+
+AccountingObj.prototype.get_financial_statement = function(statement,address)
+{
+ //alert(JSON.stringify(this.accounts))
+ var fa=function(dic, data_, accounts, ad, sta, ss="")
+ {
+ var s_='';
+ for(a in dic)
+ {
+  if(!isNaN(parseInt(a)))
+  {
+   s_+='<tr>'+'<td>&nbsp;&nbsp;'+ss+accounts[a]+'</td>';
+      for(i in data_)
+      {
+       s_+='<td>'+data_[i][a]+'</td>'
+      };
+      s_+='</tr>';
+  }
+  else
+  {if(a!="v")
+   {ad1={};s_+='<tr>'+'<td>'+ss+a+'</td>';
+    for(i in ad)
+    {ad1[i]={};ad1[i][sta]={};ad1[i][sta]=ad[i][sta][a];
+     var av="";if(a.includes("Total")){av=100*ad[i][sta][a]["v"];av=Math.round(av)/100};
+     s_+='<td>'+av+'</td>'
+    }
+    s_+='</tr>';s_+=fa(dic[a], data_, accounts, ad1, sta, ss+"&nbsp;&nbsp;")
+   }
+  }
+ }
+ return s_
+}
+
+ var s='<div>'+address+'</div>';
+ s+="<table class=''>"
+ s+='<thead><tr><th>Accounts</th>';
+ for(i in this.data_for_report){s+='<th>'+i+'</th>'};
+ s+='</tr></thead>'
+ s+="<tbody>";
+
+ s+=fa(this.data_for_report[2022][statement],this.accounting_data, this.accounts , this.data_for_report, statement)
+
+//s+=fa(this.data_for_report[2022]["Income"], this.accounting_data, this.data_for_report, "Income")
+ s+="</tbody></table>"
+ return s;
+}
+
 
 // -- acObj --
 function acObj(){}
@@ -1497,22 +1602,33 @@ function TabContent(tab, container, link_dic, is_on_click=true, is_link=null){
   //alert(JSON.stringify(this.my_creator_obj.link_dic))
   var e=event.target;
   //alert(e.outerHTML)
+  //alert(this.outerHTML)
   var e_container_id_=e.getAttribute("container_id")
   var c_container_id_=this.getAttribute("link_number")
   //alert(e_container_id_+ " " + c_container_id_)
-
   if(e_container_id_!=c_container_id_) {return;}
+  var foreign_table=e.getAttribute("foreign_table")
   var field_=e.getAttribute("field");
+  try{var type_=e.getAttribute("type");if(type_==null || type_==""){type_=""}} catch(er){}
+  if(foreign_table!=null && foreign_table!="")
+  {
+   if(this.foreign_keys==null){this.foreign_keys={}}
+   var vv=e.value;if(type_=="date"){var ss=vv.split("-");vv=ss[0]+ss[1]+ss[2]}
+   this.foreign_keys[field_]={"value":vv, "foreign_table":foreign_table};
+   return;
+  }
+
   var model_=this.my_creator_obj.link_dic["properties"]["table"];
   try{var parent_model_=this.my_creator_obj.link_dic["properties"]["parent_table"]} catch(er){};
   if(parent_model_==null){var parent_model_="";}
   var record_id_=this.getAttribute("record_id");
   var parent_id_=this.getAttribute("parent_id");
-  try{var type_=e.getAttribute("type");if(type_==null || type_==""){type_=""}} catch(er){}
   if(field_=="" || field_==null){return}
+
   var dic_data={"model":model_, "parent_model":parent_model_, "field":field_, "pkey":record_id_, "parent_pkey":parent_id_,
-                "value":e.value, "type":type_}
-  //alert(JSON.stringify(dic_data))
+                "value":e.value, "type":type_, "foreign_keys":this.foreign_keys}
+
+  // alert(JSON.stringify(dic_data))
 
   this.tab.parent.active_tab_content=this;
   this.tab.parent.save_data(this, dic_data);

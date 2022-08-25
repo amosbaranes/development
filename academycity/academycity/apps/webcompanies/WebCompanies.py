@@ -9,8 +9,8 @@ class WebSiteCompany(object):
     def __init__(self, request, domain=None, web_company_id=None, is_test=False):
         # if web_company_id:
         #     log_debug("Create WebSiteCompany for: "+str(web_company_id))
-        if domain:
-            log_debug("Create WebSiteCompany for domain_0: "+str(domain))
+        # if domain:
+        #     log_debug("Create WebSiteCompany for domain_0: "+str(domain))
         # print('-1 '*20)
         # print('WebSiteCompany--'*3)
         # print('-1'*20)
@@ -18,6 +18,7 @@ class WebSiteCompany(object):
         if domain:
             # print('-domain '*5)
             # print(domain)
+            # log_debug("Create WebSiteCompany for domain_0: "+str(domain))
             # print('-domain '*5)
             try:
                 # log_debug('WebSiteCompany domain1: ' + domain)
