@@ -195,14 +195,16 @@ def update_field_model_by_id(request, foreign=None):
             s = 'model.objects.create('+app_+'_web=company_obj, '+parent_model_fk_name+'=parent_obj__)'
             # print("no parent", s)
         else:
-            foreign_keys = dic_["foreign_keys"]
             s = 'model.objects.create('+app_+'_web=company_obj'
-            for k in foreign_keys:
-                ss = foreign_keys[k]["foreign_table"]+'.objects.get(id='+foreign_keys[k]["value"]+')'
-                myVars = vars()
-                # myVars[k] = objs[k]
-                myVars[k] = eval(ss)
-                s += ', '+k+'='+k
+            try:
+                foreign_keys = dic_["foreign_keys"]
+                for k in foreign_keys:
+                    ss = foreign_keys[k]["foreign_table"]+'.objects.get(id='+foreign_keys[k]["value"]+')'
+                    myVars = vars()
+                    myVars[k] = eval(ss)
+                    s += ', '+k+'='+k
+            except Exception as ex:
+                pass
             s += ')'
         # print(s)
         obj = eval(s)
