@@ -108,10 +108,6 @@ class GeneralLedgerDetail(TruncateTableMixin, models.Model):
 
 
 class TimeDim(TruncateTableMixin, models.Model):
-    accounting_web = models.ForeignKey(AccountingWeb, on_delete=models.CASCADE, default=1,
-                                       related_name='accounting_time_dim')
-    location = models.ForeignKey(Locations, on_delete=models.CASCADE, default=1,
-                                 related_name='location_time_dim')
     id = models.PositiveIntegerField(primary_key=True)
     year = models.PositiveSmallIntegerField(default=0)
     quarter = models.PositiveSmallIntegerField(default=0)

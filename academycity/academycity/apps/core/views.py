@@ -136,9 +136,9 @@ def activate_function(request):
 
 def update_field_model_by_id(request, foreign=None):
     dic_ = request.POST["dic"]
-    print('dic_')
-    print(dic_)
-    print('dic_')
+    # print('dic_')
+    # print(dic_)
+    # print('dic_')
     dic_ = eval(dic_)
     app_ = dic_['app']
     model_ = dic_['model']
