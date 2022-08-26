@@ -136,10 +136,13 @@ def activate_function(request):
 
 
 def update_field_model_by_id(request, foreign=None):
+    log_debug("update_field_model_by_id 0")
     dic_ = request.POST["dic"]
     # print('dic_')
     # print(dic_)
+    log_debug(dic_)
     # print('dic_')
+    log_debug("update_field_model_by_id 1")
     dic_ = eval(dic_)
     app_ = dic_['app']
     model_ = dic_['model']
@@ -149,6 +152,7 @@ def update_field_model_by_id(request, foreign=None):
     type_ = dic_['type']
     company_obj_id_ = dic_['company_obj_id']
     parent_model_ = dic_['parent_model']
+    log_debug("update_field_model_by_id 2")
     # print('1-'*20)
     # print(value_)
     # print(model_)
@@ -176,27 +180,37 @@ def update_field_model_by_id(request, foreign=None):
     # except Exception as ex:
     #     print(ex)
     # Students
+    log_debug("update_field_model_by_id 3")
 
     if pkey_ == "new":
         # print("1"*20)
+        log_debug("update_field_model_by_id 4")
         # print('parent_model_')
         # print(parent_model_)
         # print('parent_model_')
         # print("1"*20)
         if parent_model_ != "":
+            log_debug("update_field_model_by_id 41")
             parent_pkey_ = dic_['parent_pkey']
             # print(parent_pkey_)
             # print("2"*20)
             parent_model__ = apps.get_model(app_label=app_, model_name=parent_model_)
             # print("3"*20)
+            log_debug("update_field_model_by_id 42")
             parent_model_fk_name = parent_model_[:-1]
             # print("4"*20)
             # print(parent_model_fk_name)
+            log_debug("update_field_model_by_id 43")
             parent_obj__ = parent_model__.objects.get(id=parent_pkey_)
+            log_debug("update_field_model_by_id 44")
             s = 'model.objects.create('+app_+'_web=company_obj, '+parent_model_fk_name+'=parent_obj__)'
             # print("no parent", s)
+            log_debug("update_field_model_by_id s="+s)
+            log_debug("update_field_model_by_id 45")
         else:
+            log_debug("update_field_model_by_id 5")
             s = 'model.objects.create('+app_+'_web=company_obj'
+            log_debug("update_field_model_by_id s="+s)
             try:
                 log_debug("save with fkey 1")
                 foreign_keys = dic_["foreign_keys"]
