@@ -8,6 +8,7 @@ from django.contrib.auth.models import User
 from ..actions.utils import create_action
 from .AdvancedTabes import AdvancedTabs
 from ..acapps.accounting.models import Locations, TimeDim
+from ..core.utils import log_debug
 
 
 def home(request):
@@ -197,17 +198,25 @@ def update_field_model_by_id(request, foreign=None):
         else:
             s = 'model.objects.create('+app_+'_web=company_obj'
             try:
+                log_debug("save with fkey 1")
                 foreign_keys = dic_["foreign_keys"]
+                log_debug("save with fkey 2")
                 for k in foreign_keys:
+                    log_debug("save with fkey k="+k)
                     ss = foreign_keys[k]["foreign_table"]+'.objects.get(id='+foreign_keys[k]["value"]+')'
+                    log_debug("save with fkey ss="+ss)
                     myVars = vars()
                     myVars[k] = eval(ss)
+                    log_debug("save with fkey 3 ")
                     s += ', '+k+'='+k
+                    log_debug("save with fkey s="+s)
             except Exception as ex:
                 pass
             s += ')'
         # print(s)
+        log_debug("save with fkey last s="+s)
         obj = eval(s)
+        log_debug("save with fkey 100")
         # print(obj.id)
         # print('2'*30)
     else:
@@ -245,9 +254,11 @@ def update_field_model_by_id(request, foreign=None):
         s = 'obj.' + field_ + ' = value_'
         # print('-'*30)
         # print(s)
+        log_debug("set value: "+s)
         # print('-'*30)
         exec(s)
         obj.save()
+        log_debug("value was set successfully: "+s)
         # print('obj.id')
         # print(obj.id)
         # print('obj.id')

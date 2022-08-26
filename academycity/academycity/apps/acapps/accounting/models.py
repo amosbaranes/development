@@ -131,5 +131,5 @@ class TrialBalance(TruncateTableMixin, models.Model):
     amount = models.DecimalField(max_digits=10, decimal_places=2, default=0, blank=True, null=True)
 
     def __str__(self):
-        return str(self.account) + " - " + str(self.amount) + " - " + str(self.comment)
+        return str(self.account) + " - " + str(self.amount)
 
