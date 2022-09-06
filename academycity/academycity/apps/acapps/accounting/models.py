@@ -1,6 +1,7 @@
 from __future__ import unicode_literals
 from django.db import models
 from academycity.apps.core.sql import TruncateTableMixin
+from datetime import datetime
 
 
 class AccountingWeb(TruncateTableMixin, models.Model):
@@ -80,33 +81,6 @@ class Locations(TruncateTableMixin, models.Model):
         return str(self.location)  # + " - " + str(self.address) + " - " + str(self.city) + " - " + str(self.state)
 
 
-class GeneralLedgers(TruncateTableMixin, models.Model):
-    accounting_web = models.ForeignKey(AccountingWeb, on_delete=models.CASCADE, default=1,
-                                       related_name='accounting_general_ledger')
-    location = models.ForeignKey(Locations, on_delete=models.CASCADE, default=1,
-                                 related_name='location_general_ledger')
-    created = models.DateField(auto_now_add=True)
-    comment = models.CharField(max_length=256, default='', blank=True, null=True)
-
-    def __str__(self):
-        return str(self.id) + " - " + str(self.comment)
-
-
-class GeneralLedgerDetail(TruncateTableMixin, models.Model):
-    accounting_web = models.ForeignKey(AccountingWeb, on_delete=models.CASCADE, default=1,
-                                       related_name='accounting_general_ledger_detail')
-    location = models.ForeignKey(Locations, on_delete=models.CASCADE, default=1,
-                                 related_name='location_general_ledger_detail')
-    generalledger = models.ForeignKey(Locations, on_delete=models.CASCADE, default=1,
-                                      related_name='general_ledger_detail')
-    account = models.IntegerField(default=0, blank=True, null=True)
-    amount = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
-    comment = models.CharField(max_length=256, default='', blank=True, null=True)
-
-    def __str__(self):
-        return str(self.account) + " - " + str(self.amount) + " - " + str(self.comment)
-
-
 class TimeDim(TruncateTableMixin, models.Model):
     id = models.PositiveIntegerField(primary_key=True)
     year = models.PositiveSmallIntegerField(default=0)
@@ -116,6 +90,32 @@ class TimeDim(TruncateTableMixin, models.Model):
 
     def __str__(self):
         return str(self.id)
+
+
+class GeneralLedgers(TruncateTableMixin, models.Model):
+    accounting_web = models.ForeignKey(AccountingWeb, on_delete=models.CASCADE, default=1,
+                                       related_name='accounting_general_ledger')
+    location = models.ForeignKey(Locations, on_delete=models.CASCADE, default=1,
+                                 related_name='location_general_ledger')
+    time_dim = models.ForeignKey(TimeDim, on_delete=models.CASCADE, default=1,
+                                 related_name='general_ledger_timedim')
+    comment = models.CharField(max_length=256, default='', blank=True, null=True)
+
+    def __str__(self):
+        return str(self.id) + " - " + str(self.location) + " - " + str(self.comment)
+
+
+class GeneralLedgerDetail(TruncateTableMixin, models.Model):
+    accounting_web = models.ForeignKey(AccountingWeb, on_delete=models.CASCADE, default=1,
+                                       related_name='accounting_general_ledger_detail')
+    generalledger = models.ForeignKey(GeneralLedgers, on_delete=models.CASCADE, default=1,
+                                      related_name='gl_general_ledger_detail')
+    account = models.IntegerField(default=0, blank=True, null=True)
+    amount = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    comment = models.CharField(max_length=256, default='', blank=True, null=True)
+
+    def __str__(self):
+        return str(self.account) + " - " + str(self.amount) + " - " + str(self.comment)
 
 
 class TrialBalance(TruncateTableMixin, models.Model):

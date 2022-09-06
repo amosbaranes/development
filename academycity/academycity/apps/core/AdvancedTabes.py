@@ -34,7 +34,6 @@ class AdvancedTabs(object):
             result = {'tab_id': "-1"}
         return result
 
-
     def add_tab(self, params):
         try:
             # print('-1'*10)
@@ -146,11 +145,22 @@ class AdvancedTabs(object):
     def get_list_from_model(self, params):
         # print('params')
         # print(params)
+
         app_ = params['app']
         model_name_ = params['model_name']
         field_name_ = params['field_name']
+
         model = apps.get_model(app_label=app_, model_name=model_name_)
-        data = model.objects.all()
+
+        data_filter_field_ = params['data_filter_field']
+        data_filter_field_value_ = params['data_filter_field_value']
+        if data_filter_field_value_ or data_filter_field_value_ != "":
+            try:
+                data = eval('model.objects.filter('+data_filter_field_+'__icontains="'+data_filter_field_value_+'").all()')
+            except Exception as ex:
+                data = eval('model.objects.filter('+data_filter_field_+'__icontains='+data_filter_field_value_+').all()')
+        else:
+            data = model.objects.all()
         # print(data)
         result = []
         for q in data:

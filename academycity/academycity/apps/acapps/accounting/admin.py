@@ -37,12 +37,12 @@ class LocationsAdmin(admin.ModelAdmin):
 
 @admin.register(GeneralLedgers)
 class GeneralLedgersAdmin(admin.ModelAdmin):
-    list_display = ('id', 'comment')
+    list_display = ('id', 'time_dim', 'location', 'comment')
 
 
 @admin.register(GeneralLedgerDetail)
 class GeneralLedgerDetailAdmin(admin.ModelAdmin):
-    list_display = ('id', 'account', 'amount', 'comment')
+    list_display = ('id', 'generalledger', 'account', 'amount', 'comment')
 
 
 @admin.register(TimeDim)
@@ -52,5 +52,5 @@ class TimeDimAdmin(admin.ModelAdmin):
 
 @admin.register(TrialBalance)
 class TrialBalanceAdmin(admin.ModelAdmin):
-    list_display = ('id', "level", 'account', 'amount')
+    list_display = ('id', "level", 'time_dim', 'account', 'amount')
 

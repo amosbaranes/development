@@ -32,7 +32,7 @@ company_obj_id, is_show_btns=true, user_id=0)
 
                  "Component":{"title":"Component", "obj_type":"acObj",
                         "sub_buttons": {"Button":{"title":"Button", "width":5,
-                                                  "setting": {},
+                                                  "setting": {"color":[],"background-color":[], "font-weight":["normal","lighter","bold","900"]},
                                                   "attributes":{},
                                                   "functions":["onmouseover", "onmouseout"]},
                                         "Span":{"title":"Span", "width":5,
@@ -84,12 +84,22 @@ company_obj_id, is_show_btns=true, user_id=0)
                  "PopWin":{"title":"Pop Win", "obj_type":"none",
                         "sub_buttons": {"NewPopWin":{"title":"New Pop Win", "width":10},
                                         "DeletePopWin":{"title":"Del Pop Win", "width":10}}},
-                 "Plugin":{"title":"Plugin", "obj_type":"acPlugin",
+                 "Plugin":{"title":"Plugins", "obj_type":"acPlugin",
                         "sub_buttons": {"SearchTable":{"title":"Search Table", "width":10,
                                                        "setting": {"is_new_button":["","Yes","No"], "is_del_button":["","Yes","No"]},
                                                        "attributes":{"number_of_rows":[], "table_class":["","basic", "payment"], "height":[]},
+                                                       "functions":["onchange", "on_new_record"],
+                                                       "field_setting":["field_title","field_name","field_width","field_align","foreign_table","filter"]},
+                                        "MSearchTable":{"title":"MSearch Table", "width":12,
+                                                       "setting": {"is_new_button":["","Yes","No"], "is_del_button":["","Yes","No"]},
+                                                       "attributes":{"number_of_rows":[], "table_class":["","basic", "payment"], "height":[]},
                                                        "functions":["onchange"],
-                                                       "field_setting":["field_title","field_name","field_width","field_align"]},
+                                                       "field_setting":["field_title","field_name","field_width","field_align","foreign_table"]},
+                                        "GeneralLedger":{"title":"General Ledger", "width":15,
+                                                         "setting": {},
+                                                         "attributes":{"table_class":["","basic", "payment"], "table":[]},
+                                                         "functions":["onchange"],
+                                                         "field_setting":["field_title","field_name","field_width","field_align"]},
                                         "Chart":{"title":"Chart", "width":5,
                                                  "setting": {},
                                                  "attributes":{"height":[]},
@@ -97,7 +107,16 @@ company_obj_id, is_show_btns=true, user_id=0)
                                         "Heatmap":{"title":"Heatmap", "width":8,
                                                    "setting": {"width":[], "height":[]},
                                                    "attributes":{},
-                                                   "functions":[]}}}
+                                                   "functions":[]}}},
+                 "Report":{"title":"Reports", "obj_type":"acReport",
+                        "sub_buttons": {"Pivot":{"title":"Pivot Table", "width":10,
+                                                 "setting": {"app":[], "table":[],
+                                                 "vertical_field":[],"vertical_title":[],
+                                                 "horizontal_field":[],"horizontal_title":[],
+                                                 "value_field":[], "order_by":[],},
+                                                 "attributes":{"table_class":["","basic", "payment"]},
+                                                 "functions":["on_amount_paint", "on_receive_data", "onclick", "onmouseover", "onmouseout"]
+                                       }}}
                 }
 
  this.tab = {"functions":[],
@@ -127,7 +146,8 @@ company_obj_id, is_show_btns=true, user_id=0)
  this.pop_win = {"functions_list":["onclick","onmouseover","onmouseout","__init___","__get_panel_structure___","__set_panel___"],
                  "settings_list":{"width":[], "height":[], "color":[], "background_color":[]},
                  "attributes_list":{"name":[],"top":[],"right":[],"title":[], "table":[], "link_number":[],"tab_id":[],
-                                    "is_panel":["true", "false"],"title_color":[], "title_background_color":[], "content_type":[]}}
+                                    "is_panel":["true", "false"],"title_color":[], "title_background_color":[],
+                                    "content_type":[]}}
 }
 
 AdvancedTabsManager.prototype.init_create_containers = function()
@@ -206,7 +226,7 @@ AdvancedTabsManager.prototype.create_add_delete_editor = function()
 
         //    alert(98765)
         //    alert(atm_.editor)
-        //    alert(987651111111111111111)
+        //    alert(98765)
         }
   }.bind(atm_=this, event))
 
@@ -398,13 +418,15 @@ AdvancedTabsManager.prototype.save = function()
 AdvancedTabsManager.prototype.app_activate_function = function(call_back_fun, dic_, html_obj)
 {
   dic_["company_obj_id"]=this.company_obj_id;
-     //alert(JSON.stringify(dic_))
+     alert(JSON.stringify(dic_))
+     //alert(this.app_activate_function_link_)
+
      $.post(this.app_activate_function_link_,
           {dic : JSON.stringify(dic_)},
           function(dic){
             if(dic["status"]=="ok"){
-                //alert(JSON.stringify(dic))
-                //alert(JSON.stringify(dic["result"]))
+                alert(JSON.stringify(dic))
+                alert(JSON.stringify(dic["result"]))
                 try{
                   call_back_fun(dic["result"], html_obj);
                   html_obj.data=dic["result"];
@@ -413,12 +435,12 @@ AdvancedTabsManager.prototype.app_activate_function = function(call_back_fun, di
           });
 }
 
-AdvancedTabsManager.prototype.save_data = function(container, dic_)
+AdvancedTabsManager.prototype.save_data = function(html_obj, dic_)
 {
   dic_["app"]=this.my_app;
   dic_["company_obj_id"]=this.company_obj_id;
   //alert(JSON.stringify(dic_));
-  //alert(container.outerHTML)
+  //alert(html_obj.outerHTML)
   //alert(this.update_field_link_)
 
   $.post(this.update_field_link_,
@@ -426,38 +448,23 @@ AdvancedTabsManager.prototype.save_data = function(container, dic_)
           function(dic){
             if(dic["status"]!="ok")
             {alert("Data was not saved.")}
-            else{  //alert("ok")
-              //alert(JSON.stringify(dic))
-              //dic["company_obj_id"]
-
-              //alert(atm)
-              //alert(atm.active_tab_content)
-              //alert(atm.active_tab_content.link_content)
-              //alert(12345)
-
-              //alert(container_.outerHTML)
-              //alert(123451)
-              //atm.active_tab_content.link_content.setAttribute("record_id", dic["record_id"])
-
-              //alert(container_.outerHTML)
-              container_.setAttribute("record_id", dic["record_id"])
-              //alert(container_.outerHTML)
-
-              //alert(123452)
-              //alert(container_.outerHTML)
-              //alert(123453)
+            else{
+              html_obj_.setAttribute("record_id", dic["record_id"])
             }
-          }.bind(container_=container));
+          }.bind(html_obj_=html_obj));
 }
 
 AdvancedTabsManager.prototype.get_data = function(call_back_fun, dic_, tbody_)
 {
+  //alert("100123  "+JSON.stringify(dic_));
   dic_["app"]=this.my_app;
   var company_obj_id = dic_["company_obj_id"];
   if(dic_["company_obj_id"]==null){dic_["company_obj_id"]=this.company_obj_id;}
   //var temp_data = null;
   //alert("calling get_data")
+
   //alert(JSON.stringify(dic_));
+
   //alert(tbody_.outerHTML)
   //alert(call_back_fun)
   //alert(this.get_data_link_)
@@ -466,6 +473,7 @@ AdvancedTabsManager.prototype.get_data = function(call_back_fun, dic_, tbody_)
           function(data){
           try{
            //alert(JSON.stringify(data));
+            //console.log("get_data AdvancedTabsManager ", JSON.stringify(data))
            if(data["status"]!="ok"){return}
            call_back_fun(data["dic"], tbody_)
            tbody_.data=data["dic"];
@@ -476,6 +484,7 @@ AdvancedTabsManager.prototype.get_data = function(call_back_fun, dic_, tbody_)
 AdvancedTabsManager.prototype.get_list = function(call_back_fun, dic_, html_obj)
 {
   dic_["company_obj_id"]=this.company_obj_id;
+  try{dic_["params"]["company_obj_id"]=this.company_obj_id;} catch (er) {}
   //alert(JSON.stringify(dic_))
      $.post(this.activate_function_link_,
           {dic : JSON.stringify(dic_)},
@@ -707,11 +716,24 @@ AccountingObj.prototype.set_accounting_data = function(data)
   var ff = function(result, dic, data, total)
   {
    for(k in dic)
-   {if(!isNaN(parseInt(k))){result[k]=data[k];total["v"]+=data[k]}
-    else{result[k]={}; result["Total "+k]={"v":0};var t=ff(result[k],dic[k],data,result["Total "+k]);total["v"]+=t["v"]}
+   {
+    if(!isNaN(parseInt(k)))
+    {
+     result[k]=data[k];
+     total["v"]+=data[k]
+    }
+    else
+    {result[k]={};
+     result["Total "+k]={"v":0};
+     var t=ff(result[k],dic[k],data,result["Total "+k]);
+     total["v"]+=t["v"]
+    }
    };return total;
   }
-  for(i in data){this.data_for_report[i]={};ff(this.data_for_report[i],this.cofa,data[i],total={"v":0})}
+  for(i in data){
+    this.data_for_report[i]={};
+    ff(this.data_for_report[i],this.cofa,data[i],total={"v":0})
+   }
   //alert(JSON.stringify(this.data_for_report))
 }
 
@@ -761,6 +783,38 @@ AccountingObj.prototype.get_financial_statement = function(statement,address)
  return s;
 }
 
+AccountingObj.prototype.set_time_dim = function(html_obj)
+{
+  var fun = function(data, html_obj)
+  {
+    html_obj.innerHTML = "Process finished with last date: "+data["last_date"]
+  }
+  var dic={"obj": "AccountingObj", "atm": atm_.my_name, "app": atm_.my_app,
+           "fun": "set_time_dimension","params": {"app": atm_.my_app, "table_name": "TimeDim"}}
+  this.parent.get_list(fun,dic,html_obj)
+}
+
+AccountingObj.prototype.update_trial_balance = function(html_obj, start_date, end_date)
+{
+ var ss = start_date.split("-"); start_date=ss[0]+ss[1]+ss[2]
+ var ss = end_date.split("-"); end_date=ss[0]+ss[1]+ss[2]
+ //alert(start_date + " " + end_date)
+
+  var fun = function(data, html_obj)
+  {
+    html_obj.innerHTML = "Process finished with start date: "+data["start date"] + " "+ data["end date"]
+  }
+  var dic={"obj": "AccountingObj", "atm": atm_.my_name, "app": atm_.my_app,
+           "fun": "update_trial_balance",
+           "params": {"app": atm_.my_app,
+                      "start_date": start_date,
+                      "end_date":end_date,
+                      "gld_table_name":"GeneralLedgerDetail",
+                      "tb_table_name":"TrialBalance"
+                     }}
+   //alert(JSON.stringify(dic));
+  this.parent.get_list(fun,dic,html_obj)
+}
 
 // -- acObj --
 function acObj(){}
@@ -854,7 +908,7 @@ acObj.prototype.get_select_data = function()
     option.value = "-1"; option.text = "----";
     this.new_obj.appendChild(option);
 
-              var fun=function(data, html_obj){
+  var fun=function(data, html_obj){
                 //alert(html_obj.outerHTML)
                 //alert(JSON.stringify(data));
                 for(i in data){
@@ -865,6 +919,7 @@ acObj.prototype.get_select_data = function()
                  html_obj.appendChild(option);
                 }
               }
+
   if(options!="" & options!=null)
   {
     options=options.split(",")
@@ -907,11 +962,11 @@ acObj.prototype.get_select_data = function()
     if(data_filter_field==null){data_filter_field="";data_filter_field_value="";}
     var dic_ = {"obj": "AdvancedTabs", "atm": atm_.my_name, "app": data_app, "fun": "get_list_from_model",
                "params": {"app": data_app, "model_name": data_model,
-               "manager_name": "","manager_fun": "",
-               "manager_fun_field": "","field_name":data_field,
-               "data_filter_field":data_filter_field,
-               "data_filter_field_value":data_filter_field_value
-               }
+                          "manager_name": "","manager_fun": "",
+                           "manager_fun_field": "","field_name":data_field,
+                           "data_filter_field":data_filter_field,
+                           "data_filter_field_value":data_filter_field_value
+                         }
               }
     this.atm.get_list(call_back_fun=fun, dic_, this.new_obj);
   }
@@ -931,9 +986,167 @@ acObj.prototype.update_data_by_dic = function(dic)
   }
 }
 
+// -- acReport --
+function acReport(){}
+acReport.prototype.create_obj = function(){this.creator.create_obj();}
+
+// -- acPivotCreator --
+function acPivotCreator(parent, container){
+  this.parent=parent;this.data=null;
+  // alert(JSON.stringify(this.parent.data));
+}
+
+acPivotCreator.prototype.create_obj = function()
+{
+  var dic=this.parent.data;
+  this.filters={};this.order_by={"field":dic["properties"]["order_by"],"direction":"ascending"};
+  //alert(JSON.stringify(dic));
+  //--
+  var container = document.getElementById("content_"+dic["container_id"]);
+  //alert(container.outerHTML)
+  //--
+  this.table_=document.createElement("table");this.table_.my_creator_obj=this;
+  container.appendChild(this.table_);
+
+  this.table_.setAttribute("class", dic["properties"]["table_class"]);
+  this.table_.setAttribute("container_id", dic["container_id"]);
+  this.table_.setAttribute("id", dic["properties"]["obj_number"]);
+  this.table_.setAttribute("obj_type", dic["obj_type"]);
+  this.table_.setAttribute("type", dic["element_name"]);
+
+  for (i in dic["attributes"]){var s=dic["attributes"][i];
+   if(s in dic["properties"]){this.table_.setAttribute(s, dic["properties"][s])}
+   else{this.table_.setAttribute(s, "")}}
+
+  for(f in dic["functions"]){if(f!="onclick" && f!="on_receive_data"  && f!="on_amount_paint")
+  {var s="this.table_."+f+"="+dic["functions"][f];eval(s);}}
+
+  this.table_.setAttribute("style", "position:absolute;left:"+dic["properties"]["x"]+"px;top:"+dic["properties"]["y"]+"px;width:200px");
+
+  this.thead=document.createElement("thead");
+  this.thead.setAttribute("style", "display: block;overflow-x: hidden;");
+  this.table_.appendChild(this.thead);
+
+  this.tr_h=document.createElement("tr");this.tr_h.my_creator_obj=this;
+  this.tr_h.addEventListener("click", function(event){
+   var e=event.target;
+  })
+  var td = document.createElement("td");
+  td.setAttribute("style", "background-color:black; color:white");
+
+  td.innerHTML="Pivot Table";this.tr_h.appendChild(td);
+
+  this.tr_h.setAttribute("style","cursor:pointer");
+  this.thead.appendChild(this.tr_h);
+
+  this.tbody=document.createElement("tbody");this.tbody.my_creator_obj=this;
+  this.tbody.setAttribute("id", "tbody_"+dic["properties"]["obj_number"]);
+  this.tbody.setAttribute("style", "display: block;height: "+dic["properties"]["height"]+"px;overflow-y: auto;overflow-x: hidden;");
+  this.table_.appendChild(this.tbody);
+
+  this.table_.onclick=this.row_col_click;
+}
+
+acPivotCreator.prototype.add_filter = function(f,v,ft)
+{this.filters[f]={"value":v,"foreign_table":ft}}
+
+acPivotCreator.prototype.update_data_by_dic = function(dic)
+{
+
+ //update table width
+ // this.table_.setAttribute("style", "position:absolute;left:"+dic["properties"]["x"]+"px;top:"+dic["properties"]["y"]+"px;width:200px");
+
+}
+
+acPivotCreator.prototype.set_data = function()
+{
+  var dic=this.parent.data;
+  //alert(JSON.stringify(dic["properties"]));
+  var dic__=["level",dic["properties"]["horizontal_field"],
+             dic["properties"]["vertical_field"],
+             dic["properties"]["value_field"]]
+
+  var dic__={"app":dic["properties"]["app"], "model":dic["properties"]["table"], "parent_model": "new", "parent_id":"",
+             "number_of_rows":5000000,
+             "filters":this.filters, "order_by":this.order_by, "fields":dic__
+             }
+       //alert(JSON.stringify(dic__));
+
+   try{eval('var zz='+this.parent.data["functions"]["on_receive_data"]);zz.atm=this.atm;zz.dic} catch(er){}
+   try{eval('var aa='+this.parent.data["functions"]["on_amount_paint"]);aa.atm=this.atm;aa.dic} catch(er){}
+
+  var fun = function(data,html_obj){
+     //alert(JSON.stringify(data));
+     data["dim_titles"]={}
+     zz(data);
+       //alert(JSON.stringify(data));
+       //alert(JSON.stringify(data["dim_titles"]));
+       //alert(JSON.stringify(dic));
+     var vertical_field_=dic["properties"]["vertical_field"];
+     var horizontal_field_=dic["properties"]["horizontal_field"];
+     var n_=data[vertical_field_].length;
+     var pdata={};var v_=[];var h_=[];
+     for(j=0; j<n_;j++)
+     {
+              if(!(data[vertical_field_][j] in pdata))
+              {pdata[data[vertical_field_][j]]={};v_.push(data[vertical_field_][j])}
+              if(!(data[horizontal_field_][j] in pdata[data[vertical_field_][j]]))
+              {
+                 pdata[data[vertical_field_][j]][data[horizontal_field_][j]]={};
+                 if(!(h_.includes(data[horizontal_field_][j]))){h_.push(data[horizontal_field_][j])}
+              }
+              pdata[data[vertical_field_][j]][data[horizontal_field_][j]]={"value":data["amount"][j],"color":"black"};
+              aa(v=data[vertical_field_][j],h=data[horizontal_field_][j],a=
+              pdata[data[vertical_field_][j]][data[horizontal_field_][j]]
+              )
+     }
+     v_=v_.sort();//h_=h_.sort();
+    // alert(JSON.stringify(data["dim_titles"][horizontal_field_]));
+
+     var sh="<thead><tr><th></th>";
+     for(j in h_){sh+="<th>"+data["dim_titles"][horizontal_field_][h_[j]]+"</th>"};
+      if(dic["properties"]["horizontal_title"]!=null && dic["properties"]["horizontal_title"]!="")
+      {sh+="<th>"+dic["properties"]["horizontal_title"]+"</th>"}
+     sh+="</tr></thead>";
+     var s="<table>"+sh+"<tbody>"
+     for (i in v_)
+     {
+      s+="<tr><th style='white-space: pre;text-align:left'>"+v_[i]+":"+data["dim_titles"][vertical_field_][v_[i]]+"</th>"
+      var horizontal_total=0
+      for(j in h_)
+      {
+       try{
+         s+="<td style='text-align:right;color:"+pdata[v_[i]][h_[j]]["color"]+"'>"+pdata[v_[i]][h_[j]]["value"]+"</td>"
+         horizontal_total+=1*pdata[v_[i]][h_[j]]["value"]
+         } catch(er){s+="<td style='text-align:right'></td>"}
+      }
+      horizontal_total=Math.round(100*horizontal_total)/100
+      if(dic["properties"]["horizontal_title"]!=null && dic["properties"]["horizontal_title"]!="")
+      {s+="<td style='text-align:right'>"+horizontal_total+"</td>"}
+      s+="</tr>"
+     }
+     s+="</tbody></table>";
+     html_obj.innerHTML=s;
+          //  alert(s)
+   }
+
+  if(company_obj_id!=null){dic__["company_obj_id"]=company_obj_id}
+  this.parent.atm.get_data(fun, dic__, this.table_)
+}
+
+acPivotCreator.prototype.row_col_click = function(event)
+{
+ //var e=event.target;
+ //alert(e.outerHTML)
+ try{eval('var zz='+this.my_creator_obj.parent.data["functions"]["onclick"]);zz(event)} catch(er)
+ {//alert("er9013: "+er)
+ }
+
+}
+
+
 // -- acPlugin --
 function acPlugin(){}
-
 acPlugin.prototype.create_obj = function(){this.creator.create_obj();}
 
 
@@ -977,7 +1190,8 @@ acSearchTableCreator.prototype.create_obj = function()
    container.appendChild(this.new_button);
    this.new_button.addEventListener("click", function(event){
      var container_=event.target.parentNode;
-     container_.my_creator_obj.clear_objects_data()
+     container_.my_creator_obj.clear_objects_data();
+     try{eval('var zz='+this.my_creator_obj.parent.data["functions"]["on_new_record"]);zz.atm=this.atm;zz(event)} catch(er){}
    })
   }
   if(this.is_del_button=="Yes")
@@ -1001,8 +1215,14 @@ acSearchTableCreator.prototype.create_obj = function()
   this.search_input_.addEventListener("keyup", function(event){
      var input=event.target;
      var filter_field = input.getAttribute("filter_field");
+     var filter_field_foreign_table = input.getAttribute("filter_field_foreign_table");
+
      input.my_creator_obj.filter_field=filter_field;
+     input.my_creator_obj.filter_field_foreign_table=filter_field_foreign_table;
+
      input.my_creator_obj.filter_value=input.value;
+
+     console.log("keyup ", filter_field, input.value)
      input.my_creator_obj.get_data();
    })
   container.appendChild(this.search_input_);
@@ -1023,29 +1243,45 @@ acSearchTableCreator.prototype.create_obj = function()
   tr_h.addEventListener("click", function(event){
    var e=event.target;
    var filter_field=e.getAttribute("filter_field")
+   var filter_field_foreign_table=e.getAttribute("filter_field_foreign_table")
+
    e.parentNode.my_creator_obj.search_input_.setAttribute("filter_field", filter_field);
+   e.parentNode.my_creator_obj.search_input_.setAttribute("filter_field_foreign_table", filter_field_foreign_table);
+
    e.parentNode.my_creator_obj.search_input_.setAttribute("placeholder", "Search "+e.innerHTML+"..");
    e.parentNode.my_creator_obj.filter_field=filter_field;
+   e.parentNode.my_creator_obj.filter_field_foreign_table=filter_field_foreign_table;
+     var mco = e.parentNode.my_creator_obj
+     var field = mco.order_by["field"]
+     if(field==filter_field)
+     {if(mco.order_by["direction"]=="ascending"){mco.order_by["direction"]="descending"}else{mco.order_by["direction"]="ascending"}}
+     else{mco.order_by["field"]=filter_field;mco.order_by["direction"]="ascending"}
    e.parentNode.my_creator_obj.get_data();
   })
 
   tr_h.setAttribute("style","cursor:pointer");
   this.thead.appendChild(tr_h);
   var n__=0;
+  this.order_by={"field":"","direction":"ascending"};
   for(f in dic["fields"])
   {
     var th_=document.createElement("th");
     th_.innerHTML=dic["fields"][f]["field_title"];
     var width_=100;try{width_=dic["fields"][f]["field_width"]} catch(er){}
+    var foreign_table="";if(dic["fields"][f]["foreign_table"]!=null){foreign_table=dic["fields"][f]["foreign_table"]}
     if(n__==0){
       th_.setAttribute("style", "width:"+width_+"px;border-top-left-radius: 15px")
       this.filter_field=dic["fields"][f]["field_name"];
+      this.filter_field_foreign_table=dic["fields"][f]["foreign_table"]
       this.search_input_.setAttribute("filter_field", dic["fields"][f]["field_name"]);
+      this.search_input_.setAttribute("filter_field_foreign_table", foreign_table);
       this.search_input_.setAttribute("placeholder", "Search "+dic["fields"][f]["field_title"]+"..");
+      this.order_by["field"]=dic["fields"][f]["field_name"];
     }
     else{th_.setAttribute("style", "width:"+width_+"px;")}; n__+=1;
     tr_h.appendChild(th_);
     th_.setAttribute("filter_field", dic["fields"][f]["field_name"])
+    th_.setAttribute("filter_field_foreign_table", foreign_table)
   }
   th_.setAttribute("style", "width:"+width_+"px;border-top-right-radius: 15px");
   this.tbody=document.createElement("tbody");
@@ -1062,7 +1298,7 @@ acSearchTableCreator.prototype.create_obj = function()
 
   container.appendChild(this.table_);
   this.table_.onclick=this.row_click;
-  for(f in dic["functions"]){if(f!="onclick"){var s="this.table_."+f+"="+dic["functions"][f];eval(s);}}
+  for(f in dic["functions"]){if(f!="onclick" && f!="on_new_record"){var s="this.table_."+f+"="+dic["functions"][f];eval(s);}}
 }
 
 acSearchTableCreator.prototype.get_data = function(data_table_name=null,parent_model=null,parent_id=null,company_obj_id=null)
@@ -1074,7 +1310,6 @@ acSearchTableCreator.prototype.get_data = function(data_table_name=null,parent_m
   if(data_table_name!==null){this.data_table_name=data_table_name} else {this.data_table_name=container.getAttribute("table")}
   try{
     var parent_id_="";
-    //alert(this.data_table_name)
     var model_=container.my_creator_obj.link_dic["properties"]["table"];
     //alert(model_)
     try{
@@ -1090,13 +1325,15 @@ acSearchTableCreator.prototype.get_data = function(data_table_name=null,parent_m
   } catch(er){alert("er9012: "+er)}
 
   var fun=function(data, ttbody_){
-//  alert(JSON.stringify(dic));
-//    alert(JSON.stringify(dic["fields"]));
+
+  console.log("get_data search table inside call back function")
+
     //alert(JSON.stringify(data));
     //alert(dic_["fields"][0])
     //alert(JSON.stringify(data[dic_["fields"][0]]))
     var n_=data[dic_["fields"][0]].length;
     //alert(n_)
+  console.log("get_data search table inside call back function n=" + n_)
     var s='';
     for(i=0; i<n_; i++)
     {
@@ -1112,24 +1349,48 @@ acSearchTableCreator.prototype.get_data = function(data_table_name=null,parent_m
      };
      s+='</tr>';
     }
+
+  console.log("get_data search table inside call back function s=" + s)
+
     ttbody_.innerHTML=s;
   }
-
-  //alert(JSON.stringify(dic_));
   var container_id=this.parent.data["container_id"];
-  //alert(container_id);
-
   var container_dic=this.parent.tab.tab_objects[container_id];
   var dic__=[]; for(i in dic_["fields"]){dic__.push(dic_["fields"][i])}
   for(o in container_dic)
   {if(container_dic[o]["obj_type"]=="acObj" && container_dic[o]["obj_name"]=="acInput"){
       var f=container_dic[o]["properties"]["field"];if(!dic__.includes(f)){dic__.push(f)}}
   }
-  //alert(JSON.stringify(dic__));
+
   var dic__={"model":this.data_table_name, "parent_model": parent_model_, "parent_id":parent_id_,
-             "number_of_rows":this.number_of_rows, "filter_field":this.filter_field, "filter_value":this.filter_value,
-             "fields":dic__}
+             "number_of_rows":this.number_of_rows,
+             "filters":{}, "order_by":this.order_by, "fields":dic__
+             }
+      dic__["filters"][this.filter_field]={"value":this.filter_value, "foreign_table":this.filter_field_foreign_table}
   //alert(JSON.stringify(dic__));
+  console.log("get_data search table ", JSON.stringify(dic__))
+
+  //alert("1: "+JSON.stringify(dic__));
+    for(j in dic["fields"])
+    {
+       //alert(JSON.stringify(dic["fields"][j]));
+       if("filter" in dic["fields"][j] && dic["fields"][j]["filter"]!="")
+       {
+          var fn_=dic["fields"][j]["field_name"]
+          if(!(fn_ in dic__["filters"]) || dic__["filters"][fn_]["value"]=="")
+          {
+            var foreign_table_="";
+            if ("foreign_table" in dic["fields"][j])
+            {
+              foreign_table_==dic["fields"][j]["foreign_table"];
+            }
+            dic__["filters"][fn_]={"value":dic["fields"][j]["filter"], "foreign_table": foreign_table_}
+
+          }
+       }
+    }
+  //alert("11: "+JSON.stringify(dic__));
+
   if(company_obj_id!=null){dic__["company_obj_id"]=company_obj_id}
   this.parent.atm.get_data(call_back_fun=fun, dic__, this.tbody)
 }
@@ -1226,6 +1487,454 @@ acSearchTableCreator.prototype.editor_properties_func = function(tab, tab_proper
  tab_properties_.appendChild(nav);
  tab_properties_.appendChild(nav_detail);
 }
+
+
+// -- acMSearchTableCreator --
+function acMSearchTableCreator(parent, container){
+  this.parent=parent;this.data=null;
+  // alert(JSON.stringify(this.parent.data));
+}
+
+acMSearchTableCreator.prototype.create_obj = function()
+{
+  var dic=this.parent.data;
+  if(!dic["fields"]){dic["fields"]={"1":{"field_title":"1", "field_name":"","field_width":"100","field_align":"left"},
+                                    "2":{"field_title":"2", "field_name":"","field_width":"100","field_align":"left"}}}
+  if(!(dic["properties"]["table_class"])){dic["properties"]["table_class"]="basic"}
+  //alert(JSON.stringify(dic));
+  this.parent.data=dic;
+  //--
+  var container = document.getElementById("content_"+dic["container_id"]);
+  this.number_of_rows=dic["properties"]["number_of_rows"];
+  this.is_new_button=dic["properties"]["is_new_button"];
+  this.is_del_button=dic["properties"]["is_del_button"];
+  this.fields=[]
+  for(f in dic["fields"]){this.fields.push(dic["fields"][f]["field_name"])}
+  //--
+  this.table_=document.createElement("table");
+  this.table_.setAttribute("class", dic["properties"]["table_class"]);
+  this.table_.setAttribute("container_id", dic["container_id"]);
+  this.table_.setAttribute("id", dic["properties"]["obj_number"]);
+  this.table_.setAttribute("obj_type", dic["obj_type"]);
+  this.table_.setAttribute("type", dic["element_name"]);
+
+  for (i in dic["attributes"]){var s=dic["attributes"][i];
+   if(s in dic["properties"]){this.table_.setAttribute(s, dic["properties"][s])}
+   else{this.table_.setAttribute(s, "")}}
+  this.thead=document.createElement("thead");
+  this.thead.setAttribute("style", "display: block;overflow-x: hidden;");
+  this.table_.appendChild(this.thead);
+  var tr_h=document.createElement("tr");tr_h.my_creator_obj=this;
+  tr_h.addEventListener("click", function(event){
+     var e=event.target;
+     var filter_field=e.getAttribute("filter_field")
+     var mco = e.parentNode.my_creator_obj
+     var field = mco.order_by["field"]
+     if(field==filter_field)
+     {if(mco.order_by["direction"]=="ascending"){mco.order_by["direction"]="descending"}else{mco.order_by["direction"]="ascending"}}
+     else{mco.order_by["field"]=filter_field;mco.order_by["direction"]="ascending"}
+     e.parentNode.my_creator_obj.get_data();
+  })
+  tr_h.setAttribute("style","cursor:pointer");
+  this.thead.appendChild(tr_h);
+  //--
+  var ny_search=parseInt(dic["properties"]["y"])-18
+  var nx_search=parseInt(dic["properties"]["x"])+4
+  var table_width=0;
+  this.filters={};this.order_by={"field":"","direction":"ascending"};
+  var nf=0
+  for(f in dic["fields"])
+  {
+    nx_search+=1*1
+    var width_=100;try{width_=dic["fields"][f]["field_width"]} catch(er){}
+    var sr=document.createElement("input");sr.my_creator_obj=this;
+    container.appendChild(sr);
+    sr.setAttribute("type", "text");
+    sr.setAttribute("id", "search_"+f+"_"+dic["properties"]["obj_number"]);
+    sr.setAttribute("style", "position:absolute;left:"+nx_search+"px;top:"+ny_search+"px;width:"+width_+"px");
+    var foreign_table="";if(dic["fields"][f]["foreign_table"]!=null){foreign_table=dic["fields"][f]["foreign_table"]}
+      sr.setAttribute("filter_field", dic["fields"][f]["field_name"]);
+      sr.setAttribute("filter_field_foreign_table", foreign_table);
+    this.filters[dic["fields"][f]["field_name"]]={"value":"","foreign_table":foreign_table}
+    if(nf==0){this.order_by["field"]=dic["fields"][f]["field_name"]};nf+=1;
+      sr.setAttribute("placeholder", "Search "+dic["fields"][f]["field_title"]+"..");
+      nx_search+=1*width_
+    sr.addEventListener("keyup", function(event){
+         var input=event.target;var mco=input.my_creator_obj;
+         var filter_field = input.getAttribute("filter_field");
+         mco.filters[filter_field]["value"]=input.value;
+         mco.get_data();
+    })
+    var th_=document.createElement("th");
+    th_.innerHTML=dic["fields"][f]["field_title"];
+    table_width+=1*width_;
+    th_.setAttribute("style", "width:"+width_+"px;");
+    tr_h.appendChild(th_);
+    th_.setAttribute("filter_field", dic["fields"][f]["field_name"])
+    th_.setAttribute("filter_field_foreign_table", foreign_table)
+  }
+
+  this.tbody=document.createElement("tbody");
+  this.tbody.setAttribute("id", "tbody_"+dic["properties"]["obj_number"]);
+  this.tbody.setAttribute("style", "display: block;height: "+dic["properties"]["height"]+"px;overflow-y: auto;overflow-x: hidden;");
+  this.table_.appendChild(this.tbody);
+  this.table_.my_creator_obj=this;
+  this.table_.setAttribute("style", "position:absolute;left:"+dic["properties"]["x"]+"px;top:"+dic["properties"]["y"]+"px;width:"+table_width+"px");
+
+  if(this.is_new_button=="Yes")
+  {
+   this.new_button=document.createElement("button");
+   this.new_button.setAttribute("id", "new_button_"+dic["properties"]["obj_number"]);
+   var nx_nb=nx_search
+   nx_search+=40
+   this.new_button.setAttribute("style", "position:absolute;left:"+nx_nb+"px;top:"+ny_search+"px;width:40px");
+   this.new_button.innerHTML="New";
+   this.new_button.my_creator_obj=this;
+   container.appendChild(this.new_button);
+   this.new_button.addEventListener("click", function(event){
+     var container_=event.target.parentNode;
+     container_.my_creator_obj.clear_objects_data()
+   })
+  }
+  if(this.is_del_button=="Yes")
+  {
+   this.del_button=document.createElement("button");
+   this.del_button.setAttribute("id", "del_button_"+dic["properties"]["obj_number"]);
+   var nx_db=nx_search
+   this.del_button.setAttribute("style", "position:absolute;left:"+nx_db+"px;top:"+ny_search+"px;width:40px");
+   this.del_button.innerHTML="Del";
+   this.del_button.my_creator_obj=this;
+   container.appendChild(this.del_button);
+   this.del_button.addEventListener("click", function(event){
+     var container_=event.target.parentNode;
+     container_.my_creator_obj.delete_record();
+     event.target.my_creator_obj.get_data();
+     container_.my_creator_obj.clear_objects_data()
+   })
+  }
+
+  container.appendChild(this.table_);
+  this.table_.onclick=this.row_click;
+  for(f in dic["functions"]){if(f!="onclick"){var s="this.table_."+f+"="+dic["functions"][f];eval(s);}}
+}
+
+acMSearchTableCreator.prototype.get_data = function(data_table_name=null,parent_model=null,parent_id=null,company_obj_id=null)
+{
+  var dic=this.parent.data;
+  //alert(JSON.stringify(dic));
+  var container = document.getElementById("content_"+dic["container_id"]);
+  //alert(container.outerHTML);
+  if(data_table_name!==null){this.data_table_name=data_table_name} else {this.data_table_name=container.getAttribute("table")}
+  try{
+    var parent_id_="";
+    //alert(this.data_table_name)
+    var model_=container.my_creator_obj.link_dic["properties"]["table"];
+    //alert(model_)
+    try{
+        if(parent_model!=null){var parent_model_=parent_model} else {
+          var parent_model_=container.my_creator_obj.link_dic["properties"]["parent_table"]
+          }
+          if(parent_model_==null){var parent_model_="";}
+        } catch(er){};
+    // var record_id_=container.getAttribute("record_id");
+    if(parent_id!=null){parent_id_=parent_id} else {parent_id_=container.getAttribute("parent_id")}
+    if(parent_id_=="" || parent_id_==null){return}
+    var dic_={"model":this.data_table_name, "number_of_rows":this.number_of_rows, "fields":this.fields}
+  } catch(er){alert("er9012: "+er)}
+
+  var fun=function(data, ttbody_){
+
+  console.log("get_data search table inside call back function")
+
+    //alert(JSON.stringify(data));
+    //alert(dic_["fields"][0])
+    //alert(JSON.stringify(data[dic_["fields"][0]]))
+    var n_=data[dic_["fields"][0]].length;
+    //alert(n_)
+  console.log("get_data search table inside call back function n=" + n_)
+    var s='';
+    for(i=0; i<n_; i++)
+    {
+     s+='<tr id_="'+data["id"][i]+'" row="'+i+'"'+'>';
+     for(j in dic_["fields"])
+     {
+       var f=dic_["fields"][j];
+       var width_=200;var field_align_="left";
+       for(z in dic["fields"]){
+        if(dic["fields"][z]["field_name"]==f){width_=dic["fields"][z]["field_width"];field_align_=dic["fields"][z]["field_align"]}
+        }
+        s+='<td style="width:'+width_+'px;text-align:'+field_align_+'">'+data[f][i]+'</td>'
+     };
+     s+='</tr>';
+    }
+
+  console.log("get_data search table inside call back function s=" + s)
+
+    ttbody_.innerHTML=s;
+  }
+
+  //alert(JSON.stringify(dic_));
+  var container_id=this.parent.data["container_id"];
+  //alert(container_id);
+
+  var container_dic=this.parent.tab.tab_objects[container_id];
+  var dic__=[]; for(i in dic_["fields"]){dic__.push(dic_["fields"][i])}
+  for(o in container_dic)
+  {if(container_dic[o]["obj_type"]=="acObj" && container_dic[o]["obj_name"]=="acInput"){
+      var f=container_dic[o]["properties"]["field"];if(!dic__.includes(f)){dic__.push(f)}}
+  }
+  //alert(JSON.stringify(dic__));
+  var dic__={"model":this.data_table_name, "parent_model": parent_model_, "parent_id":parent_id_,
+             "number_of_rows":this.number_of_rows,
+             "filters": this.filters,"order_by":this.order_by,
+             "fields":dic__}
+  //alert(JSON.stringify(dic__));
+  console.log("get_data search table ", JSON.stringify(dic__))
+  if(company_obj_id!=null){dic__["company_obj_id"]=company_obj_id}
+  this.parent.atm.get_data(call_back_fun=fun, dic__, this.tbody)
+}
+
+acMSearchTableCreator.prototype.row_click = function(event)
+{
+ var e=event.target;
+ while(e.tagName!="TR"){e=e.parentNode;}
+ //alert(e.outerHTML)
+ //alert(this.my_creator_obj.table_.outerHTML)
+ var n_row=e.getAttribute("row")
+ if(n_row==null){return;}
+ var container_id=this.my_creator_obj.parent.data["container_id"];
+ var container = document.getElementById("content_"+container_id);
+ //alert(container_id)
+ var result={}
+ //alert(JSON.stringify(this.my_creator_obj.tbody.data))
+ var dic=this.my_creator_obj.tbody.data;
+
+ for(f in dic){result[f]=dic[f][n_row]}
+
+ container.my_creator_obj.set_objects_data(result);
+ container.my_creator_obj.current_record_data=result;
+
+ try{eval('var zz='+this.my_creator_obj.parent.data["functions"]["onclick"]);zz(event)} catch(er)
+ {//alert("er9013: "+er)
+ }
+}
+
+acMSearchTableCreator.prototype.editor_properties_func = function(tab, tab_properties_)
+{
+ //alert(tab.active_obj)
+ var field_setting=tab.parent.buttons[tab.active_obj.data["parent_obj_name"]]["sub_buttons"][tab.active_obj.data["element_name"]]["field_setting"]
+ //alert(field_setting)
+ var fields=tab.active_obj.data["fields"];
+ //alert(JSON.stringify(fields));
+ var nav=document.createElement("div");
+ var add_del_btns=document.createElement("div");
+ this.add_btn=document.createElement("button");this.del_btn=document.createElement("button");
+ this.add_btn.innerHTML="Add"; this.add_btn.tab=tab;
+ this.del_btn.innerHTML="Delete"; this.del_btn.tab=tab; this.del_btn.nav=nav;
+ this.add_btn.onclick=function (event){
+   var n_=Object.keys(tab.active_obj.data["fields"]).length+1
+   tab.active_obj.data["fields"][n_]={"field_name":"","field_title":"","field_width":"100","field_align":"left"};
+   tab.parent.save();
+ }
+ this.del_btn.onclick=function (event){
+   //alert(this.nav.active_property_num)
+   delete tab.active_obj.data["fields"][this.nav.active_property_num];
+   tab.parent.save();
+ }
+ add_del_btns.appendChild(add_btn);add_del_btns.appendChild(del_btn);
+ nav.setAttribute("style","cursor:pointer");
+ var nav_detail=document.createElement("div");
+ nav.setAttribute("class", "scrollmenu");
+ for(f in fields){var a=document.createElement("a");a.innerHTML=f;nav.appendChild(a);}
+ nav.onclick=function(event)
+ {
+  var e=event.target;
+  nav_detail.innerHTML="";
+  f=e.innerHTML
+  this.active_property_num=f
+  //alert(JSON.stringify(this.fields[f]));
+  var table=document.createElement("table");
+  var tr=document.createElement("tr");table.appendChild(tr);
+  var th=document.createElement("th");tr.appendChild(th);th.innerHTML="property"
+  var th=document.createElement("th");tr.appendChild(th);th.innerHTML="value"
+  for(p_ in field_setting) // this.fields[f])
+  {
+   var p=field_setting[p_]
+   var v=this.fields[f];var tr=document.createElement("tr");table.appendChild(tr);
+   var td=document.createElement("td");tr.appendChild(td);td.innerHTML=p
+   var td=document.createElement("td");tr.appendChild(td);var input=document.createElement("input");
+   input.setAttribute("size","10");td.appendChild(input);
+   input.setAttribute("field",f);input.setAttribute("property",p);
+   try{if(this.fields[f][p]!=null){input.value=this.fields[f][p]}} catch(er){}
+  }
+  nav_detail.appendChild(table);
+ }
+ nav.fields=fields;
+ nav_detail.onchange=function(event){
+   event.preventDefault();
+   var e=event.target;
+   var f=e.getAttribute("field")
+   var p=e.getAttribute("property")
+   //alert(e.outerHTML);
+   //alert(e.value);
+   tab.active_obj.data["fields"][f][p]=e.value;
+   tab.parent.save();
+ }
+ nav_detail.tab=tab;
+ tab_properties_.appendChild(document.createElement("br"));
+ tab_properties_.appendChild(add_del_btns);
+ tab_properties_.appendChild(nav);
+ tab_properties_.appendChild(nav_detail);
+}
+
+
+// -- acGeneralLedgerCreator --
+function acGeneralLedgerCreator(parent, container){
+  this.parent=parent;this.data=null;
+  // alert(JSON.stringify(this.parent.data));
+}
+
+acGeneralLedgerCreator.prototype.create_obj = function()
+{
+  var dic=this.parent.data;
+  //alert(JSON.stringify(dic));
+
+  if(!(dic["properties"]["table_class"])){dic["properties"]["table_class"]="basic"}
+  //alert(JSON.stringify(dic));
+  this.parent.data=dic;
+  //--
+  var container = document.getElementById("content_"+dic["container_id"]);
+  this.number_of_rows=dic["properties"]["number_of_rows"];
+  this.model=dic["properties"]["table"];
+  this.is_new_button=dic["properties"]["is_new_button"];
+  this.is_del_button=dic["properties"]["is_del_button"];
+  this.table_=document.createElement("table");
+  this.table_.addEventListener("change", function(event){
+    var e=event.target
+    e.setAttribute("model", this.getAttribute("model"))
+    e.setAttribute("content_type", "accounting")
+   })
+
+  this.table_.setAttribute("class", dic["properties"]["table_class"]);
+  this.table_.setAttribute("model", this.model);
+  this.table_.setAttribute("container_id", dic["container_id"]);
+  this.table_.setAttribute("id", dic["properties"]["obj_number"]);
+  this.table_.setAttribute("obj_type", dic["obj_type"]);
+  this.table_.setAttribute("type", dic["element_name"]);
+  this.table_.setAttribute("style", "position:absolute;left:"+dic["properties"]["x"]+"px;top:"+dic["properties"]["y"]+"px;width:400px");
+  this.thead=document.createElement("thead");
+  this.thead.setAttribute("style", "display: block;overflow-x: hidden;");
+  this.table_.appendChild(this.thead);
+  var tr_h=document.createElement("tr");
+  tr_h.my_creator_obj=this;
+  tr_h.setAttribute("style","cursor:pointer");
+  this.thead.appendChild(tr_h);
+    var th_an=document.createElement("th");th_an.innerHTML="Acc #";
+    th_an.setAttribute("style","width:50px;border-top-left-radius: 15px");tr_h.appendChild(th_an);
+    var th_a=document.createElement("th");th_a.innerHTML="Account name";
+    th_a.setAttribute("style","width:250px;");tr_h.appendChild(th_a);
+    var th_m=document.createElement("th");th_m.innerHTML="Amount";
+    th_m.setAttribute("style","width:100px;border-top-right-radius: 15px");
+    tr_h.appendChild(th_m);
+  this.tbody=document.createElement("tbody");
+  this.tbody.setAttribute("id", "tbody_"+dic["properties"]["obj_number"]);
+  this.tbody.setAttribute("style", "display: block;");
+  this.table_.appendChild(this.tbody);
+  this.table_.my_creator_obj=this;
+
+  for (i in dic["attributes"]){var s=dic["attributes"][i];
+   if(s in dic["properties"]){this.table_.setAttribute(s, dic["properties"][s])}
+   else{this.table_.setAttribute(s, "")}}
+
+  container.appendChild(this.table_);
+  this.table_.onclick=this.row_click;
+  for(f in dic["functions"]){if(f!="onclick"){var s="this.table_."+f+"="+dic["functions"][f];eval(s);}}
+}
+
+acGeneralLedgerCreator.prototype.set_accounts = function(dic=null,obj_nums=[])
+{
+ if(dic!=null){this.accounts_dic=dic}
+ else{
+  if(obj_nums.length>1)
+  {
+   for(j in obj_nums){var id__=obj_nums[j]+""; getEBI(id__).my_creator_obj.set_accounts();};
+   return;
+  }
+ }
+
+ this.tbody.innerHTML=""
+ for(a in this.accounts_dic)
+ {
+  var tr=document.createElement("tr");this.tbody.appendChild(tr);
+  var tdan=document.createElement("td");tdan.setAttribute("style","width:50px");tdan.innerHTML=a;tr.appendChild(tdan);
+  var tda=document.createElement("td");tda.setAttribute("style","width:250px");tda.innerHTML=this.accounts_dic[a];tr.appendChild(tda);
+  var tdi=document.createElement("td");tdi.setAttribute("style","width:100px");
+  var i=document.createElement("input");
+  var table_id=this.parent.data["properties"]["obj_number"]
+  i.setAttribute("id", table_id+"_"+a);
+  i.setAttribute("container_id", this.table_.getAttribute("container_id"));
+  i.setAttribute("style","width:100px;text-align:right");
+  i.setAttribute("type_","Input");
+  i.setAttribute("field","amount");
+  i.setAttribute("account",a);
+  tdi.appendChild(i);tr.appendChild(tdi);
+ }
+
+}
+
+acGeneralLedgerCreator.prototype.set_data = function(parent_id, obj_nums=[])
+{
+ //alert(parent_id)
+ //alert(JSON.stringify(obj_nums));
+  var fun=function(data, obj_nums){
+    try{
+        if(obj_nums.constructor === Array){
+         for(j in obj_nums)
+         {
+            var table_id=obj_nums[j]+"";
+            var n_=data["account"].length;
+            var s='';
+            for(i=0; i<n_; i++)
+            {
+             try{
+               var i_=document.getElementById(table_id+"_"+data["account"][i])
+               i_.setAttribute("record_id", data["id"][i])
+               i_.value=data["amount"][i]
+               } catch(er) {}
+            }
+         }
+        }
+    }catch(er){}
+  }
+  this.set_accounts(null,obj_nums);
+  var model_ = document.getElementById("content_"+this.parent.data["container_id"]).getAttribute("table");
+  var dic_={"model":this.model, "number_of_rows":1000, "fields":["account", "amount", "comment"],
+             "parent_model":model_ , "parent_id": parent_id, filters:{}, order_by:{}}
+
+  if(obj_nums.length<1){obj_nums.push(this.parent.data["properties"]["obj_number"])}
+  this.parent.atm.get_data(call_back_fun=fun, dic_, obj_nums)
+}
+
+acGeneralLedgerCreator.prototype.row_click = function(event)
+{
+ var e=event.target;
+ while(e.tagName!="TR"){e=e.parentNode;}
+ //alert("1: "+e.outerHTML)
+ //alert(this.my_creator_obj.table_.outerHTML)
+ var n_row=e.getAttribute("row")
+ if(n_row==null){return;}
+
+ var container_id=this.my_creator_obj.parent.data["container_id"];
+ var container = document.getElementById("content_"+container_id);
+ //alert(container_id)
+
+ try{eval('var zz='+this.my_creator_obj.parent.data["functions"]["onclick"]);zz(event)} catch(er)
+ {//alert("er9013: "+er)
+ }
+
+}
+
+
 
 // -- acChartCreator --
 function acChartCreator(parent){
@@ -1493,15 +2202,9 @@ acHeatmapCreator.prototype.get_data = function()
 // -- TabContent --
 function TabContent(tab, container, link_dic, is_on_click=true, is_link=null){
 
- //alert("TabContent");
- //alert(tab.tab_name)
- //alert('container.outerHTML')
  //alert(container.outerHTML)
  //alert(JSON.stringify(link_dic));
-
  var pp_=link_dic["properties"]
- //alert(JSON.stringify(pp_));
- //alert(tab.tab_name)
  this.is_link=is_link;
  this.tab=tab;
  this.link_dic=link_dic;
@@ -1515,35 +2218,25 @@ function TabContent(tab, container, link_dic, is_on_click=true, is_link=null){
  this.link_content.setAttribute("record_id", "new");
  this.link_content.setAttribute("parent_id", "new");
  this.link_content.setAttribute("link_number", this.link_number);
- //this.link_content.innerHTML=this.link_number;
  this.link_content.setAttribute("type", "container");
- //this.link_content.setAttribute("obj_type", "container");
  this.link_content.setAttribute("class", "tabcontent");
  this.link_content.tab=tab;
  this.link_content.tab_content_id=this.link_number;
  if(is_link){var width=100} else {var width=pp_["width"];}
-
  // alert('JSON.stringify(pp_)');
  // alert(JSON.stringify(pp_));
  var background_color_="white";
  var color_="black";
- // alert(pp_["background-color"])
- // alert(pp_["color"])
-
+ // alert(pp_["background-color"]); alert(pp_["color"])
  //if(!(pp_["background-color"]==null)){alert(9);background-color_=pp_["background-color"]}
  //if(!(pp_["color"]==null)){alert(9);color_=pp_["color"]}
-
  var ss_="position: relative;background-color:"+background_color_+";color:"+color_+";width: "+width+"%;height:1000px;display:block;"
- //alert(ss_)
  this.link_content.setAttribute("style", ss_);
-
  // border: 1px solid #ccc;
-
  if(is_on_click){
     //alert(this.link_content.outerHTML)
 
     this.link_content.onclick=function(event){
-      //alert(event.target.outerHTML);
       this.tab.parent.active_tab_content=this;
       var e=event.target;
       //alert(e.outerHTML)
@@ -1570,11 +2263,10 @@ function TabContent(tab, container, link_dic, is_on_click=true, is_link=null){
          } else {
                var s=f+this.link_number+'='+link_dic["functions"]["onclick"]
                //alert(s);
-               eval(s);
-               eval(f+this.link_number+'(event)');
+               try{eval(s);eval(f+this.link_number+'(event)');} catch(er){}
          }
       } else {
-        // alert(JSON.stringify(this.tab.new_obj_to_create));
+         //alert(JSON.stringify(this.tab.new_obj_to_create));
         var dic=this.tab.new_obj_to_create;
         var x=event.clientX-e.offsetLeft;
         //alert(event.clientX); //alert(e.offsetLeft); //alert(x)
@@ -1587,10 +2279,9 @@ function TabContent(tab, container, link_dic, is_on_click=true, is_link=null){
 
         var obj_number=this.tab.get_next_obj_number();
         var container_id=e.getAttribute("link_number");
-
+        //alert(container_id)
         dic["properties"]["obj_number"]=obj_number;dic["container_id"]=container_id;
         dic["properties"]["x"]=x;dic["properties"]["y"]=y;
-
         this.tab.active_obj=this.tab.generate_obj(dic=dic);
         this.tab.active_obj.create_editor();
         this.tab.tab_objects[container_id][obj_number]=this.tab.active_obj.data;
@@ -1602,6 +2293,7 @@ function TabContent(tab, container, link_dic, is_on_click=true, is_link=null){
   //alert(JSON.stringify(this.my_creator_obj.link_dic))
   var e=event.target;
   //alert(e.outerHTML)
+  //alert(event.target.value)
   //alert(this.outerHTML)
   var e_container_id_=e.getAttribute("container_id")
   var c_container_id_=this.getAttribute("link_number")
@@ -1609,7 +2301,10 @@ function TabContent(tab, container, link_dic, is_on_click=true, is_link=null){
   if(e_container_id_!=c_container_id_) {return;}
   var foreign_table=e.getAttribute("foreign_table")
   var field_=e.getAttribute("field");
+  if(field_=="" || field_==null){//alert("missing file in object="+e.getAttribute("id"));
+  return}
   try{var type_=e.getAttribute("type");if(type_==null || type_==""){type_=""}} catch(er){}
+
   if(foreign_table!=null && foreign_table!="")
   {
    if(this.foreign_keys==null){this.foreign_keys={}}
@@ -1618,22 +2313,36 @@ function TabContent(tab, container, link_dic, is_on_click=true, is_link=null){
    return;
   }
 
-  var model_=this.my_creator_obj.link_dic["properties"]["table"];
-  try{var parent_model_=this.my_creator_obj.link_dic["properties"]["parent_table"]} catch(er){};
-  if(parent_model_==null){var parent_model_="";}
-  var record_id_=this.getAttribute("record_id");
-  var parent_id_=this.getAttribute("parent_id");
-  if(field_=="" || field_==null){return}
-
-  var dic_data={"model":model_, "parent_model":parent_model_, "field":field_, "pkey":record_id_, "parent_pkey":parent_id_,
-                "value":e.value, "type":type_, "foreign_keys":this.foreign_keys}
-
-  // alert(JSON.stringify(dic_data))
-
   this.tab.parent.active_tab_content=this;
-  this.tab.parent.save_data(this, dic_data);
-  this.my_creator_obj.refresh_my_tables(f=field_, v=e.value)
-  //event.preventDefault();
+  try{var content_type_=e.getAttribute("content_type");if(content_type_==null || content_type_==""){content_type_=""}} catch(er){}
+  var html_obj_to_update=this
+  if (content_type_=="accounting")
+  {
+    try{var record_id_=e.getAttribute("record_id");if(record_id_==null || record_id_==""){record_id_="new"}} catch(er){}
+    var model_=e.getAttribute("model")
+    var parent_model_=this.my_creator_obj.link_dic["properties"]["table"];
+    var parent_id_=this.getAttribute("record_id");
+    var html_obj_to_update=e
+    var account=e.getAttribute("account")
+    var dic_data={"model":model_, "parent_model":parent_model_, "pkey":record_id_, "parent_pkey":parent_id_,
+                  "fields": {"account":account}, "type":type_, "foreign_keys":this.foreign_keys}
+        dic_data["fields"][field_]=e.value;
+    this.tab.parent.save_data(html_obj_to_update, dic_data);
+  } else
+  {
+   var model_=this.my_creator_obj.link_dic["properties"]["table"];
+   try{var parent_model_=this.my_creator_obj.link_dic["properties"]["parent_table"]} catch(er){};
+   if(parent_model_==null){var parent_model_="";}
+   var record_id_=this.getAttribute("record_id");
+   var parent_id_=this.getAttribute("parent_id");
+   var dic_data={"model":model_, "parent_model":parent_model_, "pkey":record_id_, "parent_pkey":parent_id_,
+                "fields": {}, "type":type_, "foreign_keys":this.foreign_keys}
+       dic_data["fields"][field_]=e.value;
+
+   this.tab.parent.save_data(html_obj_to_update, dic_data);
+   this.my_creator_obj.refresh_my_tables(f=field_, v=e.value);
+  }
+  // event.stopPropagation();
  }
  container.appendChild(this.link_content);
  this.process_content();
@@ -1657,12 +2366,20 @@ TabContent.prototype.process_content = function()
 
 TabContent.prototype.set_objects_data = function(dic)
 {
- // alert(JSON.stringify(dic))
+ //alert(JSON.stringify(dic))
  this.link_content.setAttribute("record_id", dic["id"]);var container_dic=this.tab.tab_objects[this.link_number];
  for(o in container_dic)
  {
    if(container_dic[o]["obj_type"]=="acObj" && (container_dic[o]["obj_name"]=="acInput" || container_dic[o]["obj_name"]=="acSelect")){
-     var eI=document.getElementById(o);var v=dic[container_dic[o]["properties"]["field"]];eI.value=v;
+     var eI=document.getElementById(o);
+     var v=dic[container_dic[o]["properties"]["field"]]
+
+     if(container_dic[o]["properties"]["field"]=="time_dim")
+     {
+      v=v+"";
+      v= v.substr(0, 4)+"-"+v.substring(4,6)+"-"+v.substring(6,8)
+     }
+     eI.value=v;
    }
  }
 }
@@ -1701,12 +2418,14 @@ TabContent.prototype.refresh_my_tables = function(f, v)
  var container_dic=this.tab.tab_objects[this.link_number];
  for(o in container_dic)
  {
-   if(container_dic[o]["obj_type"]=="acPlugin" && container_dic[o]["obj_name"]=="acSearchTable"){
-     var eI=document.getElementById(o);
-     eI.my_creator_obj.search_input_.setAttribute("filter_field", f);
-     eI.my_creator_obj.search_input_.value=v;
-     var ec = new Event("keyup", {bubbles: true});
-     eI.my_creator_obj.search_input_.dispatchEvent(ec);
+   if(container_dic[o]["obj_type"]=="acPlugin" && (container_dic[o]["obj_name"]=="acSearchTable" || container_dic[o]["obj_name"]=="acMSearchTable")){
+     try{
+         var eI=document.getElementById(o);
+         eI.my_creator_obj.search_input_.setAttribute("filter_field", f);
+         eI.my_creator_obj.search_input_.value=v;
+         var ec = new Event("keyup", {bubbles: true});
+         eI.my_creator_obj.search_input_.dispatchEvent(ec);
+     } catch(er){}
    }
  }
 }
@@ -2549,6 +3268,7 @@ return eval(s);
 // -- MenuBtn --
 function MenuBtn(parent, my_name_, my_title, buttons, obj_type, width="width:10%;")
 {
+
  this.parent=parent;
  this.my_name=my_name_;
  this.my_title = my_title;
@@ -2707,32 +3427,6 @@ Tab_create_main_content = function()
 //  this.parent.win_content.appendChild(this.parent.tab_properties_);
 }
 
-//TabNewFunction_click = function(obj, event)
-//{
-//  var fun_name_ = prompt("Enter name for new function:" , '');
-//  if(fun_name_ == '') {alert("Please enter a function name"); return;}
-//  var tab_name=obj.parent.parent.tab_obj_.tab_name;
-//  obj.parent.parent.tab_obj_.tab_functions[tab_name+"_"+fun_name_]=tab_name+"_"+fun_name_+"=function(obj){\ntry{\n\n} catch(er){alert('er9026: '+ er)}}";
-//  obj.parent.parent.tab_obj_.active_function = obj.parent.parent.tab_obj_.tab_name+"_"+fun_name_;
-//  try{
-//    obj.parent.parent.tab_obj_.parent.save();
-//    var click_event = new Event("click", {bubbles: true});
-//    obj.parent.parent.main_menus["Tab"].btn.dispatchEvent(click_event);
-//  } catch (er){alert("er9029: "+ er)}
-//}
-//
-//TabDeleteFunction_click = function(obj, event)
-//{
-//  var confirm_=prompt("Are you sure you want to delete the function(type Yes): "+obj.parent.parent.tab_obj_.active_function, 'no');
-//  if(confirm_!='Yes'){return;}
-//  delete obj.parent.parent.tab_obj_.tab_functions[obj.parent.parent.tab_obj_.active_function];
-//  try{
-//    obj.parent.parent.tab_obj_.parent.save();
-//    var click_event = new Event("click", {bubbles: true});
-//    obj.parent.parent.main_menus["Tab"].btn.dispatchEvent(click_event);
-//  } catch (er){}
-//}
-
 
 // -- MenuBtnComponent --
 Component_create_main_content = function()
@@ -2821,10 +3515,10 @@ TabNavLink_create_main_content = function()
 //- nav --
 TabNavLinknav_click = function(obj, event)
 {
-  //alert(obj.my_name);
-  //alert(obj.parent.my_name) // TabNavLink
-  //alert(obj.parent.parent.my_name) // editor
-  //alert(obj.parent.parent.atm.active_tab.tab_name)
+//  alert(obj.my_name);
+//  alert(obj.parent.my_name) // TabNavLink
+//  alert(obj.parent.parent.my_name) // editor
+//  alert(obj.parent.parent.atm.active_tab.tab_name)
   //alert(JSON.stringify(obj.parent.parent.tab_nav_links))
   //alert(JSON.stringify(obj.parent.parent.atm.tab_nav_links))
   //alert(JSON.stringify(obj.parent.parent.atm.active_tab.tab_nav_links))
@@ -2845,18 +3539,18 @@ TabNavLinkitem_click = function(obj, event)
 {
   //alert("TabNavLink- item")
   //alert(obj.obj_name) // acitem
-  //alert(obj.parent.my_name) // TabNavLink (in editor. it is the MenuBtn)
-  //alert(obj.parent.parent.my_name) // editor
-  //alert(obj.parent.parent.tab_obj_.tab_name)
-
+//  alert(obj.parent.my_name) // TabNavLink (in editor. it is the MenuBtn)
+//  alert(obj.parent.parent.my_name) // editor
+  //alert(obj.parent.parent.atm.active_tab.tab_name)
   var link_number=obj.parent.parent.active_link.link_number
-  //alert(JSON.stringify(obj.parent.parent.tab_obj_.tab_nav_links["nav_links"][link_number]))
-
+  //alert(link_number)
+  //alert(JSON.stringify(obj.parent.parent.atm.active_tab.tab_nav_links["nav_links"][link_number]))
+  //alert(JSON.stringify(obj.parent.parent.atm.tab_nav_links))
   try{tab_fpe=obj.parent.parent.get_functions_properties_editor(
             obj.parent.parent.atm.active_tab,
-              functions_dic=obj.parent.parent.tab_obj_.tab_nav_links["nav_links"][link_number]["nav_link"]["functions"],
+              functions_dic=obj.parent.parent.atm.active_tab.tab_nav_links["nav_links"][link_number]["nav_link"]["functions"],
             functions_list_dic=obj.parent.parent.atm.nav_link["functions"],
-              dic_properties=obj.parent.parent.tab_obj_.tab_nav_links["nav_links"][link_number]["nav_link"]["properties"],
+              dic_properties=obj.parent.parent.atm.active_tab.tab_nav_links["nav_links"][link_number]["nav_link"]["properties"],
             settings_list=obj.parent.parent.atm.nav_link["settings_list"],
             attributes_list=obj.parent.parent.atm.nav_link["attributes_list"],
             tab_btn_name="TabNavLink",null,
@@ -2978,6 +3672,20 @@ PluginSearchTable_click = function(obj, event)
   //var tab_=obj.parent.parent.atm.active_tab;
 }
 
+PluginMSearchTable_click = function(obj, event)
+{
+ //alert(333444)
+  //var tab_=obj.parent.parent.atm.active_tab;
+}
 
-//-- General Functions --
+//-- Report --
+Report_create_main_content = function()
+{
+ //alert("333 Report")
+}
+
+ReportPivot_click = function(obj, event)
+{
+ //alert(333444)
+}
 var getEBI = function(s){return document.getElementById(s)}
