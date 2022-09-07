@@ -238,6 +238,9 @@ def update_field_model_by_id(request, foreign=None):
 
 def get_data_link(request):
     dic_ = request.POST["dic"]
+    # print('dic_')
+    # print(dic_)
+    # print('dic_')
     dic_ = eval(dic_)
     # print('get_data_link dic_= ')
     # print(dic_)
@@ -259,7 +262,6 @@ def get_data_link(request):
             fields_str += f + '","'
         except Exception as ex:
             print("error 400"+str(ex))
-
     fields_str = fields_str[:len(fields_str)-2]
 
     # print("=2"*50)
@@ -347,34 +349,13 @@ def get_data_link(request):
     for ff in dic_["fields"]:
         dic[ff] = eval(ff)
 
-    # print("=2"*50)
-    # print("=2"*50)
-    # print(dic)
-    # print("=2"*50)
-    # print("=2"*50)
+    print("=2"*50)
+    print("=2"*50)
+    print(dic)
+    print("=2"*50)
+    print("=2"*50)
 
     dic = {'status': 'ok', "dic": dic}
     # print(dic)
     return JsonResponse(dic)
-
-
-# def get_adjective_link(request):
-#     dic_ = request.POST["dic"]
-#     dic_ = eval(dic_)
-#     # print('dic_')
-#     # print(dic_)
-#     # print('dic_')
-#     app_ = dic_['app']
-#     adjective_ = dic_['adjective']
-#     model = apps.get_model(app_label=app_, model_name="AdjectivesValues")
-#
-#     data = model.adjectives.adjectives(adjective_title=adjective_)
-#
-#     dic = {}
-#     for q in data:
-#         dic[q.id] = q.value
-#
-#     dic = {'status': 'ok', "dic": dic}
-#     # print(dic)
-#     return JsonResponse(dic)
 

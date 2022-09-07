@@ -2,7 +2,7 @@ from django.shortcuts import get_object_or_404
 from ..courses.models import GeneralLedger, ChartOfAccounts
 from .utils import get_number, add_years_months_days
 from .sql import SQL
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from django.apps import apps
 from django.db.models import Sum
 
@@ -92,7 +92,7 @@ class AccountingObj(object):
                                                            time_dim=timedim_obj,
                                                            level=0,  account=q["account"]
                 )
-                tb_obj.amount =q ["amount"]
+                tb_obj.amount = q["amount"]
                 tb_obj.save()
                 # print(tb_obj)
             except Exception as ex:
@@ -102,9 +102,52 @@ class AccountingObj(object):
                                             generalledger__time_dim__id__lte=end_date_dim,
                                             accounting_web__id=company_obj_id_).values('accounting_web',
                                                                     'generalledger__location',
+                                                                    'generalledger__time_dim__year',
+                                                                    'generalledger__time_dim__month',
                                                                     'account').annotate(
             amount=Sum('amount')).all()
 
+        # print("+31"*10)
+        # print("+31"*10)
+        # print("+31"*10)
+        # print(gld_objs)
+        # print("+31"*10)
+        # print("+31"*10)
+        # print("+31"*10)
+
+        for q in gld_objs:
+            try:
+                accounting_web_obj = accounting_web.objects.get(id=q["accounting_web"])
+                y_ = q["generalledger__time_dim__year"]
+                m_ = q["generalledger__time_dim__month"]
+                ds_ = (date(y_, m_+1, 1) - date(y_, m_, 1)).days
+                time_dim_id = y_*10000+m_*100+ds_
+                timedim_obj, c = timedim.objects.get_or_create(id=time_dim_id)
+                if c:
+                    timedim_obj.year = y_
+                    timedim_obj.month = m_
+                    if m_ > 9:
+                        timedim_obj.quarter = 4
+                    elif m_ > 6:
+                        timedim_obj.quarter = 3
+                    elif m_ > 3:
+                        timedim_obj.quarter = 2
+                    else:
+                        timedim_obj.quarter = 1
+                    timedim_obj.day = 0
+                    timedim_obj.save()
+                location_obj = location.objects.get(id=q["generalledger__location"])
+                tb_obj, c = model_tb.objects.get_or_create(accounting_web=accounting_web_obj,
+                                                           location=location_obj,
+                                                           time_dim=timedim_obj,
+                                                           level=2,  account=q["account"]
+                )
+                tb_obj.amount = q["amount"]
+                tb_obj.save()
+                # print(tb_obj)
+                # print(tb_obj)
+            except Exception as ex:
+                print(ex)
 
         # print("=5"*10)
         return {"start date": start_date_dim, "end date": end_date_dim}

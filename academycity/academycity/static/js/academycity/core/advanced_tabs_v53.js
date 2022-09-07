@@ -19,6 +19,7 @@ company_obj_id, is_show_btns=true, user_id=0)
  this.setTabs();
  this.active_tab=null;
  this.editor=null;
+ this.new_obj_to_create=null;
 
 // "Tab":{"title":"Tab", "obj_type":"none",
 //                        "sub_buttons": {"NewFunction":{"title":"new func", "width":10},
@@ -210,7 +211,7 @@ AdvancedTabsManager.prototype.create_add_delete_editor = function()
   if(atm_.editor == null){
     var editor = new PopWin(my_name_="editor",win_name_="editor",win_title_="Editor for Tab: ",user_id=1, atm=atm_)
     editor.__init__();
-    editor.set_win_frame_style("20", "650", "1000", "15%", "5%", "white")
+    editor.set_win_frame_style("20", "650", "1000", "15%", "35%", "white")
     editor.set_acWinStatEventListeners(editor);
     editor.set_acWinStat('block');
     atm_.editor=editor;
@@ -460,20 +461,13 @@ AdvancedTabsManager.prototype.get_data = function(call_back_fun, dic_, tbody_)
   dic_["app"]=this.my_app;
   var company_obj_id = dic_["company_obj_id"];
   if(dic_["company_obj_id"]==null){dic_["company_obj_id"]=this.company_obj_id;}
-  //var temp_data = null;
-  //alert("calling get_data")
-
   //alert(JSON.stringify(dic_));
-
-  //alert(tbody_.outerHTML)
-  //alert(call_back_fun)
   //alert(this.get_data_link_)
   $.post(this.get_data_link_,
           {dic : JSON.stringify(dic_)},
           function(data){
           try{
            //alert(JSON.stringify(data));
-            //console.log("get_data AdvancedTabsManager ", JSON.stringify(data))
            if(data["status"]!="ok"){return}
            call_back_fun(data["dic"], tbody_)
            tbody_.data=data["dic"];
@@ -502,6 +496,10 @@ this.content["last_obj_number"]+=1;
 return this.content["last_obj_number"]
 }
 
+AdvancedTabsManager.prototype.set_obj_to_copy=function(dic){
+ this.new_obj_to_create = dic;
+}
+
 // -- FunctionsPropertiesEditor --
 function FunctionsPropertiesEditor(tab, functions_dic, functions_list_dic, properties_dic, settings_list,
                                    attributes_list, tab_btn_name="PopWin", properties_func=null, node_to_delete=null)
@@ -511,10 +509,6 @@ function FunctionsPropertiesEditor(tab, functions_dic, functions_list_dic, prope
   //alert(JSON.stringify(properties_dic))
   //alert(JSON.stringify(settings_list))
   //alert(JSON.stringify(attributes_list))
-
-  //alert(JSON.stringify(functions_dic))
-  //alert('JSON.stringify(properties_dic)')
-  //alert(JSON.stringify(properties_dic))
   //--
   tab.parent.editor.main_menus[tab_btn_name].btn.click();
   tab.parent.editor.win_content.innerHTML="";
@@ -604,7 +598,7 @@ function FunctionsPropertiesEditor(tab, functions_dic, functions_list_dic, prope
    if(node_to_delete!=null){
       var btn=document.createElement("button");btn.innerHTML="Delete Obj";btn.tab=tab;
       btn.onclick=function(event){
-        var link_ = prompt("Are you sure you want to remove link the obj? if so type Yes:",'No');
+        var link_ = prompt("Are you sure you want to remove the obj? if so type Yes:",'No');
         if(link_=='Yes')
         {
          //alert(tab_)
@@ -617,6 +611,15 @@ function FunctionsPropertiesEditor(tab, functions_dic, functions_list_dic, prope
       tab_properties_.appendChild(btn);
     }
 
+   var cbtn=document.createElement("button");cbtn.innerHTML="Copy Obj";cbtn.tab=tab;
+   cbtn.onclick=function(event){
+         var clone = JSON.parse(JSON.stringify(this.tab.active_obj.data))
+         //alert("original\n\n"+JSON.stringify(this.tab.active_obj.data))
+         clone["container_id"]=""
+         clone["properties"]["obj_number"]=""
+         this.tab.parent.set_obj_to_copy(clone);
+      }
+   tab_properties_.appendChild(cbtn);
    var table = document.createElement("table");var tr=document.createElement("tr");table.appendChild(tr);
    var thp=document.createElement("th");thp.innerHTML="Property";thp.setAttribute("style","width:10%;text-align:center;");
    tr.appendChild(thp);
@@ -1086,7 +1089,7 @@ acPivotCreator.prototype.set_data = function()
      var horizontal_field_=dic["properties"]["horizontal_field"];
      var n_=data[vertical_field_].length;
      var pdata={};var v_=[];var h_=[];
-     for(j=0; j<n_;j++)
+     for(var j=0; j<n_;j++)
      {
               if(!(data[vertical_field_][j] in pdata))
               {pdata[data[vertical_field_][j]]={};v_.push(data[vertical_field_][j])}
@@ -1104,19 +1107,21 @@ acPivotCreator.prototype.set_data = function()
     // alert(JSON.stringify(data["dim_titles"][horizontal_field_]));
 
      var sh="<thead><tr><th></th>";
-     for(j in h_){sh+="<th>"+data["dim_titles"][horizontal_field_][h_[j]]+"</th>"};
+     for(var j in h_){sh+="<th>"+data["dim_titles"][horizontal_field_][h_[j]]+"</th>"};
       if(dic["properties"]["horizontal_title"]!=null && dic["properties"]["horizontal_title"]!="")
       {sh+="<th>"+dic["properties"]["horizontal_title"]+"</th>"}
      sh+="</tr></thead>";
      var s="<table>"+sh+"<tbody>"
-     for (i in v_)
+     for (var i in v_)
      {
       s+="<tr><th style='white-space: pre;text-align:left'>"+v_[i]+":"+data["dim_titles"][vertical_field_][v_[i]]+"</th>"
       var horizontal_total=0
-      for(j in h_)
+      for(var j in h_)
       {
        try{
-         s+="<td style='text-align:right;color:"+pdata[v_[i]][h_[j]]["color"]+"'>"+pdata[v_[i]][h_[j]]["value"]+"</td>"
+         var s_color="black"; try{s_color=pdata[v_[i]][h_[j]]["color"]}catch(er){}
+         var ssnn=nice_number(pdata[v_[i]][h_[j]]["value"])
+         s+="<td style='text-align:right;color:"+s_color+"'>"+ssnn+"</td>"
          horizontal_total+=1*pdata[v_[i]][h_[j]]["value"]
          } catch(er){s+="<td style='text-align:right'></td>"}
       }
@@ -2201,7 +2206,6 @@ acHeatmapCreator.prototype.get_data = function()
 
 // -- TabContent --
 function TabContent(tab, container, link_dic, is_on_click=true, is_link=null){
-
  //alert(container.outerHTML)
  //alert(JSON.stringify(link_dic));
  var pp_=link_dic["properties"]
@@ -2239,6 +2243,10 @@ function TabContent(tab, container, link_dic, is_on_click=true, is_link=null){
     this.link_content.onclick=function(event){
       this.tab.parent.active_tab_content=this;
       var e=event.target;
+        if(this.tab.parent.new_obj_to_create){
+            this.tab.new_obj_to_create=this.tab.parent.new_obj_to_create;
+            this.tab.parent.new_obj_to_create=null;
+        }
       //alert(e.outerHTML)
       if(this.tab.new_obj_to_create==null){
          var click_event=new Event("click", {bubbles: true});
@@ -2728,6 +2736,7 @@ Tab.prototype.set_to_create_obj=function(dic){
  //alert("set_to_create_obj")
  //alert(JSON.stringify(dic));
  this.new_obj_to_create = dic;
+ this.parent.new_obj_to_create=null;
 }
 
 Tab.prototype.generate_obj=function(dic=null){
@@ -3688,4 +3697,17 @@ ReportPivot_click = function(obj, event)
 {
  //alert(333444)
 }
-var getEBI = function(s){return document.getElementById(s)}
+
+//-- General Functions --
+var getEBI=function(s){s=s+"";return document.getElementById(s)}
+var get_creator=function(n){return getEBI(n).my_creator_obj;}
+var clone_dic=function(dic){return JSON.parse(JSON.stringify(dic))}
+
+var nice_number = function(z){
+ var kk="";if(z*1<0){kk="-";z=-1*z};var s=z+"";s_=s.split(".");var ns=s_[0];var dn=s_[1];
+ if(dn){if(dn.length<2){dn=dn+"0"} else if(dn.length>2){
+   dn=Math.round((100*dn)/Math.pow(10, dn.length))/100;dn=dn+"";dn=dn.split(".")[1]}}else{dn="00"}
+ var nss=ns.split(",");var n_="";for(var j=0;j<nss.length;j++){n_= n_+nss[j]};var n__="";
+ while (n_.length>0) {if(n__.length>0){n__=","+n__};n__=n_.substring(n_.length-3,n_.length)+n__;n_=n_.substring(0,n_.length-3)}
+ return kk+n__+"."+dn;
+}
