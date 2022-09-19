@@ -1,7 +1,6 @@
 from __future__ import unicode_literals
 from django.db import models
 from academycity.apps.core.sql import TruncateTableMixin
-from datetime import datetime
 
 
 class AccountingWeb(TruncateTableMixin, models.Model):
@@ -106,6 +105,12 @@ class GeneralLedgers(TruncateTableMixin, models.Model):
 
 
 class GeneralLedgerDetail(TruncateTableMixin, models.Model):
+
+    class Meta:
+        verbose_name = 'GeneralLedgerDetail'
+        verbose_name_plural = 'GeneralLedgerDetail'
+        ordering = ['generalledger', 'account']
+
     accounting_web = models.ForeignKey(AccountingWeb, on_delete=models.CASCADE, default=1,
                                        related_name='accounting_general_ledger_detail')
     generalledger = models.ForeignKey(GeneralLedgers, on_delete=models.CASCADE, default=1,

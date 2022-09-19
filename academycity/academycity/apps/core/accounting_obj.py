@@ -28,128 +28,103 @@ class AccountingObj(object):
         start_date_dim = params["start_date"]
         end_date_dim = params["end_date"]
         model_gld = apps.get_model(app_label=app_, model_name=gld_table_name_)
-        gld_objs = model_gld.objects.filter(generalledger__time_dim__id__gte=start_date_dim,
-                                            generalledger__time_dim__id__lte=end_date_dim,
-                                            accounting_web__id=company_obj_id_)\
-            .exclude(generalledger__comment__icontains="BB").values('accounting_web',
-                                                                    'generalledger__location',
-                                                                    'generalledger__time_dim__id',
-                                                                    'account').annotate(
-            amount=Sum('amount')).all()
+        sql = SQL()
+        squery = '''
+                SELECT gl.accounting_web_id, gl.location_id, gl.time_dim_id, gld.account, sum(amount) as amount
+                FROM accounting_GeneralLedgerDetail gld, accounting_GeneralLedgers gl
+                WHERE gl.id = gld.generalledger_id and gl.comment NOT LIKE '%%BB%%' and
+                  gl.time_dim_id >= ''' + start_date_dim + " and gl.time_dim_id <= " + end_date_dim + '''
+                GROUP BY gl.accounting_web_id, gl.location_id, gl.time_dim_id, gld.account
+                ORDER BY gl.accounting_web_id, gl.location_id, gl.time_dim_id, gld.account
+                '''
+        # print(squery)
+        results = sql.exc_sql(squery, [], verb='select')
+        # print(results)
+        for k in results:
+            # print(k)
+            accounting_web_obj = accounting_web.objects.get(id=k[0])
+            location_obj = location.objects.get(id=k[1])
+            timedim_obj = timedim.objects.get(id=k[2])
+            tb_obj, c = model_tb.objects.get_or_create(accounting_web=accounting_web_obj, location=location_obj,
+                                                       time_dim=timedim_obj, level=1,  account=k[3])
+            tb_obj.amount = k[4]
+            tb_obj.save()
 
-        # print("=3"*10)
-        # print(gld_objs)
-        # print("=4"*10)
+        # gld_objs = model_gld.objects.values('accounting_web', 'generalledger__location', 'generalledger__time_dim__id',
+        #                                     'account').filter(generalledger__time_dim__id__gte=start_date_dim,
+        #                                                       generalledger__time_dim__id__lte=end_date_dim,
+        #                                                       accounting_web__id=company_obj_id_).\
+        #     exclude(generalledger__comment__icontains="BB").annotate(amount=Sum('amount'))
 
-        for q in gld_objs:
-            # print("accounting_web", q["accounting_web"])
-            # print("generalledger__location", q["generalledger__location"])
-            # print("generalledger__time_dim__id", q["generalledger__time_dim__id"])
-            # print("account", q["account"])
-            # print("amount", q["amount"])
-            # print("=5"*10)
-            try:
-                accounting_web_obj = accounting_web.objects.get(id=q["accounting_web"])
-                timedim_obj = timedim.objects.get(id=q["generalledger__time_dim__id"])
-                location_obj = location.objects.get(id=q["generalledger__location"])
-                # print("=6"*10)
-                # print(accounting_web_obj)
-                # print("=7"*10)
-                tb_obj, c = model_tb.objects.get_or_create(accounting_web=accounting_web_obj,
-                                                           location=location_obj,
-                                                           time_dim=timedim_obj,
-                                                           level=1,  account=q["account"]
-                )
-                tb_obj.amount =q["amount"]
-                tb_obj.save()
-            except Exception as ex:
-                print(ex)
+        squery = '''
+                SELECT gl.accounting_web_id, gl.location_id, gl.time_dim_id, gld.account, sum(amount) as amount
+                FROM accounting_GeneralLedgerDetail gld, accounting_GeneralLedgers gl
+                WHERE gl.id = gld.generalledger_id and gl.comment LIKE '%%BB%%' and
+                  gl.time_dim_id >= ''' + start_date_dim + " and gl.time_dim_id <= " + end_date_dim + '''
+                GROUP BY gl.accounting_web_id, gl.location_id, gl.time_dim_id, gld.account
+                ORDER BY gl.accounting_web_id, gl.location_id, gl.time_dim_id, gld.account
+                '''
+        # print(squery)
+        results = sql.exc_sql(squery, [], verb='select')
+        # print(results)
+        for k in results:
+            # print(k)
+            # print(k[0])
+            accounting_web_obj = accounting_web.objects.get(id=k[0])
+            location_obj = location.objects.get(id=k[1])
+            timedim_obj = timedim.objects.get(id=k[2])
+            tb_obj, c = model_tb.objects.get_or_create(accounting_web=accounting_web_obj,
+                                                       location=location_obj,
+                                                       time_dim=timedim_obj,
+                                                       level=0,  account=k[3]
+            )
+            tb_obj.amount = k[4]
+            tb_obj.save()
 
-        # print("+31"*10)
-        # print("+31"*10)
-        # print("+31"*10)
-        # print(model_tb)
-        # print("+31"*10)
-        # print("+31"*10)
-        # print("+31"*10)
+        squery = '''
+                SELECT gl.accounting_web_id, gl.location_id, td.year, td.month, 
+                       gld.account, sum(gld.amount) as amount
+                FROM accounting_GeneralLedgerDetail gld, accounting_GeneralLedgers gl,
+                     accounting_timedim td
+                WHERE gl.id = gld.generalledger_id and gl.time_dim_id=td.id and
+                  td.id >= ''' + start_date_dim + " and td.id <= " + end_date_dim + '''
+                GROUP BY gl.accounting_web_id, gl.location_id, td.year, td.month, gld.account
+                ORDER BY gl.accounting_web_id, gl.location_id, td.year, td.month, gld.account
+                '''
+        # print(squery)
+        try:
+            results = sql.exc_sql(squery, [], verb='select')
+        except Exception as ex:
+            print("Error 2030: "+str(ex))
+        # print(results)
+        for k in results:
+            # print(k)
+            accounting_web_obj = accounting_web.objects.get(id=k[0])
+            location_obj = location.objects.get(id=k[1])
+            td_ = k[2]*10000+k[3]*100+(date(k[2], k[3]+1, 1) - date(k[2], k[3], 1)).days
+            timedim_obj, c = timedim.objects.get_or_create(id=td_)
+            if c:
+                timedim_obj.year = k[2]
+                timedim_obj.month = k[3]
+                if k[3] > 9:
+                    timedim_obj.quarter = 4
+                elif k[3] > 6:
+                    timedim_obj.quarter = 3
+                elif k[3] > 3:
+                    timedim_obj.quarter = 2
+                else:
+                    timedim_obj.quarter = 1
+                timedim_obj.day = (date(k[2], k[3]+1, 1) - date(k[2], k[3], 1)).days
+                timedim_obj.save()
 
-        gld_objs = model_gld.objects.filter(generalledger__time_dim__id__gte=start_date_dim,
-                                            generalledger__time_dim__id__lte=end_date_dim,
-                                            accounting_web__id=company_obj_id_,
-                                            generalledger__comment__icontains="BB").values('accounting_web',
-                                                                                           'generalledger__location',
-                                                                                           'generalledger__time_dim__id',
-                                                                                           'account').annotate(
-            amount=Sum('amount')).all()
+            tb_obj, c = model_tb.objects.get_or_create(accounting_web=accounting_web_obj,
+                                                       location=location_obj,
+                                                       time_dim=timedim_obj,
+                                                       level=2,  account=k[4]
+            )
+            tb_obj.amount = k[5]
+            tb_obj.save()
 
-        for q in gld_objs:
-            try:
-                accounting_web_obj = accounting_web.objects.get(id=q["accounting_web"])
-                timedim_obj = timedim.objects.get(id=q["generalledger__time_dim__id"])
-                location_obj = location.objects.get(id=q["generalledger__location"])
-                tb_obj, c = model_tb.objects.get_or_create(accounting_web=accounting_web_obj,
-                                                           location=location_obj,
-                                                           time_dim=timedim_obj,
-                                                           level=0,  account=q["account"]
-                )
-                tb_obj.amount = q["amount"]
-                tb_obj.save()
-                # print(tb_obj)
-            except Exception as ex:
-                print(ex)
-
-        gld_objs = model_gld.objects.filter(generalledger__time_dim__id__gte=start_date_dim,
-                                            generalledger__time_dim__id__lte=end_date_dim,
-                                            accounting_web__id=company_obj_id_).values('accounting_web',
-                                                                    'generalledger__location',
-                                                                    'generalledger__time_dim__year',
-                                                                    'generalledger__time_dim__month',
-                                                                    'account').annotate(
-            amount=Sum('amount')).all()
-
-        # print("+31"*10)
-        # print("+31"*10)
-        # print("+31"*10)
-        # print(gld_objs)
-        # print("+31"*10)
-        # print("+31"*10)
-        # print("+31"*10)
-
-        for q in gld_objs:
-            try:
-                accounting_web_obj = accounting_web.objects.get(id=q["accounting_web"])
-                y_ = q["generalledger__time_dim__year"]
-                m_ = q["generalledger__time_dim__month"]
-                ds_ = (date(y_, m_+1, 1) - date(y_, m_, 1)).days
-                time_dim_id = y_*10000+m_*100+ds_
-                timedim_obj, c = timedim.objects.get_or_create(id=time_dim_id)
-                if c:
-                    timedim_obj.year = y_
-                    timedim_obj.month = m_
-                    if m_ > 9:
-                        timedim_obj.quarter = 4
-                    elif m_ > 6:
-                        timedim_obj.quarter = 3
-                    elif m_ > 3:
-                        timedim_obj.quarter = 2
-                    else:
-                        timedim_obj.quarter = 1
-                    timedim_obj.day = 0
-                    timedim_obj.save()
-                location_obj = location.objects.get(id=q["generalledger__location"])
-                tb_obj, c = model_tb.objects.get_or_create(accounting_web=accounting_web_obj,
-                                                           location=location_obj,
-                                                           time_dim=timedim_obj,
-                                                           level=2,  account=q["account"]
-                )
-                tb_obj.amount = q["amount"]
-                tb_obj.save()
-                # print(tb_obj)
-                # print(tb_obj)
-            except Exception as ex:
-                print(ex)
-
-        # print("=5"*10)
         return {"start date": start_date_dim, "end date": end_date_dim}
 
     def set_time_dimension(self, params):

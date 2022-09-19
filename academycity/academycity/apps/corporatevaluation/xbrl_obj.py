@@ -3995,7 +3995,6 @@ class AcademyCityXBRL(object):
 
     def update_etfs_companies(self, params):
         l = ["b", "c", "e", "f", "i", "k", "p", "re", "u", "v", "y"]
-
         for f in l:
             file = "etfs/index-holdings-xl"+f
             # print(file)

@@ -1,5 +1,6 @@
 from django.conf import settings
-from django.db import connection
+from django.db import connection, models
+from django.core.exceptions import FieldDoesNotExist
 import psycopg2
 import os
 
@@ -46,3 +47,12 @@ class TruncateTableMixin(object):
     def truncate(cls):
         with connection.cursor() as cursor:
             cursor.execute('TRUNCATE TABLE {} CASCADE'.format(cls._meta.db_table))
+
+    @classmethod
+    def model_field_exists(cls, field):
+        try:
+            cls._meta.get_field(field)
+            return True
+        except FieldDoesNotExist:
+            return False
+

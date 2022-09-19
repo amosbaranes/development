@@ -11,7 +11,7 @@ def home(request):
     company_obj_id_ = company_obj.id
     app_ = "accounting"
     app_activate_function_link_ = reverse(app_+':activate_obj_function', kwargs={})
-    return render(request, 'accounting/home.html', {"atm_name": "aatm",
+    return render(request, app_+'/home.html', {"atm_name": "aatm",
                                                     "app": app_,
                                                     "app_activate_function_link": app_activate_function_link_,
                                                     "company_obj_id": company_obj_id_,
@@ -25,7 +25,7 @@ def app(request, app_name):
     company_obj_id_ = company_obj.id
     app_ = "accounting"
     app_activate_function_link_ = reverse(app_+':activate_obj_function', kwargs={})
-    return render(request, 'accounting/home.html', {"atm_name": "co_"+app_name+"_tm",
+    return render(request, app_+'//home.html', {"atm_name": "co_"+app_name+"_tm",
                                                                "app": app_,
                                                                "app_activate_function_link": app_activate_function_link_,
                                                                "company_obj_id": company_obj_id_,

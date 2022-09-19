@@ -45,7 +45,6 @@ urlpatterns += i18n_patterns(
     url(r'blog/', include('academycity.apps.blog.urls')),
     url(r'globsim/', include('academycity.apps.globsim.urls')),
     url(r'corporatevaluation/', include('academycity.apps.corporatevaluation.urls')),
-    url(r'trading/', include('academycity.apps.trading.urls')),
     url(r'polls/', include('academycity.apps.polls.urls')),
     url(r'research/', include('academycity.apps.research.urls')),
     path(r'search/', include('academycity.apps.search.urls')),
@@ -60,11 +59,10 @@ urlpatterns += i18n_patterns(
     url(r'^webcompanies/', include('academycity.apps.webcompanies.urls')),
     #
     #
-    url(r'm/', include('academycity.apps.acapps.macroeconomics.urls')),
     url(r'acmath/', include('academycity.apps.acapps.acmath.urls')),
     url(r'businesssim/', include('academycity.apps.acapps.businesssim.urls')),
     url(r'accounting/', include('academycity.apps.acapps.accounting.urls')),
-    url(r'tr/', include('academycity.apps.acapps.trades.urls')),
+
     url(r'c/', include('academycity.apps.webapps.checkcashingchicago.urls')),
     url(r'e/', include('academycity.apps.webapps.education.urls')),
     url(r'p/', include('academycity.apps.webapps.portfolio.urls')),

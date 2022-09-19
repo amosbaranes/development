@@ -163,3 +163,11 @@ div.scrollmenu a:hover {
 .payment tr:hover {background-color: #ddd;}
 .payment tr:nth-child(even){background-color: #f2f2f2;}
 
+
+.data_entry {font-family: Arial, Helvetica, sans-serif;width: 100%;}
+.data_entry td th {padding: 1px;border-spacing: 1px;}
+.data_entry th {text-align: center;
+  background-color:#2196F3; color: white;
+}
+.data_entry tr:hover {background-color: #ddd;}
+.data_entry tr:nth-child(even){background-color: #f2f2f2;}

@@ -52,5 +52,5 @@ class TimeDimAdmin(admin.ModelAdmin):
 
 @admin.register(TrialBalance)
 class TrialBalanceAdmin(admin.ModelAdmin):
-    list_display = ('id', "level", 'time_dim', 'account', 'amount')
+    list_display = ('id', 'location', "level", 'time_dim', 'account', 'amount')
 

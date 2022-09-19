@@ -5,6 +5,6 @@ app_name = "businesssim"
 
 urlpatterns = [
     path('', home, name='home'),
-    path('app/<str:app_name>/', app, name='app'),
+    path('app/<str:app_name>/<int:company_obj_id>/', app, name='app'),
     path('activate_obj_function/', activate_obj_function, name='activate_obj_function'),
 ]
