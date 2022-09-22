@@ -140,10 +140,10 @@ def activate_function(request):
 def update_field_model_by_id(request, foreign=None):
     # log_debug("update_field_model_by_id 0")
     dic_ = request.POST["dic"]
-    print('-1'*50)
-    print('update_field_model_by_id: dic_')
-    print(dic_)
-    print('-1'*50)
+    # print('-1'*50)
+    # print('update_field_model_by_id: dic_')
+    # print(dic_)
+    # print('-1'*50)
     log_debug(dic_)
     # print('dic_')
     dic_ = eval(dic_)
@@ -160,7 +160,7 @@ def update_field_model_by_id(request, foreign=None):
     if pkey_ == "new":
         s = ""
         if model.model_field_exists(app_+'_web') and isinstance(model._meta.get_field("businesssim_web"), ForeignKey):
-            print("it is a foreign key")
+            # print("it is a foreign key")
             s = "model.objects.create("
             s += app_ + '_web=company_obj '
         if parent_model_ != "":
@@ -206,18 +206,18 @@ def update_field_model_by_id(request, foreign=None):
             obj = eval(s)
             # print("9051\n" + s)
 
-            print("9042 "+model._meta.get_field("businesssim_web"))
+            # print("9042 "+str(model._meta.get_field("businesssim_web")))
 
             if model.model_field_exists(app_ + '_web') and isinstance(model._meta.get_field("businesssim_web"), ManyToManyField):
                 s = "obj."+app_ + '_web.add(company_obj)'
-                print("9035\n", s)
+                # print("9035\n", s)
                 eval(s)
-                print("9052")
+                # print("9052")
                 obj.save()
-                print("9055")
+                # print("9055")
         except Exception as ex:
-            print("error700 "+str(ex))
-            log_debug("error700 "+str(ex))
+            print("error701 "+str(ex))
+            log_debug("error701 "+str(ex))
     else:
         try:
             obj_slug = request.POST.get('obj_slug')
@@ -227,14 +227,14 @@ def update_field_model_by_id(request, foreign=None):
         except Exception as er:
             obj = model.objects.get(id=pkey_)
 
-    print('9088  obj')
-    print(obj)
-    print('9088  obj')
+    # print('9088  obj')
+    # print(obj)
+    # print('9088  obj')
 
     try:
         for f in fields_:
             value_ = fields_[f]
-            print("9071 ", f, value_)
+            # print("9071 ", f, value_)
             try:
                 if isinstance(model._meta.get_field(f), ManyToManyRel):
                     l_ = value_.split(",")
@@ -252,7 +252,6 @@ def update_field_model_by_id(request, foreign=None):
 
                     print(9089)
                     return JsonResponse({'status': 'ok', "record_id": obj.id})
-
             except Exception as ex:
                 print("Error 450: "+str(ex))
 
@@ -284,10 +283,15 @@ def update_field_model_by_id(request, foreign=None):
             try:
                 try:
                     foreign_keys = dic_["foreign_keys"]
+                    # print(foreign_keys, f)
                     model_f = apps.get_model(app_label=app_, model_name=foreign_keys[f]["foreign_table"])
+                    # print(model_f)
+                    # print("9011 ", value_)
                     value_ = model_f.objects.get(id=value_)
+                    # print("9012 ", value_)
                 except Exception as ex:
                     pass
+                    # print("Error 600: "+str(ex))
                 setattr(obj, f, value_)
             except Exception as ex:
                 print("Error 800: "+str(ex))
