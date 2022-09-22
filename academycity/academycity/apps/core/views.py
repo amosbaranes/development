@@ -10,6 +10,7 @@ from .AdvancedTabes import AdvancedTabs
 from ..acapps.accounting.models import Locations, TimeDim
 from ..core.utils import log_debug
 from .accounting_obj import AccountingObj
+from django.db.models.fields.related import ForeignKey, ManyToManyField, ManyToManyRel
 
 
 def home(request):
@@ -139,10 +140,10 @@ def activate_function(request):
 def update_field_model_by_id(request, foreign=None):
     # log_debug("update_field_model_by_id 0")
     dic_ = request.POST["dic"]
-    # print('-1'*50)
-    # print('update_field_model_by_id: dic_')
-    # print(dic_)
-    # print('-1'*50)
+    print('-1'*50)
+    print('update_field_model_by_id: dic_')
+    print(dic_)
+    print('-1'*50)
     log_debug(dic_)
     # print('dic_')
     dic_ = eval(dic_)
@@ -157,38 +158,65 @@ def update_field_model_by_id(request, foreign=None):
     company_obj = parent_model.objects.get(id=company_obj_id_)
     model = apps.get_model(app_label=app_, model_name=model_)
     if pkey_ == "new":
-        s = "model.objects.create("
-        if model.model_field_exists(app_+'_web'):
-            # print("exist")
+        s = ""
+        if model.model_field_exists(app_+'_web') and isinstance(model._meta.get_field("businesssim_web"), ForeignKey):
+            print("it is a foreign key")
+            s = "model.objects.create("
             s += app_ + '_web=company_obj '
         if parent_model_ != "":
-            # print('-4' * 5, s)
+            # print('9040\n', s)
+            if s == "":
+                s = "model.objects.create("
             parent_pkey_ = dic_['parent_pkey']
             parent_model__ = apps.get_model(app_label=app_, model_name=parent_model_)
             parent_model_fk_name = parent_model_[:-1]
             parent_obj__ = parent_model__.objects.get(id=parent_pkey_)
-            s += ", "+parent_model_fk_name+'=parent_obj__)'
-        else:
-            try:
-                foreign_keys = dic_["foreign_keys"]
-                for k in foreign_keys:
-                    ss = foreign_keys[k]["foreign_table"]+'.objects.get(id='+foreign_keys[k]["value"]+')'
-                    try:
-                        myVars = vars()
-                    except Exception as ex:
-                        log_debug("err800: "+str(ex))
-                    try:
-                        myVars[k] = eval(ss)
-                    except Exception as ex:
-                        log_debug("err900: "+str(ex))
-                    s += ', '+k+'='+k
-            except Exception as ex:
-                log_debug("save with fkey error " + str(ex))
-            s += ')'
+            s += ", "+parent_model_fk_name+'=parent_obj__'
         try:
-            obj = eval(s)
+            # print('9045')
+            space_ = ", "
+            if s == "":
+                s = "model.objects.create("
+                space_ = ""
+            # print("9045 ")
+            foreign_keys = dic_["foreign_keys"]
+            # print("9046 ")
+            for k in foreign_keys:
+                t_obj = apps.get_model(app_label=app_, model_name=foreign_keys[k]["foreign_table"])
+                obj__ = t_obj.objects.get(id=int(foreign_keys[k]["value"]))
+                # print("=6"*10)
+                # print(obj__)
+                # print("=6"*10)
+                try:
+                    myVars = vars()
+                except Exception as ex:
+                    print("err800: "+str(ex))
+                try:
+                    myVars[k] = obj__
+                except Exception as ex:
+                    log_debug("err900: "+str(ex))
+                s += space_+k+'='+k
+                space_ = ", "
         except Exception as ex:
-            # print("error700 "+str(ex))
+            pass
+            # print("save with fkey error " + str(ex))
+        s += ')'
+        try:
+            # print("9050\n" + s)
+            obj = eval(s)
+            # print("9051\n" + s)
+
+            print("9042 "+model._meta.get_field("businesssim_web"))
+
+            if model.model_field_exists(app_ + '_web') and isinstance(model._meta.get_field("businesssim_web"), ManyToManyField):
+                s = "obj."+app_ + '_web.add(company_obj)'
+                print("9035\n", s)
+                eval(s)
+                print("9052")
+                obj.save()
+                print("9055")
+        except Exception as ex:
+            print("error700 "+str(ex))
             log_debug("error700 "+str(ex))
     else:
         try:
@@ -199,14 +227,36 @@ def update_field_model_by_id(request, foreign=None):
         except Exception as er:
             obj = model.objects.get(id=pkey_)
 
-    # print('obj')
-    # print(obj)
-    # print('obj')
+    print('9088  obj')
+    print(obj)
+    print('9088  obj')
 
     try:
         for f in fields_:
-            # print("f", f, "fields_[f]", fields_[f])
             value_ = fields_[f]
+            print("9071 ", f, value_)
+            try:
+                if isinstance(model._meta.get_field(f), ManyToManyRel):
+                    l_ = value_.split(",")
+                    for z in l_:
+                        print(z)
+                        model__ = apps.get_model(app_label=app_, model_name=f.split("_")[1])
+                        model__v = model__.objects.get(id=int(z))
+                        print(model__v)
+                        try:
+                            print("model__v." + f.split("_")[0] + "_web.add(obj)")
+                            exec("model__v." + f.split("_")[0] + "_web.add(obj)")
+                            model__v.save()
+                        except Exception as ex:
+                            print("Error 9072 " + ex)
+
+                    print(9089)
+                    return JsonResponse({'status': 'ok', "record_id": obj.id})
+
+            except Exception as ex:
+                print("Error 450: "+str(ex))
+
+            # print("f", f, "fields_[f]", fields_[f])
             if type_ == "checkbox":
                 if value_ == 'true':
                     value_ = True
@@ -258,6 +308,11 @@ def get_data_link(request):
     # print(dic_)
     # print(dic_["fields"])
     # print('dic_')
+
+    multiple_select_fields = None
+    if "multiple_select_fields" in dic_:
+        if len(dic_["multiple_select_fields"]) > 0:
+            multiple_select_fields = dic_["multiple_select_fields"]
     if "id" not in dic_["fields"]:
         dic_["fields"].insert(0, "id")
 
@@ -282,6 +337,10 @@ def get_data_link(request):
     # print("=2"*50)
 
     model = apps.get_model(app_label=app_, model_name=model_)
+
+    # fields_ = model._meta.get_fields(include_parents=True, include_hidden=True)
+    # print(fields_)
+
     number_of_rows_ = 2
     try:
         number_of_rows_ = dic_['number_of_rows']
@@ -355,6 +414,12 @@ def get_data_link(request):
             s += '.order_by("'+order_by["field"]+'")'
             if order_by["direction"] == "descending":
                 s += '.reverse()'
+        if multiple_select_fields:
+            ss__ = s+'.all()[:number_of_rows_]'
+            # print('ss__')
+            # print(ss__)
+            # print('ss__')
+            data__ = eval(ss__)
         s += '.all()[:number_of_rows_].values('+fields_str+')'
         # print('s111')
         # print(s)
@@ -364,11 +429,22 @@ def get_data_link(request):
         print("error 300 "+str(ex))
         # pass
 
+    dic = {}
+    if multiple_select_fields:
+        for z in multiple_select_fields:
+            dic[z] = []
+            for q in data__:
+                qs = eval('q.'+z+'.all()')
+                s = ""
+                for q_ in qs:
+                    if s != "":
+                        s += ","
+                    s += str(q_.id)
+                dic[z].append(s)
     # print('data')
     # print(data)
     # print('data')
 
-    dic = {}
     try:
         for q in data:
             for f in dic_["fields"]:

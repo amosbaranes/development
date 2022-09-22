@@ -11,7 +11,7 @@ class BusinesssimWeb(TruncateTableMixin, models.Model):
     number_of_participant = models.SmallIntegerField(default=9)
 
     def __str__(self):
-        return self.program_name
+        return str(self.program_name)
 
 
 class Institutions(TruncateTableMixin, models.Model):
@@ -25,10 +25,14 @@ class Institutions(TruncateTableMixin, models.Model):
     city = models.CharField(max_length=50, default='', blank=True, null=True)
     zip = models.CharField(max_length=15, default='', blank=True, null=True)
 
+    def __str__(self):
+        return str(self.name)
+
 
 class Instructors(TruncateTableMixin, models.Model):
-    businesssimm_web = models.ManyToManyField(BusinesssimWeb, related_name='businesssimm_instructors')
-    institution = models.ManyToManyField(Institutions, related_name='institution_instructors')
+    businesssim_web = models.ManyToManyField(BusinesssimWeb, related_name='businesssim_instructors')
+    institution = models.ForeignKey(Institutions, on_delete=models.CASCADE, default=1,
+                                    related_name='institution_instructors')
     first_name = models.CharField(max_length=50, default='', blank=True, null=True)
     last_name = models.CharField(max_length=50, default='', blank=True, null=True)
     email = models.CharField(max_length=50, default='', blank=True, null=True)
@@ -40,20 +44,24 @@ class Instructors(TruncateTableMixin, models.Model):
     zip = models.CharField(max_length=15, default='', blank=True, null=True)
     user_id = models.CharField(max_length=10, default='', blank=True, null=True)
 
+    @property
+    def full_name(self):
+        return self.first_name+" "+self.last_name
+
     def __str__(self):
         return self.first_name+" "+self.last_name
 
 
 class Teams(TruncateTableMixin, models.Model):
-    businesssimm_web = models.ForeignKey(BusinesssimWeb, on_delete=models.CASCADE, default=1,
-                                         related_name='businesssimm_teams')
+    businesssim_web = models.ForeignKey(BusinesssimWeb, on_delete=models.CASCADE, default=1,
+                                        related_name='businesssim_teams')
     team_name = models.CharField(max_length=50, default='', blank=True, null=True)
     team_manager = models.CharField(max_length=50, default='', blank=True, null=True)
 
 
 class Participants(TruncateTableMixin, models.Model):
-    businesssimm_web = models.ForeignKey(BusinesssimWeb, on_delete=models.CASCADE, default=1,
-                                         related_name='businesssimm_participants')
+    businesssim_web = models.ForeignKey(BusinesssimWeb, on_delete=models.CASCADE, default=1,
+                                        related_name='businesssim_participants')
     institution = models.ForeignKey(Institutions, on_delete=models.CASCADE, default=1,
                                     related_name='institution_participants')
     team = models.ForeignKey(Teams, on_delete=models.CASCADE, default=1,
@@ -86,7 +94,7 @@ class RandDs(TruncateTableMixin, models.Model):
 
 class RandDProperties(TruncateTableMixin, models.Model):
     randd = models.ForeignKey(RandDs, on_delete=models.CASCADE, default=1,
-                              related_name='randd_properties')
+                              related_name='randd_randdproperties')
     property = models.CharField(max_length=50, default='new', blank=True, null=True)
     value = models.SmallIntegerField(default=20)
 
@@ -101,7 +109,7 @@ class Products(TruncateTableMixin, models.Model):
 
 
 class ProductPeriods(TruncateTableMixin, models.Model):
-    product = models.ForeignKey(Products, on_delete=models.CASCADE, default=1, related_name='product_periods')
+    product = models.ForeignKey(Products, on_delete=models.CASCADE, default=1, related_name='product_productperiods')
     period = models.SmallIntegerField(default=1)
     retail_price = models.SmallIntegerField(400)
     planned_production = models.IntegerField(default=10000)
@@ -109,20 +117,20 @@ class ProductPeriods(TruncateTableMixin, models.Model):
 
 
 # Marketing
-class Marketing(TruncateTableMixin, models.Model):
-    product = models.ForeignKey(Products, on_delete=models.CASCADE, default=1, related_name='product_marketing')
+class Marketings(TruncateTableMixin, models.Model):
+    product = models.ForeignKey(Products, on_delete=models.CASCADE, default=1, related_name='product_marketings')
     period = models.SmallIntegerField(default=1)
     channel = models.CharField(max_length=25, default='')
     amount = models.IntegerField(default=500000)
 
 
-class Branding(TruncateTableMixin, models.Model):
-    team = models.ForeignKey(Teams, on_delete=models.CASCADE, default=1, related_name='team_branding')
+class Brandings(TruncateTableMixin, models.Model):
+    team = models.ForeignKey(Teams, on_delete=models.CASCADE, default=1, related_name='team_brandings')
     period = models.SmallIntegerField(default=1)
 
 
-class Distribution(TruncateTableMixin, models.Model):
-    team = models.ForeignKey(Teams, on_delete=models.CASCADE, default=1, related_name='team_distribution')
+class Distributions(TruncateTableMixin, models.Model):
+    team = models.ForeignKey(Teams, on_delete=models.CASCADE, default=1, related_name='team_distributions')
     period = models.SmallIntegerField(default=1)
     type = models.CharField(max_length=25, default='')
     extra_support = models.IntegerField(500000)
@@ -130,8 +138,8 @@ class Distribution(TruncateTableMixin, models.Model):
 
 
 # Manufacturing
-class Manufacturing(TruncateTableMixin, models.Model):
-    team = models.ForeignKey(Teams, on_delete=models.CASCADE, default=1, related_name='team_manufacturing')
+class Manufacturings(TruncateTableMixin, models.Model):
+    team = models.ForeignKey(Teams, on_delete=models.CASCADE, default=1, related_name='team_manufacturings')
     period = models.SmallIntegerField(default=1)
     add_employees = models.SmallIntegerField(default=1)
     add_plant_size = models.SmallIntegerField(default=1)
@@ -145,8 +153,8 @@ class Manufacturing(TruncateTableMixin, models.Model):
 
 
 # Finance
-class Finance(TruncateTableMixin, models.Model):
-    team = models.ForeignKey(Teams, on_delete=models.CASCADE, default=1, related_name='team_finance')
+class Finances(TruncateTableMixin, models.Model):
+    team = models.ForeignKey(Teams, on_delete=models.CASCADE, default=1, related_name='team_finances')
     period = models.SmallIntegerField(default=1)
     add_equity = models.IntegerField(default=1)
     dividend = models.SmallIntegerField(1)
@@ -156,7 +164,7 @@ class Finance(TruncateTableMixin, models.Model):
 # Accounting
 class GeneralLedgers(TruncateTableMixin, models.Model):
     team = models.ForeignKey(Teams, on_delete=models.CASCADE, default=1,
-                             related_name='team_general_ledger')
+                             related_name='team_generalledgers')
     period = models.SmallIntegerField(default=1)
     comment = models.CharField(max_length=256, default='', blank=True, null=True)
 
@@ -164,9 +172,9 @@ class GeneralLedgers(TruncateTableMixin, models.Model):
         return str(self.id) + " - " + str(self.team) + " - " + str(self.comment)
 
 
-class GeneralLedgerDetail(TruncateTableMixin, models.Model):
+class GeneralLedgerDetails(TruncateTableMixin, models.Model):
     generalledger = models.ForeignKey(GeneralLedgers, on_delete=models.CASCADE, default=1,
-                                      related_name='gl_general_ledger_detail')
+                                      related_name='generalledger_generalledgerdetails')
     account = models.IntegerField(default=0, blank=True, null=True)
     amount = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     comment = models.CharField(max_length=256, default='', blank=True, null=True)
@@ -175,8 +183,8 @@ class GeneralLedgerDetail(TruncateTableMixin, models.Model):
         return str(self.account) + " - " + str(self.amount) + " - " + str(self.comment)
 
 
-class TrialBalance(TruncateTableMixin, models.Model):
-    team = models.ForeignKey(Teams, on_delete=models.CASCADE, default=1, related_name='tb_general_ledger')
+class TrialBalances(TruncateTableMixin, models.Model):
+    team = models.ForeignKey(Teams, on_delete=models.CASCADE, default=1, related_name='team_trialbalances')
     period = models.SmallIntegerField(default=1)
     level = models.SmallIntegerField(default=0, blank=True, null=True)
     account = models.IntegerField(default=0, blank=True, null=True)

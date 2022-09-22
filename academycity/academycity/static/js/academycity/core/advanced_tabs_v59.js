@@ -41,7 +41,8 @@ company_obj_id, is_show_btns=true, user_id=0)
                                                 "attributes":{},
                                                 "functions":["onmouseover", "onmouseout"]},
                                         "Input":{"title":"Input", "width":5,
-                                                 "setting": {"color":[], "background-color":[], "text-align":["", "left", "center", "right"]},
+                                                 "setting": {"color":[], "background-color":[],
+                                                             "text-align":["", "left", "center", "right"]},
                                                  "attributes":{"field":[],
                                                                "type":["text","button","checkbox","color","date",
                                                                        "datetime-local","email","file","hidden","image",
@@ -49,13 +50,13 @@ company_obj_id, is_show_btns=true, user_id=0)
                                                                        "search","submit","tel","time","url","week"],
                                                                        "foreign_table":[]},
                                                  "functions":["onchange", "onkeyup", "onkeydown"]},
-                                        "Select":{"title":"Select", "width":5, "setting": {"options":[], "global_adjective":[],
-                                                                                           "app_adjective":[], "data_app":[], "data_model":[],
-                                                                                           "data_field":[], "data_filter_field":[],
-                                                                                           "data_filter_field_value":[]},
-                                                                                "attributes":{"field":[], "size":[],
-                                                                                "foreign_table":[]},
-                                                                                "functions":["onchange"]},
+                                        "Select":{"title":"Select", "width":5,
+                                                  "setting": {"options":[], "global_adjective":[], "app_adjective":[],
+                                                              "data_app":[], "data_model":[],"data_field":[],
+                                                              "data_filter_field":[], "data_filter_field_value":[],
+                                                              "multiple":["regular", "multiple"]},
+                                                  "attributes":{"field":[], "size":[], "foreign_table":[]},
+                                                  "functions":["onchange"]},
                                         "Table":{"title":"Table", "width":5, "setting": {}, "attributes":{}, "functions":["onchange"]},
                                         "Textarea":{"title":"textarea", "width":7,
                                                     "setting": {"overflow":[],"color":[],"background-color":[]},
@@ -1002,7 +1003,6 @@ acObj.prototype.create_obj = function(){
     s_+="color:"+color+background_color+font_weight;
     this.new_obj.setAttribute("style", s_);
   }
-
   if(this.data["element_name"]=="Select")
   {
    try{this.get_select_data()} catch(er){}
@@ -1020,7 +1020,10 @@ acObj.prototype.get_select_data = function()
   this.new_obj.innerHTML = "";
   var dic=this.data;
   //alert(JSON.stringify(dic));
+  //alert(JSON.stringify(dic["settings"]));
   var options=dic["properties"]["options"];
+  var multiple_=dic["properties"]["multiple"];
+  if(!(multiple_==null)){this.new_obj.setAttribute("multiple", "multiple")}
     var option = document.createElement("option");
     option.value = "-1"; option.text = "----";
     this.new_obj.appendChild(option);
@@ -1319,7 +1322,7 @@ acSearchTableCreator.prototype.create_obj = function()
   if(!dic["fields"]){dic["fields"]={"1":{"field_title":"1", "field_name":"","field_width":"100","field_align":"left"},
                                     "2":{"field_title":"2", "field_name":"","field_width":"100","field_align":"left"}}}
   if(!(dic["properties"]["table_class"])){dic["properties"]["table_class"]="basic"}
-  //alert(JSON.stringify(dic));
+  //alert("9035 "+JSON.stringify(dic));
   this.parent.data=dic;
   //--
   var container = document.getElementById("content_"+dic["container_id"]);
@@ -1328,6 +1331,7 @@ acSearchTableCreator.prototype.create_obj = function()
   this.is_del_button=dic["properties"]["is_del_button"];
   this.fields=[]
   for(f in dic["fields"]){this.fields.push(dic["fields"][f]["field_name"])}
+  //alert("9036 "+JSON.stringify(this.fields));
   //--
   this.filter_value="";
   this.search_input_=document.createElement("input");
@@ -1466,7 +1470,7 @@ acSearchTableCreator.prototype.create_obj = function()
 acSearchTableCreator.prototype.get_data = function(data_table_name=null,parent_model=null,parent_id=null,company_obj_id=null)
 {
   var dic=this.parent.data;
-  //alert("44  +JSON.stringify(dic));
+  //alert("44  "+JSON.stringify(dic));
   var container = document.getElementById("content_"+dic["container_id"]);
   //alert(container.outerHTML);
   if(data_table_name!==null){this.data_table_name=data_table_name} else {this.data_table_name=container.getAttribute("table")}
@@ -1488,7 +1492,7 @@ acSearchTableCreator.prototype.get_data = function(data_table_name=null,parent_m
 
   var fun=function(data, ttbody_){
     console.log("get_data search table inside call back function")
-    //alert("167 data: "+JSON.stringify(data));
+    //alert("9081 data: "+JSON.stringify(data));
     try{if(Object.keys(data).length==0){return;}} catch (er) {}
     //alert(dic_["fields"][0])
     //alert(JSON.stringify(data[dic_["fields"][0]]))
@@ -1515,18 +1519,26 @@ acSearchTableCreator.prototype.get_data = function(data_table_name=null,parent_m
   }
 
   var dic__=[]; for(i in dic_["fields"]){dic__.push(dic_["fields"][i])}
-  //alert("906 dic__ "+dic__)
+  //alert("9060 dic__ "+dic__)
 
   var container_id=this.parent.data["container_id"];
   var container_dic=this.parent.tab.tab_objects[container_id];
-
+  this.multiple_select_fields=[]
   for(o in container_dic)
-  {if(container_dic[o]["obj_type"]=="acObj" && container_dic[o]["obj_name"]=="acInput"){
-      var f=container_dic[o]["properties"]["field"];if(!dic__.includes(f)){dic__.push(f)}}
+  {
+     if(container_dic[o]["obj_type"]=="acObj")
+      {
+        var f=container_dic[o]["properties"]["field"];
+        if(container_dic[o]["obj_name"]=="acInput"){if(!dic__.includes(f)){dic__.push(f)}
+        } else if (container_dic[o]["obj_name"]=="acSelect"){
+         var ps_ = container_dic[o]["properties"]
+         //alert("9087 field = "+JSON.stringify(ps_));
+         if("multiple" in ps_){this.multiple_select_fields.push(f)}else{if(!dic__.includes(f)){dic__.push(f)}}
+        }
+      }
   }
-
   var dic__={"model":this.data_table_name, "parent_model": parent_model_, "parent_id":parent_id_,
-             "number_of_rows":this.number_of_rows,
+             "number_of_rows":this.number_of_rows, "multiple_select_fields": this.multiple_select_fields,
              "filters":{}, "order_by":this.order_by, "fields":dic__
              }
       dic__["filters"][this.filter_field]={"value":this.filter_value, "foreign_table":this.filter_field_foreign_table}
@@ -1574,6 +1586,8 @@ acSearchTableCreator.prototype.row_click = function(event)
  var dic=this.my_creator_obj.tbody.data;
 
  for(f in dic){result[f]=dic[f][n_row]}
+
+ //alert(JSON.stringify(result))
 
  container.my_creator_obj.set_objects_data(result);
  container.my_creator_obj.current_record_data=result;
@@ -2728,24 +2742,23 @@ function TabContent(tab, container, link_dic, is_on_click=true, is_link=null){
   var e=event.target;
   //alert("c9001 "+event.target.outerHTML)
   var e_container_id_=e.getAttribute("container_id")
-  //alert(e_container_id_)
+//  alert(e_container_id_)
   var container = getEBI("content_"+e_container_id_)
-  //alert("c9002 "+container.outerHTML)
-  //alert("9050 " + JSON.stringify(container.my_creator_obj.link_dic))
+//  alert("c9002 "+container.outerHTML)
+//  alert("9050 " + JSON.stringify(container.my_creator_obj.link_dic))
   var c_container_id_=this.getAttribute("link_number")
-  //alert("c9003  e_container_id_=" + e_container_id_+ " c_container_id_=" + c_container_id_)
-  if(e_container_id_!=c_container_id_){return}
- // alert("c9004 container: e.outerHTML: "+e.outerHTML+"\n\n e.value= " + e.value+"\n\n this.outerHTML= " + this.outerHTML)
-  //if(e_container_id_!=c_container_id_) {return;}
 
+//  alert("c9003  e_container_id_=" + e_container_id_+ " c_container_id_=" + c_container_id_)
+//  if(e_container_id_!=c_container_id_){return}
+
+//  alert("c9004 container: e.outerHTML: "+e.outerHTML+"\n\n e.value= " + e.value+"\n\n this.outerHTML= " + this.outerHTML)
+  if(e_container_id_!=c_container_id_) {return;}
   var foreign_table=e.getAttribute("foreign_table")
   var field_=e.getAttribute("field");
   //alert("field_ 1: " + field_)
   if(field_=="" || field_==null){//alert("missing file in object="+e.getAttribute("id"));
   return}
-
   try{var type_=e.getAttribute("type");if(type_==null || type_==""){type_=""}} catch(er){}
-
   //alert("9059 ")
   var field__="";var v__="";
   if(foreign_table!=null && foreign_table!="")
@@ -2764,9 +2777,21 @@ function TabContent(tab, container, link_dic, is_on_click=true, is_link=null){
   //alert("9043  e: " + e.outerHTML)
   //alert("9054  "+content_type_)
   //alert("field_ 3: " + field_)
-  var field__u=field_; var v__u=e.value; if(field__!=""){field__u=field__; v__u=v__}
-  //alert("field__u 1: " + field__u)
-  //alert("90544  "+field__u+" - "+v__u)
+  var field__u=field_; var v__u=e.value;
+  var type__=e.getAttribute("type_");
+  //alert("9086 type__="+type__)
+  if(type__!=null && type__!="" && type__=="Select"){
+   var s__="";
+   for(j in e.selectedOptions)
+   {
+    try{if(e.selectedOptions[j]!=null && e.selectedOptions[j].tagName.toLowerCase()=="option")
+    {if(s__!=""){s__+=","};s__+=e.selectedOptions[j].getAttribute("value")}} catch(er){}
+   }
+   v__u=s__
+   //alert("9052 v__u = "+v__u)
+  }
+  if(field__!=""){field__u=field__; v__u=v__}
+  //alert("90544  field__u= "+field__u+" - v__u= "+v__u)
   if (content_type_=="accounting")
   {
   //alert("90010")
@@ -2779,7 +2804,6 @@ function TabContent(tab, container, link_dic, is_on_click=true, is_link=null){
     var parent_model_=container.my_creator_obj.link_dic["properties"]["table"];
     var html_obj_to_update=e
     var account=e.getAttribute("account")
-
     var dic_data={"model":model_, "parent_model":parent_model_, "pkey":record_id_, "parent_pkey":parent_id_,
                   "fields": {"account":account}, "type":type_, "foreign_keys":container.foreign_keys}
         dic_data["fields"][field__u]=v__u;
@@ -2789,7 +2813,6 @@ function TabContent(tab, container, link_dic, is_on_click=true, is_link=null){
   } else if (content_type_=="data_entry")
   {
   //alert("90011")
-
   } else
   {
    //alert("90012")
@@ -2798,13 +2821,10 @@ function TabContent(tab, container, link_dic, is_on_click=true, is_link=null){
    var model_=container.my_creator_obj.link_dic["properties"]["table"];
    try{var parent_model_=container.my_creator_obj.link_dic["properties"]["parent_table"]} catch(er){};
    if(parent_model_==null){var parent_model_="";}
-
    //alert("9004 else: record_id_ "+record_id_ +" parent_id_= "+parent_id_+" model_= "+model_+" parent_model_= "+parent_model_)
-
    var dic_data={"model":model_, "parent_model":parent_model_, "pkey":record_id_, "parent_pkey":parent_id_,
                 "fields": {}, "type":type_, "foreign_keys":container.foreign_keys}
        dic_data["fields"][field__u]=v__u;
-
    //alert('9080 dic_data= '+ JSON.stringify(dic_data));
    container.tab.parent.save_data(html_obj_to_update, dic_data);
    //alert("90 "+e.value)
@@ -2834,24 +2854,33 @@ TabContent.prototype.process_content = function()
 
 TabContent.prototype.set_objects_data = function(dic)
 {
- //alert(JSON.stringify(dic))
+ //alert("9076 "+JSON.stringify(dic))
  this.link_content.setAttribute("record_id", dic["id"]);var container_dic=this.tab.tab_objects[this.link_number];
  for(o in container_dic)
  {
    if(container_dic[o]["obj_type"]=="acObj" && (container_dic[o]["obj_name"]=="acInput" || container_dic[o]["obj_name"]=="acSelect")){
-     //alert(JSON.stringify(container_dic[o]["properties"]))
+     //alert("9023 "+JSON.stringify(container_dic[o]["properties"]))
+     var multiple_=false;if("multiple" in container_dic[o]["properties"]){multiple_ = true}
      var eI=document.getElementById(o);
      var v=dic[container_dic[o]["properties"]["field"]]
+     //var m=dic[container_dic[o]["properties"]["field"]]
      if(container_dic[o]["properties"]["field"]=="time_dim")
      {
       var v_=v+"";v_=v_.substr(0, 4)+"-"+v_.substring(4,6)+"-"+v_.substring(6,8)
       //alert(v_)
       eI.value=v_;
-     } else{eI.value=v;}
+     }
+     else if (multiple_==true)
+     {
+       var sv = v.split(',');eI.value = null; // Reset pre-selected options (just in case)
+       var eILen = eI.options.length;
+       for (var i=0;i<eILen;i++) {if (sv.indexOf(eI.options[i].value) >= 0) {eI.options[i].selected = true}}
+     }else {eI.value=v}
+
      var foreign_table=container_dic[o]["properties"]["foreign_table"]
      if(foreign_table!=null && foreign_table!="")
      {
-     //alert(JSON.stringify(container_dic[o]["properties"]))
+       //alert(JSON.stringify(container_dic[o]["properties"]))
        var field_=container_dic[o]["properties"]["field"]
        if(!this.link_content.foreign_keys){this.link_content.foreign_keys={}}
        this.link_content.foreign_keys[field_]={"value":v, "foreign_table":foreign_table};
@@ -2906,9 +2935,15 @@ TabContent.prototype.refresh_my_tables = function(f, v)
           var n_=0; eI.my_creator_obj.search_input_.value="";
           for(var i in fs)
           {
-           if(f==fs[i]["field_name"]){var ft_=fs[i]["foreign_table"];
+           if(f==fs[i]["field_name"]){
+            var ft_=fs[i]["foreign_table"];
+            //alert(f + "  9087  " + ft_)
             if(ft_==null || ft_==""){eI.my_creator_obj.search_input_.setAttribute("filter_field_foreign_table", "")}
+            else{eI.my_creator_obj.search_input_.setAttribute("filter_field_foreign_table", ft_)}
+            eI.my_creator_obj.search_input_.setAttribute("filter_field", f);
+            eI.my_creator_obj.search_input_.setAttribute("placeholder", "Search "+fs[i]["field_title"]+"..");
             eI.my_creator_obj.search_input_.value=v;
+            //alert(eI.my_creator_obj.search_input_.outerHTML)
            }
            if(n_==0){
               var ec = new Event("keyup", {bubbles: true});

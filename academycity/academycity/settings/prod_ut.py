@@ -7,7 +7,7 @@ ALLOWED_HOSTS = ['*']
 SITE_ID = 3
 
 ADMINS = (
-    ('Amos Baranes', 'amos@DrBaranes.com'),
+    ('Amos Baranes', 'ac@drbaranes.com'),
 )
 
 DATABASES = {

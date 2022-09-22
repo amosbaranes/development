@@ -1,7 +1,8 @@
 from __future__ import unicode_literals
 from django.contrib import admin
 from django.utils.translation import ugettext_lazy as _
-from .models import (BusinesssimWeb, Participants, Institutions, GeneralLedgers, GeneralLedgerDetail, TrialBalance)
+from .models import (BusinesssimWeb, Instructors, Participants, Institutions, GeneralLedgers, GeneralLedgerDetails,
+                     TrialBalances)
 
 
 @admin.register(BusinesssimWeb)
@@ -16,5 +17,10 @@ class ParticipantsAdmin(admin.ModelAdmin):
 
 @admin.register(Institutions)
 class InstitutionsAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name')
+    list_display = ('id', 'name', 'contact_person')
+
+
+@admin.register(Instructors)
+class InstructorsAdmin(admin.ModelAdmin):
+    list_display = ('id', 'first_name', 'last_name')
 
