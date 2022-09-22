@@ -39,7 +39,7 @@ class Instructors(TruncateTableMixin, models.Model):
     phone = models.CharField(max_length=50, default='', blank=True, null=True)
     address = models.CharField(max_length=100, default='', blank=True, null=True)
     country = models.CharField(max_length=100, default='', blank=True, null=True)
-    State = models.CharField(max_length=20, default='', blank=True, null=True)
+    state = models.CharField(max_length=20, default='', blank=True, null=True)
     city = models.CharField(max_length=50, default='', blank=True, null=True)
     zip = models.CharField(max_length=15, default='', blank=True, null=True)
     user_id = models.CharField(max_length=10, default='', blank=True, null=True)

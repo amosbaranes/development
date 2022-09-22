@@ -308,7 +308,6 @@ def get_data_link(request):
     # print(dic_)
     # print(dic_["fields"])
     # print('dic_')
-
     multiple_select_fields = None
     if "multiple_select_fields" in dic_:
         if len(dic_["multiple_select_fields"]) > 0:
@@ -368,7 +367,8 @@ def get_data_link(request):
         company_obj = parent_model.objects.get(id=company_obj_id_)
         s = 'model.objects'
         s_ = ''
-        if model.model_field_exists(app_+'_web'):
+        if model.model_field_exists(app_+'_web') and isinstance(model._meta.get_field("businesssim_web"),
+                                                                ForeignKey):
             s_ += app_ + '_web=company_obj '
         if parent_id_ > -1:
             parent_model_ = dic_['parent_model']
@@ -459,9 +459,7 @@ def get_data_link(request):
         print(ex)
 
     # print("=2"*50)
-    # print("=2"*50)
     # print(dic)
-    # print("=2"*50)
     # print("=2"*50)
 
     dic = {'status': 'ok', "dic": dic}
