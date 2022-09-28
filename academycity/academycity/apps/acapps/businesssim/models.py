@@ -8,7 +8,9 @@ class BusinesssimWeb(TruncateTableMixin, models.Model):
     start_date = models.DateField(blank=True, null=True)
     end_date = models.DateField(blank=True, null=True)
     number_of_periods = models.SmallIntegerField(default=9)
-    number_of_participant = models.SmallIntegerField(default=9)
+    number_of_participants = models.SmallIntegerField(default=9)
+    number_of_teams = models.SmallIntegerField(default=7)
+    max_participants_in_team = models.SmallIntegerField(default=6)
 
     def __str__(self):
         return str(self.program_name)
@@ -57,6 +59,9 @@ class Teams(TruncateTableMixin, models.Model):
                                         related_name='businesssim_teams')
     team_name = models.CharField(max_length=50, default='', blank=True, null=True)
     team_manager = models.CharField(max_length=50, default='', blank=True, null=True)
+
+    def __str__(self):
+        return str(self.team_name)
 
 
 class Participants(TruncateTableMixin, models.Model):

@@ -27,6 +27,18 @@ class DataAdvancedTabs(models.Model):
         return str(self.manager) + ":" + str(self.tab_name)
 
 
+class DataAdvancedApps(models.Model):
+    class Meta:
+        verbose_name = 'DataAdvancedApps'
+        verbose_name_plural = 'DataAdvancedApps'
+
+    app_name = models.CharField(max_length=50, null=True, default="app_name")
+    app_content = models.JSONField(null=True)
+
+    def __str__(self):
+        return str(self.app_name)
+
+
 class DataAdvancedTabsCustomization(models.Model):
     tab = models.ForeignKey(DataAdvancedTabs, on_delete=models.CASCADE, default=1)
     tab_content = models.JSONField(null=True)

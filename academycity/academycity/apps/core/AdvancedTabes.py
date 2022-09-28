@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django.http import JsonResponse
 from django.apps import apps
-from .models import DataAdvancedTabs, DataAdvancedTabsManager, AdjectivesValues
+from .models import DataAdvancedTabs, DataAdvancedTabsManager, AdjectivesValues, DataAdvancedApps
 
 
 class AdvancedTabs(object):
@@ -62,6 +62,7 @@ class AdvancedTabs(object):
     def get_tabs_from_table(self, params):
         try:
             manager_ = DataAdvancedTabsManager.objects.get(at_name=self.manager_name)
+            app_, c = DataAdvancedApps.objects.get_or_create(app_name=self.app)
             tabs = DataAdvancedTabs.objects.filter(manager=manager_).all()
             result = []
             for t in tabs:
@@ -73,7 +74,7 @@ class AdvancedTabs(object):
                 t.tab_content = content_
                 t.save()
                 result.append((t.id, t.tab_content))
-            result = {"manager": manager_.manager_content, "tabs": result}
+            result = {"manager": manager_.manager_content, "tabs": result, "app_content": app_.app_content}
             # print(result)
         except Exception as ex:
             result = {"error": "-1"}
@@ -92,11 +93,15 @@ class AdvancedTabs(object):
             # print('='*20)
             # print('tab_name')
             # print(params["tab_name"])
+            # print(params["app_content"])
             # print('='*50)
             try:
                 atm = DataAdvancedTabsManager.objects.get(at_name=self.manager_name)
                 atm.manager_content = params["atm_content"]
                 atm.save()
+                app = DataAdvancedApps.objects.get(app_name=self.app)
+                app.app_content = params["app_content"]
+                app.save()
                 tab = DataAdvancedTabs.objects.get(manager=atm, id=params["tab_id"])
                 tab.tab_content = params["tab_content"]
                 tab.tab_name = params["tab_name"]

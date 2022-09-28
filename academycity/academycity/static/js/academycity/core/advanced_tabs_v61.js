@@ -13,6 +13,7 @@ company_obj_id, is_show_btns=true, user_id=0)
  this.get_data_link_=get_data_link;
  this.titles=null;this.container=null;
  this.content={"last_obj_number":0};
+ this.app_content={};this.app_objs={};this.temp_number=1;
  this.tabs={};
  this.init_create_containers();
  if(is_show_btns == true){this.create_add_delete_editor();}
@@ -87,7 +88,17 @@ company_obj_id, is_show_btns=true, user_id=0)
                         "sub_buttons": {"NewPopWin":{"title":"New Pop Win", "width":10},
                                         "DeletePopWin":{"title":"Del Pop Win", "width":10}}},
                  "Plugin":{"title":"Plugins", "obj_type":"acPlugin",
-                        "sub_buttons": {"SearchTable":{"title":"Search Table", "width":10,
+                        "sub_buttons": {"Container":{"title":"Container", "width":10,
+                                                     "setting": {"height":[], "width":[], "width":[], "color":[],
+                                                                 "background-color":[]},
+                                                     "attributes":{"table":[], "parent_table":[], "content_type":[],
+                                                                   "border_style":["none","solid","Dotted","dashed",
+                                                                   "double","groove","ridge","inset","outset",
+                                                                   "hidden"], "border_width":[],
+                                                                   "border_color":[], "border_radius":[]},
+                                                     "functions":["onclick", "onchange", "onmouseover", "onmouseout"]
+                                                    },
+                                        "SearchTable":{"title":"Search Table", "width":10,
                                                        "setting": {"is_new_button":["","Yes","No"], "is_del_button":["","Yes","No"]},
                                                        "attributes":{"number_of_rows":[], "table_class":["","basic", "payment"], "height":[]},
                                                        "functions":["onchange", "on_new_record"],
@@ -140,6 +151,9 @@ company_obj_id, is_show_btns=true, user_id=0)
                                                    "functions":["on_amount_paint", "on_receive_data", "onclick", "onmouseover", "onmouseout"]
                                                   }
                                        }
+                           },
+                 "AppObjs":{"title":"App objects", "obj_type":"none",
+                        "sub_buttons": {}
                            }
                 }
 
@@ -234,7 +248,7 @@ AdvancedTabsManager.prototype.create_add_delete_editor = function()
   if(atm_.editor == null){
     var editor = new PopWin(my_name_="editor",win_name_="editor",win_title_="Editor for Tab: ",user_id=1, atm=atm_)
     editor.__init__();
-    editor.set_win_frame_style("20", "650", "1000", "15%", "35%", "white")
+    editor.set_win_frame_style("20", "650", "1000", "15%", "20%", "white")
     editor.set_acWinStatEventListeners(editor);
     editor.set_acWinStat('block');
     atm_.editor=editor;
@@ -269,13 +283,13 @@ AdvancedTabsManager.prototype.setTabs = function()
           //alert(JSON.stringify(dic))
           var result = dic["result"];
           if(result["manager"]==null){} else {atm_.content=result["manager"]}
-
+          if(result["app_content"]==null){} else {atm_.app_content=result["app_content"]}
           //alert('JSON.stringify(atm_.content)')
           //alert(JSON.stringify(atm_.content))
-          var tabs = result["tabs"];
           //alert('JSON.stringify(tabs)')
           //alert(JSON.stringify(tabs))
-          for (jj in tabs)
+          var tabs = result["tabs"];
+          for (var jj in tabs)
           {
             var k=tabs[jj]; var id_=k[0];
             atm_.tabs[id_]=new Tab(atm_, data=k[1], id=id_);
@@ -287,6 +301,27 @@ AdvancedTabsManager.prototype.setTabs = function()
  );
 }
 
+AdvancedTabsManager.prototype.get_app_obj=function(obj_name, obj=null, is_new=false)
+{
+  //alert(obj_name + "  " + JSON.stringify(obj))
+  var obj_dic="";
+  for (var h in atm_.app_content){if(obj_name==atm_.app_content[h]["properties"]["obj_name"]){obj_dic=atm_.app_content[h]};break;}
+  if(obj_dic==""){alert("There is no object "+obj_name+"."); return;}
+  //alert(h + "  " + JSON.stringify(obj_dic))
+  if(!(h in this.app_objs) || is_new==true){
+    var n_=this.temp_number;this.temp_number+=1;
+    var s=obj_dic["properties"]["obj_name"]+n_+'='+obj_dic["functions"]["constructor"];eval(s);
+    for(f in obj_dic["functions"])
+    {if(f!="constructor"){s=obj_dic["properties"]["obj_name"]+n_+'.prototype.'+f+' = '+obj_dic["functions"][f];
+       try{eval(s)}catch(er){alert("Error 9053: "+er)}}
+    }
+    var k="new "+obj_dic["properties"]["obj_name"]+n_+"(obj)";
+    var obj_=eval(k); if(is_new==true){return obj_}
+    this.app_objs[h]=obj_;
+  } else {return this.app_objs[h]}
+  return obj_
+}
+
 AdvancedTabsManager.prototype.delete_tab = function(tab_id_, tab_name_)
 {this.tabs[tab_id_].btn.outerHTML="";this.tabs[tab_id_].content.outerHTML="";}
 
@@ -295,9 +330,7 @@ AdvancedTabsManager.prototype.set_active_tab = function(btn)
   var tabcontent=document.getElementsByClassName("tabcontent");
   for(i=0;i<tabcontent.length;i++){tabcontent[i].style.display='none';}
   var tablinks=document.getElementsByClassName("tablinks");
-
   try{eval(btn.parent.tab_name+"__myclick__(called_tab=btn.parent, calling_tab=btn.parent)");} catch(er){alert("er9001: "+er)}
-
   for (i=0;i<tablinks.length;i++){
     try{
       tablinks[i].className=tablinks[i].className.replace(" active","");
@@ -305,14 +338,12 @@ AdvancedTabsManager.prototype.set_active_tab = function(btn)
       {eval(tablinks[i].parent.tab_name+"__otherclick__(called_tab=tablinks[i].parent, calling_tab=btn.parent)");}
     } catch(er){alert('er9038: '+ er)}
   }
-
   try{for(w in this.active_tab.PopWinObjects){if(w=="editor"){ continue;};this.active_tab.PopWinObjects[w].temp_close_win()}} catch(er){}
-
 
   var click_event=new Event("click", {bubbles: true});
   try{
-    this.active_tab=btn.parent;this.active_tab.content.style.display="block";btn.className+=" active";
-    try{for(w in this.active_tab.PopWinObjects){if(w=="editor"){ continue;}; this.active_tab.PopWinObjects[w].resume_win()}} catch(er){}
+      this.active_tab=btn.parent;this.active_tab.content.style.display="block";btn.className+=" active";
+      try{for(w in this.active_tab.PopWinObjects){if(w=="editor"){ continue;}; this.active_tab.PopWinObjects[w].resume_win()}} catch(er){}
 
       this.editor.main_menus["Tab"].btn.dispatchEvent(click_event);
       this.editor.set_title(this.editor.win_title_+this.active_tab.tab_name);
@@ -337,9 +368,8 @@ AdvancedTabsManager.prototype.get_tab = function(tab_name){for(id in this.tabs){
 // this is a Factory function which return object based on the dic.
 AdvancedTabsManager.prototype.get_obj = function(tab, dic)
 {
- //alert(tab.tab_name)
+ //alert("9011 "+tab.tab_name)
  //alert(JSON.stringify(dic))
-
  var s='function '+dic["obj_name"]+dic["properties"]["obj_number"]+'(atm_, tab_, dic_)'
  s+='{'
  //s+='this.my_type="'+dic["obj_name"]+'";this.my_element="'+dic["element_name"]+'";';
@@ -352,17 +382,13 @@ AdvancedTabsManager.prototype.get_obj = function(tab, dic)
  s+='};'
  //alert(s)
  try{eval(s)} catch(er){alert("er9002: "+er)}
-
  s=dic["obj_name"]+dic["properties"]["obj_number"]+'.prototype = Object.create('+dic["obj_type"]+'.prototype);'
  //alert(s);
  try{eval(s)} catch(er){alert("er903: "+er)}
  //--
-
  if(dic["obj_name"]=="acPivot")
  {
-
  //alert(JSON.stringify(dic))
-
  s=dic["obj_name"]+dic["properties"]["obj_number"]+'.prototype.create_editor = function()'
  s+='{'
  s+=' var container_id=this.data["container_id"];';
@@ -377,11 +403,8 @@ s+=' try{'
  s+='  )';
  s+=' } catch(er) {alert("er 207: "+er)};'
  s+='}'
-
  //alert(s);
-
  try{eval(s)}catch(er){alert(er)}
-
  } else {
 
  s=dic["obj_name"]+dic["properties"]["obj_number"]+'.prototype.create_editor = function()'
@@ -399,17 +422,14 @@ s+=' try{'
  s+='  )';
  s+=' } catch(er) {alert("er 207: "+er)};'
  s+='}'
-
  //alert(s);
  eval(s);
-
  }
-
-
  //--
  s = 'new '+dic["obj_name"]+dic["properties"]["obj_number"]+'(atm_=this, tab_=tab, dic_=dic)'
  //alert(s)
- return eval(s)
+ try{obj_=eval(s)}catch(er){alert(er)}
+ return obj_
 }
 
 AdvancedTabsManager.prototype.get_obj_functions_settings_attributes = function(dic_)
@@ -458,6 +478,7 @@ AdvancedTabsManager.prototype.save = function()
   } catch(er){alert("er9004: "+er)}
   var dic_={"obj":"AdvancedTabs","atm":this.my_name, "app": this.my_app, "fun":"save_content",
             "params": {"atm_content": this.content,
+                       "app_content": this.app_content,
                        "tab_content": tab_content,
                        "tab_name": this.active_tab.tab_name,
                        "tab_order": this.active_tab.tab_properties["tab_order"],
@@ -665,10 +686,8 @@ function FunctionsPropertiesEditor(tab, functions_dic, functions_list_dic, prope
         var link_ = prompt("Are you sure you want to remove the obj? if so type Yes:",'No');
         if(link_=='Yes')
         {
-         //alert(tab_)
          //alert(tab_.tab_name);
          try{var s='delete tab_'+node_to_delete_;eval(s)} catch(er) {}
-
          try{tab_.parent.save();} catch(er) {alert("error 2099: "+ er)}
         }
       }.bind(tab_=tab, node_to_delete_=node_to_delete)
@@ -935,13 +954,15 @@ AccountingObj.prototype.get_financial_statement = function(statement,address)
  return s;
 }
 
+
 // -- acObj --
 function acObj(){}
 
 acObj.prototype.create_obj = function(){
   var container = document.getElementById("content_"+this.data["container_id"])
-  //alert(JSON.stringify(this.data));
-  //alert(container.outerHTML)
+  if(container==null){var container = document.getElementById(this.data["container_id"])}
+  //alert("9015"+JSON.stringify(this.data));
+  //alert("9016"+container.outerHTML)
   //alert(container) //alert(container.outerHTML)
   this.new_obj=document.createElement(this.data["element_name"]);
   this.new_obj.my_creator_obj=this;
@@ -971,7 +992,6 @@ acObj.prototype.create_obj = function(){
   var background_color_=this.data["properties"]["background-color"];
   if(background_color_=="" || background_color_==null){var background_color="";}
   else {var background_color=";background-color:"+background_color_}
-
   if(this.data["element_name"]=="Input")
   {
     var s_label=this.data["properties"]["title"]+":&nbsp;";
@@ -1310,11 +1330,227 @@ function acPlugin(){}
 acPlugin.prototype.create_obj = function(){this.creator.create_obj();}
 
 
-// -- acSearchTableCreator --
-function acSearchTableCreator(parent){
-  this.parent=parent;
-  // alert(JSON.stringify(this.parent.data));
+// -- acContainerCreator --
+function acContainerCreator(parent){this.parent=parent;this.tab=parent.tab}
+acContainerCreator.prototype.create_obj = function()
+{
+  this.link_dic=this.parent.data;
+  //alert("9065 this.tab.tab_name: "+this.tab.tab_name)
+  var pp_=this.link_dic["properties"]
+  //alert("this.link_dic="+JSON.stringify(this.link_dic))
+  //--
+  var container = document.getElementById("content_"+this.link_dic["container_id"]);
+  //alert(container.outerHTML)
+  //--
+  this.obj_number=pp_["obj_number"]
+  this.link_number=pp_["obj_number"]
+  this.link_content=document.createElement("div");
+  this.link_content.my_creator_obj=this
+  this.link_content.setAttribute("id", this.obj_number);
+  this.link_content.setAttribute("link_number", this.obj_number);
+  this.link_content.setAttribute("container_id", this.link_dic["container_id"]);
+  this.link_content.setAttribute("obj_type", this.link_dic["obj_type"]);
+
+  this.link_content.tab=this.parent.tab;
+  var width_=100;if((pp_["width"]!=null && pp_["width"]!="")){width_=pp_["width"]}
+  var height_=100;if((pp_["height"]!=null && pp_["height"]!="")){height_=pp_["height"]}
+
+  var background_color_="#AEEEEF";if(pp_["background-color"]!=null && pp_["background-color"]!=""){background_color_=pp_["background-color"]}
+  var color_="black";if((pp_["color"]!=null && pp_["color"]!="")){color_=pp_["color"]}
+  var ss_="position: relative;left:"+pp_["x"]+"px;top:"+pp_["y"]+"px;background-color:transparent;color:"+color_
+  ss_+=";width: "+width_+"px;height:"+height_+"px;display:block;"
+  if(pp_["border_style"]!=null && pp_["border_style"]!=""){ss_+="border-style:"+pp_["border_style"]+";"}
+  if(pp_["border_width"]!=null && pp_["border_width"]!=""){ss_+="border-width:"+pp_["border_width"]+"px;"}
+  if(pp_["border_color"]!=null && pp_["border_color"]!=""){ss_+="border-color:"+pp_["border_color"]+";"}
+  if(pp_["border_radius"]!=null && pp_["border_radius"]!=""){ss_+="border-radius:"+pp_["border_radius"]+"px;"}
+
+  this.link_content.setAttribute("style", ss_);
+  this.link_content.my_creator_obj=this
+  container.appendChild(this.link_content);
+  this.link_content.onclick=container_on_click;
+  this.link_content.container_on_change=container_on_change;
+  //alert("9066 this.tab.tab_name: "+this.tab.tab_name)
+  this.process_content();
 }
+
+var process_content=function(){
+//alert("9087")
+  //alert(JSON.stringify(this.link_dic["functions"]));
+  for(f in this.link_dic["functions"])
+  {
+    if(f!="onclick"){var s='this.link_content.'+f+'='+this.link_dic["functions"][f];eval(s);}
+  }
+  for (i in this.tab.tab_objects[this.link_number])
+  {
+   dic_=this.tab.tab_objects[this.link_number][i];
+   //alert(JSON.stringify(dic_));
+   this.tab.generate_obj(dic=dic_);
+  }
+}
+var container_on_change=function (event){
+  event.stopPropagation();
+  var e=event.target;
+  //alert("c9001 "+event.target.outerHTML)
+  var e_container_id_=e.getAttribute("container_id")
+  //  alert(e_container_id_)
+  var container = getEBI("content_"+e_container_id_)
+  //  alert("c9002 "+container.outerHTML)
+  //  alert("9050 " + JSON.stringify(container.my_creator_obj.link_dic))
+  var c_container_id_=this.getAttribute("link_number")
+
+  //  alert("c9003  e_container_id_=" + e_container_id_+ " c_container_id_=" + c_container_id_)
+
+  //alert("c9004 container: e.outerHTML: "+e.outerHTML+"\n\n e.value= " + e.value+"\n\n this.outerHTML= " + this.outerHTML)
+  //if(e_container_id_!=c_container_id_) {return;}
+
+
+  var foreign_table=e.getAttribute("foreign_table")
+  var field_=e.getAttribute("field");
+  //alert("field_ 1: " + field_)
+  if(field_=="" || field_==null){//alert("missing file in object="+e.getAttribute("id"));
+  return}
+  try{var type_=e.getAttribute("type");if(type_==null || type_==""){type_=""}} catch(er){}
+  //alert("9059 ")
+  var field__="";var v__="";
+  if(foreign_table!=null && foreign_table!="")
+  {
+   if(container.foreign_keys==null){container.foreign_keys={}}
+   var vv=e.value;if(type_=="date"){var ss=vv.split("-");vv=ss[0]+ss[1]+ss[2]}
+   if(!(field_ in container.foreign_keys))
+   {container.foreign_keys[field_]={"value":vv, "foreign_table":foreign_table};return;}
+   else{field__=field_; v__=vv}
+  }
+  //alert("c9006 field_ 2: " + field_)
+
+  container.tab.parent.active_tab_content=container;
+  try{var content_type_=e.getAttribute("content_type");if(content_type_==null || content_type_==""){content_type_=""}} catch(er){}
+  var html_obj_to_update=container
+  //alert("9043  e: " + e.outerHTML)
+  //alert("9054  "+content_type_)
+  //alert("field_ 3: " + field_)
+  var field__u=field_; var v__u=e.value;
+  var type__=e.getAttribute("type_");
+  //alert("9086 type__="+type__)
+  if(type__!=null && type__!="" && type__=="Select"){
+   var s__="";
+   for(j in e.selectedOptions)
+   {
+    try{if(e.selectedOptions[j]!=null && e.selectedOptions[j].tagName.toLowerCase()=="option")
+    {if(s__!=""){s__+=","};s__+=e.selectedOptions[j].getAttribute("value")}} catch(er){}
+   }
+   v__u=s__
+   //alert("9052 v__u = "+v__u)
+  }
+  if(field__!=""){field__u=field__; v__u=v__}
+  //alert("90544  field__u= "+field__u+" - v__u= "+v__u)
+  if (content_type_=="accounting")
+  {
+  //alert("90010")
+    try{
+    var record_id_=e.getAttribute("record_id");
+    var parent_id_=container.getAttribute("record_id");
+    // alert("9084 record_id_= "+record_id_+" : parent_id_= "+parent_id_)
+    if(record_id_==null || record_id_==""){record_id_="new"}} catch(er){}
+    var model_=e.getAttribute("model")
+    var parent_model_=container.my_creator_obj.link_dic["properties"]["table"];
+    var html_obj_to_update=e
+    var account=e.getAttribute("account")
+    var dic_data={"model":model_, "parent_model":parent_model_, "pkey":record_id_, "parent_pkey":parent_id_,
+                  "fields": {"account":account}, "type":type_, "foreign_keys":container.foreign_keys}
+        dic_data["fields"][field__u]=v__u;
+
+    //alert('80 dic_data= '+ JSON.stringify(dic_data));
+    container.tab.parent.save_data(html_obj_to_update, dic_data);
+  } else if (content_type_=="data_entry")
+  {
+  //alert("90011")
+  } else
+  {
+   //alert("90012")
+   var record_id_=container.getAttribute("record_id");
+   var parent_id_=container.getAttribute("parent_id");
+   var model_=container.my_creator_obj.link_dic["properties"]["table"];
+   try{var parent_model_=container.my_creator_obj.link_dic["properties"]["parent_table"]} catch(er){};
+   if(parent_model_==null){var parent_model_="";}
+   //alert("9004 else: record_id_ "+record_id_ +" parent_id_= "+parent_id_+" model_= "+model_+" parent_model_= "+parent_model_)
+   var dic_data={"model":model_, "parent_model":parent_model_, "pkey":record_id_, "parent_pkey":parent_id_,
+                "fields": {}, "type":type_, "foreign_keys":container.foreign_keys}
+       dic_data["fields"][field__u]=v__u;
+   //alert('9080 dic_data= '+ JSON.stringify(dic_data));
+   container.tab.parent.save_data(html_obj_to_update, dic_data);
+   //alert("90 "+e.value)
+   try{container.my_creator_obj.refresh_my_tables(f=field__u, v=v__u);}catch(er){}
+  }
+  // event.stopPropagation();
+ }
+var container_on_click=function(event){
+  event.stopPropagation();
+      this.tab.parent.active_tab_content=this;
+      var e=event.target;
+
+
+        if(this.tab.parent.new_obj_to_create){
+            this.tab.new_obj_to_create=this.tab.parent.new_obj_to_create;
+            this.tab.parent.new_obj_to_create=null;
+        }
+      if(this.tab.new_obj_to_create==null){
+         var click_event=new Event("click", {bubbles: true});
+         if(event.ctrlKey){
+           var obj_type=e.getAttribute("obj_type");
+           try{while(obj_type==null){e=e.parentNode;var obj_type=e.getAttribute("obj_type");}} catch(er){}
+            if(obj_type==null){
+              this.tab.parent.editor.main_menus["TabContent"].btn.dispatchEvent(click_event);
+              this.tab.parent.editor.main_menus["TabContent"].my_sub_objs["content"].btn.dispatchEvent(click_event)
+            }
+            else{
+             var obj_number=e.getAttribute("id")
+             var container_id=e.getAttribute("container_id")
+             var click_event=new Event("click", {bubbles: true});
+             var dic__=this.tab.tab_objects[container_id][obj_number];
+             this.tab.parent.editor.main_menus[dic__["parent_obj_name"]].btn.dispatchEvent(click_event);
+             var s='this.tab.active_obj=this.tab.parent.get_obj(this.tab,dic__);'
+             //alert(s)
+             eval(s)
+             this.tab.active_obj.create_editor();
+             }
+         } else {
+               var s=f+this.link_number+'='+link_dic["functions"]["onclick"]
+               //alert(s);
+               try{eval(s);eval(f+this.link_number+'(event)');} catch(er){}
+         }
+      } else {
+
+      //alert("e="+e.outerHTML+" \nthis="+this.outerHTML)
+         //alert(JSON.stringify(this.tab.new_obj_to_create));
+
+        var dic=this.tab.new_obj_to_create;
+        var x=event.clientX-e.offsetLeft;
+        //alert(event.clientX); //alert(e.offsetLeft); //alert(x)
+        //alert(event.clientX); //alert(event.pageX); //-e.offsetLeft;
+        if(e.parentNode.parentNode.offsetTop*1==0){var y=event.clientY-e.offsetTop;}
+        else{var y=event.clientY-e.parentNode.parentNode.offsetTop;}
+        // alert('event.clientY'); // alert(event.clientY);// alert('e.offsetTop');
+        //alert(e.offsetTop);//alert('e.parentNode.parentNode.offsetTop')
+        //alert(e.parentNode.parentNode.offsetTop); //alert('y');//alert(y)
+
+        var obj_number=this.tab.get_next_obj_number();
+        var container_id=e.getAttribute("link_number");
+
+        dic["properties"]["obj_number"]=obj_number;dic["container_id"]=container_id;
+        dic["properties"]["x"]=x;dic["properties"]["y"]=y;
+        this.tab.active_obj=this.tab.generate_obj(dic=dic);
+        this.tab.active_obj.create_editor();
+        if(this.tab.tab_objects[container_id]==null){this.tab.tab_objects[container_id]={}}
+        this.tab.tab_objects[container_id][obj_number]=this.tab.active_obj.data;
+        this.tab.parent.save();
+      }
+}
+
+acContainerCreator.prototype.process_content = process_content;
+
+
+// -- acSearchTableCreator --
+function acSearchTableCreator(parent){this.parent=parent;} // alert(JSON.stringify(this.parent.data));}
 
 acSearchTableCreator.prototype.create_obj = function()
 {
@@ -2668,189 +2904,26 @@ function TabContent(tab, container, link_dic, is_on_click=true, is_link=null){
  this.link_content.tab=tab;
  this.link_content.tab_content_id=this.link_number;
  if(is_link){var width=100} else {var width=pp_["width"];}
- // alert('JSON.stringify(pp_)');
- // alert(JSON.stringify(pp_));
+ //alert("JSON.stringify(pp_)\n\n"+ JSON.stringify(pp_));
  var background_color_="white";
  var color_="black";
- // alert(pp_["background-color"]); alert(pp_["color"])
- //if(!(pp_["background-color"]==null)){background-color_=pp_["background-color"]}
- //if(!(pp_["color"]==null)){color_=pp_["color"]}
+ // alert("background-color= "+pp_["background-color"] + " color="+pp_["color"])
+ if(pp_["background-color"]!=null && pp_["background-color"]!=""){background_color_=pp_["background-color"]}
+ if((pp_["color"]!=null && pp_["color"]!="")){color_=pp_["color"]}
  var ss_="position: relative;background-color:"+background_color_+";color:"+color_+";width: "+width+"%;height:1000px;display:block;"
  this.link_content.setAttribute("style", ss_);
  // border: 1px solid #ccc;
  if(is_on_click){
     //alert(this.link_content.outerHTML)
-
-    this.link_content.onclick=function(event){
-      this.tab.parent.active_tab_content=this;
-      var e=event.target;
-        if(this.tab.parent.new_obj_to_create){
-            this.tab.new_obj_to_create=this.tab.parent.new_obj_to_create;
-            this.tab.parent.new_obj_to_create=null;
-        }
-      //alert(e.outerHTML)
-      if(this.tab.new_obj_to_create==null){
-         var click_event=new Event("click", {bubbles: true});
-         if(event.ctrlKey){
-           var obj_type=e.getAttribute("obj_type");
-           try{while(obj_type==null){e=e.parentNode;var obj_type=e.getAttribute("obj_type");}} catch(er){}
-            if(obj_type==null){
-              this.tab.parent.editor.main_menus["TabContent"].btn.dispatchEvent(click_event);
-              this.tab.parent.editor.main_menus["TabContent"].my_sub_objs["content"].btn.dispatchEvent(click_event)
-            }
-            else{
-             var obj_number=e.getAttribute("id")
-             var container_id=e.getAttribute("container_id")
-             var click_event=new Event("click", {bubbles: true});
-             var dic__=this.tab.tab_objects[container_id][obj_number];
-             this.tab.parent.editor.main_menus[dic__["parent_obj_name"]].btn.dispatchEvent(click_event);
-             var s='this.tab.active_obj=this.tab.parent.get_obj(this.tab,dic__);'
-             //alert(s)
-             eval(s)
-             this.tab.active_obj.create_editor();
-             }
-         } else {
-               var s=f+this.link_number+'='+link_dic["functions"]["onclick"]
-               //alert(s);
-               try{eval(s);eval(f+this.link_number+'(event)');} catch(er){}
-         }
-      } else {
-         //alert(JSON.stringify(this.tab.new_obj_to_create));
-        var dic=this.tab.new_obj_to_create;
-        var x=event.clientX-e.offsetLeft;
-        //alert(event.clientX); //alert(e.offsetLeft); //alert(x)
-        //alert(event.clientX); //alert(event.pageX); //-e.offsetLeft;
-        if(e.parentNode.parentNode.offsetTop*1==0){var y=event.clientY-e.offsetTop;}
-        else{var y=event.clientY-e.parentNode.parentNode.offsetTop;}
-        // alert('event.clientY'); // alert(event.clientY);// alert('e.offsetTop');
-        //alert(e.offsetTop);//alert('e.parentNode.parentNode.offsetTop')
-        //alert(e.parentNode.parentNode.offsetTop); //alert('y');//alert(y)
-
-        var obj_number=this.tab.get_next_obj_number();
-        var container_id=e.getAttribute("link_number");
-        //alert(container_id)
-        dic["properties"]["obj_number"]=obj_number;dic["container_id"]=container_id;
-        dic["properties"]["x"]=x;dic["properties"]["y"]=y;
-        this.tab.active_obj=this.tab.generate_obj(dic=dic);
-        this.tab.active_obj.create_editor();
-        this.tab.tab_objects[container_id][obj_number]=this.tab.active_obj.data;
-        this.tab.parent.save();
-      }
-    }
+    this.link_content.onclick=container_on_click;
  }
- this.link_content.onchange=function (event){
-  var e=event.target;
-  //alert("c9001 "+event.target.outerHTML)
-  var e_container_id_=e.getAttribute("container_id")
-//  alert(e_container_id_)
-  var container = getEBI("content_"+e_container_id_)
-//  alert("c9002 "+container.outerHTML)
-//  alert("9050 " + JSON.stringify(container.my_creator_obj.link_dic))
-  var c_container_id_=this.getAttribute("link_number")
 
-//  alert("c9003  e_container_id_=" + e_container_id_+ " c_container_id_=" + c_container_id_)
-//  if(e_container_id_!=c_container_id_){return}
-
-//  alert("c9004 container: e.outerHTML: "+e.outerHTML+"\n\n e.value= " + e.value+"\n\n this.outerHTML= " + this.outerHTML)
-  if(e_container_id_!=c_container_id_) {return;}
-  var foreign_table=e.getAttribute("foreign_table")
-  var field_=e.getAttribute("field");
-  //alert("field_ 1: " + field_)
-  if(field_=="" || field_==null){//alert("missing file in object="+e.getAttribute("id"));
-  return}
-  try{var type_=e.getAttribute("type");if(type_==null || type_==""){type_=""}} catch(er){}
-  //alert("9059 ")
-  var field__="";var v__="";
-  if(foreign_table!=null && foreign_table!="")
-  {
-   if(container.foreign_keys==null){container.foreign_keys={}}
-   var vv=e.value;if(type_=="date"){var ss=vv.split("-");vv=ss[0]+ss[1]+ss[2]}
-   if(!(field_ in container.foreign_keys))
-   {container.foreign_keys[field_]={"value":vv, "foreign_table":foreign_table};return;}
-   else{field__=field_; v__=vv}
-  }
-  //alert("c9006 field_ 2: " + field_)
-
-  container.tab.parent.active_tab_content=container;
-  try{var content_type_=e.getAttribute("content_type");if(content_type_==null || content_type_==""){content_type_=""}} catch(er){}
-  var html_obj_to_update=container
-  //alert("9043  e: " + e.outerHTML)
-  //alert("9054  "+content_type_)
-  //alert("field_ 3: " + field_)
-  var field__u=field_; var v__u=e.value;
-  var type__=e.getAttribute("type_");
-  //alert("9086 type__="+type__)
-  if(type__!=null && type__!="" && type__=="Select"){
-   var s__="";
-   for(j in e.selectedOptions)
-   {
-    try{if(e.selectedOptions[j]!=null && e.selectedOptions[j].tagName.toLowerCase()=="option")
-    {if(s__!=""){s__+=","};s__+=e.selectedOptions[j].getAttribute("value")}} catch(er){}
-   }
-   v__u=s__
-   //alert("9052 v__u = "+v__u)
-  }
-  if(field__!=""){field__u=field__; v__u=v__}
-  //alert("90544  field__u= "+field__u+" - v__u= "+v__u)
-  if (content_type_=="accounting")
-  {
-  //alert("90010")
-    try{
-    var record_id_=e.getAttribute("record_id");
-    var parent_id_=container.getAttribute("record_id");
-    // alert("9084 record_id_= "+record_id_+" : parent_id_= "+parent_id_)
-    if(record_id_==null || record_id_==""){record_id_="new"}} catch(er){}
-    var model_=e.getAttribute("model")
-    var parent_model_=container.my_creator_obj.link_dic["properties"]["table"];
-    var html_obj_to_update=e
-    var account=e.getAttribute("account")
-    var dic_data={"model":model_, "parent_model":parent_model_, "pkey":record_id_, "parent_pkey":parent_id_,
-                  "fields": {"account":account}, "type":type_, "foreign_keys":container.foreign_keys}
-        dic_data["fields"][field__u]=v__u;
-
-    //alert('80 dic_data= '+ JSON.stringify(dic_data));
-    container.tab.parent.save_data(html_obj_to_update, dic_data);
-  } else if (content_type_=="data_entry")
-  {
-  //alert("90011")
-  } else
-  {
-   //alert("90012")
-   var record_id_=container.getAttribute("record_id");
-   var parent_id_=container.getAttribute("parent_id");
-   var model_=container.my_creator_obj.link_dic["properties"]["table"];
-   try{var parent_model_=container.my_creator_obj.link_dic["properties"]["parent_table"]} catch(er){};
-   if(parent_model_==null){var parent_model_="";}
-   //alert("9004 else: record_id_ "+record_id_ +" parent_id_= "+parent_id_+" model_= "+model_+" parent_model_= "+parent_model_)
-   var dic_data={"model":model_, "parent_model":parent_model_, "pkey":record_id_, "parent_pkey":parent_id_,
-                "fields": {}, "type":type_, "foreign_keys":container.foreign_keys}
-       dic_data["fields"][field__u]=v__u;
-   //alert('9080 dic_data= '+ JSON.stringify(dic_data));
-   container.tab.parent.save_data(html_obj_to_update, dic_data);
-   //alert("90 "+e.value)
-   container.my_creator_obj.refresh_my_tables(f=field__u, v=v__u);
-  }
-  // event.stopPropagation();
- }
+ this.link_content.onchange=container_on_change;
  container.appendChild(this.link_content);
  this.process_content();
 }
 
-TabContent.prototype.process_content = function()
-{
-  //alert(JSON.stringify(this.link_dic["functions"]));
-  for(f in this.link_dic["functions"])
-  {
-    if(f!="onclick"){var s='this.link_content.'+f+'='+this.link_dic["functions"][f];eval(s);}
-  }
-  //alert(this.tab.tab_name)
-  for (i in this.tab.tab_objects[this.link_number])
-  {
-   dic_=this.tab.tab_objects[this.link_number][i];
-   //alert(JSON.stringify(dic_));
-   this.tab.generate_obj(dic=dic_);
-  }
-}
+TabContent.prototype.process_content = process_content;
 
 TabContent.prototype.set_objects_data = function(dic)
 {
@@ -3141,7 +3214,7 @@ TabNav.prototype.process_data = function()
 function Tab(parent, data, id)
 {
  //alert("Tab");
- //alert(JSON.stringify(data));
+ //alert("id="+id+"\n"+JSON.stringify(data));
  this.parent=parent; this.tab_id=id;
  this.btn=null;this.content=null;this.PopWinObjects={};
  this.tab_properties=data["properties"];
@@ -4215,6 +4288,46 @@ ReportPivot_click = function(obj, event)
 {
  //alert(333444)
 }
+
+//-- AppObjs --
+AppObjs_create_main_content = function()
+{
+ // alert(this.parent.my_name); // it is the editor
+ var f=function(select_){select_.innerHTML="";var o=document.createElement("option");o.value="";o.innerHTML="------";select_.appendChild(o);
+ for(var j in atm.app_content){var o=document.createElement("option");o.value=j;o.innerHTML=atm.app_content[j]["properties"]["obj_name"];select_.appendChild(o)}
+ }
+ var btn=document.createElement("button");btn.setAttribute("class", "main_menu_btn");btn.setAttribute("style", "width:150px");btn.innerHTML="create new AppObj";
+ var span_=document.createElement("span");span_.setAttribute("style","width:150px;text-align:rigth");span_.innerHTML="  Edit AppObj: ";
+ var select=document.createElement("select");select.setAttribute("style","width:150px");f(select);
+ select.addEventListener("change", function(){
+  var e=event.target;
+  try{var tab_fpe_=atm.editor.get_functions_properties_editor(
+              atm.active_tab,functions_dic=atm.app_content[e.value]["functions"],functions_list_dic={},
+              dic_properties=atm.app_content[e.value]["properties"],settings_list={}, attributes_list={"obj_name":[]},
+              tab_btn_name="AppObjs",properties_func=null,node_to_delete=".parent.app_content["+e.value+"]")
+    } catch(er) {}
+ })
+
+ btn.onclick=function(event){
+   //alert(atm.my_name)
+   //alert(JSON.stringify(atm.app_content))
+   var app_obj_name_ = prompt("Enter name for new AppObj:",'');if(app_obj_name_==null || app_obj_name_==''){alert("Please enter a name for AppObj"); return;}
+   var n_=atm.get_next_obj_number();
+   atm.app_content[n_]={"functions":{"constructor": "function (obj){try{\nthis.obj=obj;\n\n}catch(er){'error 5000'}}"},
+                        "properties":{"obj_name":app_obj_name_},
+                        "settings":{}}
+   atm.save(); f(this.select);
+ };
+ btn.select=select;
+ this.parent.win_content.appendChild(btn);this.parent.win_content.appendChild(span_);this.parent.win_content.appendChild(select);
+}
+
+AppObjsCreateObject_click = function(obj, event)
+{
+ alert("222 create AppObjs")
+}
+
+
 
 //-- General Functions --
 var getEBI=function(s){s=s+"";return document.getElementById(s)}

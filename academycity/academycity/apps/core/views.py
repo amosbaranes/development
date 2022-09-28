@@ -371,9 +371,10 @@ def get_data_link(request):
         company_obj = parent_model.objects.get(id=company_obj_id_)
         s = 'model.objects'
         s_ = ''
-        if model.model_field_exists(app_+'_web') and isinstance(model._meta.get_field("businesssim_web"),
-                                                                ForeignKey):
-            s_ += app_ + '_web=company_obj '
+        if model.model_field_exists(app_+'_web') and isinstance(model._meta.get_field(app_+'_web'),
+                                                                    ForeignKey):
+                s_ += app_ + '_web=company_obj '
+
         if parent_id_ > -1:
             parent_model_ = dic_['parent_model']
             parent_pkey_ = parent_id_

@@ -7,7 +7,7 @@ from .models import (BusinesssimWeb, Instructors, Participants, Institutions, Ge
 
 @admin.register(BusinesssimWeb)
 class BusinesssimWebAdmin(admin.ModelAdmin):
-    list_display = ('id', 'program_name', 'start_date', 'end_date', 'number_of_periods', 'number_of_participant')
+    list_display = ('id', 'program_name', 'start_date', 'end_date', 'number_of_periods', 'number_of_participants')
 
 
 @admin.register(Participants)
