@@ -17,7 +17,7 @@ from .views import (home, candle,
                     create_company_by_ticker,
                     get_risk_premium,
                     update_country_risk,
-                    app, ac_home, f_home)
+                    app, ac_home)
 
 # create_company_by_ticker,
 
@@ -27,7 +27,6 @@ urlpatterns = [
     path('', ac_home, name='ac_home'),
     path('app/<str:app_name>/', app, name='app'),
     path('activate_obj_function/', activate_obj_function, name='activate_obj_function'),
-    path('f/', f_home, name='f_home'),
     path('candle/', candle, name='candle'),
     path('home/<int:obj_id>/', home, name='home'),
     path('home_chat_working/<int:obj_id>/', home_chat_working, name='home_chat_working'),

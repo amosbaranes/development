@@ -8,6 +8,7 @@ from django.conf import settings
 import pandas as pd
 import numpy as np
 from pandas_datareader import data
+
 import string
 import datetime
 import time
@@ -32,7 +33,7 @@ from channels.db import database_sync_to_async
 
 from channels.layers import get_channel_layer
 
-# import yfinance as yf
+import yfinance as yf
 from yahoofinancials import YahooFinancials
 from ..core.utils import log_debug, clear_log_debug
 from ..core.sql import SQL
@@ -520,24 +521,40 @@ class TDAmeriTrade(BaseTDAmeriTrade):
         return {'status': 'ok', 'option_data_ticker': options_.json()}
 
     def get_prices(self, dic):
+        # print("9010")
         # print(dic)
-        dic = eval(dic)
-        # print(dic)
+        # print("9011")
+
+        try:
+            dic = eval(dic)
+        except Exception as ex:
+            pass
+            # print("er 9015: "+str(ex))
         ticker_ = dic['ticker']
-        r = self.client.get_price_history(ticker_,
-                                          period_type=client.Client.PriceHistory.PeriodType.DAY,
-                                          period=client.Client.PriceHistory.Period.ONE_DAY,
-                                          frequency_type=client.Client.PriceHistory.FrequencyType.MINUTE,
-                                          frequency=client.Client.PriceHistory.Frequency.EVERY_MINUTE)
-        assert r.status_code == 200, r.raise_for_status()
-        # print(json.dumps(r.json(), indent=4))
-        dic = {'data': r}
-        # print(dic)
+        # print("9012 ticker:  "+ticker_)
+        try:
+            r = self.client.get_price_history(ticker_,
+                                              period_type=client.Client.PriceHistory.PeriodType.DAY,
+                                              period=client.Client.PriceHistory.Period.TEN_DAYS,# .ONE_DAY,
+                                              frequency_type=client.Client.PriceHistory.FrequencyType.MINUTE,
+                                              frequency=client.Client.PriceHistory.Frequency.EVERY_MINUTE)
+            assert r.status_code == 200, r.raise_for_status()
+            # print(json.dumps(r.json(), indent=4))
+        except Exception as ex:
+            pass
+            # print("9022 "+str(ex))
+
+        dic = {'data': r.json()}
         log_debug("End get_prices.")
         return dic
 
     def get_quote(self, dic):
-        dic = eval(dic)
+        # print(9024)
+        try:
+            dic = eval(dic)
+        except Exception as ex:
+            pass
+        # print(dic)
         ticker_ = dic['ticker']
         url = r"https://api.tdameritrade.com/v1/marketdata/{}/quotes".format(ticker_.upper())
         # print(url)
@@ -653,8 +670,10 @@ class TDAmeriTrade(BaseTDAmeriTrade):
 
     def get_quotes(self, dic):
         # print(dic)
-        # print(type(dic))
-        dic = eval(dic)
+        try:
+            dic = eval(dic)
+        except Exception as ex:
+            pass
         ticker_ = dic['ticker']
         #
         # need to pull the list of all stocks
@@ -1287,6 +1306,51 @@ class TDAmeriTrade(BaseTDAmeriTrade):
     def create_option_symbol(self, ticker):
         symbol = ticker
         return symbol
+    # -------------------------------------------------
+
+    def get_ticker_prices_yf(self, dic):
+        # print("9010 input dic: \n", dic, "\n"+"-"*30)
+        # obj = yf.Ticker("^GSPC")
+        # print(dic["ticker"])
+        obj = yf.Ticker(dic["ticker"])
+        result = {"y": [], "m": [], "d": [], "mi": [], "datetime":[], "close": []}
+        i = 5  # 5 for 1m, 45 for 1d
+        nn=0
+        while i > 0:
+            if nn == 0:
+                date_e = (datetime.datetime.now() + datetime.timedelta(days=-((i-1)*7)))
+                date_b = (datetime.datetime.now() + datetime.timedelta(days=-(i*7)))
+                nn=1
+            else:
+                date_b = (date_e + datetime.timedelta(days=1))
+                date_e = (date_b + datetime.timedelta(days=7))
+            i-=1
+            date_b_ = date_b.date()
+            date_e_ = date_e.date()
+            # print(date_b_, date_e_)
+            end_ = str(date_e_.year)+"-"+str(date_e_.month)+"-"+str(date_e_.day)
+            beg_ = str(date_b_.year)+"-"+str(date_b_.month)+"-"+str(date_b_.day)
+            hist = obj.history(interval="1m",start=beg_, end=end_)
+            # print("-1"*50)
+            # print(hist)
+            # print("-2"*50)
+            dn0=0
+            for index, row in hist.iterrows():
+                # result["y"].append(pd.Timestamp(index).year)
+                # result["m"].append(pd.Timestamp(index).month)
+                # result["d"].append(pd.Timestamp(index).day)
+                # result["mi"].append(pd.Timestamp(index).minute)
+                if row["Volume"] > 0:
+                    if dn0 != pd.Timestamp(index).day:
+                        dn0 = pd.Timestamp(index).day
+                        # result["datetime"].append(str(index))
+                        # result["close"].append(round(95*row["Close"])/100)
+                    result["datetime"].append(str(index))
+                    result["close"].append(round(100*row["Close"])/100)
+
+        dic = {'data': result}
+        # print("9099 output dic: \n", dic, "\n"+"="*30)
+        return dic
 
 
 class AcademyCityXBRL(object):

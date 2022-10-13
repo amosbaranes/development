@@ -604,6 +604,19 @@ class ETFS(TruncateTableMixin, models.Model):
         return str(self.symbol) + ': ' + str(self.description)
 
 
+class ETFWatchLists(TruncateTableMixin, models.Model):
+    class Meta:
+        verbose_name = _('ETFWatchLists')
+        verbose_name_plural = _('ETFWatchLists')
+        ordering = ['symbol']
+
+    symbol = models.CharField(max_length=5, default='', blank=True, null=True)
+    description = models.CharField(max_length=128, default='', blank=True, null=True)
+
+    def __str__(self):
+        return str(self.symbol) + ': ' + str(self.description)
+
+
 class XBRLCompanyInfo(TruncateTableMixin, models.Model):
 
     class Meta:
@@ -614,7 +627,10 @@ class XBRLCompanyInfo(TruncateTableMixin, models.Model):
     industry = models.ForeignKey(XBRLIndustryInfo, on_delete=models.CASCADE, default=None, blank=True, null=True)
     country_of_incorporation = models.ForeignKey(XBRLCountry, on_delete=models.CASCADE, default=None, blank=True,
                                                  null=True, related_name="country_companies")
-    etf = models.ForeignKey(ETFS, on_delete=models.CASCADE, default=None, blank=True, null=True)
+    etf = models.ForeignKey(ETFS, on_delete=models.CASCADE, default=None, blank=True, null=True,
+                            related_name="eft_xbrlcompanyinfo")
+    etfwatchlist = models.ForeignKey(ETFWatchLists, on_delete=models.CASCADE, default=None, blank=True, null=True,
+                            related_name="etf_watch_list_xbrlcompanyinfo")
     exchange = models.CharField(max_length=10, default='nyse')
     company_name = models.CharField(max_length=128, default='', blank=True, null=True)
     ticker = models.CharField(max_length=10, null=False)

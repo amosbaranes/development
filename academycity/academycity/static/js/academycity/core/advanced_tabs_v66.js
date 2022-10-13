@@ -1,14 +1,15 @@
 // -- AdvancedTabsManager --
 function AdvancedTabsManager(my_name, my_app, body_,
-activate_function_link, app_activate_function_link,update_field_link,get_data_link,
+activate_function_link, activate_obj_function_link,update_field_link,get_data_link,
 company_obj_id, is_show_btns=true, user_id=0)
 {
+ //alert(activate_obj_function_link)
  this.company_obj_id=company_obj_id;
  this.user_id=user_id;
  this.my_name=my_name; this.my_app=my_app; this.elm_body=body_;
  this.activate_function_link_=activate_function_link;
- this.app_activate_function_link_=app_activate_function_link;
- //alert(this.app_activate_function_link_)
+ this.activate_obj_function_link_=activate_obj_function_link;
+ //alert(this.activate_obj_function_link_)
  this.update_field_link_=update_field_link;
  this.get_data_link_=get_data_link;
  this.titles=null;this.container=null;
@@ -62,7 +63,13 @@ company_obj_id, is_show_btns=true, user_id=0)
                                         "Textarea":{"title":"textarea", "width":7,
                                                     "setting": {"overflow":[],"color":[],"background-color":[]},
                                                     "attributes":{"rows":[], "cols":[]}, "functions":[]},
-                                        "DIV":{"title":"div", "width":3, "setting": {"overflow":[]}, "attributes":{}, "functions":[]},
+                                        "Canvas":{"title":"canvas", "width":7,
+                                                    "setting": {"overflow":[],"color":[],"background-color":[]},
+                                                    "attributes":{"width":[], "height":[]}, "functions":[]},
+                                        "DIV":{"title":"div", "width":3,
+                                               "setting": {"overflow":[]},
+                                               "attributes":{},
+                                               "functions":[]},
                                         "A":{"title":"a", "width":3,
                                              "setting": {"color":[], "background-color":[]},
                                              "attributes":{"href":[], "target":[]},
@@ -127,6 +134,10 @@ company_obj_id, is_show_btns=true, user_id=0)
                                                                        ,"field_width":[],"field_align":[],
                                                                        "foreign_table":[],"filter":[]}},
                                         "Chart":{"title":"Chart", "width":5,
+                                                 "setting": {},
+                                                 "attributes":{"height":[]},
+                                                 "functions":[]},
+                                        "Candle":{"title":"Candle", "width":5,
                                                  "setting": {},
                                                  "attributes":{"height":[]},
                                                  "functions":[]},
@@ -305,7 +316,7 @@ AdvancedTabsManager.prototype.get_app_obj=function(obj_name, obj=null, is_new=fa
 {
   //alert(obj_name + "  " + JSON.stringify(obj))
   var obj_dic="";
-  for (var h in atm_.app_content){if(obj_name==atm_.app_content[h]["properties"]["obj_name"]){obj_dic=atm_.app_content[h]};break;}
+  for (var h in this.app_content){if(obj_name==this.app_content[h]["properties"]["obj_name"]){obj_dic=this.app_content[h];break;}}
   if(obj_dic==""){alert("There is no object "+obj_name+"."); return;}
   //alert(h + "  " + JSON.stringify(obj_dic))
   if(!(h in this.app_objs) || is_new==true){
@@ -494,13 +505,13 @@ AdvancedTabsManager.prototype.save = function()
           });
 }
 
-AdvancedTabsManager.prototype.app_activate_function = function(call_back_fun, dic_, html_obj)
+AdvancedTabsManager.prototype.activate_obj_function = function(call_back_fun, dic_, html_obj)
 {
   dic_["company_obj_id"]=this.company_obj_id;
      //alert(JSON.stringify(dic_))
-     //alert(this.app_activate_function_link_)
+     //alert(this.activate_obj_function_link_)
 
-     $.post(this.app_activate_function_link_,
+     $.post(this.activate_obj_function_link_,
           {dic : JSON.stringify(dic_)},
           function(dic){
           //alert(JSON.stringify(dic))
@@ -539,11 +550,10 @@ AdvancedTabsManager.prototype.get_data = function(call_back_fun, dic_, tbody_)
 {
   //alert("100123  "+JSON.stringify(dic_));
   dic_["app"]=this.my_app;
-  var company_obj_id = dic_["company_obj_id"];
   //alert("9070"+JSON.stringify(dic_));
   if(dic_["company_obj_id"]==null){dic_["company_obj_id"]=this.company_obj_id;}
   //alert("9080"+JSON.stringify(dic_));
-  //alert("9090"+this.get_data_link_)
+//  alert("9090"+this.get_data_link_)
 
   //alert(call_back_fun)
   call_back_fun.atm=this
@@ -551,7 +561,7 @@ AdvancedTabsManager.prototype.get_data = function(call_back_fun, dic_, tbody_)
           {dic : JSON.stringify(dic_)},
           function(data){
           try{
-           //alert("9001"+JSON.stringify(data));
+//           alert("9001"+JSON.stringify(data));
            if(data["status"]!="ok"){return}
            call_back_fun(data["dic"], tbody_)
            tbody_.data=data["dic"];
@@ -809,7 +819,7 @@ AccountingObj.prototype.update_trial_balance = function(html_obj, start_date, en
 {
  var ss = start_date.split("-"); start_date=ss[0]+ss[1]+ss[2]
  var ss = end_date.split("-"); end_date=ss[0]+ss[1]+ss[2]
- //alert(start_date + " " + end_date)
+  //alert(start_date + " " + end_date)
 
   var fun = function(data, html_obj)
   {
@@ -1456,10 +1466,10 @@ var container_on_change=function (event){
     var html_obj_to_update=e
     var account=e.getAttribute("account")
     var dic_data={"model":model_, "parent_model":parent_model_, "pkey":record_id_, "parent_pkey":parent_id_,
-                  "fields": {"account":account}, "type":type_, "foreign_keys":container.foreign_keys}
+                  "fields": {"account":account}, "type":type_, "foreign_keys":{}}
         dic_data["fields"][field__u]=v__u;
 
-    //alert('80 dic_data= '+ JSON.stringify(dic_data));
+    //alert('9080 dic_data = '+ JSON.stringify(dic_data));
     container.tab.parent.save_data(html_obj_to_update, dic_data);
   } else if (content_type_=="data_entry")
   {
@@ -1548,7 +1558,6 @@ var container_on_click=function(event){
 
 acContainerCreator.prototype.process_content = process_content;
 
-
 // -- acSearchTableCreator --
 function acSearchTableCreator(parent){this.parent=parent;} // alert(JSON.stringify(this.parent.data));}
 
@@ -1635,8 +1644,8 @@ acSearchTableCreator.prototype.create_obj = function()
   this.table_.setAttribute("id", dic["properties"]["obj_number"]);
   this.table_.setAttribute("obj_type", dic["obj_type"]);
   this.table_.setAttribute("type", dic["element_name"]);
-  if("width" in dic["properties"]){var width_=dic["properties"]["width"]} else {var width_="400"}
-  this.table_.setAttribute("style", "position:absolute;left:"+dic["properties"]["x"]+"px;top:"+dic["properties"]["y"]+"px;width:"+width_+"px");
+  //if("width" in dic["properties"]){var width_=dic["properties"]["width"]} else {var width_="400"}
+  var style_ = "position:absolute;left:"+dic["properties"]["x"]+"px;top:"+dic["properties"]["y"]+"px;width:"
   this.thead=document.createElement("thead");
   this.thead.setAttribute("style", "display: block;overflow-x: hidden;");
   this.table_.appendChild(this.thead);
@@ -1665,11 +1674,15 @@ acSearchTableCreator.prototype.create_obj = function()
   this.thead.appendChild(tr_h);
   var n__=0;
   this.order_by={"field":"","direction":"ascending"};
+  var width__=1*0;
+  var nd_=Object.keys(dic["fields"]).length;var n_=0
   for(f in dic["fields"])
   {
+    n_+=1;
     var th_=document.createElement("th");
     th_.innerHTML=dic["fields"][f]["field_title"];
-    var width_=100;try{width_=dic["fields"][f]["field_width"]} catch(er){}
+    var width_=1*100;try{width_=dic["fields"][f]["field_width"]} catch(er){}
+    width__+=1*width_;
     var foreign_table="";if(dic["fields"][f]["foreign_table"]!=null){foreign_table=dic["fields"][f]["foreign_table"]}
     if(n__==0){
       th_.setAttribute("style", "width:"+width_+"px;border-top-left-radius: 15px")
@@ -1680,11 +1693,12 @@ acSearchTableCreator.prototype.create_obj = function()
       this.search_input_.setAttribute("placeholder", "Search "+dic["fields"][f]["field_title"]+"..");
       this.order_by["field"]=dic["fields"][f]["field_name"];
     }
-    else{th_.setAttribute("style", "width:"+width_+"px;")}; n__+=1;
+    else{if(n_==nd_){width_=width_*1+1*17} th_.setAttribute("style", "width:"+width_+"px;")}; n__+=1;
     tr_h.appendChild(th_);
     th_.setAttribute("filter_field", dic["fields"][f]["field_name"])
     th_.setAttribute("filter_field_foreign_table", foreign_table)
   }
+  width__+=1*17; style_ += width__+"px"
   th_.setAttribute("style", "width:"+width_+"px;border-top-right-radius: 15px");
   this.tbody=document.createElement("tbody");
   this.tbody.setAttribute("id", "tbody_"+dic["properties"]["obj_number"]);
@@ -1692,6 +1706,8 @@ acSearchTableCreator.prototype.create_obj = function()
 
   this.table_.appendChild(this.tbody);
   this.table_.my_creator_obj=this;
+  //alert(style_)
+  this.table_.setAttribute("style", style_);
   this.search_input_.my_creator_obj=this;
 
   for (i in dic["attributes"]){var s=dic["attributes"][i];
@@ -1706,14 +1722,14 @@ acSearchTableCreator.prototype.create_obj = function()
 acSearchTableCreator.prototype.get_data = function(data_table_name=null,parent_model=null,parent_id=null,company_obj_id=null)
 {
   var dic=this.parent.data;
-  //alert("44  "+JSON.stringify(dic));
+//  alert("9044  "+JSON.stringify(dic));
   var container = document.getElementById("content_"+dic["container_id"]);
   //alert(container.outerHTML);
   if(data_table_name!==null){this.data_table_name=data_table_name} else {this.data_table_name=container.getAttribute("table")}
   try{
     var parent_id_="";
     var model_=container.my_creator_obj.link_dic["properties"]["table"];
-    //alert(model_)
+    //alert("9059=: "+model_)
     try{
         if(parent_model!=null){var parent_model_=parent_model} else {
           var parent_model_=container.my_creator_obj.link_dic["properties"]["parent_table"]
@@ -1725,6 +1741,8 @@ acSearchTableCreator.prototype.get_data = function(data_table_name=null,parent_m
     if(parent_id_=="" || parent_id_==null){return}
     var dic_={"model":this.data_table_name, "number_of_rows":this.number_of_rows, "fields":this.fields}
   } catch(er){alert("er9012: "+er)}
+
+  //alert("90441  "+JSON.stringify(dic_));
 
   var fun=function(data, ttbody_){
     console.log("get_data search table inside call back function")
@@ -1755,33 +1773,36 @@ acSearchTableCreator.prototype.get_data = function(data_table_name=null,parent_m
   }
 
   var dic__=[]; for(i in dic_["fields"]){dic__.push(dic_["fields"][i])}
-  //alert("9060 dic__ "+dic__)
+  //alert("9060 dic__ \n"+JSON.stringify(dic__))
 
   var container_id=this.parent.data["container_id"];
   var container_dic=this.parent.tab.tab_objects[container_id];
+  //alert("9065 container_dic= \n"+JSON.stringify(container_dic))
   this.multiple_select_fields=[]
   for(o in container_dic)
   {
      if(container_dic[o]["obj_type"]=="acObj")
       {
         var f=container_dic[o]["properties"]["field"];
-        if(container_dic[o]["obj_name"]=="acInput"){if(!dic__.includes(f)){dic__.push(f)}
-        } else if (container_dic[o]["obj_name"]=="acSelect"){
-         var ps_ = container_dic[o]["properties"]
-         //alert("9087 field = "+JSON.stringify(ps_));
-         if("multiple" in ps_){this.multiple_select_fields.push(f)}else{if(!dic__.includes(f)){dic__.push(f)}}
+        if(f!=null){
+            if(container_dic[o]["obj_name"]=="acInput"){if(!dic__.includes(f)){dic__.push(f)}
+            } else if (container_dic[o]["obj_name"]=="acSelect"){var ps_=container_dic[o]["properties"];
+             if("multiple" in ps_){this.multiple_select_fields.push(f)}else{if(!dic__.includes(f)){dic__.push(f)}}
+            }
         }
       }
   }
+  //alert("90601 dic__ \n"+JSON.stringify(dic__))
   var dic__={"model":this.data_table_name, "parent_model": parent_model_, "parent_id":parent_id_,
              "number_of_rows":this.number_of_rows, "multiple_select_fields": this.multiple_select_fields,
              "filters":{}, "order_by":this.order_by, "fields":dic__
              }
+  //alert("90602 dic__ \n"+JSON.stringify(dic__))
       dic__["filters"][this.filter_field]={"value":this.filter_value, "foreign_table":this.filter_field_foreign_table}
-  //alert(JSON.stringify(dic__));
+
+  //alert("90603 dic__ \n"+JSON.stringify(dic__))
   console.log("get_data search table ", JSON.stringify(dic__))
 
-  //alert("908 dic__ : "+JSON.stringify(dic__));
     for(j in dic["fields"])
     {
        //alert(JSON.stringify(dic["fields"][j]));
@@ -1800,9 +1821,10 @@ acSearchTableCreator.prototype.get_data = function(data_table_name=null,parent_m
           }
        }
     }
-
   if(company_obj_id!=null){dic__["company_obj_id"]=company_obj_id}
-  //alert("9010: "+JSON.stringify(dic__));
+
+//  alert("9010: "+JSON.stringify(dic__));
+
   this.parent.atm.get_data(call_back_fun=fun, dic__, this.tbody)
 }
 
@@ -1828,9 +1850,9 @@ acSearchTableCreator.prototype.row_click = function(event)
  container.my_creator_obj.set_objects_data(result);
  container.my_creator_obj.current_record_data=result;
 
- try{eval('var zz='+this.my_creator_obj.parent.data["functions"]["onclick"]);zz(event)} catch(er)
- {//alert("er9013: "+er)
- }
+ try{eval('var zz='+this.my_creator_obj.parent.data["functions"]["onclick"]);zz(event);
+ var p=e.parentNode;for (let i=0;i<p.children.length;i++){p.children[i].style.backgroundColor=""};
+ e.style.backgroundColor="lightblue"} catch(er){}
 }
 
 acSearchTableCreator.prototype.editor_properties_func = function(tab, tab_properties_)
@@ -2031,7 +2053,7 @@ acMSearchTableCreator.prototype.create_obj = function()
   for(f in dic["functions"]){if(f!="onclick"){var s="this.table_."+f+"="+dic["functions"][f];eval(s);}}
 }
 
-acMSearchTableCreator.prototype.get_data = function(data_table_name=null,parent_model=null,parent_id=null,company_obj_id=null)
+acMSearchTableCreator.prototype.get_data = function(data_table_name=null,parent_model=null,parent_id=null)
 {
   var dic=this.parent.data;
   //alert(JSON.stringify(dic));
@@ -2103,7 +2125,6 @@ acMSearchTableCreator.prototype.get_data = function(data_table_name=null,parent_
              "fields":dic__}
   //alert(JSON.stringify(dic__));
   console.log("get_data search table ", JSON.stringify(dic__))
-  if(company_obj_id!=null){dic__["company_obj_id"]=company_obj_id}
   this.parent.atm.get_data(call_back_fun=fun, dic__, this.tbody)
 }
 
@@ -2121,15 +2142,14 @@ acMSearchTableCreator.prototype.row_click = function(event)
  var result={}
  //alert(JSON.stringify(this.my_creator_obj.tbody.data))
  var dic=this.my_creator_obj.tbody.data;
-
  for(f in dic){result[f]=dic[f][n_row]}
 
  container.my_creator_obj.set_objects_data(result);
  container.my_creator_obj.current_record_data=result;
 
- try{eval('var zz='+this.my_creator_obj.parent.data["functions"]["onclick"]);zz(event)} catch(er)
- {//alert("er9013: "+er)
- }
+ try{eval('var zz='+this.my_creator_obj.parent.data["functions"]["onclick"]);zz(event)} catch(er){}
+ var p=e.parentNode;for(let i=0;i<p.children.length;i++){p.children[i].style.backgroundColor=""};
+ e.style.backgroundColor="lightblue";
 }
 
 acMSearchTableCreator.prototype.editor_properties_func = function(tab, tab_properties_)
@@ -2202,10 +2222,7 @@ acMSearchTableCreator.prototype.editor_properties_func = function(tab, tab_prope
 
 
 // -- acGeneralLedgerCreator --
-function acGeneralLedgerCreator(parent){
-  this.parent=parent;
-  // alert(JSON.stringify(this.parent.data));
-}
+function acGeneralLedgerCreator(parent){this.parent=parent;}  // alert(JSON.stringify(this.parent.data));
 
 acGeneralLedgerCreator.prototype.create_obj = function()
 {
@@ -2746,10 +2763,22 @@ acChartCreator.prototype.set_chart_data = function(chart_type)
     data_.push(trace)
   }
   var layout = {title: data["title"],
-                xaxis: {title: chart_type["x-axis-title"], range: chart_type["x-axis-range"]},
-                yaxis: {title: chart_type["y-axis-title"], range: chart_type["y-axis-range"]}}
+                xaxis: {title: chart_type["x-axis-title"],
+
+//                type: "date",
+
+                 range: chart_type["x-axis-range"], autorange: true
+
+//                 range: ['2022-10-07 09:30:00-04:00', '2022-10-12 16:00:00-04:00'], autorange: true
+                },
+                yaxis: {title: chart_type["y-axis-title"], range: chart_type["y-axis-range"], autorange: true,
+                       showgrid: true, zeroline: true, showline: true, showticklabels: true}
+               }
  }
+
  //alert(JSON.stringify(data_));
+ //alert(JSON.stringify(layout));
+
  Plotly.newPlot(this.chart, data_, layout );
 }
 

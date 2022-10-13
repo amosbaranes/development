@@ -12,7 +12,7 @@ from .models import (Project, RBOIC, CountryRegion, CountryRating, Industry,
                      XBRLIndustryBetasOfOperations,
                      XBRLDimTime, XBRLDimCompany, XBRLDimAccount, XBRLFactCompany,
                      XBRLRealEquityPrices, XBRLRealEquityPricesArchive, Adjectives, AdjectivesValues,
-                     CorporateValuationWeb, ETFS, CompaniesPriceData)
+                     CorporateValuationWeb, ETFS, ETFWatchLists, CompaniesPriceData)
 
 
 # -*- coding: utf-8 -*-
@@ -281,6 +281,11 @@ class AdjectivesValuesAdmin(admin.ModelAdmin):
 
 @admin.register(ETFS)
 class ETFSAdmin(admin.ModelAdmin):
+    list_display = ['id', 'symbol', 'description']
+
+
+@admin.register(ETFWatchLists)
+class ETFWatchListsAdmin(admin.ModelAdmin):
     list_display = ['id', 'symbol', 'description']
 
 

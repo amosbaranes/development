@@ -20,7 +20,7 @@ def home(request):
                   )
 
 
-def app(request, app_name, company_obj_id):
+def app_id(request, app_name, company_obj_id):
     company_obj = BusinesssimWeb.objects.get_or_create(id=company_obj_id)
     app_ = "businesssim"
     app_activate_function_link_ = reverse(app_+':activate_obj_function', kwargs={})
@@ -30,3 +30,11 @@ def app(request, app_name, company_obj_id):
                                                                "company_obj_id": company_obj_id,
                                                                "title": "Business Simulation"}
                   )
+
+
+def app(request, app_name):
+    wsc = WebSiteCompany(request, web_company_id=12, is_test=True)
+    company_obj = wsc.site_company()
+    company_obj_id_ = company_obj.id
+    return app_id(request, app_name, company_obj_id_)
+

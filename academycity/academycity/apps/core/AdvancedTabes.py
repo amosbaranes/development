@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django.http import JsonResponse
 from django.apps import apps
+from django.db.models.fields.related import ForeignKey
 from .models import DataAdvancedTabs, DataAdvancedTabsManager, AdjectivesValues, DataAdvancedApps
 
 
@@ -125,14 +126,10 @@ class AdvancedTabs(object):
 
         app_ = params['app']
         model_name_ = params['model_name']
-
         field_value_ = params['field_value']
-
         manager_name = params['manager_name']
         manager_fun = params['manager_fun']
-
         manager_fun_field = params['manager_fun_field']
-
         model = apps.get_model(app_label=app_, model_name=model_name_)
 
         s = "model." + manager_name + "." + manager_fun + "("+manager_fun_field+"=field_value_)"
@@ -148,24 +145,51 @@ class AdvancedTabs(object):
         return result
 
     def get_list_from_model(self, params):
-        # print('params')
+        # print('9015 params')
+        # print('9015 params')
         # print(params)
+        # print('9015 params')
+        # print('9015 params')
 
         app_ = params['app']
         model_name_ = params['model_name']
         field_name_ = params['field_name']
-
         model = apps.get_model(app_label=app_, model_name=model_name_)
-
         data_filter_field_ = params['data_filter_field']
         data_filter_field_value_ = params['data_filter_field_value']
+        squ = ''
+        try:
+            if model.model_field_exists(app_+'_web') and isinstance(model._meta.get_field(app_+'_web'), ForeignKey):
+                company_obj_id_ = params['company_obj_id']
+                parent_model = apps.get_model(app_label=app_, model_name=app_ + "web")
+                company_obj = parent_model.objects.get(id=company_obj_id_)
+                squ += 'model.objects.filter('+app_ + '_web=company_obj '
+        except Exception as ex:
+            print("9025 "+str(ex))
+
+        # print('901544 params \nsqu= '+squ)
         if data_filter_field_value_ or data_filter_field_value_ != "":
+            # print('901555 params')
+            if squ == '':
+                squ += 'model.objects.filter('
+            else:
+                squ += ','
+            # print("9013 \n"+squ)
             try:
-                data = eval('model.objects.filter('+data_filter_field_+'__icontains="'+data_filter_field_value_+'").all()')
+                squ += data_filter_field_+'__icontains="'+data_filter_field_value_+'").all()'
+                # print("9014 \n"+squ)
+                data = eval(squ)
             except Exception as ex:
-                data = eval('model.objects.filter('+data_filter_field_+'__icontains='+data_filter_field_value_+').all()')
+                print("9015 \n"+squ)
+                squ += data_filter_field_+'__icontains='+data_filter_field_value_+').all()'
+                data = eval(squ)
         else:
-            data = model.objects.all()
+            if squ == '':
+                squ += 'model.objects.filter('
+            squ += ').all()'
+            # print("9064 \n"+squ)
+            data = eval(squ)
+            # data = model.objects.all()
         # print(data)
         result = []
         for q in data:

@@ -53,7 +53,7 @@
 			<button id="randomizeData">Randomize Data</button>
 		</div>
 		<script type="text/javascript">
-			var barCount = 60;
+			var barCount = 600;
 			var initialDateStr = '01 Apr 2017 00:00 Z';
 
 			var ctx = document.getElementById('chart').getContext('2d');
@@ -100,7 +100,7 @@
 				var date = luxon.DateTime.fromRFC2822(dateStr);
 				var data = [randomBar(date, 30)];
 				while (data.length < count) {
-					date = date.plus({days: 1});
+					date = date.plus({minutes: 1});
 					if (date.weekday <= 5) {
 						data.push(randomBar(date, data[data.length - 1].c));
 					}

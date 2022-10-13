@@ -14,6 +14,9 @@ class AccountingObj(object):
 
     def update_trial_balance(self, params):
         # print("=1"*10)
+        # print("=1"*10)
+        # print("=1"*10)
+        # print("=1"*10)
         # print(params)
         app_ = params["app"]
 
@@ -21,10 +24,19 @@ class AccountingObj(object):
         timedim = apps.get_model(app_label=app_, model_name="timedim")
         location = apps.get_model(app_label=app_, model_name="locations")
 
+        # print("=2"*10)
+        # print("=2"*10)
+        # print("=2"*10)
+        # print("=2"*10)
         company_obj_id_ = params["company_obj_id"]
         gld_table_name_ = params["gld_table_name"]
         tb_table_name_ = params["tb_table_name"]
         model_tb = apps.get_model(app_label=app_, model_name=tb_table_name_)
+        try:
+            model_tb.truncate()
+        except Exception as ex:
+            print("9076 " + str(ex))
+
         start_date_dim = params["start_date"]
         end_date_dim = params["end_date"]
         model_gld = apps.get_model(app_label=app_, model_name=gld_table_name_)
@@ -82,7 +94,7 @@ class AccountingObj(object):
             tb_obj.save()
 
         squery = '''
-                SELECT gl.accounting_web_id, gl.location_id, td.year, td.month, 
+                SELECT gl.accounting_web_id, gl.location_id, td.year, td.month,
                        gld.account, sum(gld.amount) as amount
                 FROM accounting_GeneralLedgerDetail gld, accounting_GeneralLedgers gl,
                      accounting_timedim td

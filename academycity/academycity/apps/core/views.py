@@ -119,6 +119,7 @@ def activate_function(request):
         dic_ = request.POST["dic"]
         dic_ = eval(dic_)
         # print(dic_)
+
         obj_ = dic_["obj"]
         atm_ = dic_["atm"]
         app_ = dic_["app"]
@@ -159,7 +160,7 @@ def update_field_model_by_id(request, foreign=None):
     model = apps.get_model(app_label=app_, model_name=model_)
     if pkey_ == "new":
         s = ""
-        if model.model_field_exists(app_+'_web') and isinstance(model._meta.get_field("businesssim_web"), ForeignKey):
+        if model.model_field_exists(app_+'_web') and isinstance(model._meta.get_field(app_+'_web'), ForeignKey):
             # print("it is a foreign key")
             s = "model.objects.create("
             s += app_ + '_web=company_obj '
@@ -190,11 +191,11 @@ def update_field_model_by_id(request, foreign=None):
                 try:
                     myVars = vars()
                 except Exception as ex:
-                    print("err800: "+str(ex))
+                    print("err 800: "+str(ex))
                 try:
                     myVars[k] = obj__
                 except Exception as ex:
-                    log_debug("err900: "+str(ex))
+                    log_debug("err 900: "+str(ex))
                 s += space_+k+'='+k
                 space_ = ", "
         except Exception as ex:
@@ -206,9 +207,9 @@ def update_field_model_by_id(request, foreign=None):
             obj = eval(s)
             # print("9051\n" + s)
 
-            # print("9042 "+str(model._meta.get_field("businesssim_web")))
+            # print("9042 "+str(model._meta.get_field(app_ + '_web')))
 
-            if model.model_field_exists(app_ + '_web') and isinstance(model._meta.get_field("businesssim_web"), ManyToManyField):
+            if model.model_field_exists(app_ + '_web') and isinstance(model._meta.get_field(app_ + '_web'), ManyToManyField):
                 s = "obj."+app_ + '_web.add(company_obj)'
                 # print("9035\n", s)
                 eval(s)
@@ -308,17 +309,16 @@ def update_field_model_by_id(request, foreign=None):
 def get_data_link(request):
     dic_ = request.POST["dic"]
     dic_ = eval(dic_)
-    # print('get_data_link dic_= ')
+    # print('9050 get_data_link dic_= ')
     # print(dic_)
     # print(dic_["fields"])
-    # print('dic_')
+    # print('9050 dic_')
     multiple_select_fields = None
     if "multiple_select_fields" in dic_:
         if len(dic_["multiple_select_fields"]) > 0:
             multiple_select_fields = dic_["multiple_select_fields"]
     if "id" not in dic_["fields"]:
         dic_["fields"].insert(0, "id")
-
     app_ = dic_['app']
     model_ = dic_['model']
     # print("model_: "+model_)
@@ -335,7 +335,7 @@ def get_data_link(request):
             print("error 400"+str(ex))
     fields_str = fields_str[:len(fields_str)-2]
 
-    # print("=2"*50)
+    # print("9030")
     # print(fields_str)
     # print("=2"*50)
 
@@ -357,15 +357,21 @@ def get_data_link(request):
     except Exception as ex:
         # print("error 500 "+str(ex))
         pass
-    company_obj_id_ = dic_['company_obj_id']
-    filters = dic_['filters']
 
-    # print(dic_['order_by'])
+
+    try:
+        company_obj_id_ = dic_['company_obj_id']
+        # print("902055 "+str(company_obj_id_))
+    except Exception as ex:
+        print("error 440: "+str(ex))
+    filters = dic_['filters']
     if len(dic_['order_by']) > 0:
         order_by = dic_['order_by']
     else:
         order_by = ""
-    if company_obj_id_ != "-1":
+    if company_obj_id_ != "-1" and company_obj_id_ != -1:
+
+        # print("90201 ")
         parent_model = apps.get_model(app_label=app_, model_name=app_+"web")
         # print(parent_model)
         company_obj = parent_model.objects.get(id=company_obj_id_)
@@ -397,9 +403,7 @@ def get_data_link(request):
             s = 'model.objects.filter(' + parent_model_fk_name+'=parent_obj__)'
         else:
             s = 'model.objects'
-        # print('500 s '+s)
-        # print('500 s '+s)
-        # print('500 s '+s)
+        # print('90500 s '+s)
     try:
         for f in filters:
             filter_field_ = f
@@ -425,6 +429,7 @@ def get_data_link(request):
             # print(ss__)
             # print('ss__')
             data__ = eval(ss__)
+
         s += '.all()[:number_of_rows_].values('+fields_str+')'
         # print('s111')
         # print(s)

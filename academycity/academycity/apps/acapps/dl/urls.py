@@ -1,7 +1,7 @@
 from django.urls import path
 from .views import (home, app, app_id, activate_obj_function)
 
-app_name = "acmath"
+app_name = "dl"
 
 urlpatterns = [
     path('', home, name='home'),
