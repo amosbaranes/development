@@ -24,7 +24,7 @@ from .models import (RBOIC, CountryRegion, CountryRating, Country, GlobalIndustr
 # --
 
 from ..webcompanies.WebCompanies import WebSiteCompany
-from .xbrl_obj import AcademyCityXBRL, TDAmeriTrade, FinancialAnalysis
+from .objects import AcademyCityXBRL, TDAmeriTrade, FinancialAnalysis
 import datetime
 import time
 

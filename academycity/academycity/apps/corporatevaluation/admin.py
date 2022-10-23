@@ -12,7 +12,8 @@ from .models import (Project, RBOIC, CountryRegion, CountryRating, Industry,
                      XBRLIndustryBetasOfOperations,
                      XBRLDimTime, XBRLDimCompany, XBRLDimAccount, XBRLFactCompany,
                      XBRLRealEquityPrices, XBRLRealEquityPricesArchive, Adjectives, AdjectivesValues,
-                     CorporateValuationWeb, ETFS, ETFWatchLists, CompaniesPriceData)
+                     CorporateValuationWeb, ETFS, ETFWatchLists, CompaniesPriceData,
+                     StockPricesMinutes, StockPricesDays)
 
 
 # -*- coding: utf-8 -*-
@@ -293,4 +294,15 @@ class ETFWatchListsAdmin(admin.ModelAdmin):
 class CompaniesPriceDataAdmin(admin.ModelAdmin):
     list_display = ['id', 'company', 'date', 'close_price']
 
+
+@admin.register(StockPricesMinutes)
+class StockPricesMinutesAdmin(admin.ModelAdmin):
+    list_display = ['company', 'idx', 'open', 'high', 'low', 'close', 'volume']
+    list_filter = ('company', 'idx', )
+
+
+@admin.register(StockPricesDays)
+class StockPricesDaysAdmin(admin.ModelAdmin):
+    list_display = ['company', 'idx', 'open', 'high', 'low', 'close', 'volume']
+    list_filter = ('company', 'idx', )
 

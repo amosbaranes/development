@@ -13,6 +13,7 @@ import string
 import datetime
 import time
 from datetime import timedelta
+from dateutil.relativedelta import relativedelta
 from django.db.models import Q
 
 from six.moves import urllib
@@ -48,7 +49,7 @@ from .models import (XBRLMainIndustryInfo, XBRLIndustryInfo, XBRLCompanyInfoInPr
                      XBRLRegion, XBRLRegionYearData, XBRLSPEarningForecast, XBRLSPStatistics,
                      XBRLDimTime, XBRLDimCompany, XBRLDimAccount, XBRLFactCompany,
                      XBRLRealEquityPrices, XBRLRealEquityPricesArchive,
-                     ETFS)
+                     ETFS, ETFWatchLists, StockPricesMinutes, StockPricesDays)
 
 
 # cik = '0000051143'
@@ -520,7 +521,8 @@ class TDAmeriTrade(BaseTDAmeriTrade):
             return dic
         return {'status': 'ok', 'option_data_ticker': options_.json()}
 
-    def get_prices(self, dic):
+    # need to check to delete
+    def get_prices_minutes(self, dic):
         # print("9010")
         # print(dic)
         # print("9011")
@@ -531,7 +533,7 @@ class TDAmeriTrade(BaseTDAmeriTrade):
             pass
             # print("er 9015: "+str(ex))
         ticker_ = dic['ticker']
-        # print("9012 ticker:  "+ticker_)
+        print("9012 ticker:  "+ticker_)
         try:
             r = self.client.get_price_history(ticker_,
                                               period_type=client.Client.PriceHistory.PeriodType.DAY,
@@ -547,6 +549,166 @@ class TDAmeriTrade(BaseTDAmeriTrade):
         dic = {'data': r.json()}
         log_debug("End get_prices.")
         return dic
+
+    # need to check to delete
+    def update_prices(self, dic):
+        # print("9010")
+        # print(dic)
+        # print("9011")
+        try:
+            dic = eval(dic)
+        except Exception as ex:
+            pass
+            # print("er 9015: "+str(ex))
+        ticker_ = dic['ticker']
+        # print("9012 ticker:  "+ticker_)
+        try:
+            r = self.client.get_price_history(ticker_,
+                                              # period_type=client.Client.PriceHistory.PeriodType.MONTH,
+                                              # period=client.Client.PriceHistory.Period.THREE_MONTHS,
+                                              period_type=client.Client.PriceHistory.PeriodType.YEAR,
+                                              period=client.Client.PriceHistory.Period.TEN_YEARS,
+                                              frequency_type=client.Client.PriceHistory.FrequencyType.DAILY,  # .MINUTE,
+                                              frequency=client.Client.PriceHistory.Frequency.DAILY
+                                              )  #  .EVERY_MINUTE
+            assert r.status_code == 200, r.raise_for_status()
+            # print(json.dumps(r.json(), indent=4))
+        except Exception as ex:
+            pass
+            # print("9022 "+str(ex))
+        # StockPricesDays
+
+        result = {"x": [], "o": [], "h": [], "l": [], "c": [], "v": []}
+        dic = r.json()["candles"]
+        # print(dic)
+        for i in dic:
+            print("-"*50)
+            print(i["datetime"])
+            print(datetime.datetime.fromtimestamp(i["datetime"]))
+            print("-"*50)
+            result["x"].append(i["datetime"])
+            result["o"].append(i["open"])
+            result["h"].append(i["high"])
+            result["l"].append(i["low"])
+            result["c"].append(i["close"])
+            result["v"].append(i["volume"])
+        # print(result)
+
+        #
+        # # print("9010 input dic: \n", dic, "\n"+"-"*30)
+        # # print(dic)
+        # # print(dic["ticker"])
+        # l_f = str(dic["letter_from"])
+        # l_t = str(dic["letter_to"])
+        # w_ = int(dic["numer_of_weeks"])
+        # d_ = int(dic["numer_of_days"])  # d_ = 7
+        # # StockPricesMinutes.truncate();
+        #
+        # watch_list = ETFWatchLists.objects.all()
+        # for w in watch_list:
+        #     companies = XBRLCompanyInfo.objects.filter(etfwatchlist=w).all()
+        #     for c in companies:
+        #         # print("="*50)
+        #         # print("="*50)
+        #         # print("="*50)
+        #         if l_t >= c.company_letter >= l_f:
+        #             # print(w.symbol, c.ticker, c.company_letter)
+        #                 # print("="*50)
+        #             # print("="*50)
+        #             # print("="*50)
+        #             obj = yf.Ticker(c.ticker)
+        #             i = w_  # 5 for 1m, 45 for 1d
+        #
+        #             i -= 1
+        #
+        #             end_ = str(date_e_.year)+"-"+str(date_e_.month)+"-"+str(date_e_.day)
+        #             beg_ = str(date_b_.year)+"-"+str(date_b_.month)+"-"+str(date_b_.day)
+        #             hist = obj.history(interval="1m", start=beg_, end=end_)
+        #             # n_tail=10
+        #             hist = hist[:-1]  # .tail(n_tail+1)
+        #             # print("-1"*50)
+        #             # print(hist)
+        #             # print("-2"*50)
+        #             for index, row in hist.iterrows():
+        #                 idx = pd.Timestamp(index)
+        #                 idx_ = idx.year*100000000+idx.month*1000000+idx.day*10000+idx.hour*100+idx.minute
+        #                 # print("-2"*50)
+        #                 # print(idx_)
+        #                 if row["Volume"] > 0:
+        #                     # print("-3"*50)
+        #                     # print(row["Volume"])
+        #                     # print("-4"*50)
+        #                     open_ = round(100*row["Open"])/100
+        #                     high_ = round(100*row["High"])/100
+        #                     low_ = round(100*row["Low"])/100
+        #                     close_ = round(100*row["Close"])/100
+        #                     volume_ = round(row["Volume"])
+        #                     dividends_ = round(100*row["Dividends"])/100
+        #                     stock_splits_ = round(100*row["Stock Splits"])/100
+        #                     try:
+        #                         # print("-5"*50)
+        #                         sp, is_created = StockPricesMinutes.objects.get_or_create(company=c, idx=idx_)
+        #                         # print("-6"*50)
+        #                         # print(is_created)
+        #                         # print("-7"*50)
+        #                         if is_created:
+        #                             sp.open = open_
+        #                             sp.high = high_
+        #                             sp.low = low_
+        #                             sp.close = close_
+        #                             sp.volume = volume_
+        #                             sp.dividends = dividends_
+        #                             sp.stock_splits = stock_splits_
+        #                             # print("-8"*50)
+        #                             sp.save()
+        #                             # print("-9"*50)
+        #                     except Exception as ex:
+        #                         print(ex)
+        #
+        # dic = {'data': {"status": "ok"}}
+        #
+
+
+        return result
+
+    def get_prices(self, dic):
+        # print("9010")
+        # print(dic)
+        # print("9011")
+        try:
+            dic = eval(dic)
+        except Exception as ex:
+            pass
+            # print("er 9015: "+str(ex))
+        ticker_ = dic['ticker']
+        # print("9012 ticker:  "+ticker_)
+        try:
+            r = self.client.get_price_history(ticker_,
+                                              # period_type=client.Client.PriceHistory.PeriodType.MONTH,
+                                              # period=client.Client.PriceHistory.Period.THREE_MONTHS,
+                                              period_type=client.Client.PriceHistory.PeriodType.YEAR,
+                                              period=client.Client.PriceHistory.Period.TEN_YEARS,
+                                              frequency_type=client.Client.PriceHistory.FrequencyType.DAILY,  # .MINUTE,
+                                              frequency=client.Client.PriceHistory.Frequency.DAILY
+                                              )  #  .EVERY_MINUTE
+            assert r.status_code == 200, r.raise_for_status()
+            # print(json.dumps(r.json(), indent=4))
+        except Exception as ex:
+            pass
+            # print("9022 "+str(ex))
+
+        result = {"x": [], "o": [], "h": [], "l": [], "c": [], "v": []}
+        dic = r.json()["candles"]
+        # print(dic)
+        for i in dic:
+            result["x"].append(i["datetime"])
+            result["o"].append(i["open"])
+            result["h"].append(i["high"])
+            result["l"].append(i["low"])
+            result["c"].append(i["close"])
+            result["v"].append(i["volume"])
+        # print(result)
+        return result
 
     def get_quote(self, dic):
         # print(9024)
@@ -946,7 +1108,6 @@ class TDAmeriTrade(BaseTDAmeriTrade):
         # print(f'3 workers slept in parallel for {total_slept_for:.2f} seconds')
         # print(f'total expected sleep time: {total_sleep_time:.2f} seconds')
 
-
     # ------  SP Option streaming handlers ---
     async def nasdaq_order_book_handler(self, msg):
         print("="*50)
@@ -1306,51 +1467,265 @@ class TDAmeriTrade(BaseTDAmeriTrade):
     def create_option_symbol(self, ticker):
         symbol = ticker
         return symbol
-    # -------------------------------------------------
 
-    def get_ticker_prices_yf(self, dic):
+
+class StockPrices(object):
+    def __init__(self):
+        pass
+
+    def get_prices_minutes(self, dic):
         # print("9010 input dic: \n", dic, "\n"+"-"*30)
-        # obj = yf.Ticker("^GSPC")
-        # print(dic["ticker"])
-        obj = yf.Ticker(dic["ticker"])
-        result = {"y": [], "m": [], "d": [], "mi": [], "datetime":[], "close": []}
-        i = 5  # 5 for 1m, 45 for 1d
-        nn=0
-        while i > 0:
-            if nn == 0:
-                date_e = (datetime.datetime.now() + datetime.timedelta(days=-((i-1)*7)))
-                date_b = (datetime.datetime.now() + datetime.timedelta(days=-(i*7)))
-                nn=1
-            else:
-                date_b = (date_e + datetime.timedelta(days=1))
-                date_e = (date_b + datetime.timedelta(days=7))
-            i-=1
-            date_b_ = date_b.date()
-            date_e_ = date_e.date()
-            # print(date_b_, date_e_)
-            end_ = str(date_e_.year)+"-"+str(date_e_.month)+"-"+str(date_e_.day)
-            beg_ = str(date_b_.year)+"-"+str(date_b_.month)+"-"+str(date_b_.day)
-            hist = obj.history(interval="1m",start=beg_, end=end_)
-            # print("-1"*50)
-            # print(hist)
-            # print("-2"*50)
-            dn0=0
-            for index, row in hist.iterrows():
-                # result["y"].append(pd.Timestamp(index).year)
-                # result["m"].append(pd.Timestamp(index).month)
-                # result["d"].append(pd.Timestamp(index).day)
-                # result["mi"].append(pd.Timestamp(index).minute)
-                if row["Volume"] > 0:
-                    if dn0 != pd.Timestamp(index).day:
-                        dn0 = pd.Timestamp(index).day
-                        # result["datetime"].append(str(index))
-                        # result["close"].append(round(95*row["Close"])/100)
-                    result["datetime"].append(str(index))
-                    result["close"].append(round(100*row["Close"])/100)
+        # ^GSPC
+        ticker = dic["ticker"]
+        num_of_bars = int(dic["num_of_bars"])
+        # print(ticker)
+        result = {"idx": [], "open": [], "high": [], "low": [], "close": [], "volume": [], "dividends": [], "stock_splits": []}
 
+        sp = StockPricesMinutes.objects.filter(company__ticker=ticker)[:num_of_bars]
+        # print(sp)
+        for s in sp:
+            # print("-1"*50)
+            # print(s)
+            # print("-2"*50)
+            result["idx"].append(s.idx)
+            result["open"].append(float(s.open))
+            result["high"].append(float(s.high))
+            result["low"].append(float(s.low))
+            result["close"].append(float(s.close))
+            result["volume"].append(int(s.volume))
         dic = {'data': result}
         # print("9099 output dic: \n", dic, "\n"+"="*30)
         return dic
+
+    def get_prices_days(self, dic):
+        # print("9010 input dic: \n", dic, "\n"+"-"*30)
+        # ^GSPC
+        ticker = dic["ticker"]
+        num_of_bars = int(dic["num_of_bars"])
+        # print(ticker)
+        result = {"idx": [], "open": [], "high": [], "low": [], "close": [], "volume": [], "dividends": [], "stock_splits": []}
+
+        sp = StockPricesDays.objects.filter(company__ticker=ticker)[:num_of_bars]
+        # print(sp)
+        for s in sp:
+            # print("-1"*50)
+            # print(s)
+            # print("-2"*50)
+            result["idx"].append(s.idx)
+            result["open"].append(float(s.open))
+            result["high"].append(float(s.high))
+            result["low"].append(float(s.low))
+            result["close"].append(float(s.close))
+            result["volume"].append(int(s.volume))
+        dic = {'data': result}
+        # print("9099 output dic: \n", dic, "\n"+"="*30)
+        return dic
+
+    def update_prices_minutes(self, dic):
+        # print("9010 input dic: \n", dic, "\n"+"-"*30)
+        # obj = yf.Ticker("^GSPC")
+        # print(dic)
+        # print(dic["ticker"])
+        l_f = str(dic["letter_from"])
+        l_t = str(dic["letter_to"])
+        w_ = int(dic["numer_of_weeks"])
+        d_ = int(dic["numer_of_days"])  # d_ = 7
+        # StockPricesMinutes.truncate();
+
+        watch_list = ETFWatchLists.objects.all()
+        for w in watch_list:
+            companies = XBRLCompanyInfo.objects.filter(etfwatchlist=w).all()
+            for c in companies:
+                # print("="*50)
+                # print("="*50)
+                # print("="*50)
+                if l_t >= c.company_letter >= l_f:
+                    # print(w.symbol, c.ticker, c.company_letter)
+                        # print("="*50)
+                    # print("="*50)
+                    # print("="*50)
+                    obj = yf.Ticker(c.ticker)
+                    i = w_  # 5 for 1m, 45 for 1d
+                    nn = 0
+                    while i > 0:
+                        if nn == 0:
+                            date_e = (datetime.datetime.now() + datetime.timedelta(days=-((i-1)*d_)))
+                            date_b = (datetime.datetime.now() + datetime.timedelta(days=-(i*d_)))
+                            nn = 1
+                        else:
+                            date_b = (date_e + datetime.timedelta(days=1))
+                            date_e = (date_b + datetime.timedelta(days=d_))
+                        i -= 1
+                        date_b_ = date_b.date()
+                        date_e_ = date_e.date()
+                        # print(date_b_, date_e_)
+                        end_ = str(date_e_.year)+"-"+str(date_e_.month)+"-"+str(date_e_.day)
+                        beg_ = str(date_b_.year)+"-"+str(date_b_.month)+"-"+str(date_b_.day)
+                        hist = obj.history(interval="1m", start=beg_, end=end_)
+                        # n_tail=10
+                        hist = hist[:-1]  # .tail(n_tail+1)
+                        # print("-1"*50)
+                        # print(hist)
+                        # print("-2"*50)
+                        for index, row in hist.iterrows():
+                            idx = pd.Timestamp(index)
+                            idx_ = idx.year*100000000+idx.month*1000000+idx.day*10000+idx.hour*100+idx.minute
+                            # print("-2"*50)
+                            # print(idx_)
+                            if row["Volume"] > 0:
+                                # print("-3"*50)
+                                # print(row["Volume"])
+                                # print("-4"*50)
+                                open_ = round(100*row["Open"])/100
+                                high_ = round(100*row["High"])/100
+                                low_ = round(100*row["Low"])/100
+                                close_ = round(100*row["Close"])/100
+                                volume_ = round(row["Volume"])
+                                dividends_ = round(100*row["Dividends"])/100
+                                stock_splits_ = round(100*row["Stock Splits"])/100
+                                try:
+                                    # print("-5"*50)
+                                    sp, is_created = StockPricesMinutes.objects.get_or_create(company=c, idx=idx_)
+                                    # print("-6"*50)
+                                    # print(is_created)
+                                    # print("-7"*50)
+                                    if is_created:
+                                        sp.open = open_
+                                        sp.high = high_
+                                        sp.low = low_
+                                        sp.close = close_
+                                        sp.volume = volume_
+                                        sp.dividends = dividends_
+                                        sp.stock_splits = stock_splits_
+                                        # print("-8"*50)
+                                        sp.save()
+                                        # print("-9"*50)
+                                except Exception as ex:
+                                    print(ex)
+
+        dic = {'data': {"status": "ok"}}
+        # print("9099 output dic: \n", dic, "\n"+"="*30)
+        return dic
+
+    def update_prices_days(self, dic):
+        print("9015 input dic: \n", dic, "\n"+"-"*30)
+        l_f = str(dic["letter_from"])
+        l_t = str(dic["letter_to"])
+        y_ = int(dic["numer_of_years"]) # I use w for years
+        d_ = int(dic["numer_of_days"])  # d_ = 7
+
+        watch_list = ETFWatchLists.objects.all()
+        for w in watch_list:
+            companies = XBRLCompanyInfo.objects.filter(etfwatchlist=w).all()
+            for c in companies:
+                if l_t >= c.company_letter >= l_f:
+                    print("90151 company info: \n", w.symbol, c.ticker, c.company_letter, "\n"+"-"*30)
+                    obj = yf.Ticker(c.ticker)
+                    date_e = datetime.datetime.now()
+                    date_b = (datetime.datetime.now() + datetime.timedelta(days=-d_))
+                    date_b = (date_b + relativedelta(years = -y_))
+                    date_b_ = date_b.date()
+                    date_e_ = date_e.date()
+                    # print("9016 dates: \n", date_b_, date_e_, "\n"+"-"*30)
+                    end_ = str(date_e_.year)+"-"+str(date_e_.month)+"-"+str(date_e_.day)
+                    beg_ = str(date_b_.year)+"-"+str(date_b_.month)+"-"+str(date_b_.day)
+                    hist = obj.history(interval="1d", start=beg_, end=end_)
+
+                    # hist = hist[:-1]
+                    # print("9016 hist: \n", hist, "\n"+"-"*30)
+                    # print("-2"*50)
+                    for index, row in hist.iterrows():
+                        idx = pd.Timestamp(index)
+                        idx_ = idx.year*100000000+idx.month*1000000+idx.day*10000+idx.hour*100+idx.minute
+                        # print("9017 idx_: \n", idx_, "\n"+"-"*30)
+                        if row["Volume"] > 0:
+                            # print(row["Volume"])
+                            # print("9019 dates: \n", round(row["Volume"]/100), "\n"+"-"*30)
+                            open_ = round(100*row["Open"])/100
+                            high_ = round(100*row["High"])/100
+                            low_ = round(100*row["Low"])/100
+                            close_ = round(100*row["Close"])/100
+                            volume_ = round(row["Volume"]/100)
+                            dividends_ = round(100*row["Dividends"])/100
+                            stock_splits_ = round(100*row["Stock Splits"])/100
+                            try:
+                                sp, is_created = StockPricesDays.objects.get_or_create(company=c, idx=idx_)
+                                if is_created:
+                                    sp.open = open_
+                                    sp.high = high_
+                                    sp.low = low_
+                                    sp.close = close_
+                                    sp.volume = volume_
+                                    sp.dividends = dividends_
+                                    sp.stock_splits = stock_splits_
+                                    sp.save()
+                            except Exception as ex:
+                                print(ex)
+
+        dic = {'data': {"status": "ok"}}
+        # print("9099 output dic: \n", dic, "\n"+"="*30)
+        return dic
+
+    def get_prices_to_excel(self, dic):
+        # print("9010 input dic: \n", dic, "\n" + "-" * 30)
+        dic = dic["dic"]
+        idx_from = int(dic["from_date"]+"0000")
+        idx_to = int(dic["to_date"]+"0000")
+        # print("9015 : \nfrom: ", idx_from, "\nto: ", idx_to, "\n"+"-"*30)
+
+        # ^GSPC
+        ticker = dic["ticker"]
+        # print(ticker)
+        result = {"idx": [], "open": [], "high": [], "low": [], "close": [], "volume": [], "dividends": [], "stock_splits": []}
+
+        sp = StockPricesMinutes.objects.filter(company__ticker=ticker, idx__gte=idx_from, idx__lte=idx_to)
+        # print(sp)
+        for s in sp:
+            # print("-1"*50)
+            # print(s)
+            # print("-2"*50)
+            result["idx"].append(s.idx)
+            result["open"].append(float(s.open))
+            result["high"].append(float(s.high))
+            result["low"].append(float(s.low))
+            result["close"].append(float(s.close))
+            result["volume"].append(int(s.volume))
+        dic = {'data': result}
+        print("9099 output dic: \n", dic, "\n"+"="*30)
+        return dic
+
+    # https://analyzingalpha.com/yfinance-python
+    def explore_yfinance(self, dic):
+        print("9010 input dic: \n", dic, "\n"+"-"*30)
+        ticker = dic["ticker"]
+        obj = yf.Ticker(ticker)
+        date_e = datetime.datetime.now()
+        date_b = datetime.datetime.now() + datetime.timedelta(days=-5)
+        date_b_ = date_b.date()
+        date_e_ = date_e.date()
+        end_ = str(date_e_.year)+"-"+str(date_e_.month)+"-"+str(date_e_.day)
+        beg_ = str(date_b_.year)+"-"+str(date_b_.month)+"-"+str(date_b_.day)
+        hist = obj.history(interval="1m", start=beg_, end=end_)
+        hist = hist[:-1]  # .tail(n_tail+1)
+        print("-1"*50)
+        print("hist")
+        print(hist)
+        print("-2"*50)
+
+        print('obj.calendar')
+        print(obj.calendar)
+        print("-"*10)
+        print('obj.news')
+        print(obj.news)
+        print("-"*10)
+        print('obj.actions')
+        print(obj.actions)
+        print("-"*10)
+        print('obj.info')
+        print(obj.info)
+        print("-"*10)
+        dic = {'data': {"status": "ok"}}
+
 
 
 class AcademyCityXBRL(object):
@@ -4059,9 +4434,10 @@ class AcademyCityXBRL(object):
 
     def update_etfs_companies(self, params):
         l = ["b", "c", "e", "f", "i", "k", "p", "re", "u", "v", "y"]
+        # print("9085\n", l, "\n", "-"*50)
         for f in l:
             file = "etfs/index-holdings-xl"+f
-            # print(file)
+            print(file)
             df = self.load_excel_data(file, sheet_name="Sheet1")
             df = df.reset_index()
             # print(df)
@@ -4081,8 +4457,10 @@ class AcademyCityXBRL(object):
                 except Exception as ex:
                     exc.append(f+": "+r['Symbol'])
                     # print(ex)
+        # print("9088\n", "Done", "\n", "-"*50)
 
-        result = {"exc": exc , "done": "ok"}
+        result = {"exc": exc, "status": "ok"}
+        print("9090:  Result:\n", result, "\n", "-"*50)
         return result
 
 #   --- Stage 3 - SP500 ---

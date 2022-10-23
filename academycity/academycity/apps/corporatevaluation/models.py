@@ -1451,3 +1451,46 @@ class AdjectivesValues(models.Model):
     def __str__(self):
         return self.value
 
+
+# StockPrices
+class StockPricesMinutes(TruncateTableMixin, models.Model):
+    class Meta:
+        verbose_name = _('StockPricesMinute')
+        verbose_name_plural = _('StockPricesMinutes')
+        ordering = ['company__id', '-idx']
+
+    company = models.ForeignKey(XBRLCompanyInfo, on_delete=models.CASCADE, default=None, blank=True, null=True,
+                                related_name='company_info_stock_prices')
+    idx = models.PositiveBigIntegerField(default=0)
+    open = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    high = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    low = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    close = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    volume = models.PositiveIntegerField(default=0)
+    dividends = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+    stock_splits = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+
+    def __str__(self):
+        return str(self.idx)
+
+
+class StockPricesDays(TruncateTableMixin, models.Model):
+    class Meta:
+        verbose_name = _('StockPricesDay')
+        verbose_name_plural = _('StockPricesDays')
+        ordering = ['company__id', '-idx']
+
+    company = models.ForeignKey(XBRLCompanyInfo, on_delete=models.CASCADE, default=None, blank=True, null=True,
+                                related_name='company_info_stock_prices_days')
+    idx = models.PositiveBigIntegerField(default=0)
+    open = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    high = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    low = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    close = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    volume = models.PositiveIntegerField(default=0)
+    dividends = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+    stock_splits = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+
+    def __str__(self):
+        return str(self.idx)
+

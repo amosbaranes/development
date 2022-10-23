@@ -9,13 +9,24 @@ from ..actions.utils import create_action
 from .AdvancedTabes import AdvancedTabs
 from ..acapps.accounting.models import Locations, TimeDim
 from ..core.utils import log_debug
+from django.urls import reverse
 from .accounting_obj import AccountingObj
+from .apps_general_functions import activate_obj_function
 from django.db.models.fields.related import ForeignKey, ManyToManyField, ManyToManyRel
 
 
 def home(request):
     title = _('Core App')
     return render(request, 'core/home.html', {'title': title})
+
+
+def app(request, app_name):
+    app_ = "core"
+    app_activate_function_link_ = reverse(app_+':activate_obj_function', kwargs={})
+    return render(request, app_+'/advanced_tabs.html', {"atm_name": "core_"+app_name+"_tm", "app": app_,
+                                               "app_activate_function_link": app_activate_function_link_,
+                                               "company_obj_id": 0, "title": "Core"}
+                  )
 
 
 def post_ajax_create_action(request):
@@ -118,21 +129,20 @@ def activate_function(request):
     try:
         dic_ = request.POST["dic"]
         dic_ = eval(dic_)
-        # print(dic_)
+        # print("core: 9001: dic\n", dic_, "-"*50)
 
         obj_ = dic_["obj"]
         atm_ = dic_["atm"]
         app_ = dic_["app"]
         fun_ = dic_["fun"]
         params_ = dic_["params"]
-        # print('-1'*20)
+        # print("core\n", "9005: params_\n", params_, '\n', "-"*50)
         s = obj_ + "('"+atm_+"', '"+app_+"')." + fun_ + "(params_)"
-        # print(s)
-        # print('-1'*20)
+        # print("core\n", "9010: s=\n", s, "\n", "-"*50)
         result = eval(s)
         # print('-3'*20)
         dic = {'status': 'ok', 'result': result}
-        # print(dic)
+        # print("core\n", "9015: dic=\n", dic, "\n", "-"*50)
     except Exception as ex:
         dic = {'status': 'ko', 'result': "{}"}
     return JsonResponse(dic)

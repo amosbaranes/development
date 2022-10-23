@@ -1,4 +1,4 @@
-from ..corporatevaluation.xbrl_obj import AcademyCityXBRL
+from ..corporatevaluation.objects import AcademyCityXBRL, StockPrices
 from ..corporatevaluation.models import XBRLRealEquityPrices
 from ..core.sql import SQL
 
@@ -27,7 +27,13 @@ def update_forecast():
                 ssql += "select ticker,t,o,h,l,c,v from corporatevaluation_XBRLRealEquityPrices"
                 count = SQL().exc_sql(ssql, data)
                 XBRLRealEquityPrices.truncate()
-
+            elif h == 2:
+                sp = StockPrices()
+                dic = {"letter_from": "A", "letter_to": "Z", "numer_of_weeks": 1, "numer_of_days": 1}
+                sp.update_prices_minutes(dic)
+                dic = {"letter_from": "A", "letter_to": "Z", "numer_of_years": 1, "numer_of_days": 3}
+                sp.update_prices_days(dic)
+                del sp
     except Exception as ex:
         pass
         # print(ex)

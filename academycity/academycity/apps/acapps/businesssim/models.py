@@ -197,3 +197,12 @@ class TrialBalances(TruncateTableMixin, models.Model):
 
     def __str__(self):
         return str(self.team)+"-"+str(self.period)+"-"+str(self.account)+": "+str(self.amount)+": "+str(self.level)
+
+
+# For Demo data saving
+class Friends(TruncateTableMixin, models.Model):
+    name = models.CharField(max_length=50, default='')
+    friends = models.JSONField(null=True)
+
+    def __str__(self):
+        return str(self.name)
