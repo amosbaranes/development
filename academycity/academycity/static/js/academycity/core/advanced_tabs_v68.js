@@ -1,6 +1,6 @@
 // -- AdvancedTabsManager --
 function AdvancedTabsManager(my_name, my_app, body_,
-activate_function_link, activate_obj_function_link,update_field_link,get_data_link,
+activate_function_link, activate_obj_function_link,update_field_link,get_data_link,get_data_json_link,
 company_obj_id, is_show_btns=true, user_id=0)
 {
  //alert(activate_obj_function_link)
@@ -8,6 +8,7 @@ company_obj_id, is_show_btns=true, user_id=0)
  this.user_id=user_id;
  this.my_name=my_name; this.my_app=my_app; this.elm_body=body_;
  this.activate_function_link_=activate_function_link;
+ this.get_data_json_link_=get_data_json_link;
  this.activate_obj_function_link_=activate_obj_function_link;
  //alert(this.activate_obj_function_link_)
  this.update_field_link_=update_field_link;
@@ -16,7 +17,11 @@ company_obj_id, is_show_btns=true, user_id=0)
  this.content={"last_obj_number":0};
  this.app_content={};this.app_objs={};this.temp_number=1;
  this.tabs={};
+ this.pop_wins={};
  this.init_create_containers();
+ this.fun_to_run_by_timer = []
+ this.interval=5000;
+ this.init_timer();
  if(is_show_btns == true){this.create_add_delete_editor();}
  this.setTabs();
  this.active_tab=null;
@@ -213,6 +218,34 @@ AdvancedTabsManager.prototype.init_create_containers = function()
    this.elm_body.appendChild(this.add_delete_editor);this.elm_body.appendChild(this.titles);this.elm_body.appendChild(this.container);
 }
 
+AdvancedTabsManager.prototype.init_timer = function()
+{
+     fun=function(this_obj){
+      //alert("in this.fun\n"+JSON.stringify(this_obj.fun_to_run_by_timer))
+      var date = new Date;
+      this_obj.h=date.getHours();this_obj.m=date.getMinutes();this_obj.s=date.getSeconds();this_obj.y=date.getFullYear()
+      // alert(this_obj.h +":"+ this_obj.m +":"+ this_obj.ys +":"+ this_obj.y)
+
+      for(i in this_obj.fun_to_run_by_timer){
+        var dic=this_obj.fun_to_run_by_timer[i]
+        //alert(JSON.stringify(dic)+"\n\n"+this_obj.s)
+        if(1*dic["run"]==1){eval(dic["fun_ref"]);dic["run"]=1*dic["interval"]/this.interval} else {dic["run"]=1*dic["run"]-1}
+      }
+    }
+    try{Interval=setInterval(fun, this.interval, this)} catch(er){alert(er)}
+}
+
+AdvancedTabsManager.prototype.set_fun_for_timer = function(fun_name, fun_ref, interval)
+{
+  var run_=1*interval/5000
+  dic_={"fun_name":fun_name, "fun_ref":fun_ref, "interval":interval, "run":run_}
+     for(i in this.fun_to_run_by_timer){
+         var fun_name_=this.fun_to_run_by_timer[i]["fun_name"];
+         if(fun_name_==fun_name){return;}
+     }
+  this.fun_to_run_by_timer.push(dic_)
+}
+
 AdvancedTabsManager.prototype.create_add_delete_editor = function()
 {
   this.add_btn=document.createElement("button");
@@ -401,6 +434,9 @@ AdvancedTabsManager.prototype.set_active_tab = function(btn)
 
 AdvancedTabsManager.prototype.get_tab = function(tab_name){for(id in this.tabs){if (this.tabs[id].tab_name==tab_name){return this.tabs[id]}}}
 
+AdvancedTabsManager.prototype.get_pop_win = function(link_number){return this.pop_wins[link_number]}
+
+
 // this is a Factory function which return object based on the dic.
 AdvancedTabsManager.prototype.get_obj = function(tab, dic)
 {
@@ -574,12 +610,12 @@ AdvancedTabsManager.prototype.save_data = function(html_obj, dic_)
 
 AdvancedTabsManager.prototype.get_data = function(call_back_fun, dic_, tbody_)
 {
-  //alert("100123  "+JSON.stringify(dic_));
+  //alert("1001213  "+JSON.stringify(dic_));
   dic_["app"]=this.my_app;
   //alert("9070"+JSON.stringify(dic_));
   if(dic_["company_obj_id"]==null){dic_["company_obj_id"]=this.company_obj_id;}
   //alert("9080"+JSON.stringify(dic_));
-//  alert("9090"+this.get_data_link_)
+  //alert("9090"+this.get_data_link_)
 
   //alert(call_back_fun)
   call_back_fun.atm=this
@@ -588,6 +624,28 @@ AdvancedTabsManager.prototype.get_data = function(call_back_fun, dic_, tbody_)
           function(data){
           try{
 //           alert("9001"+JSON.stringify(data));
+           if(data["status"]!="ok"){return}
+           call_back_fun(data["dic"], tbody_)
+           tbody_.data=data["dic"];
+           //alert("9005"+JSON.stringify(data));
+           } catch(er){alert(er)}
+          });
+}
+
+AdvancedTabsManager.prototype.get_data_json = function(call_back_fun, dic_, tbody_)
+{
+  //alert("100123  "+JSON.stringify(dic_));
+  dic_["app"]=this.my_app;
+  if(dic_["company_obj_id"]==null){dic_["company_obj_id"]=this.company_obj_id;}
+  //alert("1001231111 "+JSON.stringify(dic_));
+  //alert(call_back_fun)
+  //alert(this.get_data_json_link_)
+  call_back_fun.atm=this;
+  $.post(this.get_data_json_link_,
+          {dic : JSON.stringify(dic_)},
+          function(data){
+          try{
+           //alert("9001"+JSON.stringify(data));
            if(data["status"]!="ok"){return}
            call_back_fun(data["dic"], tbody_)
            tbody_.data=data["dic"];
@@ -1613,7 +1671,7 @@ var container_on_click=function(event){
 acContainerCreator.prototype.process_content = process_content;
 
 // -- acSearchTableCreator --
-function acSearchTableCreator(parent){this.parent=parent;} // alert(JSON.stringify(this.parent.data));}
+function acSearchTableCreator(parent){this.parent=parent;this.is_json_data=false} // alert(JSON.stringify(this.parent.data));}
 
 acSearchTableCreator.prototype.create_obj = function()
 {
@@ -1706,22 +1764,35 @@ acSearchTableCreator.prototype.create_obj = function()
   var tr_h=document.createElement("tr");
   tr_h.my_creator_obj=this;
   tr_h.addEventListener("click", function(event){
-   var e=event.target;
-   var filter_field=e.getAttribute("filter_field")
-   var filter_field_foreign_table=e.getAttribute("filter_field_foreign_table")
 
-   e.parentNode.my_creator_obj.search_input_.setAttribute("filter_field", filter_field);
-   e.parentNode.my_creator_obj.search_input_.setAttribute("filter_field_foreign_table", filter_field_foreign_table);
+       var e=event.target;
+       var mco=e.parentNode.my_creator_obj
 
-   e.parentNode.my_creator_obj.search_input_.setAttribute("placeholder", "Search "+e.innerHTML+"..");
-   e.parentNode.my_creator_obj.filter_field=filter_field;
-   e.parentNode.my_creator_obj.filter_field_foreign_table=filter_field_foreign_table;
-     var mco = e.parentNode.my_creator_obj
-     var field = mco.order_by["field"]
-     if(field==filter_field)
-     {if(mco.order_by["direction"]=="ascending"){mco.order_by["direction"]="descending"}else{mco.order_by["direction"]="ascending"}}
-     else{mco.order_by["field"]=filter_field;mco.order_by["direction"]="ascending"}
-   e.parentNode.my_creator_obj.get_data();
+       var filter_field=e.getAttribute("filter_field")
+       var filter_field_foreign_table=e.getAttribute("filter_field_foreign_table")
+       e.parentNode.my_creator_obj.search_input_.setAttribute("filter_field", filter_field);
+       e.parentNode.my_creator_obj.search_input_.setAttribute("filter_field_foreign_table", filter_field_foreign_table);
+       e.parentNode.my_creator_obj.search_input_.setAttribute("placeholder", "Search "+e.innerHTML+"..");
+       e.parentNode.my_creator_obj.filter_field=filter_field;
+       e.parentNode.my_creator_obj.filter_field_foreign_table=filter_field_foreign_table;
+       var field = mco.order_by["field"]
+       if(field==filter_field)
+       {if(mco.order_by["direction"]=="ascending"){mco.order_by["direction"]="descending"}else{mco.order_by["direction"]="ascending"}}
+       else{mco.order_by["field"]=filter_field;mco.order_by["direction"]="ascending"}
+
+       if(mco.is_json_data==true){
+           var f=function(value,field_name,data)
+           {var dic = null;for(var i in data){if(data[i][field_name]==value){dic=data[i];break}};return dic;}
+
+           var sorted_data = [];var temp_list = []
+           for(var i in mco.tbody.data){temp_list.push(mco.tbody.data[i][mco.order_by["field"]])}
+           temp_list = temp_list.sort();if(mco.order_by["direction"]=="ascending"){temp_list=temp_list.reverse()};
+
+           for(var z in temp_list){sorted_data.push(f(temp_list[z],mco.order_by["field"],mco.tbody.data))}
+           mco.create_tbody(sorted_data, [mco.tbody, this.my_creator_obj.parent.data])
+       } else{
+           e.parentNode.my_creator_obj.get_data();
+       }
   })
 
   tr_h.setAttribute("style","cursor:pointer");
@@ -1758,6 +1829,7 @@ acSearchTableCreator.prototype.create_obj = function()
   this.tbody.setAttribute("id", "tbody_"+dic["properties"]["obj_number"]);
   this.tbody.setAttribute("style", "display: block;height: "+dic["properties"]["height"]+"px;overflow-y: auto;overflow-x: hidden;");
 
+  this.tbody.my_creator_obj=this;
   this.table_.appendChild(this.tbody);
   this.table_.my_creator_obj=this;
   //alert(style_)
@@ -1776,7 +1848,7 @@ acSearchTableCreator.prototype.create_obj = function()
 acSearchTableCreator.prototype.get_data = function(data_table_name=null,parent_model=null,parent_id=null,company_obj_id=null)
 {
   var dic=this.parent.data;
-//  alert("9044  "+JSON.stringify(dic));
+  //alert("9044  "+JSON.stringify(dic));
   var container = document.getElementById("content_"+dic["container_id"]);
   //alert(container.outerHTML);
   if(data_table_name!==null){this.data_table_name=data_table_name} else {this.data_table_name=container.getAttribute("table")}
@@ -1800,7 +1872,9 @@ acSearchTableCreator.prototype.get_data = function(data_table_name=null,parent_m
 
   var fun=function(data, ttbody_){
     console.log("get_data search table inside call back function")
+
     //alert("9081 data: "+JSON.stringify(data));
+
     try{if(Object.keys(data).length==0){return;}} catch (er) {}
     //alert(dic_["fields"][0])
     //alert(JSON.stringify(data[dic_["fields"][0]]))
@@ -1824,6 +1898,11 @@ acSearchTableCreator.prototype.get_data = function(data_table_name=null,parent_m
     }
     //alert("9008 get_data search table inside call back function s=" + s)
     ttbody_.innerHTML=s;
+
+    //alert(ttbody_.my_creator_obj)
+    //alert(ttbody_.my_creator_obj.is_json_data)
+
+    //ttbody_.my_creator_obj.is_json_data=false;
   }
 
   var dic__=[]; for(i in dic_["fields"]){dic__.push(dic_["fields"][i])}
@@ -1880,6 +1959,40 @@ acSearchTableCreator.prototype.get_data = function(data_table_name=null,parent_m
 //  alert("9010: "+JSON.stringify(dic__));
 
   this.parent.atm.get_data(call_back_fun=fun, dic__, this.tbody)
+}
+
+acSearchTableCreator.prototype.get_data_json = function(data_table_name=null,record_id=null,company_obj_id=null)
+{
+  var dic=this.parent.data;
+  //alert(JSON.stringify(dic))
+  var dic__ = {"model_name":data_table_name, "record_id": record_id}
+
+  //alert("input "+JSON.stringify(dic__));
+  this.parent.atm.get_data_json(call_back_fun=this.create_tbody, dic__, [this.tbody, dic])
+}
+
+acSearchTableCreator.prototype.create_tbody = function(data, ll)
+{
+    var tbody=ll[0]; tbody.data=data; var dic=ll[1]
+    var get_width_align = function(field_name,dic)
+    {
+      var width = 50; var align = "left";
+      for(var z in dic["fields"])
+      {if(dic["fields"][z]["field_name"] == field_name)
+        {width = dic["fields"][z]["field_width"];align = dic["fields"][z]["field_align"];break}
+      }
+      return [width, align];
+    }
+    //alert("recieved data  "+JSON.stringify(data));
+    var s=''
+    for(var i in data)
+    {
+     s+='<tr row="'+i+'"'+'>';
+     for(var k in data[i]){var wa = get_width_align(k,dic);s+='<td style="width:'+wa[0]+'px;text-align:'+wa[1]+'">'+data[i][k]+'</td>'}
+     s+='</tr>';
+    }
+    tbody.innerHTML=s;
+    tbody.my_creator_obj.is_json_data=true;
 }
 
 acSearchTableCreator.prototype.row_click = function(event)
@@ -2732,16 +2845,19 @@ acChartCreator.prototype.create_obj = function()
 acChartCreator.prototype.set_chart_data = function(chart_type)
 {
   //alert(JSON.stringify(chart_type));
-  var data_=[]
-  chart_attributes={"lines":{"type_name":"mode", "type_value":"lines", "marker_attribute":"size", "marker_attribute_value":"8"},
-                    "bars":{"type_name":"type", "type_value":"bar", "marker_attribute":"opacity", "marker_attribute_value":"0.7"},
-                    "pies":{"type_name":"type", "type_value":"pie", "marker_attribute":"opacity", "marker_attribute_value":"0.7"},
+  var data_=[];
+  chart_attributes={"pies":{"type_name":"type", "type_value":"pie", "marker_attribute":"opacity", "marker_attribute_value":"0.7"},
                     "areas":{"type_name":"type", "type_value":"scatter", "marker_attribute":"opacity", "marker_attribute_value":"0.7"},
-                    "scatter":{"type_name":"mode", "type_value":"markers", "marker_attribute":"opacity", "marker_attribute_value":"0.7"}
+                    "scatter":{"type_name":"mode", "type_value":"markers", "marker_attribute":"opacity", "marker_attribute_value":"0.7"},
+                    "lines":{"type_name":"mode", "type_value":"lines", "marker_attribute":"size", "marker_attribute_value":"8"},
+                    "bars":{"type_name":"type", "type_value":"bar", "marker_attribute":"opacity", "marker_attribute_value":"0.7"},
+                    "histogram":{"type_name":"type", "type_value":"histogram"}
                    }
-   //alert(JSON.stringify(chart_attributes));
+    //alert(JSON.stringify(chart_attributes));
+    chart_type["type_name"]=chart_attributes[chart_type["type"]]["type_name"];
+    chart_type["type_name_value"]=chart_attributes[chart_type["type"]]["type_value"]
 
-   data={"type":chart_type["type"],
+    data={"type":chart_type["type"],
          "type_name":chart_attributes[chart_type["type"]]["type_name"],
          "type_name_value":chart_attributes[chart_type["type"]]["type_value"],
          "title":chart_type["title"],
@@ -2776,6 +2892,7 @@ acChartCreator.prototype.set_chart_data = function(chart_type)
                 "height": 400, "width": 600, "showlegend": false,
                 "grid": {rows: 1, columns: n_}
                }
+   Plotly.newPlot(this.chart, data_, layout );
  } else if (chart_type["type"]=='areas') {
    for(y in data["series"]){
     var trace = {}
@@ -2786,6 +2903,7 @@ acChartCreator.prototype.set_chart_data = function(chart_type)
     trace["mode"]='none';
     data_.push(trace);
    };
+   Plotly.newPlot(this.chart, data_, layout );
  } else if(chart_type["type"]=='scatter') {
     var trace = {}
     trace["x"]=chart_type["x"];
@@ -2800,36 +2918,47 @@ acChartCreator.prototype.set_chart_data = function(chart_type)
    var layout = {title: data["title"],
                  xaxis: {title: chart_type["x-axis-title"], range: chart_type["x-axis-range"]},
                  yaxis: {title: chart_type["y-axis-title"], range: chart_type["y-axis-range"]}}
- } else {
-  for(y in data["series"]){
+   Plotly.newPlot(this.chart, data_, layout );
+ } else if(chart_type["type"]=='histogram') {
     var trace = {}
-    trace["x"]=data["x"]["data"];
-    trace["y"]=data["series"][y]["data"];
-    trace[data["type_name"]]=data["type_name_value"];
-    trace["marker"]={"color":"rgb("+data["series"][y]["color"][0]+", "+data["series"][y]["color"][1]+", "+data["series"][y]["color"][2]+")"}
-    trace["marker"][data["marker_attribute"]]=data["marker_attribute_value"]
-    trace["name"]=data["series"][y]["name"]
-    trace["line"]={color: 'rgb('+data["series"][y]["color"][0]+', '+data["series"][y]["color"][1]+', '+data["series"][y]["color"][2]+')', width: 2}
-    data_.push(trace)
-  }
-  var layout = {title: data["title"],
+    trace["x"]=chart_type["x"]["data"];
+    trace[chart_type["type_name"]]=chart_type["type_name_value"];
+    trace["xbins"]={end:chart_type["xbins"]["end"],size:chart_type["xbins"]["size"],start:chart_type["xbins"]["start"]}
+
+    data_.push(trace);
+
+    var layout = {title: data["title"],
+                  xaxis: {title: chart_type["x-axis-title"]},
+                  yaxis: {title: chart_type+["y-axis-title"]}}
+
+
+   Plotly.newPlot(this.chart, data_, layout);
+ } else {
+   for(y in data["series"]){
+     var trace = {}
+     trace["x"]=data["x"]["data"];
+     trace["y"]=data["series"][y]["data"];
+     trace[data["type_name"]]=data["type_name_value"];
+     trace["marker"]={"color":"rgb("+data["series"][y]["color"][0]+", "+data["series"][y]["color"][1]+", "+data["series"][y]["color"][2]+")"}
+     trace["marker"][data["marker_attribute"]]=data["marker_attribute_value"]
+     trace["name"]=data["series"][y]["name"]
+     trace["line"]={color: 'rgb('+data["series"][y]["color"][0]+', '+data["series"][y]["color"][1]+', '+data["series"][y]["color"][2]+')', width: 2}
+     data_.push(trace)
+   }
+    var layout = {title: data["title"],
                 xaxis: {title: chart_type["x-axis-title"],
-
 //                type: "date",
-
                  range: chart_type["x-axis-range"], autorange: true
-
 //                 range: ['2022-10-07 09:30:00-04:00', '2022-10-12 16:00:00-04:00'], autorange: true
                 },
                 yaxis: {title: chart_type["y-axis-title"], range: chart_type["y-axis-range"], autorange: true,
                        showgrid: true, zeroline: true, showline: true, showticklabels: true}
                }
+   Plotly.newPlot(this.chart, data_, layout );
  }
 
- //alert(JSON.stringify(data_));
- //alert(JSON.stringify(layout));
 
- Plotly.newPlot(this.chart, data_, layout );
+
 }
 
 acChartCreator.prototype.get_data = function()
@@ -3705,8 +3834,9 @@ Tab.prototype.get_pop_win_obj = function(dic)
  s='new TabPopWin'+this.tab_name+s_name+'(tab__, dic)';
  //alert("90677\n" + s);
  try{
- var result_obj=  eval(s)
+ var result_obj= eval(s)
  } catch (er) {alert("er4550: "+er)}
+ this.parent.pop_wins[link_number]=result_obj
  return result_obj;
 }
 
@@ -3750,6 +3880,13 @@ function acWin(my_name_="none", win_name="none", win_title="none", right= "0%", 
   this.win_frame_title.appendChild(this.win_frame_title_span)
   this.win_frame_msg_span = document.createElement("span");
   this.win_frame_title.appendChild(this.win_frame_msg_span);
+
+  this.win_frame_space_span = document.createElement("span");
+  this.win_frame_space_span.innerHTML = "&nbsp;&nbsp;";
+  this.win_frame_title.appendChild(this.win_frame_space_span);
+
+  this.win_frame_right_span = document.createElement("span");
+  this.win_frame_title.appendChild(this.win_frame_right_span);
   this.win_frame.appendChild(this.win_frame_title)
   // NAV PANEL --
   if(this.is_nav_panel==true)
@@ -3845,7 +3982,8 @@ acWin.prototype.close_win = function(){this.set_acWinStat('none');}
 acWin.prototype.temp_close_win = function(){this.win_frame.style.display = "none";}
 acWin.prototype.resume_win = function(){this.win_frame.style.display = this.win_frame_style_display;}
 acWin.prototype.set_title = function(title){this.win_frame_title_span.innerHTML=title;this.set_acWinStat('block');}
-acWin.prototype.set_msg = function(msg){this.win_frame_msg_span.innerHTML=msg;this.set_acWinStat('block');}
+acWin.prototype.set_msg = function(msg){this.win_frame_msg_span.innerHTML=msg;} //this.set_acWinStat('block');
+acWin.prototype.set_right_msg = function(msg){this.win_frame_right_span.innerHTML=msg;} //this.set_acWinStat('block');
 acWin.prototype.get_msg = function(){return this.win_frame_msg_span.innerHTML;}
 acWin.prototype.set_info = function(content){this.win_content.innerHTML=content;}
 acWin.prototype.add_info = function(content){this.win_content.innerHTML+=content;}
@@ -3958,6 +4096,18 @@ acWin.prototype.set_acWinStatEventListeners = function(ss_obj)
     } catch (err) {alert("error 99");console.log("Error set_acWinStatEventListeners :", "Check 0350");}
 
   // console.log("set_acWinStatEventListeners :", "Check 0400");
+}
+
+acWin.prototype.get_main_button_obj = function(s_name)
+{
+  try{ return this.main_menus[s_name] }catch(er){alert(er)}
+  return null;
+}
+
+acWin.prototype.get_sub_menus_button_obj = function(s_name)
+{
+  try{ return this.sub_menus[s_name] }catch(er){alert(er)}
+  return null;
 }
 
 acWin.prototype.get_main_button_win_obj = function(s_name, width, s_title, button, obj_type)

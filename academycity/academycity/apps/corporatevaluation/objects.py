@@ -498,6 +498,9 @@ class TDAmeriTrade(BaseTDAmeriTrade):
 
     def get_option_statistics_for_ticker(self, ticker):
         dic = {'status': 'ko'}
+        print("-1"*50)
+        print("atm: 90551: "+ticker)
+        print("-2"*50)
         # ticker = "^SPX" ticker = "^GSPC" print("="*100)
         n_ = 6
         if ticker in ["SPY", "QQQ", "IWM"]:
@@ -513,13 +516,24 @@ class TDAmeriTrade(BaseTDAmeriTrade):
         try:
             start_date_ = datetime.datetime.now().date()
             end_date_ = (datetime.datetime.now() + datetime.timedelta(days=n_)).date()
+            # print("-3"*50)
             # print(start_date_, end_date_)
+            # print("-4"*50)
             options_ = self.client.get_option_chain(ticker, contract_type=self.client.Options.ContractType.ALL,
                                                     from_date=start_date_, to_date=end_date_)
         except Exception as ex:
             log_debug("Error 2345 in get_option_chain api options pull for : " + ticker + " = " + str(ex))
             return dic
         return {'status': 'ok', 'option_data_ticker': options_.json()}
+
+    # new functions for Django-CMF --
+    def get_option_statistics_for_ticker_cmf(self, dic):
+        # print("-"*50)
+        # print(dic)
+        ticker = dic["ticker"]
+        return self.get_option_statistics_for_ticker(ticker)
+
+
 
     # need to check to delete
     def get_prices_minutes(self, dic):
@@ -1540,7 +1554,7 @@ class StockPrices(object):
                 # print("="*50)
                 # print("="*50)
                 if l_t >= c.company_letter >= l_f:
-                    # print(w.symbol, c.ticker, c.company_letter)
+                    print(w.symbol, c.ticker, c.company_letter)
                         # print("="*50)
                     # print("="*50)
                     # print("="*50)
@@ -1608,7 +1622,7 @@ class StockPrices(object):
         return dic
 
     def update_prices_days(self, dic):
-        print("9015 input dic: \n", dic, "\n"+"-"*30)
+        # print("9015 input dic: \n", dic, "\n"+"-"*30)
         l_f = str(dic["letter_from"])
         l_t = str(dic["letter_to"])
         y_ = int(dic["numer_of_years"]) # I use w for years
@@ -1665,6 +1679,60 @@ class StockPrices(object):
         dic = {'data': {"status": "ok"}}
         # print("9099 output dic: \n", dic, "\n"+"="*30)
         return dic
+
+    def create_return_statistics_minutes(self, dic):
+        ticker = dic["ticker"]
+
+        def get_y(x):
+            y = round(x/10000)
+            yd = x-y
+            return y
+
+        def get_yd(x):
+            y = round(x/10000)*10000
+            yd = x-y
+            return yd
+
+        sp = StockPricesMinutes.objects.filter(company__ticker=ticker).all().values('idx', 'close')
+        # print(sp)
+        df = pd.DataFrame(list(sp))
+        # print(df)
+        df["y"] = df["idx"].apply(get_y)
+        df["yd"] = df["idx"].apply(get_yd)
+        df = df[['y', 'yd', 'close']]
+        # print('-'*10)
+        # print('-'*10)
+        # print(df)
+        # print('-'*10)
+        # print('-'*10)
+        table = pd.pivot_table(df, values='close', index=['yd'], columns=['y'], aggfunc=np.sum)
+        table.fillna(method='bfill', inplace=True)
+        # print('-'*10)
+        # print('-'*10)
+        # print('table')
+        # print(table)
+        # print('-'*10)
+        # print('-'*10)
+        table1 = ((table.div(table.iloc[0])-1).astype(float)).round(4)
+        # print('table1')
+        # print(table1)
+        # print('-'*10)
+        table1 = table1.reset_index().to_dict(orient='list')
+        # print('table1')
+        # print(table1)
+        # print('-'*10)
+        table2 = ((1/table.div(table.iloc[-1])-1).astype(float)).round(4)
+        # print('table2')
+        # print(table2)
+        # print('-'*10)
+        table2 = table2.reset_index().to_dict(orient='list')
+        # print('table2')
+        # print(type(table2))
+        # print(table2)
+        result = {"table1": table1, "table2": table2}
+        # print(result)
+        # print("9099 output dic: \n", dic, "\n"+"="*30)
+        return result
 
     def get_prices_to_excel(self, dic):
         # print("9010 input dic: \n", dic, "\n" + "-" * 30)
@@ -1725,7 +1793,6 @@ class StockPrices(object):
         print(obj.info)
         print("-"*10)
         dic = {'data': {"status": "ok"}}
-
 
 
 class AcademyCityXBRL(object):

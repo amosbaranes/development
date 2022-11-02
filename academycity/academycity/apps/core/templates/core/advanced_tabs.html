@@ -11,7 +11,7 @@
     <link rel='stylesheet' id='ac-advanced-tabs'  href="{% static 'css/academycity/core/ac_advanced_tabs_v5.css' %}" media='all' />
 </head>
 <body id="body_">
-<script src="{% static 'js/academycity/core/advanced_tabs_v67.js' %}"></script>
+<script src="{% static 'js/academycity/core/advanced_tabs_v68.js' %}"></script>
 <script src="{% static 'vendor/jquery/jquery.min.js' %}"></script>
 <script src="{% static 'js/npm/cookie/js.cookie.min.js' %}"></script>
 <script src="{% static 'vendor/fontawesome-free-5.11.2-web/a076d05399.js' %}"></script>
@@ -43,7 +43,7 @@ $(document).ready(function(){
  var {{atm_name}}=new AdvancedTabsManager(my_name="{{atm_name}}", my_app="{{app}}", body_=document.getElementById("body_"),
  activate_function_link='{% url "core:activate_function" %}', activate_obj_function_link='{{app_activate_function_link}}',
  update_field_link='{% url "core:update_field_model_by_id" %}',
- get_data_link='{% url "core:get_data_link" %}',
+ get_data_link='{% url "core:get_data_link" %}',get_data_json_link='{% url "core:get_data_json_link" %}',
  company_obj_id={{company_obj_id}}, is_show_btns={%if request.user|has_group:"admins"%}true{% else %}false{%endif%},
  user_id={{ user.id }})
  var atm = {{atm_name}}

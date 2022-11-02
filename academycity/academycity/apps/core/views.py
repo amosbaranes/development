@@ -486,3 +486,23 @@ def get_data_link(request):
     # print(dic)
     return JsonResponse(dic)
 
+
+def get_data_json_link(request):
+    dic_ = request.POST["dic"]
+    dic_ = eval(dic_)
+
+    # print("-2"*10)
+    # print("-2"*10)
+    # print(dic_)
+    # print("-2"*10)
+    # print("-2"*10)
+
+    app_ = dic_["app"]
+    model_ = dic_["model_name"]
+    record_id_ = dic_["record_id"]
+    model = apps.get_model(app_label=app_, model_name=model_)
+    row = model.objects.get(id=record_id_)
+    # print(row.friends)
+    dic = {'status': 'ok', "dic": row.friends}
+    return JsonResponse(dic)
+

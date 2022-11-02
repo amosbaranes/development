@@ -1,0 +1,41 @@
+{% extends "base_education0.html" %}
+{% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
+
+    {% block add_css_base %}
+        <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+        <link href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
+        <link href="{% static 'css/django_cms_original.css' %}" rel="stylesheet">
+        <link href="{% static 'css/messages.css' %}" rel="stylesheet">
+              <!-- Font Awesome -->
+        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.2/css/all.css">
+        <!-- Bootstrap core CSS
+        <link href="css/bootstrap.min.css" rel="stylesheet">
+        -->
+        <!-- Material Design Bootstrap -->
+        <link href="css/mdb.min.css" rel="stylesheet">
+        <!-- Your custom styles (optional) -->
+        <link href="css/style_mdb.css" rel="stylesheet">
+    {% endblock add_css_base %}
+
+    {% render_block "css" %}
+    {{ ALDRYN_SNAKE.render_head }}
+
+
+<!-- body -->
+
+
+{% block base_js %}
+  <script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+  <script src="{% static 'vendor/bootstrap/js/bootstrap.min.js' %}"></script>
+  <!-- MDB core JavaScript -->
+  <script type="text/javascript" src="{% static 'js/popper.min.js' %}"></script>
+  <script type="text/javascript" src="{% static 'js/js/mdb.min.js' %}"></script>
+{% endblock base_js %}
+
+
+<!--
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+-->
+
+
+

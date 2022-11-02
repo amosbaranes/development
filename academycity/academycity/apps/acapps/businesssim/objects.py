@@ -14,11 +14,16 @@ class Friends(object):
         # print("-"*10)
         # print(dic["data"])
         # print("-"*10)
-        row, is_created = friends.objects.get_or_create(name=dic["name"])
-        # print(is_created)
-        row.friends = dic["data"]
-        row.save()
-
+        try:
+            if len(dic["data"]) == 0:
+                friends.objects.get(name=dic["name"]).delete()
+            else:
+                row, is_created = friends.objects.get_or_create(name=dic["name"])
+                # print(is_created)
+                row.friends = dic["data"]
+                row.save()
+        except Exception as ex:
+            print(str(ex))
         # save to table
         # results = {"status": "ko"}
         # print("-"*50)
@@ -29,7 +34,6 @@ class Friends(object):
 
     def get_friends_list(self, dic):
         # print("9055 \n")
-
         # print("-"*50)
         # print("-"*50)
         # print(dic["name"])
@@ -41,7 +45,6 @@ class Friends(object):
         except Exception as ex:
             data = []
             # print("not exist")
-
         # get data from table in
         # results = {"status": "ko"} result dictionary
         # print("-"*50)
@@ -49,3 +52,9 @@ class Friends(object):
         # save to database
         results = {"status": "ok", "data": data}
         return results
+
+    def test(self, dic):
+        print(dic)
+        # if i wnt to do something this is the place
+        data = {"a": "b"}
+        return {"status": "ok", "data": data}

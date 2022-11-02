@@ -27,12 +27,20 @@ def update_forecast():
                 ssql += "select ticker,t,o,h,l,c,v from corporatevaluation_XBRLRealEquityPrices"
                 count = SQL().exc_sql(ssql, data)
                 XBRLRealEquityPrices.truncate()
-            elif h == 2:
+            elif h == 4:
                 sp = StockPrices()
-                dic = {"letter_from": "A", "letter_to": "Z", "numer_of_weeks": 1, "numer_of_days": 1}
-                sp.update_prices_minutes(dic)
-                dic = {"letter_from": "A", "letter_to": "Z", "numer_of_years": 1, "numer_of_days": 3}
-                sp.update_prices_days(dic)
+                # print("Start Days")
+                try:
+                    dic = {"letter_from": "A", "letter_to": "Z", "numer_of_years": 1, "numer_of_days": 3}
+                    sp.update_prices_days(dic)
+                except Exception as ex:
+                    print("m - " + str(ex))
+                # print("Start Minutes")
+                try:
+                    dic = {"letter_from": "A", "letter_to": "Z", "numer_of_weeks": 1, "numer_of_days": 1}
+                    sp.update_prices_minutes(dic)
+                except Exception as ex:
+                    print("m - "+str(ex))
                 del sp
     except Exception as ex:
         pass

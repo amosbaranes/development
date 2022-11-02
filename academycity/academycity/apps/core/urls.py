@@ -1,7 +1,7 @@
 
 from django.urls import path
 from .views import (home, app, update_field_model, post_ajax_create_action, activate_function, update_field_model_by_id,
-                    get_data_link,
+                    get_data_link, get_data_json_link,
                     activate_obj_function
                     # , get_adjective_link
                     )
@@ -18,6 +18,7 @@ urlpatterns = [
     path('activate_function', activate_function, name='activate_function'),
     path('update_field_model_by_id', update_field_model_by_id, name='update_field_model_by_id'),
     path('get_data_link', get_data_link, name='get_data_link'),
+    path('get_data_json_link', get_data_json_link, name='get_data_json_link'),
     # path('get_adjective_link', get_adjective_link, name='get_adjective_link'),
 ]
 

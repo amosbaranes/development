@@ -24,6 +24,7 @@ class WebCompanies(models.Model):
                                       'businesssimweb',
                                       'acmathweb',
                                       'dlweb',
+                                      'mlweb',
                                       'corporatevaluationweb',
                                       'macroeconomicweb',
                                       'fabhoseafricaweb',
