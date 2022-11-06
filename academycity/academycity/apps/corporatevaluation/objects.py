@@ -1794,6 +1794,64 @@ class StockPrices(object):
         print("-"*10)
         dic = {'data': {"status": "ok"}}
 
+    def get_pca(self, dic):
+        ticker = dic["ticker"]
+
+        def get_y(x):
+            y = round(x/10000)
+            yd = x-y
+            return y
+
+        def get_yd(x):
+            y = round(x/10000)*10000
+            yd = x-y
+            return yd
+
+        sp = StockPricesMinutes.objects.filter(company__ticker=ticker).all().values('idx', 'close')
+        # print(sp)
+        df = pd.DataFrame(list(sp))
+        # print(df)
+        df["y"] = df["idx"].apply(get_y)
+        df["yd"] = df["idx"].apply(get_yd)
+        df = df[['y', 'yd', 'close']]
+        # print('-'*10)
+        # print('-'*10)
+        # print(df)
+        # print('-'*10)
+        # print('-'*10)
+        table = pd.pivot_table(df, values='close', index=['yd'], columns=['y'], aggfunc=np.sum)
+        table.fillna(method='bfill', inplace=True)
+        # print('-'*10)
+        # print('-'*10)
+        # print('table')
+        # print(table)
+        # print('-'*10)
+        # print('-'*10)
+        table1 = ((table.div(table.iloc[0])-1).astype(float)).round(4)
+        table1 = table1.T
+        # print('table1')
+        # print(table1)
+        # print('-'*10)
+        # table1 = table1.reset_index().to_dict(orient='list')
+        print('table1')
+        print(table1)
+        print('-'*10)
+        table2 = ((1/table.div(table.iloc[-1])-1).astype(float)).round(4)
+        table2 = table2.T
+        # print('table2')
+        # print(table2)
+        # print('-'*10)
+        # table2 = table2.reset_index().to_dict(orient='list')
+        print('table2')
+        # print(type(table2))
+        print(table2)
+        result = {"table1": table1, "table2": table2}
+        # print(result)
+        # print("9099 output dic: \n", dic, "\n"+"="*30)
+
+        dic = {'data': {"status": "ok"}}
+
+
 
 class AcademyCityXBRL(object):
     def __init__(self):

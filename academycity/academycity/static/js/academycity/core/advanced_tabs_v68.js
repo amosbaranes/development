@@ -1731,22 +1731,33 @@ acSearchTableCreator.prototype.create_obj = function()
 
   this.search_input_.setAttribute("style", "position:absolute;left:"+nx_search+"px;top:"+ny_search+"px;width:"+n_search_width+"px");
   this.search_input_.addEventListener("keyup", function(event){
+
      var input=event.target;
+     var mco=input.my_creator_obj;
      var filter_field = input.getAttribute("filter_field");
      var filter_value = input.value;
+     //alert(filter_field +" : " + filter_value)
      var filter_field_foreign_table = input.getAttribute("filter_field_foreign_table");
      var last_filter_field_ = input.getAttribute("last_filter_field")
      var last_filter_value_ = input.getAttribute("last_filter_value")
-     input.my_creator_obj.filter_field=filter_field;
-     input.my_creator_obj.filter_field_foreign_table=filter_field_foreign_table;
-     input.my_creator_obj.filter_value=input.value;
-     if((last_filter_value_==null) || (last_filter_field_==null) || (last_filter_field_=="") || (last_filter_field_!=filter_field) || (filter_value!=last_filter_value_))
-     {
-       //alert("904 filter_field= " + filter_field + " input.value= " + input.value + " input.outerHTML= "+input.outerHTML)
-       input.my_creator_obj.get_data();
-       this.setAttribute("last_filter_field", filter_field)
-       this.setAttribute("last_filter_value", filter_value)
-     }
+     if(mco.is_json_data==true){
+           var data_ = [];
+           for(var i in mco.tbody.data)
+           {if(mco.tbody.data[i][filter_field].toLowerCase().includes(filter_value.toLowerCase())){data_.push(mco.tbody.data[i])}}
+           mco.create_tbody(data_, [mco.tbody, mco.parent.data], is_new_data=false)
+
+     }else{
+         mco.filter_field=filter_field;
+         mco.filter_field_foreign_table=filter_field_foreign_table;
+         mco.filter_value=input.value;
+         if((last_filter_value_==null) || (last_filter_field_==null) || (last_filter_field_=="") || (last_filter_field_!=filter_field) || (filter_value!=last_filter_value_))
+         {
+           //alert("904 filter_field= " + filter_field + " input.value= " + input.value + " input.outerHTML= "+input.outerHTML)
+           mco.get_data();
+           this.setAttribute("last_filter_field", filter_field)
+           this.setAttribute("last_filter_value", filter_value)
+         }
+   }
    })
   container.appendChild(this.search_input_);
 
@@ -1770,11 +1781,11 @@ acSearchTableCreator.prototype.create_obj = function()
 
        var filter_field=e.getAttribute("filter_field")
        var filter_field_foreign_table=e.getAttribute("filter_field_foreign_table")
-       e.parentNode.my_creator_obj.search_input_.setAttribute("filter_field", filter_field);
-       e.parentNode.my_creator_obj.search_input_.setAttribute("filter_field_foreign_table", filter_field_foreign_table);
-       e.parentNode.my_creator_obj.search_input_.setAttribute("placeholder", "Search "+e.innerHTML+"..");
-       e.parentNode.my_creator_obj.filter_field=filter_field;
-       e.parentNode.my_creator_obj.filter_field_foreign_table=filter_field_foreign_table;
+       mco.search_input_.setAttribute("filter_field", filter_field);
+       mco.search_input_.setAttribute("filter_field_foreign_table", filter_field_foreign_table);
+       mco.search_input_.setAttribute("placeholder", "Search "+e.innerHTML+"..");
+       mco.filter_field=filter_field;
+       mco.filter_field_foreign_table=filter_field_foreign_table;
        var field = mco.order_by["field"]
        if(field==filter_field)
        {if(mco.order_by["direction"]=="ascending"){mco.order_by["direction"]="descending"}else{mco.order_by["direction"]="ascending"}}
@@ -1971,9 +1982,11 @@ acSearchTableCreator.prototype.get_data_json = function(data_table_name=null,rec
   this.parent.atm.get_data_json(call_back_fun=this.create_tbody, dic__, [this.tbody, dic])
 }
 
-acSearchTableCreator.prototype.create_tbody = function(data, ll)
+acSearchTableCreator.prototype.create_tbody = function(data, ll, is_new_data=true)
 {
-    var tbody=ll[0]; tbody.data=data; var dic=ll[1]
+    var tbody=ll[0];
+    if(is_new_data){tbody.data=data;}
+    var dic=ll[1]
     var get_width_align = function(field_name,dic)
     {
       var width = 50; var align = "left";
