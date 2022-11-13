@@ -1,12 +1,16 @@
 // -- AdvancedTabsManager --
 function AdvancedTabsManager(my_name, my_app, body_,
-activate_function_link, activate_obj_function_link,update_field_link,get_data_link,get_data_json_link,
+activate_function_link, update_file_link, activate_obj_function_link,upload_file_link,get_data_link,get_data_json_link,
 company_obj_id, is_show_btns=true, user_id=0)
 {
  //alert(activate_obj_function_link)
+ this.update_file_link_ = update_file_link
+ this.upload_file_link_ = upload_file_link
  this.company_obj_id=company_obj_id;
  this.user_id=user_id;
- this.my_name=my_name; this.my_app=my_app; this.elm_body=body_;
+ this.my_name=my_name;
+ this.my_app=my_app;
+ this.elm_body=body_;
  this.activate_function_link_=activate_function_link;
  this.get_data_json_link_=get_data_json_link;
  this.activate_obj_function_link_=activate_obj_function_link;
@@ -148,6 +152,11 @@ company_obj_id, is_show_btns=true, user_id=0)
                                         "Candle":{"title":"Candle", "width":7,
                                                  "setting": {"border_width":[],"border_color":[],
                                                              "scale_type":["linear", "logarithmic"],"height":[],"width":[]},
+                                                 "attributes":{},
+                                                 "functions":[]},
+                                        "UploadFile":{"title":"UploadFile", "width":10,
+                                                 "setting": {"height":[],"width":[],"obj_name":[],"function_name":[],
+                                                 "topic_id":[]},
                                                  "attributes":{},
                                                  "functions":[]},
                                         "Heatmap":{"title":"Heatmap", "width":8,
@@ -588,12 +597,12 @@ AdvancedTabsManager.prototype.activate_obj_function = function(call_back_fun, di
           });
 }
 
-AdvancedTabsManager.prototype.save_data = function(html_obj, dic_)
+AdvancedTabsManager.prototype.save_data = function(html_obj, dic_, is_json_data=false)
 {
   //alert("AdvancedTabsManager.prototype.save_data")
   dic_["app"]=this.my_app;
   dic_["company_obj_id"]=this.company_obj_id;
-  //alert(JSON.stringify(dic_));
+  //alert("9011:\n"+JSON.stringify(dic_));
   //alert(html_obj.outerHTML)
   //alert(this.update_field_link_)
 
@@ -603,7 +612,8 @@ AdvancedTabsManager.prototype.save_data = function(html_obj, dic_)
             if(dic["status"]!="ok")
             {alert("Data was not saved.")}
             else{
-              html_obj_.setAttribute("record_id", dic["record_id"])
+              var record_level="record_id"; if(is_json_data==true){record_level="parent_id"}
+              html_obj_.setAttribute(record_level, dic["record_id"])
             }
           }.bind(html_obj_=html_obj));
 }
@@ -623,7 +633,7 @@ AdvancedTabsManager.prototype.get_data = function(call_back_fun, dic_, tbody_)
           {dic : JSON.stringify(dic_)},
           function(data){
           try{
-//           alert("9001"+JSON.stringify(data));
+           //alert("9001"+JSON.stringify(data));
            if(data["status"]!="ok"){return}
            call_back_fun(data["dic"], tbody_)
            tbody_.data=data["dic"];
@@ -632,7 +642,7 @@ AdvancedTabsManager.prototype.get_data = function(call_back_fun, dic_, tbody_)
           });
 }
 
-AdvancedTabsManager.prototype.get_data_json = function(call_back_fun, dic_, tbody_)
+AdvancedTabsManager.prototype.get_data_json = function(call_back_fun, dic_, return_obj)
 {
   //alert("100123  "+JSON.stringify(dic_));
   dic_["app"]=this.my_app;
@@ -647,8 +657,8 @@ AdvancedTabsManager.prototype.get_data_json = function(call_back_fun, dic_, tbod
           try{
            //alert("9001"+JSON.stringify(data));
            if(data["status"]!="ok"){return}
-           call_back_fun(data["dic"], tbody_)
-           tbody_.data=data["dic"];
+           call_back_fun(data["dic"], return_obj)
+           return_obj.data=data["dic"];
            //alert("9005"+JSON.stringify(data));
            } catch(er){alert(er)}
           });
@@ -1568,20 +1578,31 @@ var container_on_change=function (event){
   //alert("90011")
   } else
   {
-   //alert("90012")
+   //  alert("90012")
+   var model_=container.my_creator_obj.link_dic["properties"]["table"];
    var record_id_=container.getAttribute("record_id");
    var parent_id_=container.getAttribute("parent_id");
-   var model_=container.my_creator_obj.link_dic["properties"]["table"];
-   try{var parent_model_=container.my_creator_obj.link_dic["properties"]["parent_table"]} catch(er){};
-   if(parent_model_==null){var parent_model_="";}
-   //alert("9004 else: record_id_ "+record_id_ +" parent_id_= "+parent_id_+" model_= "+model_+" parent_model_= "+parent_model_)
-   var dic_data={"model":model_, "parent_model":parent_model_, "pkey":record_id_, "parent_pkey":parent_id_,
-                "fields": {}, "type":type_, "foreign_keys":container.foreign_keys}
-       dic_data["fields"][field__u]=v__u;
-   //alert('9080 dic_data= '+ JSON.stringify(dic_data));
-   container.tab.parent.save_data(html_obj_to_update, dic_data);
-   //alert("90 "+e.value)
-   try{container.my_creator_obj.refresh_my_tables(f=field__u, v=v__u);}catch(er){}
+   if(this.my_creator_obj.is_json_data){
+     // alert(model_+"\nparent_id:"+parent_id_+"\nrecord_id:"+record_id_+"\nfield:"+field__u+"\nfield value:"+v__u+"\n"+event.target.outerHTML)
+     var json_manager_obj_number = container.getAttribute("json_manager_obj_number");
+     // alert(json_manager_obj_number)
+     var jmc = get_creator(json_manager_obj_number)
+     var dic_data={"model": model_,"parent_id":parent_id_,"record_id":record_id_,"field":field__u,"field_value":v__u,
+                  "container_id":e_container_id_}
+     // alert('9083 dic_data= '+ JSON.stringify(dic_data));
+     jmc.update_json_record(dic_data);
+   } else {
+       try{var parent_model_=container.my_creator_obj.link_dic["properties"]["parent_table"]} catch(er){};
+       if(parent_model_==null){var parent_model_="";}
+       //alert("9004 else: record_id_ "+record_id_ +" parent_id_= "+parent_id_+" model_= "+model_+" parent_model_= "+parent_model_)
+       var dic_data={"model":model_, "parent_model":parent_model_, "pkey":record_id_, "parent_pkey":parent_id_,
+                    "fields": {}, "type":type_, "foreign_keys":container.foreign_keys}
+           dic_data["fields"][field__u]=v__u;
+       //alert('9080 dic_data= '+ JSON.stringify(dic_data));
+       container.tab.parent.save_data(html_obj_to_update, dic_data);
+       //alert("90 "+e.value)
+       try{container.my_creator_obj.refresh_my_tables(f=field__u, v=v__u);}catch(er){}
+    }
   }
   // event.stopPropagation();
  }
@@ -1670,8 +1691,226 @@ var container_on_click=function(event){
 
 acContainerCreator.prototype.process_content = process_content;
 
+
+function acUploadFileCreator(parent){this.parent=parent;}
+
+acUploadFileCreator.prototype.create_obj = function()
+{
+  var dic=this.parent.data;
+  //alert("9035 "+JSON.stringify(dic));
+  var obj_number = dic["properties"]["obj_number"]
+  var title = dic["properties"]["title"]
+  var container = document.getElementById("content_"+dic["container_id"]);
+  //--
+  this.div_=document.createElement("div");
+  this.div_.setAttribute("obj_type", dic["obj_type"]);
+  this.div_.setAttribute("id", obj_number);
+  this.div_.setAttribute("container_id", dic["container_id"]);
+  this.div_.setAttribute("type", dic["element_name"]);
+  if("width" in dic["properties"]){var width_=dic["properties"]["width"]} else {var width_="400"}
+  if("height" in dic["properties"]){var height_=dic["properties"]["height"]} else {var height_="400"}
+  var style_="position:absolute;left:"+dic["properties"]["x"]+"px;top:"+dic["properties"]["y"]+"px;"
+  style_+="width:"+width_+"px;height:"+height_;
+  this.div_.setAttribute("style", style_);
+  container.appendChild(this.div_);
+  this.input_file_=document.createElement("input");
+  this.input_file_.setAttribute("id", "input_file_"+obj_number);
+  this.input_file_.setAttribute("type", "file");
+  this.input_file_.setAttribute("class", "filestyle");
+  this.input_file_.setAttribute("data-icon", "true");
+  this.input_file_.setAttribute("data-buttonText", "Brows");
+  this.input_file_.setAttribute("name", "driver_file");
+  this.div_.appendChild(this.input_file_);
+  var br=document.createElement("br");
+  this.div_.appendChild(br);
+  var span1=document.createElement("span");
+  span1.setAttribute("id", "driver-uploader-success-alert");
+  span1.setAttribute("class", "text-success");
+  span1.setAttribute("style", "display:none");
+  span1.innerHTML="Success!"
+  this.div_.appendChild(span1);
+  var span2=document.createElement("span");
+  span2.setAttribute("id", "driver-uploader-failure-alert");
+  span2.setAttribute("class", "text-danger");
+  span2.setAttribute("style", "display:none");
+  span2.innerHTML="text-danger"
+  this.div_.appendChild(span2);
+  this.input_file_.atm=this.parent.atm
+  this.input_file_.dic=dic
+  this.input_file_.onchange = function(){
+            var file = this.files[0];
+            filename = '';
+            if('name' in file)
+              filename= file.name;
+            else
+              filename = file.fileName;
+
+            var xhr = new XMLHttpRequest();
+            (xhr.upload || xhr).addEventListener('progress', function(e) {
+                var done = e.position || e.loaded
+                var total = e.totalSize || e.total;
+                console.log('xhr progress: ' + Math.round(done/total*100) + '%');
+            });
+            xhr.addEventListener('load', function(e) {
+                data = JSON.parse(this.responseText);
+
+alert("9035 "+JSON.stringify(data))
+alert(this.responseText)
+
+                if(this.status != 200){
+                  $('#driver-uploader-failure-alert').show();
+                  return;
+                }
+                $('#driver_source').val('Flat file on idisas');
+                $('#driver_name').val(data['file_remote_path']).blur();
+                $('#driver-uploader-success-alert').show();
+            });
+
+            xhr.open('post', this.atm.upload_file_link_, true);
+            xhr.setRequestHeader("X-CSRFToken", csrftoken);
+            var fd = new FormData();
+            fd.append("filename", filename);
+            fd.append("drive_file", file);
+            fd.append("app", this.atm.my_app);
+            fd.append("obj_name", this.dic["properties"]["obj_name"]);
+            fd.append("function_name", this.dic["properties"]["function_name"]);
+            fd.append("topic_id", this.dic["properties"]["topic_id"]);
+            xhr.send(fd);
+  }
+}
+
+
+acUploadFileCreator.prototype.create_obj_bu = function()
+{
+  function sendData(this_obj) {
+
+    // If there is a selected file, wait it is read
+    // If there is not, delay the execution of the function
+
+    if (!this_obj.file.binary && this_obj.file.dom.files.length > 0) {
+
+    setTimeout(sendData, 10, this_obj);return;}
+
+    // To construct our multipart form data request,
+    // We need an XMLHttpRequest instance
+    const XHR = new XMLHttpRequest();
+    //alert(csrftoken)
+
+    // We need a separator to define each part of the request
+    const boundary = "blob";
+    // Store our body request in a string.
+    let data = "";
+    // So, if the user has selected a file
+
+    if (this_obj.file.dom.files[0]) {
+      // Start a new part in our body's request
+      // Describe it as form data
+      // Define the name of the form data
+      // Provide the real name of the file
+      data += '--${boundary}\r\ncontent-disposition: form-data; name="${this_obj.file.dom.name}"; filename="${this_obj.file.dom.files[0].name}"\r\n;'
+      // And the MIME type of the file
+      // There's a blank line between the metadata and the data
+      data += 'Content-Type: ${this_obj.file.dom.files[0].type}\r\n\r\n';
+      // Append the binary data to our body's request
+      data += this_obj.file.binary + '\r\n';
+    }
+
+      // Text data is simpler
+      // Start a new part in our body's request
+      // Say it's form data, and name it
+      // There's a blank line between the metadata and the data
+      data += '--${boundary}\r\ncontent-disposition: form-data; name="${this_obj.text_.name}"\r\n\r\n';
+      // Append the text data to our body's request
+      data += this_obj.text_.value + "\r\n";
+      // Once we are done, "close" the body's request
+      data += '--${boundary}--';
+      // Define what happens on successful data submission
+    // Define what happens on successful data submission
+    XHR.addEventListener('load', (event) => { alert('Yeah! Data sent and response loaded.');});
+    // Define what happens in case of error
+    XHR.addEventListener('error', (event) => { alert('Oops! Something went wrong.');});
+    // Set up our request
+    XHR.open('POST', this_obj.parent.atm.upload_file_link_, true); // 'https://example.com/cors.php');
+    // Add the required HTTP header to handle a multipart form data POST request
+    XHR.setRequestHeader('Content-Type', `multipart/form-data; boundary=${boundary}`);
+    XHR.setRequestHeader("X-CSRFToken", csrftoken);
+    XHR.onload = function (evt)
+    {
+     alert("returned from server" + evt)
+    }
+    XHR.send(data);// Send the data;
+  }
+
+  var dic=this.parent.data;
+  //alert("9035 "+JSON.stringify(dic));
+  var obj_number = dic["properties"]["obj_number"]
+  var title = dic["properties"]["title"]
+  var container = document.getElementById("content_"+dic["container_id"]);
+  //--
+
+  this.form_=document.createElement("form");
+  this.form_.setAttribute("obj_type", dic["obj_type"]);
+  this.form_.setAttribute("id", obj_number);
+  this.form_.setAttribute("container_id", dic["container_id"]);
+  this.form_.setAttribute("type", dic["element_name"]);
+  if("width" in dic["properties"]){var width_=dic["properties"]["width"]} else {var width_="400"}
+  if("height" in dic["properties"]){var height_=dic["properties"]["height"]} else {var height_="400"}
+  var style_="position:absolute;left:"+dic["properties"]["x"]+"px;top:"+dic["properties"]["y"]+"px;"
+  style_+="width:"+width_+"px;height:"+height_;
+  this.form_.setAttribute("style", style_);
+
+  //alert(this.form_.outerHTML)
+
+//  var to_1 = document.getElementsByName("csrfmiddlewaretoken")[0]
+//  this.to_=document.createElement("input");
+//  this.to_.setAttribute("name", "csrfmiddlewaretoken");
+//  this.to_.setAttribute("value", to_1.value);
+//  this.to_.setAttribute("type","hidden");
+//  this.form_.appendChild(this.to_);
+
+
+  var label_=document.createElement("label");label_.setAttribute("for","text_"+obj_number);this.form_.appendChild(label_);
+  this.text_=document.createElement("input");this.text_.setAttribute("id","text_"+obj_number);
+  this.text_.setAttribute("name", "text_"+obj_number);
+  this.text_.setAttribute("type","text");
+  this.form_.appendChild(this.text_);
+
+  var br=document.createElement("br");
+  this.form_.appendChild(br);
+  var label_=document.createElement("label");label_.setAttribute("for","file_"+obj_number);this.form_.appendChild(label_);
+  this.file_=document.createElement("input");this.file_.setAttribute("id","file_"+obj_number);
+  this.file_.setAttribute("name", "name_"+obj_number);
+  this.file_.setAttribute("type","file");
+  this.form_.appendChild(this.file_);
+
+  var submit_btn=document.createElement("button");submit_btn.innerHTML=title;
+  this.form_.appendChild(submit_btn);
+  container.appendChild(this.form_);
+
+  this.file = {dom: this.file_, binary: null,}
+
+  this.reader= new FileReader();
+  this.reader.file=this.file;
+  this.reader.onload = function(event) {var e=event.target;this.file.binary=e.result;};
+
+  this.file_.reader=this.reader;
+  this.file_.onchange = function(event) {
+    if (this.reader.readyState === FileReader.LOADING) {this.reader.abort();}
+    this.reader.readAsBinaryString(event.target.files[0]);
+  };
+  //alert(this.form_.outerHTML)
+  this.form_.addEventListener('submit', (event) => {event.preventDefault();
+  sendData(this);
+  });
+
+
+}
+
+
 // -- acSearchTableCreator --
-function acSearchTableCreator(parent){this.parent=parent;this.is_json_data=false} // alert(JSON.stringify(this.parent.data));}
+function acSearchTableCreator(parent){this.parent=parent;this.is_json_data=false;this.json_record_id=-1;
+                                      this.json_last_record_number=0}
+// alert(JSON.stringify(this.parent.data));}
 
 acSearchTableCreator.prototype.create_obj = function()
 {
@@ -1708,7 +1947,9 @@ acSearchTableCreator.prototype.create_obj = function()
    container.appendChild(this.new_button);
    this.new_button.addEventListener("click", function(event){
      var container_=event.target.parentNode;
+     container_.my_creator_obj.is_json_data=this.my_creator_obj.is_json_data;
      container_.my_creator_obj.clear_objects_data();
+     container_.setAttribute("parent_id", this.my_creator_obj.json_record_id);
      try{eval('var zz='+this.my_creator_obj.parent.data["functions"]["on_new_record"]);zz.atm=this.atm;zz(event)} catch(er){}
    })
   }
@@ -1775,12 +2016,10 @@ acSearchTableCreator.prototype.create_obj = function()
   var tr_h=document.createElement("tr");
   tr_h.my_creator_obj=this;
   tr_h.addEventListener("click", function(event){
-
        var e=event.target;
-       var mco=e.parentNode.my_creator_obj
-
-       var filter_field=e.getAttribute("filter_field")
-       var filter_field_foreign_table=e.getAttribute("filter_field_foreign_table")
+       var mco=e.parentNode.my_creator_obj;
+       var filter_field=e.getAttribute("filter_field");
+       var filter_field_foreign_table=e.getAttribute("filter_field_foreign_table");
        mco.search_input_.setAttribute("filter_field", filter_field);
        mco.search_input_.setAttribute("filter_field_foreign_table", filter_field_foreign_table);
        mco.search_input_.setAttribute("placeholder", "Search "+e.innerHTML+"..");
@@ -1790,17 +2029,19 @@ acSearchTableCreator.prototype.create_obj = function()
        if(field==filter_field)
        {if(mco.order_by["direction"]=="ascending"){mco.order_by["direction"]="descending"}else{mco.order_by["direction"]="ascending"}}
        else{mco.order_by["field"]=filter_field;mco.order_by["direction"]="ascending"}
-
        if(mco.is_json_data==true){
-           var f=function(value,field_name,data)
-           {var dic = null;for(var i in data){if(data[i][field_name]==value){dic=data[i];break}};return dic;}
-
-           var sorted_data = [];var temp_list = []
-           for(var i in mco.tbody.data){temp_list.push(mco.tbody.data[i][mco.order_by["field"]])}
-           temp_list = temp_list.sort();if(mco.order_by["direction"]=="ascending"){temp_list=temp_list.reverse()};
-
-           for(var z in temp_list){sorted_data.push(f(temp_list[z],mco.order_by["field"],mco.tbody.data))}
-           mco.create_tbody(sorted_data, [mco.tbody, this.my_creator_obj.parent.data])
+         var sorted_data={};var temp_list=[];
+         for(var i in mco.tbody.data){temp_list.push(mco.tbody.data[i][mco.order_by["field"]])}
+         emp_list = temp_list.sort();if(mco.order_by["direction"]=="ascending"){temp_list=temp_list.reverse()};
+         temp_list = [...new Set(temp_list)];
+         //  alert("9035 "+JSON.stringify(temp_list));
+         var temp_data=JSON.parse(JSON.stringify(mco.tbody.data));var n=1;
+         for(var z in temp_list)
+         {for(var j in temp_data){if(temp_data[j][mco.order_by["field"]]==temp_list[z]){sorted_data[n]=temp_data[j];n+=1;delete temp_data[j]}}}
+         mco.create_tbody(sorted_data, [mco.tbody, this.my_creator_obj.parent.data]);
+         var container_id=this.my_creator_obj.parent.data["container_id"];
+         var container = document.getElementById("content_"+container_id);
+         container.my_creator_obj.clear_objects_data()
        } else{
            e.parentNode.my_creator_obj.get_data();
        }
@@ -1974,34 +2215,61 @@ acSearchTableCreator.prototype.get_data = function(data_table_name=null,parent_m
 
 acSearchTableCreator.prototype.get_data_json = function(data_table_name=null,record_id=null,company_obj_id=null)
 {
+  //alert("9087:\ndata_table_name:"+data_table_name+"\nrecord_id: "+record_id)
   var dic=this.parent.data;
-  //alert(JSON.stringify(dic))
+  //alert("9088:\ndic:"+JSON.stringify(dic["properties"]["obj_number"]))
+  var container = document.getElementById("content_"+dic["container_id"]);
+  container.my_creator_obj.link_dic["properties"]["table"]=data_table_name;
+  container.setAttribute("json_manager_obj_number", dic["properties"]["obj_number"])
+  this.json_record_id=record_id;
   var dic__ = {"model_name":data_table_name, "record_id": record_id}
-
   //alert("input "+JSON.stringify(dic__));
   this.parent.atm.get_data_json(call_back_fun=this.create_tbody, dic__, [this.tbody, dic])
 }
 
+acSearchTableCreator.prototype.get_next_number = function()
+{this.json_last_record_number=1*this.json_last_record_number+1; return this.json_last_record_number;}
+
+acSearchTableCreator.prototype.update_json_record = function(dic)
+{
+   var container = getEBI("content_"+dic["container_id"])
+   //alert('9084 dic_data= '+ JSON.stringify(dic));
+   if(dic["record_id"]=="new"){dic["record_id"]=this.get_next_number();this.tbody.data[dic["record_id"]]={};
+    container.setAttribute("record_id", dic["record_id"])
+   }
+   //alert('9086 dic_data= '+ JSON.stringify(this.tbody.data));
+   //alert('90861 field_old_value= '+ JSON.stringify(this.tbody.data[dic["record_id"]][dic["field"]]));
+   this.tbody.data[dic["record_id"]][dic["field"]]=dic["field_value"];
+
+   //alert('9085 dic_data= '+ JSON.stringify(this.tbody.data));
+
+   var dic_={"model":dic["model"],"parent_model":"","pkey":dic["parent_id"],"parent_pkey":"-1","type":""}
+   dic_["fields"]={};dic_["fields"][dic["model"]]=this.tbody.data;
+   // alert('9087 dic_data= '+ JSON.stringify(dic_));
+
+   this.parent.tab.parent.save_data(container, dic_, is_json_data=true)
+   this.create_tbody(this.tbody.data,[this.tbody, this.parent.data])
+   //alert('9087 dic_data= '+ JSON.stringify(this.tbody.data[dic["record_id"]]));
+}
+
 acSearchTableCreator.prototype.create_tbody = function(data, ll, is_new_data=true)
 {
-    var tbody=ll[0];
-    if(is_new_data){tbody.data=data;}
-    var dic=ll[1]
-    var get_width_align = function(field_name,dic)
-    {
-      var width = 50; var align = "left";
-      for(var z in dic["fields"])
-      {if(dic["fields"][z]["field_name"] == field_name)
-        {width = dic["fields"][z]["field_width"];align = dic["fields"][z]["field_align"];break}
-      }
-      return [width, align];
-    }
+    var tbody=ll[0];if(is_new_data){tbody.data=data;var max=0;
+      for(var j in data){if(j>max){max=j}};tbody.my_creator_obj.json_last_record_number=max;
+    };
+    var dic=ll[1];
     //alert("recieved data  "+JSON.stringify(data));
-    var s=''
+    var s='';
     for(var i in data)
     {
-     s+='<tr row="'+i+'"'+'>';
-     for(var k in data[i]){var wa = get_width_align(k,dic);s+='<td style="width:'+wa[0]+'px;text-align:'+wa[1]+'">'+data[i][k]+'</td>'}
+     s+='<tr id_="'+i+'" row="'+i+'"'+'>';
+     for(var z in dic["fields"])
+     {
+      var k=dic["fields"][z]["field_name"];
+      var width=50; var align="left";width=dic["fields"][z]["field_width"];align=dic["fields"][z]["field_align"]
+      var v=""; if(data[i][k]!=null){v=data[i][k]}
+      s+='<td style="width:'+width+'px;text-align:'+align+'">'+v+'</td>'
+     }
      s+='</tr>';
     }
     tbody.innerHTML=s;
@@ -2014,25 +2282,32 @@ acSearchTableCreator.prototype.row_click = function(event)
  while(e.tagName!="TR"){e=e.parentNode;}
  //alert(e.outerHTML)
  //alert(this.my_creator_obj.table_.outerHTML)
- var n_row=e.getAttribute("row")
- if(n_row==null){return;}
+ var n_row=e.getAttribute("row"); if(n_row==null){return;}
  var container_id=this.my_creator_obj.parent.data["container_id"];
  var container = document.getElementById("content_"+container_id);
+ //alert("1:\n"+container.outerHTML)
  //alert(container_id)
  var result={}
- //alert(JSON.stringify(this.my_creator_obj.tbody.data))
  var dic=this.my_creator_obj.tbody.data;
+ //alert(JSON.stringify(dic))
 
- for(f in dic){result[f]=dic[f][n_row]}
+ if(this.my_creator_obj.is_json_data==true){
+   container.my_creator_obj.clear_objects_data()
+   var id_=e.getAttribute("id_")
+   result=JSON.parse(JSON.stringify(dic[id_]))
+   result["id"]=id_;
+   container.my_creator_obj.set_objects_data(result, is_json_data=true);
+ } else{for(var f in dic){result[f]=dic[f][n_row]};
+   container.my_creator_obj.set_objects_data(result, is_json_data=false);
+ }
 
- //alert(JSON.stringify(result))
-
- container.my_creator_obj.set_objects_data(result);
  container.my_creator_obj.current_record_data=result;
+ container.my_creator_obj.link_content.setAttribute("parent_id", this.my_creator_obj.json_record_id);
 
  try{eval('var zz='+this.my_creator_obj.parent.data["functions"]["onclick"]);zz(event);} catch(er){}
  var p=e.parentNode;for (let i=0;i<p.children.length;i++){p.children[i].style.backgroundColor=""};
  e.style.backgroundColor="lightblue"
+
 }
 
 acSearchTableCreator.prototype.editor_properties_func = function(tab, tab_properties_)
@@ -3238,6 +3513,7 @@ function TabContent(tab, container, link_dic, is_on_click=true, is_link=null){
  this.link_dic=link_dic;
  this.link_number=pp_["link_number"];
  this.content_type=pp_["content_type"];
+ this.is_json_data=false;
  //-
  this.link_content=document.createElement("div");
  this.link_content.my_creator_obj=this
@@ -3272,10 +3548,12 @@ function TabContent(tab, container, link_dic, is_on_click=true, is_link=null){
 
 TabContent.prototype.process_content = process_content;
 
-TabContent.prototype.set_objects_data = function(dic)
+TabContent.prototype.set_objects_data = function(dic, is_json_data=false)
 {
  //alert("9076 "+JSON.stringify(dic))
- this.link_content.setAttribute("record_id", dic["id"]);var container_dic=this.tab.tab_objects[this.link_number];
+ this.is_json_data=is_json_data;
+ this.link_content.setAttribute("record_id", dic["id"]);
+ var container_dic=this.tab.tab_objects[this.link_number];
  for(o in container_dic)
  {
    if(container_dic[o]["obj_type"]=="acObj" && (container_dic[o]["obj_name"]=="acInput"

@@ -6,14 +6,13 @@ class Friends(object):
         pass
 
     def update_friends_list(self, dic):
-        # print("9055 \n")
-
-        # print("-"*50)
-        # print("-"*50)
-        # print(dic["name"])
-        # print("-"*10)
-        # print(dic["data"])
-        # print("-"*10)
+        print("9055 \n")
+        print("-"*50)
+        print("-"*50)
+        print(dic["name"])
+        print("-"*10)
+        print(dic["data"])
+        print("-"*10)
         try:
             if len(dic["data"]) == 0:
                 friends.objects.get(name=dic["name"]).delete()
@@ -33,10 +32,10 @@ class Friends(object):
         return results
 
     def get_friends_list(self, dic):
-        # print("9055 \n")
-        # print("-"*50)
-        # print("-"*50)
-        # print(dic["name"])
+        print("9065 \n")
+        print("-"*50)
+        print("-"*50)
+        print(dic["name"])
         try:
             row = friends.objects.get(name=dic["name"])
             data = row.friends

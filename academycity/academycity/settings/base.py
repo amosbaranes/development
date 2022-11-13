@@ -192,6 +192,8 @@ WebApps = [
 
 acApps = [
     'academycity.apps.acapps.acmath',
+    'academycity.apps.acapps.training',
+    'academycity.apps.acapps.avi',
     'academycity.apps.acapps.dl',
     'academycity.apps.acapps.ml',
     'academycity.apps.acapps.accounting',

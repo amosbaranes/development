@@ -41,6 +41,11 @@ from ..core.sql import SQL
 from ..core.models import Debug
 from ..core.OptionsAmeriTrade import BaseTDAmeriTrade
 
+from sklearn.decomposition import PCA
+from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import SGDClassifier, LogisticRegression
+from sklearn.model_selection import cross_val_score, cross_val_predict
+
 from .models import (XBRLMainIndustryInfo, XBRLIndustryInfo, XBRLCompanyInfoInProcess,
                      XBRLCompanyInfo, XBRLValuationStatementsAccounts, XBRLValuationAccounts,
                      XBRLValuationAccountsMatch,
@@ -498,9 +503,9 @@ class TDAmeriTrade(BaseTDAmeriTrade):
 
     def get_option_statistics_for_ticker(self, ticker):
         dic = {'status': 'ko'}
-        print("-1"*50)
-        print("atm: 90551: "+ticker)
-        print("-2"*50)
+        # print("-1"*50)
+        # print("atm: 90551: "+ticker)
+        # print("-2"*50)
         # ticker = "^SPX" ticker = "^GSPC" print("="*100)
         n_ = 6
         if ticker in ["SPY", "QQQ", "IWM"]:
@@ -1537,7 +1542,6 @@ class StockPrices(object):
 
     def update_prices_minutes(self, dic):
         # print("9010 input dic: \n", dic, "\n"+"-"*30)
-        # obj = yf.Ticker("^GSPC")
         # print(dic)
         # print(dic["ticker"])
         l_f = str(dic["letter_from"])
@@ -1553,12 +1557,15 @@ class StockPrices(object):
                 # print("="*50)
                 # print("="*50)
                 # print("="*50)
-                if l_t >= c.company_letter >= l_f:
-                    print(w.symbol, c.ticker, c.company_letter)
+                if l_t >= c.company_letter >= l_f or (c.ticker == "$SPX.X" and w == "HighV"):
                         # print("="*50)
                     # print("="*50)
                     # print("="*50)
-                    obj = yf.Ticker(c.ticker)
+                    ticker = c.ticker
+                    if ticker == "$SPX.X":
+                        ticker = "^GSPC"
+                    print("90151 company info: \n", w.symbol, ticker, c.company_letter, "\n"+"-"*30)
+                    obj = yf.Ticker(ticker)
                     i = w_  # 5 for 1m, 45 for 1d
                     nn = 0
                     while i > 0:
@@ -1632,9 +1639,12 @@ class StockPrices(object):
         for w in watch_list:
             companies = XBRLCompanyInfo.objects.filter(etfwatchlist=w).all()
             for c in companies:
-                if l_t >= c.company_letter >= l_f:
-                    print("90151 company info: \n", w.symbol, c.ticker, c.company_letter, "\n"+"-"*30)
-                    obj = yf.Ticker(c.ticker)
+                if l_t >= c.company_letter >= l_f or (c.ticker == "$SPX.X" and w == "HighV"):
+                    ticker = c.ticker
+                    if ticker == "$SPX.X":
+                        ticker = "^GSPC"
+                    print("90152 company info: \n", w.symbol, ticker, c.company_letter, "\n"+"-"*30)
+                    obj = yf.Ticker(ticker)
                     date_e = datetime.datetime.now()
                     date_b = (datetime.datetime.now() + datetime.timedelta(days=-d_))
                     date_b = (date_b + relativedelta(years = -y_))
@@ -1680,8 +1690,92 @@ class StockPrices(object):
         # print("9099 output dic: \n", dic, "\n"+"="*30)
         return dic
 
+
     def create_return_statistics_minutes(self, dic):
         ticker = dic["ticker"]
+        print("90600  "+ticker)
+
+        def get_y(x):
+            y = round(x/10000)
+            yd = x-y
+            return y
+
+        def get_yd(x):
+            y = round(x/10000)*10000
+            yd = x-y
+            return yd
+
+        sp = StockPricesMinutes.objects.filter(company__ticker=ticker).all().values('idx', 'open', 'high',
+                                                                                    'low', 'close', 'volume')
+        # print(sp)
+        df = pd.DataFrame(list(sp))
+        # print(df)
+        df["y"] = df["idx"].apply(get_y)
+        df["yd"] = df["idx"].apply(get_yd)
+        df = df[['y', 'yd', 'open', 'high', 'low', 'close', 'volume']]
+        # print('-'*10)
+        # print('-'*10)
+        print(df)
+        # print('-'*10)
+        # print('-'*10)
+        try:
+            table = pd.pivot_table(df, values=['open', 'high', 'low', 'close', 'volume'], index=['y', 'yd'],
+                                   aggfunc={'open': np.sum,
+                                            'high': np.sum,
+                                            'low': np.sum,
+                                            'close': np.sum,
+                                            'volume': np.sum})
+            table.fillna(method='bfill', inplace=True)
+        except Exception as ex:
+            print("10001"+str(ex))
+        print('-'*10)
+        print('-'*10)
+        print('table')
+        print(table)
+        print('-'*10)
+        print('-'*10)
+        try:
+            table1 = ((table.div(table.iloc[0])-1).astype(float)).round(4)
+        except Exception as ex:
+            print("10002"+str(ex))
+        print('table1')
+        print(table1)
+        np_table1 = table1.to_numpy(dtype=float)
+        print(np_table1)
+        print('-'*10)
+        try:
+            table1 = table1.reset_index().to_dict(orient='list')
+        except Exception as ex:
+            print("10003"+str(ex))
+        # print('table1')
+        # print(table1)
+        # print('-'*10)
+        try:
+            table2 = ((1/table.div(table.iloc[-1])-1).astype(float)).round(4)
+        except Exception as ex:
+            print("10004"+str(ex))
+        # print('table2')
+        # print(table2)
+        # print('-'*10)
+        try:
+            table2 = table2.reset_index().to_dict(orient='list')
+        except Exception as ex:
+            print("10005"+str(ex))
+        # print('table2')
+        # print(type(table2))
+        # print(table2)
+        # print("end of data")
+        result = {"table1": table1, "table2": table2}
+        # print(result)
+        # print('table1')
+        # print(table1[20221110])
+        # print("9099 output dic: \n", dic, "\n"+"="*30)
+        return result
+
+
+    def create_return_statistics_minutes_bu(self, dic):
+        ticker = dic["ticker"]
+        print("90600  "+ticker)
 
         def get_y(x):
             y = round(x/10000)
@@ -1696,6 +1790,10 @@ class StockPrices(object):
         sp = StockPricesMinutes.objects.filter(company__ticker=ticker).all().values('idx', 'close')
         # print(sp)
         df = pd.DataFrame(list(sp))
+        ndf = df.to_numpy(dtype=float)
+        print(ndf.shape)
+        print(ndf)
+
         # print(df)
         df["y"] = df["idx"].apply(get_y)
         df["yd"] = df["idx"].apply(get_yd)
@@ -1705,32 +1803,50 @@ class StockPrices(object):
         # print(df)
         # print('-'*10)
         # print('-'*10)
-        table = pd.pivot_table(df, values='close', index=['yd'], columns=['y'], aggfunc=np.sum)
-        table.fillna(method='bfill', inplace=True)
+        try:
+            table = pd.pivot_table(df, values='close', index=['yd'], columns=['y'], aggfunc=np.sum)
+            table.fillna(method='bfill', inplace=True)
+        except Exception as ex:
+            print("10001"+str(ex))
         # print('-'*10)
         # print('-'*10)
         # print('table')
         # print(table)
         # print('-'*10)
         # print('-'*10)
-        table1 = ((table.div(table.iloc[0])-1).astype(float)).round(4)
+        try:
+            table1 = ((table.div(table.iloc[0])-1).astype(float)).round(4)
+        except Exception as ex:
+            print("10002"+str(ex))
         # print('table1')
         # print(table1)
         # print('-'*10)
-        table1 = table1.reset_index().to_dict(orient='list')
+        try:
+            table1 = table1.reset_index().to_dict(orient='list')
+        except Exception as ex:
+            print("10003"+str(ex))
         # print('table1')
         # print(table1)
         # print('-'*10)
-        table2 = ((1/table.div(table.iloc[-1])-1).astype(float)).round(4)
+        try:
+            table2 = ((1/table.div(table.iloc[-1])-1).astype(float)).round(4)
+        except Exception as ex:
+            print("10004"+str(ex))
         # print('table2')
         # print(table2)
         # print('-'*10)
-        table2 = table2.reset_index().to_dict(orient='list')
+        try:
+            table2 = table2.reset_index().to_dict(orient='list')
+        except Exception as ex:
+            print("10005"+str(ex))
         # print('table2')
         # print(type(table2))
         # print(table2)
+        # print("end of data")
         result = {"table1": table1, "table2": table2}
         # print(result)
+        # print('table1')
+        # print(table1[20221110])
         # print("9099 output dic: \n", dic, "\n"+"="*30)
         return result
 
@@ -1794,8 +1910,11 @@ class StockPrices(object):
         print("-"*10)
         dic = {'data': {"status": "ok"}}
 
+    # https://towardsdatascience.com/principal-component-analysis-for-dimensionality-reduction-115a3d157bad
+    # https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LogisticRegression.html
     def get_pca(self, dic):
         ticker = dic["ticker"]
+        print(ticker)
 
         def get_y(x):
             y = round(x/10000)
@@ -1808,49 +1927,114 @@ class StockPrices(object):
             return yd
 
         sp = StockPricesMinutes.objects.filter(company__ticker=ticker).all().values('idx', 'close')
-        # print(sp)
         df = pd.DataFrame(list(sp))
-        # print(df)
         df["y"] = df["idx"].apply(get_y)
         df["yd"] = df["idx"].apply(get_yd)
         df = df[['y', 'yd', 'close']]
-        # print('-'*10)
-        # print('-'*10)
-        # print(df)
-        # print('-'*10)
-        # print('-'*10)
         table = pd.pivot_table(df, values='close', index=['yd'], columns=['y'], aggfunc=np.sum)
         table.fillna(method='bfill', inplace=True)
-        # print('-'*10)
-        # print('-'*10)
-        # print('table')
-        # print(table)
-        # print('-'*10)
-        # print('-'*10)
         table1 = ((table.div(table.iloc[0])-1).astype(float)).round(4)
         table1 = table1.T
+        test_size = .10
+        test_size_ = int(table1.shape[0]*test_size)
+        xtest = table1[table1.shape[0]-test_size_:]
+        xtrain = table1[:table1.shape[0]-test_size_]
         # print('table1')
-        # print(table1)
+        # print(xtrain, xtest)
         # print('-'*10)
-        # table1 = table1.reset_index().to_dict(orient='list')
-        print('table1')
-        print(table1)
-        print('-'*10)
         table2 = ((1/table.div(table.iloc[-1])-1).astype(float)).round(4)
         table2 = table2.T
+        ytest = table2[table2.shape[0]-test_size_:]
+        ytrain = table2[:table2.shape[0]-test_size_]
         # print('table2')
+        # print(ytrain, ytest)
         # print(table2)
         # print('-'*10)
-        # table2 = table2.reset_index().to_dict(orient='list')
-        print('table2')
-        # print(type(table2))
-        print(table2)
-        result = {"table1": table1, "table2": table2}
-        # print(result)
-        # print("9099 output dic: \n", dic, "\n"+"="*30)
+
+        max_ = 0
+        data_ = {}
+        for j in range(10, table1.shape[1]):
+            col = xtrain.columns[j]
+            # print('col')
+            # print(col)
+            xtrain_np = table1.to_numpy()[:, 1:j]
+            ytrain_np = table2.to_numpy()[:, j:j+1]
+            x1 = table1.to_numpy()[0:1, 1:j].copy()
+            # print('x1', '1\n', xtrain_np.shape, x1.shape)
+            # print(j, xtrain_np, ytrain_np)
+            rr = np.max(ytrain_np) - np.min(ytrain_np)
+            ub = 0.1
+            bins = np.array([rr*ub+np.min(ytrain_np),
+                             rr*ub*2+np.min(ytrain_np),
+                             rr*(1-2*ub)+np.min(ytrain_np),
+                             rr*(1-ub)+np.min(ytrain_np)])
+            ytrain_np = np.digitize(ytrain_np, bins)
+            # print(j, ytrain_np)
+            scaler = StandardScaler()
+            scaler.fit(xtrain_np)
+            X = scaler.transform(xtrain_np)
+            # print('x1', '22\n', x1)
+            x1 = scaler.transform(x1)
+            # print('x1', '23\n', x1)
+            np_ = min(xtrain.shape[0], xtrain_np.shape[1])
+
+            pca = PCA(n_components=np_)
+            pca.fit(X)
+            # print('pca.explained_variance_ratio_')
+            sg = pca.explained_variance_ratio_
+            # print(sg[sg > 0.01])
+            # print(sg[sg > 0.01].shape[0])
+            np_ = sg[sg > 0.005].shape[0]
+            if max_ < np_:
+                max_ = np_
+            pca = PCA(n_components=np_)
+            pca.fit(X)
+            sg = pca.explained_variance_ratio_
+            # print('pca.explained_variance_ratio_', sg, np_)
+            xtrain_pca = pca.transform(X)
+            x1 = pca.transform(x1)
+            data_[col] = [scaler, xtrain_pca, ytrain_np]   # , xtrain_np
+
+            # logistic regression
+            # print('logistic regression')
+            # print(xtrain_pca)
+            # print(ytrain_np.reshape(-1))
+            # print(ytrain_np.reshape(1, -1))
+            # print(ytrain_np.reshape(-1, 1))
+            lr = LogisticRegression(multi_class='auto', solver='liblinear')
+            # lr.fit(xtrain_pca, ytrain_np.reshape(-1))
+            sgc = SGDClassifier(random_state=42)
+            ytrain_np = ytrain_np.reshape(-1, 1)
+            print(j, "\n", xtrain_pca.shape, ytrain_np.shape)
+            # sgc.fit(xtrain_pca, ytrain_np)
+            # print('logistic regression 1')
+            # print(ytrain_np.T, "\n", sgc.predict(xtrain_pca))
+
+            # print('sgc.decision_function(x1)')
+            # print(sgc.decision_function(x1))
+            # print(sgc.classes_)
+            # print(np.argmax(sgc.decision_function(x1)))
+            print('-'*10)
+
+            ncv = 20
+            # y_scores = cross_val_predict(sgc, xtrain_pca, ytrain_np, method="predict", cv=ncv)
+            y_scores = cross_val_predict(lr, xtrain_pca, ytrain_np, method="predict", cv=ncv)
+            print('y_scores--')
+            print("actual:\n", ytrain_np.T, "\npredic\n", y_scores.reshape(1, -1), "\n", ytrain_np.T - y_scores.reshape(1,-1))
+            print('y_scores--2')
+
+            # test
+            # xtest_np = table1.to_numpy()[:, :j]
+            # ytest_np = table2.to_numpy()[j:j+1]
+            #
+            # xtest = scaler.transform(xtest_np)
+            # xtest_pca = pca.transform(xtest)
+            # ytest_np = np.digitize(ytest_np, bins)
+
+        # print(data_)
+        # print(max_)
 
         dic = {'data': {"status": "ok"}}
-
 
 
 class AcademyCityXBRL(object):

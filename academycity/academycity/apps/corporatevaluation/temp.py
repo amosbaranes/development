@@ -6,6 +6,7 @@ import numpy as np
 # Load Iris dataset
 iris = datasets.load_iris()
 X = iris.data
+print(type(X))
 y = iris.target
 
 x1 = X[:1, :]

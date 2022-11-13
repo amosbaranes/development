@@ -12,7 +12,7 @@ def home(request):
     company_obj_id_ = company_obj.id
     app_ = "businesssim"
     app_activate_function_link_ = reverse(app_+':activate_obj_function', kwargs={})
-    return render(request, app_+'/home.html', {"atm_name": "bs_"+app_name+"_tm",
+    return render(request, app_+'/home.html', {"atm_name": "bs_"+app_+"_tm",
                                                     "app": app_,
                                                     "app_activate_function_link": app_activate_function_link_,
                                                     "company_obj_id": company_obj_id_,
@@ -24,7 +24,7 @@ def app_id(request, app_name, company_obj_id):
     company_obj = BusinesssimWeb.objects.get_or_create(id=company_obj_id)
     app_ = "businesssim"
     app_activate_function_link_ = reverse(app_+':activate_obj_function', kwargs={})
-    return render(request, app_+'/home.html', {"atm_name": "bs_"+app_name+"_tm",
+    return render(request, app_+'/home.html', {"atm_name": "bs_"+app_+"_tm",
                                                                "app": app_,
                                                                "app_activate_function_link": app_activate_function_link_,
                                                                "company_obj_id": company_obj_id,

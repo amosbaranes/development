@@ -14,6 +14,9 @@ from .accounting_obj import AccountingObj
 from .apps_general_functions import activate_obj_function
 from django.db.models.fields.related import ForeignKey, ManyToManyField, ManyToManyRel
 
+from django.http import HttpResponse
+import json
+
 
 def home(request):
     title = _('Core App')
@@ -490,19 +493,43 @@ def get_data_link(request):
 def get_data_json_link(request):
     dic_ = request.POST["dic"]
     dic_ = eval(dic_)
-
-    # print("-2"*10)
     # print("-2"*10)
     # print(dic_)
     # print("-2"*10)
-    # print("-2"*10)
-
     app_ = dic_["app"]
     model_ = dic_["model_name"]
     record_id_ = dic_["record_id"]
     model = apps.get_model(app_label=app_, model_name=model_)
     row = model.objects.get(id=record_id_)
     # print(row.friends)
-    dic = {'status': 'ok', "dic": row.friends}
+    data = eval("row."+model_)
+    dic = {'status': 'ok', "dic": data}
     return JsonResponse(dic)
+
+
+def upload_file(request):
+    print("9005", "\n", "-"*30)
+    upload_file_ = request.FILES['drive_file']
+    ret = {}
+    if upload_file_:
+        filename = request.POST['filename']
+        app_ = request.POST['app']
+        obj_name_ = request.POST['obj_name']
+        function_name_ = request.POST['function_name']
+        topic_id_ = request.POST['topic_id']
+        add_dic = {"obj": obj_name_, "app": app_, "fun": function_name_, "params": {"request": request},
+                   "obj_param": {"topic_id": topic_id_}}
+        print("9010")
+        print(add_dic)
+        print("9010")
+        print("9010")
+        activate_obj_function(request, add_dic)
+        print("9011")
+        print("9011")
+        ret['file_remote_path'] = "target"
+    else:
+        return HttpResponse(status=500)
+
+    return HttpResponse(json.dumps(ret))
+
 

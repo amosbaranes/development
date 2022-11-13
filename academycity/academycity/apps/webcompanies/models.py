@@ -22,6 +22,7 @@ class WebCompanies(models.Model):
                                   limit_choices_to={'model__in': (
                                       'accountingweb',
                                       'businesssimweb',
+                                      'trainingweb',
                                       'acmathweb',
                                       'dlweb',
                                       'mlweb',
