@@ -517,7 +517,9 @@ def upload_file(request):
         obj_name_ = request.POST['obj_name']
         function_name_ = request.POST['function_name']
         topic_id_ = request.POST['topic_id']
-        add_dic = {"obj": obj_name_, "app": app_, "fun": function_name_, "params": {"request": request},
+        folder_type_ = request.POST['folder_type']
+        add_dic = {"obj": obj_name_, "app": app_, "fun": function_name_,
+                   "params": {"request": request, "folder_type": folder_type_},
                    "obj_param": {"topic_id": topic_id_}}
         # print("9010")
         # print(add_dic)

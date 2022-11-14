@@ -5,7 +5,11 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 
 import numpy as np
+from openpyxl import Workbook, load_workbook
 import pandas as pd
+#
+from .models import TimeDim, CountryDim, WorldBankFact
+#
 from sklearn import linear_model, neighbors
 from sklearn import preprocessing
 from sklearn import pipeline
@@ -27,7 +31,7 @@ import joblib
 mpl.use('Agg')
 
 
-class DataProcessing(object):
+class BaseDataProcessing(object):
     def __init__(self, dic):   # to_data_path, target_field
         self.name = 'DataProcessing'
         # print('-'*50)
@@ -92,17 +96,32 @@ class DataProcessing(object):
         # like topic_id. But, we need to add this property to: params in the core view
         # and use it here.
         # for example: if data_folder=excel we choose self.TO_EXCEL
-        target_folder = self.TO_EXCEL
-        # rtime = str(int(time.time()))
+
+        # print("target_folder = self.TO_"+dic["folder_type"].upper())
+        target_folder = eval("self.TO_"+dic["folder_type"].upper())
+
         filename = dic["request"].POST['filename']
-        target = os.path.join(target_folder, filename)
-        with open(target, 'wb+') as destination:
+        file_path = os.path.join(target_folder, filename)
+        with open(file_path, 'wb+') as destination:
             for c in upload_file_.chunks():
                 destination.write(c)
 
         # print("9017\nUploaded\n", "-" * 30)
-        result['file_remote_path'] = target
-
+        load_dic = {"file_path": file_path}
+        self.load_file_to_db(load_dic)
+        result['file_remote_path'] = file_path
         return result
 
 
+class DataProcessing(BaseDataProcessing):
+    def __init__(self, dic):
+        super().__init__(dic)
+
+    def load_file_to_db(self, dic):
+        file_path = dic["file_path"]
+        df = pd.read_excel(file_path, sheet_name="Data", header=0)
+        print(df)
+        print(df.columns)
+
+        result = {"status": "ok"}
+        return result

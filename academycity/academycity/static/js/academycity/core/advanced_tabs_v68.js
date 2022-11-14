@@ -118,8 +118,10 @@ company_obj_id, is_show_btns=true, user_id=0)
                                                      "functions":["onclick", "onchange", "onmouseover", "onmouseout"]
                                                     },
                                         "SearchTable":{"title":"Search Table", "width":10,
-                                                       "setting": {"is_new_button":["","Yes","No"], "is_del_button":["","Yes","No"]},
-                                                       "attributes":{"number_of_rows":[], "table_class":["","basic", "payment"], "height":[]},
+                                                       "setting": {"is_new_button":["","Yes","No"],
+                                                       "is_del_button":["","Yes","No"]},
+                                                       "attributes":{"number_of_rows":[], "table_class":["","basic",
+                                                       "payment"], "height":[]},
                                                        "functions":["onchange", "on_new_record"],
                                                        "field_setting":["field_title","field_name","field_width","field_align","foreign_table","filter"]},
                                         "MSearchTable":{"title":"MSearch Table", "width":12,
@@ -156,7 +158,7 @@ company_obj_id, is_show_btns=true, user_id=0)
                                                  "functions":[]},
                                         "UploadFile":{"title":"UploadFile", "width":10,
                                                  "setting": {"height":[],"width":[],"obj_name":[],"function_name":[],
-                                                 "topic_id":[]},
+                                                 "topic_id":[], "folder_type":["", "excel", "other"]},
                                                  "attributes":{},
                                                  "functions":[]},
                                         "Heatmap":{"title":"Heatmap", "width":8,
@@ -1775,6 +1777,7 @@ acUploadFileCreator.prototype.create_obj = function()
             fd.append("obj_name", this.dic["properties"]["obj_name"]);
             fd.append("function_name", this.dic["properties"]["function_name"]);
             fd.append("topic_id", this.dic["properties"]["topic_id"]);
+            fd.append("folder_type", this.dic["properties"]["folder_type"]);
             xhr.send(fd);
   }
 }
