@@ -30,9 +30,9 @@ mpl.use('Agg')
 class DataProcessing(object):
     def __init__(self, dic):   # to_data_path, target_field
         self.name = 'DataProcessing'
-        print('-'*50)
-        print('in constructor parent')
-        print('9001 - ')
+        # print('-'*50)
+        # print('9001 in constructor parent')
+        # print('-'*50)
         warnings.filterwarnings(action="ignore", message="^internal gelsd")
         # to make this notebook's output stable across runs
 
@@ -47,7 +47,8 @@ class DataProcessing(object):
         # --- Change to this when you start to use Django ---
         self.PROJECT_ROOT_DIR = os.path.join(settings.WEB_DIR, "data", "avi")
 
-        print(self.PROJECT_ROOT_DIR)
+        # print(self.PROJECT_ROOT_DIR)
+        # print('-'*50)
 
         os.makedirs(self.PROJECT_ROOT_DIR, exist_ok=True)
 
@@ -82,14 +83,9 @@ class DataProcessing(object):
         # print('-'*50)
 
     def upload_file(self, dic):
-        print("test1")
-        print("test1")
-        print("test1")
-        print("test1")
-        print("test1")
-        print(dic)
-
-        print("9015", "\n", "-" * 30)
+        # print("avi upload_file:")
+        # print(dic)
+        # print("avi upload_file:")
         upload_file_ = dic["request"].FILES['drive_file']
         result = {}
         # We can extend and add another property: data_folder
@@ -104,7 +100,7 @@ class DataProcessing(object):
             for c in upload_file_.chunks():
                 destination.write(c)
 
-        print("9017\nUploaded\n", "-" * 30)
+        # print("9017\nUploaded\n", "-" * 30)
         result['file_remote_path'] = target
 
         return result

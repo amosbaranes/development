@@ -1690,10 +1690,11 @@ class StockPrices(object):
         # print("9099 output dic: \n", dic, "\n"+"="*30)
         return dic
 
-
     def create_return_statistics_minutes(self, dic):
+        # print("create_return_statistics_minutes\n90600")
+        # print(dic)
         ticker = dic["ticker"]
-        print("90600  "+ticker)
+        # print("90601  "+ticker)
 
         def get_y(x):
             y = round(x/10000)
@@ -1715,7 +1716,7 @@ class StockPrices(object):
         df = df[['y', 'yd', 'open', 'high', 'low', 'close', 'volume']]
         # print('-'*10)
         # print('-'*10)
-        print(df)
+        # print(df)
         # print('-'*10)
         # print('-'*10)
         try:
@@ -1728,21 +1729,21 @@ class StockPrices(object):
             table.fillna(method='bfill', inplace=True)
         except Exception as ex:
             print("10001"+str(ex))
-        print('-'*10)
-        print('-'*10)
-        print('table')
-        print(table)
-        print('-'*10)
-        print('-'*10)
+        # print('-'*10)
+        # print('-'*10)
+        # print('table')
+        # print(table)
+        # print('-'*10)
+        # print('-'*10)
         try:
             table1 = ((table.div(table.iloc[0])-1).astype(float)).round(4)
         except Exception as ex:
             print("10002"+str(ex))
-        print('table1')
-        print(table1)
+        # print('table1')
+        # print(table1)
         np_table1 = table1.to_numpy(dtype=float)
-        print(np_table1)
-        print('-'*10)
+        # print(np_table1)
+        # print('-'*10)
         try:
             table1 = table1.reset_index().to_dict(orient='list')
         except Exception as ex:
@@ -1771,7 +1772,6 @@ class StockPrices(object):
         # print(table1[20221110])
         # print("9099 output dic: \n", dic, "\n"+"="*30)
         return result
-
 
     def create_return_statistics_minutes_bu(self, dic):
         ticker = dic["ticker"]
@@ -4769,7 +4769,7 @@ class AcademyCityXBRL(object):
         # print("9088\n", "Done", "\n", "-"*50)
 
         result = {"exc": exc, "status": "ok"}
-        print("9090:  Result:\n", result, "\n", "-"*50)
+        print("90901:  Result:\n", result, "\n", "-"*50)
         return result
 
 #   --- Stage 3 - SP500 ---

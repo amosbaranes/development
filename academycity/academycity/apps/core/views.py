@@ -508,7 +508,7 @@ def get_data_json_link(request):
 
 
 def upload_file(request):
-    print("9005", "\n", "-"*30)
+    # print("9005", "\n", "-"*30)
     upload_file_ = request.FILES['drive_file']
     ret = {}
     if upload_file_:
@@ -519,16 +519,14 @@ def upload_file(request):
         topic_id_ = request.POST['topic_id']
         add_dic = {"obj": obj_name_, "app": app_, "fun": function_name_, "params": {"request": request},
                    "obj_param": {"topic_id": topic_id_}}
-        print("9010")
-        print(add_dic)
-        print("9010")
-        print("9010")
+        # print("9010")
+        # print(add_dic)
+        # print("9010")
         activate_obj_function(request, add_dic)
-        print("9011")
-        print("9011")
-        ret['file_remote_path'] = "target"
+        # print("9011")
+        ret['status'] = "ok"
     else:
-        return HttpResponse(status=500)
+        ret['status'] = "ko"
 
     return HttpResponse(json.dumps(ret))
 

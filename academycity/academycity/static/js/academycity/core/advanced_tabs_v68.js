@@ -1754,8 +1754,8 @@ acUploadFileCreator.prototype.create_obj = function()
             xhr.addEventListener('load', function(e) {
                 data = JSON.parse(this.responseText);
 
-alert("9035 "+JSON.stringify(data))
-alert(this.responseText)
+                    alert("9035 "+JSON.stringify(data))
+                    //alert(this.responseText)
 
                 if(this.status != 200){
                   $('#driver-uploader-failure-alert').show();
