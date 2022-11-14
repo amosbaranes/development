@@ -8,7 +8,7 @@ import numpy as np
 from openpyxl import Workbook, load_workbook
 import pandas as pd
 #
-from .models import TimeDim, CountryDim, WorldBankFact
+from .models import TimeDim, CountryDim, MeasureDim, WorldBankFact
 #
 from sklearn import linear_model, neighbors
 from sklearn import preprocessing
@@ -49,7 +49,7 @@ class BaseDataProcessing(object):
         mpl.rc('ytick', labelsize=12)
         # Where to save the figures
         # --- Change to this when you start to use Django ---
-        self.PROJECT_ROOT_DIR = os.path.join(settings.WEB_DIR, "data", "avi")
+        self.PROJECT_ROOT_DIR = os.path.join(settings.WEB_DIR, "data", dic["app"])
 
         # print(self.PROJECT_ROOT_DIR)
         # print('-'*50)
@@ -87,9 +87,10 @@ class BaseDataProcessing(object):
         # print('-'*50)
 
     def upload_file(self, dic):
-        # print("avi upload_file:")
+        # print("upload_file:")
         # print(dic)
-        # print("avi upload_file:")
+        # print("upload_file:")
+
         upload_file_ = dic["request"].FILES['drive_file']
         result = {}
         # We can extend and add another property: data_folder
@@ -107,9 +108,7 @@ class BaseDataProcessing(object):
                 destination.write(c)
 
         # print("9017\nUploaded\n", "-" * 30)
-        load_dic = {"file_path": file_path}
-        self.load_file_to_db(load_dic)
-        result['file_remote_path'] = file_path
+        result['file_path'] = file_path
         return result
 
 
@@ -118,10 +117,56 @@ class DataProcessing(BaseDataProcessing):
         super().__init__(dic)
 
     def load_file_to_db(self, dic):
-        file_path = dic["file_path"]
+        file_path = self.upload_file(dic)["file_path"]
         df = pd.read_excel(file_path, sheet_name="Data", header=0)
-        print(df)
-        print(df.columns)
+        for k in df.columns:
+            s = k.split(" ")
+            # print("9088: ", s)
+            try:
+                y = int(s[0])
+                yy, is_created = TimeDim.objects.get_or_create(id=y)
+                if is_created:
+                    yy.year = y
+                    yy.save()
+            except Exception as ex:
+                pass
+        dfc = df[["Country Name", "Country Code"]]
+        # print(dfc)
+        for index, row in dfc.iterrows():
+            # print(row["Country Name"], row["Country Name"])
+            c, is_created = CountryDim.objects.get_or_create(country_code=row["Country Code"])
+            if is_created:
+                c.country_name = row["Country Name"]
+                c.save()
+
+        dfc = df[["Series Name", "Series Code"]]
+        # print(dfc)
+        for index, row in dfc.iterrows():
+            # print(row["Series Name"], row["Series Code"])
+            c, is_created = MeasureDim.objects.get_or_create(measure_code=row["Series Code"])
+            if is_created:
+                c.measure_name = row["Series Name"]
+                c.save()
+
+        # print(df)
+        for index, row in df.iterrows():
+            # print('row')
+            # print(row)
+            for k in df.columns:
+                s = k.split(" ")
+                try:
+                    y = int(s[0])
+                    t = TimeDim.objects.get(id=y)
+                    c = CountryDim.objects.get(country_code=row["Country Code"])
+                    m = MeasureDim.objects.get(measure_code=row["Series Code"])
+                    a, is_created = WorldBankFact.objects.get_or_create(time_dim=t, country_dim=c, measure_dim=m)
+                    if is_created:
+                        a.amount = float(df[k])
+                        a.save()
+                    # print(row["Series Code"], row["Country Code"], y, df[k])
+
+                except Exception as ex:
+                    pass
 
         result = {"status": "ok"}
         return result

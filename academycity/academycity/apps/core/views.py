@@ -520,7 +520,7 @@ def upload_file(request):
         folder_type_ = request.POST['folder_type']
         add_dic = {"obj": obj_name_, "app": app_, "fun": function_name_,
                    "params": {"request": request, "folder_type": folder_type_},
-                   "obj_param": {"topic_id": topic_id_}}
+                   "obj_param": {"topic_id": topic_id_, "app": app_}}
         # print("9010")
         # print(add_dic)
         # print("9010")
