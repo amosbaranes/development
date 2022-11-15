@@ -117,18 +117,12 @@ class DataProcessing(BaseDataProcessing):
         super().__init__(dic)
 
     def get_general_data(self, dic):
-
-        print("9012:\n")
-        print(dic)
-        print("9013:\n")
-
+        # print("DataProcessing get_general_data 9012:\n")
+        # print(dic)
+        # print("9013:\n")
         result = {}
         for k in CountryDim.objects.all():
             result[k.id]=k.country_name
-
-        print(result)
-        print("9014:\n")
-        # result = {"status": "ok", "countries": countries}
         return result
 
     def load_file_to_db(self, dic):
@@ -174,10 +168,14 @@ class DataProcessing(BaseDataProcessing):
                     t = TimeDim.objects.get(id=y)
                     c = CountryDim.objects.get(country_code=row["Country Code"])
                     m = MeasureDim.objects.get(measure_code=row["Series Code"])
-                    a, is_created = WorldBankFact.objects.get_or_create(time_dim=t, country_dim=c, measure_dim=m)
-                    if is_created:
-                        a.amount = float(row[k])
-                        a.save()
+
+                    # print("111\nmeasure: ", row["Series Code"],"\n", row["Country Code"], y, "\noriginal: ", row[k], "\nfloat:", float(row[k]))
+                    if float(row[k]) != 0:
+                        # print("222\nmeasure: ", row["Series Code"],"\n", row["Country Code"], y, "\noriginal: ", row[k], "\nfloat:", float(row[k]))
+                        a, is_created = WorldBankFact.objects.get_or_create(time_dim=t, country_dim=c, measure_dim=m)
+                        if is_created:
+                            a.amount = float(row[k])
+                            a.save()
                     # print(row["Series Code"], row["Country Code"], y, df[k])
 
                 except Exception as ex:

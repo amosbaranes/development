@@ -447,6 +447,19 @@ AdvancedTabsManager.prototype.get_tab = function(tab_name){for(id in this.tabs){
 
 AdvancedTabsManager.prototype.get_pop_win = function(link_number){return this.pop_wins[link_number]}
 
+AdvancedTabsManager.prototype.truncate_model = function(model_name, app=null){
+       var app_ = this.my_app; if(app!=null){app_=app}
+       var dic_ = {"obj" : "AdvancedTabs", "atm": atm_.my_name, "app": this.my_app,
+                   "fun": "truncate_model", "params": {"model_name": model_name, "app":app_}}
+       // alert(JSON.stringify(dic_))
+              $.post(atm_.activate_function_link_,
+              {
+                dic : JSON.stringify(dic_)
+              },
+              function(dic){
+                //alert(JSON.stringify(dic))
+             }.bind(atm=atm_))
+}
 
 // this is a Factory function which return object based on the dic.
 AdvancedTabsManager.prototype.get_obj = function(tab, dic)
@@ -1301,7 +1314,6 @@ acReport.prototype.set_data = function(type, is_level=true){
   var report=this;
 
   var fun = function(data,html_obj){
-
      data["dim_titles"]={}
      zz(data);
 //       alert(JSON.stringify(data));
@@ -1359,6 +1371,10 @@ acPivotCreator.prototype.create_html = function()
 //alert(JSON.stringify(this.parent.axes));
   var p=this.parent
   var h_=p.axes["h"];var v_=p.axes["v"]
+
+//  alert(JSON.stringify(v_));
+//  p.pdata[v_[i]][h_[j]]["value"])
+
   var vertical_field_=p.data["properties"]["vertical_field"];
   var horizontal_field_=p.data["properties"]["horizontal_field"];
 

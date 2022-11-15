@@ -322,7 +322,7 @@ def update_field_model_by_id(request, foreign=None):
 def get_data_link(request):
     dic_ = request.POST["dic"]
     dic_ = eval(dic_)
-    print('9050 get_data_link dic_= ', dic_, '\n', dic_["fields"])
+    # print('9050 get_data_link dic_= ', dic_, '\n', dic_["fields"])
     multiple_select_fields = None
     if "multiple_select_fields" in dic_:
         if len(dic_["multiple_select_fields"]) > 0:
@@ -482,7 +482,7 @@ def get_data_link(request):
     # print("=2"*50)
 
     dic = {'status': 'ok', "dic": dic}
-    print(dic)
+    # print('core view 9055 get_data_link dic_= ', dic)
     return JsonResponse(dic)
 
 

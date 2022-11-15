@@ -8,7 +8,7 @@ class TimeDim(TruncateTableMixin, models.Model):
     year = models.PositiveSmallIntegerField(default=0)
 
     def __str__(self):
-        return str(self.id)
+        return str(self.id)+" year="+str(self.year)
 
 
 class CountryDim(TruncateTableMixin, models.Model):
@@ -34,7 +34,7 @@ class WorldBankFact(TruncateTableMixin, models.Model):
                                     related_name='country_dim_world_Bank_fact')
     measure_dim = models.ForeignKey(MeasureDim, on_delete=models.CASCADE, default=1,
                                     related_name='country_dim_world_Bank_fact')
-    amount = models.DecimalField(max_digits=10, decimal_places=2, default=0, blank=True, null=True)
+    amount = models.DecimalField(max_digits=16, decimal_places=2, default=0, blank=True, null=True)
 
     def __str__(self):
         return str(self.country_dim) + " - " + str(self.time_dim) + ": " + str(self.amount)

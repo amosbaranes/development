@@ -198,3 +198,17 @@ class AdvancedTabs(object):
         # print('result')
         return result
 
+    def truncate_model(self, params):
+        # print('9015 params')
+        # print(params)
+        app_ = params['app']
+        model_name_ = params['model_name']
+        try:
+            model = apps.get_model(app_label=app_, model_name=model_name_)
+            model.truncate()
+        except Exception as ex:
+            print("9025 "+str(ex))
+
+        result = "Data truncated"
+        return result
+
