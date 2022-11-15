@@ -121,8 +121,15 @@ class DataProcessing(BaseDataProcessing):
         # print(dic)
         # print("9013:\n")
         result = {}
+        time_dim = {}
+        country_dim = {}
         for k in CountryDim.objects.all():
-            result[k.id]=k.country_name
+            country_dim[k.id] = k.country_name
+
+        for k in TimeDim.objects.all():
+            time_dim[k.id] = k.year
+        result["time_dim"] = time_dim
+        result["country_dim"] = country_dim
         return result
 
     def load_file_to_db(self, dic):

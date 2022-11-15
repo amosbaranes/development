@@ -1313,7 +1313,12 @@ acReport.prototype.set_data = function(type, is_level=true){
   try{eval('var aa='+this.data["functions"]["on_amount_paint"])} catch(er){}
   var report=this;
 
-  var fun = function(data,html_obj){
+  var fun = function(data,ll){
+    var html_obj = ll[0];
+    var get_data_dic = ll[1]
+    //alert(JSON.stringify(get_data_dic));
+    //alert(html_obj.outerHTML)
+
      data["dim_titles"]={}
      zz(data);
 //       alert(JSON.stringify(data));
@@ -1334,8 +1339,10 @@ acReport.prototype.set_data = function(type, is_level=true){
                  if(!(h_.includes(data[horizontal_field_][j]))){h_.push(data[horizontal_field_][j])}
               }
               pdata[data[vertical_field_][j]][data[horizontal_field_][j]]={"value":data["amount"][j],"color":"black"};
-              aa(v=data[vertical_field_][j],h=data[horizontal_field_][j],a=
-              pdata[data[vertical_field_][j]][data[horizontal_field_][j]]
+              aa(v=data[vertical_field_][j],
+                 h=data[horizontal_field_][j],
+                 a=pdata[data[vertical_field_][j]][data[horizontal_field_][j]],
+                 f=get_data_dic["filters"]
               )
      }
      v_=v_.sort();//h_=h_.sort();
@@ -1348,16 +1355,15 @@ acReport.prototype.set_data = function(type, is_level=true){
   //alert(is_level)
   if(is_level==false){this.get_data_dic["fields"] = this.get_data_dic["fields"].filter(item => item !== "level")}
   //alert("90876\n"+JSON.stringify(this.get_data_dic));
-  this.atm.get_data(fun, this.get_data_dic, this.table_)
+  this.atm.get_data(fun, this.get_data_dic, [this.table_, this.get_data_dic])
 }
 
 acReport.prototype.row_col_click = function(event)
 {
- //var e=event.target;
- //alert(e.outerHTML)
- try{eval('var zz='+this.my_creator_obj.parent.data["functions"]["onclick"]);zz(event)} catch(er)
- {//alert("er9013: "+er)
- }
+ var e=event.target;
+ //alert(JSON.stringify(this.my_creator_obj.data["functions"]["onclick"]));
+ try{eval('var zz='+this.my_creator_obj.data["functions"]["onclick"]);zz(event);
+ } catch(er){alert("er9013: "+er)}
 }
 
 // -- acPivotCreator --
