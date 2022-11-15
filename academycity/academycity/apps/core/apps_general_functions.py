@@ -42,7 +42,6 @@ def activate_obj_function(request, add_dic=None):
             s += 'acapps.'
         s += app_+'.objects import '+obj_
         # print('9081 dic_ activate_obj_function s=', '\n', s, '\n', '-'*10)
-
         exec(s)
         # print('9082 dic_ activate_obj_function params=', '\n', params, '\n', '-'*10)
 
@@ -54,11 +53,11 @@ def activate_obj_function(request, add_dic=None):
         try:
             dic = eval(s_)
         except Exception as ex:
-            print("9088: "+str(ex))
+            print("9088 activate_obj_function: "+str(ex))
         # print(dic)
         return JsonResponse({'status': 'ok', 'result': dic})
     except Exception as ex:
-        print("9090: "+str(ex))
+        print("9090 activate_obj_function: "+str(ex))
         return JsonResponse({'status': 'ko: activate_obj_function'})
 
 

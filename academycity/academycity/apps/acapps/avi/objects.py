@@ -116,6 +116,21 @@ class DataProcessing(BaseDataProcessing):
     def __init__(self, dic):
         super().__init__(dic)
 
+    def get_general_data(self, dic):
+
+        print("9012:\n")
+        print(dic)
+        print("9013:\n")
+
+        result = {}
+        for k in CountryDim.objects.all():
+            result[k.id]=k.country_name
+
+        print(result)
+        print("9014:\n")
+        # result = {"status": "ok", "countries": countries}
+        return result
+
     def load_file_to_db(self, dic):
         file_path = self.upload_file(dic)["file_path"]
         df = pd.read_excel(file_path, sheet_name="Data", header=0)
@@ -161,7 +176,7 @@ class DataProcessing(BaseDataProcessing):
                     m = MeasureDim.objects.get(measure_code=row["Series Code"])
                     a, is_created = WorldBankFact.objects.get_or_create(time_dim=t, country_dim=c, measure_dim=m)
                     if is_created:
-                        a.amount = float(df[k])
+                        a.amount = float(row[k])
                         a.save()
                     # print(row["Series Code"], row["Country Code"], y, df[k])
 

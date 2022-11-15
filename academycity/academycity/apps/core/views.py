@@ -322,10 +322,7 @@ def update_field_model_by_id(request, foreign=None):
 def get_data_link(request):
     dic_ = request.POST["dic"]
     dic_ = eval(dic_)
-    # print('9050 get_data_link dic_= ')
-    # print(dic_)
-    # print(dic_["fields"])
-    # print('9050 dic_')
+    print('9050 get_data_link dic_= ', dic_, '\n', dic_["fields"])
     multiple_select_fields = None
     if "multiple_select_fields" in dic_:
         if len(dic_["multiple_select_fields"]) > 0:
@@ -370,7 +367,6 @@ def get_data_link(request):
     except Exception as ex:
         # print("error 500 "+str(ex))
         pass
-
 
     try:
         company_obj_id_ = dic_['company_obj_id']
@@ -486,7 +482,7 @@ def get_data_link(request):
     # print("=2"*50)
 
     dic = {'status': 'ok', "dic": dic}
-    # print(dic)
+    print(dic)
     return JsonResponse(dic)
 
 

@@ -2299,7 +2299,7 @@ class AcademyCityXBRL(object):
 
     def get_dic_company_info(self, company, type_="10-K"):
         dic_company_info = self.get_dic_company_info_(company, type_)
-        # print(dic_company_info)
+        # print("22222:\n", "dic_company_info:\n", dic_company_info)
         dic_data = dic_company_info['data']
         if len(dic_data) == 0:
             try:
@@ -2312,7 +2312,7 @@ class AcademyCityXBRL(object):
         if 'statements' not in dic_company_info:
             dic_company_info['statements'] = self.get_statements(company=company)
         dic_company_info = self.process_dic_company_info_(dic_company_info)
-        # print(dic_company_info)
+        print("33333:\n", "dic_company_info:\n", dic_company_info)
         return dic_company_info
 
     def get_dic_company_info_(self, company, type_="10-K"):
@@ -2320,8 +2320,7 @@ class AcademyCityXBRL(object):
         # print("get_dic_company_info_ 1")
         base_url = "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK={}&type={}&count=100"  # &dateb={}"
         url = base_url.format(company.cik, type_)
-        # print('-1'*10)
-        # print(url)
+        print("11111:\n", url, "\n", '-'*10)
         dic_company_info = {"company_info": {'ticker': company.ticker,
                                              'cik': company.cik,
                                              'sic_code': company.industry.sic_code,

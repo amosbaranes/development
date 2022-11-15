@@ -1295,12 +1295,13 @@ acReport.prototype.create_obj = function(){
   this.table_.onclick=this.row_col_click;
 }
 
-acReport.prototype.set_data = function(type){
+acReport.prototype.set_data = function(type, is_level=true){
   try{eval('var zz='+this.data["functions"]["on_receive_data"])} catch(er){}
   try{eval('var aa='+this.data["functions"]["on_amount_paint"])} catch(er){}
-
   var report=this;
+
   var fun = function(data,html_obj){
+
      data["dim_titles"]={}
      zz(data);
 //       alert(JSON.stringify(data));
@@ -1332,6 +1333,9 @@ acReport.prototype.set_data = function(type){
      report.raw_data=data
      report.creator.create_html(type)
    }
+  //alert(is_level)
+  if(is_level==false){this.get_data_dic["fields"] = this.get_data_dic["fields"].filter(item => item !== "level")}
+  //alert("90876\n"+JSON.stringify(this.get_data_dic));
   this.atm.get_data(fun, this.get_data_dic, this.table_)
 }
 

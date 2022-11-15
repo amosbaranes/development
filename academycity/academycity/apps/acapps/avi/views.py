@@ -10,7 +10,7 @@ import json
 
 
 def home(request):
-    company_obj_id_ = 0
+    company_obj_id_ = -1
     app_ = "avi"
     app_activate_function_link_ = reverse(app_+':activate_obj_function', kwargs={})
     app_upload_file_link_ = reverse(app_+':upload_file', kwargs={})
@@ -36,7 +36,7 @@ def app_id(request, app_name, company_obj_id):
 
 
 def app(request, app_name):
-    return app_id(request, app_name, 0)
+    return app_id(request, app_name, -1)
 
 
 def upload_file(request):
