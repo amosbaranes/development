@@ -24,7 +24,7 @@ company_obj_id, is_show_btns=true, user_id=0)
  this.pop_wins={};
  this.init_create_containers();
  this.fun_to_run_by_timer = []
- this.interval=1000;
+ this.interval=100;
  this.init_timer();
  if(is_show_btns == true){this.create_add_delete_editor();}
  this.setTabs();
@@ -231,7 +231,7 @@ AdvancedTabsManager.prototype.init_create_containers = function()
 
 AdvancedTabsManager.prototype.init_timer = function()
 {
-     fun=function(this_obj){
+    fun=function(this_obj){
       //alert("in this.fun\n"+JSON.stringify(this_obj.fun_to_run_by_timer))
       var date = new Date;
       this_obj.h=date.getHours();this_obj.m=date.getMinutes();this_obj.s=date.getSeconds();this_obj.y=date.getFullYear()
@@ -243,7 +243,13 @@ AdvancedTabsManager.prototype.init_timer = function()
         if(1*dic["run"]==1){
           var obj = dic["obj"]
           eval(dic["fun_ref"]);
-        dic["run"]=1*dic["interval"]/this.interval} else {dic["run"]=1*dic["run"]-1}
+          dic["run"]=(1*dic["interval"])/this_obj.interval
+
+        //alert("this_obj.interval: "+this_obj.interval+" interval: "+dic["interval"]+" :in: "+dic["run"])
+
+        } else {dic["run"]=1*dic["run"]-1}
+
+        //alert(dic["interval"]+" : "+dic["run"])
       }
     }
     try{Interval=setInterval(fun, this.interval, this)} catch(er){alert(er)}
@@ -3285,14 +3291,14 @@ acChartCreator.prototype.set_chart_data = function(chart_type)
 
    fff = function(obj){
         for (var i in trace1["x"])
-        {trace1["x"][i] += i/2;trace1["y"][i] *= 1.2;}
+        {trace1["x"][i] *= (1/2+Math.random());trace1["y"][i] *= (1/2+Math.random());}
         Plotly.newPlot(obj, data, layout);
     }
 
     try{this.parent.atm.set_fun_for_timer(
       fun_name="fff",
       fun_ref="fff(obj)",
-      interval=1000, obj=this.chart)
+      interval=100, obj=this.chart)
     }catch(er){alert(er)}
 
 
