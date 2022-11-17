@@ -1715,58 +1715,56 @@ class StockPrices(object):
         df["yd"] = df["idx"].apply(get_yd)
         df = df[['y', 'yd', 'open', 'high', 'low', 'close', 'volume']]
         # print('-'*10)
-        # print('-'*10)
         # print(df)
         # print('-'*10)
-        # print('-'*10)
         try:
-            table = pd.pivot_table(df, values=['open', 'high', 'low', 'close', 'volume'], index=['y', 'yd'],
+            table = pd.pivot_table(df, values=['open', 'high', 'low', 'close', 'volume'], index=['yd'],
+                                   columns=['y'],
                                    aggfunc={'open': np.sum,
                                             'high': np.sum,
                                             'low': np.sum,
                                             'close': np.sum,
                                             'volume': np.sum})
             table.fillna(method='bfill', inplace=True)
+            # print('-0'*10)
+            # print(table)
         except Exception as ex:
             print("10001"+str(ex))
         # print('-'*10)
-        # print('-'*10)
         # print('table')
         # print(table)
-        # print('-'*10)
-        # print('-'*10)
         try:
             table1 = ((table.div(table.iloc[0])-1).astype(float)).round(4)
-        except Exception as ex:
-            print("10002"+str(ex))
-        # print('table1')
-        # print(table1)
-        np_table1 = table1.to_numpy(dtype=float)
-        # print(np_table1)
-        # print('-'*10)
-        try:
             table1 = table1.reset_index().to_dict(orient='list')
+            table11 = {}
+            for k in table1:
+                if k[0] not in ['index', 'yd']:
+                    if k[0] not in table11:
+                        table22[k[0]] = {}
+                    table11[k[0]][k[1]] = table1[k]
+                elif k[0] == 'yd':
+                    table11[k[0]] = table1[k]
         except Exception as ex:
-            print("10003"+str(ex))
-        # print('table1')
-        # print(table1)
-        # print('-'*10)
+            print("err10003 "+str(ex))
+        print("="*100)
+        print("="*100)
+        print("="*100)
         try:
             table2 = ((1/table.div(table.iloc[-1])-1).astype(float)).round(4)
-        except Exception as ex:
-            print("10004"+str(ex))
-        # print('table2')
-        # print(table2)
-        # print('-'*10)
-        try:
             table2 = table2.reset_index().to_dict(orient='list')
+            table22 = {}
+            for k in table2:
+                if k[0] not in ['index', 'yd']:
+                    if k[0] not in table22:
+                        table22[k[0]] = {}
+                    table22[k[0]][k[1]] = table2[k]
+                elif k[0] == 'yd':
+                    table22[k[0]] = table2[k]
         except Exception as ex:
             print("10005"+str(ex))
-        # print('table2')
-        # print(type(table2))
-        # print(table2)
-        # print("end of data")
-        result = {"table1": table1, "table2": table2}
+        # print('table22')
+        # print(table22)
+        result = {"table1": table11, "table2": table22}
         # print(result)
         # print('table1')
         # print(table1[20221110])

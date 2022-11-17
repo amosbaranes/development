@@ -27,7 +27,7 @@ def update_forecast():
                 ssql += "select ticker,t,o,h,l,c,v from corporatevaluation_XBRLRealEquityPrices"
                 count = SQL().exc_sql(ssql, data)
                 XBRLRealEquityPrices.truncate()
-            elif h == 3:
+            elif h == 4:
                 sp = StockPrices()
                 # print("Start Days")
                 try:

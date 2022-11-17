@@ -23,6 +23,7 @@ from sklearn.metrics import mean_squared_error, mean_absolute_error
 from sklearn.model_selection import cross_val_score
 from scipy import stats
 import joblib
+
 """
  to_data_path_ is the place datasets are kept
  topic_id name of the chapter to store images
@@ -32,7 +33,7 @@ mpl.use('Agg')
 
 
 class BaseDataProcessing(object):
-    def __init__(self, dic):   # to_data_path, target_field
+    def __init__(self, dic):  # to_data_path, target_field
         self.name = 'DataProcessing'
         # print('-'*50)
         # print('9001 in constructor parent')
@@ -50,12 +51,9 @@ class BaseDataProcessing(object):
         # Where to save the figures
         # --- Change to this when you start to use Django ---
         self.PROJECT_ROOT_DIR = os.path.join(settings.WEB_DIR, "data", dic["app"])
-
         # print(self.PROJECT_ROOT_DIR)
         # print('-'*50)
-
         os.makedirs(self.PROJECT_ROOT_DIR, exist_ok=True)
-
         self.TOPIC_ID = dic["topic_id"]  # "fundamentals"
         self.TO_DATA_PATH = os.path.join(self.PROJECT_ROOT_DIR, "datasets")
         os.makedirs(self.TO_DATA_PATH, exist_ok=True)
@@ -99,7 +97,7 @@ class BaseDataProcessing(object):
         # for example: if data_folder=excel we choose self.TO_EXCEL
 
         # print("target_folder = self.TO_"+dic["folder_type"].upper())
-        target_folder = eval("self.TO_"+dic["folder_type"].upper())
+        target_folder = eval("self.TO_" + dic["folder_type"].upper())
 
         filename = dic["request"].POST['filename']
         file_path = os.path.join(target_folder, filename)
@@ -132,9 +130,11 @@ class DataProcessing(BaseDataProcessing):
         result["country_dim"] = country_dim
         return result
 
-    def load_file_to_db(self, dic):
+    def load_wbfile_to_db(self, dic):
         file_path = self.upload_file(dic)["file_path"]
         df = pd.read_excel(file_path, sheet_name="Data", header=0)
+        # print(df)
+        n = 0
         for k in df.columns:
             s = k.split(" ")
             # print("9088: ", s)
@@ -146,6 +146,7 @@ class DataProcessing(BaseDataProcessing):
                     yy.save()
             except Exception as ex:
                 pass
+
         dfc = df[["Country Name", "Country Code"]]
         # print(dfc)
         for index, row in dfc.iterrows():
@@ -171,22 +172,61 @@ class DataProcessing(BaseDataProcessing):
             for k in df.columns:
                 s = k.split(" ")
                 try:
-                    y = int(s[0])
-                    t = TimeDim.objects.get(id=y)
-                    c = CountryDim.objects.get(country_code=row["Country Code"])
-                    m = MeasureDim.objects.get(measure_code=row["Series Code"])
-
-                    # print("111\nmeasure: ", row["Series Code"],"\n", row["Country Code"], y, "\noriginal: ", row[k], "\nfloat:", float(row[k]))
-                    if float(row[k]) != 0:
-                        # print("222\nmeasure: ", row["Series Code"],"\n", row["Country Code"], y, "\noriginal: ", row[k], "\nfloat:", float(row[k]))
+                    if str(row[k]) != "nan":
+                        # print("str:  ="+str(row[k])+"=")
+                        y = int(s[0])
+                        t = TimeDim.objects.get(id=y)
+                        c = CountryDim.objects.get(country_code=row["Country Code"])
+                        m = MeasureDim.objects.get(measure_code=row["Series Code"])
                         a, is_created = WorldBankFact.objects.get_or_create(time_dim=t, country_dim=c, measure_dim=m)
                         if is_created:
                             a.amount = float(row[k])
                             a.save()
-                    # print(row["Series Code"], row["Country Code"], y, df[k])
-
                 except Exception as ex:
                     pass
+                    # print("90543-1" + str(ex))
+        result = {"status": "ok"}
+        return result
+
+    def load_oecdfile_to_db(self, dic):
+        # print("90123-5: \n", dic, "="*50)
+        file_path = self.upload_file(dic)["file_path"]
+        df = pd.read_excel(file_path, sheet_name="Data", header=0)
+        # print(df)
+
+        for index, row in df.iterrows():
+            try:
+                if str(row["Value"]) != "nan":
+                    try:
+                        yy = int(row["Year"])
+                        t, is_created = TimeDim.objects.get_or_create(id=yy)
+                        if is_created:
+                            t.year = yy
+                            t.save()
+                    except Exception as ex:
+                        pass
+                    try:
+                        cc = row["Country"]
+                        c, is_created = CountryDim.objects.get_or_create(country_code=cc)
+                        if is_created:
+                            c.country_name = cc
+                            c.save()
+                    except Exception as ex:
+                        pass
+                    try:
+                        mm = row["Measurement"]
+                        m, is_created = MeasureDim.objects.get_or_create(measure_name=mm)
+                        if is_created:
+                            m.measure_code = mm
+                            m.save()
+                    except Exception as ex:
+                        pass
+                    a, is_created = WorldBankFact.objects.get_or_create(time_dim=t, country_dim=c, measure_dim=m)
+                    if is_created:
+                        a.amount = float(row["Value"])
+                        a.save()
+            except Exception as ex:
+                print("90652-3" + str(ex))
 
         result = {"status": "ok"}
         return result

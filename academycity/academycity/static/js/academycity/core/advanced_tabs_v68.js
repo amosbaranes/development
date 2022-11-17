@@ -24,7 +24,7 @@ company_obj_id, is_show_btns=true, user_id=0)
  this.pop_wins={};
  this.init_create_containers();
  this.fun_to_run_by_timer = []
- this.interval=5000;
+ this.interval=1000;
  this.init_timer();
  if(is_show_btns == true){this.create_add_delete_editor();}
  this.setTabs();
@@ -240,16 +240,19 @@ AdvancedTabsManager.prototype.init_timer = function()
       for(i in this_obj.fun_to_run_by_timer){
         var dic=this_obj.fun_to_run_by_timer[i]
         //alert(JSON.stringify(dic)+"\n\n"+this_obj.s)
-        if(1*dic["run"]==1){eval(dic["fun_ref"]);dic["run"]=1*dic["interval"]/this.interval} else {dic["run"]=1*dic["run"]-1}
+        if(1*dic["run"]==1){
+          var obj = dic["obj"]
+          eval(dic["fun_ref"]);
+        dic["run"]=1*dic["interval"]/this.interval} else {dic["run"]=1*dic["run"]-1}
       }
     }
     try{Interval=setInterval(fun, this.interval, this)} catch(er){alert(er)}
 }
 
-AdvancedTabsManager.prototype.set_fun_for_timer = function(fun_name, fun_ref, interval)
+AdvancedTabsManager.prototype.set_fun_for_timer = function(fun_name, fun_ref, interval, obj=null)
 {
-  var run_=1*interval/5000
-  dic_={"fun_name":fun_name, "fun_ref":fun_ref, "interval":interval, "run":run_}
+  var run_=1*interval/this.interval
+  dic_={"fun_name":fun_name, "fun_ref":fun_ref, "interval":interval, "run":run_, "obj": obj}
      for(i in this.fun_to_run_by_timer){
          var fun_name_=this.fun_to_run_by_timer[i]["fun_name"];
          if(fun_name_==fun_name){return;}
@@ -596,6 +599,7 @@ AdvancedTabsManager.prototype.activate_obj_function = function(call_back_fun, di
   dic_["company_obj_id"]=this.company_obj_id;
      //alert(JSON.stringify(dic_))
      //alert(this.activate_obj_function_link_)
+     //alert(call_back_fun)
 
      $.post(this.activate_obj_function_link_,
           {dic : JSON.stringify(dic_)},
@@ -3127,7 +3131,7 @@ acChartCreator.prototype.create_obj = function()
   //alert("I am a creator of acPlugin Chart")
   //--
   var dic=this.parent.data;
-  //alert(JSON.stringify(dic));
+  //alert("9079 dic:"+JSON.stringify(dic));
   //--
   var container = document.getElementById("content_"+dic["container_id"]);
   //--
@@ -3155,22 +3159,25 @@ acChartCreator.prototype.create_obj = function()
      chart_type["x"]["data"].push(i)
      chart_type["series"]["y1"]["data"].push(i+Math.random())
    }
-  //alert(JSON.stringify(chart_type));
+  //alert("90711 chart_type:"+JSON.stringify(chart_type));
  this.set_chart_data(chart_type);
 }
 
 acChartCreator.prototype.set_chart_data = function(chart_type)
 {
-  //alert(JSON.stringify(chart_type));
+  //alert("9023-550\n"+JSON.stringify(chart_type));
   var data_=[];
   chart_attributes={"pies":{"type_name":"type", "type_value":"pie", "marker_attribute":"opacity", "marker_attribute_value":"0.7"},
                     "areas":{"type_name":"type", "type_value":"scatter", "marker_attribute":"opacity", "marker_attribute_value":"0.7"},
                     "scatter":{"type_name":"mode", "type_value":"markers", "marker_attribute":"opacity", "marker_attribute_value":"0.7"},
                     "lines":{"type_name":"mode", "type_value":"lines", "marker_attribute":"size", "marker_attribute_value":"8"},
                     "bars":{"type_name":"type", "type_value":"bar", "marker_attribute":"opacity", "marker_attribute_value":"0.7"},
-                    "histogram":{"type_name":"type", "type_value":"histogram"}
+                    "histogram":{"type_name":"type", "type_value":"histogram"},
+                    "bubbles":{"type_name":"", "type_value":""}
                    }
-    //alert(JSON.stringify(chart_attributes));
+
+    //alert("9023-550 chart_attributes\n"+JSON.stringify(chart_attributes));
+
     chart_type["type_name"]=chart_attributes[chart_type["type"]]["type_name"];
     chart_type["type_name_value"]=chart_attributes[chart_type["type"]]["type_value"]
 
@@ -3182,7 +3189,7 @@ acChartCreator.prototype.set_chart_data = function(chart_type)
          "series": chart_type["series"]
         }
 
-   //alert(JSON.stringify(data));
+   //alert("90712 data:"+JSON.stringify(data));
 
  if(chart_type["type"]=='pies')
  {
@@ -3221,7 +3228,8 @@ acChartCreator.prototype.set_chart_data = function(chart_type)
     data_.push(trace);
    };
    Plotly.newPlot(this.chart, data_, layout );
- } else if(chart_type["type"]=='scatter') {
+ }
+ else if(chart_type["type"]=='scatter') {
     var trace = {}
     trace["x"]=chart_type["x"];
     trace["y"]=chart_type["y"];
@@ -3236,7 +3244,8 @@ acChartCreator.prototype.set_chart_data = function(chart_type)
                  xaxis: {title: chart_type["x-axis-title"], range: chart_type["x-axis-range"]},
                  yaxis: {title: chart_type["y-axis-title"], range: chart_type["y-axis-range"]}}
    Plotly.newPlot(this.chart, data_, layout );
- } else if(chart_type["type"]=='histogram') {
+ }
+ else if(chart_type["type"]=='histogram') {
     var trace = {}
     trace["x"]=chart_type["x"]["data"];
     trace[chart_type["type_name"]]=chart_type["type_name_value"];
@@ -3248,9 +3257,46 @@ acChartCreator.prototype.set_chart_data = function(chart_type)
                   xaxis: {title: chart_type["x-axis-title"]},
                   yaxis: {title: chart_type+["y-axis-title"]}}
 
+   //alert(JSON.stringify(data_));
 
    Plotly.newPlot(this.chart, data_, layout);
- } else {
+ }
+
+ else if(chart_type["type"]=='bubbles'){
+
+     var trace1 = {
+      x: [3, 2, 3, 4],
+      y: [10, 11, 12, 13],
+      mode: 'markers',
+      marker: {
+        size: [40, 60, 80, 100]
+      }
+    };
+
+    var data = [trace1];
+
+    var layout = {
+      title: 'Marker Size',
+      showlegend: false,
+      height: 600,
+      width: 600,
+      xaxis: {title: "x", range: [0, 20], autorange: true}
+    };
+
+   fff = function(obj){
+        for (var i in trace1["x"])
+        {trace1["x"][i] += i/2;trace1["y"][i] *= 1.2;}
+        Plotly.newPlot(obj, data, layout);
+    }
+
+    try{this.parent.atm.set_fun_for_timer(
+      fun_name="fff",
+      fun_ref="fff(obj)",
+      interval=1000, obj=this.chart)
+    }catch(er){alert(er)}
+
+
+} else {
    for(y in data["series"]){
      var trace = {}
      trace["x"]=data["x"]["data"];
@@ -5011,6 +5057,11 @@ var nice_number = function(z){
  var nss=ns.split(",");var n_="";for(var j=0;j<nss.length;j++){n_= n_+nss[j]};var n__="";
  while (n_.length>0) {if(n__.length>0){n__=","+n__};n__=n_.substring(n_.length-3,n_.length)+n__;n_=n_.substring(0,n_.length-3)}
  return kk+n__+"."+dn;
+}
+
+var clean_number = function(z){
+ try{if(z==null){return z}; z=""+z;z=z.replace(/,/g, ''); z=1*z}catch(er){}
+ return z
 }
 
 //-- General Dictionaries --
