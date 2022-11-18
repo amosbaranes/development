@@ -3271,10 +3271,11 @@ acChartCreator.prototype.set_chart_data = function(chart_type)
  else if(chart_type["type"]=='bubbles'){
 
      var trace1 = {
-      x: [2, 25, 11, 7],
-      y: [7, 9, 3, 11],
+      x: [50*(Math.random()), 50*(Math.random()), 50*(Math.random()), 50*(Math.random())],
+      y: [50*(Math.random()), 50*(Math.random()), 50*(Math.random()), 50*(Math.random())],
       mode: 'markers',
       marker: {
+        color: ['rgb(93, 164, 214)', 'rgb(255, 144, 14)',  'rgb(44, 160, 101)', 'rgb(255, 65, 54)'],
         size: [40, 60, 80, 100]
       }
     };
@@ -3292,15 +3293,15 @@ acChartCreator.prototype.set_chart_data = function(chart_type)
 
    fff = function(obj){
         for (var i in trace1["x"])
-        {trace1["x"][i] = 15 + (trace1["x"][i]-15)*(999/2000+Math.random());
-         trace1["y"][i] = 20 + (trace1["y"][i]-20)*(999/2000+Math.random());}
+        {trace1["x"][i] = trace1["x"][i] + (25-(10*(1-Math.random())+trace1["x"][i])*(999/2000+Math.random()))/10;
+         trace1["y"][i] = trace1["y"][i] + (25-(10*(1-Math.random())+trace1["y"][i])*(999/2000+Math.random()))/10;}
         Plotly.newPlot(obj, data, layout);
     }
 
     try{this.parent.atm.set_fun_for_timer(
       fun_name="fff",
       fun_ref="fff(obj)",
-      interval=200, obj=this.chart)
+      interval=300, obj=this.chart)
     }catch(er){alert(er)}
 
 
