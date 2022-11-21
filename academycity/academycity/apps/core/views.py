@@ -528,4 +528,3 @@ def upload_file(request):
 
     return HttpResponse(json.dumps(ret))
 
-

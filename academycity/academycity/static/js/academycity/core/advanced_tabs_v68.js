@@ -81,7 +81,7 @@ company_obj_id, is_show_btns=true, user_id=0)
                                                "functions":[]},
                                         "A":{"title":"a", "width":3,
                                              "setting": {"color":[], "background-color":[]},
-                                             "attributes":{"href":[], "target":[]},
+                                             "attributes":{"href":[], "target":["", "blank_"]},
                                              "functions":[]},
                                         "H":{"title":"h", "width":3,
                                              "setting": {},
@@ -149,7 +149,7 @@ company_obj_id, is_show_btns=true, user_id=0)
                                                                        "foreign_table":[],"filter":[]}},
                                         "Chart":{"title":"Chart", "width":5,
                                                  "setting": {},
-                                                 "attributes":{"height":[]},
+                                                 "attributes":{"height":[], "interval":[]},
                                                  "functions":[]},
                                         "Candle":{"title":"Candle", "width":7,
                                                  "setting": {"border_width":[],"border_color":[],
@@ -241,7 +241,7 @@ AdvancedTabsManager.prototype.init_timer = function()
         var dic=this_obj.fun_to_run_by_timer[i]
         //alert(JSON.stringify(dic)+"\n\n"+this_obj.s)
         if(1*dic["run"]==1){
-          var obj = dic["obj"]
+          var obj = dic["obj_"]
           eval(dic["fun_ref"]);
           dic["run"]=(1*dic["interval"])/this_obj.interval
 
@@ -258,7 +258,7 @@ AdvancedTabsManager.prototype.init_timer = function()
 AdvancedTabsManager.prototype.set_fun_for_timer = function(fun_name, fun_ref, interval, obj=null)
 {
   var run_=1*interval/this.interval
-  dic_={"fun_name":fun_name, "fun_ref":fun_ref, "interval":interval, "run":run_, "obj": obj}
+  dic_={"fun_name":fun_name, "fun_ref":fun_ref, "interval":interval, "run":run_, "obj_": obj}
      for(i in this.fun_to_run_by_timer){
          var fun_name_=this.fun_to_run_by_timer[i]["fun_name"];
          if(fun_name_==fun_name){return;}
@@ -3172,7 +3172,9 @@ acChartCreator.prototype.create_obj = function()
 acChartCreator.prototype.set_chart_data = function(chart_type)
 {
   //alert("9023-550\n"+JSON.stringify(chart_type));
+
   var data_=[];
+
   chart_attributes={"pies":{"type_name":"type", "type_value":"pie", "marker_attribute":"opacity", "marker_attribute_value":"0.7"},
                     "areas":{"type_name":"type", "type_value":"scatter", "marker_attribute":"opacity", "marker_attribute_value":"0.7"},
                     "scatter":{"type_name":"mode", "type_value":"markers", "marker_attribute":"opacity", "marker_attribute_value":"0.7"},
@@ -3267,7 +3269,6 @@ acChartCreator.prototype.set_chart_data = function(chart_type)
 
    Plotly.newPlot(this.chart, data_, layout);
  }
-
  else if(chart_type["type"]=='bubbles'){
 
      var trace1 = {
@@ -3291,21 +3292,48 @@ acChartCreator.prototype.set_chart_data = function(chart_type)
       yaxis: {title: "y", range: [0, 50], autorange: false}
     };
 
-   fff = function(obj){
-        for (var i in trace1["x"])
-        {trace1["x"][i] = trace1["x"][i] + (25-(10*(1-Math.random())+trace1["x"][i])*(999/2000+Math.random()))/10;
-         trace1["y"][i] = trace1["y"][i] + (25-(10*(1-Math.random())+trace1["y"][i])*(999/2000+Math.random()))/10;}
-        Plotly.newPlot(obj, data, layout);
-    }
+
+  //alert("9053-555\n"+JSON.stringify(this.parent.data));
+
+  //alert("9023-557\n"+JSON.stringify(chart_type));
+  //alert(chart_type["timer_function"])
+
+  eval("var zzz = "+chart_type["timer_function"])
+
+  //alert('zzz')
+  //alert(zzz)
 
     try{this.parent.atm.set_fun_for_timer(
-      fun_name="fff",
-      fun_ref="fff(obj)",
-      interval=300, obj=this.chart)
+      fun_name="zzz",
+      fun_ref="zzz(obj)",
+      interval=1*this.parent.data["properties"]["interval"], obj=[this.chart, data, layout])
     }catch(er){alert(er)}
 
 
-} else {
+}
+ else if(chart_type["type"]=='lines'){
+
+//alert("9023-550-1\n"+JSON.stringify(chart_type));
+    var data = [];
+    for(var k in chart_type["series"])
+    {
+      //alert("k="+k + "   y="+JSON.stringify(chart_type["series"][k]))
+        var s='var trace1={}';eval(s);
+        trace1["x"]=chart_type["x"];
+        trace1["y"]=chart_type["series"][k]["data"];
+        trace1["mode"] = 'lines+markers',
+        trace1["name"] = chart_type["series"][k]["name"],
+        data.push(trace1)
+    }
+    var layout = {
+      title: 'Data for countries',
+      xaxis: {title: chart_type["x-axis-title"]},
+      yaxis: {title: chart_type["y-axis-title"]}
+    };
+    Plotly.newPlot(this.chart, data, layout);
+ }
+ else {
+  //alert(chart_type["type"])
    for(y in data["series"]){
      var trace = {}
      trace["x"]=data["x"]["data"];
@@ -3326,9 +3354,7 @@ acChartCreator.prototype.set_chart_data = function(chart_type)
                 yaxis: {title: chart_type["y-axis-title"], range: chart_type["y-axis-range"], autorange: true,
                        showgrid: true, zeroline: true, showline: true, showticklabels: true}
                }
-   Plotly.newPlot(this.chart, data_, layout );
  }
-
 
 
 }
@@ -5051,7 +5077,6 @@ AppObjsCreateObject_click = function(obj, event)
 {
  alert("222 create AppObjs")
 }
-
 
 
 //-- General Functions --

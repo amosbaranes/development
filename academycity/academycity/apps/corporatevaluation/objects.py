@@ -2035,6 +2035,15 @@ class StockPrices(object):
         dic = {'data': {"status": "ok"}}
 
 
+class TF(object):
+    def __init__(self):
+        pass
+
+    def mnist(self):
+        from keras.datasets import mnist
+        (train_images, train_labels), (test_images, test_labels) = mnist.load_data()
+
+
 class AcademyCityXBRL(object):
     def __init__(self):
 
