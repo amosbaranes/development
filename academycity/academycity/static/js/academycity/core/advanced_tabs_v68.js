@@ -3313,7 +3313,7 @@ acChartCreator.prototype.set_chart_data = function(chart_type)
 }
  else if(chart_type["type"]=='lines'){
 
-//alert("9023-550-1\n"+JSON.stringify(chart_type));
+    //alert("9023-550-1\n"+JSON.stringify(chart_type));
     var data = [];
     for(var k in chart_type["series"])
     {
