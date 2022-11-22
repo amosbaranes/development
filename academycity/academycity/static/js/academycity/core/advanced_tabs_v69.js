@@ -170,7 +170,7 @@ company_obj_id, is_show_btns=true, user_id=0)
                                                  "setting": {"app":[], "table":[],
                                                  "vertical_field":[],"vertical_title":[],
                                                  "horizontal_field":[],"horizontal_title":[],
-                                                 "value_field":[], "order_by":[],},
+                                                 "value_field":[], "order_by":[],"height":[]},
                                                  "attributes":{"table_class":["","basic", "payment"]},
                                                  "functions":["on_amount_paint", "on_receive_data", "onclick", "onmouseover", "onmouseout"]
                                                 },
@@ -774,7 +774,7 @@ function FunctionsPropertiesEditor(tab, functions_dic, functions_list_dic, prope
     editor.tab_obj_.active_function=f;
     var fun=null;
     try{fun=functions_[f]} catch(er){}
-    if(fun==null){fun="function (event){\ntry{\n\n} catch(er){alert('er9006: '+er)}\n}";functions_[f]=fun;}
+    if(fun==null){fun="function (event){\ntry{\n\n} catch(er){alert('err 9006: '+er)}\n}";functions_[f]=fun;}
       tab_content_.innerHTML=functions_[f];
       tab_content_.setAttribute("fun_name",f);
       var funtablinks = document.getElementsByClassName("funtablinks");
@@ -1378,30 +1378,52 @@ acReport.prototype.row_col_click = function(event)
 
 // -- acPivotCreator --
 function acPivotCreator(parent){
-  this.parent=parent;
+  this.parent=parent;this.sort_by_col_num=null;this.sort_ascending=true;
   // alert(JSON.stringify(this.parent.data));
 }
 
-acPivotCreator.prototype.create_html = function()
+acPivotCreator.prototype.create_html = function(type=null)
 {
-//alert(JSON.stringify(this.parent.axes));
+  //alert(JSON.stringify(this.parent.axes));
   var p=this.parent
   var h_=p.axes["h"];var v_=p.axes["v"]
 
-//  alert(JSON.stringify(v_));
-//  p.pdata[v_[i]][h_[j]]["value"])
+  //alert(JSON.stringify(v_));
+  //alert(JSON.stringify(h_));
+  //alert(p.pdata[v_[0]][h_[5]]["value"])
 
   var vertical_field_=p.data["properties"]["vertical_field"];
   var horizontal_field_=p.data["properties"]["horizontal_field"];
-
-  var sh="<thead><tr><th></th>";
-  for(var j in h_){sh+="<th>"+p.raw_data["dim_titles"][horizontal_field_][h_[j]]+"</th>"};
+  var sh="<thead id='thead_"+this.parent.data["properties"]["obj_number"]+"'>"
+  sh+="<tr id='tr_h_"+this.parent.data["properties"]["obj_number"]+"' style='cursor:pointer'><th></th>";
+  for(var j in h_){sh+="<th col_num="+j+">"+p.raw_data["dim_titles"][horizontal_field_][h_[j]]+"</th>"};
   try{
   if(p.data["properties"]["horizontal_title"]!=null && p.data["properties"]["horizontal_title"]!="")
   {sh+="<th>"+p.data["properties"]["horizontal_title"]+"</th>"}}catch(er){}
-
   sh+="</tr></thead>";
-  var s="<table>"+sh+"<tbody>"
+
+  //alert(JSON.stringify(this.parent.data["properties"]));
+// alert(111)
+  var s="<table>"+sh+"<tbody id='tbody_"+this.parent.data["properties"]["obj_number"]+"'>"
+
+//alert(this.sort_by_col_num)
+
+  if(this.sort_by_col_num!=null)
+  {
+   try{
+      var kk={};var kk_=[]
+      for (var i in v_)
+      {try{kk[parseFloat(p.pdata[v_[i]][h_[this.sort_by_col_num]]["value"])]=v_[i];
+            kk_.push(parseFloat(p.pdata[v_[i]][h_[this.sort_by_col_num]]["value"]))
+        } catch(er){}}
+      if(this.sort_ascending==true){kk_=kk_.sort((a, b) => a - b);this.sort_ascending=false}
+      else{kk_=kk_.sort((a, b) => b - a);this.sort_ascending=true}
+      var v_=[];for(var g in kk_){v_.push(kk[kk_[g]])}
+   } catch(err){alert(err)}
+  }
+
+  //alert(JSON.stringify(v_));
+
   for (var i in v_)
   {
       s+="<tr><th style='white-space: pre;text-align:left'>"+v_[i]+":"+p.raw_data["dim_titles"][vertical_field_][v_[i]]+"</th>"
@@ -1423,6 +1445,16 @@ acPivotCreator.prototype.create_html = function()
   }
   s+="</tbody></table>";
   p.table_.innerHTML=s;
+  p.tbody=document.innerHTML=document.getElementById('tbody_'+this.parent.data["properties"]["obj_number"])
+  p.tr_h=document.innerHTML=document.getElementById('tr_h_'+this.parent.data["properties"]["obj_number"])
+  p.head=document.innerHTML=document.getElementById('thead_'+this.parent.data["properties"]["obj_number"])
+  p.tr_h.my_creator_obj=this;
+  p.tr_h.addEventListener("click", function(event){
+   var e=event.target;
+   //alert(e.getAttribute("col_num"))
+   this.my_creator_obj.sort_by_col_num=parseInt(e.getAttribute("col_num"));
+   this.my_creator_obj.create_html()
+  })
 }
 
 

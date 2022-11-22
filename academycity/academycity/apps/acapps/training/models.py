@@ -16,10 +16,19 @@ class TrainingWeb(TruncateTableMixin, models.Model):
         return str(self.program_name)
 
 
+# חטיבה
+class Brigades(TruncateTableMixin, models.Model):
+    training_web = models.ForeignKey(TrainingWeb, on_delete=models.CASCADE, default=1,
+                                     related_name='training_web_brigades')
+    brigade_name = models.CharField(max_length=50, default='', blank=True, null=True)
+
+
 # גדוד
 class Battalions(TruncateTableMixin, models.Model):
     training_web = models.ForeignKey(TrainingWeb, on_delete=models.CASCADE, default=1,
                                      related_name='training_web_battalions')
+    brigade = models.ForeignKey(Brigades, on_delete=models.CASCADE, default=1,
+                                related_name='brigade_battalions')
     battalion_name = models.CharField(max_length=50, default='', blank=True, null=True)
 
 

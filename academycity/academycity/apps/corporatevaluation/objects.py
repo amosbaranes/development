@@ -1629,7 +1629,7 @@ class StockPrices(object):
         return dic
 
     def update_prices_days(self, dic):
-        # print("9015 input dic: \n", dic, "\n"+"-"*30)
+        print("9015 input dic: \n", dic, "\n"+"-"*30)
         l_f = str(dic["letter_from"])
         l_t = str(dic["letter_to"])
         y_ = int(dic["numer_of_years"]) # I use w for years
@@ -1661,7 +1661,7 @@ class StockPrices(object):
                     for index, row in hist.iterrows():
                         idx = pd.Timestamp(index)
                         idx_ = idx.year*100000000+idx.month*1000000+idx.day*10000+idx.hour*100+idx.minute
-                        # print("9017 idx_: \n", idx_, "\n"+"-"*30)
+                        # print("9017 idx_: \n", idx_, row, "\n"+"-"*30)
                         if row["Volume"] > 0:
                             # print(row["Volume"])
                             # print("9019 dates: \n", round(row["Volume"]/100), "\n"+"-"*30)

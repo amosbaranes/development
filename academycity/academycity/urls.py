@@ -66,6 +66,8 @@ urlpatterns += i18n_patterns(
     url(r'ml/', include('academycity.apps.acapps.ml.urls')),
     url(r'businesssim/', include('academycity.apps.acapps.businesssim.urls')),
     url(r'accounting/', include('academycity.apps.acapps.accounting.urls')),
+    url(r'l/', include('academycity.apps.acapps.liongold.urls')),
+    #
 
     url(r'c/', include('academycity.apps.webapps.checkcashingchicago.urls')),
     url(r'e/', include('academycity.apps.webapps.education.urls')),
@@ -76,8 +78,6 @@ urlpatterns += i18n_patterns(
     url(r'a/', include('academycity.apps.webapps.apewives.urls')),
     url(r'j/', include('academycity.apps.webapps.javascripttutorial.urls')),
     url(r's/', include('academycity.apps.webapps.simba.urls')),
-    #
-    url(r'l/', include('academycity.apps.acapps.liongold.urls')),
     #
     url(r'^swotclock/', include('academycity.apps.webapps.swotclock.urls')),
     #
