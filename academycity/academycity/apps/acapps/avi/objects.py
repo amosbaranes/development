@@ -173,15 +173,18 @@ class DataProcessing(BaseDataProcessing):
                 s = k.split(" ")
                 try:
                     if str(row[k]) != "nan":
-                        # print("str:  ="+str(row[k])+"=")
-                        y = int(s[0])
-                        t = TimeDim.objects.get(id=y)
-                        c = CountryDim.objects.get(country_code=row["Country Code"])
-                        m = MeasureDim.objects.get(measure_code=row["Series Code"])
-                        a, is_created = WorldBankFact.objects.get_or_create(time_dim=t, country_dim=c, measure_dim=m)
-                        if is_created:
-                            a.amount = float(row[k])
-                            a.save()
+                        if float(row[k]) > 0 or float(row[k]) < 0:
+                            # print(row[k], float(row[k]))
+                            # print("str:  ="+str(row[k])+"=")
+                            y = int(s[0])
+                            t = TimeDim.objects.get(id=y)
+                            c = CountryDim.objects.get(country_code=row["Country Code"])
+                            m = MeasureDim.objects.get(measure_code=row["Series Code"])
+                            a, is_created = WorldBankFact.objects.get_or_create(time_dim=t, country_dim=c, measure_dim=m)
+                            if is_created:
+                                a.amount = float(row[k])
+                                a.save()
+
                 except Exception as ex:
                     pass
                     # print("90543-1" + str(ex))
@@ -197,34 +200,36 @@ class DataProcessing(BaseDataProcessing):
         for index, row in df.iterrows():
             try:
                 if str(row["Value"]) != "nan":
-                    try:
-                        yy = int(row["Year"])
-                        t, is_created = TimeDim.objects.get_or_create(id=yy)
+                    if float(row["Value"]) > 0 or float(row["Value"]) < 0:
+                        try:
+                            yy = int(row["Year"])
+                            t, is_created = TimeDim.objects.get_or_create(id=yy)
+                            if is_created:
+                                t.year = yy
+                                t.save()
+                        except Exception as ex:
+                            pass
+                        try:
+                            cc = row["Country"]
+                            c, is_created = CountryDim.objects.get_or_create(country_code=cc)
+                            if is_created:
+                                c.country_name = cc
+                                c.save()
+                        except Exception as ex:
+                            pass
+                        try:
+                            mm = row["Measurement"]
+                            print(cc, yy, mm)
+                            m, is_created = MeasureDim.objects.get_or_create(measure_name=mm)
+                            if is_created:
+                                m.measure_code = mm
+                                m.save()
+                        except Exception as ex:
+                            pass
+                        a, is_created = WorldBankFact.objects.get_or_create(time_dim=t, country_dim=c, measure_dim=m)
                         if is_created:
-                            t.year = yy
-                            t.save()
-                    except Exception as ex:
-                        pass
-                    try:
-                        cc = row["Country"]
-                        c, is_created = CountryDim.objects.get_or_create(country_code=cc)
-                        if is_created:
-                            c.country_name = cc
-                            c.save()
-                    except Exception as ex:
-                        pass
-                    try:
-                        mm = row["Measurement"]
-                        m, is_created = MeasureDim.objects.get_or_create(measure_name=mm)
-                        if is_created:
-                            m.measure_code = mm
-                            m.save()
-                    except Exception as ex:
-                        pass
-                    a, is_created = WorldBankFact.objects.get_or_create(time_dim=t, country_dim=c, measure_dim=m)
-                    if is_created:
-                        a.amount = float(row["Value"])
-                        a.save()
+                            a.amount = float(row["Value"])
+                            a.save()
             except Exception as ex:
                 print("90652-3" + str(ex))
 

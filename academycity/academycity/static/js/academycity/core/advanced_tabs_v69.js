@@ -235,20 +235,18 @@ AdvancedTabsManager.prototype.init_timer = function()
       //alert("in this.fun\n"+JSON.stringify(this_obj.fun_to_run_by_timer))
       var date = new Date;
       this_obj.h=date.getHours();this_obj.m=date.getMinutes();this_obj.s=date.getSeconds();this_obj.y=date.getFullYear()
-      // alert(this_obj.h +":"+ this_obj.m +":"+ this_obj.ys +":"+ this_obj.y)
-
+       //alert(this_obj.h +":"+ this_obj.m +":"+ this_obj.s +":"+ this_obj.y)
       for(i in this_obj.fun_to_run_by_timer){
-        var dic=this_obj.fun_to_run_by_timer[i]
-        //alert(JSON.stringify(dic)+"\n\n"+this_obj.s)
+      //alert(i)
+        var dic=this_obj.fun_to_run_by_timer[i];
         if(1*dic["run"]==1){
+          //alert(i+" : "+dic["fun_name"])
           var obj = dic["obj_"]
+          //alert(dic["fun_ref"]);
           eval(dic["fun_ref"]);
           dic["run"]=(1*dic["interval"])/this_obj.interval
-
         //alert("this_obj.interval: "+this_obj.interval+" interval: "+dic["interval"]+" :in: "+dic["run"])
-
         } else {dic["run"]=1*dic["run"]-1}
-
         //alert(dic["interval"]+" : "+dic["run"])
       }
     }
@@ -257,12 +255,17 @@ AdvancedTabsManager.prototype.init_timer = function()
 
 AdvancedTabsManager.prototype.set_fun_for_timer = function(fun_name, fun_ref, interval, obj=null)
 {
+  //alert(obj);
   var run_=1*interval/this.interval
+  //alert(run_)
   dic_={"fun_name":fun_name, "fun_ref":fun_ref, "interval":interval, "run":run_, "obj_": obj}
+  if(this.fun_to_run_by_timer.length>0)
+  {
      for(i in this.fun_to_run_by_timer){
          var fun_name_=this.fun_to_run_by_timer[i]["fun_name"];
          if(fun_name_==fun_name){return;}
      }
+  }
   this.fun_to_run_by_timer.push(dic_)
 }
 
@@ -3204,9 +3207,7 @@ acChartCreator.prototype.create_obj = function()
 acChartCreator.prototype.set_chart_data = function(chart_type)
 {
   //alert("9023-550\n"+JSON.stringify(chart_type));
-
   var data_=[];
-
   chart_attributes={"pies":{"type_name":"type", "type_value":"pie", "marker_attribute":"opacity", "marker_attribute_value":"0.7"},
                     "areas":{"type_name":"type", "type_value":"scatter", "marker_attribute":"opacity", "marker_attribute_value":"0.7"},
                     "scatter":{"type_name":"mode", "type_value":"markers", "marker_attribute":"opacity", "marker_attribute_value":"0.7"},
@@ -3217,10 +3218,8 @@ acChartCreator.prototype.set_chart_data = function(chart_type)
                    }
 
     //alert("9023-550 chart_attributes\n"+JSON.stringify(chart_attributes));
-
-    chart_type["type_name"]=chart_attributes[chart_type["type"]]["type_name"];
-    chart_type["type_name_value"]=chart_attributes[chart_type["type"]]["type_value"]
-
+//    chart_type["type_name"]=chart_attributes[chart_type["type"]]["type_name"];
+//    chart_type["type_name_value"]=chart_attributes[chart_type["type"]]["type_value"]
     data={"type":chart_type["type"],
          "type_name":chart_attributes[chart_type["type"]]["type_name"],
          "type_name_value":chart_attributes[chart_type["type"]]["type_value"],
@@ -3228,7 +3227,6 @@ acChartCreator.prototype.set_chart_data = function(chart_type)
          "x":{"data":chart_type["x"]},
          "series": chart_type["series"]
         }
-
    //alert("90712 data:"+JSON.stringify(data));
 
  if(chart_type["type"]=='pies')
@@ -3288,9 +3286,8 @@ acChartCreator.prototype.set_chart_data = function(chart_type)
  else if(chart_type["type"]=='histogram') {
     var trace = {}
     trace["x"]=chart_type["x"]["data"];
-    trace[chart_type["type_name"]]=chart_type["type_name_value"];
+    trace["type"]="histogram";
     trace["xbins"]={end:chart_type["xbins"]["end"],size:chart_type["xbins"]["size"],start:chart_type["xbins"]["start"]}
-
     data_.push(trace);
 
     var layout = {title: data["title"],
@@ -3303,62 +3300,50 @@ acChartCreator.prototype.set_chart_data = function(chart_type)
  }
  else if(chart_type["type"]=='bubbles'){
 
-     var trace1 = {
-      x: [50*(Math.random()), 50*(Math.random()), 50*(Math.random()), 50*(Math.random())],
-      y: [50*(Math.random()), 50*(Math.random()), 50*(Math.random()), 50*(Math.random())],
+    var trace1 = {
+      x: chart_type["x"],
+      y: chart_type["series"]["y1"]["data"],
       mode: 'markers',
       marker: {
         color: ['rgb(93, 164, 214)', 'rgb(255, 144, 14)',  'rgb(44, 160, 101)', 'rgb(255, 65, 54)'],
-        size: [40, 60, 80, 100]
+        size: chart_type["size"]
       }
     };
 
     var data = [trace1];
-
-    var layout = {
-      title: 'Marker Size',
-      showlegend: false,
-      height: 600,
-      width: 600,
+    var layout = { title: 'Marker Size', showlegend: false, height: 600,  width: 600,
       xaxis: {title: "x", range: [0, 50], autorange: false},
       yaxis: {title: "y", range: [0, 50], autorange: false}
     };
-
-
-  //alert("9053-555\n"+JSON.stringify(this.parent.data));
-
-  //alert("9023-557\n"+JSON.stringify(chart_type));
-  //alert(chart_type["timer_function"])
-
-  eval("var zzz = "+chart_type["timer_function"])
-
-  //alert('zzz')
-  //alert(zzz)
-
-    try{this.parent.atm.set_fun_for_timer(
-      fun_name="zzz",
-      fun_ref="zzz(obj)",
-      interval=1*this.parent.data["properties"]["interval"], obj=[this.chart, data, layout])
+    var obj_number=this.parent.data["properties"]["obj_number"]
+    eval("zzz_"+obj_number+"="+chart_type["timer_function"])
+    //alert("zzz_"+obj_number)
+    try{
+       this.parent.atm.set_fun_for_timer(
+          fun_name="zzz_"+obj_number,
+          fun_ref="zzz_"+obj_number+"(obj)",
+          interval=1*this.parent.data["properties"]["interval"],
+          obj=[this.chart, data, layout]
+       )
     }catch(er){alert(er)}
-
 
 }
  else if(chart_type["type"]=='lines'){
-
-    //alert("9023-550-1\n"+JSON.stringify(chart_type));
+    // alert("9023-550-1\n"+JSON.stringify(chart_type));
     var data = [];
     for(var k in chart_type["series"])
     {
-      //alert("k="+k + "   y="+JSON.stringify(chart_type["series"][k]))
-        var s='var trace1={}';eval(s);
-        trace1["x"]=chart_type["x"];
-        trace1["y"]=chart_type["series"][k]["data"];
-        trace1["mode"] = 'lines+markers',
-        trace1["name"] = chart_type["series"][k]["name"],
-        data.push(trace1)
+         var trace = {
+          x: chart_type["x"],
+          y: chart_type["series"][k]["data"],
+          name: chart_type["series"][k]["name"],
+          mode: "lines+markers",
+          type: "scatter"
+        };
+        data.push(trace);
     }
     var layout = {
-      title: 'Data for countries',
+      title: chart_type["title"],
       xaxis: {title: chart_type["x-axis-title"]},
       yaxis: {title: chart_type["y-axis-title"]}
     };
