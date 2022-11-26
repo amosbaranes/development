@@ -65,6 +65,7 @@ company_obj_id, is_show_btns=true, user_id=0)
                                                   "setting": {"options":[], "global_adjective":[], "app_adjective":[],
                                                               "data_app":[], "data_model":[],"data_field":[],
                                                               "data_filter_field":[], "data_filter_field_value":[],
+                                                              "data_filter_field_ft":["","Yes"],
                                                               "multiple":["regular", "multiple"]},
                                                   "attributes":{"field":[], "size":[], "foreign_table":[]},
                                                   "functions":["onchange"]},
@@ -1233,7 +1234,8 @@ acObj.prototype.get_select_data = function()
     var data_model=dic["properties"]["data_model"];
     var data_field=dic["properties"]["data_field"];
     var data_filter_field=dic["properties"]["data_filter_field"];
-    var data_filter_field_value=dic["properties"]["data_filter_field_value"];
+    var data_filter_field_value = dic["properties"]["data_filter_field_value"];
+    var data_filter_field_ft = dic["properties"]["data_filter_field_ft"];
     //alert(data_filter_field)
     if(data_filter_field==null){data_filter_field="";data_filter_field_value="";}
     var dic_ = {"obj": "AdvancedTabs", "atm": atm_.my_name, "app": data_app, "fun": "get_list_from_model",
@@ -1241,12 +1243,15 @@ acObj.prototype.get_select_data = function()
                           "manager_name": "","manager_fun": "",
                            "manager_fun_field": "","field_name":data_field,
                            "data_filter_field":data_filter_field,
-                           "data_filter_field_value":data_filter_field_value
+                           "data_filter_field_value":data_filter_field_value,
+                           "data_filter_field_ft":data_filter_field_ft
                          }
               }
     this.atm.get_list(call_back_fun=fun, dic_, this.new_obj);
   }
 }
+
+
 
 acObj.prototype.update_data_by_dic = function(dic)
 {
