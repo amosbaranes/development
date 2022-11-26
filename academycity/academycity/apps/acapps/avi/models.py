@@ -19,6 +19,13 @@ class CountryDim(TruncateTableMixin, models.Model):
         return str(self.country_code)
 
 
+class MeasureGroupDim(TruncateTableMixin, models.Model):
+    group_name = models.CharField(max_length=100, default='', blank=True, null=True)
+
+    def __str__(self):
+        return str(self.group_name)
+
+
 class MeasureDim(TruncateTableMixin, models.Model):
     measure_name = models.CharField(max_length=100, default='', blank=True, null=True)
     measure_code = models.CharField(max_length=100, default='', blank=True, null=True)

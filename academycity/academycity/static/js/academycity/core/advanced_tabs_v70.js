@@ -157,10 +157,11 @@ company_obj_id, is_show_btns=true, user_id=0)
                                                  "attributes":{},
                                                  "functions":[]},
                                         "UploadFile":{"title":"UploadFile", "width":10,
-                                                 "setting": {"height":[],"width":[],"obj_name":[],"function_name":[],
-                                                 "topic_id":[], "folder_type":["", "excel", "other"]},
-                                                 "attributes":{},
-                                                 "functions":[]},
+                                               "setting": {"height":[],"width":[],"obj_name":[],"function_name":[],
+                                                           "topic_id":[], "folder_type":["", "excel", "other"],
+                                                            "dimensions":[], "fields":[], "fact_model_field": []},
+                                               "attributes":{},
+                                               "functions":[]},
                                         "Heatmap":{"title":"Heatmap", "width":8,
                                                    "setting": {"width":[], "height":[]},
                                                    "attributes":{},
@@ -241,9 +242,12 @@ AdvancedTabsManager.prototype.init_timer = function()
         var dic=this_obj.fun_to_run_by_timer[i];
         if(1*dic["run"]==1){
           //alert(i+" : "+dic["fun_name"])
-          var obj = dic["obj_"]
+          var obj = dic["obj_"];
+          //alert(obj.outerHTML)
           //alert(dic["fun_ref"]);
-          eval(dic["fun_ref"]);
+          try{
+            eval(dic["fun_ref"]);
+          } catch(er){alert(er)}
           dic["run"]=(1*dic["interval"])/this_obj.interval
         //alert("this_obj.interval: "+this_obj.interval+" interval: "+dic["interval"]+" :in: "+dic["run"])
         } else {dic["run"]=1*dic["run"]-1}
@@ -1827,7 +1831,7 @@ acUploadFileCreator.prototype.create_obj = function()
             xhr.addEventListener('load', function(e) {
                 data = JSON.parse(this.responseText);
 
-                    alert("9035 "+JSON.stringify(data))
+                    //alert("9035 "+JSON.stringify(data))
                     //alert(this.responseText)
 
                 if(this.status != 200){
@@ -1849,6 +1853,9 @@ acUploadFileCreator.prototype.create_obj = function()
             fd.append("function_name", this.dic["properties"]["function_name"]);
             fd.append("topic_id", this.dic["properties"]["topic_id"]);
             fd.append("folder_type", this.dic["properties"]["folder_type"]);
+            fd.append("dimensions", this.dic["properties"]["dimensions"]);
+            fd.append("fields", this.dic["properties"]["fields"]);
+            fd.append("fact_model_field", this.dic["properties"]["fact_model_field"]);
             xhr.send(fd);
   }
 }
@@ -3299,7 +3306,6 @@ acChartCreator.prototype.set_chart_data = function(chart_type)
    Plotly.newPlot(this.chart, data_, layout);
  }
  else if(chart_type["type"]=='bubbles'){
-
     var trace1 = {
       x: chart_type["x"],
       y: chart_type["series"]["y1"]["data"],
@@ -3309,25 +3315,29 @@ acChartCreator.prototype.set_chart_data = function(chart_type)
         size: chart_type["size"]
       }
     };
-
     var data = [trace1];
     var layout = { title: 'Marker Size', showlegend: false, height: 600,  width: 600,
       xaxis: {title: "x", range: [0, 50], autorange: false},
       yaxis: {title: "y", range: [0, 50], autorange: false}
     };
-    var obj_number=this.parent.data["properties"]["obj_number"]
-    eval("zzz_"+obj_number+"="+chart_type["timer_function"])
-    //alert("zzz_"+obj_number)
-    try{
-       this.parent.atm.set_fun_for_timer(
-          fun_name="zzz_"+obj_number,
-          fun_ref="zzz_"+obj_number+"(obj)",
-          interval=1*this.parent.data["properties"]["interval"],
-          obj=[this.chart, data, layout]
-       )
-    }catch(er){alert(er)}
 
-}
+    var interval_ = this.parent.data["properties"]["interval"]
+    if (interval_==null || interval_=="")
+    {Plotly.newPlot(this.chart, data, layout);}
+    else{
+        var obj_number=this.parent.data["properties"]["obj_number"]
+        eval("zzz_"+obj_number+"="+chart_type["timer_function"])
+        //alert("zzz_"+obj_number)
+        try{
+           this.parent.atm.set_fun_for_timer(
+              fun_name="zzz_"+obj_number,
+              fun_ref="zzz_"+obj_number+"(obj)",
+              interval=1*this.parent.data["properties"]["interval"],
+              obj=[this.chart, data, layout]
+           )
+        }catch(er){alert(er)}
+    }
+ }
  else if(chart_type["type"]=='lines'){
     // alert("9023-550-1\n"+JSON.stringify(chart_type));
     var data = [];

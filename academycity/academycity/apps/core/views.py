@@ -514,8 +514,36 @@ def upload_file(request):
         function_name_ = request.POST['function_name']
         topic_id_ = request.POST['topic_id']
         folder_type_ = request.POST['folder_type']
+        #
+        dimensions_ = request.POST['dimensions']
+        fields_ = request.POST['fields']
+        fact_model_field_ = request.POST['fact_model_field']
+        #
+        dimensions_s = dimensions_.split(",")
+        # time_dim,country_dim,measure_dim
+        # year,country_name,measure_name
+        # WorldBankFact,amount
+        fields_s = fields_.split(",")
+        fact_model_field_s = fact_model_field_.split(",")
+        cube_dic = {"dimensions": {}, "fact": {"model": fact_model_field_s[0], "field_name": fact_model_field_s[1]}}
+        for j in range(len(dimensions_s)):
+            f = fields_s[j]
+            d = dimensions_s[j]
+            dm = d.replace("_", "")
+            cube_dic["dimensions"][d] = {"model": dm, "field_name": f}
+
+        # print("90876 upload file: ")
+        # print(cube_dic)
+        # cube_dic = {"dimensions": {"time_dim": {"model": "TimeDim", "field_name": "year"},
+        #                            "country_dim": {"model": "CountryDim", "field_name": "country_name"},
+        #                            "measure_dim": {"model": "MeasureDim", "field_name": "measure_name"}},
+        #             "fact": {"model": "WorldBankFact", "field_name": "amount"}
+        #             }
+        # print("90876-1 upload file: ")
+        # print(cube_dic)
+
         add_dic = {"obj": obj_name_, "app": app_, "fun": function_name_,
-                   "params": {"request": request, "folder_type": folder_type_},
+                   "params": {"request": request, "folder_type": folder_type_, "app": app_, "cube_dic": cube_dic},
                    "obj_param": {"topic_id": topic_id_, "app": app_}}
         # print("9010")
         # print(add_dic)
