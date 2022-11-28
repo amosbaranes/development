@@ -259,6 +259,7 @@ class DataProcessing(BaseDataProcessing):
                                 t.save()
                         except Exception as ex:
                             pass
+                        # print("9075-11")
                         try:
                             cc = row["Country"]
                             c, is_created = model_country_dim.objects.get_or_create(country_code=cc)
@@ -270,6 +271,7 @@ class DataProcessing(BaseDataProcessing):
                                 c.save()
                         except Exception as ex:
                             pass
+                        # print("9075-22")
                         try:
                             mm = row["Measurement"]
                             # print(cc, yy, mm)
@@ -282,6 +284,8 @@ class DataProcessing(BaseDataProcessing):
                                 m.save()
                         except Exception as ex:
                             pass
+                        # print("9075-33")
+                        # print(t, c, m)
                         a, is_created = model_fact.objects.get_or_create(time_dim=t, country_dim=c, measure_dim=m)
                         if is_created:
                             # a.amount = float("{:.2f}".format((row["Value"])))

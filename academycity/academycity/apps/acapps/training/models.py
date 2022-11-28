@@ -87,7 +87,9 @@ class Soldiers(TruncateTableMixin, models.Model):
     state = models.CharField(max_length=50, default='', blank=True, null=True)
     city = models.CharField(max_length=50, default='', blank=True, null=True)
     blood_type =  models.CharField(max_length=10, default='', blank=True, null=True)
+
     birthday = models.DateField(blank=True, null=True)
+
     marital_status = models.SmallIntegerField(default=0)
     num_of_children = models.SmallIntegerField(default=0)
     shirt_size = models.SmallIntegerField(default=0)
@@ -95,11 +97,17 @@ class Soldiers(TruncateTableMixin, models.Model):
     shoes_size = models.SmallIntegerField(default=0)
     height = models.SmallIntegerField(default=0)
     weight = models.SmallIntegerField(default=0)
+    profession = models.SmallIntegerField(default=0)
+    discipline = models.SmallIntegerField(default=0)
+    strength = models.SmallIntegerField(default=0)
     medical_condition = models.TextField(blank=True, null=True)
 
     def __str__(self):
         return str(self.user_id) + str(self.first_name) + " " + str(self.last_name)
 
+# Safety
+# professionalism
+# Aggression
 
 # פלגה
 # צוות
@@ -107,8 +115,6 @@ class Soldiers(TruncateTableMixin, models.Model):
 # משמעת
 # איתנות
 # בעיות רפואיות - פרט
-
-
 
 # מפקד
 class Officer (TruncateTableMixin, models.Model):

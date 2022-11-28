@@ -37,9 +37,10 @@ class AdvancedTabs(object):
 
     def add_tab(self, params):
         try:
-            # print('-1'*10)
+            # print('add_tab 908654-1')
             # print(params)
             # print('-1'*10)
+
             tab_name_ = params["tab_name"]
             manager_, n_ = DataAdvancedTabsManager.objects.get_or_create(at_name=self.manager_name)
             if n_:
@@ -61,11 +62,17 @@ class AdvancedTabs(object):
         return result
 
     def get_tabs_from_table(self, params):
+        # print('get_tabs_from_table 90555-1')
+        # print(params)
+        # print(self.app)
+        # print(self.manager_name)
+        # print('-2'*10)
+        result = {}
         try:
             manager_ = DataAdvancedTabsManager.objects.get(at_name=self.manager_name)
-            app_, c = DataAdvancedApps.objects.get_or_create(app_name=self.app)
+            result["manager"] = manager_.manager_content
             tabs = DataAdvancedTabs.objects.filter(manager=manager_).all()
-            result = []
+            result_ = []
             for t in tabs:
                 # print(t.id)
                 # print('t.tab_content')
@@ -74,26 +81,35 @@ class AdvancedTabs(object):
                 content_["tab_order"] = t.order
                 t.tab_content = content_
                 t.save()
-                result.append((t.id, t.tab_content))
-            result = {"manager": manager_.manager_content, "tabs": result, "app_content": app_.app_content}
-            # print(result)
+                result_.append((t.id, t.tab_content))
+            result["tabs"] = result_
+        except Exception as ex:
+            pass
+            # result = {"error": "-1"}
+        try:
+            app_, c = DataAdvancedApps.objects.get_or_create(app_name=self.app)
+            # print(app_)
+            # print(app_.app_content)
+            result["app_content"] = app_.app_content
         except Exception as ex:
             result = {"error": "-1"}
+        # print(result)
         return result
 
     def save_content(self, params):
         try:
-            # print('='*50)
-            # print('params')
-            # print(params)
-            # print('atm_content')
-            # print(params["atm_content"])
-            # print('='*20)
-            # print('9075: tab_content\n', "-"*50, params["tab_content"], "\n", "-"*50)
-            # print('tab_name')
-            # print(params["tab_name"])
-            # print(params["app_content"])
-            # print('='*50)
+            print('save_content 906543-1')
+            print('='*50)
+            print('params')
+            print(params)
+            print('atm_content')
+            print(params["atm_content"])
+            print('='*20)
+            print('9075: tab_content\n', "-"*50, params["tab_content"], "\n", "-"*50)
+            print('tab_name')
+            print(params["tab_name"])
+            print(params["app_content"])
+            print('='*50)
             try:
                 atm = DataAdvancedTabsManager.objects.get(at_name=self.manager_name)
                 atm.manager_content = params["atm_content"]

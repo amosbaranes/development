@@ -72,7 +72,7 @@ company_obj_id, is_show_btns=true, user_id=0)
                                         "Table":{"title":"Table", "width":5, "setting": {}, "attributes":{}, "functions":["onchange"]},
                                         "Textarea":{"title":"textarea", "width":7,
                                                     "setting": {"overflow":[],"color":[],"background-color":[]},
-                                                    "attributes":{"rows":[], "cols":[]}, "functions":[]},
+                                                    "attributes":{"field":[], "rows":[], "cols":[]}, "functions":[]},
                                         "Canvas":{"title":"canvas", "width":7,
                                                     "setting": {"overflow":[],"color":[],"background-color":[]},
                                                     "attributes":{"width":[], "height":[]}, "functions":[]},
@@ -109,7 +109,7 @@ company_obj_id, is_show_btns=true, user_id=0)
                                         },
                  "Plugin":{"title":"Plugins", "obj_type":"acPlugin",
                         "sub_buttons": {"Container":{"title":"Container", "width":10,
-                                                     "setting": {"height":[], "width":[], "width":[], "color":[],
+                                                     "setting": {"height":[], "width":[], "color":[],
                                                                  "background-color":[], "z_index":[-1,0,1,2,3,4,5]},
                                                      "attributes":{"table":[], "parent_table":[], "content_type":[],
                                                                    "border_style":["none","solid","Dotted","dashed",
@@ -118,6 +118,10 @@ company_obj_id, is_show_btns=true, user_id=0)
                                                                    "border_color":[], "border_radius":[]},
                                                      "functions":["onclick", "onchange", "onmouseover", "onmouseout"]
                                                     },
+                                        "Radio": {"title":"Radio", "width":5,
+                                                  "setting": {"number_of_radios":[], "title":[], "titles":[], "fields":[]},
+                                                  "attributes":{},
+                                                  "functions":["onchange"]},
                                         "SearchTable":{"title":"Search Table", "width":10,
                                                        "setting": {"is_new_button":["","Yes","No"],
                                                        "is_del_button":["","Yes","No"]},
@@ -282,6 +286,7 @@ AdvancedTabsManager.prototype.create_add_delete_editor = function()
       var tab_name_ = prompt("Enter name for new tab:",'');if(tab_name_==''){alert("Please enter a tab name"); return;}
       tab_name_=tab_name_.toLowerCase();
       var dic_ = {"obj" : "AdvancedTabs", "atm": atm_.my_name, "app": atm_.my_app, "fun": "add_tab", "params": {"tab_name": tab_name_}}
+      //alert(atm_.activate_function_link_)
              $.post(atm_.activate_function_link_,
                   {dic : JSON.stringify(dic_)},
                   function(dic){
@@ -1108,7 +1113,9 @@ acObj.prototype.create_obj = function(){
   this.new_obj.setAttribute("id", this.data["properties"]["obj_number"]);
   this.new_obj.setAttribute("obj_type", this.data["obj_type"]);
   this.new_obj.setAttribute("type_", this.data["element_name"]);
-  this.new_obj.innerHTML=this.data["properties"]["title"];
+
+  if(this.data["element_name"]!="Textarea")
+  {this.new_obj.innerHTML=this.data["properties"]["title"];}
   // -- attribute --
   for (k in this.attributes)
   {
@@ -1160,6 +1167,7 @@ acObj.prototype.create_obj = function(){
     s_+="color:"+color+background_color+font_weight;
     this.new_obj.setAttribute("style", s_);
   }
+
   if(this.data["element_name"]=="Select")
   {
    try{this.get_select_data()} catch(er){}
@@ -1184,7 +1192,6 @@ acObj.prototype.get_select_data = function()
     var option = document.createElement("option");
     option.value = "-1"; option.text = "----";
     this.new_obj.appendChild(option);
-
   var fun=function(data, html_obj){
                 //alert(html_obj.outerHTML)
                 //alert(JSON.stringify(data));
@@ -1196,7 +1203,6 @@ acObj.prototype.get_select_data = function()
                  html_obj.appendChild(option);
                 }
               }
-
   if(options!="" & options!=null)
   {
     options=options.split(",")
@@ -1251,7 +1257,11 @@ acObj.prototype.get_select_data = function()
   }
 }
 
-
+acObj.prototype.set_select_data_by_dic = function(dic)
+{
+ this.new_obj.innerHTML="";
+ for(var k in dic){var o=document.createElement("option");o.value=k;o.text=dic[k];this.new_obj.appendChild(o)}
+}
 
 acObj.prototype.update_data_by_dic = function(dic)
 {
@@ -1773,7 +1783,7 @@ var container_on_click=function(event){
 
 acContainerCreator.prototype.process_content = process_content;
 
-
+// UploadFile --
 function acUploadFileCreator(parent){this.parent=parent;}
 
 acUploadFileCreator.prototype.create_obj = function()
@@ -1863,6 +1873,64 @@ acUploadFileCreator.prototype.create_obj = function()
             fd.append("fact_model_field", this.dic["properties"]["fact_model_field"]);
             xhr.send(fd);
   }
+}
+
+// Radio --
+function acRadioCreator(parent){this.parent=parent;}
+
+acRadioCreator.prototype.create_obj = function()
+{
+  var dic=this.parent.data;
+  //alert("9035 "+JSON.stringify(dic));
+  var obj_number = dic["properties"]["obj_number"]
+  var title = dic["properties"]["title"]
+  var container = document.getElementById("content_"+dic["container_id"]);
+  //--
+  this.div_=document.createElement("div");
+  this.div_.onchange = function(event){
+  alert(this.outerHTML)
+  var e= event.target;alert(e.outerHTML); alert(e.value)}
+  this.div_.setAttribute("obj_type", dic["obj_type"]);
+  this.div_.setAttribute("id", obj_number);
+  this.div_.setAttribute("container_id", dic["container_id"]);
+  this.div_.setAttribute("type", dic["element_name"]);
+//  if("width" in dic["properties"]){var width_=dic["properties"]["width"]} else {var width_="400"}
+//  if("height" in dic["properties"]){var height_=dic["properties"]["height"]} else {var height_="40"}
+  var style_="position:absolute;left:"+dic["properties"]["x"]+"px;top:"+dic["properties"]["y"]+"px;"
+//  style_+="width:"+width_+"px;height:"+height_;
+  this.div_.setAttribute("style", style_);
+  var h3_=document.createElement("h3");h3_.innerHTML= dic["properties"]["title"]+"&nbsp;:&nbsp;";this.div_.appendChild(h3_);
+  container.appendChild(this.div_);
+  var number_of_radios=dic["properties"]["number_of_radios"];
+  if(number_of_radios==null){number_of_radios=5}
+
+try{
+  //alert(number_of_radios)
+  var titles_=dic["properties"]["titles"].split(",")
+  var fields_=dic["properties"]["fields"].split(",")
+  var max_=0;for(var h in titles_){var l=titles_[h].length; if(l>max_){max_=l}}; max_*=10
+  for(var h in titles_)
+  {
+   //alert(titles_[h])
+      var div_=document.createElement("div");
+      div_.setAttribute("field", fields_[h]);
+      var span_=document.createElement("span");span_.innerHTML= titles_[h]+"&nbsp;:&nbsp;";div_.appendChild(span_);
+      span_.setAttribute("style", "display:inline;float: left;width:"+max_+"px;text-align:right");
+      for(var j=1; j<=number_of_radios; j++)
+      {
+        var label_=document.createElement("label");
+        label_.setAttribute("class", "radio-inline");
+        var span_=document.createElement("span");span_.innerHTML=j;label_.appendChild(span_);
+        var input_file_=document.createElement("input");input_file_.setAttribute("type", "radio");
+        input_file_.setAttribute("number", j);
+        input_file_.setAttribute("name", "radio_"+titles_[h]+"_"+obj_number);label_.appendChild(input_file_);
+        var span_=document.createElement("span");span_.innerHTML="&nbsp;&nbsp;&nbsp;";label_.appendChild(span_);
+        div_.appendChild(label_);
+        this.div_.appendChild(div_);
+      }
+      //alert(div_.outerHTML)
+   }
+ } catch (er) {alert(er)}
 }
 
 
@@ -1993,6 +2061,8 @@ acUploadFileCreator.prototype.create_obj_bu = function()
 }
 
 
+
+
 // -- acSearchTableCreator --
 function acSearchTableCreator(parent){this.parent=parent;this.is_json_data=false;this.json_record_id=-1;
                                       this.json_last_record_number=0}
@@ -2013,7 +2083,7 @@ acSearchTableCreator.prototype.create_obj = function()
   this.is_del_button=dic["properties"]["is_del_button"];
   this.fields=[]
   for(f in dic["fields"]){this.fields.push(dic["fields"][f]["field_name"])}
-  //alert("9036 "+JSON.stringify(this.fields));
+  //alert("9036-1 "+JSON.stringify(this.fields));
   //--
   this.filter_value="";
   this.search_input_=document.createElement("input");
@@ -2206,7 +2276,7 @@ acSearchTableCreator.prototype.get_data = function(data_table_name=null,parent_m
     var dic_={"model":this.data_table_name, "number_of_rows":this.number_of_rows, "fields":this.fields}
   } catch(er){alert("er9012: "+er)}
 
-  //alert("90441  "+JSON.stringify(dic_));
+  //alert("90441-1  "+JSON.stringify(dic_));
 
   var fun=function(data, ttbody_){
     console.log("get_data search table inside call back function")
@@ -2244,7 +2314,7 @@ acSearchTableCreator.prototype.get_data = function(data_table_name=null,parent_m
   }
 
   var dic__=[]; for(i in dic_["fields"]){dic__.push(dic_["fields"][i])}
-  //alert("9060 dic__ \n"+JSON.stringify(dic__))
+  //alert("9060-1 dic__ \n"+JSON.stringify(dic__))
 
   var container_id=this.parent.data["container_id"];
   var container_dic=this.parent.tab.tab_objects[container_id];
@@ -2256,7 +2326,8 @@ acSearchTableCreator.prototype.get_data = function(data_table_name=null,parent_m
       {
         var f=container_dic[o]["properties"]["field"];
         if(f!=null){
-            if(container_dic[o]["obj_name"]=="acInput"){if(!dic__.includes(f)){dic__.push(f)}
+            if(container_dic[o]["obj_name"]=="acInput" || container_dic[o]["obj_name"]=="acTextarea")
+            {if(!dic__.includes(f)){dic__.push(f)}
             } else if (container_dic[o]["obj_name"]=="acSelect"){var ps_=container_dic[o]["properties"];
              if("multiple" in ps_){this.multiple_select_fields.push(f)}else{if(!dic__.includes(f)){dic__.push(f)}}
             }
@@ -3698,7 +3769,7 @@ TabContent.prototype.set_objects_data = function(dic, is_json_data=false)
  var container_dic=this.tab.tab_objects[this.link_number];
  for(o in container_dic)
  {
-   if(container_dic[o]["obj_type"]=="acObj" && (container_dic[o]["obj_name"]=="acInput"
+   if(container_dic[o]["obj_type"]=="acObj" && ((container_dic[o]["obj_name"]=="acInput" || container_dic[o]["obj_name"]=="acTextarea" )
       || container_dic[o]["obj_name"]=="acSelect")){
      //alert("9023 "+JSON.stringify(container_dic[o]["properties"]))
      var multiple_=false;if("multiple" in container_dic[o]["properties"]){multiple_ = true}
