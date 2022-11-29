@@ -110,7 +110,6 @@ class PrivateSpecialty(TruncateTableMixin, models.Model):
     class Meta:
         verbose_name = 'private_speciality'
         verbose_name_plural = 'private_specialities'
-        ordering = ['last_name']
 
     training_web = models.ForeignKey(TrainingWeb, on_delete=models.CASCADE, default=1,
                                      related_name='training_web_private_specialties')
