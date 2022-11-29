@@ -119,7 +119,7 @@ company_obj_id, is_show_btns=true, user_id=0)
                                                      "functions":["onclick", "onchange", "onmouseover", "onmouseout"]
                                                     },
                                         "Radio": {"title":"Radio", "width":5,
-                                                  "setting": {"number_of_radios":[], "title":[], "titles":[], "fields":[]},
+                                                  "setting": {"setup_dictionary":[]},
                                                   "attributes":{},
                                                   "functions":["onchange"]},
                                         "SearchTable":{"title":"Search Table", "width":10,
@@ -1592,6 +1592,7 @@ var process_content=function(){
   }
 }
 var container_on_change=function (event){
+alert(222222)
   event.stopPropagation();
   var e=event.target;
   //alert("c9001 "+event.target.outerHTML)
@@ -1710,8 +1711,11 @@ var container_on_click=function(event){
       if(this.tab.new_obj_to_create==null){
          var click_event=new Event("click", {bubbles: true});
          if(event.ctrlKey){
+           //alert("90123-1:\n"+event.target.outerHTML)
            var obj_type=e.getAttribute("obj_type");
+           //alert("90123-2:\n"+obj_type)
            try{while(obj_type==null){e=e.parentNode;var obj_type=e.getAttribute("obj_type");}} catch(er){}
+            //alert("90123-3:\n"+obj_type)
             if(obj_type==null){
               this.tab.parent.editor.main_menus["TabContent"].btn.dispatchEvent(click_event);
               this.tab.parent.editor.main_menus["TabContent"].my_sub_objs["content"].btn.dispatchEvent(click_event)
@@ -1875,64 +1879,81 @@ acUploadFileCreator.prototype.create_obj = function()
   }
 }
 
+
 // Radio --
 function acRadioCreator(parent){this.parent=parent;}
 
 acRadioCreator.prototype.create_obj = function()
 {
+  //try{alert("9088-3 "+this.parent.atm);} catch(er){alert("13: "+er)}
+  //try{alert("9088-4 "+this.parent.atm.general)} catch(er){alert("14: "+er)}
+  //try{alert("9088-5 "+JSON.stringify(this.parent.atm.general.specialty))} catch(er){alert("15: "+er)}
+
   var dic=this.parent.data;
+  var container = document.getElementById("content_"+dic["container_id"]);
   //alert("9035 "+JSON.stringify(dic));
   var obj_number = dic["properties"]["obj_number"]
-  var title = dic["properties"]["title"]
-  var container = document.getElementById("content_"+dic["container_id"]);
+  this.main_div=document.createElement("div");
+  this.main_div.setAttribute("id", obj_number);
+  this.main_div.setAttribute("obj_type", dic["obj_type"]);
+  this.main_div.setAttribute("type", dic["element_name"]);
+  this.main_div.setAttribute("container_id", dic["container_id"]);
+  container.appendChild(this.main_div);
   //--
-  this.div_=document.createElement("div");
-  this.div_.onchange = function(event){
-  alert(this.outerHTML)
-  var e= event.target;alert(e.outerHTML); alert(e.value)}
-  this.div_.setAttribute("obj_type", dic["obj_type"]);
-  this.div_.setAttribute("id", obj_number);
-  this.div_.setAttribute("container_id", dic["container_id"]);
-  this.div_.setAttribute("type", dic["element_name"]);
-//  if("width" in dic["properties"]){var width_=dic["properties"]["width"]} else {var width_="400"}
-//  if("height" in dic["properties"]){var height_=dic["properties"]["height"]} else {var height_="40"}
-  var style_="position:absolute;left:"+dic["properties"]["x"]+"px;top:"+dic["properties"]["y"]+"px;"
-//  style_+="width:"+width_+"px;height:"+height_;
-  this.div_.setAttribute("style", style_);
-  var h3_=document.createElement("h3");h3_.innerHTML= dic["properties"]["title"]+"&nbsp;:&nbsp;";this.div_.appendChild(h3_);
-  container.appendChild(this.div_);
-  var number_of_radios=dic["properties"]["number_of_radios"];
-  if(number_of_radios==null){number_of_radios=5}
-
-try{
-  //alert(number_of_radios)
-  var titles_=dic["properties"]["titles"].split(",")
-  var fields_=dic["properties"]["fields"].split(",")
-  var max_=0;for(var h in titles_){var l=titles_[h].length; if(l>max_){max_=l}}; max_*=10
-  for(var h in titles_)
+  var general_dic_name = dic["properties"]["setup_dictionary"]
+  eval("var structure_dic=this.parent.atm.general."+general_dic_name)
+  // try{alert("9088-6 "+JSON.stringify(structure_dic))} catch(er){alert("15: "+er)}
+  var field=structure_dic["field"]
+  var ny_=dic["properties"]["y"]
+  for(var h in structure_dic["data"])
   {
-   //alert(titles_[h])
-      var div_=document.createElement("div");
-      div_.setAttribute("field", fields_[h]);
-      var span_=document.createElement("span");span_.innerHTML= titles_[h]+"&nbsp;:&nbsp;";div_.appendChild(span_);
-      span_.setAttribute("style", "display:inline;float: left;width:"+max_+"px;text-align:right");
-      for(var j=1; j<=number_of_radios; j++)
-      {
-        var label_=document.createElement("label");
-        label_.setAttribute("class", "radio-inline");
-        var span_=document.createElement("span");span_.innerHTML=j;label_.appendChild(span_);
-        var input_file_=document.createElement("input");input_file_.setAttribute("type", "radio");
-        input_file_.setAttribute("number", j);
-        input_file_.setAttribute("name", "radio_"+titles_[h]+"_"+obj_number);label_.appendChild(input_file_);
-        var span_=document.createElement("span");span_.innerHTML="&nbsp;&nbsp;&nbsp;";label_.appendChild(span_);
-        div_.appendChild(label_);
-        this.div_.appendChild(div_);
-      }
-      //alert(div_.outerHTML)
-   }
- } catch (er) {alert(er)}
-}
+      div_=document.createElement("div");
+      this.main_div.appendChild(div_);
+//      div_.onchange = function(event){
+//         alert(this.outerHTML)
+//         var e=event.target;
+//         alert(e.outerHTML);
+//         alert(e.parentNode.outerHTML);
+//         alert(e.parentNode.parentNode.outerHTML);
+//         //alert(e.value)
+//      }
+      div_.setAttribute("id", obj_number+"_"+h);
+      //--
+          var n_radios=structure_dic["data"][h]["range"];if(n_radios==null || n_radios==""){number_of_radios=5}
+          //alert(n_radios+" " +h)
+          var sub_field = structure_dic["data"][h]["sub_field"]
+          var sf_data = structure_dic["data"][h]["sub_field"]["data"]
+          var l_=0; var max_=0;for(var z in sf_data){l_+=1;var l=sf_data[z].length; if(l>max_){max_=l}}; max_*=10
+      //--
+      var h3_=document.createElement("h3");h3_.innerHTML= structure_dic["data"][h]["title"]+"&nbsp;&nbsp;";
+      div_.appendChild(h3_);
 
+      try{
+          for(var z in sf_data)
+          {
+          // alert(sf_data[z])
+              var div_s=document.createElement("div");
+              var sub_field_name = structure_dic["data"][h]["sub_field"]["field"]
+              div_s.setAttribute("field", sub_field_name);
+              var span_=document.createElement("span");span_.innerHTML=sf_data[z]+"&nbsp;:&nbsp;";div_s.appendChild(span_);
+              span_.setAttribute("style", "display:inline;float:left;width:"+max_+"px;text-align:right");
+              for(var j=1; j<=n_radios; j++)
+              {
+                var label_=document.createElement("label");
+                label_.setAttribute("class", "radio-inline");
+                var span_=document.createElement("span");span_.innerHTML=j;label_.appendChild(span_);
+                var input_file_=document.createElement("input");input_file_.setAttribute("type", "radio");
+                input_file_.setAttribute("number", j);
+                input_file_.setAttribute("name", "radio_"+obj_number+"_"+h+"_"+z);label_.appendChild(input_file_);
+                var span_=document.createElement("span");span_.innerHTML="&nbsp;&nbsp;&nbsp;";label_.appendChild(span_);
+                div_s.appendChild(label_);
+              }
+            div_.appendChild(div_s);
+           }
+     } catch (er) {alert(er)}
+  }
+
+}
 
 acUploadFileCreator.prototype.create_obj_bu = function()
 {
@@ -2059,7 +2080,6 @@ acUploadFileCreator.prototype.create_obj_bu = function()
 
 
 }
-
 
 
 

@@ -33,7 +33,7 @@ class Battalions(TruncateTableMixin, models.Model):
         return str(self.battalion_name)
 
 
-# פלוגה/פרגה
+# פלוגה/פלגה
 class Companys(TruncateTableMixin, models.Model):
     training_web = models.ForeignKey(TrainingWeb, on_delete=models.CASCADE, default=1,
                                      related_name='training_web_companys')
@@ -104,6 +104,21 @@ class Soldiers(TruncateTableMixin, models.Model):
 
     def __str__(self):
         return str(self.user_id) + str(self.first_name) + " " + str(self.last_name)
+
+
+class PrivateSpecialty(TruncateTableMixin, models.Model):
+    class Meta:
+        verbose_name = 'private_speciality'
+        verbose_name_plural = 'private_specialities'
+        ordering = ['last_name']
+
+    training_web = models.ForeignKey(TrainingWeb, on_delete=models.CASCADE, default=1,
+                                     related_name='training_web_private_specialties')
+    soldier = models.ForeignKey(Squads, on_delete=models.CASCADE, default=1, related_name='soldier_private_specialties')
+    specialty = models.SmallIntegerField(default=0)
+    test = models.SmallIntegerField(default=0)
+    value = models.SmallIntegerField(default=0)
+
 
 # Safety
 # professionalism
