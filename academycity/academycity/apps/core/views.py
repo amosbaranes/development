@@ -158,7 +158,7 @@ def update_field_model_by_id(request, foreign=None):
     # print('update_field_model_by_id: dic_')
     # print(dic_)
     # print('-1'*50)
-    log_debug(dic_)
+    # log_debug(dic_)
     # print('dic_')
     dic_ = eval(dic_)
     app_ = dic_['app']

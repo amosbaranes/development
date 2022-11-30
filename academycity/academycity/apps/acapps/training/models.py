@@ -103,7 +103,13 @@ class Soldiers(TruncateTableMixin, models.Model):
     medical_condition = models.TextField(blank=True, null=True)
 
     def __str__(self):
-        return str(self.user_id) + str(self.first_name) + " " + str(self.last_name)
+        return str(self.user_id) + ": " + str(self.first_name) + " " + str(self.last_name)
+
+
+class DoubleShoot(TruncateTableMixin, models.Model):
+    soldier = models.OneToOneField(Soldiers, on_delete=models.CASCADE, default=1,
+                                   related_name='soldier_double_shoot')
+    double_shoot_id = models.CharField(max_length=128, default='', blank=True, null=True)
 
 
 class PrivateSpecialty(TruncateTableMixin, models.Model):
@@ -113,7 +119,8 @@ class PrivateSpecialty(TruncateTableMixin, models.Model):
 
     training_web = models.ForeignKey(TrainingWeb, on_delete=models.CASCADE, default=1,
                                      related_name='training_web_private_specialties')
-    soldier = models.ForeignKey(Squads, on_delete=models.CASCADE, default=1, related_name='soldier_private_specialties')
+    soldier = models.ForeignKey(Soldiers, on_delete=models.CASCADE, default=1,
+                                related_name='soldier_private_specialties')
     specialty = models.SmallIntegerField(default=0)
     test = models.SmallIntegerField(default=0)
     value = models.SmallIntegerField(default=0)

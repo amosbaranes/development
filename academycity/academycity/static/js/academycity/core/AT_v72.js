@@ -1592,12 +1592,11 @@ var process_content=function(){
   }
 }
 var container_on_change=function (event){
-alert(222222)
   event.stopPropagation();
   var e=event.target;
   //alert("c9001 "+event.target.outerHTML)
   var e_container_id_=e.getAttribute("container_id")
-  //  alert(e_container_id_)
+   // alert(e_container_id_)
   var container = getEBI("content_"+e_container_id_)
   //  alert("c9002 "+container.outerHTML)
   //  alert("9050 " + JSON.stringify(container.my_creator_obj.link_dic))
@@ -1607,8 +1606,6 @@ alert(222222)
 
   //alert("c9004 container: e.outerHTML: "+e.outerHTML+"\n\n e.value= " + e.value+"\n\n this.outerHTML= " + this.outerHTML)
   //if(e_container_id_!=c_container_id_) {return;}
-
-
   var foreign_table=e.getAttribute("foreign_table")
   var field_=e.getAttribute("field");
   //alert("field_ 1: " + field_)
@@ -1626,7 +1623,6 @@ alert(222222)
    else{field__=field_; v__=vv}
   }
   //alert("c9006 field_ 2: " + field_)
-
   container.tab.parent.active_tab_content=container;
   try{var content_type_=e.getAttribute("content_type");if(content_type_==null || content_type_==""){content_type_=""}} catch(er){}
   var html_obj_to_update=container
@@ -1671,10 +1667,15 @@ alert(222222)
   //alert("90011")
   } else
   {
-   //  alert("90012")
    var model_=container.my_creator_obj.link_dic["properties"]["table"];
    var record_id_=container.getAttribute("record_id");
+   var is_plugin = false;if(record_id_=="plugin"){is_plugin = true}
+   if(record_id_=="plugin"){
+     record_id_=e.getAttribute("record_id");var fields_values=e.getAttribute("fields_values")
+     html_obj_to_update=e;var fvs = fields_values.split("-")
+   }
    var parent_id_=container.getAttribute("parent_id");
+
    if(this.my_creator_obj.is_json_data){
      // alert(model_+"\nparent_id:"+parent_id_+"\nrecord_id:"+record_id_+"\nfield:"+field__u+"\nfield value:"+v__u+"\n"+event.target.outerHTML)
      var json_manager_obj_number = container.getAttribute("json_manager_obj_number");
@@ -1686,12 +1687,16 @@ alert(222222)
      jmc.update_json_record(dic_data);
    } else {
        try{var parent_model_=container.my_creator_obj.link_dic["properties"]["parent_table"]} catch(er){};
+       //alert("90123-1:  "+parent_model_+" "+model_+" "+parent_id_+" "+record_id_+" "+fields_values)
        if(parent_model_==null){var parent_model_="";}
        //alert("9004 else: record_id_ "+record_id_ +" parent_id_= "+parent_id_+" model_= "+model_+" parent_model_= "+parent_model_)
        var dic_data={"model":model_, "parent_model":parent_model_, "pkey":record_id_, "parent_pkey":parent_id_,
                     "fields": {}, "type":type_, "foreign_keys":container.foreign_keys}
-           dic_data["fields"][field__u]=v__u;
-       //alert('9080 dic_data= '+ JSON.stringify(dic_data));
+       if(is_plugin==true){for(var q in fvs){var x=fvs[q].split("_");dic_data["fields"][x[0]]=x[1]}}
+       else {dic_data["fields"][field__u]=v__u;}
+
+       //alert('9080-2 dic_data= '+ JSON.stringify(dic_data));
+       //alert(html_obj_to_update.outerHTML)
        container.tab.parent.save_data(html_obj_to_update, dic_data);
        //alert("90 "+e.value)
        try{container.my_creator_obj.refresh_my_tables(f=field__u, v=v__u);}catch(er){}
@@ -1897,6 +1902,8 @@ acRadioCreator.prototype.create_obj = function()
   this.main_div.setAttribute("id", obj_number);
   this.main_div.setAttribute("obj_type", dic["obj_type"]);
   this.main_div.setAttribute("type", dic["element_name"]);
+  var style_ = "position:absolute;left:"+dic["properties"]["x"]+"px;top:"+dic["properties"]["y"]+"px;"
+  this.main_div.setAttribute("style", style_);
   this.main_div.setAttribute("container_id", dic["container_id"]);
   container.appendChild(this.main_div);
   //--
@@ -1921,17 +1928,19 @@ acRadioCreator.prototype.create_obj = function()
       //--
           var n_radios=structure_dic["data"][h]["range"];if(n_radios==null || n_radios==""){number_of_radios=5}
           //alert(n_radios+" " +h)
-          var sub_field = structure_dic["data"][h]["sub_field"]
-          var sf_data = structure_dic["data"][h]["sub_field"]["data"]
+          var sub_field = structure_dic["data"][h]["sub_field"];
+          var sf_data = structure_dic["data"][h]["sub_field"]["data"];
+          var sf_field = sf_data["field"];
+          sf_data = sf_data["data"];
           var l_=0; var max_=0;for(var z in sf_data){l_+=1;var l=sf_data[z].length; if(l>max_){max_=l}}; max_*=10
       //--
       var h3_=document.createElement("h3");h3_.innerHTML= structure_dic["data"][h]["title"]+"&nbsp;&nbsp;";
       div_.appendChild(h3_);
 
       try{
+          //try{alert("9088-7 "+JSON.stringify(sf_data))} catch(er){alert("15: "+er)}
           for(var z in sf_data)
           {
-          // alert(sf_data[z])
               var div_s=document.createElement("div");
               var sub_field_name = structure_dic["data"][h]["sub_field"]["field"]
               div_s.setAttribute("field", sub_field_name);
@@ -1943,7 +1952,10 @@ acRadioCreator.prototype.create_obj = function()
                 label_.setAttribute("class", "radio-inline");
                 var span_=document.createElement("span");span_.innerHTML=j;label_.appendChild(span_);
                 var input_file_=document.createElement("input");input_file_.setAttribute("type", "radio");
-                input_file_.setAttribute("number", j);
+                input_file_.setAttribute("container_id", dic["container_id"]);
+                input_file_.setAttribute("field", sf_field);
+                input_file_.setAttribute("record_id", "new");
+                input_file_.setAttribute("fields_values", ""+field+"_"+h+"-"+sub_field_name+"_"+z+"-value_"+j);
                 input_file_.setAttribute("name", "radio_"+obj_number+"_"+h+"_"+z);label_.appendChild(input_file_);
                 var span_=document.createElement("span");span_.innerHTML="&nbsp;&nbsp;&nbsp;";label_.appendChild(span_);
                 div_s.appendChild(label_);
