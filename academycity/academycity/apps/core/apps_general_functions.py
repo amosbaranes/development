@@ -1,7 +1,6 @@
 from django.http import JsonResponse
 from .objects import SystemMaintenance
 
-
 # This function should be defined for every app
 # in the view. For example:
 # from ...core.apps_general_functions import activate_obj_function
@@ -21,7 +20,7 @@ def activate_obj_function(request, add_dic=None):
                 print("9044: "+str(ex))
         else:
             dic_ = request.POST.get('dic')
-            # print('9080 dic_ activate_obj_function dic=', '\n', dic_, '\n', '-'*10)
+            # print('9080-1 dic_ activate_obj_function dic=', '\n', dic_, '\n', '-'*10)
             dic_ = eval(dic_)
             # print("9033: "+str(ex))
             app_ = dic_["app"]
@@ -53,11 +52,11 @@ def activate_obj_function(request, add_dic=None):
         try:
             dic = eval(s_)
         except Exception as ex:
-            print("9088 activate_obj_function: "+str(ex))
+            print("9088 core view activate_obj_function: "+str(ex))
         # print(dic)
         return JsonResponse({'status': 'ok', 'result': dic})
     except Exception as ex:
-        print("9090 activate_obj_function: "+str(ex))
+        print("9090 core view activate_obj_function: "+str(ex))
         return JsonResponse({'status': 'ko: activate_obj_function'})
 
 

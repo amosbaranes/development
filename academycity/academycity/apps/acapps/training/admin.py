@@ -1,7 +1,8 @@
 from __future__ import unicode_literals
 from django.contrib import admin
 from django.utils.translation import ugettext_lazy as _
-from .models import (TrainingWeb, Brigades, Battalions, Companys, Sections, Squads, Soldiers, PrivateSpecialty)
+from .models import (TrainingWeb, Brigades, Battalions, Companys, Sections, Squads, Soldiers, PrivateSpecialty,
+                     DoubleShoot)
 
 
 @admin.register(TrainingWeb)
@@ -41,4 +42,9 @@ class SoldiersAdmin(admin.ModelAdmin):
 
 @admin.register(PrivateSpecialty)
 class PrivateSpecialtyAdmin(admin.ModelAdmin):
-    list_display = ('id', 'soldier', 'specialty', 'test', 'value')
+    list_display = ('id', 'soldier', 'obj_number', 'specialty', 'test', 'value')
+
+
+@admin.register(DoubleShoot)
+class DoubleShootAdmin(admin.ModelAdmin):
+    list_display = ('id', 'soldier')

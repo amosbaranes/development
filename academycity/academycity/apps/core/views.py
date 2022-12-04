@@ -154,10 +154,10 @@ def activate_function(request):
 def update_field_model_by_id(request, foreign=None):
     # log_debug("update_field_model_by_id 0")
     dic_ = request.POST["dic"]
-    # print('-1'*50)
-    # print('update_field_model_by_id: dic_')
-    # print(dic_)
-    # print('-1'*50)
+    print('-1'*50)
+    print('update_field_model_by_id: dic_')
+    print(dic_)
+    print('-1'*50)
     # log_debug(dic_)
     # print('dic_')
     dic_ = eval(dic_)
@@ -267,7 +267,7 @@ def update_field_model_by_id(request, foreign=None):
                     print(9089)
                     return JsonResponse({'status': 'ok', "record_id": obj.id})
             except Exception as ex:
-                print("Error 450: "+str(ex))
+                print("Error 4500-1 core update_field_model_by_id: "+str(ex))
 
             # print("f", f, "fields_[f]", fields_[f])
             if type_ == "checkbox":
@@ -322,8 +322,10 @@ def update_field_model_by_id(request, foreign=None):
 def get_data_link(request):
     dic_ = request.POST["dic"]
     dic_ = eval(dic_)
-
-    print('9050 get_data_link dic_= ', dic_, '\n', dic_["fields"])
+    try:
+        print('9050 core views get_data_link dic_= ', dic_, '\n', dic_["fields"])
+    except Exception as ex:
+        pass
 
     multiple_select_fields = None
     if "multiple_select_fields" in dic_:
@@ -344,8 +346,10 @@ def get_data_link(request):
             exec(f + ' = []')
             fields_str += f + '","'
         except Exception as ex:
-            print("error 400"+str(ex))
+            print("error 4000-1: "+str(ex))
     fields_str = fields_str[:len(fields_str)-2]
+
+    print(fields_str)
 
     # print("9030")
     # print(fields_str)
