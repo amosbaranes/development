@@ -23,6 +23,7 @@ class WebCompanies(models.Model):
                                       'accountingweb',
                                       'businesssimweb',
                                       'trainingweb',
+                                      'potentialweb',
                                       'acmathweb',
                                       'dlweb',
                                       'mlweb',

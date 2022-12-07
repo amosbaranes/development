@@ -120,14 +120,14 @@ company_obj_id, is_show_btns=true, user_id=0)
                                                     },
                                         "Radio": {"title":"Radio", "width":5,
                                                   "setting": {"setup_dictionary":[]},
-                                                  "attributes":{},
+                                                  "attributes":{"bara":[]},
                                                   "functions":["onclick", "onchange", "onmouseover", "onmouseout"]},
                                         "SearchTable":{"title":"Search Table", "width":10,
                                                        "setting": {"is_new_button":["","Yes","No"],
                                                        "is_del_button":["","Yes","No"]},
                                                        "attributes":{"number_of_rows":[], "table_class":["","basic",
                                                        "payment"], "height":[]},
-                                                       "functions":["onchange", "on_new_record"],
+                                                       "functions":["onclick", "onchange", "onmouseover", "onmouseout", "on_new_record"],
                                                        "field_setting":["field_title","field_name","field_width","field_align","foreign_table","filter"]},
                                         "MSearchTable":{"title":"MSearch Table", "width":12,
                                                        "setting": {"is_new_button":["","Yes","No"], "is_del_button":["","Yes","No"]},
@@ -1450,7 +1450,15 @@ acPivotCreator.prototype.create_html = function(type=null)
       {
        try{
          var s_color="black"; try{s_color=p.pdata[v_[i]][h_[j]]["color"]}catch(er){}
+
          var ssnn=nice_number(p.pdata[v_[i]][h_[j]]["value"])
+
+//         if(v_[i]==126)
+//         {
+//           alert(p.pdata[v_[i]][h_[j]]["value"])
+//           alert(ssnn)
+//         }
+
          s+="<td style='text-align:right;color:"+s_color+"'>"+ssnn+"</td>"
          horizontal_total+=1*p.pdata[v_[i]][h_[j]]["value"]
          } catch(er){s+="<td style='text-align:right'></td>"}
@@ -2085,6 +2093,9 @@ acRadioCreator.prototype.create_obj = function()
                 input_file_.setAttribute("field", sub_field_name);
                 input_file_.setAttribute("fields_values", "obj_number"+"__"+obj_number+"-"+field+"__"+h+"-"+sf_field+"__"+z+"-"+sub_field_name+"__"+j);
                 input_file_.setAttribute("id", obj_number+"_"+h+"_"+z+"_"+j);
+
+                input_file_.setAttribute("radio_value", j);
+
                 input_file_.setAttribute("name", "radio_"+obj_number+"_"+h+"_"+z);label_.appendChild(input_file_);
                 var span_=document.createElement("span");span_.innerHTML="&nbsp;&nbsp;&nbsp;";label_.appendChild(span_);
                 div_s.appendChild(label_);
@@ -2094,7 +2105,17 @@ acRadioCreator.prototype.create_obj = function()
          } catch (er) {alert(er)}
       }
  }
+
+// this.main_div.onclick=this.on_radio_click;
+// for(f in dic["functions"]){if(f!="onclick"){var s="this.main_div."+f+"="+dic["functions"][f];eval(s);}}
+ for(f in dic["functions"]){var s="this.main_div."+f+"="+dic["functions"][f];eval(s);}
 }
+
+//acRadioCreator.prototype.on_radio_click = function(event)
+//{
+// try{eval('var zz='+this.my_creator_obj.parent.data["functions"]["onclick"]);zz(event);} catch(er){}
+//}
+
 
 acRadioCreator.prototype.clean_data = function()
 {
@@ -5281,10 +5302,15 @@ var get_creator=function(n){return getEBI(n).my_creator_obj;}
 var clone_dic=function(dic){return JSON.parse(JSON.stringify(dic))}
 
 var nice_number = function(z){
- var kk="";if(z*1<0){kk="-";z=-1*z};var s=z+"";s_=s.split(".");var ns=s_[0];var dn=s_[1];
- if(dn){if(dn.length<2){dn=dn+"0"} else if(dn.length>2){
-   dn=Math.round((100*dn)/Math.pow(10, dn.length))/100;dn=dn+"";dn=dn.split(".")[1]}}else{dn="00"}
- var nss=ns.split(",");var n_="";for(var j=0;j<nss.length;j++){n_= n_+nss[j]};var n__="";
+ var kk="";if(z*1<0){kk="-";z=-1*z};
+ var s=z+"";s_=s.split(".");
+ var ns=s_[0];var dn=s_[1];
+ var ns_=0;
+ if(dn){if(dn.length<2){dn=dn+"0"} else if(dn.length>2)
+ {dn=Math.round((100*dn)/Math.pow(10, dn.length))/100;if(dn==1 || dn==0){ns_=1*dn;dn="00"} else{dn=dn+"";dn=dn.split(".")[1]}}}
+ else{dn="00"}
+
+ var nss=ns.split(",");var n_="";for(var j=0;j<nss.length;j++){n_= n_+nss[j]};var n__="";n_=1*n_+ns_;n_=""+n_;
  while (n_.length>0) {if(n__.length>0){n__=","+n__};n__=n_.substring(n_.length-3,n_.length)+n__;n_=n_.substring(0,n_.length-3)}
  return kk+n__+"."+dn;
 }

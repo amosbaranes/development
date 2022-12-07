@@ -322,10 +322,10 @@ def update_field_model_by_id(request, foreign=None):
 def get_data_link(request):
     dic_ = request.POST["dic"]
     dic_ = eval(dic_)
-    try:
-        print('9050 core views get_data_link dic_= ', dic_, '\n', dic_["fields"])
-    except Exception as ex:
-        pass
+    # try:
+    #     print('9050 core views get_data_link dic_= ', dic_, '\n', dic_["fields"])
+    # except Exception as ex:
+    #     pass
 
     multiple_select_fields = None
     if "multiple_select_fields" in dic_:
@@ -348,8 +348,7 @@ def get_data_link(request):
         except Exception as ex:
             print("error 4000-1: "+str(ex))
     fields_str = fields_str[:len(fields_str)-2]
-
-    print(fields_str)
+    # print(fields_str)
 
     # print("9030")
     # print(fields_str)
@@ -431,7 +430,7 @@ def get_data_link(request):
                 # print(exx)
             if filter_value_ != "":
                 if foreign_table_ != "":
-                    s += '.filter('+foreign_table_+'__id__icontains='+filter_value_+')'
+                    s += '.filter('+foreign_table_+'__'+filter_field_+'__icontains='+filter_value_+')'
                 else:
                     s += '.filter('+filter_field_+'__icontains="'+filter_value_+'")'
         if order_by != "":
@@ -483,9 +482,9 @@ def get_data_link(request):
         pass
         print(ex)
 
-    print("=2"*50)
-    print(dic)
-    print("=2"*50)
+    # print("=2"*50)
+    # print(dic)
+    # print("=2"*50)
 
     dic = {'status': 'ok', "dic": dic}
     # print('core view 9055 get_data_link dic_= ', dic)

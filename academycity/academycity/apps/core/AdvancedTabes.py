@@ -98,18 +98,18 @@ class AdvancedTabs(object):
 
     def save_content(self, params):
         try:
-            print('save_content 906543-1')
-            print('='*50)
-            print('params')
-            print(params)
-            print('atm_content')
-            print(params["atm_content"])
-            print('='*20)
-            print('9075: tab_content\n', "-"*50, params["tab_content"], "\n", "-"*50)
-            print('tab_name')
-            print(params["tab_name"])
-            print(params["app_content"])
-            print('='*50)
+            # print('save_content 906543-1')
+            # print('='*50)
+            # print('params')
+            # print(params)
+            # print('atm_content')
+            # print(params["atm_content"])
+            # print('='*20)
+            # print('9075-1: AdvancedTabs tab_content\n', "-"*50, params["tab_content"], "\n", "-"*50)
+            # print('tab_name')
+            # print(params["tab_name"])
+            # print(params["app_content"])
+            # print('='*50)
             try:
                 atm = DataAdvancedTabsManager.objects.get(at_name=self.manager_name)
                 atm.manager_content = params["atm_content"]

@@ -27,6 +27,7 @@ import joblib
 class BaseDataProcessing(object):
     def __init__(self, dic):  # to_data_path, target_field
         self.name = 'DataProcessing'
+        self.uploaded_filename = None
         # print('-'*50)
         # print('9001 BaseDataProcessing')
         # print('-'*50)
@@ -92,6 +93,7 @@ class BaseDataProcessing(object):
         target_folder = eval("self.TO_" + dic["folder_type"].upper())
 
         filename = dic["request"].POST['filename']
+        self.uploaded_filename = filename
         file_path = os.path.join(target_folder, filename)
         with open(file_path, 'wb+') as destination:
             for c in upload_file_.chunks():
@@ -100,6 +102,10 @@ class BaseDataProcessing(object):
         # print("9017\nUploaded\n", "-" * 30)
         result['file_path'] = file_path
         return result
+
+    def clean_name(self, name):
+        name_ = name.replace("-", "").replace(" ", "").replace("_", "")
+        return name_
 
 
 class DataProcessing(BaseDataProcessing):
