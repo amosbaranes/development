@@ -4,14 +4,14 @@ from academycity.apps.core.sql import TruncateTableMixin
 
 
 class GeneDim(TruncateTableMixin, models.Model):
-    gene_code = models.CharField(max_length=100, default='', blank=True, null=True)
+    gene_code = models.CharField(max_length=40, default='', blank=True, null=True)
 
     def __str__(self):
         return str(self.gene_code)
 
 
 class PersonDim(TruncateTableMixin, models.Model):
-    person_code = models.CharField(max_length=100, default='', blank=True, null=True)
+    person_code = models.CharField(max_length=40, default='', blank=True, null=True)
 
     def __str__(self):
         return str(self.person_code)

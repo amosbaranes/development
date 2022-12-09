@@ -1281,6 +1281,7 @@ acReport.prototype.add_filter = function(f,v,ft){this.filters[f]={"value":v,"for
 
 acReport.prototype.create_obj = function(){
   this.filters={};
+  // need to turn the order_by to a dictionary of dictionaries one for each field.
   this.order_by={"field":this.data["properties"]["order_by"],"direction":"ascending"};
   this.get_data_dic={"app":this.data["properties"]["app"],
                      "model":this.data["properties"]["table"],
@@ -1348,8 +1349,8 @@ acReport.prototype.set_data = function(type, is_level=true){
     //alert(html_obj.outerHTML)
 
      data["dim_titles"]={}
-     zz(data);
-//       alert(JSON.stringify(data));
+     try{zz(data)} catch(er){};
+       //alert(JSON.stringify(data));
 //       alert(JSON.stringify(data["dim_titles"]));
 //       alert(JSON.stringify(report.get_data_dic));
 
@@ -1367,11 +1368,11 @@ acReport.prototype.set_data = function(type, is_level=true){
                  if(!(h_.includes(data[horizontal_field_][j]))){h_.push(data[horizontal_field_][j])}
               }
               pdata[data[vertical_field_][j]][data[horizontal_field_][j]]={"value":data["amount"][j],"color":"black"};
-              aa(v=data[vertical_field_][j],
-                 h=data[horizontal_field_][j],
-                 a=pdata[data[vertical_field_][j]][data[horizontal_field_][j]],
-                 f=get_data_dic["filters"]
-              )
+              try{aa(v=data[vertical_field_][j],
+                     h=data[horizontal_field_][j],
+                     a=pdata[data[vertical_field_][j]][data[horizontal_field_][j]],
+                     f=get_data_dic["filters"]
+                     )} catch(er){}
      }
      v_=v_.sort();//h_=h_.sort();
     // alert(JSON.stringify(data["dim_titles"][horizontal_field_]));
@@ -1431,9 +1432,11 @@ acPivotCreator.prototype.create_html = function(type=null)
    try{
       var kk={};var kk_=[]
       for (var i in v_)
-      {try{kk[parseFloat(p.pdata[v_[i]][h_[this.sort_by_col_num]]["value"])]=v_[i];
-            kk_.push(parseFloat(p.pdata[v_[i]][h_[this.sort_by_col_num]]["value"]))
-        } catch(er){}}
+      {
+        try{var k_idx=parseFloat(p.pdata[v_[i]][h_[this.sort_by_col_num]]["value"])} catch(er){k_idx = -999999999}
+        while (kk_.includes(k_idx)){k_idx=1*k_idx+0.000001}
+        kk[k_idx]=v_[i];kk_.push(k_idx);
+      }
       if(this.sort_ascending==true){kk_=kk_.sort((a, b) => a - b);this.sort_ascending=false}
       else{kk_=kk_.sort((a, b) => b - a);this.sort_ascending=true}
       var v_=[];for(var g in kk_){v_.push(kk[kk_[g]])}

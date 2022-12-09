@@ -15,47 +15,39 @@ import csv
 import pickle
 from concurrent.futures import ThreadPoolExecutor as T
 from openpyxl import Workbook, load_workbook
+from .models import MinMaxCut, MeasureGroupDim, MeasureDim, TimeDim, Fact
 
 mpl.use('Agg')
 
 
-class PotentialDataProcessing(BaseDataProcessing):
+class PotentialAlgo(object):
+    def __init__(self, dic):  # to_data_path, target_field
+        # print("90001-01 PotentialAlgo", dic, '\n', '-'*50)
+        super(PotentialAlgo, self).__init__()
+        # print("90002-01 PotentialAlgo", dic, '\n', '-'*50)
+
+    def process_algo(self, dic):
+        print("90001-1 PotentialAlgo: \n", dic, "="*50)
+        # mmc_qs = MinMaxCut.objects.filter
+
+
+class PotentialDataProcessing(BaseDataProcessing, PotentialAlgo):
     def __init__(self, dic):
-        super().__init__(dic)
-
-    def get_general_data(self, dic):
-        # print("DataProcessing get_general_data 9012:\n")
-        # print(dic)
-        app_ = dic["app"]
-
-        # dic = {"app": "avi",
-        #        "dimensions": {"time_dim": {"model": "TimeDim", "field_name": "year"},
-        #                       "country_dim": {"model": "CountryDim", "field_name": "country_name"} }}
-
-        result = {}
-        for k in dic["dimensions"]:
-            dic_ = dic["dimensions"][k]
-            s = k + ' = {}'
-            try:
-                exec(s)
-                # print(eval(k))
-                model_name_ = dic["dimensions"][k]["model"]
-                # print(model_name_)
-                model_ = apps.get_model(app_label=app_, model_name=model_name_)
-                # print(model_)
-                for r in model_.objects.all():
-                    # print(r)
-                    s = k + '["'+str(r.id)+'"] = r.' + dic["dimensions"][k]["field_name"]
-                    # print(s)
-                    exec(s)
-                # print(eval(k))
-            except Exception as ex:
-                print("err 1000: " + str(ex))
-
-            # print('result[k] = ' + k)
-            exec('result[k] = ' + k)
-        # print(result)
-        return result
+        print("90001-00 PotentialDataProcessing", dic, '\n', '-'*50)
+        super(PotentialDataProcessing, self).__init__(dic)
+        print("90002-00 PotentialDataProcessing", dic, '\n', '-'*50)
+        mdg_fn = "id"
+        # try:
+        #     mdg_fn = dic["measure_group_dim_field_name"]
+        # except Exception as ex:
+        #     print("Exc90002-1" + str(ex))
+        # mdg_fv = dic["measure_group_dim_field_value"]
+        # td_fv = dic["time_dim_value"]
+        # # notice in the measure group, we should include index for every category
+        # s = 'sq = Fact.objects.filter(measure_dim__measure_group_dim__'+mdg_fn+'='+mdg_fv+', time_dim__id=td_fv)'
+        # exec(s)
+        # df = pd.DataFrame(sq.values('country_dim', 'measure_dim', 'amount'))
+        # print(df)
 
     def load_file_to_db(self, dic):
         # print("90121-1: \n", dic, "="*50)
@@ -174,5 +166,8 @@ class PotentialDataProcessing(BaseDataProcessing):
                                 except Exception as ex:
                                     print("Error 9055-33: "+str(ex))
         wb.close()
+
         result = {"status": "ok"}
         return result
+
+

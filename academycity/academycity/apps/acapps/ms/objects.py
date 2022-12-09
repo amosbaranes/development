@@ -19,43 +19,50 @@ from openpyxl import Workbook, load_workbook
 mpl.use('Agg')
 
 
-class MSDataProcessing(BaseDataProcessing):
+class MSAlgo(object):
+    def __init__(self, dic):  # to_data_path, target_field
+        # print("90001-01 MSAlgo", dic, '\n', '-'*50)
+        super(MSAlgo, self).__init__()
+        # print("90002-01 MSAlgo", dic, '\n', '-'*50)
+
+
+class MSDataProcessing(BaseDataProcessing, MSAlgo):
     def __init__(self, dic):
         super().__init__(dic)
 
-    def get_general_data(self, dic):
-        # print("DataProcessing get_general_data 9012:\n")
-        # print(dic)
-        app_ = dic["app"]
-
-        # dic = {"app": "avi",
-        #        "dimensions": {"time_dim": {"model": "TimeDim", "field_name": "year"},
-        #                       "country_dim": {"model": "CountryDim", "field_name": "country_name"} }}
-
-        result = {}
-        for k in dic["dimensions"]:
-            dic_ = dic["dimensions"][k]
-            s = k + ' = {}'
-            try:
-                exec(s)
-                # print(eval(k))
-                model_name_ = dic["dimensions"][k]["model"]
-                # print(model_name_)
-                model_ = apps.get_model(app_label=app_, model_name=model_name_)
-                # print(model_)
-                for r in model_.objects.all():
-                    # print(r)
-                    s = k + '["'+str(r.id)+'"] = r.' + dic["dimensions"][k]["field_name"]
-                    # print(s)
-                    exec(s)
-                # print(eval(k))
-            except Exception as ex:
-                print("err 1000: " + str(ex))
-
-            # print('result[k] = ' + k)
-            exec('result[k] = ' + k)
-        # print(result)
-        return result
+    # def get_general_data(self, dic):
+    #     # print("DataProcessing get_general_data 9012:\n")
+    #     # print(dic)
+    #     app_ = dic["app"]
+    #
+    #     # dic = {"app": "avi",
+    #     #        "dimensions": {"time_dim": {"model": "TimeDim", "field_name": "year"},
+    #     #                       "country_dim": {"model": "CountryDim", "field_name": "country_name"} }}
+    #
+    #     result = {}
+    #     for k in dic["dimensions"]:
+    #         dic_ = dic["dimensions"][k]
+    #         s = k + ' = {}'
+    #         try:
+    #             exec(s)
+    #             # print(eval(k))
+    #             model_name_ = dic["dimensions"][k]["model"]
+    #             # print(model_name_)
+    #             model_ = apps.get_model(app_label=app_, model_name=model_name_)
+    #             # print(model_)
+    #             for r in model_.objects.all():
+    #                 # print(r)
+    #                 s = k + '["'+str(r.id)+'"] = r.' + dic["dimensions"][k]["field_name"]
+    #                 # print(s)
+    #                 exec(s)
+    #             # print(eval(k))
+    #         except Exception as ex:
+    #             print("err 1000: " + str(ex))
+    #
+    #         # print('result[k] = ' + k)
+    #         exec('result[k] = ' + k)
+    #     # print(result)
+    #     return result
 
     def load_file_to_db(self, dic):
         print("90121-1: \n", dic, "="*50)
@@ -102,7 +109,7 @@ class MSDataProcessing(BaseDataProcessing):
         n__ = 0
         for index, row in df.iterrows():
             n__ += 1
-            if 8990 < n__ < 10000:
+            if 19490 < n__ < 23000:
                 for j in range(1, len(columns)):
                     if row[1] is not None and str(row[1]) != "None" and str(row[1]) != "":
                         g_ = str(row[1])
@@ -130,5 +137,46 @@ class MSDataProcessing(BaseDataProcessing):
             print(n__, max_v, max_d)
         print(max_v, max_d)
         wb.close()
+        result = {"status": "ok"}
+        return result
+
+    def fix_dim_names(self, dic):
+        print("90121-1: \n", dic, "="*50)
+        print(dic)
+        print('dic')
+        app_ = dic["app"]
+        # d = dic["dimensions"]["gene_dim"]
+        # m = d["model"]
+        # f = d["field_name"]
+        # model_ = apps.get_model(app_label=app_, model_name=m)
+        # max_len = 0
+        # for k in model_.objects.all():
+        #     s = k.gene_code
+        #     if "_at" not in s:
+        #         print(s)
+        #     else:
+        #         s = s.replace("_at", "")
+        #         k.gene_code = s
+        #         k.save()
+        #     if len(s) > max_len:
+        #         max_len = len(s)
+        # print("Done gene", max_len)
+        #
+        # d = dic["dimensions"]["person_dim"]
+        # m = d["model"]
+        # f = d["field_name"]
+        # model_ = apps.get_model(app_label=app_, model_name=m)
+        # max_len = 0
+        # for k in model_.objects.all():
+        #     s = k.person_code
+        #     if ".CEL" not in s:
+        #         print(s)
+        #     else:
+        #         s = s.replace(".CEL", "")
+        #         k.person_code = s
+        #         k.save()
+        #     if len(s) > max_len:
+        #         max_len = len(s)
+        # print("Done person", max_len)
         result = {"status": "ok"}
         return result

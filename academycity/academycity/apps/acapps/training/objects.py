@@ -23,7 +23,7 @@ class DoubleShoot(object):
     # https://www.yellowduck.be/posts/outputting-django-queryset-json
     # print("need to get double shoot id")
     def update_or_get_soldier_data(self, dic=None):
-        print("-"*100, "\nupdate_or_get_soldier_data\n", dic, "\n", "-"*100)
+        # print("-"*100, "\nupdate_or_get_soldier_data\n", dic, "\n", "-"*100)
         soldier_id = dic["soldier_id"]
         data = {
                 'soldier_id': soldier_id,
@@ -40,14 +40,14 @@ class DoubleShoot(object):
         except Exception as ex:
             print("90876-23: "+str(ex))
             data['double_shoot_id'] = "-100 error create record in ds model"
-        print('data 1')
-        print(data)
-        print('data 1')
+        # print('data 1')
+        # print(data)
+        # print('data 1')
 
         if not ds_row.is_pulled:
             try:
                 # print(soldier_id)
-                print("Get data and update our system")
+                # print("Get data and update our system")
                 function_name = dic["function_name"]
                 ds_update_data = self.get_soldier_data({"ds_soldier_id": data['double_shoot_id'], "function_name": function_name})
                 data["pulled_data"] = ds_update_data
@@ -61,9 +61,9 @@ class DoubleShoot(object):
                 data['double_shoot_id'] = "-2"
 
         # update the data dictionary with data from our DoubleShootModel
-        print('data')
-        print(data)
-        print('data')
+        # print('data')
+        # print(data)
+        # print('data')
 
         return data
 

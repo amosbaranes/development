@@ -12,18 +12,13 @@ def home(request):
     wsc = WebSiteCompany(request, web_company_id=21, is_test=True)
     company_obj = wsc.site_company()
     company_obj_id_ = company_obj.id
-    app_ = "potential"
-    app_activate_function_link_ = reverse(app_+':activate_obj_function', kwargs={})
-    return render(request, app_+'/home.html', {"atm_name": app_+"_default_atm",
-                                               "app": app_,
-                                               "app_activate_function_link": app_activate_function_link_,
-                                               "company_obj_id": company_obj_id_,
-                                               "title": app_}
-                  )
+    app_name = "default"
+    return app_id(request, app_name, company_obj_id_)
 
 
 def app_id(request, app_name, company_obj_id):
     company_obj_id_ = company_obj_id
+
     app_ = "potential"
     app_activate_function_link_ = reverse(app_+':activate_obj_function', kwargs={})
     return render(request, app_+'//home.html', {"atm_name": app_+"_"+app_name+"_atm",
