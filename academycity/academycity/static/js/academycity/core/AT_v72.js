@@ -1407,65 +1407,73 @@ acPivotCreator.prototype.create_html = function(type=null)
   var p=this.parent
   var h_=p.axes["h"];var v_=p.axes["v"]
 
-  //alert(JSON.stringify(v_));
+//  alert(JSON.stringify(v_));
   //alert(JSON.stringify(h_));
   //alert(p.pdata[v_[0]][h_[5]]["value"])
 
   var vertical_field_=p.data["properties"]["vertical_field"];
   var horizontal_field_=p.data["properties"]["horizontal_field"];
   var sh="<thead id='thead_"+this.parent.data["properties"]["obj_number"]+"'>"
-  sh+="<tr id='tr_h_"+this.parent.data["properties"]["obj_number"]+"' style='cursor:pointer'><th></th>";
+  sh+="<tr id='tr_h_"+this.parent.data["properties"]["obj_number"]+"' style='cursor:pointer'><th col_num=-1></th>";
   for(var j in h_){sh+="<th col_num="+j+">"+p.raw_data["dim_titles"][horizontal_field_][h_[j]]+"</th>"};
   try{
   if(p.data["properties"]["horizontal_title"]!=null && p.data["properties"]["horizontal_title"]!="")
   {sh+="<th>"+p.data["properties"]["horizontal_title"]+"</th>"}}catch(er){}
   sh+="</tr></thead>";
-
   //alert(JSON.stringify(this.parent.data["properties"]));
-// alert(111)
   var s="<table>"+sh+"<tbody id='tbody_"+this.parent.data["properties"]["obj_number"]+"'>"
-
-//alert(this.sort_by_col_num)
-
   if(this.sort_by_col_num!=null)
   {
    try{
       var kk={};var kk_=[]
-      for (var i in v_)
+
+      if(this.sort_by_col_num == -1)
       {
-        try{var k_idx=parseFloat(p.pdata[v_[i]][h_[this.sort_by_col_num]]["value"])} catch(er){k_idx = -999999999}
-        while (kk_.includes(k_idx)){k_idx=1*k_idx+0.000001}
-        kk[k_idx]=v_[i];kk_.push(k_idx);
+        for(var h in v_)
+        {
+         k_idx = p.raw_data["dim_titles"][vertical_field_][v_[h]];
+         if(k_idx != null)
+         {
+           kk[k_idx] = v_[h];kk_.push(k_idx)}
+        }
+          if(this.sort_ascending==true){kk_=kk_.sort();this.sort_ascending=false}
+          else{kk_=kk_.sort().reverse();this.sort_ascending=true}
+      } else
+      {
+          for (var i in v_)
+          {
+            try{var k_idx=parseFloat(p.pdata[v_[i]][h_[this.sort_by_col_num]]["value"])} catch(er){k_idx = -999999999}
+            while (kk_.includes(k_idx)){k_idx=1*k_idx+0.000001}
+            kk[k_idx]=v_[i];kk_.push(k_idx);
+          }
+          if(this.sort_ascending==true){kk_=kk_.sort((a, b) => a - b);this.sort_ascending=false}
+          else{kk_=kk_.sort((a, b) => b - a);this.sort_ascending=true}
       }
-      if(this.sort_ascending==true){kk_=kk_.sort((a, b) => a - b);this.sort_ascending=false}
-      else{kk_=kk_.sort((a, b) => b - a);this.sort_ascending=true}
+      //alert(JSON.stringify(kk_));
       var v_=[];for(var g in kk_){v_.push(kk[kk_[g]])}
    } catch(err){alert(err)}
   }
 
-  //alert(JSON.stringify(v_));
+//v_[i]+":"+
+
+//alert(JSON.stringify(v_))
 
   for (var i in v_)
   {
-      s+="<tr><th style='white-space: pre;text-align:left'>"+v_[i]+":"+p.raw_data["dim_titles"][vertical_field_][v_[i]]+"</th>"
+      s+="<tr><th style='white-space: pre;text-align:left'>"+p.raw_data["dim_titles"][vertical_field_][v_[i]]+"</th>"
       var horizontal_total=0
+      var sss_=""
       for(var j in h_)
       {
        try{
          var s_color="black"; try{s_color=p.pdata[v_[i]][h_[j]]["color"]}catch(er){}
-
          var ssnn=nice_number(p.pdata[v_[i]][h_[j]]["value"])
-
-//         if(v_[i]==126)
-//         {
-//           alert(p.pdata[v_[i]][h_[j]]["value"])
-//           alert(ssnn)
-//         }
-
          s+="<td style='text-align:right;color:"+s_color+"'>"+ssnn+"</td>"
+         sss_+=ssnn
          horizontal_total+=1*p.pdata[v_[i]][h_[j]]["value"]
          } catch(er){s+="<td style='text-align:right'></td>"}
       }
+// alert(i + " " +v_[i] + "\n" + sss_)
       horizontal_total=Math.round(100*horizontal_total)/100
       try{
       if(dic["properties"]["horizontal_title"]!=null && dic["properties"]["horizontal_title"]!="")
@@ -1485,7 +1493,6 @@ acPivotCreator.prototype.create_html = function(type=null)
    this.my_creator_obj.create_html()
   })
 }
-
 
 // -- acFSPivotCreator --
 function acFSPivotCreator(parent){

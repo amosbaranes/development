@@ -87,20 +87,25 @@ class ProcessData:
         to_save = []
         try:
             df = pd.read_excel(srr, sheet_name="Data", index_col=0, header=1)
+            print("1\n", df, "-"*50)
             df = df.apply(pd.to_numeric, errors='coerce')
+            print("2\n", df, "-"*50)
             df_min_max = df.iloc[0:2, :]
-            # print('df_min_max')
-            # print(df_min_max)
-            # print('df_min_max')
+            print('df_min_max')
+            print(df_min_max)
+            print('df_min_max')
             df = df.iloc[2:, :]
+
             df_index = df.index
             df_columns = df.columns
             first_row = df_min_max.iloc[[0]].values[0]
             second_row = df_min_max.iloc[[1]].values[0]
             diff_row = second_row - first_row
             df_n1 = df.apply(lambda row: (row - first_row)/diff_row, axis=1)
+            print("10\n", first_row, "\n11\n", second_row, "\n12\n", diff_row, "\n13\n", df_n1)
+
             to_save.append((df_n1.copy(), srr, 'Normalized1'))
-            # self.save_to_excel(df_n1, srr, 'Normalized1')
+            self.save_to_excel(df_n1, srr, 'Normalized1')
             df_n2 = df_n1.copy()
             df_n2[df_n2 < 0] = 0
             df_n2[df_n2 > 1] = 1

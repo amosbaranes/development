@@ -115,6 +115,7 @@ class BaseDataProcessing(object):
         #                       "country_dim": {"model": "CountryDim", "field_name": "country_name"} }}
 
         result = {}
+        n__=0
         for k in dic["dimensions"]:
             dic_ = dic["dimensions"][k]
             s = k + ' = {}'

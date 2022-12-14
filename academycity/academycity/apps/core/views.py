@@ -132,7 +132,7 @@ def activate_function(request):
     try:
         dic_ = request.POST["dic"]
         dic_ = eval(dic_)
-        # print("core: 9001: dic\n", dic_, "-"*50)
+        # print("core: 9111-1: dic\n", dic_, "-"*50)
 
         obj_ = dic_["obj"]
         atm_ = dic_["atm"]
