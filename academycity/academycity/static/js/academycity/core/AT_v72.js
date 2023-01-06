@@ -120,7 +120,12 @@ company_obj_id, is_show_btns=true, user_id=0)
                                                     },
                                         "Radio": {"title":"Radio", "width":5,
                                                   "setting": {"setup_dictionary":[]},
-                                                  "attributes":{"bara":[]},
+                                                  "attributes":{},
+                                                  "functions":["onclick", "onchange", "onmouseover", "onmouseout"]},
+                                        "Activity": {"title":"Activity", "width":7,
+                                                  "setting": {"table_class":["","basic", "payment"], "parent_table":[], "table":[],
+                                                              "number_of_radios":[]},
+                                                  "attributes":{},
                                                   "functions":["onclick", "onchange", "onmouseover", "onmouseout"]},
                                         "SearchTable":{"title":"Search Table", "width":10,
                                                        "setting": {"is_new_button":["","Yes","No"],
@@ -134,12 +139,12 @@ company_obj_id, is_show_btns=true, user_id=0)
                                                        "attributes":{"number_of_rows":[], "table_class":["","basic", "payment"], "height":[]},
                                                        "functions":["onchange"],
                                                        "field_setting":["field_title","field_name","field_width","field_align","foreign_table"]},
-                                        "GeneralLedger":{"title":"General Ledger", "width":15,
+                                        "GeneralLedger":{"title":"General Ledger", "width":12,
                                                          "setting": {},
                                                          "attributes":{"table_class":["","basic", "payment"], "table":[]},
                                                          "functions":["onchange"],
                                                          "field_setting":["field_title","field_name","field_width","field_align"]},
-                                        "DETable":{"title":"Data Entry Table", "width":15,
+                                        "DETable":{"title":"Data Entry Table", "width":12,
                                                        "setting": {"is_new_button":["","Yes","No"], "is_del_button":["","Yes","No"]},
                                                        "attributes":{"table":[], "table_class":["","basic", "payment", "data_entry"], "height":[]},
                                                        "functions":["onchange", "on_new_record"],
@@ -161,7 +166,7 @@ company_obj_id, is_show_btns=true, user_id=0)
                                                              "scale_type":["linear", "logarithmic"],"height":[],"width":[]},
                                                  "attributes":{},
                                                  "functions":[]},
-                                        "UploadFile":{"title":"UploadFile", "width":10,
+                                        "UploadFile":{"title":"UploadFile", "width":8,
                                                "setting": {"height":[],"width":[],"obj_name":[],"function_name":[],
                                                            "topic_id":[], "folder_type":["", "excel", "other"],
                                                             "dimensions":[], "fields":[], "fact_model_field": []},
@@ -642,7 +647,7 @@ AdvancedTabsManager.prototype.save_data = function(html_obj, dic_, is_json_data=
   dic_["company_obj_id"]=this.company_obj_id;
   //alert("90112:\n"+JSON.stringify(dic_));
   //alert(html_obj.outerHTML)
-  //alert(this.update_field_link_)
+  alert(this.update_field_link_)
 
   $.post(this.update_field_link_,
           {dic : JSON.stringify(dic_)},
@@ -783,7 +788,7 @@ function FunctionsPropertiesEditor(tab, functions_dic, functions_list_dic, prope
     editor.tab_obj_.active_function=f;
     var fun=null;
     try{fun=functions_[f]} catch(er){}
-    if(fun==null){fun="function (event){\ntry{\n\n} catch(er){alert('err 9006: '+er)}\n}";functions_[f]=fun;}
+    if(fun==null){fun="function (event){\ntry{\n\n} catch(er){alert('err 9016: '+er)}\n}";functions_[f]=fun;}
       tab_content_.innerHTML=functions_[f];
       tab_content_.setAttribute("fun_name",f);
       var funtablinks = document.getElementsByClassName("funtablinks");
@@ -1676,6 +1681,22 @@ var container_on_change=function (event){
 
     //alert('9080 dic_data = '+ JSON.stringify(dic_data));
     container.tab.parent.save_data(html_obj_to_update, dic_data);
+  } else if (content_type_=="activity"){
+   //alert(e.outerHTML)
+   var model_=e.getAttribute("model")
+   html_obj_to_update=e.parentNode.parentNode;
+  //alert(html_obj_to_update.outerHTML)
+   var parent_id_ = e.getAttribute("parent_id")
+   var record_id_ = html_obj_to_update.getAttribute("record_id")
+   var parent_model_=e.getAttribute("parent_model")
+   var fields_values=e.getAttribute("fields_values");var fvs = fields_values.split("-")
+   //alert('9080-555 dic_data= '+ JSON.stringify(fvs));
+   var dic_data={"model":model_, "parent_model":parent_model_, "pkey":record_id_, "parent_pkey":parent_id_,
+                    "fields": {}, "type":type_, "foreign_keys":container.foreign_keys}
+   for(var q in fvs){var x=fvs[q].split("__");dic_data["fields"][x[0]]=x[1];}
+   //alert('9080-222 dic_data= '+ JSON.stringify(dic_data));
+   //alert(html_obj_to_update.outerHTML)
+   container.tab.parent.save_data(html_obj_to_update, dic_data);
   } else if (content_type_=="data_entry")
   {
   //alert("90011")
@@ -1703,6 +1724,7 @@ var container_on_change=function (event){
      // alert('9083 dic_data= '+ JSON.stringify(dic_data));
      jmc.update_json_record(dic_data);
    } else {
+
        try{var parent_model_=container.my_creator_obj.link_dic["properties"]["parent_table"]} catch(er){};
        //alert("90123-1:  "+parent_model_+" "+model_+" "+parent_id_+" "+record_id_+" "+fields_values)
 
@@ -1710,6 +1732,9 @@ var container_on_change=function (event){
        //alert("9004 else: record_id_ "+record_id_ +" parent_id_= "+parent_id_+" model_= "+model_+" parent_model_= "+parent_model_)
        var dic_data={"model":model_, "parent_model":parent_model_, "pkey":record_id_, "parent_pkey":parent_id_,
                     "fields": {}, "type":type_, "foreign_keys":container.foreign_keys}
+
+       //alert('9080-111 dic_data= '+ JSON.stringify(dic_data));
+
        if(is_plugin==true){for(var q in fvs){var x=fvs[q].split("__");dic_data["fields"][x[0]]=x[1];}}
        else {dic_data["fields"][field__u]=v__u;}
 
@@ -1832,6 +1857,7 @@ acUploadFileCreator.prototype.create_obj = function()
   style_+="width:"+width_+"px;height:"+height_;
   this.div_.setAttribute("style", style_);
   container.appendChild(this.div_);
+  // --
   this.input_file_=document.createElement("input");
   this.input_file_.setAttribute("id", "input_file_"+obj_number);
   this.input_file_.setAttribute("type", "file");
@@ -1840,6 +1866,7 @@ acUploadFileCreator.prototype.create_obj = function()
   this.input_file_.setAttribute("data-buttonText", "Brows");
   this.input_file_.setAttribute("name", "driver_file");
   this.div_.appendChild(this.input_file_);
+  // --
   var br=document.createElement("br");
   this.div_.appendChild(br);
   var span1=document.createElement("span");
@@ -1885,8 +1912,11 @@ acUploadFileCreator.prototype.create_obj = function()
                 $('#driver-uploader-success-alert').show();
             });
 
+           //alert(this.atm.upload_file_link_)
+
             xhr.open('post', this.atm.upload_file_link_, true);
             xhr.setRequestHeader("X-CSRFToken", csrftoken);
+
             var fd = new FormData();
             fd.append("filename", filename);
             fd.append("drive_file", file);
@@ -2030,6 +2060,209 @@ acUploadFileCreator.prototype.create_obj_bu = function()
 
 
 // Radio --
+function acActivityCreator(parent){this.parent=parent;
+   var dic=this.parent.data;
+   this.number_of_radios=10;if(dic["properties"]["number_of_radios"]){this.number_of_radios=dic["properties"]["number_of_radios"]}
+   this.id_width = 50;
+   this.name_width = 150;
+   this.score_width = this.number_of_radios*47;
+   this.table_width = 1*this.id_width + 1*this.name_width+1*this.score_width;
+   this.field = "specialty";
+   this.field_value = 45;
+   this.sf_field = "test";
+   this.sf_field_value = 50;
+   this.sub_field_name="value";
+}
+
+acActivityCreator.prototype.create_obj = function()
+{
+  var dic=this.parent.data;
+  var container = document.getElementById("content_"+dic["container_id"]);
+  var obj_number = dic["properties"]["obj_number"];
+  if(!(dic["properties"]["table_class"])){dic["properties"]["table_class"]="basic"}
+  //alert(JSON.stringify(dic));
+  this.parent.data=dic;
+  //--
+  this.number_of_rows=dic["properties"]["number_of_rows"];
+  this.model=dic["properties"]["table"];
+  this.parent_model=dic["properties"]["parent_table"];
+  this.table_=document.createElement("table");
+  this.table_.addEventListener("change", function(event){
+    var e=event.target
+    e.setAttribute("model", this.getAttribute("model"))
+    e.setAttribute("parent_model", this.getAttribute("parent_model"))
+    e.setAttribute("content_type", "activity")
+   })
+  this.table_.setAttribute("class", dic["properties"]["table_class"]);
+  this.table_.setAttribute("model", this.model);
+  this.table_.setAttribute("parent_model", this.parent_model);
+  this.table_.setAttribute("container_id", dic["container_id"]);
+  this.table_.setAttribute("id", dic["properties"]["obj_number"]);
+  this.table_.setAttribute("obj_type", dic["obj_type"]);
+  this.table_.setAttribute("type", dic["element_name"]);
+  this.table_.setAttribute("style", "position:absolute;left:"+dic["properties"]["x"]+"px;top:"+dic["properties"]["y"]+"px;width:"+this.table_width+"px");
+  this.thead=document.createElement("thead");
+  this.thead.setAttribute("style", "display: block;overflow-x: hidden;");
+  this.table_.appendChild(this.thead);
+  var tr_h=document.createElement("tr");
+  tr_h.my_creator_obj=this;
+  tr_h.setAttribute("style","cursor:pointer");
+  this.thead.appendChild(tr_h);
+    var th_an=document.createElement("th");th_an.innerHTML="ID";
+    th_an.setAttribute("style","width:"+this.id_width+"px;border-top-left-radius: 15px");tr_h.appendChild(th_an);
+    var th_a=document.createElement("th");th_a.innerHTML="Name";
+    th_a.setAttribute("style","width:"+this.name_width+"px;");tr_h.appendChild(th_a);
+    var th_m=document.createElement("th");th_m.innerHTML="Score";
+    th_m.setAttribute("style","width:"+this.score_width+"px;border-top-right-radius: 15px");
+    tr_h.appendChild(th_m);
+  this.tbody=document.createElement("tbody");
+  this.tbody.setAttribute("id", "tbody_"+dic["properties"]["obj_number"]);
+  this.tbody.setAttribute("style", "display: block;");
+  this.table_.appendChild(this.tbody);
+  this.table_.my_creator_obj=this;
+
+  for (i in dic["attributes"]){var s=dic["attributes"][i];
+   if(s in dic["properties"]){this.table_.setAttribute(s, dic["properties"][s])}
+   else{this.table_.setAttribute(s, "")}}
+
+  container.appendChild(this.table_);
+  // this.table_.onclick=this.row_click;
+  for(f in dic["functions"]){if(f!="onclick"){var s="this.table_."+f+"="+dic["functions"][f];eval(s);}}
+}
+
+
+acActivityCreator.prototype.set_members = function(members_dic)
+{
+ var dic = this.parent.data
+ this.members_dic = members_dic
+ //var obj_number_ = dic["obj_number"]
+ var obj_number_ = 50;
+ this.tbody.innerHTML=""
+ for(var m in this.members_dic)
+ {
+  var tr=document.createElement("tr");this.tbody.appendChild(tr);
+  var tdan=document.createElement("td");tdan.setAttribute("style","width:"+this.id_width+"px");tdan.innerHTML=m;tr.appendChild(tdan);
+  var tda=document.createElement("td");tda.setAttribute("style","width:"+this.name_width+"px");tda.innerHTML=this.members_dic[m];tr.appendChild(tda);
+  var tdi=document.createElement("td");tdi.setAttribute("style","width:"+this.score_width+"px");tr.appendChild(tdi);
+     var div_s=document.createElement("div");
+     div_s.setAttribute("record_id", "new");
+     div_s.setAttribute("field", this.sf_field);
+     for(var j=1; j<=this.number_of_radios; j++)
+     {
+        var label_=document.createElement("label");
+        label_.setAttribute("class", "radio-inline");
+        var span_=document.createElement("span");span_.innerHTML=j;label_.appendChild(span_);
+        var input_field_=document.createElement("input");input_field_.setAttribute("type", "radio");
+        input_field_.setAttribute("container_id", dic["container_id"]);
+        input_field_.setAttribute("field", this.sub_field_name);
+        input_field_.setAttribute("parent_id", m);
+        input_field_.setAttribute("fields_values", "obj_number"+"__"+obj_number_+"-"+this.field+"__"+this.field_value+"-"+this.sf_field+"__"+this.sf_field_value+"-"+this.sub_field_name+"__"+j);
+        input_field_.setAttribute("id", m+"_"+obj_number_+"_"+this.field_value+"_"+this.sf_field_value+"_"+j);
+        input_field_.setAttribute("radio_value", j);
+        input_field_.setAttribute("name", "radio_"+m+"_"+obj_number_+"_"+this.field_value+"_"+this.sf_field_value);label_.appendChild(input_field_);
+        var span_=document.createElement("span");span_.innerHTML="&nbsp;&nbsp;&nbsp;";label_.appendChild(span_);
+        div_s.appendChild(label_);
+     }
+    tdi.appendChild(div_s);
+  var table_id=this.parent.data["properties"]["obj_number"]
+ }
+}
+
+acActivityCreator.prototype.set_data = function(parent_id, obj_nums=[])
+{
+ //alert(parent_id)
+ //alert(JSON.stringify(obj_nums));
+  var fun=function(data, obj_nums){
+    try{
+        if(obj_nums.constructor === Array){
+         for(j in obj_nums)
+         {
+            var table_id=obj_nums[j]+"";
+            var n_=data["account"].length;
+            var s='';
+            for(i=0; i<n_; i++)
+            {
+             try{
+               var i_=document.getElementById(table_id+"_"+data["account"][i])
+               i_.setAttribute("record_id", data["id"][i])
+               i_.value=data["amount"][i]
+               } catch(er) {}
+            }
+         }
+        }
+    }catch(er){}
+  }
+  this.set_accounts(null,obj_nums);
+
+  var model_ = document.getElementById("content_"+this.parent.data["container_id"]).getAttribute("table");
+  var dic_={"model":this.model, "number_of_rows":1000, "fields":["account", "amount", "comment"],
+             "parent_model":model_ , "parent_id": parent_id, filters:{}, order_by:{}}
+
+  if(obj_nums.length<1){obj_nums.push(this.parent.data["properties"]["obj_number"])}
+  this.parent.atm.get_data(call_back_fun=fun, dic_, obj_nums)
+}
+
+acActivityCreator.prototype.row_click = function(event)
+{
+ var e=event.target;
+ while(e.tagName!="TR"){e=e.parentNode;}
+ //alert("1: "+e.outerHTML)
+ //alert(this.my_creator_obj.table_.outerHTML)
+ var n_row=e.getAttribute("row")
+ if(n_row==null){return;}
+
+ var container_id=this.my_creator_obj.parent.data["container_id"];
+ var container = document.getElementById("content_"+container_id);
+ //alert(container_id)
+
+ try{eval('var zz='+this.my_creator_obj.parent.data["functions"]["onclick"]);zz(event)} catch(er)
+ {//alert("er9013: "+er)
+ }
+
+}
+
+
+
+
+
+
+
+//acActivityCreator.prototype.set_data = function(ll=null)
+//{
+//  alert(66666)
+//  //this.clean_data();
+//  if(ll!=null){for(var i in ll){get_creator(ll[i]).clean_data()}}
+//  var dic=this.parent.data;
+//  //alert("acRadioCreator 90441-1  "+JSON.stringify(dic));
+//  var container = document.getElementById("content_"+dic["container_id"]);
+//  var model_=container.my_creator_obj.link_dic["properties"]["table"];
+//     var parent_model_=container.my_creator_obj.link_dic["properties"]["parent_table"];
+//     var parent_id_=container.getAttribute("parent_id");
+//     var dic_={"model":model_, "parent_model":parent_model_, "parent_id": parent_id_, "number_of_rows": "1000",
+//               "fields": this.fields, "filters":{}, "order_by": {}}
+//
+//    //alert("90446-1  "+JSON.stringify(dic_));
+//    //alert("90441-2  "+JSON.stringify(this.fields));
+//
+//  var fun=function(data, this_obj){
+//    var dic=this_obj.parent.data;
+//    var obj_number = dic["properties"]["obj_number"]
+//    var n_=data[this_obj.fields[0]].length;
+//    //alert(n_)
+//    if(n_<1){return}
+//    //alert("9081-22 acRadioCreator.prototype.set_data\n data: "+JSON.stringify(data));
+//    for(var j=0; j<n_; j++)
+//    {
+//     var s_id=data[this_obj.fields[0]][j]+"_"+data[this_obj.fields[1]][j]+"_"+data[this_obj.fields[2]][j]+"_"+data[this_obj.fields[3]][j]
+//     getEBI(s_id).checked=true;
+//     getEBI(s_id).parentNode.parentNode.setAttribute("record_id", data["id"][j])
+//    }
+//  }
+//  //  alert("9010: "+JSON.stringify(dic__));
+//  this.parent.atm.get_data(call_back_fun=fun, dic_, this)
+//}
+
+// Radio --
 function acRadioCreator(parent){this.parent=parent;this.structure_dic=null;}
 
 acRadioCreator.prototype.create_obj = function()
@@ -2125,7 +2358,6 @@ acRadioCreator.prototype.create_obj = function()
 //{
 // try{eval('var zz='+this.my_creator_obj.parent.data["functions"]["onclick"]);zz(event);} catch(er){}
 //}
-
 
 acRadioCreator.prototype.clean_data = function()
 {

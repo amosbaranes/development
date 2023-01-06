@@ -38,7 +38,13 @@ class WebSiteCompany(object):
                 # print('-domain ex'*5)
                 request.session[settings.WEB_SITE_COMPANY_ID] = {'domain': 'null'}
 
-        self.web_site_company = request.session[settings.WEB_SITE_COMPANY_ID]
+        print(settings.WEB_SITE_COMPANY_ID)
+        try:
+            self.web_site_company = request.session[settings.WEB_SITE_COMPANY_ID]
+        except Exception as ex:
+            print("="*50)
+            print(str(ex))
+            print("="*50)
 
         if (not is_test) and self.is_registered_domain():
             self.web_company_id = self.web_site_company['web_company_id']

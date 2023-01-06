@@ -3,6 +3,11 @@ from django.http import JsonResponse
 import requests
 
 
+class TestManager(object):
+    def __init__(self, dic=None):
+        self.obj_dic = dic
+
+
 class DoubleShoot(object):
     def __init__(self, dic=None):
         url_a = "https://qa.double-shoot.com/FlexiCore/rest/authenticationNew/login"

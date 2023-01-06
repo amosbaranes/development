@@ -98,6 +98,7 @@ class Soldiers(TruncateTableMixin, models.Model):
     height = models.SmallIntegerField(default=0)
     weight = models.SmallIntegerField(default=0)
     profession = models.SmallIntegerField(default=0)
+    sub_profession = models.SmallIntegerField(default=0)
     discipline = models.SmallIntegerField(default=0)
     strength = models.SmallIntegerField(default=0)
     medical_condition = models.TextField(blank=True, null=True)
@@ -116,17 +117,39 @@ class DoubleShoot(TruncateTableMixin, models.Model):
         return str(self.id) + ": " + str(self.double_shoot_id)
 
 
-class PrivateSpecialty(TruncateTableMixin, models.Model):
+class TimeDim(TruncateTableMixin, models.Model):
+    id = models.PositiveIntegerField(primary_key=True)
+    year = models.PositiveSmallIntegerField(default=0)
+    month = models.PositiveSmallIntegerField(default=0)
+    day = models.PositiveSmallIntegerField(default=0)
+
+    def __str__(self):
+        return str(self.id)+" year="+str(self.year)
+
+
+# class TestsDim(TruncateTableMixin, models.Model):
+#     class Meta:
+#         verbose_name = 'test'
+#         verbose_name_plural = 'tests'
+#
+#     test_name = models.CharField(max_length=50, default='', blank=True, null=True)
+#     test_content = models.JSONField(null=True)
+
+
+class SoldierFact(TruncateTableMixin, models.Model):
     class Meta:
-        verbose_name = 'private_speciality'
-        verbose_name_plural = 'private_specialities'
+        verbose_name = 'soldier_fact'
+        verbose_name_plural = 'soldier_facts'
 
     training_web = models.ForeignKey(TrainingWeb, on_delete=models.CASCADE, default=1,
-                                     related_name='training_web_private_specialties')
+                                     related_name='training_web_soldier_facts')
+    created = models.DateTimeField(auto_now_add=True, blank=True)
+    time_dim = models.ForeignKey(TimeDim, on_delete=models.CASCADE, default=1,
+                                 related_name='time_dim_soldier_facts')
     soldier = models.ForeignKey(Soldiers, on_delete=models.CASCADE, default=1,
-                                related_name='soldier_private_specialties')
-    obj_number = models.SmallIntegerField(default=0)
-    specialty = models.SmallIntegerField(default=0)
+                                related_name='soldier_soldier_facts')
+    # test_dim = models.ForeignKey(TestsDim, on_delete=models.CASCADE, default=1,
+    #                              related_name='test_dim_soldier_facts')
     test = models.SmallIntegerField(default=0)
     value = models.SmallIntegerField(default=0)
 
