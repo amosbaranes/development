@@ -514,21 +514,27 @@ def upload_file(request):
     ret = {}
     if upload_file_:
         filename = request.POST['filename']
+        # print("9005-1", filename, "\n", "-"*30)
         app_ = request.POST['app']
+        # print("9005-2", app_, "\n", "-"*30)
         obj_name_ = request.POST['obj_name']
         function_name_ = request.POST['function_name']
         topic_id_ = request.POST['topic_id']
         folder_type_ = request.POST['folder_type']
+        # print("9005-16", folder_type_, "\n", "-"*30)
         #
         dimensions_ = request.POST['dimensions']
         fields_ = request.POST['fields']
         fact_model_field_ = request.POST['fact_model_field']
+        # print("9005-161", fact_model_field_, "\n", "-"*30)
         #
         dimensions_s = dimensions_.split(",")
         # time_dim,country_dim,measure_dim
         # year,country_name,measure_name
         # WorldBankFact,amount
         fields_s = fields_.split(",")
+        # print(fields_)
+        # print(fact_model_field_)
         fact_model_field_s = fact_model_field_.split(",")
         cube_dic = {"dimensions": {}, "fact": {"model": fact_model_field_s[0], "field_name": fact_model_field_s[1]}}
         for j in range(len(dimensions_s)):
@@ -550,6 +556,14 @@ def upload_file(request):
         add_dic = {"obj": obj_name_, "app": app_, "fun": function_name_,
                    "params": {"request": request, "folder_type": folder_type_, "app": app_, "cube_dic": cube_dic},
                    "obj_param": {"topic_id": topic_id_, "app": app_}}
+        try:
+            add_dic["obj_param"]["country_model"] = cube_dic["dimensions"]["country_dim"]["model"]
+        except Exception as ex:
+            pass
+        try:
+            add_dic["obj_param"]["measure_model"] = cube_dic["dimensions"]["measure_dim"]["model"]
+        except Exception as ex:
+            pass
         # print("9010")
         # print(add_dic)
         # print("9010")

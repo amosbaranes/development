@@ -8,7 +8,7 @@ class TimeDim(TruncateTableMixin, models.Model):
     year = models.PositiveSmallIntegerField(default=0)
 
     def __str__(self):
-        return str(self.id)+" year="+str(self.year)
+        return str(self.id)
 
 
 class CountryDim(TruncateTableMixin, models.Model):
@@ -16,7 +16,16 @@ class CountryDim(TruncateTableMixin, models.Model):
     country_code = models.CharField(max_length=100, default='', blank=True, null=True)
 
     def __str__(self):
-        return str(self.country_code)
+        return str(self.country_name)
+
+
+class UniversityDim(TruncateTableMixin, models.Model):
+    country_dim = models.ForeignKey(CountryDim, on_delete=models.CASCADE, default=1,
+                                          related_name='country_dim_university')
+    university_name = models.CharField(max_length=100, default='', blank=True, null=True)
+
+    def __str__(self):
+        return str(self.university_name)
 
 
 class MeasureGroupDim(TruncateTableMixin, models.Model):
@@ -42,7 +51,22 @@ class WorldBankFact(TruncateTableMixin, models.Model):
     country_dim = models.ForeignKey(CountryDim, on_delete=models.CASCADE, default=1,
                                     related_name='country_dim_world_Bank_fact')
     measure_dim = models.ForeignKey(MeasureDim, on_delete=models.CASCADE, default=1,
-                                    related_name='country_dim_world_Bank_fact')
+                                    related_name='measure_dim_world_Bank_fact')
+    amount = models.DecimalField(max_digits=16, decimal_places=2, default=0, blank=True, null=True)
+
+    def __str__(self):
+        return str(self.country_dim) + " - " + str(self.time_dim) + ": " + str(self.amount)
+
+
+class UniversityRankFact(TruncateTableMixin, models.Model):
+    time_dim = models.ForeignKey(TimeDim, on_delete=models.CASCADE, default=1,
+                                 related_name='time_dim_university_rank_fact')
+    country_dim = models.ForeignKey(CountryDim, on_delete=models.CASCADE, default=1,
+                                    related_name='country_dim_university_rank_fact')
+    university_dim = models.ForeignKey(UniversityDim, on_delete=models.CASCADE, default=1,
+                                    related_name='university_dim_university_rank_fact')
+    measure_dim = models.ForeignKey(MeasureDim, on_delete=models.CASCADE, default=1,
+                                    related_name='measure_dim_university_rank_fact')
     amount = models.DecimalField(max_digits=16, decimal_places=2, default=0, blank=True, null=True)
 
     def __str__(self):

@@ -39,15 +39,6 @@ def signup_login_form(request, error_message=''):
     return render(request, 'potential/login_page.html', arg)
 
 
-# def home(request):
-#     # return HttpResponseRedirect(reverse(self.web_site_company['app_label'] + ':home'))
-#     wsc = WebSiteCompany(request, web_company_id=21, is_test=True)
-#     company_obj = wsc.site_company()
-#     company_obj_id_ = company_obj.id
-#     app_name = "default"
-#     return app_id(request, app_name, company_obj_id_)
-
-
 def home_logged(request):
     wsc = WebSiteCompany(request, web_company_id=21, is_test=True)
     company_obj = wsc.site_company()
@@ -64,7 +55,6 @@ def home_logged(request):
 
 def app_id(request, app_name, company_obj_id):
     company_obj_id_ = company_obj_id
-
     app_ = "potential"
     app_activate_function_link_ = reverse(app_+':activate_obj_function', kwargs={})
     return render(request, app_+'//home.html', {"atm_name": app_+"_"+app_name+"_atm",

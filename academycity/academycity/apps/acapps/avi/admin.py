@@ -1,7 +1,7 @@
 from __future__ import unicode_literals
 from django.contrib import admin
 from django.utils.translation import ugettext_lazy as _
-from .models import (TimeDim, CountryDim, MeasureGroupDim, MeasureDim, WorldBankFact)
+from .models import (TimeDim, CountryDim, MeasureGroupDim, MeasureDim, UniversityDim, WorldBankFact, UniversityRankFact)
 
 
 @admin.register(TimeDim)
@@ -27,4 +27,14 @@ class MeasureDimAdmin(admin.ModelAdmin):
 @admin.register(WorldBankFact)
 class WorldBankFactAdmin(admin.ModelAdmin):
     list_display = ('id', 'time_dim', 'country_dim', 'measure_dim', 'amount')
+
+
+@admin.register(UniversityRankFact)
+class UniversityRankFactAdmin(admin.ModelAdmin):
+    list_display = ('id', 'time_dim', 'country_dim', 'university_dim', 'measure_dim', 'amount')
+
+
+@admin.register(UniversityDim)
+class UniversityDimAdmin(admin.ModelAdmin):
+    list_display = ('id', 'university_name', 'country_dim')
 
