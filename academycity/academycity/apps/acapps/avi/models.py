@@ -14,6 +14,7 @@ class TimeDim(TruncateTableMixin, models.Model):
 class CountryDim(TruncateTableMixin, models.Model):
     country_name = models.CharField(max_length=100, default='', blank=True, null=True)
     country_code = models.CharField(max_length=100, default='', blank=True, null=True)
+    country_cc = models.CharField(max_length=100, default='', blank=True, null=True)
 
     def __str__(self):
         return str(self.country_name)

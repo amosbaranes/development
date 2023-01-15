@@ -11,7 +11,8 @@ class TimeDimAdmin(admin.ModelAdmin):
 
 @admin.register(CountryDim)
 class CountryDimAdmin(admin.ModelAdmin):
-    list_display = ('id', 'country_name', 'country_code')
+    list_display = ('id', 'country_name', 'country_code', )
+    list_filter = ['country_name', 'country_code', 'country_cc']
 
 
 @admin.register(MeasureGroupDim)
@@ -27,14 +28,17 @@ class MeasureDimAdmin(admin.ModelAdmin):
 @admin.register(WorldBankFact)
 class WorldBankFactAdmin(admin.ModelAdmin):
     list_display = ('id', 'time_dim', 'country_dim', 'measure_dim', 'amount')
+    list_filter = ['measure_dim', 'time_dim', 'country_dim']
 
 
 @admin.register(UniversityRankFact)
 class UniversityRankFactAdmin(admin.ModelAdmin):
     list_display = ('id', 'time_dim', 'country_dim', 'university_dim', 'measure_dim', 'amount')
+    list_filter = ['measure_dim', 'time_dim', 'country_dim']
 
 
 @admin.register(UniversityDim)
 class UniversityDimAdmin(admin.ModelAdmin):
     list_display = ('id', 'university_name', 'country_dim')
+    list_filter = ['university_name', 'country_dim']
 

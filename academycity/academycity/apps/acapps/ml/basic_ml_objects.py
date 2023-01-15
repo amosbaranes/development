@@ -62,6 +62,7 @@ class BaseDataProcessing(object):
         os.makedirs(self.IMAGES_PATH, exist_ok=True)
         self.MODELS_PATH = os.path.join(self.PROJECT_ROOT_DIR, "models")
         os.makedirs(self.MODELS_PATH, exist_ok=True)
+        self.target_folder = None
 
         # self.TARGET_FIELD = target_field
         # self.DATA = None
@@ -96,11 +97,11 @@ class BaseDataProcessing(object):
         # for example: if data_folder=excel we choose self.TO_EXCEL
 
         # print("target_folder = self.TO_"+dic["folder_type"].upper())
-        target_folder = eval("self.TO_" + dic["folder_type"].upper())
+        self.target_folder = eval("self.TO_" + dic["folder_type"].upper())
 
         filename = dic["request"].POST['filename']
         self.uploaded_filename = filename
-        file_path = os.path.join(target_folder, filename)
+        file_path = os.path.join(self.target_folder, filename)
         with open(file_path, 'wb+') as destination:
             for c in upload_file_.chunks():
                 destination.write(c)
