@@ -972,6 +972,8 @@ class AviDataProcessing(BaseDataProcessing, BasePotentialAlgo):
                     cc_ = "Moldova"
                 elif cc_ == "Viet Nam":
                     cc_ = "Vietnam"
+                elif cc_ == "Republic Of North Macedonia":
+                    cc_ = "North Macedonia"
 
                 c, is_created = model_country_dim.objects.get_or_create(country_name=cc_)
                 if is_created:
@@ -993,6 +995,144 @@ class AviDataProcessing(BaseDataProcessing, BasePotentialAlgo):
                         f.save()
             except Exception as ex:
                 print("9060-60 Error: ", str(ex))
+
+        result = {"status": "ok"}
+        return result
+
+    def load_ai_oxford22_file_to_db(self, dic):
+        print("90123-6: \n", dic, "\n", "="*50)
+        file_path = self.upload_file(dic)["file_path"]
+        print("file_path", file_path, "\n", "="*50)
+        app_ = dic["app"]
+        # print('90022-1 dic')
+        dic = dic["cube_dic"]
+        # print('90022-1 dic', dic, "\n", "="*50)
+
+        model_name_ = dic["dimensions"]["time_dim"]["model"]
+        model_time_dim = apps.get_model(app_label=app_, model_name=model_name_)
+        model_name_ = dic["dimensions"]["country_dim"]["model"]
+        model_country_dim = apps.get_model(app_label=app_, model_name=model_name_)
+        model_name_ = "measuregroupdim"
+        model_group_measure_dim = apps.get_model(app_label=app_, model_name=model_name_)
+        model_name_ = dic["dimensions"]["measure_dim"]["model"]
+        model_measure_dim = apps.get_model(app_label=app_, model_name=model_name_)
+        model_name_ = dic["dimensions"]["university_dim"]["model"]
+        model_university_dim = apps.get_model(app_label=app_, model_name=model_name_)
+        model_name_ = dic["fact"]["model"]
+        model_fact = apps.get_model(app_label=app_, model_name=model_name_)
+        model_name_ = "worldbankfact"
+        model_wb_fact = apps.get_model(app_label=app_, model_name=model_name_)
+
+        yy = int(file_path.split("_")[1].split(".")[0])
+        # print("="*100)
+        # print(yy)
+        # print("="*100)
+        try:
+            t, is_created = model_time_dim.objects.get_or_create(id=yy)
+            if is_created:
+                # t.year = yy
+                s = 't.' + dic["dimensions"]["time_dim"]["field_name"] + ' = yy'
+                # print(s)
+                exec(s)
+                t.save()
+        except Exception as ex:
+            pass
+        try:
+            gm, is_created = model_group_measure_dim.objects.get_or_create(group_name="ai")
+            mm = "oxford"
+            m, is_created = model_measure_dim.objects.get_or_create(measure_name=mm, measure_group_dim=gm)
+            if is_created:
+                s = 'm.' + dic["dimensions"]["measure_dim"]["field_name"] + ' = mm'
+                exec(s)
+                m.save()
+        except Exception as ex:
+            print("9025-5 Error measure:"+str(ex))
+
+        df = pd.read_excel(file_path, sheet_name="Data", header=0)
+        # print("A\n", df)
+
+        for i, r in df.iterrows():
+            # print(r)
+            s = r["data"]
+            ns1 = 0
+            ns2 = 0
+            for h in range(2, 200):
+                # print("h=", h)
+                if h > 2:
+                    ns1 = ns2 + 1
+                else:
+                    ns1 = ns2
+                ns2 = s.find(" "+str(h)+" ")
+                if ns2 < 0:
+                    break
+                # print("ns1, ns2=", ns1, ns2)
+                si = s[ns1:ns2]
+                # print(si)
+                llsi = si.split(" ")
+                # print(llsi)
+                nl = len(llsi)
+                nc = nl - 4
+                cc_ = ' '.join(llsi[1:nc]).strip()
+                sg = llsi[len(llsi)-4]
+                # print(cc_, sg)
+                try:
+                    # print("=" * 100)
+                    # print(cc_)
+                    cc__ = cc_.split(" ")
+                    # print(cc__)
+                    n_ = len(cc__)
+                    for j in range(n_):
+                        cc__[j] = cc__[j].capitalize()
+                    # print(cc__)
+                    cc_ = ' '.join(cc__).strip()
+                    # print(cc_)
+                    # print("="*100)
+
+                    if cc_ == "Slovak Republic":
+                        cc_ = "Slovakia"
+                    elif cc_ == "Korea":
+                        cc_ = "South Korea"
+                    elif cc_ == "Republic Of Korea":
+                        cc_ = "South Korea"
+                    elif cc_ == "United States Of America":
+                        cc_ = "United States"
+                    elif cc_ == "Democratic Republic Of The Congo":
+                        cc_ = "Democratic Republic of the Congo"
+                    elif cc_ == "Cabo Verde":
+                        cc_ = "Cape Verde"
+                    elif cc_ == "United Republic Of Tanzania":
+                        cc_ = "Tanzania"
+                    elif cc_ == "Guinea Bissau":
+                        cc_ = "Guinea-bissau"
+                    elif cc_ == "Lao People's Democratic Republic":
+                        cc_ = "Laos"
+                    elif cc_ == "Republic Of Moldova":
+                        cc_ = "Moldova"
+                    elif cc_ == "Viet Nam":
+                        cc_ = "Vietnam"
+                    elif cc_ == "Republic Of North Macedonia":
+                        cc_ = "North Macedonia"
+
+                    c, is_created = model_country_dim.objects.get_or_create(country_name=cc_)
+                    if is_created:
+                        print(cc_)
+                        c.country_name = cc_
+                        c.country_code = cc_
+                        c.country_cc = cc_
+                        c.save()
+                except Exception as ex:
+                    print("Error country 9080-1: " + str(ex))
+                amount = -1
+                try:
+                    amount = float(sg)
+                    # print(amount)
+                    if amount > -1:
+                        f, cr = model_wb_fact.objects.get_or_create(time_dim=t ,country_dim=c, measure_dim=m)
+                        if cr:
+                            f.amount = float(amount)
+                            f.save()
+                except Exception as ex:
+                    print("9060-60 Error: ", str(ex))
 
         result = {"status": "ok"}
         return result
