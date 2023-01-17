@@ -55,11 +55,14 @@ class AviDataProcessing(BaseDataProcessing, BasePotentialAlgo):
         model_time_dim = apps.get_model(app_label=app_, model_name=model_name_)
         model_name_ = dic["dimensions"]["country_dim"]["model"]
         model_country_dim = apps.get_model(app_label=app_, model_name=model_name_)
+        model_name_ = "measuregroupdim"
+        model_group_measure_dim = apps.get_model(app_label=app_, model_name=model_name_)
         model_name_ = dic["dimensions"]["measure_dim"]["model"]
         model_measure_dim = apps.get_model(app_label=app_, model_name=model_name_)
         model_name_ = dic["fact"]["model"]
         model_fact = apps.get_model(app_label=app_, model_name=model_name_)
         #
+        # Year
         for k in df.columns:
             s = k.split(" ")
             # print("9088: ", s)
@@ -74,30 +77,12 @@ class AviDataProcessing(BaseDataProcessing, BasePotentialAlgo):
                     yy.save()
             except Exception as ex:
                 pass
-        dfc = df[["Country Name", "Country Code"]]
-        # print(dfc)
-        for index, row in dfc.iterrows():
-            # print(row["Country Name"], row["Country Name"])
-            c, is_created = model_country_dim.objects.get_or_create(country_code=row["Country Code"])
-            if is_created:
-                # c.country_name = row["Country Name"]
-                s = 'c.' + dic["dimensions"]["country_dim"]["field_name"] + ' = "'+row["Country Name"]+'"'
-                # print(s)
-                exec(s)
-                c.save()
+        # group measure
+        try:
+            gm, is_created = model_group_measure_dim.objects.get_or_create(group_name="Economics")
+        except Exception as ex:
+            print("9022-2 Error measure:"+str(ex))
 
-        dfc = df[["Series Name", "Series Code"]]
-        # print(dfc)
-        for index, row in dfc.iterrows():
-            # print(row["Series Name"], row["Series Code"])
-            c, is_created = model_measure_dim.objects.get_or_create(measure_code=row["Series Code"])
-            if is_created:
-                # c.measure_name = row["Series Name"]
-                s = 'c.' + dic["dimensions"]["measure_dim"]["field_name"] + ' = "'+row["Series Name"]+'"'
-                # print(s)
-                exec(s)
-                c.save()
-        # print(df)
         for index, row in df.iterrows():
             # print('row')
             # print(row)
@@ -108,10 +93,40 @@ class AviDataProcessing(BaseDataProcessing, BasePotentialAlgo):
                         if float("{:.2f}".format((row[k]))) > 0 or float("{:.2f}".format((row[k]))) < 0:
                             # print(row[k], float(row[k]))
                             # print("str:  ="+str(row[k])+"=")
+                            # Country
+                            try:
+                                # dfc = df[["Series Name", "Series Code"]]
+                                # print(dfc)
+                                c, is_created = model_country_dim.objects.get_or_create(country_code=row["Country Code"])
+                                if is_created:
+                                    # c.country_name = row["Country Name"]
+                                    s = 'c.' + dic["dimensions"]["country_dim"]["field_name"] + ' = "' + row["Country Name"] + '"'
+                                    # print(s)
+                                    exec(s)
+                                    c.save()
+                            except Exception as ex:
+                                print("90987-1 Error measure:"+str(ex))
+
+                            try:
+                                mm = row["Series Code"]
+                                # print("-"*10)
+                                # print(mm)
+                                m, is_created = model_measure_dim.objects.get_or_create(measure_code=mm, measure_group_dim=gm)
+                                if is_created:
+                                    # m.measure_code = mm
+                                    # s = 'm.' + dic["dimensions"]["measure_dim"]["field_name"] + ' = mm'
+                                    s = 'm.' + dic["dimensions"]["measure_dim"]["field_name"] + ' = "' + row["Series Name"] + '"'
+                                    # print(s)
+                                    exec(s)
+                                    m.save()
+                            except Exception as ex:
+                                print("90986-1 Error measure:"+str(ex))
+
+                            # m = model_measure_dim.objects.get(measure_code=row["Series Code"])
+
                             y = int(s[0])
                             t = model_time_dim.objects.get(id=y)
-                            c = model_country_dim.objects.get(country_code=row["Country Code"])
-                            m = model_measure_dim.objects.get(measure_code=row["Series Code"])
+                            # c = model_country_dim.objects.get(country_code=row["Country Code"])
                             a, is_created = model_fact.objects.get_or_create(time_dim=t, country_dim=c, measure_dim=m)
                             if is_created:
                                 # a.amount = float(row[k])
@@ -126,7 +141,7 @@ class AviDataProcessing(BaseDataProcessing, BasePotentialAlgo):
         return result
 
     def load_oecdfile_to_db(self, dic):
-        # print("90123-5: \n", dic, "="*50)
+        print("90123-5: \n", dic, "="*50)
         file_path = self.upload_file(dic)["file_path"]
         app_ = dic["app"]
         # print('90022-1 dic')
@@ -139,11 +154,18 @@ class AviDataProcessing(BaseDataProcessing, BasePotentialAlgo):
         model_time_dim = apps.get_model(app_label=app_, model_name=model_name_)
         model_name_ = dic["dimensions"]["country_dim"]["model"]
         model_country_dim = apps.get_model(app_label=app_, model_name=model_name_)
+        model_name_ = "measuregroupdim"
+        model_group_measure_dim = apps.get_model(app_label=app_, model_name=model_name_)
         model_name_ = dic["dimensions"]["measure_dim"]["model"]
         model_measure_dim = apps.get_model(app_label=app_, model_name=model_name_)
         model_name_ = dic["fact"]["model"]
         model_fact = apps.get_model(app_label=app_, model_name=model_name_)
         #
+        try:
+            gm, is_created = model_group_measure_dim.objects.get_or_create(group_name="Economics")
+        except Exception as ex:
+            print("9023-3 Error measure:"+str(ex))
+
         for index, row in df.iterrows():
             try:
                 if str(row["Value"]) != "nan":
@@ -175,7 +197,7 @@ class AviDataProcessing(BaseDataProcessing, BasePotentialAlgo):
                         try:
                             mm = row["Measurement"]
                             # print(cc, yy, mm)
-                            m, is_created = model_measure_dim.objects.get_or_create(measure_name=mm)
+                            m, is_created = model_measure_dim.objects.get_or_create(measure_name=mm, measure_group_dim=gm)
                             if is_created:
                                 # m.measure_code = mm
                                 s = 'm.' + dic["dimensions"]["measure_dim"]["field_name"] + ' = mm'
