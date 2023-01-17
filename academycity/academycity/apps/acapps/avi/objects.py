@@ -199,6 +199,7 @@ class AviDataProcessing(BaseDataProcessing, BasePotentialAlgo):
         result = {"status": "ok"}
         return result
 
+    # 1
     def load_ai_shanghai_file_to_db(self, dic):
         print("90123-6: \n", dic, "\n", "="*50)
         file_path = self.upload_file(dic)["file_path"]
@@ -240,7 +241,7 @@ class AviDataProcessing(BaseDataProcessing, BasePotentialAlgo):
         except Exception as ex:
             pass
         try:
-            gm, is_created = model_group_measure_dim.objects.get_or_create(group_name="ai")
+            gm, is_created = model_group_measure_dim.objects.get_or_create(group_name="Edu")
             mm = "shanghai"
             m, is_created = model_measure_dim.objects.get_or_create(measure_name=mm,
                                                                     measure_group_dim=gm)
@@ -251,7 +252,7 @@ class AviDataProcessing(BaseDataProcessing, BasePotentialAlgo):
                 exec(s)
                 m.save()
         except Exception as ex:
-            print("9025-5 Error measure:"+str(ex))
+            print("9022-2 Error measure:"+str(ex))
         with open(file_path) as f:
             soup = BeautifulSoup(f.read())
             tbody_tag = soup.find('tbody')
@@ -274,7 +275,7 @@ class AviDataProcessing(BaseDataProcessing, BasePotentialAlgo):
                                 try:
                                     cc = df_cc[df_cc["cc"]==cc_]["country"].item()
                                 except Exception as ex:
-                                    print("9087-88 Error country="+cc_+str(ex))
+                                    print("9087-88 Error country="+cc_+str(ex), uu)
                                     continue
 
                                 c, is_created = model_country_dim.objects.get_or_create(country_name=cc)
@@ -347,6 +348,7 @@ class AviDataProcessing(BaseDataProcessing, BasePotentialAlgo):
         result = {"status": "ok"}
         return result
 
+    # 2
     def load_ai_shanghai_engineering_file_to_db(self, dic):
         print("90123-6: \n", dic, "\n", "="*50)
         file_path = self.upload_file(dic)["file_path"]
@@ -399,7 +401,7 @@ class AviDataProcessing(BaseDataProcessing, BasePotentialAlgo):
                 exec(s)
                 m.save()
         except Exception as ex:
-            print("9025-5 Error measure:"+str(ex))
+            print("9023-3 Error measure:"+str(ex))
         with open(file_path) as f:
             soup = BeautifulSoup(f.read())
             try:
@@ -514,173 +516,7 @@ class AviDataProcessing(BaseDataProcessing, BasePotentialAlgo):
         result = {"status": "ok"}
         return result
 
-    def load_ai_research_engineering_technology_file_to_db(self, dic):
-        print("90123-6: \n", dic, "\n", "="*50)
-        file_path = self.upload_file(dic)["file_path"]
-        print("file_path", file_path, "\n", "="*50)
-        app_ = dic["app"]
-        # print('90022-1 dic')
-        dic = dic["cube_dic"]
-        # print('90022-1 dic', dic, "\n", "="*50)
-        match = {"101-150":24, "151-200":22, "201-300":20, "301-400":18, "401-500":16,
-                 "501-600":14, "601-700":12, "701-800":10, "801-900":8, "901-1000":6}
-        #
-        # df_cc = pd.read_excel(os.path.join(self.target_folder, "countries.xlsx"), sheet_name="Data", header=0)
-        # print(df_cc)
-        #
-        model_name_ = dic["dimensions"]["time_dim"]["model"]
-        model_time_dim = apps.get_model(app_label=app_, model_name=model_name_)
-        model_name_ = dic["dimensions"]["country_dim"]["model"]
-        model_country_dim = apps.get_model(app_label=app_, model_name=model_name_)
-        model_name_ = "measuregroupdim"
-        model_group_measure_dim = apps.get_model(app_label=app_, model_name=model_name_)
-        model_name_ = dic["dimensions"]["measure_dim"]["model"]
-        model_measure_dim = apps.get_model(app_label=app_, model_name=model_name_)
-        model_name_ = dic["dimensions"]["university_dim"]["model"]
-        model_university_dim = apps.get_model(app_label=app_, model_name=model_name_)
-        model_name_ = dic["fact"]["model"]
-        model_fact = apps.get_model(app_label=app_, model_name=model_name_)
-        model_name_ = "worldbankfact"
-        model_wb_fact = apps.get_model(app_label=app_, model_name=model_name_)
-        #
-        # yy = int(file_path.split("_")[2].split(".")[0])
-        # try:
-        #     t, is_created = model_time_dim.objects.get_or_create(id=yy)
-        #     if is_created:
-        #         # t.year = yy
-        #         s = 't.' + dic["dimensions"]["time_dim"]["field_name"] + ' = yy'
-        #         # print(s)
-        #         exec(s)
-        #         t.save()
-        # except Exception as ex:
-        #     pass
-        # try:
-        #     gm, is_created = model_group_measure_dim.objects.get_or_create(group_name="ai")
-        #     mm = "shanghaiEng"
-        #     m, is_created = model_measure_dim.objects.get_or_create(measure_name=mm,
-        #                                                             measure_group_dim=gm)
-        #     if is_created:
-        #         # m.measure_code = mm
-        #         s = 'm.' + dic["dimensions"]["measure_dim"]["field_name"] + ' = mm'
-        #         # print(s)
-        #         exec(s)
-        #         m.save()
-        # except Exception as ex:
-        #     print("9025-5 Error measure:"+str(ex))
-        # with open(file_path) as f:
-        #     soup = BeautifulSoup(f.read())
-        #     try:
-        #         rows = soup.find_all('div', {"class": "row ind"})
-        #         n_=0
-        #         for row in rows:
-        #             try:
-        #                 # print(row)
-        #                 n_+=1
-        #                 sn = row.find("div", class_= "_univ-rank").text.strip()
-        #                 uu = row.find("div", class_= "td-wrap").text.strip()
-        #                 sg = row.find("span", class_= "overall-score-span").text.strip()
-        #                 cc_ = row.find("div", class_= "location").text.strip().split(",")[1].strip()
-        #                 # print(n_, uu, "="+sg+"=", cc_)
-        #                 if sg.strip() == "-":
-        #                     if n_ < 151:
-        #                         sn = "101-150"
-        #                     elif n_ < 201:
-        #                         sn = "151-200"
-        #                     elif n_ < 301:
-        #                         sn = "201-300"
-        #                     elif n_ < 401:
-        #                         sn = "301-400"
-        #                     elif n_ < 501:
-        #                         sn = "401-500"
-        #                     elif n_ < 601:
-        #                         sn = "501-600"
-        #                     elif n_ < 701:
-        #                         sn = "601-700"
-        #                     elif n_ < 801:
-        #                         sn = "701-800"
-        #                     elif n_ < 901:
-        #                         sn = "801-900"
-        #                     elif n_ < 1001:
-        #                         sn = "901-1000"
-        #                     sg = match[sn]
-        #                     # print(sn, sg)
-        #                 # print(len(sn), uu, sg, cc_)
-        #
-        #                 try:
-        #                     try:
-        #                         if cc_ == "China (Mainland)":
-        #                             cc_ = "China"
-        #                         elif cc_ == "Hong Kong SAR":
-        #                             cc_ = "China-Hong Kong"
-        #
-        #                         c, is_created = model_country_dim.objects.get_or_create(country_name=cc_)
-        #                         if is_created:
-        #                             c.country_name = cc_
-        #                             c.country_code = cc_
-        #                             c.country_cc = cc_
-        #                             c.save()
-        #                     except Exception as ex:
-        #                         print("Error country 9080-1: " + str(ex))
-        #                     try:
-        #                         u, is_created = model_university_dim.objects.get_or_create(university_name=uu,
-        #                                                                                    country_dim=c)
-        #                         if is_created:
-        #                             print(uu)
-        #                             s = 'u.' + dic["dimensions"]["university_dim"]["field_name"] + ' = uu'
-        #                             # print(s)
-        #                             exec(s)
-        #                             u.save()
-        #                     except Exception as ex:
-        #                         pass
-        #                     a, is_created = model_fact.objects.get_or_create(time_dim=t, country_dim=c,
-        #                                                                      university_dim=u, measure_dim=m)
-        #                     if is_created:
-        #                         s = 'a.' + dic["fact"]["field_name"] + ' = ' + str(sg)
-        #                         # print(s)
-        #                         exec(s)
-        #                         a.save()
-        #
-        #                 except Exception as ex:
-        #                     print("9085-7 Error university: "+uu+" " +str(ex))
-        #                     continue
-        #             except Exception as ex:
-        #                 pass
-        #     except Exception as ex:
-        #         print("Error 9070-1"+str(ex))
-
-        # # update worldBankFact
-        # qs = model_fact.objects.filter(measure_dim__measure_name=mm).all()
-        # df = pd.DataFrame(list(qs.values("time_dim_id","country_dim_id","university_dim_id","measure_dim_id","amount")))
-        # # print(df)
-        # df = df.pivot_table(values='amount', index='country_dim_id', columns=['time_dim_id', 'measure_dim_id'],
-        #                     aggfunc='sum')
-        # # print(df)
-        # for k in df.columns:
-        #     tid = k[0]
-        #     mid = k[1]
-        #     df_ = df[k[0]][k[1]]
-        #     df_ = df_.reset_index()
-        #     # print(df_)
-        #     for i, r in df_.iterrows():
-        #         # print(r)
-        #         cid = r["country_dim_id"]
-        #         if str(r[mid]) != "nan":
-        #             # print("=1"*50)
-        #             # print(r[mid])
-        #             amount = r[mid]
-        #
-        #             # print(tid, type(tid), mid, type(tid), cid)
-        #             t = model_time_dim.objects.get(id=tid)
-        #             c = model_country_dim.objects.get(id=cid)
-        #             m=model_measure_dim.objects.get(id=mid)
-        #             f, cr = model_wb_fact.objects.get_or_create(time_dim=t ,country_dim=c, measure_dim=m)
-        #             if cr:
-        #                 f.amount = amount
-        #                 f.save()
-
-        result = {"status": "ok"}
-        return result
-
+    # 3
     def load_ai_cwur_file_to_db(self, dic):
         print("90123-6: \n", dic, "\n", "="*50)
         file_path = self.upload_file(dic)["file_path"]
@@ -724,19 +560,23 @@ class AviDataProcessing(BaseDataProcessing, BasePotentialAlgo):
         except Exception as ex:
             pass
 
-        if yy in [2017]:
-            llg = [12]
-            ll = ["score"]
-        if yy in [2018]:
-            llg = [7, 11]
-            ll = ["research", "score"]
-        else:
-            llg = [7, 8]
-            ll = ["research", "score"]
-
         try:
-            gm, is_created = model_group_measure_dim.objects.get_or_create(group_name="ai")
-            for k in ll:
+            if yy in [2017]:
+                llg = [12]
+                ll = ["score"]
+                llgm = ["Edu"]
+            elif yy in [2018]:
+                llg = [7, 11]
+                ll = ["research", "score"]
+                llgm = ["ai", "Edu"]
+            else:
+                llg = [7, 8]
+                ll = ["research", "score"]
+                llgm = ["ai", "Edu"]
+            nll_ = len(ll)
+            for jj in range(nll_):
+                k = ll[jj]
+                gm, is_created = model_group_measure_dim.objects.get_or_create(group_name=llgm[jj])
                 smm = "cwur"+k
                 # print(smm)
                 s = "mm"+k+", is_created = model_measure_dim.objects.get_or_create(measure_name=smm, measure_group_dim=gm)"
@@ -748,7 +588,7 @@ class AviDataProcessing(BaseDataProcessing, BasePotentialAlgo):
                     exec(s)
                     m.save()
         except Exception as ex:
-            print("9025-5 Error measure:"+str(ex))
+            print("9028-8 Error measure:"+str(ex))
         with open(file_path) as f:
             soup = BeautifulSoup(f.read())
             tbody_tag = soup.find('tbody')
@@ -800,7 +640,7 @@ class AviDataProcessing(BaseDataProcessing, BasePotentialAlgo):
                                                                                                country_dim=c)
                                     if is_created:
                                         s = 'u.' + dic["dimensions"]["university_dim"]["field_name"] + ' = uu'
-                                        print(s)
+                                        print(s, "\n", uu)
                                         exec(s)
                                         u.save()
                                 except Exception as ex:
@@ -830,16 +670,18 @@ class AviDataProcessing(BaseDataProcessing, BasePotentialAlgo):
 
         # update worldBankFact
         print("="*50, "\n","move data to fact table\n", t, "\n", "="*50)
-        for j in ll:
+        nll_ = len(ll)
+        for jj in range(nll_):
+            j = ll[jj]
             try:
-                print("="*100, "\n", j, "\n", "="*100)
+                # print("="*100, "\n", j, "\n", "="*100)
                 mm = eval("mm" + j)
                 qs = model_fact.objects.filter(measure_dim__measure_name=mm, time_dim=t).all()
                 df = pd.DataFrame(list(qs.values("time_dim_id","country_dim_id","university_dim_id","measure_dim_id","amount")))
-                print("A\n", "="*10, "\n", df)
+                # print("A\n", "="*10, "\n", df)
                 df = df.pivot_table(values='amount', index='country_dim_id', columns=['time_dim_id', 'measure_dim_id'],
                                 aggfunc='sum')
-                print("B\n", "="*10, "\n", df)
+                # print("B\n", "="*10, "\n", df)
                 for k in df.columns:
                     tid = k[0]
                     mid = k[1]
@@ -864,9 +706,9 @@ class AviDataProcessing(BaseDataProcessing, BasePotentialAlgo):
                             c = model_country_dim.objects.get(id=cid)
                             m=model_measure_dim.objects.get(id=mid)
                             try:
-                                print("D\n", "=" * 10, "\n", "DDDDD", yy, t, c, m)
+                                # print("D\n", "=" * 10, "\n", "DDDDD", yy, t, c, m)
                                 f, cr = model_wb_fact.objects.get_or_create(time_dim=t ,country_dim=c, measure_dim=m)
-                                print("E\n", "=" * 10, "\n", "EEEEE", f, cr)
+                                # print("E\n", "=" * 10, "\n", "EEEEE", f, cr)
                                 if cr:
                                     print("F\n", "=" * 10, "\n", "FFFFFF", amount)
                                     f.amount = amount
@@ -874,8 +716,8 @@ class AviDataProcessing(BaseDataProcessing, BasePotentialAlgo):
                             except Exception as ex:
                                 print("9088-88 Error "+ str(ex))
 
-                print("=" * 150, "\n", j, "\n", "=" * 150)
-                print("=" * 150, "\n", j, "\n", "=" * 150)
+                # print("=" * 150, "\n", j, "\n", "=" * 150)
+                # print("=" * 150, "\n", j, "\n", "=" * 150)
             except Exception as ex:
                 print("9066-66 Error "+ str(ex))
 
@@ -921,7 +763,8 @@ class AviDataProcessing(BaseDataProcessing, BasePotentialAlgo):
         except Exception as ex:
             pass
         try:
-            gm, is_created = model_group_measure_dim.objects.get_or_create(group_name="ai")
+            gm, is_created = model_group_measure_dim.objects.get_or_create(group_name="GovAI")
+            print(gm)
             mm = "oxford"
             m, is_created = model_measure_dim.objects.get_or_create(measure_name=mm, measure_group_dim=gm)
             if is_created:
@@ -929,10 +772,10 @@ class AviDataProcessing(BaseDataProcessing, BasePotentialAlgo):
                 exec(s)
                 m.save()
         except Exception as ex:
-            print("9025-5 Error measure:"+str(ex))
+            print("9024-4 Error measure:"+str(ex))
 
         df = pd.read_excel(file_path, sheet_name="Data", header=0)
-        # print("A\n", df)
+        print("A\n", df)
         for i, r in df.iterrows():
             # print(r)
             cc_ = r["country"]
@@ -1038,7 +881,7 @@ class AviDataProcessing(BaseDataProcessing, BasePotentialAlgo):
         except Exception as ex:
             pass
         try:
-            gm, is_created = model_group_measure_dim.objects.get_or_create(group_name="ai")
+            gm, is_created = model_group_measure_dim.objects.get_or_create(group_name="GovAI")
             mm = "oxford"
             m, is_created = model_measure_dim.objects.get_or_create(measure_name=mm, measure_group_dim=gm)
             if is_created:
@@ -1046,7 +889,7 @@ class AviDataProcessing(BaseDataProcessing, BasePotentialAlgo):
                 exec(s)
                 m.save()
         except Exception as ex:
-            print("9025-5 Error measure:"+str(ex))
+            print("90261-5 Error measure:"+str(ex))
 
         df = pd.read_excel(file_path, sheet_name="Data", header=0)
         # print("A\n", df)
@@ -1133,6 +976,452 @@ class AviDataProcessing(BaseDataProcessing, BasePotentialAlgo):
                             f.save()
                 except Exception as ex:
                     print("9060-60 Error: ", str(ex))
+
+        result = {"status": "ok"}
+        return result
+
+    def load_ai_the_reputation_file_to_db(self, dic):
+        print("90123-6: \n", dic, "\n", "="*50)
+        file_path = self.upload_file(dic)["file_path"]
+        print("file_path", file_path, "\n", "="*50)
+        app_ = dic["app"]
+        # print('90022-1 dic')
+        dic = dic["cube_dic"]
+        # print('90022-1 dic', dic, "\n", "="*50)
+        # match = {'51-60''':5, '61-70''':4, '71-80':3, '81–90':2, '91–100':1}
+        #                  # "501-600":14, "601-700":12, "701-800":10, "801-900":8, "901-1000":6}
+        # print(match)
+        # print(match["91-100"])
+        model_name_ = dic["dimensions"]["time_dim"]["model"]
+        model_time_dim = apps.get_model(app_label=app_, model_name=model_name_)
+        model_name_ = dic["dimensions"]["country_dim"]["model"]
+        model_country_dim = apps.get_model(app_label=app_, model_name=model_name_)
+        model_name_ = "measuregroupdim"
+        model_group_measure_dim = apps.get_model(app_label=app_, model_name=model_name_)
+        model_name_ = dic["dimensions"]["measure_dim"]["model"]
+        model_measure_dim = apps.get_model(app_label=app_, model_name=model_name_)
+        model_name_ = dic["dimensions"]["university_dim"]["model"]
+        model_university_dim = apps.get_model(app_label=app_, model_name=model_name_)
+        model_name_ = dic["fact"]["model"]
+        model_fact = apps.get_model(app_label=app_, model_name=model_name_)
+        model_name_ = "worldbankfact"
+        model_wb_fact = apps.get_model(app_label=app_, model_name=model_name_)
+        #
+        yy = int(file_path.split("_")[1].split(".")[0])
+        print(yy)
+        try:
+            t, is_created = model_time_dim.objects.get_or_create(id=yy)
+            if is_created:
+                # t.year = yy
+                s = 't.' + dic["dimensions"]["time_dim"]["field_name"] + ' = yy'
+                # print(s)
+                exec(s)
+                t.save()
+        except Exception as ex:
+            pass
+        if yy in [2017, 2018]:
+            llg = [2, 3]
+            ll = ["research", "score"]
+            llgm = ["ai", "Edu"]
+        else:
+            llg = [2, 3]
+            ll = ["research", "score"]
+            llgm = ["ai", "Edu"]
+
+        print(ll, llg, llgm)
+        try:
+            nll_ = len(ll)
+            for jj in range(nll_):
+                k = ll[jj]
+                gm, is_created = model_group_measure_dim.objects.get_or_create(group_name=llgm[jj])
+                smm = "the"+k
+                # print(smm)
+                s = "mm"+k+", is_created = model_measure_dim.objects.get_or_create(measure_name=smm, measure_group_dim=gm)"
+                # print(s)
+                exec(s)
+                if is_created:
+                    s = 'mm'+k+'.' + dic["dimensions"]["measure_dim"]["field_name"] + ' = '+smm
+                    # print(s)
+                    exec(s)
+                    m.save()
+        except Exception as ex:
+            print("9025-5 Error measure:"+str(ex))
+
+        with open(file_path) as f:
+            soup = BeautifulSoup(f.read())
+            tbody_tag = soup.find('tbody')
+            try:
+                rows = tbody_tag.find_all('tr')
+                # print(rows)
+                for row in rows:
+                    try:
+                        # print(row)
+                        cells = row.find_all('td')
+                        uu = cells[1].find('a').text.strip()
+                        cc_ = cells[1].find('div', class_='location').find('a').text.strip()
+                        # print(uu, cc_)
+
+                        nll = len(ll)
+                        for i in range(nll):
+                            # smm = "cwur" + k
+                            sg = cells[llg[i]].text.strip()
+                            # print("A\n", "="*10)
+                            if sg.strip() == "_" or sg.strip() == "-":
+                                rk = str(cells[0].text.strip())
+                                # print(rk)
+                                if rk == '51–60' or rk == '51-60':
+                                    sg = 5
+                                elif rk == '61–70' or rk == '61-70':
+                                    sg = 4
+                                elif rk == '71–80' or rk == '71-80':
+                                    sg = 3
+                                elif rk == '81–90' or rk == '81-90':
+                                    sg = 2
+                                elif rk == '91–100' or rk == '91-100':
+                                    sg = 1
+                                elif rk == '101-125' or rk == '101-125':
+                                    sg = 0.75
+                                elif rk == '126-150' or rk == '126-150':
+                                    sg = 0.5
+                                elif rk == '151-175' or rk == '151-175':
+                                    sg = 0.25
+                                elif rk == '176-200' or rk == '176-200':
+                                    sg = 0.1
+                            print(cc_, uu, sg)
+                            try:
+                                try:
+                                    if cc_ == "USA":
+                                        cc_ = "United States"
+                                    elif cc_ == "Hong Kong":
+                                        cc_ = "China-Hong Kong"
+                                    elif cc_ == "Slovak Republic":
+                                        cc_ = "Slovakia"
+                                    elif cc_ == "Macau":
+                                        cc_ = "China-Macau"
+
+                                    c, is_created = model_country_dim.objects.get_or_create(country_name=cc_)
+                                    if is_created:
+                                        print("="*50)
+                                        print(cc_)
+                                        print("="*50)
+                                        c.country_cc = cc_
+                                        c.country_code = cc_
+                                        c.country_name = cc_
+                                        c.save()
+                                except Exception as ex:
+                                    print("Error country 9080-1: " + str(ex))
+                                try:
+                                    u, is_created = model_university_dim.objects.get_or_create(university_name=uu,
+                                                                                               country_dim=c)
+                                    if is_created:
+                                        s = 'u.' + dic["dimensions"]["university_dim"]["field_name"] + ' = uu'
+                                        print(s, "\n", uu)
+                                        exec(s)
+                                        u.save()
+                                except Exception as ex:
+                                    pass
+                                 # print(s)
+                                # exec(s)
+                                try:
+                                    kkk = float(sg)
+                                    a, is_created = model_fact.objects.get_or_create(time_dim=t, country_dim=c,
+                                                                                     university_dim=u,
+                                                                                     measure_dim=eval("mm" + ll[i]))
+                                    a.amount = kkk
+                                    a.save()
+                                except Exception as ex:
+                                    pass
+                                # print("="*10)
+
+                            except Exception as ex:
+                                print("9085-7 Error university: "+uu+" " +str(ex))
+                                continue
+                    except Exception as ex:
+                        pass
+            except Exception as ex:
+                print("Error 9070-1"+str(ex))
+
+        # update worldBankFact
+        print("="*50, "\n","move data to fact table\n", t, "\n", "="*50)
+        nll_ = len(ll)
+        for jj in range(nll_):
+            j = ll[jj]
+            try:
+                print("="*100, "\n", j, "\n", "="*100)
+                mm = eval("mm" + j)
+                qs = model_fact.objects.filter(measure_dim__measure_name=mm, time_dim=t).all()
+                df = pd.DataFrame(list(qs.values("time_dim_id","country_dim_id","university_dim_id","measure_dim_id","amount")))
+                # print("A\n", "="*10, "\n", df)
+                df = df.pivot_table(values='amount', index='country_dim_id', columns=['time_dim_id', 'measure_dim_id'],
+                                aggfunc='sum')
+                # print("B\n", "="*10, "\n", df)
+                for k in df.columns:
+                    tid = k[0]
+                    mid = k[1]
+                    df_ = df[k[0]][k[1]]
+                    df_ = df_.reset_index()
+                    # print("C\n", "=" * 10, "\n", df_)
+                    for i, r in df_.iterrows():
+                        # print(r)
+                        cid = r["country_dim_id"]
+                        if str(r[mid]) != "nan":
+                            # print("=1"*50)
+                            # print(r[mid])
+                            amount = -1
+                            try:
+                                amount = r[mid]
+                            except Exception as ex:
+                                print("9077-77 Error "+ str(ex))
+                            if amount == -1:
+                                continue
+                            # print(tid, type(tid), mid, type(tid), cid)
+                            t = model_time_dim.objects.get(id=tid)
+                            c = model_country_dim.objects.get(id=cid)
+                            m=model_measure_dim.objects.get(id=mid)
+                            try:
+                                # print("D\n", "=" * 10, "\n", "DDDDD", yy, t, c, m)
+                                f, cr = model_wb_fact.objects.get_or_create(time_dim=t ,country_dim=c, measure_dim=m)
+                                # print("E\n", "=" * 10, "\n", "EEEEE", f, cr)
+                                if cr:
+                                    # print("F", amount)
+                                    f.amount = amount
+                                    f.save()
+                            except Exception as ex:
+                                print("9088-88 Error "+ str(ex))
+
+                # print("=" * 150, "\n", j, "\n", "=" * 150)
+                # print("=" * 150, "\n", j, "\n", "=" * 150)
+            except Exception as ex:
+                print("9066-66 Error "+ str(ex))
+
+        result = {"status": "ok"}
+        return result
+
+    def load_ai_research_engineering_technology_file_to_db(self, dic):
+        print("90123-6: \n", dic, "\n", "="*50)
+        file_path = self.upload_file(dic)["file_path"]
+        print("file_path", file_path, "\n", "="*50)
+        app_ = dic["app"]
+        # print('90022-1 dic')
+        dic = dic["cube_dic"]
+        # print('90022-1 dic', dic, "\n", "="*50)
+        match = {"101-150":24, "151-200":22, "201-300":20, "301-400":18, "401-500":16,
+                 "501-600":14, "601-700":12, "701-800":10, "801-900":8, "901-1000":6}
+
+        model_name_ = dic["dimensions"]["time_dim"]["model"]
+        model_time_dim = apps.get_model(app_label=app_, model_name=model_name_)
+        model_name_ = dic["dimensions"]["country_dim"]["model"]
+        model_country_dim = apps.get_model(app_label=app_, model_name=model_name_)
+        model_name_ = "measuregroupdim"
+        model_group_measure_dim = apps.get_model(app_label=app_, model_name=model_name_)
+        model_name_ = dic["dimensions"]["measure_dim"]["model"]
+        model_measure_dim = apps.get_model(app_label=app_, model_name=model_name_)
+        model_name_ = dic["dimensions"]["university_dim"]["model"]
+        model_university_dim = apps.get_model(app_label=app_, model_name=model_name_)
+        model_name_ = dic["fact"]["model"]
+        model_fact = apps.get_model(app_label=app_, model_name=model_name_)
+        model_name_ = "worldbankfact"
+        model_wb_fact = apps.get_model(app_label=app_, model_name=model_name_)
+        #
+        yy = int(file_path.split("_")[1].split(".")[0])
+        print(yy)
+        try:
+            t, is_created = model_time_dim.objects.get_or_create(id=yy)
+            if is_created:
+                # t.year = yy
+                s = 't.' + dic["dimensions"]["time_dim"]["field_name"] + ' = yy'
+                # print(s)
+                exec(s)
+                t.save()
+        except Exception as ex:
+            pass
+
+        llg = [1, 2, 3]
+        ll = ["Scholars", "Pub", "DIndex"]
+
+        try:
+            gm, is_created = model_group_measure_dim.objects.get_or_create(group_name="ai")
+            for k in ll:
+                smm = "Res"+k
+                # print(smm)
+                s = "mm"+k+", is_created = model_measure_dim.objects.get_or_create(measure_name=smm, measure_group_dim=gm)"
+                # print(s)
+                exec(s)
+                if is_created:
+                    s = 'mm'+k+'.' + dic["dimensions"]["measure_dim"]["field_name"] + ' = '+smm
+                    # print(s)
+                    exec(s)
+                    m.save()
+        except Exception as ex:
+            print("9029-9 Error measure:"+str(ex))
+
+        with open(file_path) as f:
+            soup = BeautifulSoup(f.read())
+            try:
+                rows = soup.find_all('div', {"class": "rankings-content__item"})
+                n_=0
+                for row in rows:
+                    try:
+                        # print(row)
+                        n_+=1
+                        # print("="*100)
+                        uu = row.find("div").find("a").text.strip()
+                        cc_ = row.find("span", class_= "sh").text.strip()
+                        # print(uu, cc_)
+                        rk_ = row.find("span", class_= "rankings-info")
+                        rks_ = rk_.find_all("span", {"class": "no-wrap"})
+                        llg_ = []
+                        for k in rks_:
+                            # print(k.text.strip())
+                            llg_.append(float(k.text.replace(",", "").strip()))
+                        # print(llg_)
+                        # if n_ > 5:
+                        #     break
+
+                        nll = len(ll)
+                        for i in range(nll):
+                            # smm = "cwur" + k
+                            try:
+                                try:
+                                    if cc_ == "USA":
+                                        cc_ = "United States"
+                                    elif cc_ == "Hong Kong":
+                                        cc_ = "China-Hong Kong"
+                                    elif cc_ == "Slovak Republic":
+                                        cc_ = "Slovakia"
+                                    elif cc_ == "Macau":
+                                        cc_ = "China-Macau"
+                                    elif cc_ == "Macedonia":
+                                        cc_ = "North Macedonia"
+
+                                    c, is_created = model_country_dim.objects.get_or_create(country_name=cc_)
+                                    if is_created:
+                                        print("=" * 50)
+                                        print(cc_)
+                                        print("=" * 50)
+                                        c.country_cc = cc_
+                                        c.country_code = cc_
+                                        c.country_name = cc_
+                                        c.save()
+                                except Exception as ex:
+                                    print("Error country 9080-1: " + str(ex))
+                                try:
+                                    u, is_created = model_university_dim.objects.get_or_create(university_name=uu,
+                                                                                               country_dim=c)
+                                    if is_created:
+                                        s = 'u.' + dic["dimensions"]["university_dim"]["field_name"] + ' = uu'
+                                        print(s)
+                                        exec(s)
+                                        u.save()
+                                except Exception as ex:
+                                    pass
+                                try:
+                                    kkk = llg_[i]
+                                    # print(t, c, u, eval("mm" + ll[i]), kkk)
+                                    a, is_created = model_fact.objects.get_or_create(time_dim=t, country_dim=c,
+                                                                                     university_dim=u,
+                                                                                     measure_dim=eval("mm" + ll[i]))
+                                    a.amount = kkk
+                                    a.save()
+                                except Exception as ex:
+                                    pass
+                                # print("="*10)
+                            except Exception as ex:
+                                print("9085-7 Error university: " + uu + " " + str(ex))
+                                continue
+
+        #                 try:
+        #                     try:
+        #                         if cc_ == "China (Mainland)":
+        #                             cc_ = "China"
+        #                         elif cc_ == "Hong Kong SAR":
+        #                             cc_ = "China-Hong Kong"
+        #
+        #                         c, is_created = model_country_dim.objects.get_or_create(country_name=cc_)
+        #                         if is_created:
+        #                             c.country_name = cc_
+        #                             c.country_code = cc_
+        #                             c.country_cc = cc_
+        #                             c.save()
+        #                     except Exception as ex:
+        #                         print("Error country 9080-1: " + str(ex))
+        #                     try:
+        #                         u, is_created = model_university_dim.objects.get_or_create(university_name=uu,
+        #                                                                                    country_dim=c)
+        #                         if is_created:
+        #                             print(uu)
+        #                             s = 'u.' + dic["dimensions"]["university_dim"]["field_name"] + ' = uu'
+        #                             # print(s)
+        #                             exec(s)
+        #                             u.save()
+        #                     except Exception as ex:
+        #                         pass
+        #                     a, is_created = model_fact.objects.get_or_create(time_dim=t, country_dim=c,
+        #                                                                      university_dim=u, measure_dim=m)
+        #                     if is_created:
+        #                         s = 'a.' + dic["fact"]["field_name"] + ' = ' + str(sg)
+        #                         # print(s)
+        #                         exec(s)
+        #                         a.save()
+        #
+        #                 except Exception as ex:
+        #                     print("9085-7 Error university: "+uu+" " +str(ex))
+        #                     continue
+                    except Exception as ex:
+                        pass
+            except Exception as ex:
+                print("Error 9070-1"+str(ex))
+
+        # update worldBankFact
+        print("="*50, "\n","move data to fact table\n", t, "\n", "="*50)
+        for j in ll:
+            try:
+                # print("="*100, "\n", j, "\n", "="*100)
+                mm = eval("mm" + j)
+                qs = model_fact.objects.filter(measure_dim__measure_name=mm, time_dim=t).all()
+                df = pd.DataFrame(list(qs.values("time_dim_id","country_dim_id","university_dim_id","measure_dim_id","amount")))
+                # print("A\n", "="*10, "\n", df)
+                df = df.pivot_table(values='amount', index='country_dim_id', columns=['time_dim_id', 'measure_dim_id'],
+                                aggfunc='sum')
+                # print("B\n", "="*10, "\n", df)
+                for k in df.columns:
+                    tid = k[0]
+                    mid = k[1]
+                    df_ = df[k[0]][k[1]]
+                    df_ = df_.reset_index()
+                    # print("C\n", "=" * 10, "\n", df_)
+                    for i, r in df_.iterrows():
+                        # print(r)
+                        cid = r["country_dim_id"]
+                        if str(r[mid]) != "nan":
+                            # print("=1"*50)
+                            # print(r[mid])
+                            amount = -1
+                            try:
+                                amount = r[mid]
+                            except Exception as ex:
+                                print("9077-77 Error "+ str(ex))
+                            if amount == -1:
+                                continue
+                            # print(tid, type(tid), mid, type(tid), cid)
+                            t = model_time_dim.objects.get(id=tid)
+                            c = model_country_dim.objects.get(id=cid)
+                            m=model_measure_dim.objects.get(id=mid)
+                            try:
+                                # print("D\n", "=" * 10, "\n", "DDDDD", yy, t, c, m)
+                                f, cr = model_wb_fact.objects.get_or_create(time_dim=t ,country_dim=c, measure_dim=m)
+                                # print("E\n", "=" * 10, "\n", "EEEEE", f, cr)
+                                if cr:
+                                    # print("F\n", "=" * 10, "\n", "FFFFFF", amount)
+                                    f.amount = amount
+                                    f.save()
+                            except Exception as ex:
+                                print("9088-88 Error "+ str(ex))
+
+                # print("=" * 150, "\n", j, "\n", "=" * 150)
+                # print("=" * 150, "\n", j, "\n", "=" * 150)
+            except Exception as ex:
+                print("9066-66 Error "+ str(ex))
 
         result = {"status": "ok"}
         return result
@@ -1228,7 +1517,7 @@ class AviDataProcessing(BaseDataProcessing, BasePotentialAlgo):
                 exec(s)
                 m.save()
         except Exception as ex:
-            print("9025-5 Error measure:"+str(ex))
+            print("9021-1 Error measure:"+str(ex))
         #
         for k in df.columns:
             if str(k).isnumeric():

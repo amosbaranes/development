@@ -1348,20 +1348,24 @@ acReport.prototype.set_data = function(type, is_level=true){
   var report=this;
 
   var fun = function(data,ll){
+
     var html_obj = ll[0];
     var get_data_dic = ll[1]
-    //alert(JSON.stringify(get_data_dic));
-    //alert(html_obj.outerHTML)
+//    alert(JSON.stringify(data));
+//    alert(JSON.stringify(get_data_dic));
+//    alert(html_obj.outerHTML)
 
      data["dim_titles"]={}
      try{zz(data)} catch(er){};
-       //alert(JSON.stringify(data));
+//  alert(88882222)
+
+
+//       alert(JSON.stringify(data));
 //       alert(JSON.stringify(data["dim_titles"]));
 //       alert(JSON.stringify(report.get_data_dic));
 
      var vertical_field_=report.data["properties"]["vertical_field"];
      var horizontal_field_=report.data["properties"]["horizontal_field"];
-
      var n_=data[vertical_field_].length;
      var pdata={};var v_=[];var h_=[];
      for(var j=0; j<n_;j++)

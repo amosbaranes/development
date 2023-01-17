@@ -217,14 +217,13 @@ class BasePotentialAlgo(object):
                 for v in dic["axes"]:
                     s += "'" + v + "',"
                 s += "'" + dic["value"] + "'"
-
                 print(dic["time_dim_value"])
-
                 qs = model_fact.objects.filter(measure_dim__measure_group_dim__group_name=group,
                                                time_dim_id=dic["time_dim_value"]).all()
                 s = "pd.DataFrame(list(qs.values(" + s + ")))"
                 df = eval(s)
-                # print(df)
+                if df.shape[0] == 0:
+                    continue
                 # print("50001-21")
                 df = df.pivot(index="country_dim", columns='measure_dim', values='amount')
                 # print(df)
@@ -251,8 +250,6 @@ class BasePotentialAlgo(object):
                     diff_qm75 = df_q.iloc[2].subtract(df_q.iloc[1], fill_value=None)*1.5
                     first_row = pd.DataFrame(df_q.iloc[0] - diff_qm25).T
                     second_row = pd.DataFrame(df_q.iloc[1] + diff_qm75).T
-
-                # print("4000")
                 first_row.columns = df_columns
                 second_row.columns = df_columns
                 diff_row = second_row.subtract(first_row, fill_value=None)
@@ -417,10 +414,10 @@ class BasePotentialAlgo(object):
                 # self.add_to_save(title='min-max', a=df_1_2, cols=-1)
                 # print("50001-3-9")
 
-                print("50001-3-9-0")
+                # print("50001-3-9-0")
                 self.save_to_excel_()
 
-                print("50001-3-9-1")
+                # print("50001-3-9-1")
             except Exception as ex:
                 print("Error 50001-1: " + str(ex))
             df_n1_ = df_n1.copy()
@@ -457,17 +454,17 @@ class BasePotentialAlgo(object):
                 exec("df_n" + n + "_all['d_" + k + "']=df_n" + n + "_all[[" + eval("ss_n_" + k) + "]].min(axis=1)")
                 exec("ll.append(1-df_n" + n + "_all[[" + eval("ss_n_" + k) + "]].min(axis=1).mean())")
             exec("similarity_n" + n + ".loc['SComb'] = ll")
-
             exec("sign_n" + n + ".drop([0], axis=0, inplace=True)")
             self.add_to_save_all(title='sign-n' + n, a=eval("sign_n" + n), cols=-1)
             exec("similarity_n" + n + ".drop([0], axis=0, inplace=True)")
             self.add_to_save_all(title='similarity-n' + n, a=eval("similarity_n" + n), cols=-1)
-
+        print(4000)
         for n in ["1", "2"]:
             nn__ = 0
             for k in groups:
                 group = k.group_name
-                # print(group)
+                print("-"*10)
+                print(group)
                 if nn__ > 0:
                     ll = []
                     for z in self.options:
@@ -483,7 +480,6 @@ class BasePotentialAlgo(object):
                     exec("relimp_n" + n + ".loc[group] = llc")
                 else:
                     nn__ += 1
-
             self.add_to_save_all(title="all-n" + n, a=eval("df_n" + n + "_all"), cols=-1)
             exec("contribution_n" + n + ".columns = self.options")
             exec("relimp_n" + n + ".columns = self.options")
@@ -493,7 +489,6 @@ class BasePotentialAlgo(object):
             # print(eval("relimp_n"+n))
             self.add_to_save_all(title='contribution-n' + n, a=eval("contribution_n" + n), cols=-1)
             self.add_to_save_all(title='relimp-n' + n, a=eval("relimp_n" + n), cols=-1)
-
         self.save_to_excel_all_(dic["time_dim_value"])
 
         result = {"status": "ok"}
