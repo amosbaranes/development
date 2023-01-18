@@ -43,28 +43,25 @@ class Companys(TruncateTableMixin, models.Model):
     def __str__(self):
         return str(self.company_name)
 
-#
-# # צוות
-# class Sections(TruncateTableMixin, models.Model):
-#     training_web = models.ForeignKey(TrainingWeb, on_delete=models.CASCADE, default=1,
-#                                      related_name='training_web_sections')
-#     company = models.ForeignKey(Companys, on_delete=models.CASCADE, default=1, related_name='company_sections')
-#     section_name = models.CharField(max_length=50, default='', blank=True, null=True)
-#
-#     def __str__(self):
-#         return str(self.section_name)
-
-
 # צוות
-class Teams(TruncateTableMixin, models.Model):
+class Platoons(TruncateTableMixin, models.Model):
+    training_web = models.ForeignKey(TrainingWeb, on_delete=models.CASCADE, default=1,
+                                     related_name='training_web_sections')
+    company = models.ForeignKey(Companys, on_delete=models.CASCADE, default=1, related_name='company_platoons')
+    platon_name = models.CharField(max_length=50, default='', blank=True, null=True)
+
+    def __str__(self):
+        return str(self.section_name)
+
+# כיתה
+class Squads(TruncateTableMixin, models.Model):
     training_web = models.ForeignKey(TrainingWeb, on_delete=models.CASCADE, default=1,
                                      related_name='training_web_squads')
-    company = models.ForeignKey(Companys, on_delete=models.CASCADE, default=1, related_name='company_teams')
-    team_name = models.CharField(max_length=50, default='', blank=True, null=True)
+    platoon = models.ForeignKey(Platoons, on_delete=models.CASCADE, default=1, related_name='platoon_squads')
+    squad_name = models.CharField(max_length=50, default='', blank=True, null=True)
 
     def __str__(self):
         return str(self.squad_name)
-
 
 # חייל
 class Soldiers(TruncateTableMixin, models.Model):
@@ -75,7 +72,7 @@ class Soldiers(TruncateTableMixin, models.Model):
 
     training_web = models.ForeignKey(TrainingWeb, on_delete=models.CASCADE, default=1,
                                      related_name='training_web_soldiers')
-    team = models.ForeignKey(Teams, on_delete=models.CASCADE, default=1, related_name='team_soldiers')
+    squad = models.ForeignKey(Squads, on_delete=models.CASCADE, default=1, related_name='squad_soldiers')
     first_name = models.CharField(max_length=50, default='', blank=True, null=True)
     last_name = models.CharField(max_length=50, default='', blank=True, null=True)
     user_id = models.CharField(max_length=100, default='', blank=True, null=True)
@@ -99,8 +96,10 @@ class Soldiers(TruncateTableMixin, models.Model):
     weight = models.SmallIntegerField(default=0)
     profession = models.SmallIntegerField(default=0)
     sub_profession = models.SmallIntegerField(default=0)
-    discipline = models.SmallIntegerField(default=0)
-    strength = models.SmallIntegerField(default=0)
+
+    # discipline = models.SmallIntegerField(default=0)
+    # strength = models.SmallIntegerField(default=0)
+
     medical_condition = models.TextField(blank=True, null=True)
 
     def __str__(self):

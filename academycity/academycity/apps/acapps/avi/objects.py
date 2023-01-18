@@ -40,10 +40,84 @@ class AviDataProcessing(BaseDataProcessing, BasePotentialAlgo):
     def __init__(self, dic):
         super().__init__(dic)
 
+    def check_country(self, cc):
+        if cc == "Viet Nam":
+            cc = "Vietnam"
+        elif cc == "Congo":
+            cc = "Democratic Republic of the Congo"
+        elif cc == "DR Congo":
+            cc = "Democratic Republic of the Congo"
+        elif cc == "Congo":
+            cc = "Republic of the Congo"
+        elif cc == "Democratic Republic Of The Congo":
+            cc = "Democratic Republic of the Congo"
+        elif cc == "Russian Federation":
+            cc = "Russia"
+        elif cc == "Côte d’Ivoire":
+            cc = "Cote d'Ivoire"
+        elif cc == "Eswatini (Swaziland)":
+            cc = "Eswatini"
+        elif cc == "Slovak Republic":
+            cc = "Slovakia"
+        elif cc == "Korea":
+            cc = "South Korea"
+        elif cc == "Republic Of Korea":
+            cc = "South Korea"
+        elif cc == "Korea, Dem. People's Rep":
+            cc = "North Korea"
+        elif cc == "United States Of America":
+            cc = "United States"
+        elif cc == "Cabo Verde":
+            cc = "Cape Verde"
+        elif cc == "United Republic Of Tanzania":
+            cc = "Tanzania"
+        elif cc == "Guinea Bissau":
+            cc = "Guinea-bissau"
+        elif cc == "Lao People's Democratic Republic":
+            cc = "Laos"
+        elif cc == "Republic Of Moldova":
+            cc = "Moldova"
+        elif cc == "Republic Of North Macedonia":
+            cc = "North Macedonia"
+        elif cc == "Macedonia":
+            cc = "North Macedonia"
+        elif cc == "EU (27)":
+            cc = "EU27"
+        elif cc == "Yemen, Rep.":
+            cc = "Yemen"
+        elif cc == "Venezuela, RB":
+            cc = "Venezuela"
+        elif cc == "turkiye":
+            cc = "turkey"
+        elif cc == "Egypt, Arab Rep.":
+            cc = "Egypt"
+        elif cc == "China (Mainland)":
+            cc = "China"
+        elif cc == "Hong Kong SAR":
+            cc = "China-Hong Kong"
+        elif cc == "Hong Kong (China)":
+            cc = "China-Hong Kong"
+        elif cc == "Hong Kong":
+            cc = "China-Hong Kong"
+        elif cc == "USA":
+            cc = "United States"
+        elif cc == "Slovak Republic":
+            cc = "Slovakia"
+        elif cc == "Macau":
+            cc = "China-Macau"
+        elif cc == "Cabo Verde":
+            cc = "Cape Verde"
+        elif cc == "United Republic Of Tanzania":
+            cc = "Tanzania"
+        elif cc == "Guinea Bissau":
+            cc = "Guinea-bissau"
+        elif cc == "Republic Of Moldova":
+            cc = "Moldova"
+        return cc
+
+    # _1
     def load_wbfile_to_db(self, dic):
-        # print("90121-5: \n", dic, "="*50)
-        # print(dic)
-        # print('dic')
+        print("90121-5: \n", dic, "="*50)
         app_ = dic["app"]
         file_path = self.upload_file(dic)["file_path"]
         # print('90022-1 dic')
@@ -61,87 +135,71 @@ class AviDataProcessing(BaseDataProcessing, BasePotentialAlgo):
         model_measure_dim = apps.get_model(app_label=app_, model_name=model_name_)
         model_name_ = dic["fact"]["model"]
         model_fact = apps.get_model(app_label=app_, model_name=model_name_)
-        #
-        # Year
-        for k in df.columns:
-            s = k.split(" ")
-            # print("9088: ", s)
-            try:
-                y = int(s[0])
-                yy, is_created = model_time_dim.objects.get_or_create(id=y)
-                if is_created:
-                    # yy.year = y
-                    s = 'yy.' + dic["dimensions"]["time_dim"]["field_name"]+' = y'
-                    # print(s)
-                    exec(s)
-                    yy.save()
-            except Exception as ex:
-                pass
-        # group measure
-        try:
-            gm, is_created = model_group_measure_dim.objects.get_or_create(group_name="Economics")
-        except Exception as ex:
-            print("9022-2 Error measure:"+str(ex))
 
         for index, row in df.iterrows():
-            # print('row')
-            # print(row)
-            for k in df.columns:
-                s = k.split(" ")
+            print(row["Country Name"], row["Country Code"], row["Series Name"], row["Series Code"])
+            # Country
+            try:
+                c, is_created = model_country_dim.objects.get_or_create(country_code=row["Country Code"])
+                if is_created:
+                    cc = self.check_country(row["Country Name"])
+                    s = 'c.' + dic["dimensions"]["country_dim"]["field_name"] + ' = "' + cc + '"'
+                    exec(s)
+                    c.save()
+            except Exception as ex:
+                print("90987-1 Error measure:"+str(ex))
+            #
+            if row["Series Name"] == "GDP per capita (constant 2015 US$)":
+                measure_name = "GDPPC2015$"
+                group_measure_name = "Economics"
+            elif row["Series Name"] == "Population, total":
+                measure_name = "TotalPop"
+                group_measure_name = "General"
+            print(group_measure_name, measure_name)
+            #
+            try:
+                gm, is_created = model_group_measure_dim.objects.get_or_create(group_name=group_measure_name)
+                mm = row["Series Code"]
+                m, is_created = model_measure_dim.objects.get_or_create(measure_code=mm, measure_group_dim=gm)
+                if is_created:
+                    s = 'm.' + dic["dimensions"]["measure_dim"]["field_name"] + ' = "' + measure_name + '"'
+                    exec(s)
+                    m.save()
+            except Exception as ex:
+                print("90986-1 Error measure:"+str(ex))
+
+            for j in range(4, len(df.columns)):
+                k = df.columns[j]
                 try:
-                    if str(row[k]) != "nan":
-                        if float("{:.2f}".format((row[k]))) > 0 or float("{:.2f}".format((row[k]))) < 0:
-                            # print(row[k], float(row[k]))
-                            # print("str:  ="+str(row[k])+"=")
-                            # Country
-                            try:
-                                # dfc = df[["Series Name", "Series Code"]]
-                                # print(dfc)
-                                c, is_created = model_country_dim.objects.get_or_create(country_code=row["Country Code"])
-                                if is_created:
-                                    # c.country_name = row["Country Name"]
-                                    s = 'c.' + dic["dimensions"]["country_dim"]["field_name"] + ' = "' + row["Country Name"] + '"'
-                                    # print(s)
-                                    exec(s)
-                                    c.save()
-                            except Exception as ex:
-                                print("90987-1 Error measure:"+str(ex))
+                    if float("{:.2f}".format(row[k])) > 0 or float("{:.2f}".format(row[k])) < 0:
+                        s = k.split(" ")
+                        # print(s[0])
+                        yy = int(s[0])
+                        t, is_created = model_time_dim.objects.get_or_create(id=yy)
+                        if is_created:
+                            # t.year = yy
+                            s = 't.' + dic["dimensions"]["time_dim"]["field_name"] + ' = yy'
+                            # print(s)
+                            exec(s)
+                            t.save()
 
-                            try:
-                                mm = row["Series Code"]
-                                # print("-"*10)
-                                # print(mm)
-                                m, is_created = model_measure_dim.objects.get_or_create(measure_code=mm, measure_group_dim=gm)
-                                if is_created:
-                                    # m.measure_code = mm
-                                    # s = 'm.' + dic["dimensions"]["measure_dim"]["field_name"] + ' = mm'
-                                    s = 'm.' + dic["dimensions"]["measure_dim"]["field_name"] + ' = "' + row["Series Name"] + '"'
-                                    # print(s)
-                                    exec(s)
-                                    m.save()
-                            except Exception as ex:
-                                print("90986-1 Error measure:"+str(ex))
-
-                            # m = model_measure_dim.objects.get(measure_code=row["Series Code"])
-
-                            y = int(s[0])
-                            t = model_time_dim.objects.get(id=y)
-                            # c = model_country_dim.objects.get(country_code=row["Country Code"])
-                            a, is_created = model_fact.objects.get_or_create(time_dim=t, country_dim=c, measure_dim=m)
-                            if is_created:
-                                # a.amount = float(row[k])
-                                s = 'a.' + dic["fact"]["field_name"] + ' = ' + str(float("{:.2f}".format((row[k]))))
-                                # print(s)
-                                exec(s)
-                                a.save()
+                        a, is_created = model_fact.objects.get_or_create(time_dim=t, country_dim=c, measure_dim=m)
+                        if is_created:
+                            # a.amount = float(row[k])
+                            s = 'a.' + dic["fact"]["field_name"] + ' = ' + str(float("{:.2f}".format((row[k]))))
+                            # print(s)
+                            exec(s)
+                            a.save()
                 except Exception as ex:
                     pass
-                    # print("90543-1" + str(ex))
+                    # print(k, row[k], "9065-55 Error: "+str(ex))
+
         result = {"status": "ok"}
         return result
 
+    # _2
     def load_oecdfile_to_db(self, dic):
-        print("90123-5: \n", dic, "="*50)
+        print("90123-5: \n", dic, "\n", "="*50)
         file_path = self.upload_file(dic)["file_path"]
         app_ = dic["app"]
         # print('90022-1 dic')
@@ -160,16 +218,26 @@ class AviDataProcessing(BaseDataProcessing, BasePotentialAlgo):
         model_measure_dim = apps.get_model(app_label=app_, model_name=model_name_)
         model_name_ = dic["fact"]["model"]
         model_fact = apps.get_model(app_label=app_, model_name=model_name_)
-        #
-        try:
-            gm, is_created = model_group_measure_dim.objects.get_or_create(group_name="Economics")
-        except Exception as ex:
-            print("9023-3 Error measure:"+str(ex))
 
         for index, row in df.iterrows():
+            if row["Measurement"] == "number of AI Research Publication":
+                measure_name = "OECD#AIRePub"
+                group_measure_name = "AIRePub"
+                country_field = "country_code"
+            elif row["Measurement"] == "Total number of number of All Research Publication":
+                measure_name = "OECD#AllRePub"
+                group_measure_name = "AllRePub"
+                country_field = "country_code"
+            elif row["Measurement"] == "AI publications":
+                measure_name = "OECD#AIPub"
+                group_measure_name = "AIPub"
+                country_field = "country_name"
+
             try:
                 if str(row["Value"]) != "nan":
                     if float("{:.2f}".format((row["Value"]))) > 0 or float("{:.2f}".format((row["Value"]))) < 0:
+                        gm, is_created = model_group_measure_dim.objects.get_or_create(group_name=group_measure_name)
+                        # year
                         try:
                             yy = int(row["Year"])
                             t, is_created = model_time_dim.objects.get_or_create(id=yy)
@@ -181,27 +249,30 @@ class AviDataProcessing(BaseDataProcessing, BasePotentialAlgo):
                                 t.save()
                         except Exception as ex:
                             pass
-                        # print("9075-11")
+                        # country
                         try:
                             cc = row["Country"]
-                            c, is_created = model_country_dim.objects.get_or_create(country_code=cc)
+                            if country_field == "country_code":
+                                c, is_created = model_country_dim.objects.get_or_create(country_code=cc)
+                            else:
+                                cc = self.check_country(cc)
+                                c, is_created = model_country_dim.objects.get_or_create(country_name=cc)
                             if is_created:
                                 # c.country_name = cc
+                                print(cc)
                                 s = 'c.' + dic["dimensions"]["country_dim"]["field_name"] + ' = cc'
                                 # print(s)
                                 exec(s)
                                 c.save()
                         except Exception as ex:
                             pass
-                        # print("9075-22")
+                        # measure
                         try:
-                            mm = row["Measurement"]
+                            mm = measure_name
                             # print(cc, yy, mm)
                             m, is_created = model_measure_dim.objects.get_or_create(measure_name=mm, measure_group_dim=gm)
                             if is_created:
-                                # m.measure_code = mm
                                 s = 'm.' + dic["dimensions"]["measure_dim"]["field_name"] + ' = mm'
-                                # print(s)
                                 exec(s)
                                 m.save()
                         except Exception as ex:
@@ -252,6 +323,7 @@ class AviDataProcessing(BaseDataProcessing, BasePotentialAlgo):
         model_wb_fact = apps.get_model(app_label=app_, model_name=model_name_)
         #
         yy = int(file_path.split("_")[2].split(".")[0])
+        print(yy)
         try:
             t, is_created = model_time_dim.objects.get_or_create(id=yy)
             if is_created:
@@ -285,6 +357,7 @@ class AviDataProcessing(BaseDataProcessing, BasePotentialAlgo):
                     try:
                         cells = row.find_all('td')
                         cc_ = cells[2].find('div')["style"].split("/")[4].split(".")[0]
+                        cc_ = self.check_country(cc_)
                         sn = cells[0].find('div').text.strip()
                         uu = cells[1].find('span', class_='univ-name').text.strip()
                         sg = cells[4].text.strip()
@@ -412,7 +485,7 @@ class AviDataProcessing(BaseDataProcessing, BasePotentialAlgo):
         except Exception as ex:
             pass
         try:
-            gm, is_created = model_group_measure_dim.objects.get_or_create(group_name="ai")
+            gm, is_created = model_group_measure_dim.objects.get_or_create(group_name="EduEng")
             mm = "shanghaiEng"
             m, is_created = model_measure_dim.objects.get_or_create(measure_name=mm,
                                                                     measure_group_dim=gm)
@@ -465,11 +538,7 @@ class AviDataProcessing(BaseDataProcessing, BasePotentialAlgo):
 
                         try:
                             try:
-                                if cc_ == "China (Mainland)":
-                                    cc_ = "China"
-                                elif cc_ == "Hong Kong SAR":
-                                    cc_ = "China-Hong Kong"
-
+                                cc_ = self.check_country(cc_)
                                 c, is_created = model_country_dim.objects.get_or_create(country_name=cc_)
                                 if is_created:
                                     c.country_name = cc_
@@ -590,18 +659,18 @@ class AviDataProcessing(BaseDataProcessing, BasePotentialAlgo):
             elif yy in [2018]:
                 llg = [7, 11]
                 ll = ["research", "score"]
-                llgm = ["ai", "Edu"]
+                llgm = ["EduRes", "Edu"]
             else:
                 llg = [7, 8]
                 ll = ["research", "score"]
-                llgm = ["ai", "Edu"]
+                llgm = ["EduRes", "Edu"]
             nll_ = len(ll)
             for jj in range(nll_):
                 k = ll[jj]
                 gm, is_created = model_group_measure_dim.objects.get_or_create(group_name=llgm[jj])
                 smm = "cwur"+k
                 # print(smm)
-                s = "mm"+k+", is_created = model_measure_dim.objects.get_or_create(measure_name=smm, measure_group_dim=gm)"
+                s = "mm"+k+", is_created = model_measure_dim.objects.get_or_create(measure_name='"+smm+"', measure_group_dim=gm)"
                 # print(s)
                 exec(s)
                 if is_created:
@@ -637,15 +706,7 @@ class AviDataProcessing(BaseDataProcessing, BasePotentialAlgo):
                             # print(cc_, sn, uu, sg)
                             try:
                                 try:
-                                    if cc_ == "USA":
-                                        cc_ = "United States"
-                                    elif cc_ == "Hong Kong":
-                                        cc_ = "China-Hong Kong"
-                                    elif cc_ == "Slovak Republic":
-                                        cc_ = "Slovakia"
-                                    elif cc_ == "Macau":
-                                        cc_ = "China-Macau"
-
+                                    cc_ = self.check_country(cc_)
                                     c, is_created = model_country_dim.objects.get_or_create(country_name=cc_)
                                     if is_created:
                                         print("="*50)
@@ -662,7 +723,7 @@ class AviDataProcessing(BaseDataProcessing, BasePotentialAlgo):
                                                                                                country_dim=c)
                                     if is_created:
                                         s = 'u.' + dic["dimensions"]["university_dim"]["field_name"] + ' = uu'
-                                        print(s, "\n", uu)
+                                        # print(s, "\n", uu)
                                         exec(s)
                                         u.save()
                                 except Exception as ex:
@@ -732,7 +793,7 @@ class AviDataProcessing(BaseDataProcessing, BasePotentialAlgo):
                                 f, cr = model_wb_fact.objects.get_or_create(time_dim=t ,country_dim=c, measure_dim=m)
                                 # print("E\n", "=" * 10, "\n", "EEEEE", f, cr)
                                 if cr:
-                                    print("F\n", "=" * 10, "\n", "FFFFFF", amount)
+                                    # print("F\n", "=" * 10, "\n", "FFFFFF", amount)
                                     f.amount = amount
                                     f.save()
                             except Exception as ex:
@@ -814,32 +875,7 @@ class AviDataProcessing(BaseDataProcessing, BasePotentialAlgo):
                 cc_ = ' '.join(cc__).strip()
                 # print(cc_)
                 # print("="*100)
-
-                if cc_ == "Slovak Republic":
-                    cc_ = "Slovakia"
-                elif cc_ == "Korea":
-                    cc_ = "South Korea"
-                elif cc_ == "Republic Of Korea":
-                    cc_ = "South Korea"
-                elif cc_ == "United States Of America":
-                    cc_ = "United States"
-                elif cc_ == "Democratic Republic Of The Congo":
-                    cc_ = "Democratic Republic of the Congo"
-                elif cc_ == "Cabo Verde":
-                    cc_ = "Cape Verde"
-                elif cc_ == "United Republic Of Tanzania":
-                    cc_ = "Tanzania"
-                elif cc_ == "Guinea Bissau":
-                    cc_ = "Guinea-bissau"
-                elif cc_ == "Lao People's Democratic Republic":
-                    cc_ = "Laos"
-                elif cc_ == "Republic Of Moldova":
-                    cc_ = "Moldova"
-                elif cc_ == "Viet Nam":
-                    cc_ = "Vietnam"
-                elif cc_ == "Republic Of North Macedonia":
-                    cc_ = "North Macedonia"
-
+                cc_ = self.check_country(cc_)
                 c, is_created = model_country_dim.objects.get_or_create(country_name=cc_)
                 if is_created:
                     print(cc_)
@@ -953,31 +989,7 @@ class AviDataProcessing(BaseDataProcessing, BasePotentialAlgo):
                     # print(cc_)
                     # print("="*100)
 
-                    if cc_ == "Slovak Republic":
-                        cc_ = "Slovakia"
-                    elif cc_ == "Korea":
-                        cc_ = "South Korea"
-                    elif cc_ == "Republic Of Korea":
-                        cc_ = "South Korea"
-                    elif cc_ == "United States Of America":
-                        cc_ = "United States"
-                    elif cc_ == "Democratic Republic Of The Congo":
-                        cc_ = "Democratic Republic of the Congo"
-                    elif cc_ == "Cabo Verde":
-                        cc_ = "Cape Verde"
-                    elif cc_ == "United Republic Of Tanzania":
-                        cc_ = "Tanzania"
-                    elif cc_ == "Guinea Bissau":
-                        cc_ = "Guinea-bissau"
-                    elif cc_ == "Lao People's Democratic Republic":
-                        cc_ = "Laos"
-                    elif cc_ == "Republic Of Moldova":
-                        cc_ = "Moldova"
-                    elif cc_ == "Viet Nam":
-                        cc_ = "Vietnam"
-                    elif cc_ == "Republic Of North Macedonia":
-                        cc_ = "North Macedonia"
-
+                    cc_ = self.check_country(cc_)
                     c, is_created = model_country_dim.objects.get_or_create(country_name=cc_)
                     if is_created:
                         print(cc_)
@@ -1044,11 +1056,11 @@ class AviDataProcessing(BaseDataProcessing, BasePotentialAlgo):
         if yy in [2017, 2018]:
             llg = [2, 3]
             ll = ["research", "score"]
-            llgm = ["ai", "Edu"]
+            llgm = ["EduRes", "Edu"]
         else:
             llg = [2, 3]
             ll = ["research", "score"]
-            llgm = ["ai", "Edu"]
+            llgm = ["EduRes", "Edu"]
 
         print(ll, llg, llgm)
         try:
@@ -1058,7 +1070,7 @@ class AviDataProcessing(BaseDataProcessing, BasePotentialAlgo):
                 gm, is_created = model_group_measure_dim.objects.get_or_create(group_name=llgm[jj])
                 smm = "the"+k
                 # print(smm)
-                s = "mm"+k+", is_created = model_measure_dim.objects.get_or_create(measure_name=smm, measure_group_dim=gm)"
+                s = "mm"+k+", is_created = model_measure_dim.objects.get_or_create(measure_name='"+smm+"', measure_group_dim=gm)"
                 # print(s)
                 exec(s)
                 if is_created:
@@ -1112,15 +1124,7 @@ class AviDataProcessing(BaseDataProcessing, BasePotentialAlgo):
                             print(cc_, uu, sg)
                             try:
                                 try:
-                                    if cc_ == "USA":
-                                        cc_ = "United States"
-                                    elif cc_ == "Hong Kong":
-                                        cc_ = "China-Hong Kong"
-                                    elif cc_ == "Slovak Republic":
-                                        cc_ = "Slovakia"
-                                    elif cc_ == "Macau":
-                                        cc_ = "China-Macau"
-
+                                    cc_ = self.check_country(cc_)
                                     c, is_created = model_country_dim.objects.get_or_create(country_name=cc_)
                                     if is_created:
                                         print("="*50)
@@ -1262,11 +1266,11 @@ class AviDataProcessing(BaseDataProcessing, BasePotentialAlgo):
         ll = ["Scholars", "Pub", "DIndex"]
 
         try:
-            gm, is_created = model_group_measure_dim.objects.get_or_create(group_name="ai")
+            gm, is_created = model_group_measure_dim.objects.get_or_create(group_name="EduEng")
             for k in ll:
                 smm = "Res"+k
-                # print(smm)
-                s = "mm"+k+", is_created = model_measure_dim.objects.get_or_create(measure_name=smm, measure_group_dim=gm)"
+                print(smm)
+                s = "mm"+k+", is_created = model_measure_dim.objects.get_or_create(measure_name='"+smm+"', measure_group_dim=gm)"
                 # print(s)
                 exec(s)
                 if is_created:
@@ -1296,26 +1300,13 @@ class AviDataProcessing(BaseDataProcessing, BasePotentialAlgo):
                         for k in rks_:
                             # print(k.text.strip())
                             llg_.append(float(k.text.replace(",", "").strip()))
-                        # print(llg_)
-                        # if n_ > 5:
-                        #     break
 
                         nll = len(ll)
                         for i in range(nll):
                             # smm = "cwur" + k
                             try:
                                 try:
-                                    if cc_ == "USA":
-                                        cc_ = "United States"
-                                    elif cc_ == "Hong Kong":
-                                        cc_ = "China-Hong Kong"
-                                    elif cc_ == "Slovak Republic":
-                                        cc_ = "Slovakia"
-                                    elif cc_ == "Macau":
-                                        cc_ = "China-Macau"
-                                    elif cc_ == "Macedonia":
-                                        cc_ = "North Macedonia"
-
+                                    cc_ = self.check_country(cc_)
                                     c, is_created = model_country_dim.objects.get_or_create(country_name=cc_)
                                     if is_created:
                                         print("=" * 50)
@@ -1352,43 +1343,6 @@ class AviDataProcessing(BaseDataProcessing, BasePotentialAlgo):
                                 print("9085-7 Error university: " + uu + " " + str(ex))
                                 continue
 
-        #                 try:
-        #                     try:
-        #                         if cc_ == "China (Mainland)":
-        #                             cc_ = "China"
-        #                         elif cc_ == "Hong Kong SAR":
-        #                             cc_ = "China-Hong Kong"
-        #
-        #                         c, is_created = model_country_dim.objects.get_or_create(country_name=cc_)
-        #                         if is_created:
-        #                             c.country_name = cc_
-        #                             c.country_code = cc_
-        #                             c.country_cc = cc_
-        #                             c.save()
-        #                     except Exception as ex:
-        #                         print("Error country 9080-1: " + str(ex))
-        #                     try:
-        #                         u, is_created = model_university_dim.objects.get_or_create(university_name=uu,
-        #                                                                                    country_dim=c)
-        #                         if is_created:
-        #                             print(uu)
-        #                             s = 'u.' + dic["dimensions"]["university_dim"]["field_name"] + ' = uu'
-        #                             # print(s)
-        #                             exec(s)
-        #                             u.save()
-        #                     except Exception as ex:
-        #                         pass
-        #                     a, is_created = model_fact.objects.get_or_create(time_dim=t, country_dim=c,
-        #                                                                      university_dim=u, measure_dim=m)
-        #                     if is_created:
-        #                         s = 'a.' + dic["fact"]["field_name"] + ' = ' + str(sg)
-        #                         # print(s)
-        #                         exec(s)
-        #                         a.save()
-        #
-        #                 except Exception as ex:
-        #                     print("9085-7 Error university: "+uu+" " +str(ex))
-        #                     continue
                     except Exception as ex:
                         pass
             except Exception as ex:
