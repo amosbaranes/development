@@ -149,12 +149,73 @@ class AviDataProcessing(BaseDataProcessing, BasePotentialAlgo):
             except Exception as ex:
                 print("90987-1 Error measure:"+str(ex))
             #
-            if row["Series Name"] == "GDP per capita (constant 2015 US$)":
-                measure_name = "GDPPC2015$"
-                group_measure_name = "Economics"
-            elif row["Series Name"] == "Population, total":
+            if row["Series Name"] == "Population, total":
                 measure_name = "TotalPop"
                 group_measure_name = "General"
+            elif row["Series Name"] == "High-technology exports (current US$)":
+                measure_name = "HighTech"
+                group_measure_name = "General"
+            elif row["Series Name"] == "ICT service exports (BoP, current US$)":
+                measure_name = "ICT"
+                group_measure_name = "General"
+            elif row["Series Name"] == "GDP per capita (current US$)":
+                measure_name = "GDPPCCUS$"
+                group_measure_name = "GDP"
+            elif row["Series Name"] == "GDP per capita (constant 2015 US$)":
+                measure_name = "GDPPC2015$"
+                group_measure_name = "GDP"
+            elif row["Series Name"] == "GDP per capita, PPP (current international $)":
+                measure_name = "GDPPCINT$"
+                group_measure_name = "GDP"
+            elif row["Series Name"] == "GDP per capita, PPP (constant 2017 international $)":
+                measure_name = "GDPPC2017INT$"
+                group_measure_name = "GDP"
+            elif row["Series Name"] == "GNI per capita, Atlas method (current US$)":
+                measure_name = "GNIPCINT$"
+                group_measure_name = "GDP"
+            elif row["Series Name"] == "GNI per capita (constant 2015 US$)":
+                measure_name = "GNIPC2015$"
+                group_measure_name = "GDP"
+            elif row["Series Name"] == "GNI per capita, PPP (current international $)":
+                measure_name = "GNIPCINT$"
+                group_measure_name = "GDP"
+            elif row["Series Name"] == "GNI per capita, PPP (constant 2017 international $)":
+                measure_name = "GNIPC2017INT$"
+                group_measure_name = "GDP"
+            elif row["Series Name"] == "Military expenditure (current USD)":
+                measure_name = "MExpCUS$"
+                group_measure_name = "Military"
+            elif row["Series Name"] == "Armed forces personnel, total":
+                measure_name = "ArmedFPT"
+                group_measure_name = "Military"
+            elif row["Series Name"] == "Researchers in R&D (per million people)":
+                measure_name = "ResearchersPMP"
+                group_measure_name = "RandD"
+            elif row["Series Name"] == "Technicians in R&D (per million people)":
+                measure_name = "TechniciansPMP"
+                group_measure_name = "RandD"
+            elif row["Series Name"] == "Exports of goods and services (constant 2015 US$)":
+                measure_name = "GSC2015US$"
+                group_measure_name = "Exports"
+            elif row["Series Name"] == "Exports of goods and services (BoP, current US$)":
+                measure_name = "GSBOPCUS$"
+                group_measure_name = "Exports"
+            elif row["Series Name"] == "Industry (including construction), value added (current US$)":
+                measure_name = "IndCUS$"
+                group_measure_name = "Industry"
+            elif row["Series Name"] == "Industry (including construction), value added (constant 2015 US$)":
+                measure_name = "IndC2015$"
+                group_measure_name = "Industry"
+            elif row["Series Name"] == "Scientific and technical journal articles":
+                measure_name = "SciTechJA"
+                group_measure_name = "Science"
+            elif row["Series Name"] == "Natural gas rents (% of GDP)":
+                measure_name = "GasPerGDP"
+                group_measure_name = "NaturalRes"
+            elif row["Series Name"] == "Total natural resources rents (% of GDP)":
+                measure_name = "TNRPerGDP"
+                group_measure_name = "NaturalRes"
+
             print(group_measure_name, measure_name)
             #
             try:
@@ -335,7 +396,7 @@ class AviDataProcessing(BaseDataProcessing, BasePotentialAlgo):
         except Exception as ex:
             pass
         try:
-            gm, is_created = model_group_measure_dim.objects.get_or_create(group_name="Edu")
+            gm, is_created = model_group_measure_dim.objects.get_or_create(group_name="URanking")
             mm = "shanghai"
             m, is_created = model_measure_dim.objects.get_or_create(measure_name=mm,
                                                                     measure_group_dim=gm)
@@ -485,7 +546,7 @@ class AviDataProcessing(BaseDataProcessing, BasePotentialAlgo):
         except Exception as ex:
             pass
         try:
-            gm, is_created = model_group_measure_dim.objects.get_or_create(group_name="EduEng")
+            gm, is_created = model_group_measure_dim.objects.get_or_create(group_name="URankingEng")
             mm = "shanghaiEng"
             m, is_created = model_measure_dim.objects.get_or_create(measure_name=mm,
                                                                     measure_group_dim=gm)
@@ -655,15 +716,15 @@ class AviDataProcessing(BaseDataProcessing, BasePotentialAlgo):
             if yy in [2017]:
                 llg = [12]
                 ll = ["score"]
-                llgm = ["Edu"]
+                llgm = ["URanking"]
             elif yy in [2018]:
                 llg = [7, 11]
                 ll = ["research", "score"]
-                llgm = ["EduRes", "Edu"]
+                llgm = ["URankingRes", "URanking"]
             else:
                 llg = [7, 8]
                 ll = ["research", "score"]
-                llgm = ["EduRes", "Edu"]
+                llgm = ["URankingRes", "URanking"]
             nll_ = len(ll)
             for jj in range(nll_):
                 k = ll[jj]
@@ -1056,11 +1117,11 @@ class AviDataProcessing(BaseDataProcessing, BasePotentialAlgo):
         if yy in [2017, 2018]:
             llg = [2, 3]
             ll = ["research", "score"]
-            llgm = ["EduRes", "Edu"]
+            llgm = ["URankingRes", "URanking"]
         else:
             llg = [2, 3]
             ll = ["research", "score"]
-            llgm = ["EduRes", "Edu"]
+            llgm = ["URankingRes", "URanking"]
 
         print(ll, llg, llgm)
         try:
@@ -1266,7 +1327,7 @@ class AviDataProcessing(BaseDataProcessing, BasePotentialAlgo):
         ll = ["Scholars", "Pub", "DIndex"]
 
         try:
-            gm, is_created = model_group_measure_dim.objects.get_or_create(group_name="EduEng")
+            gm, is_created = model_group_measure_dim.objects.get_or_create(group_name="URankingEng")
             for k in ll:
                 smm = "Res"+k
                 print(smm)
@@ -1398,6 +1459,42 @@ class AviDataProcessing(BaseDataProcessing, BasePotentialAlgo):
                 # print("=" * 150, "\n", j, "\n", "=" * 150)
             except Exception as ex:
                 print("9066-66 Error "+ str(ex))
+
+        result = {"status": "ok"}
+        return result
+
+    def process_algo2(self, dic):
+        print("90222-6: \n", dic, "\n", "="*50)
+        app_ = dic["app"]
+        yy = dic["year"]
+        l_calculate_measures = dic["calculate_measures"]
+        l_calculate_measures = eval(l_calculate_measures)
+        print(l_calculate_measures)
+        lmm = dic["measure"]
+        # print(lmm)
+        lmm = eval(lmm)
+        print(lmm)
+        # lmm = ["TotalPop","shanghai"]
+        model_wb_fact = apps.get_model(app_label=app_, model_name="worldbankfact")
+
+        qs = model_wb_fact.objects.filter(measure_dim__measure_name__in=lmm, time_dim__year=yy).all()
+        df = pd.DataFrame(list(qs.values("country_dim_id","measure_dim_id","amount")))
+        df = df.pivot_table(values='amount', index='country_dim_id', columns='measure_dim_id', aggfunc='sum')
+        df.columns = lmm
+        print(df)
+        for k in l_calculate_measures:
+            ll_ = l_calculate_measures[k].split("_")
+            print(k, ll_)
+            action = ll_[1]
+            a = ll_[0]
+            b = ll_[2]
+            conv_ = {a: 'float', b: 'float'}
+            if action == "over":
+                df = df.astype(conv_)
+                df[k] = df[a].div(df[b].values)
+                print(df)
+        for i, r in df.iterrows():
+            print(r)
 
         result = {"status": "ok"}
         return result
