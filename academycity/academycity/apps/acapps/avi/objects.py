@@ -224,6 +224,7 @@ class AviDataProcessing(BaseDataProcessing, BasePotentialAlgo):
                 m, is_created = model_measure_dim.objects.get_or_create(measure_code=mm, measure_group_dim=gm)
                 if is_created:
                     s = 'm.' + dic["dimensions"]["measure_dim"]["field_name"] + ' = "' + measure_name + '"'
+                    # print(s)
                     exec(s)
                     m.save()
             except Exception as ex:

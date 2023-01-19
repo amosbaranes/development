@@ -1351,14 +1351,15 @@ acReport.prototype.set_data = function(type, is_level=true){
 
     var html_obj = ll[0];
     var get_data_dic = ll[1]
+
 //    alert(JSON.stringify(data));
+
 //    alert(JSON.stringify(get_data_dic));
 //    alert(html_obj.outerHTML)
 
      data["dim_titles"]={}
      try{zz(data)} catch(er){};
 //  alert(88882222)
-
 
 //       alert(JSON.stringify(data));
 //       alert(JSON.stringify(data["dim_titles"]));
@@ -1384,7 +1385,7 @@ acReport.prototype.set_data = function(type, is_level=true){
                      )} catch(er){}
      }
      v_=v_.sort();//h_=h_.sort();
-    // alert(JSON.stringify(data["dim_titles"][horizontal_field_]));
+     //alert(JSON.stringify(data["dim_titles"][horizontal_field_]));
      report.axes={"v":v_, "h":h_}
      report.pdata=pdata
      report.raw_data=data
@@ -1392,7 +1393,7 @@ acReport.prototype.set_data = function(type, is_level=true){
    }
   //alert(is_level)
   if(is_level==false){this.get_data_dic["fields"] = this.get_data_dic["fields"].filter(item => item !== "level")}
-  //alert("90876\n"+JSON.stringify(this.get_data_dic));
+//  alert("90876\n"+JSON.stringify(this.get_data_dic));
   this.atm.get_data(fun, this.get_data_dic, [this.table_, this.get_data_dic])
 }
 

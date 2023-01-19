@@ -16,6 +16,7 @@ from django.db.models.fields.related import ForeignKey, ManyToManyField, ManyToM
 
 from django.http import HttpResponse
 import json
+import pandas as pd
 
 
 def home(request):
@@ -449,6 +450,7 @@ def get_data_link(request):
         # print(s)
         # print('s11')
         data = eval(s)
+        # print(data)
     except Exception as ex:
         print("error 300 "+str(ex))
         # pass
