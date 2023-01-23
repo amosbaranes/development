@@ -475,7 +475,7 @@ class AviDataProcessing(BaseDataProcessing, BasePotentialAlgo):
         # update worldBankFact
         qs = model_fact.objects.all()
         df = pd.DataFrame(list(qs.values("time_dim_id","country_dim_id","university_dim_id","measure_dim_id","amount")))
-        print(df)
+        # print(df)
         df = df.pivot_table(values='amount', index='country_dim_id', columns=['time_dim_id', 'measure_dim_id'],
                             aggfunc='sum')
         # print(df)

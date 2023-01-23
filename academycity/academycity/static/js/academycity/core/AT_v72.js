@@ -168,7 +168,7 @@ company_obj_id, is_show_btns=true, user_id=0)
                                                  "functions":[]},
                                         "UploadFile":{"title":"UploadFile", "width":8,
                                                "setting": {"height":[],"width":[],"obj_name":[],"function_name":[],
-                                                           "topic_id":[], "folder_type":["", "excel", "other"],
+                                                           "topic_id":[], "folder_type":["", "excel", "media", "other"],
                                                             "dimensions":[], "fields":[], "fact_model_field": []},
                                                "attributes":{},
                                                "functions":[]},
@@ -647,8 +647,7 @@ AdvancedTabsManager.prototype.save_data = function(html_obj, dic_, is_json_data=
   dic_["company_obj_id"]=this.company_obj_id;
   //alert("90112:\n"+JSON.stringify(dic_));
   //alert(html_obj.outerHTML)
-  alert(this.update_field_link_)
-
+  //alert(this.update_field_link_)
   $.post(this.update_field_link_,
           {dic : JSON.stringify(dic_)},
           function(dic){
@@ -1353,14 +1352,11 @@ acReport.prototype.set_data = function(type, is_level=true){
     var get_data_dic = ll[1]
 
 //    alert(JSON.stringify(data));
-
 //    alert(JSON.stringify(get_data_dic));
 //    alert(html_obj.outerHTML)
 
      data["dim_titles"]={}
      try{zz(data)} catch(er){};
-//  alert(88882222)
-
 //       alert(JSON.stringify(data));
 //       alert(JSON.stringify(data["dim_titles"]));
 //       alert(JSON.stringify(report.get_data_dic));
@@ -1731,7 +1727,7 @@ var container_on_change=function (event){
    } else {
 
        try{var parent_model_=container.my_creator_obj.link_dic["properties"]["parent_table"]} catch(er){};
-       //alert("90123-1:  "+parent_model_+" "+model_+" "+parent_id_+" "+record_id_+" "+fields_values)
+//       alert("90123-1:  "+parent_model_+" "+model_+" "+parent_id_+" "+record_id_+" "+fields_values)
 
        if(parent_model_==null){var parent_model_="";}
        //alert("9004 else: record_id_ "+record_id_ +" parent_id_= "+parent_id_+" model_= "+model_+" parent_model_= "+parent_model_)
@@ -1852,6 +1848,7 @@ acUploadFileCreator.prototype.create_obj = function()
   var container = document.getElementById("content_"+dic["container_id"]);
   //--
   this.div_=document.createElement("div");
+  this.div_.my_creator_obj=this
   this.div_.setAttribute("obj_type", dic["obj_type"]);
   this.div_.setAttribute("id", obj_number);
   this.div_.setAttribute("container_id", dic["container_id"]);
@@ -1872,8 +1869,8 @@ acUploadFileCreator.prototype.create_obj = function()
   this.input_file_.setAttribute("name", "driver_file");
   this.div_.appendChild(this.input_file_);
   // --
-  var br=document.createElement("br");
-  this.div_.appendChild(br);
+  //var br=document.createElement("br");
+  //this.div_.appendChild(br);
   var span1=document.createElement("span");
   span1.setAttribute("id", "driver-uploader-success-alert");
   span1.setAttribute("class", "text-success");
@@ -1888,14 +1885,12 @@ acUploadFileCreator.prototype.create_obj = function()
   this.div_.appendChild(span2);
   this.input_file_.atm=this.parent.atm
   this.input_file_.dic=dic
-  this.input_file_.onchange = function(){
+  this.input_file_.onchange = function(event){
+            var e = event.target;
+            var fn = "";try{var fn = e.getAttribute("file_name");} catch(er){}
             var file = this.files[0];
-            filename = '';
-            if('name' in file)
-              filename= file.name;
-            else
-              filename = file.fileName;
-
+            var filename = ''; if ('name' in file) {filename= file.name;} else {filename = file.fileName;}
+            if(fn !="" && fn != null){var ll=filename.split(".");filename=fn+"."+ll[ll.length-1]}
             var xhr = new XMLHttpRequest();
             (xhr.upload || xhr).addEventListener('progress', function(e) {
                 var done = e.position || e.loaded
@@ -2225,11 +2220,6 @@ acActivityCreator.prototype.row_click = function(event)
  }
 
 }
-
-
-
-
-
 
 
 //acActivityCreator.prototype.set_data = function(ll=null)
@@ -2642,7 +2632,7 @@ acSearchTableCreator.prototype.get_data = function(data_table_name=null,parent_m
   var fun=function(data, ttbody_){
     console.log("get_data search table inside call back function")
 
-    //alert("9081 data: "+JSON.stringify(data));
+    // alert("9081 data: "+JSON.stringify(data));
 
     try{if(Object.keys(data).length==0){return;}} catch (er) {}
     //alert(dic_["fields"][0])
@@ -2651,9 +2641,10 @@ acSearchTableCreator.prototype.get_data = function(data_table_name=null,parent_m
     //alert(n_)
     console.log("get_data search table inside call back function n=" + n_)
     var s='';
+    // alert(data["pkf_name"])
     for(i=0; i<n_; i++)
     {
-     s+='<tr id_="'+data["id"][i]+'" row="'+i+'"'+'>';
+     s+='<tr id_="'+data[data["pkf_name"]][i]+'" row="'+i+'"'+'>';
      for(j in dic_["fields"])
      {
        var f=dic_["fields"][j];
@@ -2668,7 +2659,7 @@ acSearchTableCreator.prototype.get_data = function(data_table_name=null,parent_m
     //alert("9008 get_data search table inside call back function s=" + s)
     ttbody_.innerHTML=s;
 
-    //alert(ttbody_.my_creator_obj)
+//    alert(ttbody_.my_creator_obj)
     //alert(ttbody_.my_creator_obj.is_json_data)
 
     //ttbody_.my_creator_obj.is_json_data=false;
@@ -2807,7 +2798,7 @@ acSearchTableCreator.prototype.row_click = function(event)
  //alert(container_id)
  var result={}
  var dic=this.my_creator_obj.tbody.data;
- //alert(JSON.stringify(dic))
+  //alert(JSON.stringify(dic))
 
  if(this.my_creator_obj.is_json_data==true){
    container.my_creator_obj.clear_objects_data()
@@ -2815,7 +2806,10 @@ acSearchTableCreator.prototype.row_click = function(event)
    result=JSON.parse(JSON.stringify(dic[id_]))
    result["id"]=id_;
    container.my_creator_obj.set_objects_data(result, is_json_data=true);
- } else{for(var f in dic){result[f]=dic[f][n_row]};
+ } else{for(var f in dic){
+  if(f != "pkf_name"){result[f]=dic[f][n_row]} else {result["pkf_name"]=dic[f]}
+ };
+  //alert(JSON.stringify(result))
    container.my_creator_obj.set_objects_data(result, is_json_data=false);
  }
 
@@ -4124,9 +4118,11 @@ TabContent.prototype.process_content = process_content;
 
 TabContent.prototype.set_objects_data = function(dic, is_json_data=false)
 {
- //alert("9076 "+JSON.stringify(dic))
+ // alert("9076 "+JSON.stringify(dic))
+ // alert(dic["pkf_name"])
  this.is_json_data=is_json_data;
- this.link_content.setAttribute("record_id", dic["id"]);
+
+ this.link_content.setAttribute("record_id", dic[dic["pkf_name"]]);
  var container_dic=this.tab.tab_objects[this.link_number];
  for(o in container_dic)
  {

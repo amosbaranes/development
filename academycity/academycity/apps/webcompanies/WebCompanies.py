@@ -38,7 +38,7 @@ class WebSiteCompany(object):
                 # print('-domain ex'*5)
                 request.session[settings.WEB_SITE_COMPANY_ID] = {'domain': 'null'}
 
-        print(settings.WEB_SITE_COMPANY_ID)
+        # print("1234-1", settings.WEB_SITE_COMPANY_ID)
         try:
             self.web_site_company = request.session[settings.WEB_SITE_COMPANY_ID]
         except Exception as ex:

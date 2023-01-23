@@ -85,8 +85,8 @@ class BaseDataProcessing(object):
         # print('-'*50)
 
     def upload_file(self, dic):
-        # print("9002 upload_file:")
-        # print(dic)
+        print("9002 BaseDataProcessing upload_file:")
+        print(dic)
         # print("upload_file:")
 
         upload_file_ = dic["request"].FILES['drive_file']
@@ -100,13 +100,16 @@ class BaseDataProcessing(object):
         self.target_folder = eval("self.TO_" + dic["folder_type"].upper())
 
         filename = dic["request"].POST['filename']
+
+        print(filename)
+
         self.uploaded_filename = filename
         file_path = os.path.join(self.target_folder, filename)
         with open(file_path, 'wb+') as destination:
             for c in upload_file_.chunks():
                 destination.write(c)
 
-        # print("9017\nUploaded\n", "-" * 30)
+        # print("9888-8 Uploaded\n", "-" * 30)
         result['file_path'] = file_path
         return result
 
@@ -199,16 +202,16 @@ class BasePotentialAlgo(object):
         similarity_n2 = pd.DataFrame([[0, 0, 0, 0]])
         contribution_n1 = pd.DataFrame([[0, 0, 0, 0]])
         contribution_n2 = pd.DataFrame([[0, 0, 0, 0]])
-        relimp_n1 = pd.DataFrame([[0, 0, 0, 0]])
-        relimp_n2 = pd.DataFrame([[0, 0, 0, 0]])
+        # relimp_n1 = pd.DataFrame([[0, 0, 0, 0]])
+        # relimp_n2 = pd.DataFrame([[0, 0, 0, 0]])
         similarity_n1.columns = self.options
         similarity_n2.columns = self.options
         group_d = ""
         for k in groups:
             group = k.group_name
-            print("-1"*50)
-            print(group)
-            print("-2"*50)
+            # print("="*50)
+            # print(group)
+            # print("="*50)
             try:
                 self.save_to_file = os.path.join(self.TO_EXCEL_OUTPUT, str(dic["time_dim_value"]) + "_" + group + "_o.xlsx")
                 self.to_save = []
@@ -217,7 +220,7 @@ class BasePotentialAlgo(object):
                 for v in dic["axes"]:
                     s += "'" + v + "',"
                 s += "'" + dic["value"] + "'"
-                print(dic["time_dim_value"])
+                # print(dic["time_dim_value"])
                 qs = model_fact.objects.filter(measure_dim__measure_group_dim__group_name=group,
                                                time_dim_id=dic["time_dim_value"]).all()
                 s = "pd.DataFrame(list(qs.values(" + s + ")))"
@@ -413,8 +416,6 @@ class BasePotentialAlgo(object):
                 self.add_to_save(title='min-max', a=df_1_2, cols=cols)
                 # self.add_to_save(title='min-max', a=df_1_2, cols=-1)
                 # print("50001-3-9")
-
-                # print("50001-3-9-0")
                 self.save_to_excel_()
 
                 # print("50001-3-9-1")
@@ -458,9 +459,9 @@ class BasePotentialAlgo(object):
             self.add_to_save_all(title='sign-n' + n, a=eval("sign_n" + n), cols=-1)
             exec("similarity_n" + n + ".drop([0], axis=0, inplace=True)")
             self.add_to_save_all(title='similarity-n' + n, a=eval("similarity_n" + n), cols=-1)
-        print(4000)
         for n in ["1", "2"]:
             nn__ = 0
+            llg = []
             for k in groups:
                 group = k.group_name
                 print("-"*10)
@@ -474,21 +475,55 @@ class BasePotentialAlgo(object):
                         exec(s_)
                         # print('ll.append(1-df_n'+n+'_all["dc_'+group+'_' + z+'"].mean())')
                         exec('ll.append(1-df_n' + n + '_all["dc_' + group + '_' + z + '"].mean())')
+
                     llc = [x - 0.7 for x in ll]
+                    llg.append(llc)
                     llc = llc / sum(llc)
                     exec("contribution_n" + n + ".loc[group] = ll")
-                    exec("relimp_n" + n + ".loc[group] = llc")
                 else:
                     nn__ += 1
+
             self.add_to_save_all(title="all-n" + n, a=eval("df_n" + n + "_all"), cols=-1)
             exec("contribution_n" + n + ".columns = self.options")
-            exec("relimp_n" + n + ".columns = self.options")
             exec("contribution_n" + n + ".drop([0], axis=0, inplace=True)")
-            exec("relimp_n" + n + ".drop([0], axis=0, inplace=True)")
-            # print(eval("contribution_n"+n))
-            # print(eval("relimp_n"+n))
+            # print("="*50)
+            npg = np.array(llg)
+            npgs = np.sum(llg, axis=0)
+            df_relimp = pd.DataFrame(npg/npgs, index=contribution_n1.index)
+            df_relimp.columns = self.options
+            # print(df_relimp)
             self.add_to_save_all(title='contribution-n' + n, a=eval("contribution_n" + n), cols=-1)
-            self.add_to_save_all(title='relimp-n' + n, a=eval("relimp_n" + n), cols=-1)
+            self.add_to_save_all(title='relimp-n' + n, a=df_relimp, cols=-1)
+        # for n in ["1", "2"]:
+        #     nn__ = 0
+        #     for k in groups:
+        #         group = k.group_name
+        #         print("-"*10)
+        #         print(group)
+        #         if nn__ > 0:
+        #             ll = []
+        #             for z in self.options:
+        #                 s_ = "df_n" + n + "_all['dc_" + group + "_" + z + "'] = abs("
+        #                 s_ += "df_n" + n + "_all['d_" + z + "'] - "
+        #                 s_ += "df_n" + n + "_all['" + group_d + "-" + group + "-" + z + "'])"
+        #                 exec(s_)
+        #                 # print('ll.append(1-df_n'+n+'_all["dc_'+group+'_' + z+'"].mean())')
+        #                 exec('ll.append(1-df_n' + n + '_all["dc_' + group + '_' + z + '"].mean())')
+        #             llc = [x - 0.7 for x in ll]
+        #             llc = llc / sum(llc)
+        #             exec("contribution_n" + n + ".loc[group] = ll")
+        #             exec("relimp_n" + n + ".loc[group] = llc")
+        #         else:
+        #             nn__ += 1
+        #     self.add_to_save_all(title="all-n" + n, a=eval("df_n" + n + "_all"), cols=-1)
+        #     exec("contribution_n" + n + ".columns = self.options")
+        #     exec("relimp_n" + n + ".columns = self.options")
+        #     exec("contribution_n" + n + ".drop([0], axis=0, inplace=True)")
+        #     exec("relimp_n" + n + ".drop([0], axis=0, inplace=True)")
+        #     # print(eval("contribution_n"+n))
+        #     # print(eval("relimp_n"+n))
+        #     self.add_to_save_all(title='contribution-n' + n, a=eval("contribution_n" + n), cols=-1)
+        #     self.add_to_save_all(title='relimp-n' + n, a=eval("relimp_n" + n), cols=-1)
         self.save_to_excel_all_(dic["time_dim_value"])
 
         result = {"status": "ok"}
@@ -590,7 +625,7 @@ class BasePotentialAlgo(object):
         wb2.save(self.save_to_file)
         wb2.close()
         wb2 = None
-        print("save_to_excel_", self.save_to_file)
+        # print("save_to_excel_", self.save_to_file)
 
         with pd.ExcelWriter(self.save_to_file, engine='openpyxl', mode="a") as writer_o:
             for d in self.to_save:
@@ -608,7 +643,7 @@ class BasePotentialAlgo(object):
 
     def save_to_excel_all_(self, year):
         save_to_file_all = os.path.join(self.TO_EXCEL_OUTPUT, "all_" + str(year) + ".xlsx")
-        print("save_to_excel_all_", save_to_file_all)
+        # print("save_to_excel_all_", save_to_file_all)
         wb2 = Workbook()
         wb2.save(save_to_file_all)
         wb2.close()

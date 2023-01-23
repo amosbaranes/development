@@ -1,5 +1,7 @@
 from __future__ import unicode_literals
 from django.db import models
+from django.conf import settings
+from django.utils import timezone
 from academycity.apps.core.sql import TruncateTableMixin
 
 
@@ -11,6 +13,21 @@ class TrainingWeb(TruncateTableMixin, models.Model):
     def __str__(self):
         return str(self.program_name)
 
+# מדריכים
+class Instructors(TruncateTableMixin, models.Model):
+    class Meta:
+        verbose_name = 'instructor'
+        verbose_name_plural = 'instructors'
+        ordering = ['last_name']
+    training_web = models.ForeignKey(TrainingWeb, on_delete=models.CASCADE, default=1,
+                                     related_name='training_web_instructors')
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, primary_key=True,
+                                related_name='training_user_instructors')
+    first_name = models.CharField(max_length=50, default='', blank=True, null=True)
+    last_name = models.CharField(max_length=50, default='', blank=True, null=True)
+
+    def __str__(self):
+        return str(self.first_name) + " " + str(self.last_name)
 
 # חטיבה
 class Brigades(TruncateTableMixin, models.Model):
@@ -21,22 +38,25 @@ class Brigades(TruncateTableMixin, models.Model):
     def __str__(self):
         return str(self.brigade_name)
 
-
 # גדוד
 class Battalions(TruncateTableMixin, models.Model):
     training_web = models.ForeignKey(TrainingWeb, on_delete=models.CASCADE, default=1,
                                      related_name='training_web_battalions')
+    instructor = models.ManyToManyField(Instructors, default=[1],
+                                        related_name='instructor_battalions')
     brigade = models.ForeignKey(Brigades, on_delete=models.CASCADE, default=1, related_name='brigade_battalions')
     battalion_name = models.CharField(max_length=50, default='', blank=True, null=True)
 
     def __str__(self):
         return str(self.battalion_name)
 
-
 # פלוגה/פלגה
 class Companys(TruncateTableMixin, models.Model):
     training_web = models.ForeignKey(TrainingWeb, on_delete=models.CASCADE, default=1,
                                      related_name='training_web_companys')
+    instructor = models.ManyToManyField(Instructors, default=[1],
+                                        related_name='instructor_companys')
+    company_number = models.SmallIntegerField(default=1)
     battalion = models.ForeignKey(Battalions, on_delete=models.CASCADE, default=1, related_name='battalion_companys')
     company_name = models.CharField(max_length=50, default='', blank=True, null=True)
 
@@ -46,22 +66,66 @@ class Companys(TruncateTableMixin, models.Model):
 # צוות
 class Platoons(TruncateTableMixin, models.Model):
     training_web = models.ForeignKey(TrainingWeb, on_delete=models.CASCADE, default=1,
-                                     related_name='training_web_sections')
+                                     related_name='training_web_platoons')
+    instructor = models.ManyToManyField(Instructors, default=[1], related_name='instructor_platoons')
+    platoon_number = models.SmallIntegerField(default=1)
     company = models.ForeignKey(Companys, on_delete=models.CASCADE, default=1, related_name='company_platoons')
-    platon_name = models.CharField(max_length=50, default='', blank=True, null=True)
+    platoon_name = models.CharField(max_length=50, default='', blank=True, null=True)
 
     def __str__(self):
-        return str(self.section_name)
+        return str(self.platoon_number) + ": " + str(self.platoon_name)
 
 # כיתה
 class Squads(TruncateTableMixin, models.Model):
     training_web = models.ForeignKey(TrainingWeb, on_delete=models.CASCADE, default=1,
                                      related_name='training_web_squads')
-    platoon = models.ForeignKey(Platoons, on_delete=models.CASCADE, default=1, related_name='platoon_squads')
+    platoon = models.ForeignKey(Platoons, on_delete=models.CASCADE, null=True, related_name='platoon_squads')
     squad_name = models.CharField(max_length=50, default='', blank=True, null=True)
 
     def __str__(self):
         return str(self.squad_name)
+
+class TestsStructures(TruncateTableMixin, models.Model):
+    class Meta:
+        verbose_name = 'test'
+        verbose_name_plural = 'tests'
+    training_web = models.ForeignKey(TrainingWeb, on_delete=models.CASCADE, default=1,
+                                     related_name='training_web_tests')
+    battalion = models.OneToOneField(Battalions, on_delete=models.CASCADE, primary_key=True,
+                                     related_name='battalion_testsstructures')
+    tests_structures_content = models.JSONField(null=True)
+
+    def __str__(self):
+        return str(self.battalion)
+
+# תכנון מול ביצוע
+class Compliances(TruncateTableMixin, models.Model):
+    class Meta:
+        verbose_name = 'compliance'
+        verbose_name_plural = 'compliances'
+        ordering = ['week']
+    week = models.SmallIntegerField(default=0)
+    platoon = models.ForeignKey(Platoons, on_delete=models.CASCADE, default=1, related_name='platoon_compliences')
+    extra_done = models.TextField(blank=True, null=True)
+    not_done = models.TextField(blank=True, null=True)
+    conclusion = models.TextField(blank=True, null=True)
+
+    def __str__(self):
+        return str(self.week) + " : " + str(self.platoon)
+
+# קורסים
+class Courses(TruncateTableMixin, models.Model):
+    class Meta:
+        verbose_name = 'course'
+        verbose_name_plural = 'courses'
+        ordering = ['course_name']
+    training_web = models.ForeignKey(TrainingWeb, on_delete=models.CASCADE, default=1,
+                                     related_name='training_web_courses')
+    instructor = models.ManyToManyField(Instructors, default=[1],
+                                        related_name='instructor_courses')
+    course_name = models.CharField(max_length=50, default='', blank=True, null=True)
+    start_date = models.DateField(default=timezone.now)
+    end_date = models.DateField(default=timezone.now)
 
 # חייל
 class Soldiers(TruncateTableMixin, models.Model):
@@ -72,38 +136,62 @@ class Soldiers(TruncateTableMixin, models.Model):
 
     training_web = models.ForeignKey(TrainingWeb, on_delete=models.CASCADE, default=1,
                                      related_name='training_web_soldiers')
-    squad = models.ForeignKey(Squads, on_delete=models.CASCADE, default=1, related_name='squad_soldiers')
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, primary_key=True,
+                                related_name='user_training')
+    platoon = models.ForeignKey(Platoons, on_delete=models.CASCADE, null=True, related_name='platoon_soldiers')
+    course = models.ManyToManyField(Courses, default=[1],
+                                    related_name='course_soldiers')
+    #
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
+    is_confirmed = models.BooleanField(default=True)
+    #
     first_name = models.CharField(max_length=50, default='', blank=True, null=True)
     last_name = models.CharField(max_length=50, default='', blank=True, null=True)
-    user_id = models.CharField(max_length=100, default='', blank=True, null=True)
-    rank = models.SmallIntegerField(default=0)
+    image = models.ImageField(upload_to='training/%Y/%m/%d/', blank=True, null=True)
+    userid = models.CharField(max_length=100, default='', blank=True, null=True)
+    #
+    mz4psn = models.CharField(max_length=100, default='', blank=True, null=True)
+    ramonsn = models.CharField(max_length=100, default='', blank=True, null=True)
+    #
+    address = models.CharField(max_length=100, default='', blank=True, null=True)
+    city = models.CharField(max_length=50, default='', blank=True, null=True)
+    state = models.CharField(max_length=50, default='', blank=True, null=True)
+    zip = models.CharField(max_length=50, default='', blank=True, null=True)
+    country = models.CharField(max_length=50, default='', blank=True, null=True)
+    #
     email = models.CharField(max_length=50, default='', blank=True, null=True)
     phone = models.CharField(max_length=50, default='', blank=True, null=True)
-    address = models.CharField(max_length=100, default='', blank=True, null=True)
-    country = models.CharField(max_length=50, default='', blank=True, null=True)
-    state = models.CharField(max_length=50, default='', blank=True, null=True)
-    city = models.CharField(max_length=50, default='', blank=True, null=True)
-    blood_type =  models.CharField(max_length=10, default='', blank=True, null=True)
-
+    #
     birthday = models.DateField(blank=True, null=True)
-
-    marital_status = models.SmallIntegerField(default=0)
     num_of_children = models.SmallIntegerField(default=0)
+    marital_status = models.SmallIntegerField(default=0)
     shirt_size = models.SmallIntegerField(default=0)
     pant_size = models.SmallIntegerField(default=0)
     shoes_size = models.SmallIntegerField(default=0)
     height = models.SmallIntegerField(default=0)
     weight = models.SmallIntegerField(default=0)
+    blood_type =  models.CharField(max_length=10, default='', blank=True, null=True)
+    #
+    position = models.SmallIntegerField(default=0)
+    rank = models.SmallIntegerField(default=0)
     profession = models.SmallIntegerField(default=0)
     sub_profession = models.SmallIntegerField(default=0)
-
-    # discipline = models.SmallIntegerField(default=0)
-    # strength = models.SmallIntegerField(default=0)
-
+    #
     medical_condition = models.TextField(blank=True, null=True)
 
     def __str__(self):
-        return str(self.user_id) + ": " + str(self.first_name) + " " + str(self.last_name)
+        return str(self.userid) + ": " + str(self.first_name) + " " + str(self.last_name)
+
+#
+class Tests(TruncateTableMixin, models.Model):
+    class Meta:
+        verbose_name = 'test'
+        verbose_name_plural = 'tests'
+
+    soldier = models.ForeignKey(Soldiers, on_delete=models.CASCADE, default=1, related_name='soldier_tests')
+    test = models.PositiveSmallIntegerField(default=0)
+    grade = models.PositiveSmallIntegerField(default=0)
 
 
 class DoubleShoot(TruncateTableMixin, models.Model):
@@ -127,15 +215,6 @@ class TimeDim(TruncateTableMixin, models.Model):
 
 
 # class PlanningVsExecution(TruncateTableMixin, models.Model):
-
-
-# class TestsDim(TruncateTableMixin, models.Model):
-#     class Meta:
-#         verbose_name = 'test'
-#         verbose_name_plural = 'tests'
-#
-#     test_name = models.CharField(max_length=50, default='', blank=True, null=True)
-#     test_content = models.JSONField(null=True)
 
 
 class SoldierFact(TruncateTableMixin, models.Model):
@@ -168,16 +247,16 @@ class SoldierFact(TruncateTableMixin, models.Model):
 # בעיות רפואיות - פרט
 
 # מפקד
-class Officer(TruncateTableMixin, models.Model):
-    training_web = models.ForeignKey(TrainingWeb, on_delete=models.CASCADE, default=1,
-                                     related_name='training_web_officers')
-    first_name = models.CharField(max_length=50, default='', blank=True, null=True)
-    last_name = models.CharField(max_length=50, default='', blank=True, null=True)
-    email = models.CharField(max_length=50, default='', blank=True, null=True)
-    phone = models.CharField(max_length=50, default='', blank=True, null=True)
-    address = models.CharField(max_length=100, default='', blank=True, null=True)
-    user_id = models.CharField(max_length=100, default='', blank=True, null=True)
-
-    def __str__(self):
-        return self.first_name+" "+self.last_name
+# class Officer(TruncateTableMixin, models.Model):
+#     training_web = models.ForeignKey(TrainingWeb, on_delete=models.CASCADE, default=1,
+#                                      related_name='training_web_officers')
+#     first_name = models.CharField(max_length=50, default='', blank=True, null=True)
+#     last_name = models.CharField(max_length=50, default='', blank=True, null=True)
+#     email = models.CharField(max_length=50, default='', blank=True, null=True)
+#     phone = models.CharField(max_length=50, default='', blank=True, null=True)
+#     address = models.CharField(max_length=100, default='', blank=True, null=True)
+#     user_id = models.CharField(max_length=100, default='', blank=True, null=True)
+#
+#     def __str__(self):
+#         return self.first_name+" "+self.last_name
 

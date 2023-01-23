@@ -1,8 +1,10 @@
 from django.shortcuts import render
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import ugettext_lazy as _, get_language
 from django.core.management import call_command
 from django.apps import apps
 from django.http import JsonResponse
+from django.conf import settings
+import os
 from django.utils.dateparse import parse_date
 from django.contrib.auth.models import User
 from ..actions.utils import create_action
@@ -134,7 +136,7 @@ def activate_function(request):
         dic_ = request.POST["dic"]
         dic_ = eval(dic_)
         # print("core: 9111-1: dic\n", dic_, "-"*50)
-
+        #
         obj_ = dic_["obj"]
         atm_ = dic_["atm"]
         app_ = dic_["app"]
@@ -240,11 +242,14 @@ def update_field_model_by_id(request, foreign=None):
             obj = \
             model.objects.filter(translations__language_code=get_language()).filter(translations__slug=obj_slug).all()[0]
         except Exception as er:
-            obj = model.objects.get(id=pkey_)
+            p_key_field_name = model._meta.pk.name
+            obj = eval('model.objects.get('+p_key_field_name+'=pkey_)')
+            # print("obj: ", obj)
+            # obj = model.objects.get(id=pkey_)
 
-    # print('9088  obj')
+    # print('9088-1  obj')
     # print(obj)
-    # print('9088  obj')
+    # print('9088-1  obj')
 
     try:
         for f in fields_:
@@ -265,7 +270,6 @@ def update_field_model_by_id(request, foreign=None):
                         except Exception as ex:
                             print("Error 9072 " + ex)
 
-                    print(9089)
                     return JsonResponse({'status': 'ok', "record_id": obj.id})
             except Exception as ex:
                 print("Error 4500-1 core update_field_model_by_id: "+str(ex))
@@ -314,7 +318,19 @@ def update_field_model_by_id(request, foreign=None):
             obj.save()
         except Exception as eex:
             print("Error 850: "+str(eex))
-        return JsonResponse({'status': 'ok', "record_id": obj.id})
+
+        # print(('obj.' + p_key_field_name+".id"))
+        # ooo = eval('obj.' + p_key_field_name+".id")
+        # print(ooo)
+        # isinstance(obj_id, User)
+
+        try:
+            obj_id = eval('obj.' + p_key_field_name)
+            obj_id = int(obj_id)
+        except Exception as ex:
+            obj_id = eval('obj.' + p_key_field_name + ".id")
+        # print(p_key_field_name, obj_id)
+        return JsonResponse({'status': 'ok', "record_id": obj_id})
     except Exception as e:
         log_debug("erro600 " + str(e))
         return JsonResponse({'status': 'ko'})
@@ -323,23 +339,31 @@ def update_field_model_by_id(request, foreign=None):
 def get_data_link(request):
     dic_ = request.POST["dic"]
     dic_ = eval(dic_)
-    # try:
-    #     print('9050 core views get_data_link dic_= ', dic_, '\n', dic_["fields"])
-    # except Exception as ex:
-    #     pass
+    try:
+        print('9050-1 core views get_data_link dic_= ', dic_, '\n', dic_["fields"])
+    except Exception as ex:
+        pass
 
     multiple_select_fields = None
     if "multiple_select_fields" in dic_:
         if len(dic_["multiple_select_fields"]) > 0:
             multiple_select_fields = dic_["multiple_select_fields"]
-    if "id" not in dic_["fields"]:
-        dic_["fields"].insert(0, "id")
+
     app_ = dic_['app']
     model_ = dic_['model']
     # print("model_: "+model_)
     if model_ == "":
         dic = {'status': 'ko', "dic": {}}
         return JsonResponse(dic)
+
+    model = apps.get_model(app_label=app_, model_name=model_)
+
+    p_key_field_name = model._meta.pk.name
+    # if model.model_field_exists(p_key_field_name):
+    dic_["fields"].insert(0, p_key_field_name)
+    # if model.model_field_exists('id'):
+    #     if "id" not in dic_["fields"]:
+    #         dic_["fields"].insert(0, "id")
 
     fields_str = '"'
     for f in dic_["fields"]:
@@ -354,8 +378,6 @@ def get_data_link(request):
     # print("9030")
     # print(fields_str)
     # print("=2"*50)
-
-    model = apps.get_model(app_label=app_, model_name=model_)
 
     # fields_ = model._meta.get_fields(include_parents=True, include_hidden=True)
     # print(fields_)
@@ -419,6 +441,8 @@ def get_data_link(request):
         else:
             s = 'model.objects'
         # print('90500 s '+s)
+
+    # print("9030-2")
     try:
         for f in filters:
             filter_field_ = f
@@ -452,9 +476,10 @@ def get_data_link(request):
         data = eval(s)
         # print(data)
     except Exception as ex:
-        print("error 300 "+str(ex))
+        print("3030-1 core error 300 "+str(ex))
         # pass
 
+    # print("9030-3")
     dic = {}
     if multiple_select_fields:
         for z in multiple_select_fields:
@@ -485,6 +510,7 @@ def get_data_link(request):
         print(ex)
 
     # print("=2"*50)
+    dic["pkf_name"] = p_key_field_name
     # print(dic)
     # print("=2"*50)
 
@@ -523,6 +549,19 @@ def upload_file(request):
         function_name_ = request.POST['function_name']
         topic_id_ = request.POST['topic_id']
         folder_type_ = request.POST['folder_type']
+        if folder_type_ == "media":
+            # print("media")
+            data_dir = settings.MEDIA_ROOT + '/'+topic_id_
+            upload_file_ = request.FILES['drive_file']
+            os.makedirs(data_dir, exist_ok=True)
+            filename = request.POST['filename']
+            file_path = os.path.join(data_dir, filename)
+            print(file_path)
+            with open(file_path, 'wb+') as destination:
+                for c in upload_file_.chunks():
+                    destination.write(c)
+            ret['status'] = "ok"
+            return HttpResponse(json.dumps(ret))
         # print("9005-16", folder_type_, "\n", "-"*30)
         #
         dimensions_ = request.POST['dimensions']
