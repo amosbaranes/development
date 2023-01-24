@@ -7,6 +7,8 @@ import pandas as pd
 from django.apps import apps
 from openpyxl import Workbook, load_workbook
 import math
+import time
+import shutil
 #
 from ...core.utils import Debug
 #
@@ -178,6 +180,9 @@ class BasePotentialAlgo(object):
         # print("9015 BasePotentialAlgo process_algo\n", dic)
         app_ = dic["app"]
         fact_model_name_ = dic["fact_model"]
+        dependent_group = dic["dependent_group"]
+        do_not_include_groups = ["General"]
+        print(dependent_group)
         min_max_model_name_ = dic["min_max_model"]
         measure_group_model_name_ = dic["measure_group_model"]
         model_fact = apps.get_model(app_label=app_, model_name=fact_model_name_)
@@ -207,10 +212,16 @@ class BasePotentialAlgo(object):
         similarity_n1.columns = self.options
         similarity_n2.columns = self.options
         group_d = ""
+        ll_groups = [dependent_group]
         for k in groups:
             group = k.group_name
-            # print("="*50)
-            # print(group)
+            if group not in ll_groups and group not in do_not_include_groups:
+                ll_groups.append(group)
+        lll_groups = []  # this will have only the groups that do not have problems
+        for k in ll_groups:
+            group = k #.group_name
+            print("="*50)
+            print(group)
             # print("="*50)
             try:
                 self.save_to_file = os.path.join(self.TO_EXCEL_OUTPUT, str(dic["time_dim_value"]) + "_" + group + "_o.xlsx")
@@ -406,7 +417,6 @@ class BasePotentialAlgo(object):
                     df_n2 = a_2.apply(self.min_max_rule, axis=1)
                     df_n2.columns = ['min-n2', 'max-n2']
                     df_1_2 = pd.merge(left=df_n1, right=df_n2, left_index=True, right_index=True)
-
                 # print("50001-3")
 
                 df_1_2.columns = ['min-n1', 'max-n1', 'min-n2', 'max-n2']
@@ -425,7 +435,7 @@ class BasePotentialAlgo(object):
             df_n1_.columns = ['m-' + group, 'x-' + group]
             df_n2_ = df_n2.copy()
             df_n2_.columns = ['m-' + group, 'x-' + group]
-            if nn__ == 0:
+            if group == dependent_group:
                 ss_n_mm = ""
                 ss_n_xm = ""
                 ss_n_mx = ""
@@ -433,7 +443,6 @@ class BasePotentialAlgo(object):
                 group_d = group
                 df_n1_all = df_n1_
                 df_n2_all = df_n2_
-                nn__ += 1
             else:
                 # print(group_d, group)
                 group_d, group, df_n1_all, df_n2_all, df_n1_, df_n2_, sign_n1, sign_n2, similarity_n1, similarity_n2 = \
@@ -443,7 +452,7 @@ class BasePotentialAlgo(object):
                 ss_n_mx += '"' + group_d + '-' + group + '-mx",'
                 ss_n_xm += '"' + group_d + '-' + group + '-xm",'
                 ss_n_xx += '"' + group_d + '-' + group + '-xx",'
-
+            lll_groups.append(group)
         ss_n_mm = ss_n_mm[:-1]
         ss_n_mx = ss_n_mx[:-1]
         ss_n_xm = ss_n_xm[:-1]
@@ -462,31 +471,34 @@ class BasePotentialAlgo(object):
         for n in ["1", "2"]:
             nn__ = 0
             llg = []
-            for k in groups:
-                group = k.group_name
-                print("-"*10)
-                print(group)
-                if nn__ > 0:
-                    ll = []
-                    for z in self.options:
-                        s_ = "df_n" + n + "_all['dc_" + group + "_" + z + "'] = abs("
-                        s_ += "df_n" + n + "_all['d_" + z + "'] - "
-                        s_ += "df_n" + n + "_all['" + group_d + "-" + group + "-" + z + "'])"
-                        exec(s_)
-                        # print('ll.append(1-df_n'+n+'_all["dc_'+group+'_' + z+'"].mean())')
-                        exec('ll.append(1-df_n' + n + '_all["dc_' + group + '_' + z + '"].mean())')
+            for k in lll_groups:
+                try:
+                    group = k #.group_name
+                    print("-"*10)
+                    print(group)
+                    if nn__ > 0:
+                        ll = []
+                        for z in self.options:
+                            s_ = "df_n" + n + "_all['dc_" + group + "_" + z + "'] = abs("
+                            s_ += "df_n" + n + "_all['d_" + z + "'] - "
+                            s_ += "df_n" + n + "_all['" + group_d + "-" + group + "-" + z + "'])"
+                            exec(s_)
+                            # print('ll.append(1-df_n'+n+'_all["dc_'+group+'_' + z+'"].mean())')
+                            exec('ll.append(1-df_n' + n + '_all["dc_' + group + '_' + z + '"].mean())')
 
-                    llc = [x - 0.7 for x in ll]
-                    llg.append(llc)
-                    llc = llc / sum(llc)
-                    exec("contribution_n" + n + ".loc[group] = ll")
-                else:
-                    nn__ += 1
-
+                        llc = [x - 0.7 for x in ll]
+                        llg.append(llc)
+                        llc = llc / sum(llc)
+                        exec("contribution_n" + n + ".loc[group] = ll")
+                    else:
+                        nn__ += 1
+                except Exception as ex:
+                    print("Error 50008-8: " + str(ex))
+            print("="*100)
             self.add_to_save_all(title="all-n" + n, a=eval("df_n" + n + "_all"), cols=-1)
             exec("contribution_n" + n + ".columns = self.options")
             exec("contribution_n" + n + ".drop([0], axis=0, inplace=True)")
-            # print("="*50)
+            print("=1"*50)
             npg = np.array(llg)
             npgs = np.sum(llg, axis=0)
             df_relimp = pd.DataFrame(npg/npgs, index=contribution_n1.index)
@@ -494,38 +506,8 @@ class BasePotentialAlgo(object):
             # print(df_relimp)
             self.add_to_save_all(title='contribution-n' + n, a=eval("contribution_n" + n), cols=-1)
             self.add_to_save_all(title='relimp-n' + n, a=df_relimp, cols=-1)
-        # for n in ["1", "2"]:
-        #     nn__ = 0
-        #     for k in groups:
-        #         group = k.group_name
-        #         print("-"*10)
-        #         print(group)
-        #         if nn__ > 0:
-        #             ll = []
-        #             for z in self.options:
-        #                 s_ = "df_n" + n + "_all['dc_" + group + "_" + z + "'] = abs("
-        #                 s_ += "df_n" + n + "_all['d_" + z + "'] - "
-        #                 s_ += "df_n" + n + "_all['" + group_d + "-" + group + "-" + z + "'])"
-        #                 exec(s_)
-        #                 # print('ll.append(1-df_n'+n+'_all["dc_'+group+'_' + z+'"].mean())')
-        #                 exec('ll.append(1-df_n' + n + '_all["dc_' + group + '_' + z + '"].mean())')
-        #             llc = [x - 0.7 for x in ll]
-        #             llc = llc / sum(llc)
-        #             exec("contribution_n" + n + ".loc[group] = ll")
-        #             exec("relimp_n" + n + ".loc[group] = llc")
-        #         else:
-        #             nn__ += 1
-        #     self.add_to_save_all(title="all-n" + n, a=eval("df_n" + n + "_all"), cols=-1)
-        #     exec("contribution_n" + n + ".columns = self.options")
-        #     exec("relimp_n" + n + ".columns = self.options")
-        #     exec("contribution_n" + n + ".drop([0], axis=0, inplace=True)")
-        #     exec("relimp_n" + n + ".drop([0], axis=0, inplace=True)")
-        #     # print(eval("contribution_n"+n))
-        #     # print(eval("relimp_n"+n))
-        #     self.add_to_save_all(title='contribution-n' + n, a=eval("contribution_n" + n), cols=-1)
-        #     self.add_to_save_all(title='relimp-n' + n, a=eval("relimp_n" + n), cols=-1)
+            print("=2"*50)
         self.save_to_excel_all_(dic["time_dim_value"])
-
         result = {"status": "ok"}
         return result
 

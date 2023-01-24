@@ -1,5 +1,7 @@
 import warnings
 import os
+from pathlib import Path
+#
 from django.conf import settings
 from django.contrib.auth.models import Group
 import matplotlib as mpl
@@ -10,11 +12,15 @@ from django.apps import apps
 import pandas as pd
 import numpy as np
 #
+import time
+import shutil
+#
 import string
 # from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
 #
+from openpyxl import Workbook  #, load_workbook
 
 
 from .models import Soldiers, DoubleShoot as DoubleShootModel
@@ -98,10 +104,60 @@ class BaseTrainingAlgo(object):
         # super(BaseTrainingAlgo, self).__init__()
         # print("90050-02 BaseTrainingAlgo", dic, '\n', '-'*50)
         app_ = dic["app"]
+        self.excel_dir = settings.MEDIA_ROOT + '/'+app_+'/excel'
+        os.makedirs(self.excel_dir, exist_ok=True)
+        self.save_to_file = None
+        self.second_time_save = ''
+
+
+    def save_to_excel(self, df, folder, file_name=None):
+        if file_name:
+            self.save_to_file = os.path.join(self.excel_dir, file_name)
+
+        # create a Path object with the path to the file
+        path = Path(self.save_to_file)
+        if not path.is_file():
+            wb2 = Workbook()
+            wb2.save(self.save_to_file)
+            wb2.close()
+
+        df2 = df.copy()
+        # print(self.save_to_file + ' -Before sleep save_to_excel- ' + folder)
+        total, used, free = shutil.disk_usage("/")
+        # print(' total: ' + str(total) + ' used: ' + str(used) + ' free: ' + str(free))
+
+        nnn = 0
+        try:
+            with pd.ExcelWriter(self.save_to_file, engine='openpyxl', mode='a') as writer_:
+                df2.to_excel(writer_, sheet_name=folder)
+                writer_.save()
+                time.sleep(5)
+            if self.second_time_save != '':
+                print("save ok:", self.second_time_save)
+            self.second_time_save = ''
+            nnn = 1
+        except Exception as ee:
+            print(ee)
+            time.sleep(5)
+            self.save_to_excel(df2, folder)
+            self.second_time_save = self.save_to_file
+            nnn = 1
+        finally:
+            if nnn == 0:
+                print(self.save_to_file + ' 55 finally -' + str(nnn) + ' - ' + folder)
+                time.sleep(5)
+                print(self.save_to_file + ' 551 finally -' + str(nnn) + ' - ' + folder)
+                self.save_to_excel(df2, folder)
+                self.second_time_save = self.save_to_file
+
+
 
 class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
     def __init__(self, dic):
         super().__init__(dic)
+
+        self.df_positions = pd.DataFrame.from_dict({"id" :[1,2,3,4,5,0],
+                                          "position_name": ["captain","officer","soldier","colonel","sous officer","Other"]})
 
     def set_soldiers(self, dic):
         print('90022-1 dic', dic)
@@ -114,7 +170,33 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
 
         model_name_ = "instructors"
         model_instructors = apps.get_model(app_label=app_, model_name=model_name_)
-        instructor_obj, is_created = model_instructors.objects.get_or_create(first_name='default_instructor1')
+
+        try:
+            u = User.objects.get(username="dinstructor")
+            count = u.delete()
+            # print("B count\n", count, "\n")
+        except Exception as ex:
+            pass
+            # print("9055-55 Error " + str(ex))
+
+        my_group, is_created = Group.objects.get_or_create(name='t_simple_user')
+        try:
+            u = User.objects.create_user(username="dinstructor", email='dinstructor@gmail.com', password='DINSTRUCTOR123#')
+            print(u.password)
+            u.first_name = "dinstructor"
+            u.last_name = "dinstructor"
+            u.save()
+            # print(u)
+            my_group.user_set.add(u)
+            my_group.save()
+        except Exception as ex:
+            print("9000-00 Error " + str(ex))
+
+        try:
+            instructor_obj, is_created = model_instructors.objects.get_or_create(first_name='default_instructor1',
+                                                                                 user=u)
+        except Exception as ex:
+            print("9001-01 Error " + str(ex))
         # print("-"*100, "\n", instructor_obj, "  =", is_created, "\n", "-"*100)
 
         model_name_ = "brigades"
@@ -142,7 +224,6 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
         model_squads = apps.get_model(app_label=app_, model_name=model_name_)
         model_name_ = "soldiers"
         model_soldier = apps.get_model(app_label=app_, model_name=model_name_)
-        my_group, is_created = Group.objects.get_or_create(name='t_simple_user')
         # model_user = get_user_model()
         # ll = []
         # ll_ = []
@@ -303,6 +384,22 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
         print(df)
         print("-" * 100)
 
+        # model_name_ = "companys"
+        # model_companys = apps.get_model(app_label=app_, model_name=model_name_)
+        # model_name_ = "platoons"
+        # model_platoons = apps.get_model(app_label=app_, model_name=model_name_)
+        # model_name_ = "soldiers"
+        # model_soldier = apps.get_model(app_label=app_, model_name=model_name_)
+        # for index, row in df.iterrows():
+        #     soldier_obj = model_soldier.objects.get(ramonsn=str(row["RAMONSN"]))
+        #     soldier_obj.mz4psn = str(row["MZ4PSN"])
+        #     platoon_obj = model_platoons.objects.get(company__company_name=str(row["COMPANY"]),
+        #                                                  platoon_name=str(row["PLATOON"]))
+        #     soldier_obj.platoon = platoon_obj
+        #
+        #     soldier_obj.save()
+
+
         result = {"status": "ok"}
         return result
 
@@ -326,6 +423,36 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
         df = pd.read_excel(file_path, sheet_name="Data", header=0)
         print(df)
         print("-" * 100)
+
+        result = {"status": "ok"}
+        return result
+
+    def daily_run(self, dic):
+        print(dic)
+        app_ = dic["app"]
+        model_name_ = "soldiers"
+        model_soldier = apps.get_model(app_label=app_, model_name=model_name_)
+        model_name_ = "platoons"
+        model_platoon = apps.get_model(app_label=app_, model_name=model_name_)
+
+        qs = model_platoon.objects.all()
+        df_p = pd.DataFrame(list(qs.values("id", "platoon_name")))
+        qs = model_soldier.objects.all()
+        df = pd.DataFrame(list(qs.values("platoon_id","is_confirmed","first_name","last_name","image",
+                                         "userid","mz4psn","ramonsn","address","city","state","zip","country",
+                                         "email","phone","birthday","num_of_children","marital_status","shirt_size",
+                                         "pant_size","shoes_size","height","weight","blood_type","position","rank",
+                                         "profession","sub_profession","medical_condition")))
+        dfm = df.merge(df_p, left_on='platoon_id', right_on='id')
+        dfm = dfm.drop(["platoon_id", "id"], axis=1)
+        # print(dfm.iloc[0])
+        # print("="*20)
+        dfm = dfm.merge(self.df_positions, left_on='position', right_on='id')
+        dfm = dfm.drop(["position", "id"], axis=1)
+
+        # print(dfm.iloc[0])
+        # print("="*20)
+        self.save_to_excel(dfm, "SoldiersList", file_name="daily_run.xlsx")
 
         result = {"status": "ok"}
         return result
