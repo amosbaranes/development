@@ -20,7 +20,7 @@ import string
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
 #
-from openpyxl import Workbook  #, load_workbook
+from openpyxl import Workbook, load_workbook
 
 
 from .models import Soldiers, DoubleShoot as DoubleShootModel
@@ -109,23 +109,29 @@ class BaseTrainingAlgo(object):
         self.save_to_file = None
         self.second_time_save = ''
 
-
     def save_to_excel(self, df, folder, file_name=None):
         if file_name:
             self.save_to_file = os.path.join(self.excel_dir, file_name)
-
-        # create a Path object with the path to the file
-        path = Path(self.save_to_file)
-        if not path.is_file():
-            wb2 = Workbook()
-            wb2.save(self.save_to_file)
-            wb2.close()
-
-        df2 = df.copy()
-        # print(self.save_to_file + ' -Before sleep save_to_excel- ' + folder)
-        total, used, free = shutil.disk_usage("/")
-        # print(' total: ' + str(total) + ' used: ' + str(used) + ' free: ' + str(free))
-
+        # print(self.save_to_file)
+        try:
+            # create a Path object with the path to the file
+            path = Path(self.save_to_file)
+            if not path.is_file():
+                wb2 = Workbook()
+                wb2.save(self.save_to_file)
+                wb2.close()
+            else:
+                wb = load_workbook(filename=self.save_to_file, read_only=False)
+                sheet_names = wb.sheetnames
+                for f in sheet_names:
+                    if f == folder:
+                        wb.remove(wb[folder])
+                        wb.save(self.save_to_file)
+                        break
+            df2 = df.copy()
+            total, used, free = shutil.disk_usage("/")
+        except Exception as ee:
+            print("90555-52 Error objects save_to_excel: "+str(ee))
         nnn = 0
         try:
             with pd.ExcelWriter(self.save_to_file, engine='openpyxl', mode='a') as writer_:
@@ -136,8 +142,9 @@ class BaseTrainingAlgo(object):
                 print("save ok:", self.second_time_save)
             self.second_time_save = ''
             nnn = 1
+            # print("OK")
         except Exception as ee:
-            print(ee)
+            print("90555-12 Error objects save_to_excel: "+str(ee))
             time.sleep(5)
             self.save_to_excel(df2, folder)
             self.second_time_save = self.save_to_file
@@ -165,8 +172,8 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
         file_path = self.upload_file(dic)["file_path"]
         print("-"*100, "\n", file_path, "\n", "-"*100)
         df = pd.read_excel(file_path, sheet_name="Data", header=0)
-        print(df)
-        print("-"*100)
+        # print(df)
+        # print("-"*100)
 
         model_name_ = "instructors"
         model_instructors = apps.get_model(app_label=app_, model_name=model_name_)
@@ -182,7 +189,7 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
         my_group, is_created = Group.objects.get_or_create(name='t_simple_user')
         try:
             u = User.objects.create_user(username="dinstructor", email='dinstructor@gmail.com', password='DINSTRUCTOR123#')
-            print(u.password)
+            # print(u.password)
             u.first_name = "dinstructor"
             u.last_name = "dinstructor"
             u.save()
@@ -235,7 +242,7 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
         # llfn_ = []
         n__ = 0
         for index, row in df.iterrows():
-            if n__ > 1000:
+            if n__ > 10:
                 break
             n__ += 1
             # print(row, "\n", row["COMPANY"])
@@ -326,20 +333,13 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
                 soldier.first_name = first_name
                 soldier.last_name = last_name
                 soldier.userid = username_
-
-                if position.lower().strip() == "captain":
-                    position = 1
-                elif position.lower().strip() == "officer":
-                    position = 2
-                elif position.lower().strip() == "soldier":
-                    position = 3
-                elif position.lower().strip() == "colonel":
-                    position = 4
-                elif position.lower().strip() == "sous officer":
-                    position = 5
-                else:
-                    position = 0
-
+                try:
+                    p_ = position.lower().strip()
+                    if p_ == "":
+                        p_ = "Other"
+                    position = int(self.df_positions[self.df_positions["position_name"]==p_]["id"])
+                except Exception as ex:
+                    print("90888-66 Training objects set_soldiers Error: " +str(ex))
                 soldier.position = position
                 soldier.mz4psn = mz4psn
                 soldier.ramonsn = ramonsn
@@ -428,7 +428,7 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
         return result
 
     def daily_run(self, dic):
-        print(dic)
+        # print(dic)
         app_ = dic["app"]
         model_name_ = "soldiers"
         model_soldier = apps.get_model(app_label=app_, model_name=model_name_)
