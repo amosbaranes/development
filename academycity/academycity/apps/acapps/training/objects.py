@@ -242,7 +242,7 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
         # llfn_ = []
         n__ = 0
         for index, row in df.iterrows():
-            if n__ > 10:
+            if n__ > 1000:
                 break
             n__ += 1
             # print(row, "\n", row["COMPANY"])
