@@ -270,12 +270,9 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
             squad_obj.save()
             # print("-"*100, "\n", squad_obj, "  ", is_created, "\n", "-"*100)
             full_name = string.capwords(str(row["FULLNAME"]))
-            first_name = full_name.split(" ")[0]
-            last_name = ""
-            try:
-                last_name = full_name.split(" ")[1]
-            except Exception as ex:
-                print("9077-77 No last name: "+str(ex))
+            nn__ = full_name.find(" ")
+            first_name = full_name[:nn__]
+            last_name = full_name[nn__+1:]
             mz4psn = str(row["MZ4PSN"])
             ramonsn = str(row["RAMONSN"])
             # if mz4psn not in ll:
@@ -337,6 +334,8 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
                     p_ = position.lower().strip()
                     if p_ == "":
                         p_ = "Other"
+                    elif p_ == "OFFICIER".lower():
+                        p_ = "officer"
                     position = int(self.df_positions[self.df_positions["position_name"]==p_]["id"])
                 except Exception as ex:
                     print("90888-66 Training objects set_soldiers Error: " +str(ex))
