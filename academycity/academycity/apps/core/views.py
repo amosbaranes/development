@@ -150,6 +150,7 @@ def activate_function(request):
         dic = {'status': 'ok', 'result': result}
         # print("core\n", "9015: dic=\n", dic, "\n", "-"*50)
     except Exception as ex:
+        print("90265-55 Error core activate_function: "+str(ex))
         dic = {'status': 'ko', 'result': "{}"}
     return JsonResponse(dic)
 
@@ -157,12 +158,9 @@ def activate_function(request):
 def update_field_model_by_id(request, foreign=None):
     # log_debug("update_field_model_by_id 0")
     dic_ = request.POST["dic"]
-    print('-1'*50)
-    print('update_field_model_by_id: dic_')
-    print(dic_)
-    print('-1'*50)
+    # print('-1'*50)
+    # print('9055-67 core update_field_model_by_id: dic_', dic_, "\n", '-'*50)
     # log_debug(dic_)
-    # print('dic_')
     dic_ = eval(dic_)
     app_ = dic_['app']
     model_ = dic_['model']
@@ -174,6 +172,7 @@ def update_field_model_by_id(request, foreign=None):
     parent_model = apps.get_model(app_label=app_, model_name=app_+"web")
     company_obj = parent_model.objects.get(id=company_obj_id_)
     model = apps.get_model(app_label=app_, model_name=model_)
+    p_key_field_name = ""
     if pkey_ == "new":
         s = ""
         if model.model_field_exists(app_+'_web') and isinstance(model._meta.get_field(app_+'_web'), ForeignKey):
@@ -199,8 +198,9 @@ def update_field_model_by_id(request, foreign=None):
             foreign_keys = dic_["foreign_keys"]
             # print("9046 ")
             for k in foreign_keys:
-                t_obj = apps.get_model(app_label=app_, model_name=foreign_keys[k]["foreign_table"])
-                obj__ = t_obj.objects.get(id=int(foreign_keys[k]["value"]))
+                t_model = apps.get_model(app_label=app_, model_name=foreign_keys[k]["foreign_table"])
+                p_key_field_name = t_model._meta.pk.name
+                obj__ = t_model.objects.get(id=int(foreign_keys[k]["value"]))
                 # print("=6"*10)
                 # print(obj__)
                 # print("=6"*10)
@@ -219,12 +219,9 @@ def update_field_model_by_id(request, foreign=None):
             # print("save with fkey error " + str(ex))
         s += ')'
         try:
-            # print("9050\n" + s)
+            # print("9055-89\n" + s, "\n", "-"*30)
             obj = eval(s)
-            # print("9051\n" + s)
-
             # print("9042 "+str(model._meta.get_field(app_ + '_web')))
-
             if model.model_field_exists(app_ + '_web') and isinstance(model._meta.get_field(app_ + '_web'), ManyToManyField):
                 s = "obj."+app_ + '_web.add(company_obj)'
                 # print("9035\n", s)
@@ -319,17 +316,18 @@ def update_field_model_by_id(request, foreign=None):
         except Exception as eex:
             print("Error 850: "+str(eex))
 
-        # print(('obj.' + p_key_field_name+".id"))
-        # ooo = eval('obj.' + p_key_field_name+".id")
-        # print(ooo)
-        # isinstance(obj_id, User)
+        if p_key_field_name != "":
+            # print(('obj.' + p_key_field_name+".id"))
+            # ooo = eval('obj.' + p_key_field_name+".id")
+            # print(ooo)
+            # isinstance(obj_id, User)
 
-        try:
-            obj_id = eval('obj.' + p_key_field_name)
-            obj_id = int(obj_id)
-        except Exception as ex:
-            obj_id = eval('obj.' + p_key_field_name + ".id")
-        # print(p_key_field_name, obj_id)
+            try:
+                obj_id = eval('obj.' + p_key_field_name)
+                obj_id = int(obj_id)
+            except Exception as ex:
+                obj_id = eval('obj.' + p_key_field_name + '.id')
+            # print(p_key_field_name, obj_id)
         return JsonResponse({'status': 'ok', "record_id": obj_id})
     except Exception as e:
         log_debug("erro600 " + str(e))
@@ -339,10 +337,10 @@ def update_field_model_by_id(request, foreign=None):
 def get_data_link(request):
     dic_ = request.POST["dic"]
     dic_ = eval(dic_)
-    try:
-        print('9050-1 core views get_data_link dic_= ', dic_, '\n', dic_["fields"])
-    except Exception as ex:
-        pass
+    # try:
+    #     print('9050-1 core views get_data_link dic_= ', dic_, '\n', dic_["fields"])
+    # except Exception as ex:
+    #     pass
 
     multiple_select_fields = None
     if "multiple_select_fields" in dic_:
@@ -359,11 +357,9 @@ def get_data_link(request):
     model = apps.get_model(app_label=app_, model_name=model_)
 
     p_key_field_name = model._meta.pk.name
-    # if model.model_field_exists(p_key_field_name):
-    dic_["fields"].insert(0, p_key_field_name)
-    # if model.model_field_exists('id'):
-    #     if "id" not in dic_["fields"]:
-    #         dic_["fields"].insert(0, "id")
+
+    if p_key_field_name not in dic_["fields"]:
+        dic_["fields"].insert(0, p_key_field_name)
 
     fields_str = '"'
     for f in dic_["fields"]:
@@ -373,12 +369,10 @@ def get_data_link(request):
         except Exception as ex:
             print("error 4000-1: "+str(ex))
     fields_str = fields_str[:len(fields_str)-2]
-    # print(fields_str)
 
     # print("9030")
     # print(fields_str)
     # print("=2"*50)
-
     # fields_ = model._meta.get_fields(include_parents=True, include_hidden=True)
     # print(fields_)
 
@@ -464,13 +458,12 @@ def get_data_link(request):
                 s += '.reverse()'
         if multiple_select_fields:
             ss__ = s+'.all()[:number_of_rows_]'
-            # print('ss__')
+            # print('ss__ for data__')
             # print(ss__)
             # print('ss__')
             data__ = eval(ss__)
-
         s += '.all()[:number_of_rows_].values('+fields_str+')'
-        # print('s111')
+        # print('s111 for data')
         # print(s)
         # print('s11')
         data = eval(s)
@@ -485,17 +478,19 @@ def get_data_link(request):
         for z in multiple_select_fields:
             dic[z] = []
             for q in data__:
+                model_z_name = z+"s"
+                model_z = apps.get_model(app_label=app_, model_name=model_z_name)
+                df = pd.DataFrame(model_z.objects.all().values())
+                p_key_field_z_name = model_z._meta.pk.name
+                if p_key_field_z_name != "id":
+                    p_key_field_z_name = p_key_field_z_name + "_id"
                 qs = eval('q.'+z+'.all()')
                 s = ""
                 for q_ in qs:
                     if s != "":
                         s += ","
-                    s += str(q_.id)
+                    s += str(eval('q_.'+p_key_field_z_name))
                 dic[z].append(s)
-    # print('data')
-    # print(data)
-    # print('data')
-
     try:
         for q in data:
             for f in dic_["fields"]:
@@ -551,7 +546,7 @@ def upload_file(request):
         folder_type_ = request.POST['folder_type']
         if folder_type_ == "media":
             # print("media")
-            data_dir = settings.MEDIA_ROOT + '/'+topic_id_
+            data_dir = settings.MEDIA_ROOT + '/' + app_ + '/' + topic_id_
             upload_file_ = request.FILES['drive_file']
             os.makedirs(data_dir, exist_ok=True)
             filename = request.POST['filename']

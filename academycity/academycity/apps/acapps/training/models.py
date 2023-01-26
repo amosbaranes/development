@@ -25,6 +25,11 @@ class Instructors(TruncateTableMixin, models.Model):
                                 related_name='training_user_instructors')
     first_name = models.CharField(max_length=50, default='', blank=True, null=True)
     last_name = models.CharField(max_length=50, default='', blank=True, null=True)
+    position = models.SmallIntegerField(default=0)
+
+    @property
+    def full_name(self):
+        return str(self.first_name) +": " + str(self.last_name)
 
     def __str__(self):
         return str(self.first_name) + " " + str(self.last_name)
@@ -46,6 +51,7 @@ class Battalions(TruncateTableMixin, models.Model):
                                         related_name='instructor_battalions')
     brigade = models.ForeignKey(Brigades, on_delete=models.CASCADE, default=1, related_name='brigade_battalions')
     battalion_name = models.CharField(max_length=50, default='', blank=True, null=True)
+    battalion_number = models.SmallIntegerField(default=1)
 
     def __str__(self):
         return str(self.battalion_name)
@@ -65,6 +71,11 @@ class Companys(TruncateTableMixin, models.Model):
 
 # צוות
 class Platoons(TruncateTableMixin, models.Model):
+    class Meta:
+        verbose_name = 'platoon'
+        verbose_name_plural = 'platoons'
+        ordering = ['company', 'platoon_number']
+
     training_web = models.ForeignKey(TrainingWeb, on_delete=models.CASCADE, default=1,
                                      related_name='training_web_platoons')
     instructor = models.ManyToManyField(Instructors, default=[1], related_name='instructor_platoons')
@@ -73,14 +84,23 @@ class Platoons(TruncateTableMixin, models.Model):
     platoon_name = models.CharField(max_length=50, default='', blank=True, null=True)
 
     def __str__(self):
-        return str(self.platoon_number) + ": " + str(self.platoon_name)
+        return str(self.platoon_name)
 
 # כיתה
 class Squads(TruncateTableMixin, models.Model):
+    class Meta:
+        verbose_name = 'squad'
+        verbose_name_plural = 'squads'
+        ordering = ['platoon', 'squad_name']
     training_web = models.ForeignKey(TrainingWeb, on_delete=models.CASCADE, default=1,
                                      related_name='training_web_squads')
     platoon = models.ForeignKey(Platoons, on_delete=models.CASCADE, null=True, related_name='platoon_squads')
     squad_name = models.CharField(max_length=50, default='', blank=True, null=True)
+    squad_number = models.SmallIntegerField(default=1)
+
+    @property
+    def complete_name(self):
+        return str(self.platoon.company.company_name) +": " + str(self.platoon.platoon_name) +": " + str(self.squad_name)
 
     def __str__(self):
         return str(self.squad_name)
@@ -109,6 +129,7 @@ class Compliances(TruncateTableMixin, models.Model):
     extra_done = models.TextField(blank=True, null=True)
     not_done = models.TextField(blank=True, null=True)
     conclusion = models.TextField(blank=True, null=True)
+    file_name = models.CharField(max_length=100, default='', blank=True, null=True)
 
     def __str__(self):
         return str(self.week) + " : " + str(self.platoon)

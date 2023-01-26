@@ -20,7 +20,7 @@ class BrigadesAdmin(admin.ModelAdmin):
 
 @admin.register(Battalions)
 class BattalionsAdmin(admin.ModelAdmin):
-    list_display = ('id', 'battalion_name')
+    list_display = ('id', 'battalion_name', 'battalion_number')
 
 @admin.register(Companys)
 class CompanysAdmin(admin.ModelAdmin):
@@ -28,7 +28,7 @@ class CompanysAdmin(admin.ModelAdmin):
 
 @admin.register(Platoons)
 class PlatoonsAdmin(admin.ModelAdmin):
-    list_display = ('id', 'platoon_name')
+    list_display = ('id', 'platoon_name', 'platoon_number')
 
 @admin.register(Squads)
 class SquadsAdmin(admin.ModelAdmin):

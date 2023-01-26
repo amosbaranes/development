@@ -87,8 +87,8 @@ class BaseDataProcessing(object):
         # print('-'*50)
 
     def upload_file(self, dic):
-        print("9002 BaseDataProcessing upload_file:")
-        print(dic)
+        # print("9002 BaseDataProcessing upload_file:")
+        # print(dic)
         # print("upload_file:")
 
         upload_file_ = dic["request"].FILES['drive_file']

@@ -164,13 +164,92 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
         super().__init__(dic)
 
         self.df_positions = pd.DataFrame.from_dict({"id" :[1,2,3,4,5,0],
-                                          "position_name": ["captain","officer","soldier","colonel","sous officer","Other"]})
+                                          "position_name": ["Captain","Officer","Soldier","Colonel","Sous Officer","Other"]})
 
-    def set_soldiers(self, dic):
-        print('90022-1 dic', dic)
+        self.df_instructor_positions = pd.DataFrame.from_dict({"id" :[1,2,3,4,5,6,7,8],
+                                          "position_name": ['מפקד גדוד', 'מפקד פלוגה', 'מספר 2 – צ', 'מוביל צוות', 'מספר 2',
+                                                            'אימון גופני', 'מתגבר', 'קמ”ג']})
+
+    def set_instructors(self, dic):
+        # print('90088-1 dic', dic)
         app_ = dic["app"]
         file_path = self.upload_file(dic)["file_path"]
-        print("-"*100, "\n", file_path, "\n", "-"*100)
+        # print("-"*100, "\n", file_path, "\n", "-"*100)
+        df = pd.read_excel(file_path, sheet_name="Data", header=0)
+        # print(df)
+        # print("-"*100)
+        model_instructors = apps.get_model(app_label=app_, model_name="instructors")
+        model_companys = apps.get_model(app_label=app_, model_name="companys")
+        model_platoons = apps.get_model(app_label=app_, model_name="platoons")
+        model_battalions = apps.get_model(app_label=app_, model_name="battalions")
+        my_group, is_created = Group.objects.get_or_create(name='t_simple_user')
+        for index, row in df.iterrows():
+            company_name_ = str(row["company_name"])
+            first_name_ = str(row["first_name"])
+            last_name_ = str(row["last_name"])
+            username_ = str(row["username"])
+            password_ = str(row["password"])
+            position_name_ = str(row["position_name"])
+            position_ = int(self.df_instructor_positions[self.df_instructor_positions["position_name"]==position_name_]["id"])
+            # print(company_name_, first_name_, " ", last_name_, position_name_)
+
+            try:
+                u = User.objects.get(username=username_)
+                count = u.delete()
+                # print("B count\n", count, "\n")
+            except Exception as ex:
+                pass
+                # print("9055-55 Error " + str(ex))
+            try:
+                u = User.objects.create_user(username=username_, email=username_+'@gmail.com',
+                                             password=password_)
+                # print(u.password)
+                u.first_name = first_name_
+                u.last_name = last_name_
+                u.save()
+                # print(u)
+                my_group.user_set.add(u)
+                my_group.save()
+            except Exception as ex:
+                print("9000-00 Error " + str(ex))
+
+            try:
+                instructor_obj, is_created = model_instructors.objects.get_or_create(user=u)
+                instructor_obj.first_name = first_name_
+                instructor_obj.last_name = last_name_
+                instructor_obj.position = position_
+                instructor_obj.save()
+            except Exception as ex:
+                print("9001-01 Error " + str(ex))
+            # print("-"*100, "\n", instructor_obj, "  =", is_created, "\n", "-"*100)
+
+            if company_name_ != "Battalion":
+                # print(company_name_)
+                company_obj = model_companys.objects.get(company_name=company_name_)
+                if str(row["platoon_number"]).lower() != "nan":
+                    platoon_number = float(str(row["platoon_number"]))
+                    platoon_obj = model_platoons.objects.get(platoon_number=platoon_number, company=company_obj)
+                    platoon_obj.instructor.add(instructor_obj)
+                    if position_ == 2:
+                        company_obj.instructor.add(instructor_obj)
+                    platoon_obj.save()
+                else:
+                    # print("no platoon")
+                    company_obj.instructor.add(instructor_obj)
+                    company_obj.save()
+            else:
+                battalion_obj = model_battalions.objects.get(battalion_number=1)
+                # print("Battalion")
+                battalion_obj.instructor.add(instructor_obj)
+                battalion_obj.save()
+        result = {"status": "ok"}
+        return result
+
+    def set_soldiers(self, dic):
+        # print('90022-1 dic', dic)
+        app_ = dic["app"]
+        file_path = self.upload_file(dic)["file_path"]
+        # print("-"*100, "\n", file_path, "\n", "-"*100)
         df = pd.read_excel(file_path, sheet_name="Data", header=0)
         # print(df)
         # print("-"*100)
@@ -231,6 +310,7 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
         model_squads = apps.get_model(app_label=app_, model_name=model_name_)
         model_name_ = "soldiers"
         model_soldier = apps.get_model(app_label=app_, model_name=model_name_)
+
         # model_user = get_user_model()
         # ll = []
         # ll_ = []
@@ -241,6 +321,7 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
         # llfn = []
         # llfn_ = []
         n__ = 0
+        nc_ = 0
         for index, row in df.iterrows():
             if n__ > 1000:
                 break
@@ -252,6 +333,8 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
             company_obj, is_created = model_companys.objects.get_or_create(company_name=company_name_, battalion=battalion_obj)
             if is_created:
                 # print("-"*100, "\n", company_obj, "  ", is_created, "\n", "-"*100)
+                nc_ += 1
+                company_obj.company_number = nc_
                 company_obj.instructor.add(instructor_obj)
                 company_obj.save()
             # str(int(row["PLATOON"]))
@@ -301,9 +384,9 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
 
             if position == "NAN":
                 position = ""
-            print("A ", "-"*100, "\n", "full name", full_name, " first name=", first_name,
-                  " last name=", last_name, " position=", position,
-                  " mz4psn", mz4psn, " ramonsn=", ramonsn)
+            # print("A ", "-"*100, "\n", "full name", full_name, " first name=", first_name,
+            #       " last name=", last_name, " position=", position,
+            #       " mz4psn", mz4psn, " ramonsn=", ramonsn)
 
             try:
                 u = User.objects.get(username=username_)
@@ -334,11 +417,17 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
                     p_ = position.lower().strip()
                     if p_ == "":
                         p_ = "Other"
-                    elif p_ == "OFFICIER".lower():
-                        p_ = "officer"
+                    elif p_ == "officier":
+                        p_ = "Officer"
+                    elif p_ == "soldeir":
+                        p_ = "Soldier"
+                    elif p_ == "sous officier":
+                        p_ = "Sous Officer"
+                    else:
+                        p_ = p_.title()
                     position = int(self.df_positions[self.df_positions["position_name"]==p_]["id"])
                 except Exception as ex:
-                    print("90888-66 Training objects set_soldiers Error: " +str(ex))
+                    print("90888-66 Training objects set_soldiers Error: " + p_ +str(ex))
                 soldier.position = position
                 soldier.mz4psn = mz4psn
                 soldier.ramonsn = ramonsn

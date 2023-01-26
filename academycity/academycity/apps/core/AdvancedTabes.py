@@ -1,3 +1,4 @@
+import pandas as pd
 from django.shortcuts import render
 from django.http import JsonResponse
 from django.apps import apps
@@ -167,6 +168,9 @@ class AdvancedTabs(object):
         model_name_ = params['model_name']
         field_name_ = params['field_name']
         model = apps.get_model(app_label=app_, model_name=model_name_)
+
+        # print(model._meta.get_fields(include_hidden=True))
+
         data_filter_field_ = params['data_filter_field']
         data_filter_field_value_ = params['data_filter_field_value']
         data_filter_field_ft_ = ""
@@ -215,10 +219,18 @@ class AdvancedTabs(object):
             data = eval(squ)
             # data = model.objects.all()
         # print(data)
+        # df = pd.DataFrame(data.values())
+        # print(df)
+
+        p_key_field_name = model._meta.pk.name
+        if  p_key_field_name != "id":
+            p_key_field_name =  p_key_field_name+"_id"
         result = []
         for q in data:
-            s = 'result.append((q.id, q.'+field_name_+'))'
+            s = 'result.append((q.'+ p_key_field_name+', q.'+field_name_+'))'
+            # print(s)
             eval(s)
+
         # print('result')
         # print(result)
         # print('result')
