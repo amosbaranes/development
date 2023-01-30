@@ -551,7 +551,15 @@ def upload_file(request):
             os.makedirs(data_dir, exist_ok=True)
             filename = request.POST['filename']
             file_path = os.path.join(data_dir, filename)
-            print(file_path)
+            record_id = request.POST['record_id']
+            model_field_name = request.POST['model_field_name']
+            model_name = request.POST['model_name']
+            model = apps.get_model(app_label=app_, model_name=model_name)
+            obj = model.objects.get(id=record_id)
+            s = "obj."+model_field_name+"='"+filename+"'"
+            exec(s)
+            obj.save()
+            # print(file_path)
             with open(file_path, 'wb+') as destination:
                 for c in upload_file_.chunks():
                     destination.write(c)

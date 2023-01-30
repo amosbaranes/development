@@ -9,6 +9,8 @@ from openpyxl import Workbook, load_workbook
 import math
 import time
 import shutil
+from statistics import mean
+import pickle
 #
 from ...core.utils import Debug
 #
@@ -64,6 +66,8 @@ class BaseDataProcessing(object):
         os.makedirs(self.IMAGES_PATH, exist_ok=True)
         self.MODELS_PATH = os.path.join(self.PROJECT_ROOT_DIR, "models")
         os.makedirs(self.MODELS_PATH, exist_ok=True)
+        self.PICKLE_PATH = os.path.join(self.PROJECT_ROOT_DIR, "pickle")
+        os.makedirs(self.PICKLE_PATH, exist_ok=True)
         self.target_folder = None
 
         # self.TARGET_FIELD = target_field
@@ -181,7 +185,7 @@ class BasePotentialAlgo(object):
         app_ = dic["app"]
         fact_model_name_ = dic["fact_model"]
         dependent_group = dic["dependent_group"]
-        do_not_include_groups = ["General"]
+        do_not_include_groups = ["General", "URanking", "UrankingEng", "URankingRes"]
         print(dependent_group)
         min_max_model_name_ = dic["min_max_model"]
         measure_group_model_name_ = dic["measure_group_model"]
@@ -193,6 +197,8 @@ class BasePotentialAlgo(object):
             print("Error 9016: \n"+str(ex))
         if not self.is_calculate_min_max:
             model_min_max = apps.get_model(app_label=app_, model_name=min_max_model_name_)
+        else:
+            self.calculate_min_max_cuts(dic)
         model_measure_group = apps.get_model(app_label=app_, model_name=measure_group_model_name_)
 
         # print("90060-10 PotentialAlgo: \n", dic, "\n", "="*50)
@@ -430,7 +436,7 @@ class BasePotentialAlgo(object):
 
                 # print("50001-3-9-1")
             except Exception as ex:
-                print("Error 50001-1: " + str(ex))
+                print("Error 50001-135: " + str(ex))
             df_n1_ = df_n1.copy()
             df_n1_.columns = ['m-' + group, 'x-' + group]
             df_n2_ = df_n2.copy()
@@ -508,6 +514,274 @@ class BasePotentialAlgo(object):
             self.add_to_save_all(title='relimp-n' + n, a=df_relimp, cols=-1)
             print("=2"*50)
         self.save_to_excel_all_(dic["time_dim_value"])
+        result = {"status": "ok"}
+        return result
+
+    def calculate_min_max_cuts(self, dic):
+        print("90066-106 PotentialAlgo calculate_min_max_cuts: \n", dic, "\n", "="*50)
+        app_ = dic["app"]
+        fact_model_name_ = dic["fact_model"]
+        dependent_group = dic["dependent_group"]
+        do_not_include_groups = ["General"]
+        print(dependent_group)
+        year_ = str(dic["time_dim_value"])
+        print(year_)
+        min_max_model_name_ = dic["min_max_model"]
+        measure_group_model_name_ = dic["measure_group_model"]
+        model_fact = apps.get_model(app_label=app_, model_name=fact_model_name_)
+        model_measure_group = apps.get_model(app_label=app_, model_name=measure_group_model_name_)
+        wb2 = None
+        groups = model_measure_group.objects.all()
+
+        sign_ = pd.DataFrame([[0, 0, 0, 0]])
+        sign_.columns = self.options
+        similarity_ = pd.DataFrame([[0, 0, 0, 0]])
+        similarity_.columns = self.options
+
+        ll_groups = [dependent_group]
+        for k in groups:
+            group = k.group_name
+            if group not in ll_groups and group not in do_not_include_groups:
+                ll_groups.append(group)
+        lll_groups = []  # this will have only the groups that do not have problems (have data)
+        ll_dfs = {}
+        best_cut = {}
+        for k in ll_groups:
+            group = k #.group_name
+            # print("="*50, "\n", group, "\n", "="*50)
+            try:
+                s = ""
+                for v in dic["axes"]:
+                    s += "'" + v + "',"
+                s += "'" + dic["value"] + "'"
+                qs = model_fact.objects.filter(measure_dim__measure_group_dim__group_name=group,
+                                               time_dim_id=year_).all()
+                s = "pd.DataFrame(list(qs.values(" + s + ")))"
+                df = eval(s)
+                if df.shape[0] == 0:
+                    continue
+                lll_groups.append(group)
+                if group != dependent_group:
+                    best_cut[group] = {}
+                df = df.pivot(index="country_dim", columns='measure_dim', values='amount')
+                # print("="*50, "\n", df, "\n", "="*50)
+                ll_dfs[group] = df.apply(pd.to_numeric, errors='coerce').round(6)
+            except Exception as ex:
+                print("Error 50661-12 PotentialAlgo calculate_min_max_cuts: " + str(ex))
+
+        print("-=" * 30)
+        high_group_cut = [0.4, 0.30, 0.2, 0.1]
+        low_group_cut = [0.4, 0.30, 0.2, 0.1]
+        stepo = 0.1
+        stepi = 0.05
+        df_d = ll_dfs[dependent_group]
+        # print("-"*50, "\n", df_d, "\n", "-"*50, "\n")
+
+        results = {}
+        n___ = 0
+        for h in high_group_cut:
+            hh = 1- h
+            while hh <= .95:
+                hh = round(hh*100)/100
+                results[hh] = {}
+                for l in low_group_cut:
+                    ll = l
+                    while ll >= 0.05:
+                        ll = round(ll*100)/100
+                        results[hh][ll] = {}
+                        df_q = df_d.quantile([hh, ll])
+                        # print("-" * 10, df_q, "\n", "=" * 50, "\n")
+                        for f in df_d:
+                            # print(df_q[f].iloc[0], df_q[f].iloc[1])
+                            results[hh][ll][f] = {}
+                            results[hh][ll][f]["max_cut"] = df_q[f].iloc[0]
+                            results[hh][ll][f]["min_cut"] = df_q[f].iloc[1]
+                            df_hi = df_d[df_d[f] >= df_q[f].iloc[0]].index
+                            df_li = df_d[df_d[f] <= df_q[f].iloc[1]].index
+                            # print(df_i)
+                            # print("-i"*30)
+                            results[hh][ll][f]["groups"] = {}
+                            for g in ll_dfs:
+                                if g != dependent_group:
+                                    if f not in best_cut[g]:
+                                        best_cut[g][f] = {"mean_similarity": -1}
+                                    results[hh][ll][f]["groups"][g] = {}
+                                    df = ll_dfs[g]
+                                    iih = []
+                                    iil = []
+                                    for j in df.index:
+                                        if j in df_hi:
+                                            iih.append(j)
+                                        if j in df_li:
+                                            iil.append(j)
+
+                                    # print(g, "\n", "-"*30, "\n", df,"\n", df.shape, "\n", "="*30)
+                                    dfh = df.loc[iih]
+                                    dfl = df.loc[iil]
+                                    # print(dfh,"\n", dfl,"\n", dfh.shape, dfl.shape)
+                                    # print("==df"*30)
+                                    dfhm = dfh.min()
+                                    dflm = dfl.max()
+                                    n__ = 0
+                                    is_evaluate = True
+                                    for ff in dfhm:
+                                        ffn = dfhm.index[n__]
+                                        results[hh][ll][f]["groups"][g][ffn] = {}
+                                        if str(ff) == "nan":
+                                            ff = np.nan
+                                            is_evaluate = False
+                                        try:
+                                            results[hh][ll][f]["groups"][g][ffn]["max_cut"] = ff
+                                        except Exception as ex:
+                                            print(ex)
+                                        n__ += 1
+                                    n__ = 0
+                                    for ff in dflm:
+                                        if str(ff) == "nan":
+                                            ff = np.nan
+                                            is_evaluate = False
+                                        ffn = dflm.index[n__]
+                                        if ffn not in results[hh][ll][f]["groups"][g]:
+                                            results[hh][ll][f]["groups"][g][ffn] = {}
+                                        results[hh][ll][f]["groups"][g][ffn]["min_cut"] = ff
+                                        n__ += 1
+                                    # print(results[hh][ll][f]["groups"][g])
+                                    # print("-"*100, "\n", hh, ll, g, "\n", "-"*10,
+                                    #       "\n",results[hh][ll][f], "\n", "-"*10,
+                                    #       "\n",results[hh][ll][f]["groups"][g],
+                                    #       "\n", "-"*10)
+                                    dic = {"f": f, "g": g, "df_d": df_d, "ll_dfs": ll_dfs, "mmf": results[hh][ll][f]}
+                                    # if n___ < 15:
+                                    if is_evaluate:
+                                        self.get_similarity(dic)
+                                        print(results[hh][ll][f]["groups"][g]["mean_similarity"])
+                                    else:
+                                        results[hh][ll][f]["groups"][g]["mean_similarity"] = -1
+                                        # n___ += 1
+                                    sim_ = results[hh][ll][f]["groups"][g]["mean_similarity"]
+                                    if sim_ > best_cut[g][f]["mean_similarity"]:
+                                        best_cut[g][f]["mean_similarity"] = sim_
+                                        best_cut[g][f]["mm_cut"] = results[hh][ll][f]["groups"][g]
+                        ll -= 0.05
+                hh += 0.05
+        print(results)
+        print("="*30)
+        print(best_cut)
+        file_path = os.path.join(self.PICKLE_PATH, "results_"+year_+".pkl")
+        print(file_path)
+        with open(file_path, 'wb') as handle:
+            pickle.dump(results, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+        file_path = os.path.join(self.PICKLE_PATH, "best_cut_"+year_+".pkl")
+        print(file_path)
+        with open(file_path, 'wb') as handle:
+            pickle.dump(best_cut, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+        result = {"status": "ok"}
+        return result
+
+    def get_similarity(self, dic):
+        # print("="*50)
+        f = dic["f"]
+        g = dic["g"]
+        df = dic["ll_dfs"][g]
+        df_d = dic["df_d"]
+        mmf = dic["mmf"]
+        mmxs = mmf["groups"][g]
+        # print(f, mmf["max_cut"], mmf["min_cut"], mmxs)
+
+        dff = pd.DataFrame(df_d.loc[:, f].astype(float))
+        dffn = dff.copy()
+        dffn = dffn.apply(lambda x: (x - mmf["min_cut"].astype(float)) / (mmf["max_cut"].astype(float) - mmf["min_cut"].astype(float)))
+        dffn[dffn < 0] = 0
+        dffn[dffn > 1] = 1
+
+        dfn = df.copy()
+        for c in dfn.columns:
+            max_cut = mmxs[c]["max_cut"]
+            min_cut = mmxs[c]["min_cut"]
+            mm_cut = max_cut - min_cut
+            # print(mm_cut)
+            dfn.loc[:, c] = dfn.loc[:, c].apply(lambda x: (x - min_cut)/mm_cut)
+        dfn[dfn < 0] = 0
+        dfn[dfn > 1] = 1
+        # print(dfn)
+        dfm = pd.merge(left=dffn, how='outer', right=dfn, left_index=True, right_index=True)
+        # print(dfm)
+        nc = len(dfm.columns)
+        lls = []
+        for n in range(1, nc):
+            c = dfm.columns[n]
+            dfd = abs(dfm[dfm.columns[0]] - dfm[c])
+            s_d = dfd.sum()
+            # print(s_d)
+            dfr = abs(dfm[dfm.columns[0]] - (1-dfm[c]))
+            s_r = dfr.sum()
+            # print(s_r)
+            if s_d < s_r:
+                d_ = s_d
+                lls.append(1 - dfd.mean())
+            else:
+                d_ = s_r
+                lls.append(1 - dfr.mean())
+        # print(lls)
+        # print(mean(lls))
+        mmxs["mean_similarity"] = mean(lls)
+        # return mean(lls)
+
+    def update_min_max_cuts(self, dic):
+        app_ = dic["app"]
+        year_ = str(dic["time_dim_value"])
+        min_max_model_name_ = dic["min_max_model"]
+        model_min_max = apps.get_model(app_label=app_, model_name=min_max_model_name_)
+        model_measure_dim = apps.get_model(app_label=app_, model_name="measuredim")
+
+        file_path = os.path.join(self.PICKLE_PATH, "results_"+year_+".pkl")
+        print(file_path)
+        with open(file_path, 'rb') as handle:
+            results = pickle.load(handle)
+        print(results)
+
+        file_path = os.path.join(self.PICKLE_PATH, "best_cut_"+year_+".pkl")
+        print(file_path)
+        with open(file_path, 'rb') as handle:
+            best_cut = pickle.load(handle)
+        print(best_cut)
+        for g in best_cut:
+            dg = best_cut[g]
+            # print("-"*60, "\n", g, "\n", dg)
+            dd_ff_cc = {}
+            for f in dg:
+                # print("-"*10, "\n", f, "\n", dg[f])
+                if dg[f]['mean_similarity'] == -1:
+                    continue
+                for c in dg[f]["mm_cut"]:
+                    if c != 'mean_similarity':
+                        if c not in dd_ff_cc:
+                            dd_ff_cc[c] = {}
+                        if f not in dd_ff_cc[c]:
+                            dd_ff_cc[c][f] = {}
+                        # print(g, f, c)
+                        dd_ff_cc[c][f]["max_cut"] = dg[f]["mm_cut"][c]["max_cut"]
+                        dd_ff_cc[c][f]["min_cut"] = dg[f]["mm_cut"][c]["min_cut"]
+            if len(dd_ff_cc) > 0:
+                # print(g, "\n", dd_ff_cc)
+                # print("-"*30)
+                for c in dd_ff_cc:
+                    ll_max = []
+                    ll_min = []
+                    for f in dd_ff_cc[c]:
+                        ll_max.append(dd_ff_cc[c][f]["max_cut"])
+                        ll_min.append(dd_ff_cc[c][f]["min_cut"])
+                    # print(ll_max, "\n", ll_min)
+                    # print(year_, c, mean(ll_max), mean(ll_min))
+                    m_obj = model_measure_dim.objects.get(id=c)
+                    mm_obj, is_created = model_min_max.objects.get_or_create(measure_dim=m_obj, time_dim_id=year_)
+                    mm_obj.min = mean(ll_min)
+                    mm_obj.max = mean(ll_max)
+                    mm_obj.save()
+            else:
+                print("g with noe cut", g)
         result = {"status": "ok"}
         return result
 

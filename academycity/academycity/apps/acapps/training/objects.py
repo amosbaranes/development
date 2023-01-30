@@ -158,7 +158,6 @@ class BaseTrainingAlgo(object):
                 self.second_time_save = self.save_to_file
 
 
-
 class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
     def __init__(self, dic):
         super().__init__(dic)

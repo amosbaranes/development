@@ -171,7 +171,7 @@ company_obj_id, is_show_btns=true, user_id=0)
                                                "setting": {"height":[],"width":[],"obj_name":[],"function_name":[],
                                                            "topic_id":[], "folder_type":["", "excel", "media", "other"],
                                                             "dimensions":[], "fields":[], "fact_model_field": []},
-                                               "attributes":{},
+                                               "attributes":{"field":[]},
                                                "functions":["onchange", "on_loaded"]},
                                         "Heatmap":{"title":"Heatmap", "width":8,
                                                    "setting": {"width":[], "height":[]},
@@ -1616,7 +1616,7 @@ var process_content=function(){
 var container_on_change=function (event){
   event.stopPropagation();
   var e=event.target;
-  alert("c9001 "+event.target.outerHTML)
+  //alert("c9001 "+event.target.outerHTML)
   var e_container_id_=e.getAttribute("container_id")
    // alert(e_container_id_)
   var container = getEBI("content_"+e_container_id_)
@@ -1749,7 +1749,6 @@ var container_on_change=function (event){
      // alert('9083 dic_data= '+ JSON.stringify(dic_data));
      jmc.update_json_record(dic_data);
    } else {
-
        try{var parent_model_=container.my_creator_obj.link_dic["properties"]["parent_table"]} catch(er){};
        //alert("90123-1:  "+parent_model_+" "+model_+" "+parent_id_+" "+record_id_+" "+fields_values)
 
@@ -1869,12 +1868,14 @@ acUploadFileCreator.prototype.create_obj = function()
   //alert("90352 "+JSON.stringify(dic));
   var obj_number = dic["properties"]["obj_number"]
   var title = dic["properties"]["title"]
+//  var field = dic["properties"]["field"]
   var container = document.getElementById("content_"+dic["container_id"]);
   //--
   this.div_=document.createElement("div");
   this.div_.my_creator_obj=this
   this.div_.setAttribute("obj_type", dic["obj_type"]);
   this.div_.setAttribute("id", obj_number);
+//  this.div_.setAttribute("field", field);
   this.div_.setAttribute("container_id", dic["container_id"]);
   this.div_.setAttribute("type", dic["element_name"]);
   if("width" in dic["properties"]){var width_=dic["properties"]["width"]} else {var width_="400"}
@@ -1938,11 +1939,9 @@ acUploadFileCreator.prototype.create_obj = function()
                 $('#driver-uploader-success-alert').show();
             });
 
-           //alert(this.atm.upload_file_link_)
-
+            //alert(this.atm.upload_file_link_)
             xhr.open('post', this.atm.upload_file_link_, true);
             xhr.setRequestHeader("X-CSRFToken", csrftoken);
-
             var fd = new FormData();
             fd.append("filename", filename);
             fd.append("drive_file", file);
@@ -1954,6 +1953,16 @@ acUploadFileCreator.prototype.create_obj = function()
             fd.append("dimensions", this.dic["properties"]["dimensions"]);
             fd.append("fields", this.dic["properties"]["fields"]);
             fd.append("fact_model_field", this.dic["properties"]["fact_model_field"]);
+            //--
+            var container = document.getElementById("content_"+this.dic["container_id"]);
+            var record_id = container.getAttribute("record_id")
+            var table = container.getAttribute("table")
+            fd.append("record_id", record_id);
+            // alert("90352-1 "+JSON.stringify(this.dic["properties"]));
+            var field = this.dic["properties"]["field"]
+            fd.append("model_field_name", field);
+            fd.append("model_name", table);
+            //--
             xhr.send(fd);
             var s="zz="+dic["functions"]["onchange"];eval(s);
             zz(event)
@@ -2106,6 +2115,7 @@ function acActivityCreator(parent){this.parent=parent;
    this.sf_field_value = 50;
    this.sub_field_name="value";
 }
+
 
 acActivityCreator.prototype.create_obj = function()
 {
@@ -2661,12 +2671,9 @@ acSearchTableCreator.prototype.get_data = function(data_table_name=null,parent_m
   } catch(er){alert("er9012: "+er)}
 
   //alert("90441-1  "+JSON.stringify(dic_));
-
   var fun=function(data, ttbody_){
     console.log("get_data search table inside call back function")
-
-    // alert("9081 data: "+JSON.stringify(data));
-
+     // alert("9081 data: "+JSON.stringify(data));
     try{if(Object.keys(data).length==0){return;}} catch (er) {}
     //alert(dic_["fields"][0])
     //alert(JSON.stringify(data[dic_["fields"][0]]))
@@ -2692,9 +2699,8 @@ acSearchTableCreator.prototype.get_data = function(data_table_name=null,parent_m
     //alert("9008 get_data search table inside call back function s=" + s)
     ttbody_.innerHTML=s;
 
-//    alert(ttbody_.my_creator_obj)
+    //alert(ttbody_.my_creator_obj)
     //alert(ttbody_.my_creator_obj.is_json_data)
-
     //ttbody_.my_creator_obj.is_json_data=false;
   }
 
@@ -2717,6 +2723,11 @@ acSearchTableCreator.prototype.get_data = function(data_table_name=null,parent_m
              if("multiple" in ps_){this.multiple_select_fields.push(f)}else{if(!dic__.includes(f)){dic__.push(f)}}
             }
         }
+      }
+      else if(container_dic[o]["obj_name"]=="acUploadFile") {
+        //alert("90601-23 \n"+JSON.stringify(container_dic[o]))
+        var f=container_dic[o]["properties"]["field"];
+        if(f!=null){if(!dic__.includes(f)){dic__.push(f)}}
       }
   }
   //alert("90601 dic__ \n"+JSON.stringify(dic__))
@@ -4151,7 +4162,8 @@ TabContent.prototype.process_content = process_content;
 
 TabContent.prototype.set_objects_data = function(dic, is_json_data=false)
 {
- // alert("9076 "+JSON.stringify(dic))
+ this.clear_objects_data()
+ // alert("90766-66 "+JSON.stringify(dic))
  // alert(dic["pkf_name"])
  this.is_json_data=is_json_data;
 
@@ -4214,7 +4226,12 @@ TabContent.prototype.clear_objects_data = function()
    var dic = this.current_record_data;
    this.link_content.setAttribute("record_id", "new");var container_dic=this.tab.tab_objects[this.link_number];
    for(o in container_dic)
-   {if(container_dic[o]["obj_type"]=="acObj" && container_dic[o]["obj_name"]=="acInput"){document.getElementById(o).value="";}}
+   {
+    //alert('90 container_dic= ' + JSON.stringify(container_dic[o]));
+    var obj_name=container_dic[o]["obj_name"];
+    if(container_dic[o]["obj_type"]=="acObj" && (obj_name=="acInput" || obj_name=="acTextarea" || obj_name=="acSelect"))
+    {if(obj_name=="acSelect"){document.getElementById(o).value=-1} else {document.getElementById(o).value="";}}
+   }
   } catch(er){}
 }
 

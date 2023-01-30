@@ -40,7 +40,7 @@ class TestsStructuresAdmin(admin.ModelAdmin):
 
 @admin.register(Compliances)
 class CompliancesAdmin(admin.ModelAdmin):
-    list_display = ('id', 'week', 'platoon')
+    list_display = ('id', 'week', 'platoon', 'extra_done', 'not_done', 'conclusion', 'file_name')
 
 @admin.register(Soldiers)
 class SoldiersAdmin(admin.ModelAdmin):
