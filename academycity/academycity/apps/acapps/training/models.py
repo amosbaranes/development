@@ -107,8 +107,8 @@ class Squads(TruncateTableMixin, models.Model):
 
 class TestsStructures(TruncateTableMixin, models.Model):
     class Meta:
-        verbose_name = 'test'
-        verbose_name_plural = 'tests'
+        verbose_name = 'test_structure'
+        verbose_name_plural = 'test_structures'
     training_web = models.ForeignKey(TrainingWeb, on_delete=models.CASCADE, default=1,
                                      related_name='training_web_tests')
     battalion = models.OneToOneField(Battalions, on_delete=models.CASCADE, primary_key=True,
@@ -204,6 +204,28 @@ class Soldiers(TruncateTableMixin, models.Model):
     def __str__(self):
         return str(self.userid) + ": " + str(self.first_name) + " " + str(self.last_name)
 
+
+class TimeDim(TruncateTableMixin, models.Model):
+    id = models.PositiveIntegerField(primary_key=True)
+    year = models.PositiveSmallIntegerField(default=0)
+    month = models.PositiveSmallIntegerField(default=0)
+    day = models.PositiveSmallIntegerField(default=0)
+
+    def __str__(self):
+        return str(self.id)+" year="+str(self.year)
+
+
+class TestEvent(TruncateTableMixin, models.Model):
+    class Meta:
+        verbose_name = 'test_event'
+        verbose_name_plural = 'test_events'
+
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, primary_key=True,
+                                related_name='training_user_test_events')
+    time_dim = models.ForeignKey(TimeDim, on_delete=models.CASCADE, default=1,
+                                 related_name='time_dim_test_events')
+    test_event_name = models.CharField(max_length=100, default='', blank=True, null=True)
+
 #
 class Tests(TruncateTableMixin, models.Model):
     class Meta:
@@ -225,16 +247,6 @@ class DoubleShoot(TruncateTableMixin, models.Model):
         return str(self.id) + ": " + str(self.double_shoot_id)
 
 
-class TimeDim(TruncateTableMixin, models.Model):
-    id = models.PositiveIntegerField(primary_key=True)
-    year = models.PositiveSmallIntegerField(default=0)
-    month = models.PositiveSmallIntegerField(default=0)
-    day = models.PositiveSmallIntegerField(default=0)
-
-    def __str__(self):
-        return str(self.id)+" year="+str(self.year)
-
-
 # class PlanningVsExecution(TruncateTableMixin, models.Model):
 
 
@@ -254,30 +266,4 @@ class SoldierFact(TruncateTableMixin, models.Model):
     #                              related_name='test_dim_soldier_facts')
     test = models.SmallIntegerField(default=0)
     value = models.SmallIntegerField(default=0)
-
-
-# Safety
-# professionalism
-# Aggression
-
-# פלגה
-# צוות
-# פק"ל אישי
-# משמעת
-# איתנות
-# בעיות רפואיות - פרט
-
-# מפקד
-# class Officer(TruncateTableMixin, models.Model):
-#     training_web = models.ForeignKey(TrainingWeb, on_delete=models.CASCADE, default=1,
-#                                      related_name='training_web_officers')
-#     first_name = models.CharField(max_length=50, default='', blank=True, null=True)
-#     last_name = models.CharField(max_length=50, default='', blank=True, null=True)
-#     email = models.CharField(max_length=50, default='', blank=True, null=True)
-#     phone = models.CharField(max_length=50, default='', blank=True, null=True)
-#     address = models.CharField(max_length=100, default='', blank=True, null=True)
-#     user_id = models.CharField(max_length=100, default='', blank=True, null=True)
-#
-#     def __str__(self):
-#         return self.first_name+" "+self.last_name
 

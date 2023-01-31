@@ -123,6 +123,10 @@ company_obj_id, is_show_btns=true, user_id=0)
                                                   "setting": {"setup_dictionary":[]},
                                                   "attributes":{},
                                                   "functions":["onclick", "onchange", "onmouseover", "onmouseout"]},
+                                        "Test":{"title":"Test", "width":5,
+                                                  "setting": {"setup_dictionary":[], "width":[], "height":[]},
+                                                  "attributes":{},
+                                                  "functions":["onclick", "onchange", "onmouseover", "onmouseout"]},
                                         "Activity": {"title":"Activity", "width":7,
                                                   "setting": {"table_class":["","basic", "payment"], "parent_table":[], "table":[],
                                                               "number_of_radios":[]},
@@ -1616,7 +1620,7 @@ var process_content=function(){
 var container_on_change=function (event){
   event.stopPropagation();
   var e=event.target;
-  //alert("c9001 "+event.target.outerHTML)
+  alert("c9001 "+event.target.outerHTML)
   var e_container_id_=e.getAttribute("container_id")
    // alert(e_container_id_)
   var container = getEBI("content_"+e_container_id_)
@@ -2456,6 +2460,96 @@ acRadioCreator.prototype.set_data = function(ll=null)
   //  alert("9010: "+JSON.stringify(dic__));
   this.parent.atm.get_data(call_back_fun=fun, dic_, this)
 }
+
+
+// Test --
+function acTestCreator(parent){this.parent=parent;this.structure_dic=null;}
+
+acTestCreator.prototype.create_obj = function()
+{
+  var ff = function(div_, dic_, nlt){
+      table_=document.createElement("table");
+      t_body_=document.createElement("tbody");
+      table_.appendChild(t_body_);
+      div_.appendChild(table_);
+      for(var l in dic_)
+      {
+        f(e_obj=table_, l, dic_[l], nlt)
+      }
+  }
+  var f = function(e_obj, l, dic_,nlt)
+  {
+   //alert("\n" + JSON.stringify(dic_))
+   var s = '<input type="checkbox" test_number="'+l+'">'
+   //var s = '<label class="switch"><input type="checkbox" checked><span class="slider"></span></label><br><br>'
+   e_obj.innerHTML+="<tr><td style='width:"+nlt+"%'>"+dic_["title"]+"</td><td>"+s+"</td></tr>"
+  }
+  var dic=this.parent.data;
+  var width_=dic["properties"]["width"]; if(width_==null || width_==""){width_=80};
+  var height_=dic["properties"]["height"]; if(height_==null || height_==""){height_=300};
+  var container = document.getElementById("content_"+dic["container_id"]);
+  //alert("90355-23 acTestDesignerCreator.prototype.create_obj\n"+JSON.stringify(dic));
+  var obj_number = dic["properties"]["obj_number"]
+  this.main_div=document.createElement("div");
+  this.main_div.my_creator_obj=this;
+  this.main_div.setAttribute("id", obj_number);
+  this.main_div.setAttribute("obj_type", dic["obj_type"]);
+  this.main_div.setAttribute("type", dic["element_name"]);
+  var style_ = "position:absolute;left:"+dic["properties"]["x"]+"px;top:"+dic["properties"]["y"]+"px;width:"+width_+"%"
+  this.main_div.setAttribute("style", style_);
+  this.main_div.setAttribute("class", "row");
+  this.main_div.setAttribute("container_id", dic["container_id"]);
+  container.appendChild(this.main_div);
+  //--
+  var general_dic_name = dic["properties"]["setup_dictionary"]
+  if(general_dic_name==null || general_dic_name==""){
+    //alert("i am not defined write code to set property")
+    this.main_div.innerHTML="Test Pluging"
+  } else {
+      try{eval("var structure_dic=this.parent.atm.general."+general_dic_name)} catch(er){alert("1567-98: "+er)}
+      this.structure_dic = structure_dic;
+      //try{alert("9088-63 "+JSON.stringify(structure_dic))} catch(er){alert("15: "+er)}
+
+      var nl = Math.round(10000/Object.keys(structure_dic).length)/100
+      var nlt = 90
+      for(var h in structure_dic)
+      {
+        //alert(h + "\n" + JSON.stringify(structure_dic[h]))
+          div_=document.createElement("div");
+          div_.setAttribute("id", obj_number+"_"+h);
+          var style_ = "float:left;width:"+nl+"%;padding:10px;height:"+height_+"px;border-radius:25px;background-color:"
+          var color_ = structure_dic[h]["color"];
+          style_ += color_+";padding: 20px;border: 2px solid #73AD21;";
+          div_.setAttribute("style", style_);
+          h_=document.createElement("h3");
+          div_.appendChild(h_);
+          h_.innerHTML = structure_dic[h]["title"]+"<hr/>"
+          this.main_div.appendChild(div_);
+          var dic_tests=structure_dic[h]["sub_tests"]
+          if(dic_tests!=null)
+          {
+            if(dic_tests["type"]==2){
+              for(var g in dic_tests["data"])
+              {
+                var title_ = dic_tests["data"][g]["title"]
+                var color_ = dic_tests["data"][g]["color"]
+                div_.innerHTML += "<h3 style='text-align:center;width:100%;color:"+color_+"'><u>"+title_+"</u></h3>"
+                var dic_=dic_tests["data"][g]["sub_tests"]["data"]
+                ff(div_, dic_, nlt)
+              }
+            } else if(dic_tests["type"]==3)
+            {
+              ff(div_, dic_tests["data"], nlt)
+            }
+          }
+      }
+  }
+
+  for(f in dic["functions"]){var s="this.main_div."+f+"="+dic["functions"][f];eval(s);}
+}
+
+
+
 
 // -- acSearchTableCreator --
 function acSearchTableCreator(parent){this.parent=parent;this.is_json_data=false;this.json_record_id=-1;
