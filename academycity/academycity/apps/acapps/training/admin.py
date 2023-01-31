@@ -3,7 +3,7 @@ from django.contrib import admin
 from django.utils.translation import ugettext_lazy as _
 from .models import (TrainingWeb, Instructors, Brigades, Battalions, Companys, Platoons, Squads, TestsStructures,
                      Compliances, Courses, Soldiers, Tests, TimeDim, SoldierFact,
-                     TestEvent,
+                     TestEvents,
                      DoubleShoot)
 
 
@@ -63,9 +63,9 @@ class TimeDimAdmin(admin.ModelAdmin):
 class SoldierFactAdmin(admin.ModelAdmin):
     list_display = ('id', 'created', 'time_dim', 'soldier', 'test', 'value')
 
-@admin.register(TestEvent)
-class TestEventAdmin(admin.ModelAdmin):
-    list_display = ('user', 'time_dim', 'test_event_name')
+@admin.register(TestEvents)
+class TestEventsAdmin(admin.ModelAdmin):
+    list_display = ('instructor', 'time_dim', 'test_event_name')
 
 @admin.register(DoubleShoot)
 class DoubleShootAdmin(admin.ModelAdmin):

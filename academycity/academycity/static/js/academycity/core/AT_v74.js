@@ -59,7 +59,8 @@ company_obj_id, is_show_btns=true, user_id=0)
                                                                        "datetime-local","email","file","hidden","image",
                                                                        "month","number","password","radio","range","reset",
                                                                        "search","submit","tel","time","url","week"],
-                                                                       "foreign_table":[]},
+                                                               "foreign_table":[],
+                                                               "dependent":[]},
                                                  "functions":["onchange", "onkeyup", "onkeydown"]},
                                         "Select":{"title":"Select", "width":5,
                                                   "setting": {"options":[], "global_adjective":[], "app_adjective":[],
@@ -653,7 +654,7 @@ AdvancedTabsManager.prototype.save_data = function(html_obj, dic_, is_json_data=
   dic_["company_obj_id"]=this.company_obj_id;
   //alert("90112:\n"+JSON.stringify(dic_));
   //alert(html_obj.outerHTML)
-  //alert(this.update_field_link_)
+  //alert("90122 "+this.update_field_link_)
   $.post(this.update_field_link_,
           {dic : JSON.stringify(dic_)},
           function(dic){
@@ -679,6 +680,9 @@ AdvancedTabsManager.prototype.get_data = function(call_back_fun, dic_, tbody_)
           try{
            //alert("9001"+JSON.stringify(data));
            if(data["status"]!="ok"){return}
+
+           //alert("9005-0"+JSON.stringify(data));
+
            call_back_fun(data["dic"], tbody_)
            tbody_.data=data["dic"];
            //alert("9005"+JSON.stringify(data));
@@ -1620,12 +1624,12 @@ var process_content=function(){
 var container_on_change=function (event){
   event.stopPropagation();
   var e=event.target;
-  alert("c9001 "+event.target.outerHTML)
+  //alert("c9001 "+event.target.outerHTML)
   var e_container_id_=e.getAttribute("container_id")
    // alert(e_container_id_)
   var container = getEBI("content_"+e_container_id_)
   //  alert("c9002 "+container.outerHTML)
-  //  alert("9050 " + JSON.stringify(container.my_creator_obj.link_dic))
+    //alert("9050 " + JSON.stringify(container.my_creator_obj.link_dic))
   var c_container_id_=this.getAttribute("link_number")
 
   //  alert("c9003  e_container_id_=" + e_container_id_+ " c_container_id_=" + c_container_id_)
@@ -1638,6 +1642,9 @@ var container_on_change=function (event){
   //alert("field_ 1: " + field_)
   if(field_=="" || field_==null){//alert("missing file in object="+e.getAttribute("id"));
   return}
+
+  //alert("field_ 2: " + field_)
+
   try{var type_=e.getAttribute("type");if(type_==null || type_==""){type_=""}} catch(er){}
   //alert("9059 ")
   var field__="";var v__="";
@@ -1656,6 +1663,7 @@ var container_on_change=function (event){
    else{field__=field_; v__=vv}
   }
   //alert('90807-78 = \n'+ JSON.stringify(container.dependents)+"\n\n"+JSON.stringify(dependent));
+
   if(foreign_table!=null && foreign_table!="")
   {
    if(container.foreign_keys==null){container.foreign_keys={}}
@@ -1669,7 +1677,7 @@ var container_on_change=function (event){
 
   if(need_to_return==true){return}
 
-//  alert("c9006 field_ 2: " + field_)
+  //alert("c9006 field_ 2: " + field_)
 
   container.tab.parent.active_tab_content=container;
   try{var content_type_=e.getAttribute("content_type");if(content_type_==null || content_type_==""){content_type_=""}} catch(er){}
@@ -1732,6 +1740,7 @@ var container_on_change=function (event){
   } else
   {
    var model_=container.my_creator_obj.link_dic["properties"]["table"];
+   //alert(model_)
    var record_id_=container.getAttribute("record_id");
    var is_plugin = false;if(record_id_=="plugin"){is_plugin = true}
    if(record_id_=="plugin"){
@@ -1742,7 +1751,6 @@ var container_on_change=function (event){
      var fields_values=e.getAttribute("fields_values");var fvs = fields_values.split("-")
    }
    var parent_id_=container.getAttribute("parent_id");
-
    if(this.my_creator_obj.is_json_data){
      // alert(model_+"\nparent_id:"+parent_id_+"\nrecord_id:"+record_id_+"\nfield:"+field__u+"\nfield value:"+v__u+"\n"+event.target.outerHTML)
      var json_manager_obj_number = container.getAttribute("json_manager_obj_number");
@@ -1754,7 +1762,8 @@ var container_on_change=function (event){
      jmc.update_json_record(dic_data);
    } else {
        try{var parent_model_=container.my_creator_obj.link_dic["properties"]["parent_table"]} catch(er){};
-       //alert("90123-1:  "+parent_model_+" "+model_+" "+parent_id_+" "+record_id_+" "+fields_values)
+
+       //alert("90123-1 parent_model_=  "+parent_model_+" model_= "+model_+" parent_id_="+parent_id_+" record_id_="+record_id_+" fields_values="+fields_values)
 
        if(parent_model_==null){var parent_model_="";}
        //alert("9004 else: record_id_ "+record_id_ +" parent_id_= "+parent_id_+" model_= "+model_+" parent_model_= "+parent_model_)

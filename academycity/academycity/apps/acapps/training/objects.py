@@ -13,6 +13,7 @@ import pandas as pd
 import numpy as np
 #
 import time
+from datetime import timedelta, date
 import shutil
 #
 import string
@@ -511,6 +512,27 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
         print(df)
         print("-" * 100)
 
+        result = {"status": "ok"}
+        return result
+
+    def create_dates_in_time_dim(self, dic):
+        # print('90099-1 dic', dic)
+        app_ = dic["app"]
+        model_name = dic["model_name"]
+        model_ = apps.get_model(app_label=app_, model_name=model_name)
+        start_date = date.today() + timedelta(days=-90) # Monday = 0
+        for i in range(1000):
+            t = start_date + timedelta(days=i)
+            y = t.year
+            m = t.month
+            d = t.day
+            id_ = y * 10000 + m * 100 + d
+            # print(y, m, d, id_)
+            obj, is_create = model_.objects.get_or_create(id=id_)
+            obj.year = y
+            obj.month = m
+            obj.day = d
+            obj.save()
         result = {"status": "ok"}
         return result
 

@@ -173,6 +173,9 @@ def update_field_model_by_id(request, foreign=None):
     company_obj = parent_model.objects.get(id=company_obj_id_)
     model = apps.get_model(app_label=app_, model_name=model_)
     p_key_field_name = ""
+
+    print("pkey_", pkey_)
+
     if pkey_ == "new":
         s = ""
         if model.model_field_exists(app_+'_web') and isinstance(model._meta.get_field(app_+'_web'), ForeignKey):
@@ -189,21 +192,29 @@ def update_field_model_by_id(request, foreign=None):
             parent_obj__ = parent_model__.objects.get(id=parent_pkey_)
             s += ", "+parent_model_fk_name+'=parent_obj__'
         try:
-            # print('9045')
+            # print('9045-0')
             space_ = ", "
             if s == "":
                 s = "model.objects.create("
                 space_ = ""
-            # print("9045 ")
+            # print("9045-1 ", s)
+
             foreign_keys = dic_["foreign_keys"]
-            # print("9046 ")
+            # print("9046 ", foreign_keys, "9046 ")
+
             for k in foreign_keys:
                 t_model = apps.get_model(app_label=app_, model_name=foreign_keys[k]["foreign_table"])
                 p_key_field_name = t_model._meta.pk.name
-                obj__ = t_model.objects.get(id=int(foreign_keys[k]["value"]))
-                # print("=6"*10)
-                # print(obj__)
-                # print("=6"*10)
+                try:
+                    # print(k, foreign_keys[k]["value"])
+                    n_p_key = int(foreign_keys[k]["value"])
+                    # print('t_model.objects.get('+p_key_field_name+'=n_p_key)')
+                    obj__ = eval('t_model.objects.get('+p_key_field_name+'=n_p_key)')
+                    # print("=6"*10)
+                    # print(obj__)
+                    # print("=6"*10)
+                except Exception as ex:
+                    print("err 800-1: "+str(ex))
                 try:
                     myVars = vars()
                 except Exception as ex:
@@ -211,13 +222,15 @@ def update_field_model_by_id(request, foreign=None):
                 try:
                     myVars[k] = obj__
                 except Exception as ex:
+                    print("err 900: "+str(ex))
                     log_debug("err 900: "+str(ex))
                 s += space_+k+'='+k
                 space_ = ", "
         except Exception as ex:
             pass
-            # print("save with fkey error " + str(ex))
+            # print("7010-1 save with fkey error " + str(ex))
         s += ')'
+        # print(s)
         try:
             # print("9055-89\n" + s, "\n", "-"*30)
             obj = eval(s)

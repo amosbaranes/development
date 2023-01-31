@@ -215,13 +215,13 @@ class TimeDim(TruncateTableMixin, models.Model):
         return str(self.id)+" year="+str(self.year)
 
 
-class TestEvent(TruncateTableMixin, models.Model):
+class TestEvents(TruncateTableMixin, models.Model):
     class Meta:
         verbose_name = 'test_event'
         verbose_name_plural = 'test_events'
 
-    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, primary_key=True,
-                                related_name='training_user_test_events')
+    instructor = models.ForeignKey(Instructors, on_delete=models.CASCADE, default=1,
+                                   related_name='training_instructor_test_events')
     time_dim = models.ForeignKey(TimeDim, on_delete=models.CASCADE, default=1,
                                  related_name='time_dim_test_events')
     test_event_name = models.CharField(max_length=100, default='', blank=True, null=True)
