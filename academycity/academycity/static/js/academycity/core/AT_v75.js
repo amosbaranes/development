@@ -1624,16 +1624,14 @@ var process_content=function(){
 var container_on_change=function (event){
   event.stopPropagation();
   var e=event.target;
-  //alert("c9001 "+event.target.outerHTML)
+  alert("c9001 "+event.target.outerHTML)
   var e_container_id_=e.getAttribute("container_id")
    // alert(e_container_id_)
   var container = getEBI("content_"+e_container_id_)
   //  alert("c9002 "+container.outerHTML)
     //alert("9050 " + JSON.stringify(container.my_creator_obj.link_dic))
   var c_container_id_=this.getAttribute("link_number")
-
   //  alert("c9003  e_container_id_=" + e_container_id_+ " c_container_id_=" + c_container_id_)
-
   //alert("c9004 container: e.outerHTML: "+e.outerHTML+"\n\n e.value= " + e.value+"\n\n this.outerHTML= " + this.outerHTML)
   //if(e_container_id_!=c_container_id_) {return;}
   var foreign_table=e.getAttribute("foreign_table")
@@ -1642,9 +1640,6 @@ var container_on_change=function (event){
   //alert("field_ 1: " + field_)
   if(field_=="" || field_==null){//alert("missing file in object="+e.getAttribute("id"));
   return}
-
-  //alert("field_ 2: " + field_)
-
   try{var type_=e.getAttribute("type");if(type_==null || type_==""){type_=""}} catch(er){}
   //alert("9059 ")
   var field__="";var v__="";
@@ -1662,7 +1657,7 @@ var container_on_change=function (event){
    }
    else{field__=field_; v__=vv}
   }
-  //alert('90807-78 = \n'+ JSON.stringify(container.dependents)+"\n\n"+JSON.stringify(dependent));
+  alert('90807-78 = \n'+ JSON.stringify(container.dependents)+"\n\n"+JSON.stringify(dependent));
 
   if(foreign_table!=null && foreign_table!="")
   {
@@ -1677,7 +1672,7 @@ var container_on_change=function (event){
 
   if(need_to_return==true){return}
 
-  //alert("c9006 field_ 2: " + field_)
+  alert("c9006 field_ 2: " + field_)
 
   container.tab.parent.active_tab_content=container;
   try{var content_type_=e.getAttribute("content_type");if(content_type_==null || content_type_==""){content_type_=""}} catch(er){}
@@ -2556,7 +2551,6 @@ acTestCreator.prototype.create_obj = function()
 
   for(f in dic["functions"]){var s="this.main_div."+f+"="+dic["functions"][f];eval(s);}
 }
-
 
 
 
@@ -4328,6 +4322,7 @@ TabContent.prototype.clear_objects_data = function()
  try{
    var dic = this.current_record_data;
    this.link_content.setAttribute("record_id", "new");var container_dic=this.tab.tab_objects[this.link_number];
+   this.link_content.foreign_keys={};this.link_content.dependents={};
    for(o in container_dic)
    {
     //alert('90 container_dic= ' + JSON.stringify(container_dic[o]));
