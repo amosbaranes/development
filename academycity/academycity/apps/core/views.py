@@ -23,6 +23,8 @@ import pandas as pd
 
 def home(request):
     title = _('Core App')
+
+
     return render(request, 'core/home.html', {'title': title})
 
 
@@ -174,7 +176,7 @@ def update_field_model_by_id(request, foreign=None):
     model = apps.get_model(app_label=app_, model_name=model_)
     p_key_field_name = ""
 
-    print("pkey_", pkey_)
+    # print("9087-67 pkey_", pkey_)
 
     if pkey_ == "new":
         s = ""
@@ -182,15 +184,19 @@ def update_field_model_by_id(request, foreign=None):
             # print("it is a foreign key")
             s = "model.objects.create("
             s += app_ + '_web=company_obj '
+        # print("9066-66:\n" + s)
+        # print(parent_model_)
         if parent_model_ != "":
             # print('9040\n', s)
-            if s == "":
-                s = "model.objects.create("
             parent_pkey_ = dic_['parent_pkey']
             parent_model__ = apps.get_model(app_label=app_, model_name=parent_model_)
             parent_model_fk_name = parent_model_[:-1]
             parent_obj__ = parent_model__.objects.get(id=parent_pkey_)
-            s += ", "+parent_model_fk_name+'=parent_obj__'
+            if s == "":
+                s = "model.objects.create("
+            else:
+                s += ", "
+            s += parent_model_fk_name + '=parent_obj__'
         try:
             # print('9045-0')
             space_ = ", "
@@ -230,18 +236,21 @@ def update_field_model_by_id(request, foreign=None):
             pass
             # print("7010-1 save with fkey error " + str(ex))
         s += ')'
-        # print(s)
+
+        # print("9066-661:\n" + s)
+
         try:
             # print("9055-89\n" + s, "\n", "-"*30)
             obj = eval(s)
-            # print("9042 "+str(model._meta.get_field(app_ + '_web')))
+            p_key_field_name = model._meta.pk.name
             if model.model_field_exists(app_ + '_web') and isinstance(model._meta.get_field(app_ + '_web'), ManyToManyField):
                 s = "obj."+app_ + '_web.add(company_obj)'
                 # print("9035\n", s)
                 eval(s)
                 # print("9052")
                 obj.save()
-                # print("9055")
+                print("9055")
+            # print("9055-89\n", "-"*30)
         except Exception as ex:
             print("error701 "+str(ex))
             log_debug("error701 "+str(ex))
@@ -284,7 +293,8 @@ def update_field_model_by_id(request, foreign=None):
             except Exception as ex:
                 print("Error 4500-1 core update_field_model_by_id: "+str(ex))
 
-            # print("f", f, "fields_[f]", fields_[f])
+            # print("f", f, "fields_[f]", fields_[f], type_)
+
             if type_ == "checkbox":
                 if value_ == 'true':
                     value_ = True
@@ -334,13 +344,11 @@ def update_field_model_by_id(request, foreign=None):
             # ooo = eval('obj.' + p_key_field_name+".id")
             # print(ooo)
             # isinstance(obj_id, User)
-
             try:
                 obj_id = eval('obj.' + p_key_field_name)
                 obj_id = int(obj_id)
             except Exception as ex:
                 obj_id = eval('obj.' + p_key_field_name + '.id')
-            # print(p_key_field_name, obj_id)
         return JsonResponse({'status': 'ok', "record_id": obj_id})
     except Exception as e:
         log_debug("erro600 " + str(e))

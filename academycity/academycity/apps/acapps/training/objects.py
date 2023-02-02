@@ -183,23 +183,35 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
         model_platoons = apps.get_model(app_label=app_, model_name="platoons")
         model_battalions = apps.get_model(app_label=app_, model_name="battalions")
         my_group, is_created = Group.objects.get_or_create(name='t_simple_user')
+
+        try:
+            u = User.objects.get(first_name="admin", last_name="admin")
+            print(u)
+            instructor_obj, is_created = model_instructors.objects.get_or_create(user=u)
+            instructor_obj.first_name = "admin"
+            instructor_obj.last_name = "admin"
+            # instructor_obj.position = 0
+            instructor_obj.save()
+        except Exception as ex:
+            print("9001-01 Error " + str(ex))
+
         for index, row in df.iterrows():
-            company_name_ = str(row["company_name"])
+            company_name_ = str(row["company_name"]).upper()
             first_name_ = str(row["first_name"])
             last_name_ = str(row["last_name"])
             username_ = str(row["username"])
             password_ = str(row["password"])
             position_name_ = str(row["position_name"])
             position_ = int(self.df_instructor_positions[self.df_instructor_positions["position_name"]==position_name_]["id"])
-            # print(company_name_, first_name_, " ", last_name_, position_name_)
+            # print("9088-1", company_name_, first_name_, " ", last_name_, position_name_)
 
             try:
                 u = User.objects.get(username=username_)
                 count = u.delete()
                 # print("B count\n", count, "\n")
             except Exception as ex:
-                pass
-                # print("9055-55 Error " + str(ex))
+                # pass
+                print("9055-55 Error " + str(ex))
             try:
                 u = User.objects.create_user(username=username_, email=username_+'@gmail.com',
                                              password=password_)
@@ -207,12 +219,10 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
                 u.first_name = first_name_
                 u.last_name = last_name_
                 u.save()
-                # print(u)
                 my_group.user_set.add(u)
                 my_group.save()
             except Exception as ex:
                 print("9000-00 Error " + str(ex))
-
             try:
                 instructor_obj, is_created = model_instructors.objects.get_or_create(user=u)
                 instructor_obj.first_name = first_name_
@@ -221,27 +231,41 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
                 instructor_obj.save()
             except Exception as ex:
                 print("9001-01 Error " + str(ex))
-            # print("-"*100, "\n", instructor_obj, "  =", is_created, "\n", "-"*100)
 
-            if company_name_ != "Battalion":
-                # print(company_name_)
-                company_obj = model_companys.objects.get(company_name=company_name_)
-                if str(row["platoon_number"]).lower() != "nan":
-                    platoon_number = float(str(row["platoon_number"]))
-                    platoon_obj = model_platoons.objects.get(platoon_number=platoon_number, company=company_obj)
-                    platoon_obj.instructor.add(instructor_obj)
-                    if position_ == 2:
+            print("Record 9088-3   ", company_name_, instructor_obj, "  =", is_created)
+
+            try:
+                if company_name_ != "Battalion".upper():
+                    # print(company_name_)
+                    company_obj = model_companys.objects.get(company_name=company_name_)
+                    if str(row["platoon_number"]).lower() != "nan":
+                        platoon_number = float(str(row["platoon_number"]))
+                        platoon_obj = model_platoons.objects.get(platoon_number=platoon_number, company=company_obj)
+                        platoon_obj.instructor.add(instructor_obj)
+                        if position_ == 2:
+                            company_obj.instructor.add(instructor_obj)
+                        platoon_obj.save()
+                    else:
+                        # print("no platoon")
                         company_obj.instructor.add(instructor_obj)
-                    platoon_obj.save()
+                        company_obj.save()
                 else:
-                    # print("no platoon")
-                    company_obj.instructor.add(instructor_obj)
-                    company_obj.save()
-            else:
-                battalion_obj = model_battalions.objects.get(battalion_number=1)
-                # print("Battalion")
-                battalion_obj.instructor.add(instructor_obj)
-                battalion_obj.save()
+                    try:
+                        battalion_obj, is_created = model_battalions.objects.get_or_create(battalion_number=1)
+                    except Exception as ex:
+                        print("9011-1111 Error " + str(ex))
+                    try:
+                        battalion_obj.instructor.add(instructor_obj)
+                    except Exception as ex:
+                        print("9011-1122 Error " + str(ex))
+                    try:
+                        battalion_obj.save()
+                    except Exception as ex:
+                        print("9011-1133 Error " + str(ex))
+            except Exception as ex:
+                print("9022-22 Error " + str(ex))
+
+        print("Done")
         result = {"status": "ok"}
         return result
 
@@ -312,35 +336,32 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
         model_soldier = apps.get_model(app_label=app_, model_name=model_name_)
 
         # model_user = get_user_model()
-        # ll = []
-        # ll_ = []
-        # ll1 = []
-        # ll1_ = []
-        # llf = []
-        # llf_ = []
-        # llfn = []
-        # llfn_ = []
+        ll = []
+        ll_ = []
+        ll1 = []
+        ll1_ = []
+        llf = []
+        llf_ = []
+        llfn = []
+        llfn_ = []
         n__ = 0
-        nc_ = 0
         for index, row in df.iterrows():
-            if n__ > 1000:
+            if n__ > 10000:
                 break
             n__ += 1
             # print(row, "\n", row["COMPANY"])
-            company_name_ = str(row["COMPANY"])
-            company_name_1 = company_name_[0]
-            username_ = company_name_1.upper()+str(row["SN"])
+            company_name_ = str(row["COMPANY"]).upper()
+            company_number = int(row["COMPANYID"])
+            username_ = str(23*10000+company_number*1000+int(row["SN"]))
             company_obj, is_created = model_companys.objects.get_or_create(company_name=company_name_, battalion=battalion_obj)
             if is_created:
                 # print("-"*100, "\n", company_obj, "  ", is_created, "\n", "-"*100)
-                nc_ += 1
-                company_obj.company_number = nc_
+                company_obj.company_number = company_number
                 company_obj.instructor.add(instructor_obj)
                 company_obj.save()
             # str(int(row["PLATOON"]))
-
             platoon_name_n = int(row["PLATOON"])
-            platoon_name_ = str(platoon_name_n)
+            platoon_name_ = company_name_ + " " +str(platoon_name_n)
             platoon_obj, is_created = model_platoons.objects.get_or_create(platoon_name=platoon_name_, company=company_obj)
             if is_created:
                 platoon_obj.platoon_number = platoon_name_n
@@ -358,16 +379,19 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
             last_name = full_name[nn__+1:]
             mz4psn = str(row["MZ4PSN"])
             ramonsn = str(row["RAMONSN"])
-            # if mz4psn not in ll:
-            #     ll.append(mz4psn)
-            # else:
-            #     ll_.append(mz4psn)
-            #     print("mz4psn= ", mz4psn)
-            # if ramonsn not in ll1:
-            #     ll1.append(ramonsn)
-            # else:
-            #     ll1_.append(ramonsn)
-            #     print("ramonsn= ", ramonsn)
+            shoes_size = float(row["shoes_size"])
+            uniform_size = str(row["uniform_size"])
+            sport_size = str(row["sport_size"])
+            if mz4psn not in ll:
+                ll.append(mz4psn)
+            else:
+                ll_.append(mz4psn)
+                print("mz4psn= ", mz4psn)
+            if ramonsn not in ll1:
+                ll1.append(ramonsn)
+            else:
+                ll1_.append(ramonsn)
+                print("ramonsn= ", ramonsn)
 
             # if first_name not in llf:
             #     llf.append(first_name)
@@ -384,9 +408,11 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
 
             if position == "NAN":
                 position = ""
-            # print("A ", "-"*100, "\n", "full name", full_name, " first name=", first_name,
-            #       " last name=", last_name, " position=", position,
-            #       " mz4psn", mz4psn, " ramonsn=", ramonsn)
+            #  "A \n", "-"*100, "\n",
+            print("full name", full_name, " first name=", first_name,"username_",username_,
+                  " last name=", last_name, " position=", position,
+                  " mz4psn", mz4psn, " ramonsn=", ramonsn,
+                  shoes_size, uniform_size, sport_size)
 
             try:
                 u = User.objects.get(username=username_)
@@ -397,7 +423,7 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
                 # print("9055-55 Error " + str(ex))
 
             try:
-                u = User.objects.create_user(username=username_, email=username_+'@gmail.com', password=username_+'PP123#')
+                u = User.objects.create_user(username=username_, email=username_+'@gmail.com', password=company_name_+username_+'#')
                 # print(u.password)
                 u.first_name = first_name
                 u.last_name = last_name
@@ -431,6 +457,10 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
                 soldier.position = position
                 soldier.mz4psn = mz4psn
                 soldier.ramonsn = ramonsn
+                #
+                soldier.shoes_size = shoes_size
+                soldier.uniform_size = uniform_size
+                soldier.sport_size = sport_size
                 soldier.save()
                 course_obj.course_soldiers.add(soldier)
                 course_obj.save()
@@ -441,12 +471,12 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
         # print("1="*10, "\n\n")
         # print(llfn, "\n\n", llfn_)
         # print("2="*10, "\n\n")
-
-        # print(ll, "\n\n", ll1)
-        # print("="*100, "\n\n")
-        # print(ll_, "\n\n", ll1_)
-        # print("="*100, "\n\n")
-
+        #
+        print(ll, "\n\n", ll1)
+        print("="*100, "\n\n")
+        print(ll_, "\n\n", ll1_)
+        print("="*100, "\n\n")
+        #
         # ukkk = authenticate(username='testsold', password='Amos122#')
         # print(ukkk)
         # print(ukkk.email)
@@ -549,9 +579,10 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
         qs = model_soldier.objects.all()
         df = pd.DataFrame(list(qs.values("platoon_id","is_confirmed","first_name","last_name","image",
                                          "userid","mz4psn","ramonsn","address","city","state","zip","country",
-                                         "email","phone","birthday","num_of_children","marital_status","shirt_size",
-                                         "pant_size","shoes_size","height","weight","blood_type","position","rank",
+                                         "email","phone","birthday","num_of_children","marital_status",
+                                         "shoes_size", "uniform_size", "sport_size", "uniform_size","height","weight","blood_type","position","rank",
                                          "profession","sub_profession","medical_condition")))
+
         dfm = df.merge(df_p, left_on='platoon_id', right_on='id')
         dfm = dfm.drop(["platoon_id", "id"], axis=1)
         # print(dfm.iloc[0])

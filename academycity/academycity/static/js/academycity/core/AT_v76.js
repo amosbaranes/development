@@ -125,7 +125,8 @@ company_obj_id, is_show_btns=true, user_id=0)
                                                   "attributes":{},
                                                   "functions":["onclick", "onchange", "onmouseover", "onmouseout"]},
                                         "Test":{"title":"Test", "width":5,
-                                                  "setting": {"setup_dictionary":[], "width":[], "height":[]},
+                                                  "setting": {"setup_dictionary":[], "width":[], "height":[],
+                                                              "table":[], "field":[]},
                                                   "attributes":{},
                                                   "functions":["onclick", "onchange", "onmouseover", "onmouseout"]},
                                         "Activity": {"title":"Activity", "width":7,
@@ -1624,12 +1625,12 @@ var process_content=function(){
 var container_on_change=function (event){
   event.stopPropagation();
   var e=event.target;
-  alert("c9001 "+event.target.outerHTML)
+  //alert("c9001 "+event.target.outerHTML)
   var e_container_id_=e.getAttribute("container_id")
-   // alert(e_container_id_)
+  //alert(e_container_id_)
   var container = getEBI("content_"+e_container_id_)
   //  alert("c9002 "+container.outerHTML)
-    //alert("9050 " + JSON.stringify(container.my_creator_obj.link_dic))
+  //alert("9050 " + JSON.stringify(container.my_creator_obj.link_dic))
   var c_container_id_=this.getAttribute("link_number")
   //  alert("c9003  e_container_id_=" + e_container_id_+ " c_container_id_=" + c_container_id_)
   //alert("c9004 container: e.outerHTML: "+e.outerHTML+"\n\n e.value= " + e.value+"\n\n this.outerHTML= " + this.outerHTML)
@@ -1644,6 +1645,7 @@ var container_on_change=function (event){
   //alert("9059 ")
   var field__="";var v__="";
   var need_to_return = false;
+  //alert(dependent)
   if(dependent!=null && dependent!="")
   {
    var ll_dependents =dependent.split(",")
@@ -1657,8 +1659,7 @@ var container_on_change=function (event){
    }
    else{field__=field_; v__=vv}
   }
-  alert('90807-78 = \n'+ JSON.stringify(container.dependents)+"\n\n"+JSON.stringify(dependent));
-
+  // try{alert('90807-78 = \n'+ JSON.stringify(container.dependents)+"\n\n"+JSON.stringify(dependent));}catch(er){}
   if(foreign_table!=null && foreign_table!="")
   {
    if(container.foreign_keys==null){container.foreign_keys={}}
@@ -1667,19 +1668,15 @@ var container_on_change=function (event){
    {container.foreign_keys[field_]={"value":vv, "foreign_table":foreign_table};need_to_return=true;}
    else{field__=field_; v__=vv}
   }
-
   //alert(need_to_return)
-
   if(need_to_return==true){return}
-
-  alert("c9006 field_ 2: " + field_)
+  // alert("c9006 field_ 2: " + field_)
 
   container.tab.parent.active_tab_content=container;
   try{var content_type_=e.getAttribute("content_type");if(content_type_==null || content_type_==""){content_type_=""}} catch(er){}
   var html_obj_to_update=container
   //alert("9043  e: " + e.outerHTML)
   //alert("9054  "+content_type_)
-  //alert("field_ 3: " + field_)
   var field__u=field_; var v__u=e.value;
   var type__=e.getAttribute("type_");
   //alert("9086 type__="+type__)
@@ -1695,6 +1692,7 @@ var container_on_change=function (event){
   }
   if(field__!=""){field__u=field__; v__u=v__}
   //alert("90544  field__u= "+field__u+" - v__u= "+v__u)
+
   if (content_type_=="accounting")
   {
   //alert("90010")
@@ -1734,48 +1732,61 @@ var container_on_change=function (event){
   //alert("90011")
   } else
   {
-   var model_=container.my_creator_obj.link_dic["properties"]["table"];
-   //alert(model_)
-   var record_id_=container.getAttribute("record_id");
-   var is_plugin = false;if(record_id_=="plugin"){is_plugin = true}
-   if(record_id_=="plugin"){
-     //alert(e.outerHTML);
-     if(type_=="radio"){html_obj_to_update=e.parentNode.parentNode}else {html_obj_to_update=e};
-     //alert("html_obj_to_update:\n"+html_obj_to_update.outerHTML);
-     record_id_=html_obj_to_update.getAttribute("record_id");
-     var fields_values=e.getAttribute("fields_values");var fvs = fields_values.split("-")
-   }
-   var parent_id_=container.getAttribute("parent_id");
-   if(this.my_creator_obj.is_json_data){
-     // alert(model_+"\nparent_id:"+parent_id_+"\nrecord_id:"+record_id_+"\nfield:"+field__u+"\nfield value:"+v__u+"\n"+event.target.outerHTML)
-     var json_manager_obj_number = container.getAttribute("json_manager_obj_number");
-     // alert(json_manager_obj_number)
-     var jmc = get_creator(json_manager_obj_number)
-     var dic_data={"model": model_,"parent_id":parent_id_,"record_id":record_id_,"field":field__u,"field_value":v__u,
-                  "container_id":e_container_id_}
-     // alert('9083 dic_data= '+ JSON.stringify(dic_data));
-     jmc.update_json_record(dic_data);
-   } else {
-       try{var parent_model_=container.my_creator_obj.link_dic["properties"]["parent_table"]} catch(er){};
+       var model_=container.my_creator_obj.link_dic["properties"]["table"];
+       var record_id_=container.getAttribute("record_id");
+       var parent_id_=container.getAttribute("parent_id");
+       var is_plugin = false;if(record_id_=="plugin"){is_plugin = true}
+       if(record_id_=="plugin"){
+         //alert(e.outerHTML);
+         if(type_=="radio"){html_obj_to_update=e.parentNode.parentNode}else {html_obj_to_update=e};
+         //alert("html_obj_to_update:\n"+html_obj_to_update.outerHTML);
+         record_id_=html_obj_to_update.getAttribute("record_id");
+         var fields_values=e.getAttribute("fields_values");var fvs = fields_values.split("-")
+       }
 
-       //alert("90123-1 parent_model_=  "+parent_model_+" model_= "+model_+" parent_id_="+parent_id_+" record_id_="+record_id_+" fields_values="+fields_values)
+       //alert("9055-35:\nmodel_="+model_ +"\nrecord_id_="+record_id_)
 
-       if(parent_model_==null){var parent_model_="";}
-       //alert("9004 else: record_id_ "+record_id_ +" parent_id_= "+parent_id_+" model_= "+model_+" parent_model_= "+parent_model_)
-       var dic_data={"model":model_, "parent_model":parent_model_, "pkey":record_id_, "parent_pkey":parent_id_,
-                    "fields": {}, "type":type_, "foreign_keys":container.foreign_keys, "dependents":container.dependents}
+       if(this.my_creator_obj.is_json_data){
+         // alert(model_+"\nparent_id:"+parent_id_+"\nrecord_id:"+record_id_+"\nfield:"+field__u+"\nfield value:"+v__u+"\n"+event.target.outerHTML)
+         var json_manager_obj_number = container.getAttribute("json_manager_obj_number");
+         // alert(json_manager_obj_number)
+         var jmc = get_creator(json_manager_obj_number)
+         var dic_data={"model": model_,"parent_id":parent_id_,"record_id":record_id_,"field":field__u,"field_value":v__u,
+                      "container_id":e_container_id_}
+         // alert('9083 dic_data= '+ JSON.stringify(dic_data));
+         jmc.update_json_record(dic_data);
+       } else {
+         try{var parent_model_=container.my_creator_obj.link_dic["properties"]["parent_table"]} catch(er){};
+         //alert("90123-1 parent_model_=  "+parent_model_+" model_= "+model_+" parent_id_="+parent_id_+" record_id_="+record_id_+" fields_values="+fields_values)
+         if(parent_model_==null){var parent_model_="";}
+         //alert("9004 else: record_id_ "+record_id_ +" parent_id_= "+parent_id_+" model_= "+model_+" parent_model_= "+parent_model_)
+         var foreign_keys_ = container.foreign_keys; var dependents_=container.dependents;
+         if(type__=="tests")
+         {
+           foreign_keys_={};dependents_={};
+           parent_model_=model_;parent_id_=record_id_;
+           var e_=event.target;
+           v__u = ""+e.checked;html_obj_to_update=e;
+           var model_=e.getAttribute("table")
+           var record_id_=e.getAttribute("record_id")
+           //alert("c9001-55-0 \nparent_model_="+parent_model_+"\nparent_id_="+parent_id_+"\nmodel_="+model_+"\nrecord_id_="+record_id_)
+         }
 
-       //alert('9080-111 dic_data= '+ JSON.stringify(dic_data));
+           var dic_data={"model":model_, "parent_model":parent_model_, "pkey":record_id_, "parent_pkey":parent_id_,
+                        "fields": {}, "type":type_, "foreign_keys":foreign_keys_, "dependents":dependents_}
 
-       if(is_plugin==true){for(var q in fvs){var x=fvs[q].split("__");dic_data["fields"][x[0]]=x[1];}}
-       else {dic_data["fields"][field__u]=v__u;}
+           //alert('9080-111 dic_data= '+ JSON.stringify(dic_data));
 
-       //alert('9080-222 dic_data= '+ JSON.stringify(dic_data));
-       //alert(html_obj_to_update.outerHTML)
-       container.tab.parent.save_data(html_obj_to_update, dic_data);
-       //alert("90 "+e.value)
-       try{container.my_creator_obj.refresh_my_tables(f=field__u, v=v__u);}catch(er){}
-    }
+           if(is_plugin==true){for(var q in fvs){var x=fvs[q].split("__");dic_data["fields"][x[0]]=x[1];}}
+           else {dic_data["fields"][field__u]=v__u;}
+
+           //alert('9080-222 dic_data= '+ JSON.stringify(dic_data));
+           //alert(html_obj_to_update.outerHTML)
+           container.tab.parent.save_data(html_obj_to_update, dic_data);
+           //alert("90 "+e.value)
+           try{container.my_creator_obj.refresh_my_tables(f=field__u, v=v__u);}catch(er){}
+
+       }
   }
   // event.stopPropagation();
  }
@@ -2471,20 +2482,24 @@ function acTestCreator(parent){this.parent=parent;this.structure_dic=null;}
 
 acTestCreator.prototype.create_obj = function()
 {
-  var ff = function(div_, dic_, nlt){
+  var ff = function(div_, dic_, dic, nlt){
       table_=document.createElement("table");
       t_body_=document.createElement("tbody");
       table_.appendChild(t_body_);
       div_.appendChild(table_);
       for(var l in dic_)
       {
-        f(e_obj=table_, l, dic_[l], nlt)
+        f(e_obj=table_, l, dic_[l], dic, nlt)
       }
   }
-  var f = function(e_obj, l, dic_,nlt)
+  var f = function(e_obj, l, dic_, dic, nlt)
   {
+   //alert("\n" + JSON.stringify(dic))
    //alert("\n" + JSON.stringify(dic_))
-   var s = '<input type="checkbox" test_number="'+l+'">'
+   var container_id = dic["container_id"]
+   var table = dic["properties"]["table"]
+   var field = dic["properties"]["field"]
+   var s = '<input type="checkbox" type_="tests" container_id="'+container_id+'" field="'+field+'" table="'+table+'" record_id="new" test_number="'+l+'">'
    //var s = '<label class="switch"><input type="checkbox" checked><span class="slider"></span></label><br><br>'
    e_obj.innerHTML+="<tr><td style='width:"+nlt+"%'>"+dic_["title"]+"</td><td>"+s+"</td></tr>"
   }
@@ -2539,11 +2554,11 @@ acTestCreator.prototype.create_obj = function()
                 var color_ = dic_tests["data"][g]["color"]
                 div_.innerHTML += "<h3 style='text-align:center;width:100%;color:"+color_+"'><u>"+title_+"</u></h3>"
                 var dic_=dic_tests["data"][g]["sub_tests"]["data"]
-                ff(div_, dic_, nlt)
+                ff(div_, dic_, dic, nlt)
               }
             } else if(dic_tests["type"]==3)
             {
-              ff(div_, dic_tests["data"], nlt)
+              ff(div_, dic_tests["data"], dic, nlt)
             }
           }
       }

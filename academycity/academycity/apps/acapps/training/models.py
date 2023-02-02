@@ -187,9 +187,11 @@ class Soldiers(TruncateTableMixin, models.Model):
     birthday = models.DateField(blank=True, null=True)
     num_of_children = models.SmallIntegerField(default=0)
     marital_status = models.SmallIntegerField(default=0)
-    shirt_size = models.SmallIntegerField(default=0)
-    pant_size = models.SmallIntegerField(default=0)
-    shoes_size = models.SmallIntegerField(default=0)
+    #
+    shoes_size = models.DecimalField(max_digits=4, decimal_places=2, default=0)
+    uniform_size = models.CharField(max_length=2, default='', blank=True, null=True)
+    sport_size = models.CharField(max_length=2, default='', blank=True, null=True)
+    #
     height = models.SmallIntegerField(default=0)
     weight = models.SmallIntegerField(default=0)
     blood_type =  models.CharField(max_length=10, default='', blank=True, null=True)
@@ -225,6 +227,18 @@ class TestEvents(TruncateTableMixin, models.Model):
     time_dim = models.ForeignKey(TimeDim, on_delete=models.CASCADE, default=1,
                                  related_name='time_dim_test_events')
     test_event_name = models.CharField(max_length=100, default='', blank=True, null=True)
+
+    def __str__(self):
+        return str(self.id)+" "+str(self.test_event_name)
+
+class TestsForEvents(TruncateTableMixin, models.Model):
+    class Meta:
+        verbose_name = 'test_for_event'
+        verbose_name_plural = 'test_for_events'
+
+    testevent = models.ForeignKey(TestEvents, on_delete=models.CASCADE, default=1,
+                                  related_name='test_event_tests_for_events')
+    test_number = models.PositiveSmallIntegerField(default=0)
 
 #
 class Tests(TruncateTableMixin, models.Model):
