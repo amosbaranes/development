@@ -69,7 +69,7 @@ class TestEventsAdmin(admin.ModelAdmin):
 
 @admin.register(TestsForEvents)
 class TestsForEventsAdmin(admin.ModelAdmin):
-    list_display = ('id', 'test_number')
+    list_display = ('id', 'test_number', 'value')
 
 @admin.register(DoubleShoot)
 class DoubleShootAdmin(admin.ModelAdmin):

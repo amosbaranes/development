@@ -1761,19 +1761,26 @@ var container_on_change=function (event){
          if(parent_model_==null){var parent_model_="";}
          //alert("9004 else: record_id_ "+record_id_ +" parent_id_= "+parent_id_+" model_= "+model_+" parent_model_= "+parent_model_)
          var foreign_keys_ = container.foreign_keys; var dependents_=container.dependents;
+         fields_={}
          if(type__=="tests")
          {
            foreign_keys_={};dependents_={};
            parent_model_=model_;parent_id_=record_id_;
            var e_=event.target;
+           //alert(e_.outerHTML)
            v__u = ""+e.checked;html_obj_to_update=e;
            var model_=e.getAttribute("table")
            var record_id_=e.getAttribute("record_id")
+
+           fields_[e_.getAttribute("value_field")]=e_.getAttribute("test_number")
+
+           //alert('9080-111-11 fields_= '+ JSON.stringify(field_));
+
            //alert("c9001-55-0 \nparent_model_="+parent_model_+"\nparent_id_="+parent_id_+"\nmodel_="+model_+"\nrecord_id_="+record_id_)
          }
 
            var dic_data={"model":model_, "parent_model":parent_model_, "pkey":record_id_, "parent_pkey":parent_id_,
-                        "fields": {}, "type":type_, "foreign_keys":foreign_keys_, "dependents":dependents_}
+                        "fields": fields_, "type":type_, "foreign_keys":foreign_keys_, "dependents":dependents_}
 
            //alert('9080-111 dic_data= '+ JSON.stringify(dic_data));
 
@@ -2478,32 +2485,36 @@ acRadioCreator.prototype.set_data = function(ll=null)
 
 
 // Test --
-function acTestCreator(parent){this.parent=parent;this.structure_dic=null;}
+function acTestCreator(parent){this.parent=parent;this.structure_dic=null;this.tesl_list=[], this.fields=[];}
 
 acTestCreator.prototype.create_obj = function()
 {
-  var ff = function(div_, dic_, dic, nlt){
+  var ff = function(div_, dic_, dic, nlt, ll){
       table_=document.createElement("table");
       t_body_=document.createElement("tbody");
       table_.appendChild(t_body_);
       div_.appendChild(table_);
-      for(var l in dic_)
-      {
-        f(e_obj=table_, l, dic_[l], dic, nlt)
-      }
+      for(var l in dic_){f(e_obj=table_, l, dic_[l], dic, nlt, ll)}
   }
-  var f = function(e_obj, l, dic_, dic, nlt)
+  var f = function(e_obj, l, dic_, dic, nlt, ll)
   {
    //alert("\n" + JSON.stringify(dic))
    //alert("\n" + JSON.stringify(dic_))
+   ll.push(l)
    var container_id = dic["container_id"]
    var table = dic["properties"]["table"]
    var field = dic["properties"]["field"]
-   var s = '<input type="checkbox" type_="tests" container_id="'+container_id+'" field="'+field+'" table="'+table+'" record_id="new" test_number="'+l+'">'
+   var s = '<input id="test_'+l+'" type="checkbox" type_="tests" container_id="'+container_id
+   s+='" field="value" value_field="'+field+'" table="'+table+'" record_id="new" test_number="'+l+'">'
    //var s = '<label class="switch"><input type="checkbox" checked><span class="slider"></span></label><br><br>'
    e_obj.innerHTML+="<tr><td style='width:"+nlt+"%'>"+dic_["title"]+"</td><td>"+s+"</td></tr>"
   }
   var dic=this.parent.data;
+  var field=dic["properties"]["field"]; this.fields.push(field);
+    this.fields.push("value");
+
+    //alert("90441-200  "+JSON.stringify(this.fields));
+
   var width_=dic["properties"]["width"]; if(width_==null || width_==""){width_=80};
   var height_=dic["properties"]["height"]; if(height_==null || height_==""){height_=300};
   var container = document.getElementById("content_"+dic["container_id"]);
@@ -2554,17 +2565,48 @@ acTestCreator.prototype.create_obj = function()
                 var color_ = dic_tests["data"][g]["color"]
                 div_.innerHTML += "<h3 style='text-align:center;width:100%;color:"+color_+"'><u>"+title_+"</u></h3>"
                 var dic_=dic_tests["data"][g]["sub_tests"]["data"]
-                ff(div_, dic_, dic, nlt)
+                ff(div_, dic_, dic, nlt, this.tesl_list)
+                //f1(dic_, this.tesl_list)
               }
             } else if(dic_tests["type"]==3)
             {
-              ff(div_, dic_tests["data"], dic, nlt)
+              ff(div_, dic_tests["data"], dic, nlt, this.tesl_list);
+              //f1(dic_tests["data"], this.tesl_list)
             }
           }
       }
+      //alert(JSON.stringify(this.tesl_list));
   }
 
   for(f in dic["functions"]){var s="this.main_div."+f+"="+dic["functions"][f];eval(s);}
+}
+
+acTestCreator.prototype.clean_data = function()
+{for(var j in this.tesl_list){var id="test_"+this.tesl_list[j];getEBI(id).checked=false;}}
+
+acTestCreator.prototype.set_data = function(record_id, ll=null)
+{
+  this.clean_data();if(ll!=null){for(var i in ll){get_creator(ll[i]).clean_data()}}
+  var dic=this.parent.data;
+  //alert("acRadioCreator 90446-16  "+JSON.stringify(dic));
+  var model_=dic["properties"]["table"]
+  var container = document.getElementById("content_"+dic["container_id"]);
+  var parent_model_=container.my_creator_obj.link_dic["properties"]["table"];
+     var dic_={"model":model_, "parent_model":parent_model_, "parent_id": record_id, "number_of_rows": "1000",
+               "fields": this.fields,
+               "filters":{}, "order_by": {}}
+    //alert("90447-150  "+JSON.stringify(dic_));
+  var fun=function(data, this_obj){
+    //alert("9010: "+JSON.stringify(data));
+    var n_=data[this_obj.fields[0]].length;if(n_<1){return}
+    for(var j=0; j<n_; j++)
+    {
+     var s_id="test_"+data["test_number"][j];var n=1*data["value"][j];
+     s_id=getEBI(s_id);if(n==1){s_id.checked=true}else{s_id.checked=false}
+     s_id.parentNode.parentNode.setAttribute("record_id",data["id"][j])
+    }
+  }
+  this.parent.atm.get_data(call_back_fun=fun, dic_, this)
 }
 
 

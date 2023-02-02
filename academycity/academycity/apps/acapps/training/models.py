@@ -238,7 +238,8 @@ class TestsForEvents(TruncateTableMixin, models.Model):
 
     testevent = models.ForeignKey(TestEvents, on_delete=models.CASCADE, default=1,
                                   related_name='test_event_tests_for_events')
-    test_number = models.PositiveSmallIntegerField(default=0)
+    test_number = models.PositiveIntegerField(default=0)
+    value = models.PositiveSmallIntegerField(default=0)
 
 #
 class Tests(TruncateTableMixin, models.Model):

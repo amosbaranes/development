@@ -162,7 +162,7 @@ def update_field_model_by_id(request, foreign=None):
     dic_ = request.POST["dic"]
     # print('-1'*50)
     # print('9055-67 core update_field_model_by_id: dic_', dic_, "\n", '-'*50)
-    # log_debug(dic_)
+    log_debug(dic_)
     dic_ = eval(dic_)
     app_ = dic_['app']
     model_ = dic_['model']
@@ -240,7 +240,7 @@ def update_field_model_by_id(request, foreign=None):
         # print("9066-661:\n" + s)
 
         try:
-            # print("9055-89\n" + s, "\n", "-"*30)
+            print("9055-89\n" + s, "\n", "-"*30)
             obj = eval(s)
             p_key_field_name = model._meta.pk.name
             if model.model_field_exists(app_ + '_web') and isinstance(model._meta.get_field(app_ + '_web'), ManyToManyField):
@@ -294,11 +294,10 @@ def update_field_model_by_id(request, foreign=None):
                 print("Error 4500-1 core update_field_model_by_id: "+str(ex))
 
             # print("f", f, "fields_[f]", fields_[f], type_)
-
             if type_ == "checkbox":
                 if value_ == 'true':
                     value_ = True
-                else:
+                elif value_ == 'false':
                     value_ = False
             elif type_ == "date":
                 try:
@@ -358,10 +357,10 @@ def update_field_model_by_id(request, foreign=None):
 def get_data_link(request):
     dic_ = request.POST["dic"]
     dic_ = eval(dic_)
-    # try:
-    #     print('9050-1 core views get_data_link dic_= ', dic_, '\n', dic_["fields"])
-    # except Exception as ex:
-    #     pass
+    try:
+        print('9050-1 core views get_data_link dic_= ', dic_, '\n', dic_["fields"])
+    except Exception as ex:
+        pass
 
     multiple_select_fields = None
     if "multiple_select_fields" in dic_:
@@ -432,19 +431,20 @@ def get_data_link(request):
         if model.model_field_exists(app_+'_web') and isinstance(model._meta.get_field(app_+'_web'),
                                                                     ForeignKey):
                 s_ += app_ + '_web=company_obj '
-
         if parent_id_ > -1:
             parent_model_ = dic_['parent_model']
             parent_pkey_ = parent_id_
             parent_model__ = apps.get_model(app_label=app_, model_name=parent_model_)
             parent_model_fk_name = parent_model_[:-1]
             parent_obj__ = parent_model__.objects.get(id=parent_pkey_)
-            s_ += ', ' + parent_model_fk_name+'=parent_obj__'
+            if s_ != '':
+                s_ += ', '
+            s_ += parent_model_fk_name+'=parent_obj__'
         if s_ != '':
             s += '.filter('+s_+')'
-        # print('s00')
+        # print('s00111')
         # print(s)
-        # print('s00')
+        # print('s00111')
     else:
         if parent_id_ > -1:
             parent_model_ = dic_['parent_model']
@@ -457,7 +457,7 @@ def get_data_link(request):
             s = 'model.objects'
         # print('90500 s '+s)
 
-    # print("9030-2")
+    print("9030-2")
     try:
         for f in filters:
             filter_field_ = f
@@ -484,9 +484,9 @@ def get_data_link(request):
             # print('ss__')
             data__ = eval(ss__)
         s += '.all()[:number_of_rows_].values('+fields_str+')'
-        # print('s111 for data')
-        # print(s)
-        # print('s11')
+        print('s111 for data')
+        print(s)
+        print('s11')
         data = eval(s)
         # print(data)
     except Exception as ex:
@@ -527,8 +527,8 @@ def get_data_link(request):
 
     # print("=2"*50)
     dic["pkf_name"] = p_key_field_name
-    # print(dic)
-    # print("=2"*50)
+    print(dic)
+    print("=2"*50)
 
     dic = {'status': 'ok', "dic": dic}
     # print('core view 9055 get_data_link dic_= ', dic)
