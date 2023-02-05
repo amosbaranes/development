@@ -161,9 +161,14 @@ def update_field_model_by_id(request, foreign=None):
     # log_debug("update_field_model_by_id 0")
     dic_ = request.POST["dic"]
     # print('-1'*50)
-    # print('9055-67 core update_field_model_by_id: dic_', dic_, "\n", '-'*50)
+    print('90155-67 core update_field_model_by_id: dic_', dic_, "\n", '-'*50)
     log_debug(dic_)
     dic_ = eval(dic_)
+    element_id_ = ""
+    try:
+        element_id_ = dic_["element_id"]
+    except Exception as ex:
+        pass
     app_ = dic_['app']
     model_ = dic_['model']
     pkey_ = dic_['pkey']
@@ -240,7 +245,8 @@ def update_field_model_by_id(request, foreign=None):
         # print("9066-661:\n" + s)
 
         try:
-            print("9055-89\n" + s, "\n", "-"*30)
+            # print("9055-89\n" + s, "\n", "-"*30)
+            # print(model)
             obj = eval(s)
             p_key_field_name = model._meta.pk.name
             if model.model_field_exists(app_ + '_web') and isinstance(model._meta.get_field(app_ + '_web'), ManyToManyField):
@@ -348,7 +354,8 @@ def update_field_model_by_id(request, foreign=None):
                 obj_id = int(obj_id)
             except Exception as ex:
                 obj_id = eval('obj.' + p_key_field_name + '.id')
-        return JsonResponse({'status': 'ok', "record_id": obj_id})
+        print({'status': 'ok', "record_id": obj_id, "element_id":element_id_})
+        return JsonResponse({'status': 'ok', "record_id": obj_id, "element_id":element_id_})
     except Exception as e:
         log_debug("erro600 " + str(e))
         return JsonResponse({'status': 'ko'})
@@ -457,7 +464,7 @@ def get_data_link(request):
             s = 'model.objects'
         # print('90500 s '+s)
 
-    print("9030-2")
+    # print("9030-2")
     try:
         for f in filters:
             filter_field_ = f
@@ -484,9 +491,9 @@ def get_data_link(request):
             # print('ss__')
             data__ = eval(ss__)
         s += '.all()[:number_of_rows_].values('+fields_str+')'
-        print('s111 for data')
-        print(s)
-        print('s11')
+        # print('s111 for data')
+        # print(s)
+        # print('s11')
         data = eval(s)
         # print(data)
     except Exception as ex:
@@ -527,8 +534,8 @@ def get_data_link(request):
 
     # print("=2"*50)
     dic["pkf_name"] = p_key_field_name
-    print(dic)
-    print("=2"*50)
+    # print(dic)
+    # print("=2"*50)
 
     dic = {'status': 'ok', "dic": dic}
     # print('core view 9055 get_data_link dic_= ', dic)

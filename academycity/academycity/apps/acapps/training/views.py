@@ -58,7 +58,12 @@ k = {
                                                  {1: {"title": "grade for Run 10000"}
                                                   }
                                              },
-                                    201050: {"title": "Thick subjugation",
+                                    201050: {"title": "Pushups",
+                                             "questions":
+                                                 {1: {"title": "grade for Run 10000"}
+                                                  }
+                                             },
+                                    201060: {"title": "Pullups",
                                              "questions":
                                                  {1: {"title": "grade for Run 10000"}
                                                   }

@@ -58,6 +58,9 @@ class Battalions(TruncateTableMixin, models.Model):
 
 # פלוגה/פלגה
 class Companys(TruncateTableMixin, models.Model):
+    class Meta:
+        verbose_name = 'company'
+        verbose_name_plural = 'companys'
     training_web = models.ForeignKey(TrainingWeb, on_delete=models.CASCADE, default=1,
                                      related_name='training_web_companys')
     instructor = models.ManyToManyField(Instructors, default=[1],
@@ -206,7 +209,6 @@ class Soldiers(TruncateTableMixin, models.Model):
     def __str__(self):
         return str(self.userid) + ": " + str(self.first_name) + " " + str(self.last_name)
 
-
 class TimeDim(TruncateTableMixin, models.Model):
     id = models.PositiveIntegerField(primary_key=True)
     year = models.PositiveSmallIntegerField(default=0)
@@ -214,9 +216,9 @@ class TimeDim(TruncateTableMixin, models.Model):
     day = models.PositiveSmallIntegerField(default=0)
 
     def __str__(self):
-        return str(self.id)+" year="+str(self.year)
+        return str(self.id)
 
-
+#
 class TestEvents(TruncateTableMixin, models.Model):
     class Meta:
         verbose_name = 'test_event'
@@ -229,7 +231,7 @@ class TestEvents(TruncateTableMixin, models.Model):
     test_event_name = models.CharField(max_length=100, default='', blank=True, null=True)
 
     def __str__(self):
-        return str(self.id)+" "+str(self.test_event_name)
+        return str(self.test_event_name)
 
 class TestsForEvents(TruncateTableMixin, models.Model):
     class Meta:
@@ -241,7 +243,39 @@ class TestsForEvents(TruncateTableMixin, models.Model):
     test_number = models.PositiveIntegerField(default=0)
     value = models.PositiveSmallIntegerField(default=0)
 
-#
+    def __str__(self):
+        return str(self.test_number)
+
+class SoldiersForEvents(TruncateTableMixin, models.Model):
+    class Meta:
+        verbose_name = 'soldiers_for_event'
+        verbose_name_plural = 'soldiers_for_events'
+
+    testevent = models.ForeignKey(TestEvents, on_delete=models.CASCADE, default=1,
+                                  related_name='test_event_soldiers_for_events')
+    soldier_number = models.PositiveIntegerField(default=0)
+    value = models.PositiveSmallIntegerField(default=0)
+
+    def __str__(self):
+        return str(self.soldier_number)
+
+class GradesForEvents(TruncateTableMixin, models.Model):
+    class Meta:
+        verbose_name = 'grades_for_event'
+        verbose_name_plural = 'grades_for_events'
+
+    testevent = models.ForeignKey(TestEvents, on_delete=models.CASCADE, default=1,
+                                  related_name='test_event_grades_for_events')
+    soldiersforevent = models.ForeignKey(SoldiersForEvents, on_delete=models.CASCADE, default=1,
+                                         related_name='soldiersforevent_grades_for_events')
+    testsforevent = models.ForeignKey(TestsForEvents, on_delete=models.CASCADE, default=1,
+                                      related_name='testsforevent_grades_for_events')
+    value = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+
+    def __str__(self):
+        return str(self.testevent)+"-"+str(self.soldiersforevent)+"-"+str(self.testsforevent)+"-"+str(self.value)
+
+# ToBeDeleted
 class Tests(TruncateTableMixin, models.Model):
     class Meta:
         verbose_name = 'test'

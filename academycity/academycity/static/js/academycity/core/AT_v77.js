@@ -124,12 +124,24 @@ company_obj_id, is_show_btns=true, user_id=0)
                                                   "setting": {"setup_dictionary":[]},
                                                   "attributes":{},
                                                   "functions":["onclick", "onchange", "onmouseover", "onmouseout"]},
-                                        "Test":{"title":"Test", "width":5,
+                                        "Test":{"title":"T", "width":3,
                                                   "setting": {"setup_dictionary":[], "width":[], "height":[],
-                                                              "table":[], "field":[]},
+                                                              "table":[], "field":[], "value_field":[],
+                                                              "recording_tests_number":[]},
                                                   "attributes":{},
                                                   "functions":["onclick", "onchange", "onmouseover", "onmouseout"]},
-                                        "Activity": {"title":"Activity", "width":7,
+                                        "Group":{"title":"G", "width":3,
+                                                  "setting": {"setup_dictionary":[], "width":[], "height":[],
+                                                              "table":[], "field":[], "value_field":[],
+                                                              "recording_tests_number":[]},
+                                                  "attributes":{},
+                                                  "functions":["onclick", "onchange", "onmouseover", "onmouseout"]},
+                                        "RecordingTests":{"title":"R", "width":3,
+                                                  "setting": {"setup_dictionary":[], "width":[], "height":[],
+                                                              "table":[], "field":[], "value_field":[]},
+                                                  "attributes":{},
+                                                  "functions":["onclick", "onchange", "onmouseover", "onmouseout"]},
+                                        "Activity": {"title":"Activity", "width":6,
                                                   "setting": {"table_class":["","basic", "payment"], "parent_table":[], "table":[],
                                                               "number_of_radios":[]},
                                                   "attributes":{},
@@ -141,17 +153,17 @@ company_obj_id, is_show_btns=true, user_id=0)
                                                        "payment"], "height":[]},
                                                        "functions":["onclick", "onchange", "onmouseover", "onmouseout", "on_new_record"],
                                                        "field_setting":["field_title","field_name","field_width","field_align","foreign_table","filter"]},
-                                        "MSearchTable":{"title":"MSearch Table", "width":12,
+                                        "MSearchTable":{"title":"MSearchTable", "width":10,
                                                        "setting": {"is_new_button":["","Yes","No"], "is_del_button":["","Yes","No"]},
                                                        "attributes":{"number_of_rows":[], "table_class":["","basic", "payment"], "height":[]},
                                                        "functions":["onchange"],
                                                        "field_setting":["field_title","field_name","field_width","field_align","foreign_table"]},
-                                        "GeneralLedger":{"title":"General Ledger", "width":12,
+                                        "GeneralLedger":{"title":"GenLedger", "width":8,
                                                          "setting": {},
                                                          "attributes":{"table_class":["","basic", "payment"], "table":[]},
                                                          "functions":["onchange"],
                                                          "field_setting":["field_title","field_name","field_width","field_align"]},
-                                        "DETable":{"title":"Data Entry Table", "width":12,
+                                        "DETable":{"title":"DaEntryTable", "width":10,
                                                        "setting": {"is_new_button":["","Yes","No"], "is_del_button":["","Yes","No"]},
                                                        "attributes":{"table":[], "table_class":["","basic", "payment", "data_entry"], "height":[]},
                                                        "functions":["onchange", "on_new_record"],
@@ -168,7 +180,7 @@ company_obj_id, is_show_btns=true, user_id=0)
                                                  "setting": {},
                                                  "attributes":{"height":[], "interval":[]},
                                                  "functions":[]},
-                                        "Candle":{"title":"Candle", "width":7,
+                                        "Candle":{"title":"Candle", "width":6,
                                                  "setting": {"border_width":[],"border_color":[],
                                                              "scale_type":["linear", "logarithmic"],"height":[],"width":[]},
                                                  "attributes":{},
@@ -179,7 +191,7 @@ company_obj_id, is_show_btns=true, user_id=0)
                                                             "dimensions":[], "fields":[], "fact_model_field": []},
                                                "attributes":{"field":[]},
                                                "functions":["onchange", "on_loaded"]},
-                                        "Heatmap":{"title":"Heatmap", "width":8,
+                                        "Heatmap":{"title":"Heatmap", "width":7,
                                                    "setting": {"width":[], "height":[]},
                                                    "attributes":{},
                                                    "functions":[]}}},
@@ -648,9 +660,7 @@ AdvancedTabsManager.prototype.activate_obj_function = function(call_back_fun, di
 }
 
 AdvancedTabsManager.prototype.save_data = function(html_obj, dic_, is_json_data=false)
-{
-  //alert("AdvancedTabsManager.prototype.save_data")
-
+{  //alert("AdvancedTabsManager.prototype.save_data")
   dic_["app"]=this.my_app;
   dic_["company_obj_id"]=this.company_obj_id;
   //alert("90112:\n"+JSON.stringify(dic_));
@@ -663,7 +673,10 @@ AdvancedTabsManager.prototype.save_data = function(html_obj, dic_, is_json_data=
             {alert("Data was not saved.")}
             else{
               var record_level="record_id"; if(is_json_data==true){record_level="parent_id"}
-              html_obj_.setAttribute(record_level, dic["record_id"])
+              var element_id_=null;
+              try{var element_id_=dic["element_id"];} catch(er){alert(er)}
+              if(element_id_!=null){getEBI(element_id_).setAttribute(record_level, dic["record_id"])} else{
+              html_obj_.setAttribute(record_level, dic["record_id"])}
             }
           }.bind(html_obj_=html_obj));
 }
@@ -681,10 +694,9 @@ AdvancedTabsManager.prototype.get_data = function(call_back_fun, dic_, tbody_)
           try{
            //alert("9001"+JSON.stringify(data));
            if(data["status"]!="ok"){return}
-
-           //alert("9005-0"+JSON.stringify(data));
-
+           //alert("9005-0 data in atm "+JSON.stringify(data));
            call_back_fun(data["dic"], tbody_)
+           //alert("after call_back_fun")
            tbody_.data=data["dic"];
            //alert("9005"+JSON.stringify(data));
            } catch(er){alert("9090-1 AdvancedTabsManager.prototype.get_data: "+er)}
@@ -798,7 +810,7 @@ function FunctionsPropertiesEditor(tab, functions_dic, functions_list_dic, prope
     editor.tab_obj_.active_function=f;
     var fun=null;
     try{fun=functions_[f]} catch(er){}
-    if(fun==null){fun="function (event){\ntry{\n\n} catch(er){alert('err 9016: '+er)}\n}";functions_[f]=fun;}
+    if(fun==null){fun="function (event){\ntry{\n\n} catch(er){alert('err 9016-1: '+er)}\n}";functions_[f]=fun;}
       tab_content_.innerHTML=functions_[f];
       tab_content_.setAttribute("fun_name",f);
       var funtablinks = document.getElementsByClassName("funtablinks");
@@ -1625,11 +1637,12 @@ var process_content=function(){
 var container_on_change=function (event){
   event.stopPropagation();
   var e=event.target;
+  //alert("c9001-1 "+e.outerHTML)
   //alert("c9001 "+event.target.outerHTML)
   var e_container_id_=e.getAttribute("container_id")
   //alert(e_container_id_)
   var container = getEBI("content_"+e_container_id_)
-  //  alert("c9002 "+container.outerHTML)
+  //alert("c9002 "+container.outerHTML)
   //alert("9050 " + JSON.stringify(container.my_creator_obj.link_dic))
   var c_container_id_=this.getAttribute("link_number")
   //  alert("c9003  e_container_id_=" + e_container_id_+ " c_container_id_=" + c_container_id_)
@@ -1762,25 +1775,58 @@ var container_on_change=function (event){
          //alert("9004 else: record_id_ "+record_id_ +" parent_id_= "+parent_id_+" model_= "+model_+" parent_model_= "+parent_model_)
          var foreign_keys_ = container.foreign_keys; var dependents_=container.dependents;
          fields_={}
-         if(type__=="tests")
+         if(type__=="tests" || type__=="groups")
          {
            foreign_keys_={};dependents_={};
            parent_model_=model_;parent_id_=record_id_;
            var e_=event.target;
            //alert(e_.outerHTML)
-           v__u = ""+e.checked;html_obj_to_update=e;
-           var model_=e.getAttribute("table")
-           var record_id_=e.getAttribute("record_id")
-
-           fields_[e_.getAttribute("value_field")]=e_.getAttribute("test_number")
-
+           v__u = ""+e_.checked;html_obj_to_update=e_;
+           var model_=e_.getAttribute("table")
+           var record_id_=e_.getAttribute("record_id")
+           fields_[e_.getAttribute("value_field")]=e_.getAttribute(e_.getAttribute("value_field"))
            //alert('9080-111-11 fields_= '+ JSON.stringify(field_));
-
            //alert("c9001-55-0 \nparent_model_="+parent_model_+"\nparent_id_="+parent_id_+"\nmodel_="+model_+"\nrecord_id_="+record_id_)
+
+            var atm_=this.tab.parent;
+           if(e_.checked==false){
+              var dic_={"obj":"AdvancedTabs","atm":atm_.my_name,"app":atm_.my_app,"fun":"delete_record",
+                        "params": {"app":atm_.my_app,"model":model_,"id":record_id_}}
+              //alert('9080-1222-11 fields_= '+ JSON.stringify(dic_));
+              $.post(atm_.activate_function_link_,
+                  {dic : JSON.stringify(dic_)},
+                  function(dic){
+                    id_ = dic["result"]["id"];
+                    //alert("record was deleted: "+id_)
+                 })
+                 e.setAttribute("record_id", "new")
+              return;
+           }
+//           else{
+//
+//           var dic_data={"model":model_, "parent_model":parent_model_, "pkey":record_id_, "parent_pkey":parent_id_,
+//                        "fields": fields_, "type":type_, "foreign_keys":foreign_keys_, "dependents":dependents_,
+//                        "element_id":e_.getAttribute("id")}
+//           dic_data["fields"][field__u]=v__u;
+//
+//           dic_data["app"]=atm_.my_app;dic_data["company_obj_id"]=atm_.company_obj_id;
+//           $.post(atm_.update_field_link_,
+//                  {dic : JSON.stringify(dic_data)},
+//                  function(data){
+//                    if(data["status"]!="ok")
+//                    {alert("Data was not saved.")}
+//                    else{
+//                    var element_id=data["element_id"];try{var ee=getEBI(element_id);ee.setAttribute("record_id", data["record_id"])
+//                    } catch(er){"Error 90556-22: "+alert(er)}
+//                    }
+//                  })
+//            return
+//           }
          }
 
            var dic_data={"model":model_, "parent_model":parent_model_, "pkey":record_id_, "parent_pkey":parent_id_,
-                        "fields": fields_, "type":type_, "foreign_keys":foreign_keys_, "dependents":dependents_}
+                        "fields": fields_, "type":type_, "foreign_keys":foreign_keys_, "dependents":dependents_,
+                        "element_id":e_.getAttribute("id")}
 
            //alert('9080-111 dic_data= '+ JSON.stringify(dic_data));
 
@@ -2290,42 +2336,6 @@ acActivityCreator.prototype.row_click = function(event)
 
 }
 
-
-//acActivityCreator.prototype.set_data = function(ll=null)
-//{
-//  alert(66666)
-//  //this.clean_data();
-//  if(ll!=null){for(var i in ll){get_creator(ll[i]).clean_data()}}
-//  var dic=this.parent.data;
-//  //alert("acRadioCreator 90441-1  "+JSON.stringify(dic));
-//  var container = document.getElementById("content_"+dic["container_id"]);
-//  var model_=container.my_creator_obj.link_dic["properties"]["table"];
-//     var parent_model_=container.my_creator_obj.link_dic["properties"]["parent_table"];
-//     var parent_id_=container.getAttribute("parent_id");
-//     var dic_={"model":model_, "parent_model":parent_model_, "parent_id": parent_id_, "number_of_rows": "1000",
-//               "fields": this.fields, "filters":{}, "order_by": {}}
-//
-//    //alert("90446-1  "+JSON.stringify(dic_));
-//    //alert("90441-2  "+JSON.stringify(this.fields));
-//
-//  var fun=function(data, this_obj){
-//    var dic=this_obj.parent.data;
-//    var obj_number = dic["properties"]["obj_number"]
-//    var n_=data[this_obj.fields[0]].length;
-//    //alert(n_)
-//    if(n_<1){return}
-//    //alert("9081-22 acRadioCreator.prototype.set_data\n data: "+JSON.stringify(data));
-//    for(var j=0; j<n_; j++)
-//    {
-//     var s_id=data[this_obj.fields[0]][j]+"_"+data[this_obj.fields[1]][j]+"_"+data[this_obj.fields[2]][j]+"_"+data[this_obj.fields[3]][j]
-//     getEBI(s_id).checked=true;
-//     getEBI(s_id).parentNode.parentNode.setAttribute("record_id", data["id"][j])
-//    }
-//  }
-//  //  alert("9010: "+JSON.stringify(dic__));
-//  this.parent.atm.get_data(call_back_fun=fun, dic_, this)
-//}
-
 // Radio --
 function acRadioCreator(parent){this.parent=parent;this.structure_dic=null;}
 
@@ -2479,13 +2489,13 @@ acRadioCreator.prototype.set_data = function(ll=null)
      getEBI(s_id).parentNode.parentNode.setAttribute("record_id", data["id"][j])
     }
   }
-  //  alert("9010: "+JSON.stringify(dic__));
+  //  alert("901210: "+JSON.stringify(dic__));
   this.parent.atm.get_data(call_back_fun=fun, dic_, this)
 }
 
 
 // Test --
-function acTestCreator(parent){this.parent=parent;this.structure_dic=null;this.tesl_list=[], this.fields=[];}
+function acTestCreator(parent){this.parent=parent;this.structure_dic=null;this.test_list=[];this.fields=[];}
 
 acTestCreator.prototype.create_obj = function()
 {
@@ -2504,14 +2514,15 @@ acTestCreator.prototype.create_obj = function()
    var container_id = dic["container_id"]
    var table = dic["properties"]["table"]
    var field = dic["properties"]["field"]
+   var value_field = dic["properties"]["value_field"]
    var s = '<input id="test_'+l+'" type="checkbox" type_="tests" container_id="'+container_id
-   s+='" field="value" value_field="'+field+'" table="'+table+'" record_id="new" test_number="'+l+'">'
+   s+='" field="'+field+'" value_field="'+value_field+'" table="'+table+'" record_id="new" test_number="'+l+'">'
    //var s = '<label class="switch"><input type="checkbox" checked><span class="slider"></span></label><br><br>'
    e_obj.innerHTML+="<tr><td style='width:"+nlt+"%'>"+dic_["title"]+"</td><td>"+s+"</td></tr>"
   }
   var dic=this.parent.data;
   var field=dic["properties"]["field"]; this.fields.push(field);
-    this.fields.push("value");
+  var value_field=dic["properties"]["value_field"]; this.fields.push(value_field);
 
     //alert("90441-200  "+JSON.stringify(this.fields));
 
@@ -2522,6 +2533,7 @@ acTestCreator.prototype.create_obj = function()
   var obj_number = dic["properties"]["obj_number"]
   this.main_div=document.createElement("div");
   this.main_div.my_creator_obj=this;
+  this.main_div.my_creator_obj.dic=dic;
   this.main_div.setAttribute("id", obj_number);
   this.main_div.setAttribute("obj_type", dic["obj_type"]);
   this.main_div.setAttribute("type", dic["element_name"]);
@@ -2529,6 +2541,23 @@ acTestCreator.prototype.create_obj = function()
   this.main_div.setAttribute("style", style_);
   this.main_div.setAttribute("class", "row");
   this.main_div.setAttribute("container_id", dic["container_id"]);
+
+  this.main_div.addEventListener("click", function(event){
+      var e=event.target;
+      //alert(e.outerHTML)
+      //alert("90765-57\n"+JSON.stringify(this.dic));
+      var etype_=e.getAttribute("type")
+      if(etype_=="checkbox"){
+         //alert(e.outerHTML)
+         //alert(e.checked)
+          var etype_=e.getAttribute("type")
+          if(etype_=="checkbox"){
+             //alert("test66")
+             this.my_creator_obj.obj_was_clicked(e)
+          }
+      }
+  })
+
   container.appendChild(this.main_div);
   //--
   var general_dic_name = dic["properties"]["setup_dictionary"]
@@ -2565,24 +2594,29 @@ acTestCreator.prototype.create_obj = function()
                 var color_ = dic_tests["data"][g]["color"]
                 div_.innerHTML += "<h3 style='text-align:center;width:100%;color:"+color_+"'><u>"+title_+"</u></h3>"
                 var dic_=dic_tests["data"][g]["sub_tests"]["data"]
-                ff(div_, dic_, dic, nlt, this.tesl_list)
-                //f1(dic_, this.tesl_list)
+                ff(div_, dic_, dic, nlt, this.test_list)
+                //f1(dic_, this.test_list)
               }
             } else if(dic_tests["type"]==3)
             {
-              ff(div_, dic_tests["data"], dic, nlt, this.tesl_list);
-              //f1(dic_tests["data"], this.tesl_list)
+              ff(div_, dic_tests["data"], dic, nlt, this.test_list);
+              //f1(dic_tests["data"], this.test_list)
             }
           }
       }
-      //alert(JSON.stringify(this.tesl_list));
+      //alert(JSON.stringify(this.test_list));
   }
 
   for(f in dic["functions"]){var s="this.main_div."+f+"="+dic["functions"][f];eval(s);}
 }
 
 acTestCreator.prototype.clean_data = function()
-{for(var j in this.tesl_list){var id="test_"+this.tesl_list[j];getEBI(id).checked=false;}}
+{for(var j in this.test_list){var id="test_"+this.test_list[j];getEBI(id).checked=false;}}
+
+acTestCreator.prototype.obj_was_clicked = function(e)
+{
+  //alert("901456\nacTestCreator.prototype.obj_was_clicked\n "+e.outerHTML);
+}
 
 acTestCreator.prototype.set_data = function(record_id, ll=null)
 {
@@ -2597,24 +2631,314 @@ acTestCreator.prototype.set_data = function(record_id, ll=null)
                "filters":{}, "order_by": {}}
     //alert("90447-150  "+JSON.stringify(dic_));
   var fun=function(data, this_obj){
-    //alert("9010: "+JSON.stringify(data));
+    //alert("943010: "+JSON.stringify(data));
     var n_=data[this_obj.fields[0]].length;if(n_<1){return}
     for(var j=0; j<n_; j++)
     {
      var s_id="test_"+data["test_number"][j];var n=1*data["value"][j];
      s_id=getEBI(s_id);if(n==1){s_id.checked=true}else{s_id.checked=false}
-     s_id.parentNode.parentNode.setAttribute("record_id",data["id"][j])
+     s_id.setAttribute("record_id",data["id"][j])
+     //s_id.parentNode.parentNode.setAttribute("record_id",data["id"][j])
     }
   }
   this.parent.atm.get_data(call_back_fun=fun, dic_, this)
 }
 
 
+// Group --
+function acGroupCreator(parent){this.parent=parent;this.fields=[];}
+
+acGroupCreator.prototype.get_soldiers_list = function(e_dic)
+{
+ var dic=this.parent.data;
+ var container_id=dic["container_id"]
+ var e=e_dic["e"];var c=e_dic["c"];
+ var table=dic["properties"]["table"];
+ var field=dic["properties"]["field"]
+ var value_field = dic["properties"]["value_field"]
+ //alert(e.outerHTML)
+ if(e.getAttribute("my_members_status")=="empty")
+ {
+   e.setAttribute("my_members_status", "field")
+     var dic_=eval(e.getAttribute("link"))
+     for(var i in dic_)
+     {
+      var id_=i
+      var s='&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' //<span style="cursor: pointer">+</span>'
+      s+='<input type="checkbox" container_id="'+container_id+'" id="soldier_'+id_+'" soldier_number="'+id_+'" record_id="new" value="" table="'+table
+      s+='" field="'+field+'" value_field="'+value_field+'" type_="groups">'
+      s+='<label>'+dic_[i]["title"]+'</label><br/>'
+      c.innerHTML+=s
+     }
+ }
+}
+
+acGroupCreator.prototype.create_obj = function()
+{
+  var dic=this.parent.data;
+  var field=dic["properties"]["field"]; this.fields.push(field);
+  var value_field=dic["properties"]["value_field"]; this.fields.push(value_field);
+  var width_=dic["properties"]["width"]; if(width_==null || width_==""){width_=80};
+  var height_=dic["properties"]["height"]; if(height_==null || height_==""){height_=300};
+  var container = document.getElementById("content_"+dic["container_id"]);
+  // alert("90355-23 acGroupCreator.prototype.create_obj\n"+JSON.stringify(dic));
+  var obj_number = dic["properties"]["obj_number"]
+  this.main_div=document.createElement("div");
+  this.main_div.my_creator_obj=this;
+  this.main_div.dic=dic;
+  this.main_div.setAttribute("id", obj_number);
+  this.main_div.setAttribute("obj_type", dic["obj_type"]);
+  this.main_div.setAttribute("type", dic["element_name"]);
+  var style_ = "position:absolute;left:"+dic["properties"]["x"]+"px;top:"+dic["properties"]["y"]+"px;width:"+width_+"%"
+  this.main_div.setAttribute("style", style_);
+  this.main_div.setAttribute("class", "row");
+  this.main_div.setAttribute("container_id", dic["container_id"]);
+
+  this.main_div.addEventListener("change", function(event){
+      var e=event.target;
+   //alert("change\n\n"+e.outerHTML)
+  })
+
+  this.main_div.addEventListener("click", function(event){
+      var e=event.target;
+      //alert("click: \n\n"+e.outerHTML)
+      //alert("90777-77\n"+JSON.stringify(this.dic));
+      var my_class_members=e.getAttribute("my_class_members")
+      if(my_class_members!=null){
+        var c = document.getElementsByClassName(my_class_members)[0]
+        var etype_=e.getAttribute("type")
+        if(etype_=="checkbox"){
+         //alert(e.outerHTML)
+         //alert(e.checked)
+         var cc=c.getElementsByTagName("input");
+         var ec=new Event("change", {bubbles: true});
+         var n_=0
+         for(k in cc)
+         {
+          cc[k].checked=e.checked;
+         }
+         for(k in cc)
+         {
+          cc[k].dispatchEvent(ec)
+         }
+        } else if (etype_=="span"){
+            if(c.style.display=="block"){c.style.display="none"}
+            else{c.style.display="block";this.my_creator_obj.get_soldiers_list({"e":e,"c":c})}
+        }
+      } else{
+        var etype_=e.getAttribute("type")
+        if(etype_=="checkbox"){
+         //alert("group55")
+         this.my_creator_obj.obj_was_clicked(e)
+        }
+      }
+  })
+  container.appendChild(this.main_div);
+  //--
+  var general_dic_name=dic["properties"]["setup_dictionary"]
+  if(general_dic_name==null || general_dic_name==""){this.main_div.innerHTML="Group Pluging"}
+  else {this.main_div.innerHTML="Group Pluging working"}
+  //--
+  for(f in dic["functions"]){var s="this.main_div."+f+"="+dic["functions"][f];eval(s);}
+}
+
+acGroupCreator.prototype.obj_was_clicked = function(e)
+{
+   //alert("90356-22\nacGroupCreator.prototype.obj_was_clicked\n "+e.outerHTML);
+}
+
+acGroupCreator.prototype.open_close_lists = function(n=0)
+{
+  var ll=atm.general.get_platoons_ids();ll=ll[n]
+  //alert("90667-77\n"+JSON.stringify(ll));
+  var ec=new Event("click", {bubbles: true});
+  for(l in ll){try{getEBI(ll[l]).dispatchEvent(ec)} catch(er){}}
+}
+
+acGroupCreator.prototype.set_obj_structure = function(display_="none")
+{
+ var f=function(s_link, dic, d_div, n=0, spaces="")
+ {
+     var spaces_=spaces+"&nbsp;&nbsp;&nbsp;"; var n_=n+1;
+     for(k in dic)
+     {
+        s_link_=s_link+"["+k+"]['data']";var title = dic[k]["title"];
+        var title_=title.replace(/ /g, '').toLowerCase();
+        var class_="group_"+title_;var id_="id_"+title_;var sid_="sid_"+title_
+        //&#45;&#45;
+        var s=spaces_+'<span type="span" style="cursor: pointer" id="'+sid_+'"'
+
+        if(n_>2){s+='my_members_status="empty" link="'+s_link_+'"'}
+
+        s+='my_class_members="'+class_+'">+</span><input type="checkbox" id="'+id_+'" my_class_members="'+class_+'"><label>'+title+'</label><br/>'
+        //alert(s)
+        d_div.innerHTML+=s;
+        var d_div_=document.createElement("div");
+        d_div_.setAttribute("id", "div_"+id_);d_div_.setAttribute("class", class_);
+        //var display_='block';
+        //var display_='none';
+        if(n_>2){display_='none'}
+        d_div_.setAttribute("style", 'display:'+display_);
+        d_div.appendChild(d_div_);
+        if(n_<3){f(s_link_, dic[k]["data"], d_div_, n_, spaces_)}
+     }
+ }
+
+  var dic=this.parent.data;
+  //alert("acRadioCreator 90446-16  "+JSON.stringify(dic));
+  try{
+       var general_dic_name = dic["properties"]["setup_dictionary"];
+       this.units_structure = eval("this.parent.atm.general."+general_dic_name)
+       this.soldiers_list = eval("this.parent.atm.general.soldiers_list")
+       //alert(JSON.stringify(this.units_structure));
+
+       var s_link="this.units_structure";
+       this.main_div.innerHTML="";
+       f(s_link, this.units_structure, this.main_div, 0)
+     } catch(er){alert("1155-515: "+er)}
+}
+
+acGroupCreator.prototype.set_data = function(record_id=null, ll=null)
+{
+  // --
+   this.open_close_lists(0)
+  // --
+  var dic=this.parent.data;
+  var model_=dic["properties"]["table"]
+  var container = document.getElementById("content_"+dic["container_id"]);
+  var parent_model_=container.my_creator_obj.link_dic["properties"]["table"];
+
+  var dic_={"model":model_,"parent_model":parent_model_,"parent_id":record_id,"number_of_rows":"1000",
+            "fields":this.fields,"filters":{},"order_by":{}}
+
+  var fun=function(data, this_obj){
+    var n_=data[this_obj.fields[0]].length;
+    if(n_<1){return}
+    for(var j=0; j<n_; j++)
+    {try{var s_id="soldier_"+data["soldier_number"][j];var n=1*data["value"][j];s_id=getEBI(s_id);
+         if(n==1){s_id.checked=true}else{s_id.checked=false};s_id.setAttribute("record_id",data["id"][j])
+     } catch(er){alert(er)}}
+  }
+  //alert("90555-55\n"+JSON.stringify(dic_));
+  this.parent.atm.get_data(call_back_fun=fun, dic_, this)
+  // --)
+   this.open_close_lists(0);this.open_close_lists(2)
+  // --
+}
+
+// RecordingTests --
+function acRecordingTestsCreator(parent){
+ this.parent=parent;this.vertical_field=null;this.horizontal_field=null;this.fields=[];
+}
+
+acRecordingTestsCreator.prototype.create_obj = function()
+{
+  var dic=this.parent.data;
+  var field=dic["properties"]["field"]; this.fields.push(field);
+  var value_field=dic["properties"]["value_field"]; this.fields.push(value_field);
+  var width_=dic["properties"]["width"]; if(width_==null || width_==""){width_=80};
+  var height_=dic["properties"]["height"]; if(height_==null || height_==""){height_=300};
+  var container = document.getElementById("content_"+dic["container_id"]);
+  // alert("90355-23 acGroupCreator.prototype.create_obj\n"+JSON.stringify(dic));
+  var obj_number = dic["properties"]["obj_number"]
+  this.main_div=document.createElement("div");
+  this.main_div.my_creator_obj=this;
+  this.main_div.dic=dic;
+  this.main_div.setAttribute("id", obj_number);
+  this.main_div.setAttribute("obj_type", dic["obj_type"]);
+  this.main_div.setAttribute("type", dic["element_name"]);
+  var style_ = "position:absolute;left:"+dic["properties"]["x"]+"px;top:"+dic["properties"]["y"]+"px;width:"+width_+"%"
+  this.main_div.setAttribute("style", style_);
+
+  this.main_div.setAttribute("container_id", dic["container_id"]);
+  this.main_div.addEventListener("click", function(event){
+      var e=event.target;
+      //alert(e.outerHTML)
+      //alert("90777-77\n"+JSON.stringify(this.dic));
+  })
+  container.appendChild(this.main_div);
+  //--
+  this.main_div.innerHTML="RecordingTests Pluging"
+  //--
+  for(f in dic["functions"]){var s="this.main_div."+f+"="+dic["functions"][f];eval(s);}
+}
+
+acRecordingTestsCreator.prototype.set_obj_structure = function(vertical_field_list=null, horizontal_field_list=null)
+{
+ if(vertical_field_list!=null){this.vertical_field_list=vertical_field_list}
+ if(horizontal_field_list!=null){this.horizontal_field_list=vertical_field_list}
+ this.horizontal_field_list=[10609,10610]; this.vertical_field_list=[201010,201020];
+ this.horizontal_field_name="soldier_number";this.vertical_field_name="test_number";
+ if(this.horizontal_field_list!=null && this.vertical_field_list!=null)
+ {
+      var s="<table><thead><tr>";
+      for(var i in this.horizontal_field_list)
+      {
+        var hf_idx=this.horizontal_field_list[j];var hf_name=hf_idx;
+        s+="<th>"+hf_name+"</th";
+      }
+      s+="</tr></thead><tbody>"
+      for(var j in this.vertical_field_list)
+      {
+       var vf_idx=this.vertical_field_list[j];var vf_name=vf_idx;
+       s+="<tr><td>"+vf_name+"</td>";
+       for(var i in this.horizontal_field_list)
+       {
+        var hf_idx=this.horizontal_field_list[j];//var hf_name=hf_idx;
+        s+="<td><input id='tg_"+vf_idx+"_"+hf_idx+"' "
+        s+="vertical_field_name='"+this.vertical_field_name+"' "
+        s+="horizontal_field_name='"+this.horizontal_field_name+"' type='text'/></td>"
+       }
+       s+="<td></tr>";
+     }
+     s+="</tbody></table>"
+     alert(s)
+ }
+
+ var f=function(s_link, dic, d_div, n=0, spaces="")
+ {
+     var spaces_=spaces+"&nbsp;&nbsp;&nbsp;"; var n_=n+1;
+     for(k in dic)
+     {
+        s_link_=s_link+"["+k+"]['data']";var title = dic[k]["title"];
+        var title_=title.replace(/ /g, '').toLowerCase();
+        var class_="group_"+title_;var id_="id_"+title_;var sid_="sid_"+title_
+        //&#45;&#45;
+        var s=spaces_+'<span type="span" style="cursor: pointer" id="'+sid_+'"'
+
+        if(n_>2){s+='my_members_status="empty" link="'+s_link_+'"'}
+
+        s+='my_class_members="'+class_+'">+</span><input type="checkbox" id="'+id_+'" my_class_members="'+class_+'"><label>'+title+'</label><br/>'
+        //alert(s)
+        d_div.innerHTML+=s;
+        var d_div_=document.createElement("div");
+        d_div_.setAttribute("id", "div_"+id_);d_div_.setAttribute("class", class_);
+        //var display_='block';
+        //var display_='none';
+        if(n_>2){display_='none'}
+        d_div_.setAttribute("style", 'display:'+display_);
+        d_div.appendChild(d_div_);
+        if(n_<3){f(s_link_, dic[k]["data"], d_div_, n_, spaces_)}
+     }
+ }
+
+  var dic=this.parent.data;
+  //alert("acRadioCreator 90446-16  "+JSON.stringify(dic));
+  try{
+       var general_dic_name = dic["properties"]["setup_dictionary"];
+       this.units_structure = eval("this.parent.atm.general."+general_dic_name)
+       this.soldiers_list = eval("this.parent.atm.general.soldiers_list")
+       //alert(JSON.stringify(this.units_structure));
+
+       var s_link="this.units_structure";
+       this.main_div.innerHTML="";
+       f(s_link, this.units_structure, this.main_div, 0)
+     } catch(er){alert("1155-525: "+er)}
+}
 
 // -- acSearchTableCreator --
 function acSearchTableCreator(parent){this.parent=parent;this.is_json_data=false;this.json_record_id=-1;
                                       this.json_last_record_number=0}
-// alert(JSON.stringify(this.parent.data));}
 
 acSearchTableCreator.prototype.create_obj = function()
 {
@@ -4474,7 +4798,8 @@ function TabNavLink(tab_nav, link_dic){
      //alert("onclick"+this.parent.link_number+"="+f)
      eval("onclick"+this.parent.link_number+"="+f)
      //alert("onclick"+this.parent.link_number+"(event)")
-     eval("onclick"+this.parent.link_number+"(event)")
+     var k=eval("onclick"+this.parent.link_number+"(event)")
+     try{if(k==-1){return;}} catch(er){alert("Error 555666 TabNavLink: "+er)}
    } catch(er){}
    var e=event.target;
    var tab_name=e.getAttribute("tab_name");

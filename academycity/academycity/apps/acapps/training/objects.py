@@ -170,6 +170,44 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
                                           "position_name": ['מפקד גדוד', 'מפקד פלוגה', 'מספר 2 – צ', 'מוביל צוות', 'מספר 2',
                                                             'אימון גופני', 'מתגבר', 'קמ”ג']})
 
+    def process(self, app_, n, nav_tables_, result, qid=None):
+        nn = len(nav_tables_)
+        if n < nn:
+            title = nav_tables_[n]
+            # print(title)
+            # result[nav_tables_[n]]={}
+            model_ = apps.get_model(app_label=app_, model_name=nav_tables_[n]+"s")
+            p_key_field_name = model_._meta.pk.name
+            if qid:
+                model_name = nav_tables_[n-1]
+                # print(title, p_key_field_name, model_name)
+                model_p = apps.get_model(app_label=app_, model_name=model_name+"s").objects.get(id=qid)
+                qs = eval("model_.objects.filter("+model_name+"=model_p).all()")
+            else:
+                qs = model_.objects.all()
+            n += 1
+            for q in qs:
+                if p_key_field_name=="user":
+                    qid_ = eval("q."+p_key_field_name+".id")
+                else:
+                    qid_ = eval("q."+p_key_field_name)
+                result[qid_]={"title":str(q), "data":{}}
+                self.process(app_, n, nav_tables_, result[qid_]["data"], qid=qid_)
+
+        return result
+
+    def get_units_structure(self, dic):
+        print('90035-1 dic', dic)
+        app_ = dic["app"]
+        groups_ = dic["groups"]
+        nav_tables_ = groups_["nav_tables"]
+        result = {"title":"title-top", "data":{}}
+        result = self.process(app_, 0, nav_tables_, result["data"])
+        # print(result)
+        # print("-"*100, "\n", "Done")
+        result = {"status": "ok", "result":result}
+        return result
+
     def set_instructors(self, dic):
         # print('90088-1 dic', dic)
         app_ = dic["app"]
