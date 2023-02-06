@@ -595,35 +595,39 @@ def upload_file(request):
             return HttpResponse(json.dumps(ret))
         # print("9005-16", folder_type_, "\n", "-"*30)
         #
-        dimensions_ = request.POST['dimensions']
-        fields_ = request.POST['fields']
-        fact_model_field_ = request.POST['fact_model_field']
-        # print("9005-161", fact_model_field_, "\n", "-"*30)
-        #
-        dimensions_s = dimensions_.split(",")
-        # time_dim,country_dim,measure_dim
-        # year,country_name,measure_name
-        # WorldBankFact,amount
-        fields_s = fields_.split(",")
-        # print(fields_)
-        # print(fact_model_field_)
-        fact_model_field_s = fact_model_field_.split(",")
-        cube_dic = {"dimensions": {}, "fact": {"model": fact_model_field_s[0], "field_name": fact_model_field_s[1]}}
-        for j in range(len(dimensions_s)):
-            f = fields_s[j]
-            d = dimensions_s[j]
-            dm = d.replace("_", "")
-            cube_dic["dimensions"][d] = {"model": dm, "field_name": f}
+        try:
+            cube_dic = {}
+            dimensions_ = request.POST['dimensions']
+            fields_ = request.POST['fields']
+            fact_model_field_ = request.POST['fact_model_field']
+            # print("9005-161", fact_model_field_, "\n", "-"*30)
+            #
+            dimensions_s = dimensions_.split(",")
+            # time_dim,country_dim,measure_dim
+            # year,country_name,measure_name
+            # WorldBankFact,amount
+            fields_s = fields_.split(",")
+            # print(fields_)
+            # print(fact_model_field_)
+            fact_model_field_s = fact_model_field_.split(",")
+            cube_dic = {"dimensions": {}, "fact": {"model": fact_model_field_s[0], "field_name": fact_model_field_s[1]}}
+            for j in range(len(dimensions_s)):
+                f = fields_s[j]
+                d = dimensions_s[j]
+                dm = d.replace("_", "")
+                cube_dic["dimensions"][d] = {"model": dm, "field_name": f}
 
-        # print("90876 upload file: ")
-        # print(cube_dic)
-        # cube_dic = {"dimensions": {"time_dim": {"model": "TimeDim", "field_name": "year"},
-        #                            "country_dim": {"model": "CountryDim", "field_name": "country_name"},
-        #                            "measure_dim": {"model": "MeasureDim", "field_name": "measure_name"}},
-        #             "fact": {"model": "WorldBankFact", "field_name": "amount"}
-        #             }
-        # print("90876-1 upload file: ")
-        # print(cube_dic)
+            # print("90876 upload file: ")
+            # print(cube_dic)
+            # cube_dic = {"dimensions": {"time_dim": {"model": "TimeDim", "field_name": "year"},
+            #                            "country_dim": {"model": "CountryDim", "field_name": "country_name"},
+            #                            "measure_dim": {"model": "MeasureDim", "field_name": "measure_name"}},
+            #             "fact": {"model": "WorldBankFact", "field_name": "amount"}
+            #             }
+            # print("90876-1 upload file: ")
+            # print(cube_dic)
+        except Exception as ex:
+            pass
 
         add_dic = {"obj": obj_name_, "app": app_, "fun": function_name_,
                    "params": {"request": request, "folder_type": folder_type_, "app": app_, "cube_dic": cube_dic},
@@ -636,6 +640,7 @@ def upload_file(request):
             add_dic["obj_param"]["measure_model"] = cube_dic["dimensions"]["measure_dim"]["model"]
         except Exception as ex:
             pass
+
         # print("9010")
         # print(add_dic)
         # print("9010")

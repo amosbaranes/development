@@ -205,6 +205,8 @@ class Soldiers(TruncateTableMixin, models.Model):
     mz4psn = models.CharField(max_length=100, default='', blank=True, null=True)
     ramonsn = models.CharField(max_length=100, default='', blank=True, null=True)
     #
+
+    #
     address = models.CharField(max_length=100, default='', blank=True, null=True)
     city = models.CharField(max_length=50, default='', blank=True, null=True)
     state = models.CharField(max_length=50, default='', blank=True, null=True)

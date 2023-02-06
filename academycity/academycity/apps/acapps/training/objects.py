@@ -635,6 +635,34 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
         result = {"status": "ok"}
         return result
 
+    def set_guns(self, dic):
+        print('90088-1 dic', dic)
+        app_ = dic["app"]
+        file_path = self.upload_file(dic)["file_path"]
+        # print("-"*100, "\n", file_path, "\n", "-"*100)
+        df = pd.read_excel(file_path, sheet_name="Data", header=0)
+        print(df)
+        print("-"*100)
+        model_inventorys = apps.get_model(app_label=app_, model_name="inventorys")
+        model_inventorycategorys = apps.get_model(app_label=app_, model_name="inventorycategorys")
+        columns = df.columns
+        print(columns)
+        for c in columns:
+            print(c)
+            inventory_category_obj, is_create = model_inventorycategorys.objects.get_or_create(category_name=c)
+            inventory_category_obj.save()
+            for index, row in df.iterrows():
+                gun_number = str(row[c]).upper()
+                print(gun_number)
+                inventory_obj, is_created = model_inventorys.objects.get_or_create(inventorycategory=inventory_category_obj,
+                                                                                   inventory_number=gun_number)
+                inventory_obj.save()
+        print("-"*50, "\n\nDone")
+        result = {"status": "ok"}
+        return result
+
+
+
 # double_shoot = DoubleShoot()
 # # function = "getSolderData"
 # dic = {"function_name": "getMember", "soldier_id": "RoxASKgvRGaR90ZuAnc3Gw"}
