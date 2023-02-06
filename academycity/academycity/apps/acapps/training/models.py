@@ -205,7 +205,8 @@ class Soldiers(TruncateTableMixin, models.Model):
     mz4psn = models.CharField(max_length=100, default='', blank=True, null=True)
     ramonsn = models.CharField(max_length=100, default='', blank=True, null=True)
     #
-
+    gun_mz4psn = models.ForeignKey(Inventorys, on_delete=models.CASCADE, null=True, related_name='inventory_mz4psn_soldiers')
+    gun_ramonsn = models.ForeignKey(Inventorys, on_delete=models.CASCADE, null=True, related_name='inventory_ramonsn_soldiers')
     #
     address = models.CharField(max_length=100, default='', blank=True, null=True)
     city = models.CharField(max_length=50, default='', blank=True, null=True)

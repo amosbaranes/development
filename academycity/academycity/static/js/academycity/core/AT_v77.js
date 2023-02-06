@@ -675,11 +675,11 @@ AdvancedTabsManager.prototype.save_data = function(html_obj, dic_, is_json_data=
             {alert("Data was not saved.")}
             else{
               var record_level="record_id"; if(is_json_data==true){record_level="parent_id"}
-              var element_id_=null;
-              try{var element_id_=dic["element_id"];} catch(er){alert(er)}
-              if(element_id_!=null){html_obj_=getEBI(element_id_)}
+              try{var element_id_=null;var element_id_=dic["element_id"];} catch(er){alert(er)}
+              try{if(element_id_!=null){html_obj_=getEBI(element_id_)}} catch(er){}
               html_obj_.setAttribute(record_level, dic["record_id"])
-              try{get_creator(html_obj_.getAttribute("my_creator_number")).on_record_created_deleted(html_obj_)} catch(er){alert(er)}
+              var creator_number=html_obj_.getAttribute("my_creator_number")
+              try{if(!(creator_number==null)){get_creator(aa).on_record_created_deleted(html_obj_);}} catch(er){alert(er)}
             }
           }.bind(html_obj_=html_obj));
 }
