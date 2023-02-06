@@ -4,6 +4,7 @@ from django.utils.translation import ugettext_lazy as _
 from .models import (TrainingWeb, Instructors, Brigades, Battalions, Companys, Platoons, Squads, TestsStructures,
                      Compliances, Courses, Soldiers, Tests, TimeDim, SoldierFact,
                      TestEvents, TestsForEvents, SoldiersForEvents, GradesForEvents,
+                     InventoryCategorys,Inventorys,
                      DoubleShoot)
 
 
@@ -78,6 +79,16 @@ class SoldiersForEventsAdmin(admin.ModelAdmin):
 @admin.register(GradesForEvents)
 class SoldiersForEventsAdmin(admin.ModelAdmin):
     list_display = ('id', 'testevent', 'soldiersforevent', 'testsforevent', 'value')
+
+#
+@admin.register(Inventorys)
+class InventorysAdmin(admin.ModelAdmin):
+    list_display = ('id', 'inventorycategory', 'inventory_number')
+
+@admin.register(InventoryCategorys)
+class InventoryCategorysAdmin(admin.ModelAdmin):
+    list_display = ('id', 'category_name')
+#
 
 @admin.register(DoubleShoot)
 class DoubleShootAdmin(admin.ModelAdmin):

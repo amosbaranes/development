@@ -13,6 +13,33 @@ class TrainingWeb(TruncateTableMixin, models.Model):
     def __str__(self):
         return str(self.program_name)
 
+# Inventory
+class InventoryCategorys(TruncateTableMixin, models.Model):
+    class Meta:
+        verbose_name = 'inventorycategory'
+        verbose_name_plural = 'inventorycategorys'
+        ordering = ['category_name']
+    training_web = models.ForeignKey(TrainingWeb, on_delete=models.CASCADE, default=1,
+                                     related_name='training_web_inventory_categorys')
+    category_name = models.CharField(max_length=50, default='', blank=True, null=True)
+
+    def __str__(self):
+        return str(self.category_name)
+
+class Inventorys(TruncateTableMixin, models.Model):
+    class Meta:
+        verbose_name = 'inventory'
+        verbose_name_plural = 'inventorys'
+        ordering = ['inventory_number']
+    training_web = models.ForeignKey(TrainingWeb, on_delete=models.CASCADE, default=1,
+                                     related_name='training_web_inventories')
+    inventorycategory = models.ForeignKey(InventoryCategorys, on_delete=models.CASCADE, default=1,
+                                          related_name='inventory_category_inventorys')
+    inventory_number = models.CharField(max_length=50, default='', blank=True, null=True)
+
+    def __str__(self):
+        return str(self.inventory_number)
+
 # מדריכים
 class Instructors(TruncateTableMixin, models.Model):
     class Meta:
@@ -285,7 +312,6 @@ class Tests(TruncateTableMixin, models.Model):
     test = models.PositiveSmallIntegerField(default=0)
     grade = models.PositiveSmallIntegerField(default=0)
 
-
 class DoubleShoot(TruncateTableMixin, models.Model):
     soldier = models.OneToOneField(Soldiers, on_delete=models.CASCADE, default=1,
                                    related_name='soldier_double_shoot')
@@ -294,7 +320,6 @@ class DoubleShoot(TruncateTableMixin, models.Model):
 
     def __str__(self):
         return str(self.id) + ": " + str(self.double_shoot_id)
-
 
 # class PlanningVsExecution(TruncateTableMixin, models.Model):
 

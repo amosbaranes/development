@@ -161,7 +161,7 @@ def update_field_model_by_id(request, foreign=None):
     # log_debug("update_field_model_by_id 0")
     dic_ = request.POST["dic"]
     # print('-1'*50)
-    print('90155-67 core update_field_model_by_id: dic_', dic_, "\n", '-'*50)
+    print('90155-100 core update_field_model_by_id: dic_', dic_, "\n", '-'*50)
     log_debug(dic_)
     dic_ = eval(dic_)
     element_id_ = ""
