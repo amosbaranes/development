@@ -197,7 +197,7 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
         return result
 
     def get_units_structure(self, dic):
-        print('90035-1 dic', dic)
+        # print('90035-1 dic', dic)
         app_ = dic["app"]
         groups_ = dic["groups"]
         nav_tables_ = groups_["nav_tables"]
@@ -635,17 +635,6 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
         result = {"status": "ok"}
         return result
 
-    def add_col(self, r):
-        print(r["user_id_x"])
-        # k = 0
-        if r["user_id_x"].isnull():
-            print(r["user_id_y"])
-            # k = r["user_id_y"]
-        else:
-            print(r["user_id_x"])
-            # k = r["user_id_x"]
-        return "aaaaa"
-
     def excel_gun_list(self, dic):
         print('90033-100 dic\n', '-'*100, '\n', dic, '\n', '-'*100)
         app_ = dic["app"]
@@ -658,50 +647,30 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
 
         qs = model_inventorys.objects.all()
         df_i = pd.DataFrame(list(qs.values('id', 'inventorycategory_id', 'inventory_number')))
-        # print(df_i)
-        # print("-"*50)
         qs = model_inventorycategorys.objects.all()
         df_ic = pd.DataFrame(list(qs.values('id', 'category_name')))
-        # print(df_ic)
         dfm = df_i.merge(df_ic, left_on='inventorycategory_id', right_on='id')
         dfm = dfm.drop(["inventorycategory_id", 'id_y'], axis=1)
         dfm.columns = ['id', 'inventory_number', 'category_name']
-        print("0="*20)
-        print(dfm)
-        # print(dfm.iloc[0])
-        print("1="*20)
 
         qs = model_soldier.objects.all()
-        df_s = pd.DataFrame(list(qs.values('user_id', 'gun_mz4psn_id', 'gun_ramonsn_id')))
-        print(df_s)
-        print(df_s.columns)
-        print("2="*20)
+        df_s = pd.DataFrame(list(qs.values('user_id', 'userid', 'first_name', 'last_name', 'gun_mz4psn_id', 'gun_ramonsn_id')))
+        df_s['userid'] = df_s['userid'] + ":" + df_s['first_name'] + " " + df_s['last_name']
+        df_s = df_s.drop(['first_name', 'last_name'], axis=1)
         dfm = df_s.merge(dfm, how='outer', left_on='gun_mz4psn_id', right_on='id')
-        print(dfm)
-        print("3="*20)
+        #
         dfm = df_s.merge(dfm, how='outer', left_on='gun_ramonsn_id', right_on='id')
-        print(dfm)
-        dfm = dfm.assign(user_id=self.add_col, axis=1)
-        print(dfm)
-        print("4="*20)
-        # dfm.columns = ['id', 'inventory_number', 'category_name']
-
-        # df = pd.DataFrame(list(qs.values("platoon_id","is_confirmed","first_name","last_name","image",
-        #                                  "userid","mz4psn","ramonsn","address","city","state","zip","country",
-        #                                  "email","phone","birthday","num_of_children","marital_status",
-        #                                  "shoes_size", "uniform_size", "sport_size", "uniform_size","height","weight","blood_type","position","rank",
-        #                                  "profession","sub_profession","medical_condition")))
         #
-        # dfm = df.merge(df_p, left_on='platoon_id', right_on='id')
-        # dfm = dfm.drop(["platoon_id", "id"], axis=1)
-        # # print(dfm.iloc[0])
-        # # print("="*20)
-        # dfm = dfm.merge(self.df_positions, left_on='position', right_on='id')
-        # dfm = dfm.drop(["position", "id"], axis=1)
-        #
-        # # print(dfm.iloc[0])
-        # # print("="*20)
-        # self.save_to_excel(dfm, "SoldiersList", file_name="daily_run.xlsx")
+        dfm = dfm.drop(['id', 'gun_mz4psn_id_x', 'gun_mz4psn_id_y', 'gun_ramonsn_id_x', 'gun_ramonsn_id_y'], axis=1)
+        dfm['userid'] = dfm.apply(lambda row: row["userid_y"] if np.isnan(row["user_id_x"]) else row["userid_x"], axis=1)
+        dfm = dfm.drop(['user_id_x', 'user_id_y', 'userid_x', 'userid_y'], axis=1)
+        # print(dfm)
+        # print("5="*20)
+        df = dfm.pivot_table(values='inventory_number', index='userid', columns=['category_name']
+                             , aggfunc='sum'
+                             )
+        print(df)
+        self.save_to_excel(df, "GunsList", file_name="guns_list.xlsx")
 
         result = {"status": "ok"}
         return result

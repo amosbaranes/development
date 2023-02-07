@@ -36,7 +36,8 @@ company_obj_id, is_show_btns=true, user_id=0)
 //                        "sub_buttons": {"NewFunction":{"title":"new func", "width":10},
 //                                        "DeleteFunction":{"title":"del func", "width":10}}},
 
- this.buttons = {"Tab":{"title":"Tab", "obj_type":"none",
+ this.buttons =
+ {"Tab":{"title":"Tab", "obj_type":"none",
                         "sub_buttons": {}},
 
                  "TabContent":{"title":"Tab Content", "obj_type":"none",
@@ -131,13 +132,13 @@ company_obj_id, is_show_btns=true, user_id=0)
                                                   "attributes":{},
                                                   "functions":["onclick", "onchange", "onmouseover", "onmouseout"]},
                                         "Group":{"title":"G", "width":3,
-                                                  "setting": {"setup_dictionary":[], "width":[], "height":[],
+                                                  "setting": {"setup_dictionary":[], "entity":[], "width":[], "height":[],
                                                               "table":[], "field":[], "value_field":[],
                                                               "recording_tests_number":[]},
                                                   "attributes":{},
                                                   "functions":["onclick", "onchange", "onmouseover", "onmouseout"]},
                                         "RecordingTests":{"title":"R", "width":3,
-                                                  "setting": {"width":[], "height":[], "table":[],
+                                                  "setting": {"entity":[], "width":[], "height":[], "table":[],
                                                   "vertical_field":[],
                                                   "horizontal_field":[],
                                                   "field":[]},
@@ -673,13 +674,14 @@ AdvancedTabsManager.prototype.save_data = function(html_obj, dic_, is_json_data=
           function(dic){
             if(dic["status"]!="ok")
             {alert("Data was not saved.")}
-            else{
+            else
+            {
               var record_level="record_id"; if(is_json_data==true){record_level="parent_id"}
               try{var element_id_=null;var element_id_=dic["element_id"];} catch(er){alert(er)}
               try{if(element_id_!=null){html_obj_=getEBI(element_id_)}} catch(er){}
               html_obj_.setAttribute(record_level, dic["record_id"])
               var creator_number=html_obj_.getAttribute("my_creator_number")
-              try{if(!(creator_number==null)){get_creator(aa).on_record_created_deleted(html_obj_);}} catch(er){alert(er)}
+              try{if(!(creator_number==null)){get_creator(creator_number).on_record_created_deleted(html_obj_);}} catch(er){alert(er)}
             }
           }.bind(html_obj_=html_obj));
 }
@@ -1820,12 +1822,11 @@ var container_on_change=function (event){
            if(is_plugin==true){for(var q in fvs){var x=fvs[q].split("__");dic_data["fields"][x[0]]=x[1];}}
            else {dic_data["fields"][field__u]=v__u;}
 
-           //alert('9080-222 dic_data= '+ JSON.stringify(dic_data));
+           //alert('9081-222 dic_data= '+ JSON.stringify(dic_data));
            //alert(html_obj_to_update.outerHTML)
            container.tab.parent.save_data(html_obj_to_update, dic_data);
            //alert(c9002-130+e.value)
            try{container.my_creator_obj.refresh_my_tables(f=field__u, v=v__u);}catch(er){}
-
        }
   }
   // event.stopPropagation();
@@ -2482,8 +2483,9 @@ acRadioCreator.prototype.set_data = function(ll=null)
 
 
 // Test --
-function acTestCreator(parent){this.parent=parent;this.structure_dic=null;
-this.test_list=[];this.fields=[];this.members_list=[]}
+function acTestCreator(parent){this.parent=parent;this.structure_dic=null;this.test_list=[];this.fields=[];
+                   this.members_list={"test_number":[], "record_id":[]};
+}
 
 acTestCreator.prototype.create_obj = function()
 {
@@ -2497,7 +2499,11 @@ acTestCreator.prototype.create_obj = function()
   var f = function(e_obj, l, dic_, dic, nlt, ll)
   {
    //alert("\n" + JSON.stringify(dic))
-   //alert("\n" + JSON.stringify(dic_))
+   //alert("\n" +l+": "+ JSON.stringify(dic_))
+
+    //this_obj.test_dic["test_number"].push(l)
+    //this_obj.test_dic["test_name"].push(dic_["title"])
+
    ll.push(l)
    var container_id = dic["container_id"]
    var table = dic["properties"]["table"]
@@ -2621,6 +2627,7 @@ acTestCreator.prototype.set_data = function(record_id, ll=null)
     //alert("90447-150  "+JSON.stringify(dic_));
   var fun=function(data, this_obj){
     //alert("943010: "+JSON.stringify(data));
+    this_obj.members_list={"test_number":[], "record_id":[]}
     var n_=data[this_obj.fields[0]].length;if(n_<1){return}
     for(var j=0; j<n_; j++)
     {
@@ -2629,18 +2636,19 @@ acTestCreator.prototype.set_data = function(record_id, ll=null)
      s_id.setAttribute("record_id",data["id"][j])
      //alert(data["id"][j])
      //alert("90447-150  "+JSON.stringify(this_obj.members_list));
-     this_obj.members_list.push(data["id"][j])
+     this_obj.members_list["test_number"].push(data["test_number"][j])
+     this_obj.members_list["record_id"].push(data["id"][j])
     }
      get_creator(this_obj.recording_tests_number).set_obj_structure(group_list=null, test_list=this_obj.members_list)
   }
   this.parent.atm.get_data(call_back_fun=fun, dic_, this)
 }
 
-
 // Group --
-function acGroupCreator(parent){this.parent=parent;this.fields=[];this.is_data_pulled=false;this.members_list=[]}
+function acGroupCreator(parent){this.parent=parent;this.fields=[];this.members_list={"entity_number":[], "record_id":[]};
+                                this.active_record_id=-1}
 
-acGroupCreator.prototype.get_soldiers_list = function(e_dic)
+acGroupCreator.prototype.get_entity_list = function(e_dic)
 {
  var dic=this.parent.data;
  //alert("90100-1\n"+JSON.stringify(dic));
@@ -2676,7 +2684,7 @@ acGroupCreator.prototype.create_obj = function()
   var width_=dic["properties"]["width"]; if(width_==null || width_==""){width_=80};
   var height_=dic["properties"]["height"]; if(height_==null || height_==""){height_=300};
   var container = document.getElementById("content_"+dic["container_id"]);
-  // alert("90100-2 acGroupCreator.prototype.create_obj\n"+JSON.stringify(dic));
+   //alert("90100-2 acGroupCreator.prototype.create_obj\n"+JSON.stringify(dic));
   var obj_number = dic["properties"]["obj_number"]
   this.main_div=document.createElement("div");
   this.main_div.my_creator_obj=this;
@@ -2718,7 +2726,7 @@ acGroupCreator.prototype.create_obj = function()
          }
         } else if (etype_=="span"){
             if(c.style.display=="block"){c.style.display="none"}
-            else{c.style.display="block";this.my_creator_obj.get_soldiers_list({"e":e,"c":c})}
+            else{c.style.display="block";this.my_creator_obj.get_entity_list({"e":e,"c":c})}
         }
       } else{
         var etype_=e.getAttribute("type")
@@ -2741,6 +2749,11 @@ acGroupCreator.prototype.obj_was_clicked = function(e)
 {
    //alert("90100-10\nacGroupCreator.prototype.obj_was_clicked\n "+e.outerHTML);
 }
+
+//acGroupCreator.prototype.clean_data = function()
+//{for(var j in this.members_list=[]){
+// var id="soldier_"+this.members_list[j];getEBI(id).checked=false;}
+//}
 
 acGroupCreator.prototype.open_close_lists = function(n=0)
 {
@@ -2784,47 +2797,54 @@ acGroupCreator.prototype.set_obj_structure = function(display_="none")
   try{
        var general_dic_name = dic["properties"]["setup_dictionary"];
        this.units_structure = eval("this.parent.atm.general."+general_dic_name)
-       this.soldiers_list = eval("this.parent.atm.general.soldiers_list")
-       //alert(JSON.stringify(this.units_structure));
+       var general_entity_name = dic["properties"]["entity"];
+       this.entity_list = eval("this.parent.atm.general."+general_entity_name+"_list")
+       this.entity_dic = eval("this.parent.atm.general."+general_entity_name+"_dic")
+       //alert("90000-010  "+JSON.stringify(this.entity_dic));
 
        var s_link="this.units_structure";
        this.main_div.innerHTML="";
        f(s_link, this.units_structure, this.main_div, 0)
      } catch(er){alert("1155-515: "+er)}
+  // alert("done acGroupCreator.prototype.set_obj_structure")
 }
 
 acGroupCreator.prototype.set_data = function(record_id=null, ll=null)
 {
-  if(this.is_data_pulled==true){return}
+  if(this.active_record_id==record_id){return}
+  this.active_record_id=record_id;
   // --
-   this.open_close_lists(0)
+   try{this.open_close_lists(0)} catch(er){}
   // --
   var dic=this.parent.data;
   this.recording_tests_number=dic["properties"]["recording_tests_number"];
   var model_=dic["properties"]["table"]
   var container = document.getElementById("content_"+dic["container_id"]);
   var parent_model_=container.my_creator_obj.link_dic["properties"]["table"];
-
   var dic_={"model":model_,"parent_model":parent_model_,"parent_id":record_id,"number_of_rows":"10000",
             "fields":this.fields,"filters":{},"order_by":{}}
-
+  //alert("90000-099\n"+JSON.stringify(dic_));
   var fun=function(data, this_obj){
+    //alert("90000-100\n"+JSON.stringify(data));
+    this_obj.members_list={"entity_number":[], "record_id":[]}
     var n_=data[this_obj.fields[0]].length;
     if(n_<1){return}
     for(var j=0; j<n_; j++)
     {try{var s_id="soldier_"+data["soldier_number"][j];var n=1*data["value"][j];s_id=getEBI(s_id);
          if(n==1){s_id.checked=true}else{s_id.checked=false};
          s_id.setAttribute("record_id",data["id"][j])
-         this_obj.members_list.push(data["id"][j])
-     } catch(er){alert(er)}}
 
+         this_obj.members_list["entity_number"].push(data["soldier_number"][j])
+         this_obj.members_list["record_id"].push(data["id"][j])
+
+     } catch(er){alert(er)}}
      get_creator(this_obj.recording_tests_number).set_obj_structure(group_list=this_obj.members_list, test_list=null)
+     get_creator(this_obj.recording_tests_number).set_data(record_id)
   }
   //alert("90555-55\n"+JSON.stringify(dic_));
   this.parent.atm.get_data(call_back_fun=fun, dic_, this)
   // --)
-   this.open_close_lists(0);this.open_close_lists(2)
-   this.is_data_pulled=true;
+   try{this.open_close_lists(0);this.open_close_lists(2)} catch(er){}
   // --
 }
 
@@ -2832,20 +2852,22 @@ acGroupCreator.prototype.on_record_created_deleted = function(e,action="created"
 {
    //alert("90100-20\nacGroupCreator.prototype.obj_was_clicked\n "+e.outerHTML);
    var record_id=e.getAttribute("record_id")
+   var soldier_number=e.getAttribute("soldier_number")
    if(action=="created"){
-     if(!(record_id in this.members_list)){this.members_list.push(record_id);}
+     if(!(record_id in this_obj.members_list["record_id"])){
+      this_obj.members_list["entity_number"].push(soldier_number);
+      this_obj.members_list["record_id"].push(record_id);
+     }
+
    } else {
-           for(var i=0;i<this.members_list.length;i++)
-           {if (this.members_list[i] == record_id) {
-                    this.members_list.splice(i, 1);
+           for(var i=0;i<this_obj.members_list["record_id"].length;i++)
+           {if (this_obj.members_list["record_id"][i] == record_id) {
+                    this_obj.members_list["record_id"].splice(i, 1);
                     break;
                 }
             }
-
   //alert(record_id+"\n\n90355-1234-3 acGroupCreator.prototype.on_record_created_deleted\n"+JSON.stringify(this.members_list));
-
        }
-
    get_creator(this.recording_tests_number).set_obj_structure(group_list=this.members_list, test_list=null)
 }
 
@@ -2858,12 +2880,15 @@ function acRecordingTestsCreator(parent){
 acRecordingTestsCreator.prototype.create_obj = function()
 {
   var dic=this.parent.data;
+  //alert("90355-223 acRecordingTestsCreator.prototype.create_obj\\nn"+JSON.stringify(dic));
   var field=dic["properties"]["field"]; this.fields.push(field);
-  var value_field=dic["properties"]["value_field"]; this.fields.push(value_field);
+  var vertical_field=dic["properties"]["vertical_field"]; this.fields.push(vertical_field);
+  var horizontal_field=dic["properties"]["horizontal_field"]; this.fields.push(horizontal_field);
+
   var width_=dic["properties"]["width"]; if(width_==null || width_==""){width_=80};
   var height_=dic["properties"]["height"]; if(height_==null || height_==""){height_=300};
   var container = document.getElementById("content_"+dic["container_id"]);
-  // alert("90355-23 acGroupCreator.prototype.create_obj\n"+JSON.stringify(dic));
+  // alert("90355-213 acGroupCreator.prototype.create_obj\n"+JSON.stringify(dic));
   var obj_number = dic["properties"]["obj_number"]
   this.main_div=document.createElement("div");
   this.main_div.my_creator_obj=this;
@@ -2880,6 +2905,13 @@ acRecordingTestsCreator.prototype.create_obj = function()
       //alert(e.outerHTML)
       //alert("90777-77\n"+JSON.stringify(this.dic));
   })
+
+  this.main_div.addEventListener("change", function(event){
+      var e=event.target;
+      if(e.value==""){e.value=0.00}
+   //alert("90150-3 change\n\n"+e.outerHTML)
+  })
+
   container.appendChild(this.main_div);
   //--
   this.main_div.innerHTML="RecordingTests Pluging"
@@ -2889,30 +2921,45 @@ acRecordingTestsCreator.prototype.create_obj = function()
 
 acRecordingTestsCreator.prototype.set_obj_structure = function(group_list=null, test_list=null)
 {
+  //--
+  this.test_dic = eval("this.parent.atm.general.test_dic")
+  //--
+  var width_=80;
  if(test_list!=null){this.horizontal_field_list=test_list}
  if(group_list!=null){this.vertical_field_list=group_list}
- //alert("acRecordingTests 90481-33\n\n"+JSON.stringify(this.vertical_field_list)+"\n"+JSON.stringify(this.horizontal_field_list));
-
+ //alert("acRecordingTests 90000-033\n\n"+JSON.stringify(this.vertical_field_list)+"\n"+JSON.stringify(this.horizontal_field_list));
  if(this.horizontal_field_list!=null && this.vertical_field_list!=null)
  {
    var dic=this.parent.data;
+   var general_entity_name = dic["properties"]["entity"];
+   this.entity_list = eval("this.parent.atm.general."+general_entity_name+"_list")
+   this.entity_dic = eval("this.parent.atm.general."+general_entity_name+"_dic")
    var container_id=dic["container_id"];
    var field=dic["properties"]["field"];
    this.horizontal_field=dic["properties"]["horizontal_field"];
    this.vertical_field=dic["properties"]["vertical_field"];
    var table=dic["properties"]["table"];
-   var s="<table><thead><tr><td>Soldier</td>";
-   for(var i in this.horizontal_field_list)
-   {var hf_idx=this.horizontal_field_list[i];var hf_name=hf_idx;s+="<th style='width:50px'>"+hf_name+"</th";}
-   s+="</tr></thead><tbody>"
-   for(var j in this.vertical_field_list)
+   var s="<table><thead><tr><th>Soldier</th>";
+   for(var i in this.horizontal_field_list["record_id"])
    {
-     var vf_idx=this.vertical_field_list[j];var vf_name=vf_idx;
+    var hf_idx=this.horizontal_field_list["record_id"][i];
+    var test_number=this.horizontal_field_list["test_number"][i]+"";
+    var test_number_idx=this.test_dic["test_number"].indexOf(test_number)
+    var hf_name=this.test_dic["test_name"][test_number_idx]
+    s+="<th style='width:"+width_+"px'>"+hf_name+"</th>";
+   }
+   s+="</tr></thead><tbody>";
+   for(var j in this.vertical_field_list["record_id"])
+   {
+     var vf_idx=this.vertical_field_list["record_id"][j];
+     var vf_entity_idx=this.vertical_field_list["entity_number"][j]+"";
+     var idx_=this.entity_dic["id"].indexOf(vf_entity_idx)
+     var vf_name=this.entity_dic["userid"][idx_]+":"+this.entity_dic["name"][idx_];
      s+="<tr><td>"+vf_name+"</td>";
-     for(var i in this.horizontal_field_list)
+     for(var i in this.horizontal_field_list["record_id"])
      {
-      var hf_idx=this.horizontal_field_list[i];//var hf_name=hf_idx;
-      s+="<td><input id='tg_"+vf_idx+"_"+hf_idx+"' style='width:50px' type_='recording' field='"+field+"' "
+      var hf_idx=this.horizontal_field_list["record_id"][i];//var hf_name=hf_idx;
+      s+="<td><input id='tg_"+vf_idx+"_"+hf_idx+"' style='width:"+width_+"px;text-align:right' type_='recording' field='"+field+"' "
       s+=" container_id='"+container_id+"' record_id='new' table='"+table+"'";
       s+="vertical_field='"+this.vertical_field+"' "
       s+="horizontal_field='"+this.horizontal_field+"' type='text'/></td>"
@@ -2920,9 +2967,46 @@ acRecordingTestsCreator.prototype.set_obj_structure = function(group_list=null, 
      s+="<td></tr>";
    }
    s+="</tbody></table>"
-   //alert(s)
  this.main_div.innerHTML=s;
  }
+ try{if(this.data != null){this.fill_up_data(this.data, this)}} catch(er){alert(er)}
+}
+
+//acRecordingTestsCreator.prototype.clean_data = function(record_id, ll=null)
+//{
+//  //try{alert("90000-000  "+JSON.stringify(this.data));} catch(er){alert(er)}
+//}
+
+acRecordingTestsCreator.prototype.set_data = function(record_id, ll=null)
+{
+  var dic=this.parent.data;
+  //alert("acRecordingTestsCreator 90446-16  "+JSON.stringify(dic));
+  var model_=dic["properties"]["table"]
+  var container = document.getElementById("content_"+dic["container_id"]);
+
+  var parent_model_=container.my_creator_obj.link_dic["properties"]["table"];
+     var dic_={"model":model_, "parent_model":parent_model_, "parent_id": record_id, "number_of_rows": "1000",
+               "fields": this.fields,
+               "filters":{}, "order_by": {}}
+    //alert("90447-150  "+JSON.stringify(dic_));
+  this.parent.atm.get_data(call_back_fun=this.fill_up_data, dic_, this)
+}
+
+acRecordingTestsCreator.prototype.fill_up_data = function(data, this_obj)
+{
+    //alert("943010: "+JSON.stringify(data));
+    this_obj.data=data;
+    this_obj.members_list={"entity_number":[], "record_id":[]};
+    var n_=data[this_obj.fields[0]].length;if(n_<1){return}
+    for(var j=0; j<n_; j++)
+    {
+     try{
+         var s_id="tg_"+data["soldiersforevent"][j]+"_"+data["testsforevent"][j];
+         var n=1*data["value"][j];s_id=getEBI(s_id);s_id.setAttribute("record_id",data["id"][j])
+         s_id.value=data["value"][j];
+         //alert(s_id.outerHTML)
+         } catch(er){}
+    }
 }
 
 
