@@ -105,7 +105,7 @@ class Numbers(models.Model):
 
 
 class Debug(TruncateTableMixin, models.Model):
-    value = models.CharField(max_length=512)
+    value = models.CharField(max_length=1024)
 
     def __str__(self):
         return self.value

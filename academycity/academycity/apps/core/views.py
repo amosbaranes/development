@@ -162,7 +162,7 @@ def update_field_model_by_id(request, foreign=None):
     dic_ = request.POST["dic"]
     # print('-1'*50)
     print('90155-100 core update_field_model_by_id: dic_', dic_, "\n", '-'*50)
-    log_debug(dic_)
+    log_debug(dic_) # size is 1024 chars
     dic_ = eval(dic_)
     element_id_ = ""
     try:

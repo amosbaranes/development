@@ -22,7 +22,8 @@ from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
 #
 from openpyxl import Workbook, load_workbook
-
+#
+from ...core.utils import log_debug, clear_log_debug
 
 from .models import Soldiers, DoubleShoot as DoubleShootModel
 from django.http import JsonResponse

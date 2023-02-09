@@ -135,19 +135,6 @@ class Squads(TruncateTableMixin, models.Model):
     def __str__(self):
         return str(self.squad_name)
 
-class TestsStructures(TruncateTableMixin, models.Model):
-    class Meta:
-        verbose_name = 'test_structure'
-        verbose_name_plural = 'test_structures'
-    training_web = models.ForeignKey(TrainingWeb, on_delete=models.CASCADE, default=1,
-                                     related_name='training_web_tests')
-    battalion = models.OneToOneField(Battalions, on_delete=models.CASCADE, primary_key=True,
-                                     related_name='battalion_testsstructures')
-    tests_structures_content = models.JSONField(null=True)
-
-    def __str__(self):
-        return str(self.battalion)
-
 # תכנון מול ביצוע
 class Compliances(TruncateTableMixin, models.Model):
     class Meta:
@@ -259,6 +246,7 @@ class TestEvents(TruncateTableMixin, models.Model):
     time_dim = models.ForeignKey(TimeDim, on_delete=models.CASCADE, default=1,
                                  related_name='time_dim_test_events')
     test_event_name = models.CharField(max_length=100, default='', blank=True, null=True)
+    units_description = models.CharField(max_length=500, default='', blank=True, null=True)
 
     def __str__(self):
         return str(self.test_event_name)
@@ -304,6 +292,20 @@ class GradesForEvents(TruncateTableMixin, models.Model):
 
     def __str__(self):
         return str(self.testevent)+"-"+str(self.soldiersforevent)+"-"+str(self.testsforevent)+"-"+str(self.value)
+
+# To Be Deleted ###
+class TestsStructures(TruncateTableMixin, models.Model):
+    class Meta:
+        verbose_name = 'test_structure'
+        verbose_name_plural = 'test_structures'
+    training_web = models.ForeignKey(TrainingWeb, on_delete=models.CASCADE, default=1,
+                                     related_name='training_web_tests')
+    battalion = models.OneToOneField(Battalions, on_delete=models.CASCADE, primary_key=True,
+                                     related_name='battalion_testsstructures')
+    tests_structures_content = models.JSONField(null=True)
+
+    def __str__(self):
+        return str(self.battalion)
 
 # ToBeDeleted
 class Tests(TruncateTableMixin, models.Model):

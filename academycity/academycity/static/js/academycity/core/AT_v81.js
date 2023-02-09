@@ -213,6 +213,12 @@ company_obj_id, is_show_btns=true, user_id=0)
                                                    "horizontal_field":[],"horizontal_title":[],"value_field":[], "order_by":[],
                                                    "statement_type":["BalanceSheet","Income","CashFlow","ChangInEquity"]},
                                                    "functions":["on_amount_paint", "on_receive_data", "onclick", "onmouseover", "onmouseout"]
+                                                  },
+                                       "Grades":{"title":"Grades", "width":20,
+                                                   "attributes":{"table_class":["","basic", "payment"]},
+                                                   "setting": {"app":[],"table":[],"vertical_field":[],
+                                                   "horizontal_field":[],"horizontal_title":[],"value_field":[], "order_by":[]},
+                                                   "functions":["on_amount_paint", "on_receive_data", "onclick", "onmouseover", "onmouseout"]
                                                   }
                                        }
                            },
@@ -446,6 +452,12 @@ var temp_constractor=z1+"manager, "+z21+"this.atm=manager;"+z22
 
 AdvancedTabsManager.prototype.delete_tab = function(tab_id_, tab_name_)
 {this.tabs[tab_id_].btn.outerHTML="";this.tabs[tab_id_].content.outerHTML="";}
+
+var clone_PopWinObjects={};
+set_clone_PopWinObjects = function(PopWinObjects)
+{
+  clone_PopWinObjects = Object.assign({}, PopWinObjects)
+}
 
 AdvancedTabsManager.prototype.set_active_tab = function(btn)
 {
@@ -1426,7 +1438,9 @@ acReport.prototype.row_col_click = function(event)
  var e=event.target;
  //alert(JSON.stringify(this.my_creator_obj.data["functions"]["onclick"]));
  try{eval('var zz='+this.my_creator_obj.data["functions"]["onclick"]);zz(event);
- } catch(er){alert("er9013: "+er)}
+ } catch(er){
+ //alert("er9013: "+er)
+ }
 }
 
 // -- acPivotCreator --
@@ -1568,6 +1582,17 @@ acFSPivotCreator.prototype.row_col_click = function(event)
  }
 }
 
+// --
+function acGradesCreator(parent){
+  this.parent=parent;
+  // alert(JSON.stringify(this.parent.data));
+}
+
+acGradesCreator.prototype.create_html = function(type=null)
+{
+
+}
+
 
 // -- acPlugin --
 function acPlugin(){}
@@ -1581,7 +1606,7 @@ acContainerCreator.prototype.create_obj = function()
   this.link_dic=this.parent.data;
   //alert("9065 this.tab.tab_name: "+this.tab.tab_name)
   var pp_=this.link_dic["properties"]
-  //alert("this.link_dic="+JSON.stringify(this.link_dic))
+  //alert("this.link_dic="+JSON.stringify(pp_))
   //--
   var container = document.getElementById("content_"+this.link_dic["container_id"]);
   //alert(container.outerHTML)
@@ -2498,12 +2523,10 @@ acTestCreator.prototype.create_obj = function()
   }
   var f = function(e_obj, l, dic_, dic, nlt, ll)
   {
-   //alert("\n" + JSON.stringify(dic))
-   //alert("\n" +l+": "+ JSON.stringify(dic_))
-
+    //alert("\n" + JSON.stringify(dic))
+    //alert("\n" +l+": "+ JSON.stringify(dic_))
     //this_obj.test_dic["test_number"].push(l)
     //this_obj.test_dic["test_name"].push(dic_["title"])
-
    ll.push(l)
    var container_id = dic["container_id"]
    var table = dic["properties"]["table"]
@@ -2760,7 +2783,9 @@ acGroupCreator.prototype.open_close_lists = function(n=0)
   var ll=atm.general.get_platoons_ids();ll=ll[n]
   //alert("90667-77\n"+JSON.stringify(ll));
   var ec=new Event("click", {bubbles: true});
-  for(l in ll){try{getEBI(ll[l]).dispatchEvent(ec)} catch(er){}}
+  for(l in ll){
+  try{getEBI(ll[l]).dispatchEvent(ec)
+  } catch(er){alert(er)}}
 }
 
 acGroupCreator.prototype.set_obj_structure = function(display_="none")
@@ -2775,9 +2800,7 @@ acGroupCreator.prototype.set_obj_structure = function(display_="none")
         var class_="group_"+title_;var id_="id_"+title_;var sid_="sid_"+title_
         //&#45;&#45;
         var s=spaces_+'<span type="span" style="cursor: pointer" id="'+sid_+'"'
-
         if(n_>2){s+='my_members_status="empty" link="'+s_link_+'"'}
-
         s+='my_class_members="'+class_+'">+</span><input type="checkbox" id="'+id_+'" my_class_members="'+class_+'"><label>'+title+'</label><br/>'
         //alert(s)
         d_div.innerHTML+=s;
@@ -2854,15 +2877,15 @@ acGroupCreator.prototype.on_record_created_deleted = function(e,action="created"
    var record_id=e.getAttribute("record_id")
    var soldier_number=e.getAttribute("soldier_number")
    if(action=="created"){
-     if(!(record_id in this_obj.members_list["record_id"])){
-      this_obj.members_list["entity_number"].push(soldier_number);
-      this_obj.members_list["record_id"].push(record_id);
+     if(!(record_id in this.members_list["record_id"])){
+      this.members_list["entity_number"].push(soldier_number);
+      this.members_list["record_id"].push(record_id);
      }
 
    } else {
-           for(var i=0;i<this_obj.members_list["record_id"].length;i++)
-           {if (this_obj.members_list["record_id"][i] == record_id) {
-                    this_obj.members_list["record_id"].splice(i, 1);
+           for(var i=0;i<this.members_list["record_id"].length;i++)
+           {if (this.members_list["record_id"][i] == record_id) {
+                    this.members_list["record_id"].splice(i, 1);
                     break;
                 }
             }
@@ -3287,7 +3310,7 @@ acSearchTableCreator.prototype.get_data = function(data_table_name=null,parent_m
              "number_of_rows":this.number_of_rows, "multiple_select_fields": this.multiple_select_fields,
              "filters":{}, "order_by":this.order_by, "fields":dic__
              }
-  //alert("90602 dic__ \n"+JSON.stringify(dic__))
+  //alert("906012 dic__ \n"+JSON.stringify(dic__))
       dic__["filters"][this.filter_field]={"value":this.filter_value, "foreign_table":this.filter_field_foreign_table}
 
   //alert("90603 dic__ \n"+JSON.stringify(dic__))
@@ -5049,6 +5072,7 @@ function Tab(parent, data, id)
 {
  //alert("Tab");
  //alert("id="+id+"\n"+JSON.stringify(data));
+ this.n_max_zindex=0
  this.parent=parent; this.tab_id=id;
  this.tab_active_link=null;
  this.btn=null;this.content=null;this.PopWinObjects={};
@@ -5178,24 +5202,31 @@ Tab.prototype.generate_obj=function(dic=null){
  return obj;
 }
 
+
 Tab.prototype.set_max_zindex = function(win) {
-    var nmax = 0;
-    try{
-     //alert(win.outerHTML)
-     var win_number=win.getAttribute("win_number")
+
+  var number = win.win_frame.style.zIndex;
+  if(number==""){number=0}
+  if(1*number>1*this.n_max_zindex){this.n_max_zindex=1*number+1} else{
+  this.n_max_zindex=1*this.n_max_zindex+1}
+  win.win_frame.style.zIndex=this.n_max_zindex
+     var win_number=win.win_frame.getAttribute("win_number")
      if(win_number!=null){
-      var tab_id=win.getAttribute("tab_id")
-      var win_name=win.getAttribute("my_name");
-      //alert(this.parent.tabs[tab_id].PopWinObjects[win_name].my_name);
-      for (i in this.parent.tabs[tab_id].PopWinObjects)
-      {if(this.parent.tabs[tab_id].PopWinObjects[i].win_frame.style.zIndex > nmax)
-       {nmax=this.parent.tabs[tab_id].PopWinObjects[i].win_frame.style.zIndex}}
-      win.style.zIndex = 1*nmax+1;
-      this.parent.tabs[tab_id].PopWinObjects[win_name].create_editor_for_popwin(this.parent.tabs[tab_id].tab_pop_win_buttons["pop_wins"][win_number]);
-      this.parent.editor.active_popup_win=[tab_id, win_name, win_number]
-     }
-    } catch(er){}
+          var tab_id=win.win_frame.getAttribute("tab_id")
+          var win_name=win.win_frame.getAttribute("my_name");
+     //alert("this.n_max_zindex "+this.n_max_zindex+" win_number "+ win_number+" tab_id "+ tab_id+" win_name "+ win_name)
+
+    try{
+        if(win_name!="editor"){
+          win.create_editor_for_popwin(win.tab_obj_.tab_pop_win_buttons["pop_wins"][win_number]);
+          this.parent.editor.active_popup_win=[tab_id, win_name, win_number]
+        }
+    } catch(er){
+     alert("error505:\n"+er+"\nwin_name="+win_name+"\nwin_number="+win_number)
+    }
+  }
 }
+
 
 Tab.prototype.get_pop_win_obj = function(dic)
 {
@@ -5312,7 +5343,7 @@ Tab.prototype.get_pop_win_obj = function(dic)
  //alert(JSON.stringify(this.parent.tabs));
  var tab__=this.parent.tabs[tab_id_]
  s='new TabPopWin'+this.tab_name+s_name+'(tab__, dic)';
- //alert("90677\n" + s);
+ alert("90677\n" + s);
  try{
  var result_obj= eval(s)
  } catch (er) {alert("er4550: "+er)}
@@ -5456,7 +5487,7 @@ acWin.prototype.set_acWinStat = function(ss)
       this.win_frame_style_display = ss;
       } catch(er){alert("error 77")}
     }
-    this.tab_obj_.set_max_zindex(this.win_frame);
+    this.tab_obj_.set_max_zindex(this)
 }
 acWin.prototype.close_win = function(){this.set_acWinStat('none');}
 acWin.prototype.temp_close_win = function(){this.win_frame.style.display = "none";}
@@ -5537,12 +5568,8 @@ acWin.prototype.set_acWinStatEventListeners = function(ss_obj)
   s += 'document.removeEventListener("mouseup", my_mouse_up_'+this.win_name+');'
   s += 'document.removeEventListener("mousemove", my_mouse_move_'+this.win_name+');'
   s += '} catch (err) {err.message}'
-
-  //s += 'alert(elm_win_frame_' +this.win_name +'.outerHTML);'
-
-  s += 'tab_obj__.set_max_zindex(elm_win_frame_' +this.win_name +');'
-  s += '}.bind(elm_win_frame_title_'+this.win_name+', event, tab_obj__, elm_win_frame_' +this.win_name + '));'
-
+  s += ' tab_obj__.set_max_zindex(win_'+this.win_name+');'
+  s += '}.bind(elm_win_frame_title_'+this.win_name+', event, tab_obj__, win_'+this.win_name+', elm_win_frame_' +this.win_name + '));'
   s += 'document.addEventListener("mousemove", my_mouse_move_'+this.win_name+' = function(){'
   s += 'event.preventDefault();'
         // calculate the new cursor position:
@@ -5562,7 +5589,7 @@ acWin.prototype.set_acWinStatEventListeners = function(ss_obj)
   s += 'elm_win_nav_'+this.win_name+'.style.right = elm_win_frame_'+this.win_name+'.style.right;'
   s += '}.bind(elm_win_frame_title_'+this.win_name+', event, elm_win_frame_'+this.win_name+', elm_win_nav_'+this.win_name+'));'
   s += '}.bind(elm_win_frame_title_'+this.win_name+' = this.win_frame_title, event, elm_win_frame_'+this.win_name
-  s += ' = this.win_frame, elm_win_nav_'+this.win_name+' = this.win_nav, tab_obj__=this.tab_obj_));'
+  s += ' = this.win_frame, elm_win_nav_'+this.win_name+' = this.win_nav, tab_obj__=this.tab_obj_, win_'+this.win_name+'=this));'
 
   try{
    //console.log("eval 300:", s)
@@ -5619,6 +5646,19 @@ acWin.prototype.get_main_button_objs = function()
    eval(s);
    s='try{MenuBtn'+b+'.prototype.create_main_content = '+b+'_create_main_content} catch(er){};';
    eval(s);
+
+// NEED TO COMPLETE: it should be similar to the click event of sub buttons
+//--------------------------------------------------------------------------
+//   s='try{MenuBtn'+b+'.prototype.click = function (event){';
+//
+//s='SubMenuBtn'+this.my_name+s_name+'.prototype.click = function (event){';
+////s+='try{alert("'+this.my_name+s_name+'_click(obj=this, event)");} catch(er){alert("er9026: "+ er)}';
+//s+='try{eval("this.parent.parent.onclick"+'+this.parent.id+'+"(tab=this.parent.parent.tab_obj_,win=this.parent.parent, obj=this, event)");} catch(er){alert("err403: "+er)};';
+//s+='}';
+//eval(s);
+
+
+
    s='new MenuBtn'+b+'(parent=this)';
    eval(s);
   }
@@ -5667,7 +5707,6 @@ PopWin.prototype.get_functions_properties_editor = function(tab_,functions_dic,f
 {
   return new FunctionsPropertiesEditor(tab_,functions_dic=functions_dic,functions_list_dic,dic_properties,settings_list,attributes_list,tab_btn_name, properties_func, node_to_delete)
 }
-
 
 // -- MenuBtnWin --
 function MenuBtnWin(parent, my_name_, my_title, buttons, obj_type, width="width:10%;")
