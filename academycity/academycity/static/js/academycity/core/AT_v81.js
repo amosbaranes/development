@@ -675,7 +675,7 @@ AdvancedTabsManager.prototype.activate_obj_function = function(call_back_fun, di
 }
 
 AdvancedTabsManager.prototype.save_data = function(html_obj, dic_, is_json_data=false)
-{  //alert("AdvancedTabsManager.prototype.save_data")
+{ // alert("AdvancedTabsManager.prototype.save_data")
   dic_["app"]=this.my_app;
   dic_["company_obj_id"]=this.company_obj_id;
   //alert("90112:\n"+JSON.stringify(dic_));
@@ -690,7 +690,7 @@ AdvancedTabsManager.prototype.save_data = function(html_obj, dic_, is_json_data=
             {
               var record_level="record_id"; if(is_json_data==true){record_level="parent_id"}
               try{var element_id_=null;var element_id_=dic["element_id"];} catch(er){alert(er)}
-              try{if(element_id_!=null){html_obj_=getEBI(element_id_)}} catch(er){}
+              try{if(element_id_!=null){try{html_obj_=getEBI(html_obj_.element_id_);} catch(er){}}} catch(er){}
               html_obj_.setAttribute(record_level, dic["record_id"])
               var creator_number=html_obj_.getAttribute("my_creator_number")
               try{if(!(creator_number==null)){get_creator(creator_number).on_record_created_deleted(html_obj_);}} catch(er){alert(er)}
@@ -2669,7 +2669,7 @@ acTestCreator.prototype.set_data = function(record_id, ll=null)
 
 // Group --
 function acGroupCreator(parent){this.parent=parent;this.fields=[];this.members_list={"entity_number":[], "record_id":[]};
-                                this.active_record_id=-1}
+                                this.active_record_id=-1;this.is_group_updated=false}
 
 acGroupCreator.prototype.get_entity_list = function(e_dic)
 {
@@ -5343,7 +5343,7 @@ Tab.prototype.get_pop_win_obj = function(dic)
  //alert(JSON.stringify(this.parent.tabs));
  var tab__=this.parent.tabs[tab_id_]
  s='new TabPopWin'+this.tab_name+s_name+'(tab__, dic)';
- alert("90677\n" + s);
+ //alert("90677\n" + s);
  try{
  var result_obj= eval(s)
  } catch (er) {alert("er4550: "+er)}
