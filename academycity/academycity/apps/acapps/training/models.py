@@ -293,6 +293,31 @@ class GradesForEvents(TruncateTableMixin, models.Model):
     def __str__(self):
         return str(self.testevent)+"-"+str(self.soldiersforevent)+"-"+str(self.testsforevent)+"-"+str(self.value)
 
+class TestsVariables(TruncateTableMixin, models.Model):
+    class Meta:
+        verbose_name = 'test_variable'
+        verbose_name_plural = 'test_variables'
+
+    variable_name = models.CharField(max_length=100, default='', blank=True, null=True)
+    variable_description = models.CharField(max_length=500, default='', blank=True, null=True)
+
+    def __str__(self):
+        return str(self.variable_name)
+
+class TestsForVariables(TruncateTableMixin, models.Model):
+    class Meta:
+        verbose_name = 'test_for_variable'
+        verbose_name_plural = 'test_for_variables'
+
+    testsvariable = models.ForeignKey(TestsVariables, on_delete=models.CASCADE, default=1,
+                                      related_name='test_variables_tests_for_variables')
+    test_number = models.PositiveIntegerField(default=0)
+    value = models.DecimalField(max_digits=4, decimal_places=2, default=0)
+
+    def __str__(self):
+        return str(self.test_number)
+#
+
 # To Be Deleted ###
 class TestsStructures(TruncateTableMixin, models.Model):
     class Meta:

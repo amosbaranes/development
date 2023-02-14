@@ -41,6 +41,7 @@ class WebSiteCompany(object):
         # print("1234-1", settings.WEB_SITE_COMPANY_ID)
         try:
             self.web_site_company = request.session[settings.WEB_SITE_COMPANY_ID]
+            print(self.web_site_company)
         except Exception as ex:
             print("="*50)
             print(str(ex))

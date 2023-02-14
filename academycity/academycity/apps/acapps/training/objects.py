@@ -705,17 +705,36 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
 
     def update_gun_list(self, dic):
         print('900100-1 dic', dic)
+        clear_log_debug()
         app_ = dic["app"]
         model_soldiers = apps.get_model(app_label=app_, model_name="soldiers")
         model_inventorys = apps.get_model(app_label=app_, model_name="inventorys")
         qs = model_soldiers.objects.all()
         for q in qs:
-            print(q.mz4psn, q.ramonsn)
-            im_obj = model_inventorys.objects.get(inventory_number=q.mz4psn)
-            ir_obj = model_inventorys.objects.get(inventory_number=q.ramonsn)
-            q.gun_mz4psn = im_obj
-            q.gun_ramonsn = ir_obj
-            q.save()
+            try:
+                print(q.mz4psn)
+                log_debug(str(q.mz4psn))
+                im_obj = model_inventorys.objects.get(inventory_number=q.mz4psn)
+            except Exception as ex:
+                log_debug("9095-100 Error updating guns: get q.mz4psn " + str(q.mz4psn))
+
+            try:
+                q.gun_mz4psn = im_obj
+                q.save()
+            except Exception as ex:
+                # pass
+                log_debug("9095-100 Error updating guns: set 1 and save " + str(q.mz4psn))
+
+            try:
+                ir_obj = model_inventorys.objects.get(inventory_number=q.ramonsn)
+            except Exception as ex:
+                log_debug("9095-100 Error updating guns: get ramonsn" + " " + str(q.ramonsn))
+
+            try:
+                q.gun_ramonsn = ir_obj
+                q.save()
+            except Exception as ex:
+                log_debug("9095-100 Error updating guns: save ramonsn"  + " " + str(q.ramonsn))
 
         result = {"status": "ok"}
         return result

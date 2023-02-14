@@ -131,6 +131,12 @@ company_obj_id, is_show_btns=true, user_id=0)
                                                               "recording_tests_number":[]},
                                                   "attributes":{},
                                                   "functions":["onclick", "onchange", "onmouseover", "onmouseout"]},
+                                        "Variable":{"title":"V", "width":3,
+                                                  "setting": {"setup_dictionary":[], "width":[], "height":[],
+                                                              "table":[], "field":[], "value_field":[],
+                                                              "recording_variables_number":[]},
+                                                  "attributes":{},
+                                                  "functions":["onclick", "onchange", "onmouseover", "onmouseout"]},
                                         "Group":{"title":"G", "width":3,
                                                   "setting": {"setup_dictionary":[], "entity":[], "width":[], "height":[],
                                                               "table":[], "field":[], "value_field":[],
@@ -773,7 +779,7 @@ function FunctionsPropertiesEditor(tab, functions_dic, functions_list_dic, prope
 {
   //alert(JSON.stringify(functions_dic))
   //alert(JSON.stringify(functions_list_dic))
-  //alert(JSON.stringify(properties_dic))
+  //alert("555555555: "+tab.tab_name+" - "+JSON.stringify(properties_dic))
   //alert(JSON.stringify(settings_list))
   //alert(JSON.stringify(attributes_list))
   //--
@@ -1650,6 +1656,7 @@ acContainerCreator.prototype.create_obj = function()
   this.process_content();
 }
 
+// 220000
 var process_content=function(){
 //alert("9087")
   //alert(JSON.stringify(this.link_dic["functions"]));
@@ -1670,7 +1677,7 @@ var container_on_change=function (event){
   //alert("c9001-1 "+e.outerHTML+"\nn"+event.target.outerHTML)
   var e_container_id_=e.getAttribute("container_id")
   var container = getEBI("content_"+e_container_id_)
-  //alert("c9002 "+container.outerHTML) //alert("9050 " + JSON.stringify(container.my_creator_obj.link_dic))
+  //alert("c9002 container \n"+container.outerHTML) //alert("9050 " + JSON.stringify(container.my_creator_obj.link_dic))
   var c_container_id_=this.getAttribute("link_number")
   //  alert("c9002-1  e_container_id_=" + e_container_id_+ " c_container_id_=" + c_container_id_)
   //alert("c9002-2 container: e.outerHTML: "+e.outerHTML+"\n\n e.value= " + e.value+"\n\n this.outerHTML= " + this.outerHTML)
@@ -1767,7 +1774,6 @@ var container_on_change=function (event){
     //alert("c9002-50")
   } else
   {
-     //alert("c9002-60")
      var model_=container.my_creator_obj.link_dic["properties"]["table"];
      var record_id_=container.getAttribute("record_id");
      var parent_id_=container.getAttribute("parent_id");
@@ -1796,34 +1802,37 @@ var container_on_change=function (event){
         //alert("c9002-105 else: record_id_ "+record_id_ +" parent_id_= "+parent_id_+" model_= "+model_+" parent_model_= "+parent_model_)
         var foreign_keys_ = container.foreign_keys; var dependents_=container.dependents;
         fields_={}
-        if(type__=="tests" || type__=="groups")
+        if(type__=="tests" || type__=="groups" || type__=="variables")
         {
+          //alert(e.outerHTML)
+          var atm_=this.tab.parent;
            //alert("c9002-107")
            foreign_keys_={};dependents_={};parent_model_=model_;parent_id_=record_id_;
-           //alert(e.outerHTML)
-           v__u = ""+e.checked;html_obj_to_update=e;
-           var model_=e.getAttribute("table")
-           var record_id_=e.getAttribute("record_id")
-           fields_[e.getAttribute("value_field")]=e.getAttribute(e.getAttribute("value_field"))
+           var model_=e.getAttribute("table");var record_id_=e.getAttribute("record_id");
+           html_obj_to_update=e;fields_[e.getAttribute("value_field")]=e.getAttribute(e.getAttribute("value_field"))
+           if(type__=="tests" || type__=="groups"){v__u = ""+e.checked;}
+
            //alert('9080-111-11 fields_= '+ JSON.stringify(field_));
            //alert("c9001-55-0 \nparent_model_="+parent_model_+"\nparent_id_="+parent_id_+"\nmodel_="+model_+"\nrecord_id_="+record_id_)
-           var atm_=this.tab.parent;
-           if(e.checked==false){
-              var dic_={"obj":"AdvancedTabs","atm":atm_.my_name,"app":atm_.my_app,"fun":"delete_record",
-                        "params": {"app":atm_.my_app,"model":model_,"id":record_id_}}
-              //alert('9080-1222-11 fields_= '+ JSON.stringify(dic_));
-              $.post(atm_.activate_function_link_,
-                  {dic : JSON.stringify(dic_)},
-                  function(dic){
-                    id_ = dic["result"]["id"];
-                    //alert("record was deleted: "+id_)
-                 })
-              try{get_creator(e.getAttribute("my_creator_number")).on_record_created_deleted(e,action="deleted")} catch(er){alert(er)}
-              e.setAttribute("record_id", "new")
-              return;
-           }
+
+               if(((type__=="tests" || type__=="groups") && (e.checked==false)) ||
+                   ((type__=="variables") && (e.value=="" || Math.round(parseInt(e.value))==0))){
+                  var dic_={"obj":"AdvancedTabs","atm":atm_.my_name,"app":atm_.my_app,"fun":"delete_record",
+                            "params": {"app":atm_.my_app,"model":model_,"id":record_id_}}
+                  //alert('9080-1222-11 fields_= '+ JSON.stringify(dic_));
+                  $.post(atm_.activate_function_link_,
+                      {dic : JSON.stringify(dic_)},
+                      function(dic){
+                        id_ = dic["result"]["id"];
+                        //alert("record was deleted: "+id_)
+                     })
+                  e.setAttribute("record_id", "new")
+                  try{var n=e.getAttribute("my_creator_number");var c=get_creator(n);c.on_record_created_deleted(e,action="deleted")} catch(er){alert(er)}
+                  return;
+               }
+
          } else if(type__=="recording"){
-            //alert("c9002-109")
+            alert("c9002-109")
             foreign_keys_={};parent_model_=model_;parent_id_=record_id_;
             //alert("c9002-109-1\n\n"+e.outerHTML)
             html_obj_to_update=e;var model_=e.getAttribute("table");
@@ -1841,12 +1850,9 @@ var container_on_change=function (event){
            var dic_data={"model":model_, "parent_model":parent_model_, "pkey":record_id_, "parent_pkey":parent_id_,
                         "fields": fields_, "type":type_, "foreign_keys":foreign_keys_, "dependents":dependents_,
                         "element_id":e.getAttribute("id")}
-
            //alert("c9002-120 dic_data= "+ JSON.stringify(dic_data));
-
            if(is_plugin==true){for(var q in fvs){var x=fvs[q].split("__");dic_data["fields"][x[0]]=x[1];}}
            else {dic_data["fields"][field__u]=v__u;}
-
            //alert('9081-222 dic_data= '+ JSON.stringify(dic_data));
            //alert(html_obj_to_update.outerHTML)
            container.tab.parent.save_data(html_obj_to_update, dic_data);
@@ -1857,25 +1863,27 @@ var container_on_change=function (event){
   // event.stopPropagation();
  }
 var container_on_click=function(event){
-  event.stopPropagation();
+      event.stopPropagation();
       this.tab.parent.active_tab_content=this;
       var e=event.target;
-
-        if(this.tab.parent.new_obj_to_create){
+      if(this.tab.parent.new_obj_to_create){
             this.tab.new_obj_to_create=this.tab.parent.new_obj_to_create;
             this.tab.parent.new_obj_to_create=null;
         }
+
       if(this.tab.new_obj_to_create==null){
          var click_event=new Event("click", {bubbles: true});
          if(event.ctrlKey){
            //alert("90123-1:\n"+event.target.outerHTML)
            var obj_type=e.getAttribute("obj_type");
-           //alert("90123-2:\n"+obj_type)
            try{while(obj_type==null){e=e.parentNode;var obj_type=e.getAttribute("obj_type");}} catch(er){}
-            //alert("90123-3:\n"+obj_type)
             if(obj_type==null){
+            //alert(this.tab.parent.editor.main_menus["TabContent"].btn.outerHTML)
               this.tab.parent.editor.main_menus["TabContent"].btn.dispatchEvent(click_event);
+              //alert(66666666661)
+              //alert(this.tab.parent.editor.main_menus["TabContent"].my_sub_objs["content"].btn.outerHTML)
               this.tab.parent.editor.main_menus["TabContent"].my_sub_objs["content"].btn.dispatchEvent(click_event)
+              //alert(777777777771)
             }
             else{
              var obj_number=e.getAttribute("id")
@@ -1895,7 +1903,7 @@ var container_on_click=function(event){
          }
       } else {
 
-         //alert("e="+e.outerHTML+" \nthis="+this.outerHTML)
+         //alert("CCCCCC e="+e.outerHTML+" \nthis="+this.outerHTML)
          //alert(JSON.stringify(this.tab.new_obj_to_create));
 
         var dic=this.tab.new_obj_to_create;
@@ -2532,7 +2540,7 @@ acTestCreator.prototype.create_obj = function()
    var table = dic["properties"]["table"]
    var field = dic["properties"]["field"]
    var value_field = dic["properties"]["value_field"]
-   var s = '<input id="test_'+l+'" type="checkbox" type_="tests" container_id="'+container_id
+   var s = '<input id="test_'+l+'" my_creator_number="'+dic["properties"]["obj_number"]+'"  type="checkbox" type_="tests" container_id="'+container_id
    s+='" field="'+field+'" value_field="'+value_field+'" table="'+table+'" record_id="new" test_number="'+l+'">'
    //var s = '<label class="switch"><input type="checkbox" checked><span class="slider"></span></label><br><br>'
    e_obj.innerHTML+="<tr><td style='width:"+nlt+"%'>"+dic_["title"]+"</td><td>"+s+"</td></tr>"
@@ -2595,7 +2603,7 @@ acTestCreator.prototype.create_obj = function()
           div_.setAttribute("id", obj_number+"_"+h);
           var style_ = "float:left;width:"+nl+"%;padding:10px;height:"+height_+"px;border-radius:25px;background-color:"
           var color_ = structure_dic[h]["color"];
-          style_ += color_+";padding: 20px;border: 2px solid #73AD21;";
+          style_ += color_+";padding: 10px;border: 2px solid #73AD21;";
           div_.setAttribute("style", style_);
           h_=document.createElement("h3");
           div_.appendChild(h_);
@@ -2666,6 +2674,194 @@ acTestCreator.prototype.set_data = function(record_id, ll=null)
   }
   this.parent.atm.get_data(call_back_fun=fun, dic_, this)
 }
+
+acTestCreator.prototype.on_record_created_deleted = function(e,action="created")
+{
+   //alert("90120-20\nacTestCreator.prototype.on_record_created_deleted\n action: "+action+" \n\n"+e.outerHTML);
+   try{
+    var record_id=e.getAttribute("record_id")
+    if(action=="deleted"){e.setAttribute("record_id", "new")}
+   } catch(er){alert(er)}
+}
+
+
+// Variable --
+function acVariableCreator(parent){this.parent=parent;this.structure_dic=null;this.variable_list=[];this.fields=[];
+                   this.members_list={"variable_number":[], "record_id":[]};
+}
+
+acVariableCreator.prototype.create_obj = function()
+{
+  var ff = function(div_, dic_, dic, nlt, ll){
+      table_=document.createElement("table");
+      t_body_=document.createElement("tbody");
+      table_.appendChild(t_body_);
+      div_.appendChild(table_);
+      //alert(div_.outerHTML)
+      for(var l in dic_){f(e_obj=table_, l, dic_[l], dic, nlt, ll)}
+  }
+  var f = function(e_obj, l, dic_, dic, nlt, ll)
+  {
+    //alert("\n" + JSON.stringify(dic))
+    //alert("\n" +l+": "+ JSON.stringify(dic_))
+   ll.push(l)
+   var container_id = dic["container_id"]
+   var table = dic["properties"]["table"]
+   var field = dic["properties"]["field"]
+   var value_field = dic["properties"]["value_field"]
+   var s = '<input id="variable_'+l+'" my_creator_number="'+dic["properties"]["obj_number"]+'" type="text" size="2" type_="variables" container_id="'+container_id
+   s+='" field="'+field+'" value_field="'+value_field+'" table="'+table+'" record_id="new" test_number="'+l+'">'
+   //var s = '<label class="switch"><input type="text" checked><span class="slider"></span></label><br><br>'
+   s="<tr><td style='width:"+nlt+"%'>"+dic_["title"]+"</td><td>"+s+"</td></tr>"
+   //alert("s: "+s)
+   e_obj.innerHTML+=s
+   //alert(e_obj.outerHTML)
+  }
+  var dic=this.parent.data;
+    //alert("90441-200  "+JSON.stringify(dic));
+  var field=dic["properties"]["field"]; this.fields.push(field);
+  var value_field=dic["properties"]["value_field"]; this.fields.push(value_field);
+  //alert("90441-205  "+JSON.stringify(this.fields));
+  var width_=dic["properties"]["width"]; if(width_==null || width_==""){width_=80};
+  var height_=dic["properties"]["height"]; if(height_==null || height_==""){height_=300};
+  var container = document.getElementById("content_"+dic["container_id"]);
+  //alert("90355-23 acvariableCreator.prototype.create_obj\n"+JSON.stringify(dic));
+  var obj_number = dic["properties"]["obj_number"]
+  this.main_div=document.createElement("div");
+  this.main_div.my_creator_obj=this;
+  this.main_div.my_creator_obj.dic=dic;
+  this.main_div.setAttribute("id", obj_number);
+  this.main_div.setAttribute("obj_type", dic["obj_type"]);
+  this.main_div.setAttribute("type", dic["element_name"]);
+  var style_ = "position:absolute;left:"+dic["properties"]["x"]+"px;top:"+dic["properties"]["y"]+"px;width:"+width_+"%"
+  this.main_div.setAttribute("style", style_);
+  this.main_div.setAttribute("class", "row");
+  this.main_div.setAttribute("container_id", dic["container_id"]);
+  this.main_div.addEventListener("click", function(event){
+      var e=event.target;
+      //alert(e.outerHTML)
+      //alert("90765-57\n"+JSON.stringify(this.dic));
+      var etype_=e.getAttribute("type")
+      if(etype_=="checkbox"){
+         //alert(e.outerHTML)
+         //alert(e.checked)
+          var etype_=e.getAttribute("type")
+          if(etype_=="checkbox"){
+             //alert("variable66")
+             this.my_creator_obj.obj_was_clicked(e)
+          }
+      }
+  })
+  container.appendChild(this.main_div);
+  //--
+  var general_dic_name = dic["properties"]["setup_dictionary"]
+  if(general_dic_name==null || general_dic_name==""){
+    //alert("i am not defined write code to set property")
+    this.main_div.innerHTML="variable Pluging"
+  } else {
+      try{eval("var structure_dic=this.parent.atm.general."+general_dic_name)} catch(er){alert("1567-98: "+er)}
+      this.structure_dic = structure_dic;
+      try{//alert("9088-63 "+JSON.stringify(structure_dic))
+      } catch(er){alert("15: "+er)}
+
+      var nl = Math.round(10000/Object.keys(structure_dic).length)/100
+      var nlt = 80
+      for(var h in structure_dic)
+      {
+        //alert(h + "\n" + JSON.stringify(structure_dic[h]))
+          div_=document.createElement("div");
+          div_.setAttribute("id", obj_number+"_"+h);
+          var style_ = "float:left;width:"+nl+"%;"
+          style_ += "padding-top: 0px; padding-right: 10px;padding-bottom: 0px;padding-left: 10px;"
+          style_ += "height:"+height_+"px;border-radius:25px;background-color:"
+          var color_ = structure_dic[h]["color"];
+          style_ += color_+";border: 2px solid #73AD21;";
+          div_.setAttribute("style", style_);
+          h_=document.createElement("h3");
+          div_.appendChild(h_);
+          h_.innerHTML = structure_dic[h]["title"]+"<hr/>"
+          this.main_div.appendChild(div_);
+          var dic_variables=structure_dic[h]["sub_tests"]
+          if(dic_variables!=null)
+          {
+            if(dic_variables["type"]==2){
+              for(var g in dic_variables["data"])
+              {
+                var title_ = dic_variables["data"][g]["title"]
+                var color_ = dic_variables["data"][g]["color"]
+
+                div_.innerHTML += "<h3 style='text-align:center;width:100%;color:"+color_+"'><u>"+title_+"</u></h3>"
+                var dic_=dic_variables["data"][g]["sub_tests"]["data"]
+                ff(div_, dic_, dic, nlt, this.variable_list)
+                //f1(dic_, this.variable_list)
+              }
+            } else if(dic_variables["type"]==3)
+            {
+              ff(div_, dic_variables["data"], dic, nlt, this.variable_list);
+              //f1(dic_variables["data"], this.variable_list)
+            }
+          }
+      }
+      //alert(JSON.stringify(this.variable_list));
+  }
+
+  for(f in dic["functions"]){var s="this.main_div."+f+"="+dic["functions"][f];eval(s);}
+}
+
+acVariableCreator.prototype.clean_data = function()
+{for(var j in this.variable_list){var id="variable_"+this.variable_list[j];getEBI(id).value="";}}
+
+acVariableCreator.prototype.obj_was_clicked = function(e)
+{
+  //alert("901456\nacvariableCreator.prototype.obj_was_clicked\n "+e.outerHTML);
+}
+
+acVariableCreator.prototype.set_data = function(record_id, ll=null)
+{
+  //alert(record_id)
+  this.clean_data(); if(ll!=null){for(var i in ll){get_creator(ll[i]).clean_data()}}
+  var dic=this.parent.data;
+  this.recording_variables_number=dic["properties"]["recording_variables_number"];
+  //alert("acVariableCreator 90446-16  "+JSON.stringify(dic));
+  var model_=dic["properties"]["table"]
+  var container = document.getElementById("content_"+dic["container_id"]);
+  var parent_model_=container.my_creator_obj.link_dic["properties"]["table"];
+     var dic_={"model":model_, "parent_model":parent_model_, "parent_id": record_id, "number_of_rows": "1000",
+               "fields": this.fields,
+               "filters":{}, "order_by": {}}
+    //alert("90447-150  "+JSON.stringify(dic_));
+  var fun=function(data, this_obj){
+    //alert("943010: "+JSON.stringify(data));
+    this_obj.members_list={"variable_number":[], "record_id":[]}
+    var n_=data[this_obj.fields[0]].length;if(n_<1){return}
+    for(var j=0; j<n_; j++)
+    {
+     var s_id="variable_"+data["test_number"][j];
+     var n=1*data["value"][j];
+     s_id=getEBI(s_id);s_id.value=n;s_id.setAttribute("record_id",data["id"][j])
+
+     //alert(data["id"][j])
+
+     this_obj.members_list["variable_number"].push(data["test_number"][j])
+
+     this_obj.members_list["record_id"].push(data["id"][j])
+     //alert("90447-150  "+JSON.stringify(this_obj.members_list));
+    }
+     //get_creator(this_obj.recording_variables_number).set_obj_structure(group_list=null, variable_list=this_obj.members_list)
+  }
+  this.parent.atm.get_data(call_back_fun=fun, dic_, this)
+}
+
+acVariableCreator.prototype.on_record_created_deleted = function(e,action="created")
+{
+   //alert("90120-20\nacvariableCreator.prototype.on_record_created_deleted\n action: "+action+" \n\n"+e.outerHTML);
+   try{
+    var record_id=e.getAttribute("record_id")
+    if(action=="deleted"){e.setAttribute("record_id", "new")}
+   } catch(er){alert(er)}
+}
+
+
 
 // Group --
 function acGroupCreator(parent){this.parent=parent;this.fields=[];this.members_list={"entity_number":[], "record_id":[]};
@@ -2770,13 +2966,8 @@ acGroupCreator.prototype.create_obj = function()
 
 acGroupCreator.prototype.obj_was_clicked = function(e)
 {
-   //alert("90100-10\nacGroupCreator.prototype.obj_was_clicked\n "+e.outerHTML);
+  //alert("90100-10\nacGroupCreator.prototype.obj_was_clicked\n "+e.outerHTML);
 }
-
-//acGroupCreator.prototype.clean_data = function()
-//{for(var j in this.members_list=[]){
-// var id="soldier_"+this.members_list[j];getEBI(id).checked=false;}
-//}
 
 acGroupCreator.prototype.open_close_lists = function(n=0)
 {
@@ -3225,25 +3416,25 @@ acSearchTableCreator.prototype.create_obj = function()
 acSearchTableCreator.prototype.get_data = function(data_table_name=null,parent_model=null,parent_id=null,company_obj_id=null)
 {
   var dic=this.parent.data;
-  // alert("9044  "+JSON.stringify(dic));
+   //alert("9044  "+JSON.stringify(dic));
   var container = document.getElementById("content_"+dic["container_id"]);
   //alert(container.outerHTML);
+
   if(data_table_name!==null){this.data_table_name=data_table_name} else {this.data_table_name=container.getAttribute("table")}
   try{
     var parent_id_="";
     var model_=container.my_creator_obj.link_dic["properties"]["table"];
-    //alert("9059=: "+model_)
     try{
         if(parent_model!=null){var parent_model_=parent_model} else {
           var parent_model_=container.my_creator_obj.link_dic["properties"]["parent_table"]
           }
           if(parent_model_==null){var parent_model_="";}
-        } catch(er){};
+        } catch(er){alert(er)};
     // var record_id_=container.getAttribute("record_id");
     if(parent_id!=null){parent_id_=parent_id} else {parent_id_=container.getAttribute("parent_id")}
     if(parent_id_=="" || parent_id_==null){return}
     var dic_={"model":this.data_table_name, "number_of_rows":this.number_of_rows, "fields":this.fields}
-  } catch(er){alert("er9012: "+er)}
+  } catch(er){alert("er90132: "+er)}
 
   //alert("90441-1  "+JSON.stringify(dic_));
   var fun=function(data, ttbody_){
@@ -5168,6 +5359,7 @@ try{
        var win_obj=this.get_pop_win_obj(dic_);
        win_obj.__init__();
        var pp_=dic_["properties"]
+       //alert("BBBBBB"+JSON.stringify(pp_));
        win_obj.set_win_frame_style(pp_["zindex"], pp_["height"], pp_["width"], pp_["right"], pp_["top"], pp_["background_color"])
        win_obj.set_acWinStatEventListeners(this.parent.editor);       //win_obj.set_acWinStat('block');
        win_obj.resume_win()
@@ -5218,8 +5410,8 @@ Tab.prototype.set_max_zindex = function(win) {
 
     try{
         if(win_name!="editor"){
-          win.create_editor_for_popwin(win.tab_obj_.tab_pop_win_buttons["pop_wins"][win_number]);
-          this.parent.editor.active_popup_win=[tab_id, win_name, win_number]
+          var ret=win.create_editor_for_popwin(win.tab_obj_.tab_pop_win_buttons["pop_wins"][win_number]);
+          if(ret==1){this.parent.editor.active_popup_win=[tab_id, win_name, win_number]}
         }
     } catch(er){
      alert("error505:\n"+er+"\nwin_name="+win_name+"\nwin_number="+win_number)
@@ -5230,7 +5422,9 @@ Tab.prototype.set_max_zindex = function(win) {
 
 Tab.prototype.get_pop_win_obj = function(dic)
 {
- //alert("90602\n" + JSON.stringify(dic));
+ //alert("90602-11 get_pop_win_obj\n" + JSON.stringify(dic));
+ //alert("90602-22 get_pop_win_obj\n" + JSON.stringify(dic["properties"]));
+ //alert("90602-33 get_pop_win_obj\n" + JSON.stringify(dic["popwin_content"]));
  var pp_=dic["properties"];
  var s_name=pp_["name"]; var s_title=pp_["title"];
  var title_color=pp_["title_color"];var title_background_color=pp_["title_background_color"];
@@ -5251,46 +5445,53 @@ Tab.prototype.get_pop_win_obj = function(dic)
  s+='is_scroll=is_scroll_, zindex="21", tab_obj_=parent, is_nav_panel=true, win_number='+link_number+');'
  s+='this.tab_obj_.tab_pop_win_buttons["pop_wins"]['+link_number+']=dic_;'
 
-         //s+='alert("90699-inner\\n "+JSON.stringify(this.tab_obj_.tab_pop_win_buttons["pop_wins"]['+link_number+']));'
+ //s+='alert("90699-inner\\n "+JSON.stringify(this.tab_obj_.tab_pop_win_buttons["pop_wins"]['+link_number+']));'
+ //alert("link_number:"+link_number)
 
  s+='if(!("'+link_number+'" in this.tab_obj_.tab_objects)){this.tab_obj_.tab_objects["'+link_number+'"]={}};'
  s+='this.popwin_content=new TabContent(tab=parent, container=this.win_content, link_dic=dic_["popwin_content"], is_on_click=true, is_link=false);'
  s+='this.win_content=this.popwin_content.link_content;'
+ s+='this.win_content.setAttribute("my_type", "TabPopWin");';
+ //s+='this.popwin_content.link_content.my_creator_obj=this;'
  s+='this.win_content.setAttribute("class", "tabcontent"+parent.tab_name);'
  s+='this.win_content.style.display="block";'
  s+='this.win_content.parent=this;'
  s+='};';
-
  //alert("90605\n" + s);
  eval(s);
- //alert("90605-1\n");
 
  s = 'TabPopWin'+this.tab_name+s_name+'.prototype = Object.create(acWin.prototype);';
  eval(s);
  s = 'TabPopWin'+this.tab_name+s_name+'.prototype.constructor = TabPopWin'+this.tab_name+s_name;
  eval(s);
  //alert("90607\n" + s);
+
  s='TabPopWin'+this.tab_name+s_name+'.prototype.create_editor_for_popwin = function(dic)'
  s+='{'
  //s+='alert(this.tab_obj_.parent);'
  //s+='alert(this.tab_obj_.parent.editor);'
- //s+='alert(JSON.stringify(dic));'
+ //s+='alert("88888888 create_editor_for_popwin: "+JSON.stringify(dic));'
 
  s+='var tab_=this.tab_obj_.parent.tabs[dic["properties"]["tab_id"]];';
  s+='var pop_win=tab_.PopWinObjects[dic["properties"]["name"]];'
  s+='var pop_win_dic_=tab_.tab_pop_win_buttons["pop_wins"][dic["properties"]["id"]];'
- //s+='alert(JSON.stringify(pop_win_dic_));'
+ //s+='alert(100);alert(JSON.stringify(pop_win_dic_));'
  //s+='this.fpe=new FunctionsPropertiesEditor(tab_,pop_win_dic_["functions"],pop_win_dic_["functions"],pop_win_dic_["properties"],pop_win_dic_["properties"]);'
  s+='var pop_win_content=tab_.parent.pop_win;'
+ s+='if(this.tab_obj_.parent.editor!=null){'
+ //s+='alert(this.tab_obj_.parent.editor.get_functions_properties_editor);'
  s+='this.fpe=this.tab_obj_.parent.editor.get_functions_properties_editor(tab_,pop_win_dic_["functions"],'
  s+='pop_win_content["functions_list"],'
  s+='pop_win_dic_["properties"],'
  s+='pop_win_content["settings_list"],'
  s+='pop_win_content["attributes_list"],'
- s+='tab_btn_name="PopWin",null,node_to_delete=".tab_pop_win_buttons[\'pop_wins\']["+dic[\'properties\'][\'id\']+"]");'
+ s+='tab_btn_name="PopWin",null,node_to_delete=".tab_pop_win_buttons[\'pop_wins\']["+dic[\'properties\'][\'id\']+"]");return 1;'
+ s+='} else {return -1};'
  s+='}'
+
  //alert("90611\n" + s);
  eval(s);
+ //alert("90611-2\n" + s);
  //--
  s='TabPopWin'+this.tab_name+s_name+'.prototype.get_my_tab = function()'
  s+='{'
@@ -6090,30 +6291,44 @@ PopWinDeletePopWin_click = function(obj, event)
 //-- TabContent --
 TabContent_create_main_content = function()
 {
- //alert(222200000)
+ //alert(22212000)
 }
 
 TabContentcontent_click = function(obj, event)
 {
+  //alert(obj.btn)
   //alert(obj.btn.outerHTML);
   //alert(obj.my_name) // TabContentcontent
   //alert(obj.parent.my_name) // TabContent
   //alert(obj.parent.parent.my_name) // editor
-  //alert(obj.parent.parent.atm.active_tab.tab_name)
-  //alert(131)
-  //alert(JSON.stringify(obj.parent.parent.tab_nav_links))
-  //alert(JSON.stringify(obj.parent.parent.atm.tab_nav_links))
-  //alert(JSON.stringify(obj.parent.parent.atm.active_tab.tab_nav_links))
-  // alert(133)
+//  alert(obj.parent.parent.atm.active_tab.tab_name)
+//  alert(131)
+//  alert(JSON.stringify(obj.parent.parent.tab_nav_links))
+//  alert(JSON.stringify(obj.parent.parent.atm.tab_nav_links))
+//  alert(JSON.stringify(obj.parent.parent.atm.active_tab.tab_nav_links))
+//   alert(133)
   //var tab_=obj.parent.parent.atm.active_tab;
 
+//alert("BBB "+obj.parent.parent.atm.active_tab_content.outerHTML)
+
+try{
   var my_creator_obj_=obj.parent.parent.atm.active_tab_content.my_creator_obj;
-  //alert(my_creator_obj_.is_link)
+} catch(er){alert(er)}
+
+try{
+  var t_=""; t_=obj.parent.parent.atm.active_tab_content.getAttribute("my_type");
+} catch(er){alert(er)}
+
   if(my_creator_obj_.is_link){
      var tab_content_=obj.parent.parent.atm.active_tab.tab_nav_links["nav_links"][my_creator_obj_.link_number]["tab_content"]
+  } else if (t_=="TabPopWin")
+  {var tab_content_=my_creator_obj_.link_dic
   } else {var tab_content_=obj.parent.parent.atm.active_tab.tab_content_link_dic;}
+
   var tab_content=obj.parent.parent.atm.tab_content
+
   try{
+       //alert("787878787878-11 "+JSON.stringify(tab_content_))
       tab_fpe=obj.parent.parent.get_functions_properties_editor(
             obj.parent.parent.atm.active_tab,
             functions_dic=tab_content_["functions"],
