@@ -1591,13 +1591,20 @@ acFSPivotCreator.prototype.row_col_click = function(event)
 // --
 function acGradesCreator(parent){
   this.parent=parent;
-  // alert(JSON.stringify(this.parent.data));
+  this.my_name="grades";
 }
 
 acGradesCreator.prototype.create_html = function(type=null)
 {
-
+ alert(2222222)
 }
+
+acGradesCreator.prototype.set_obj_structure = function(group_list=null, test_list=null)
+{
+alert(333333)
+  //try{alert("90000-101  "+JSON.stringify(group_list) + "" + JSON.stringify(test_list));} catch(er){alert(er)}
+}
+
 
 
 // -- acPlugin --
@@ -1811,24 +1818,25 @@ var container_on_change=function (event){
            var model_=e.getAttribute("table");var record_id_=e.getAttribute("record_id");
            html_obj_to_update=e;fields_[e.getAttribute("value_field")]=e.getAttribute(e.getAttribute("value_field"))
            if(type__=="tests" || type__=="groups"){v__u = ""+e.checked;}
-
            //alert('9080-111-11 fields_= '+ JSON.stringify(field_));
            //alert("c9001-55-0 \nparent_model_="+parent_model_+"\nparent_id_="+parent_id_+"\nmodel_="+model_+"\nrecord_id_="+record_id_)
 
                if(((type__=="tests" || type__=="groups") && (e.checked==false)) ||
                    ((type__=="variables") && (e.value=="" || Math.round(parseInt(e.value))==0))){
-                  var dic_={"obj":"AdvancedTabs","atm":atm_.my_name,"app":atm_.my_app,"fun":"delete_record",
-                            "params": {"app":atm_.my_app,"model":model_,"id":record_id_}}
-                  //alert('9080-1222-11 fields_= '+ JSON.stringify(dic_));
-                  $.post(atm_.activate_function_link_,
+                   if(model_!=null && model_!="" && String(model_)!="undefined" ){
+                     var dic_={"obj":"AdvancedTabs","atm":atm_.my_name,"app":atm_.my_app,"fun":"delete_record",
+                               "params": {"app":atm_.my_app,"model":model_,"id":record_id_}}
+                     //alert('9080-1222-11 fields_= '+ JSON.stringify(dic_));
+                     $.post(atm_.activate_function_link_,
                       {dic : JSON.stringify(dic_)},
                       function(dic){
                         id_ = dic["result"]["id"];
                         //alert("record was deleted: "+id_)
                      })
-                  e.setAttribute("record_id", "new")
-                  try{var n=e.getAttribute("my_creator_number");var c=get_creator(n);c.on_record_created_deleted(e,action="deleted")} catch(er){alert(er)}
-                  return;
+                   }
+                   e.setAttribute("record_id", "new");
+                   try{var n=e.getAttribute("my_creator_number");var c=get_creator(n);c.on_record_created_deleted(e,action="deleted")} catch(er){alert(er)}
+                   return;
                }
 
          } else if(type__=="recording"){
@@ -2862,7 +2870,6 @@ acVariableCreator.prototype.on_record_created_deleted = function(e,action="creat
 }
 
 
-
 // Group --
 function acGroupCreator(parent){this.parent=parent;this.fields=[];this.members_list={"entity_number":[], "record_id":[]};
                                 this.active_record_id=-1;this.is_group_updated=false}
@@ -2898,6 +2905,7 @@ acGroupCreator.prototype.get_entity_list = function(e_dic)
 acGroupCreator.prototype.create_obj = function()
 {
   var dic=this.parent.data;
+  this.recording_tests_number=dic["properties"]["recording_tests_number"];
   var field=dic["properties"]["field"]; this.fields.push(field);
   var value_field=dic["properties"]["value_field"]; this.fields.push(value_field);
   var width_=dic["properties"]["width"]; if(width_==null || width_==""){width_=80};
@@ -3031,7 +3039,6 @@ acGroupCreator.prototype.set_data = function(record_id=null, ll=null)
    try{this.open_close_lists(0)} catch(er){}
   // --
   var dic=this.parent.data;
-  this.recording_tests_number=dic["properties"]["recording_tests_number"];
   var model_=dic["properties"]["table"]
   var container = document.getElementById("content_"+dic["container_id"]);
   var parent_model_=container.my_creator_obj.link_dic["properties"]["table"];
@@ -3067,22 +3074,31 @@ acGroupCreator.prototype.on_record_created_deleted = function(e,action="created"
    //alert("90100-20\nacGroupCreator.prototype.obj_was_clicked\n "+e.outerHTML);
    var record_id=e.getAttribute("record_id")
    var soldier_number=e.getAttribute("soldier_number")
+   var n__=this.members_list["record_id"].length
    if(action=="created"){
-     if(!(record_id in this.members_list["record_id"])){
-      this.members_list["entity_number"].push(soldier_number);
-      this.members_list["record_id"].push(record_id);
-     }
+      if(n__!=0){
+         if(!(record_id in this.members_list["record_id"])){
+          this.members_list["entity_number"].push(soldier_number);this.members_list["record_id"].push(record_id);
+         }
+      } else{
+        if(!(soldier_number in this.members_list["entity_number"])){this.members_list["entity_number"].push(soldier_number)}
+      }
+   } else
+   {
+    if(n__!=0){
+     for(var i=0;i<n__;i++){if(this.members_list["record_id"][i]==record_id) {this.members_list["record_id"].splice(i, 1);break;}}
+    } else{
+     var n__=this.members_list["entity_number"].length;
+     for(var i=0;i<n__;i++){if(this.members_list["entity_number"][i] == soldier_number) {this.members_list["entity_number"].splice(i, 1);break;}}
+    }
+     //alert(record_id+"\n\n90355-1234-3 acGroupCreator.prototype.on_record_created_deleted\n"+JSON.stringify(this.members_list));
+  }
 
-   } else {
-           for(var i=0;i<this.members_list["record_id"].length;i++)
-           {if (this.members_list["record_id"][i] == record_id) {
-                    this.members_list["record_id"].splice(i, 1);
-                    break;
-                }
-            }
-  //alert(record_id+"\n\n90355-1234-3 acGroupCreator.prototype.on_record_created_deleted\n"+JSON.stringify(this.members_list));
-       }
-   get_creator(this.recording_tests_number).set_obj_structure(group_list=this.members_list, test_list=null)
+//  alert(this.recording_tests_number)
+//  alert(get_creator(this.recording_tests_number))
+//  alert(get_creator(this.recording_tests_number).create_html)
+//  alert(get_creator(this.recording_tests_number).set_obj_structure)
+//  get_creator(this.recording_tests_number).set_obj_structure(group_list=this.members_list, test_list=null)
 }
 
 
@@ -3135,6 +3151,7 @@ acRecordingTestsCreator.prototype.create_obj = function()
 
 acRecordingTestsCreator.prototype.set_obj_structure = function(group_list=null, test_list=null)
 {
+  //alert("acRecordingTests 90000-033\n\n"+JSON.stringify(group_list));
   //--
   this.test_dic = eval("this.parent.atm.general.test_dic")
   //--
@@ -5394,7 +5411,6 @@ Tab.prototype.generate_obj=function(dic=null){
  return obj;
 }
 
-
 Tab.prototype.set_max_zindex = function(win) {
 
   var number = win.win_frame.style.zIndex;
@@ -5418,7 +5434,6 @@ Tab.prototype.set_max_zindex = function(win) {
     }
   }
 }
-
 
 Tab.prototype.get_pop_win_obj = function(dic)
 {
