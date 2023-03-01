@@ -2,7 +2,7 @@
 from django.urls import path
 from .views import (home, app, update_field_model, post_ajax_create_action, activate_function, update_field_model_by_id,
                     get_data_link, get_data_json_link,
-                    activate_obj_function, upload_file
+                    activate_obj_function, upload_file, logmein
                     # , get_adjective_link
                     )
 
@@ -13,6 +13,7 @@ urlpatterns = [
     path('app/<str:app_name>/', app, name='app'),
     path('activate_obj_function/', activate_obj_function, name='activate_obj_function'),
     path('upload_file/', upload_file, name='upload_file'),
+    path('logmein/', logmein, name='logmein'),
 
     path('post_ajax_create_action', post_ajax_create_action, name='post_ajax_create_action'),
     path('update_field_model', update_field_model, name='update_field_model'),
@@ -21,5 +22,6 @@ urlpatterns = [
     path('get_data_link', get_data_link, name='get_data_link'),
     path('get_data_json_link', get_data_json_link, name='get_data_json_link'),
     # path('get_adjective_link', get_adjective_link, name='get_adjective_link'),
+
 ]
 

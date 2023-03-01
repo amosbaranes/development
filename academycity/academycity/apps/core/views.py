@@ -1,4 +1,5 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth import login, authenticate, logout
 from django.utils.translation import ugettext_lazy as _, get_language
 from django.core.management import call_command
 from django.apps import apps
@@ -477,6 +478,7 @@ def get_data_link(request):
                 # print(exx)
             if filter_value_ != "":
                 if foreign_table_ != "":
+                    filter_field_ = "id"
                     s += '.filter('+foreign_table_+'__'+filter_field_+'__icontains='+filter_value_+')'
                 else:
                     s += '.filter('+filter_field_+'__icontains="'+filter_value_+'")'
@@ -492,8 +494,7 @@ def get_data_link(request):
             data__ = eval(ss__)
         s += '.all()[:number_of_rows_].values('+fields_str+')'
         # print('s111 for data')
-        # print(s)
-        # print('s11')
+        # print("\n\n", s, 's11')
         data = eval(s)
         # print(data)
     except Exception as ex:
@@ -579,15 +580,17 @@ def upload_file(request):
             os.makedirs(data_dir, exist_ok=True)
             filename = request.POST['filename']
             file_path = os.path.join(data_dir, filename)
-            record_id = request.POST['record_id']
-            model_field_name = request.POST['model_field_name']
+
             model_name = request.POST['model_name']
-            model = apps.get_model(app_label=app_, model_name=model_name)
-            obj = model.objects.get(id=record_id)
-            s = "obj."+model_field_name+"='"+filename+"'"
-            exec(s)
-            obj.save()
-            # print(file_path)
+            if model_name !="":
+                record_id = request.POST['record_id']
+                model_field_name = request.POST['model_field_name']
+                model = apps.get_model(app_label=app_, model_name=model_name)
+                obj = model.objects.get(id=record_id)
+                s = "obj."+model_field_name+"='"+filename+"'"
+                exec(s)
+                obj.save()
+                # print(file_path)
             with open(file_path, 'wb+') as destination:
                 for c in upload_file_.chunks():
                     destination.write(c)
@@ -652,3 +655,28 @@ def upload_file(request):
 
     return HttpResponse(json.dumps(ret))
 
+
+def logmein(request):
+    try:
+        dic_ = request.POST["dic"]
+        dic_ = eval(dic_)
+    except Exception as ex:
+        print("Error 200-21: "+str(ex))
+
+    # print('90155-100 logmein\n','-'*50, "\n", dic_, "\n", '-'*50)
+    username= dic_['username']
+    password = dic_['pwd']
+    app_ = dic_['app']
+    try:
+        user = authenticate(username=username, password=password)
+    except Exception as ex:
+        print(ex)
+
+    if user is not None:
+       if user.is_active:
+           login(request, user)
+           return JsonResponse({"status":"ok"})
+       else:
+           return JsonResponse({"status":"inactive"})
+    else:
+       return JsonResponse({"status":"bad"})

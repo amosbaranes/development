@@ -28,6 +28,7 @@ from ...core.utils import log_debug, clear_log_debug
 from .models import Soldiers, DoubleShoot as DoubleShootModel
 from django.http import JsonResponse
 import requests
+from django.shortcuts import render, get_object_or_404, redirect
 
 
 class TestManager(object):
@@ -192,9 +193,8 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
                     qid_ = eval("q."+p_key_field_name+".id")
                 else:
                     qid_ = eval("q."+p_key_field_name)
-                result[qid_]={"title":str(q), "data":{}}
+                result[qid_]={"title":str(q), "model":nav_tables_[n-1], "data":{}}
                 self.process(app_, n, nav_tables_, result[qid_]["data"], qid=qid_)
-
         return result
 
     def get_units_structure(self, dic):
@@ -555,7 +555,6 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
         #     soldier_obj.platoon = platoon_obj
         #
         #     soldier_obj.save()
-
 
         result = {"status": "ok"}
         return result

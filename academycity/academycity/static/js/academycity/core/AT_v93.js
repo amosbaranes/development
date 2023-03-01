@@ -1,37 +1,13 @@
 // -- AdvancedTabsManager --
-function AdvancedTabsManager(my_name, my_app, body_,
-activate_function_link, update_file_link, activate_obj_function_link,upload_file_link,get_data_link,get_data_json_link,
-company_obj_id, is_show_btns=true, user_id=0)
-{
- //alert(activate_obj_function_link)
- this.update_file_link_ = update_file_link
- this.upload_file_link_ = upload_file_link
- this.company_obj_id=company_obj_id;
- this.user_id=user_id;
- this.my_name=my_name;
- this.my_app=my_app;
- this.elm_body=body_;
- this.activate_function_link_=activate_function_link;
- this.get_data_json_link_=get_data_json_link;
- this.activate_obj_function_link_=activate_obj_function_link;
- //alert(this.activate_obj_function_link_)
- this.update_field_link_=update_field_link;
- this.get_data_link_=get_data_link;
- this.titles=null;this.container=null;
- this.content={"last_obj_number":0};
- this.app_content={};this.app_objs={};this.temp_number=1;
- this.tabs={};
- this.pop_wins={};
- this.init_create_containers();
- this.fun_to_run_by_timer = []
- this.interval=100;
- this.init_timer();
- if(is_show_btns == true){this.create_add_delete_editor();}
- this.setTabs();
- this.active_tab=null;
- this.editor=null;
- this.new_obj_to_create=null;
+//function AdvancedTabsManager(my_name, my_app, body_,
+//activate_function_link, update_file_link, activate_obj_function_link,upload_file_link,logmein_link,get_data_link,
+//get_data_json_link,company_obj_id, is_show_btns=true, user_id=0)
+//{
+//}
 
+// -- AdvancedTabsManager --
+function AdvancedTabsManager(dic=null)
+{
 // "Tab":{"title":"Tab", "obj_type":"none",
 //                        "sub_buttons": {"NewFunction":{"title":"new func", "width":10},
 //                                        "DeleteFunction":{"title":"del func", "width":10}}},
@@ -88,7 +64,11 @@ company_obj_id, is_show_btns=true, user_id=0)
                                              "attributes":{"href":[], "target":["", "blank_"]},
                                              "functions":[]},
                                         "H":{"title":"h", "width":3,
-                                             "setting": {},
+                                             "setting": {"font-size":[], "font-family":["", "Arial, sans-serif",
+                                                         "Verdana, sans-serif","Tahoma, sans-serif","'Trebuchet MS', sans-serif",
+                                                         "'Times New Roman', serif","Georgia, serif", "Garamond, serif",
+                                                         "'Courier New', monospace", "'Brush Script MT', cursive"
+                                                         ]},
                                              "attributes":{"color":[], "background-color":[]},
                                              "functions":[]},
                                         "H1":{"title":"h1", "width":3,
@@ -140,7 +120,8 @@ company_obj_id, is_show_btns=true, user_id=0)
                                         "Group":{"title":"G", "width":3,
                                                   "setting": {"setup_dictionary":[], "entity":[], "width":[], "height":[],
                                                               "table":[], "field":[], "value_field":[],
-                                                              "recording_tests_number":[]},
+                                                              "recording_tests_number":[],
+                                                              "present":["","groups", "detail"]},
                                                   "attributes":{},
                                                   "functions":["onclick", "onchange", "onmouseover", "onmouseout"]},
                                         "RecordingTests":{"title":"R", "width":3,
@@ -148,8 +129,12 @@ company_obj_id, is_show_btns=true, user_id=0)
                                                   "vertical_field":[],
                                                   "horizontal_field":[],
                                                   "field":[]},
-                                                  "attributes":{},
+                                                  "attributes":{"table_class":["","basic", "payment"]},
                                                   "functions":["onclick", "onchange", "onmouseover", "onmouseout"]},
+                                        "Image":{"title":"Img", "width":4,
+                                                  "setting": {"height":[], "src":[], "width":[]},
+                                                  "attributes":{},
+                                                  "functions":["onclick", "onchange", "on_loaded", "onmouseover", "onmouseout"]},
                                         "Activity": {"title":"Activity", "width":6,
                                                   "setting": {"table_class":["","basic", "payment"], "parent_table":[], "table":[],
                                                               "number_of_radios":[]},
@@ -262,6 +247,38 @@ company_obj_id, is_show_btns=true, user_id=0)
                  "attributes_list":{"name":[],"top":[],"right":[],"title":[], "table":[], "link_number":[],"tab_id":[],
                                     "is_panel":["true", "false"],"title_color":[], "title_background_color":[],
                                     "content_type":[]}}
+ if(dic!=null){this.create_atm(dic)}
+}
+
+AdvancedTabsManager.prototype.create_atm = function(dic)
+{
+ //alert("create_atm\n"+JSON.stringify(dic))
+ try{this.add_delete_editor.outerHTML="";this.titles.outerHTML="";this.container.outerHTML="";} catch(er){}
+ this.dic=dic;
+ this.my_name=dic["my_name"];
+ this.my_app=dic["my_app"];
+ this.elm_body=dic["body_"];
+ this.logmein_link_=dic["logmein_link"];
+ this.activate_function_link_=dic["activate_function_link"];
+ this.update_field_link_=dic["update_field_link"];
+ this.activate_obj_function_link_=dic["activate_obj_function_link"];
+ this.upload_file_link_ = dic["upload_file_link"]
+ this.get_data_link_=dic["get_data_link"];
+ this.get_data_json_link_=dic["get_data_json_link"];
+ this.company_obj_id=dic["company_obj_id"];
+ this.user_id=dic["user_id"];
+ //--------------------------
+ this.titles=null;this.container=null;this.content={"last_obj_number":0};this.temp_number=1;
+ this.app_content={};this.app_objs={};this.tabs={};this.pop_wins={};
+ //--------------------------
+ this.init_create_containers();
+ this.fun_to_run_by_timer=[];this.interval=100;this.init_timer();
+ if(dic["is_show_btns"] == true){this.create_add_delete_editor();}
+ this.setTabs();
+ //--------------------------
+ this.active_tab=null;this.editor=null;this.new_obj_to_create=null;
+ atm = this;
+ return this;
 }
 
 AdvancedTabsManager.prototype.init_create_containers = function()
@@ -531,8 +548,10 @@ AdvancedTabsManager.prototype.truncate_model = function(model_name, app=null){
 // this is a Factory function which return object based on the dic.
 AdvancedTabsManager.prototype.get_obj = function(tab, dic)
 {
- //alert("90111 "+tab.tab_name)
- //alert(JSON.stringify(dic))
+// if(dic["obj_name"]=="acGrades"){
+//   //alert("90111 "+tab.tab_name)
+//   alert(JSON.stringify(dic))
+// }
  var s='function '+dic["obj_name"]+dic["properties"]["obj_number"]+'(atm_, tab_, dic_)'
  s+='{'
  //s+='this.my_type="'+dic["obj_name"]+'";this.my_element="'+dic["element_name"]+'";';
@@ -543,55 +562,58 @@ AdvancedTabsManager.prototype.get_obj = function(tab, dic)
  s+='this.attributes=ps["attributes"] ;'
  s+='try{this.creator=new '+dic["obj_name"]+'Creator(this)} catch(er){};'
  s+='};'
- //alert(s)
+    // if(dic["obj_name"]=="acGrades"){
+    //   alert(s)
+    // }
  try{eval(s)} catch(er){alert("er9002: "+er)}
  s=dic["obj_name"]+dic["properties"]["obj_number"]+'.prototype = Object.create('+dic["obj_type"]+'.prototype);'
  //alert(s);
  try{eval(s)} catch(er){alert("er903: "+er)}
- //--
- if(dic["obj_name"]=="acPivot")
- {
- //alert(JSON.stringify(dic))
- s=dic["obj_name"]+dic["properties"]["obj_number"]+'.prototype.create_editor = function()'
- s+='{'
- s+=' var container_id=this.data["container_id"];';
- s+=' var obj_number=this.data["properties"]["obj_number"];';
- s+=' try{var properties_func_=null;properties_func_=this.creator.editor_properties_func}catch(er){};';
-
-s+=' try{'
- // s+='alert(JSON.stringify(this.data["properties"]));'
- s+='  var fpe_=this.editor.get_functions_properties_editor(this.tab, this.data["functions"], this.functions,'
- s+='   this.data["properties"], this.settings,this.attributes, tab_btn_name="Plugin", properties_func=properties_func_,'
- s+='   node_to_delete=".tab_objects["+container_id+"]["+obj_number+"]"';
- s+='  )';
- s+=' } catch(er) {alert("er 207: "+er)};'
- s+='}'
- //alert(s);
- try{eval(s)}catch(er){alert(er)}
- } else {
-
+    //--
+    // if(dic["obj_name"]=="acPivot")
+    // {
+    // //alert(JSON.stringify(dic))
+    // s=dic["obj_name"]+dic["properties"]["obj_number"]+'.prototype.create_editor = function()'
+    // s+='{'
+    // s+=' var container_id=this.data["container_id"];';
+    // s+=' var obj_number=this.data["properties"]["obj_number"];';
+    // s+=' try{var properties_func_=null;properties_func_=this.creator.editor_properties_func}catch(er){};';
+    // s+=' try{'
+    // // s+='alert(JSON.stringify(this.data["properties"]));'
+    // s+='  var fpe_=this.editor.get_functions_properties_editor(this.tab, this.data["functions"], this.functions,'
+    // s+='   this.data["properties"], this.settings,this.attributes, tab_btn_name="Plugin", properties_func=properties_func_,'
+    // s+='   node_to_delete=".tab_objects["+container_id+"]["+obj_number+"]"';
+    // s+='  )';
+    // s+=' } catch(er) {alert("er 2070: "+er)};'
+    // s+='}'
+    // //alert(s);
+    // try{eval(s)}catch(er){alert(er)}
+    // } else {
  s=dic["obj_name"]+dic["properties"]["obj_number"]+'.prototype.create_editor = function()'
  s+='{'
  s+=' var container_id=this.data["container_id"];';
  s+=' var obj_number=this.data["properties"]["obj_number"];';
  s+=' try{var properties_func_=null;properties_func_=this.creator.editor_properties_func}catch(er){};';
  s+=' try{'
-
  //s+='alert(JSON.stringify(this.data["properties"]));'
-
  s+='  var fpe_=this.editor.get_functions_properties_editor(this.tab, this.data["functions"], this.functions,'
  s+='   this.data["properties"], this.settings,this.attributes, tab_btn_name="Plugin", properties_func=properties_func_,'
  s+='   node_to_delete=".tab_objects["+container_id+"]["+obj_number+"]"';
  s+='  )';
- s+=' } catch(er) {alert("er 207: "+er)};'
+ s+=' } catch(er) {alert("er 2071: "+er)};'
  s+='}'
- //alert(s);
+
+// if(dic["obj_name"]=="acGrades"){
+// alert(s);
+// }
+
  eval(s);
- }
+// }
  //--
  s = 'new '+dic["obj_name"]+dic["properties"]["obj_number"]+'(atm_=this, tab_=tab, dic_=dic)'
  //alert(s)
- try{obj_=eval(s)}catch(er){alert(er)}
+ try{obj_=eval(s)
+ }catch(er){alert(er)}
  return obj_
 }
 
@@ -656,6 +678,20 @@ AdvancedTabsManager.prototype.save = function()
             else{  //alert("ok")
             }
           });
+}
+
+AdvancedTabsManager.prototype.logmein = function(dic_)
+{
+   dic_["app"]=this.my_app
+   //alert(this.logmein_link_)
+   //alert(JSON.stringify(dic_))
+   $.post(this.logmein_link_,
+     {dic : JSON.stringify(dic_)},
+     function(dic){
+       if(dic["status"]=="ok"){
+         try{location.reload();} catch(er){alert(er)}
+       }
+     });
 }
 
 AdvancedTabsManager.prototype.activate_obj_function = function(call_back_fun, dic_, html_obj)
@@ -1175,6 +1211,11 @@ acObj.prototype.create_obj = function(){
 
   var font_weight_=this.data["properties"]["font-weight"];
   if(font_weight_=="" || font_weight_==null){var font_weight="";} else {var font_weight=";font-weight:"+font_weight_}
+  var font_size=this.data["properties"]["font-size"];
+  if(font_size==null){font_size=""} else {font_size=";font-size:"+font_size+"%"}
+  var font_family=this.data["properties"]["font-family"];
+  if(font_family==null){font_family=""} else {font_family=";font-family:"+font_family}
+
   var align_=this.data["properties"]["text-align"];
   if(align_=="" || align_==null){var align="right";} else {var align=align_}
   var color_=this.data["properties"]["color"];
@@ -1210,7 +1251,7 @@ acObj.prototype.create_obj = function(){
    //"overflow: scroll;
   } else {
     var s_="position:absolute;left:"+this.data["properties"]["x"]+"px;top:"+this.data["properties"]["y"]+"px;width:"+width_+u+";"
-    s_+="color:"+color+background_color+font_weight;
+    s_+="color:"+color+background_color+font_weight+font_size+font_family;
     this.new_obj.setAttribute("style", s_);
   }
 
@@ -1591,21 +1632,22 @@ acFSPivotCreator.prototype.row_col_click = function(event)
 // --
 function acGradesCreator(parent){
   this.parent=parent;
+  //try{alert("90000-121  "+JSON.stringify(this.parent.data)) } catch(er){alert(er)}
   this.my_name="grades";
 }
 
 acGradesCreator.prototype.create_html = function(type=null)
 {
- alert(2222222)
+ alert(2222222);
 }
 
 acGradesCreator.prototype.set_obj_structure = function(group_list=null, test_list=null)
 {
-alert(333333)
-  //try{alert("90000-101  "+JSON.stringify(group_list) + "" + JSON.stringify(test_list));} catch(er){alert(er)}
+  alert(333333);
+//  dic = {"horizontal": {"table": "testsforvariables", "foreign_table": "testsVariables", "id": 1} }
+//  try{alert("90000-101  "+JSON.stringify(dic)) } catch(er){alert(er)}
+//  //try{alert("90000-101  "+JSON.stringify(group_list) + "" + JSON.stringify(test_list));} catch(er){alert(er)}
 }
-
-
 
 // -- acPlugin --
 function acPlugin(){}
@@ -1808,24 +1850,32 @@ var container_on_change=function (event){
         if(parent_model_==null){var parent_model_="";}
         //alert("c9002-105 else: record_id_ "+record_id_ +" parent_id_= "+parent_id_+" model_= "+model_+" parent_model_= "+parent_model_)
         var foreign_keys_ = container.foreign_keys; var dependents_=container.dependents;
+        //alert(e.outerHTML)
         fields_={}
-        if(type__=="tests" || type__=="groups" || type__=="variables")
+        if(type__=="tests" || type__=="groups" || type__=="variables" || type__=="recording")
         {
-          //alert(e.outerHTML)
-          var atm_=this.tab.parent;
-           //alert("c9002-107")
-           foreign_keys_={};dependents_={};parent_model_=model_;parent_id_=record_id_;
-           var model_=e.getAttribute("table");var record_id_=e.getAttribute("record_id");
-           html_obj_to_update=e;fields_[e.getAttribute("value_field")]=e.getAttribute(e.getAttribute("value_field"))
-           if(type__=="tests" || type__=="groups"){v__u = ""+e.checked;}
-           //alert('9080-111-11 fields_= '+ JSON.stringify(field_));
-           //alert("c9001-55-0 \nparent_model_="+parent_model_+"\nparent_id_="+parent_id_+"\nmodel_="+model_+"\nrecord_id_="+record_id_)
-
-               if(((type__=="tests" || type__=="groups") && (e.checked==false)) ||
-                   ((type__=="variables") && (e.value=="" || Math.round(parseInt(e.value))==0))){
-                   if(model_!=null && model_!="" && String(model_)!="undefined" ){
+            foreign_keys_={};parent_model_=model_;parent_id_=record_id_;html_obj_to_update=e;
+            var model_=e.getAttribute("table");var atm_=this.tab.parent;
+            if(type__=="recording"){
+                //alert("c9002-109-1\n\n"+e.outerHTML)
+                if(e.getAttribute("type")=="checkbox"){v__u = ""+e.checked;}
+                var record_id_=e.getAttribute("record_id"); var id_ll=e.getAttribute("id").split("_");
+                foreign_keys_[e.getAttribute("vertical_field")]={"value":id_ll[1], "foreign_table":e.getAttribute("vertical_field")+"s"},
+                foreign_keys_[e.getAttribute("horizontal_field")]={"value":id_ll[2], "foreign_table":e.getAttribute("horizontal_field")+"s"}
+             } else {
+               dependents_={};
+               var record_id_=e.getAttribute("record_id");
+               fields_[e.getAttribute("value_field")]=e.getAttribute(e.getAttribute("value_field"))
+               if(type__=="tests" || type__=="groups"){v__u = ""+e.checked;}
+               //alert('9080-111-11 fields_= '+ JSON.stringify(field_));
+               //alert("c9001-55-0 \nparent_model_="+parent_model_+"\nparent_id_="+parent_id_+"\nmodel_="+model_+"\nrecord_id_="+record_id_)
+             }
+             if(((type__=="tests" || type__=="groups") && (e.checked==false)) ||
+                ((type__=="variables" || type__=="recording") && (e.value=="" || Math.round(parseInt(e.value))==0 || v__u=="false"))){
+                 if(model_!=null && model_!="" && String(model_)!="undefined" ){
                      var dic_={"obj":"AdvancedTabs","atm":atm_.my_name,"app":atm_.my_app,"fun":"delete_record",
                                "params": {"app":atm_.my_app,"model":model_,"id":record_id_}}
+
                      //alert('9080-1222-11 fields_= '+ JSON.stringify(dic_));
                      $.post(atm_.activate_function_link_,
                       {dic : JSON.stringify(dic_)},
@@ -1834,19 +1884,10 @@ var container_on_change=function (event){
                         //alert("record was deleted: "+id_)
                      })
                    }
-                   e.setAttribute("record_id", "new");
-                   try{var n=e.getAttribute("my_creator_number");var c=get_creator(n);c.on_record_created_deleted(e,action="deleted")} catch(er){alert(er)}
-                   return;
-               }
-
-         } else if(type__=="recording"){
-            alert("c9002-109")
-            foreign_keys_={};parent_model_=model_;parent_id_=record_id_;
-            //alert("c9002-109-1\n\n"+e.outerHTML)
-            html_obj_to_update=e;var model_=e.getAttribute("table");
-            var record_id_=e.getAttribute("record_id"); var id_ll=e.getAttribute("id").split("_");
-            foreign_keys_[e.getAttribute("vertical_field")]={"value":id_ll[1], "foreign_table":e.getAttribute("vertical_field")+"s"},
-            foreign_keys_[e.getAttribute("horizontal_field")]={"value":id_ll[2], "foreign_table":e.getAttribute("horizontal_field")+"s"}
+                 e.setAttribute("record_id", "new");
+                 try{var n=e.getAttribute("my_creator_number");var c=get_creator(n);c.on_record_created_deleted(e,action="deleted")} catch(er){}
+                 return;
+             }
          }
          //alert("c9002-110")
          //alert("c9002-110-1 \nmodel_="+model_+"\nparent_model_="+parent_model_+"\nrecord_id_="+record_id_+"\nparent_id_="+parent_id_+"")
@@ -1871,6 +1912,7 @@ var container_on_change=function (event){
   // event.stopPropagation();
  }
 var container_on_click=function(event){
+      //alert("90123-10:\n"+event.target.outerHTML)
       event.stopPropagation();
       this.tab.parent.active_tab_content=this;
       var e=event.target;
@@ -2059,7 +2101,7 @@ acUploadFileCreator.prototype.create_obj = function()
             var record_id = container.getAttribute("record_id")
             var table = container.getAttribute("table")
             fd.append("record_id", record_id);
-            // alert("90352-1 "+JSON.stringify(this.dic["properties"]));
+            // alert("903572-1 "+JSON.stringify(this.dic["properties"]));
             var field = this.dic["properties"]["field"]
             fd.append("model_field_name", field);
             fd.append("model_name", table);
@@ -2199,6 +2241,101 @@ acUploadFileCreator.prototype.create_obj_bu = function()
   });
 
 
+}
+
+
+// -- Image --
+function acImageCreator(parent){this.parent=parent;}
+
+acImageCreator.prototype.create_obj = function()
+{
+  var dic=this.parent.data;
+  //alert("903542 "+JSON.stringify(dic));
+  var obj_number = dic["properties"]["obj_number"]
+  var title = dic["properties"]["title"]
+//  var field = dic["properties"]["field"]
+  var container = document.getElementById("content_"+dic["container_id"]);
+  //--
+  this.img_=document.createElement("img");
+  this.img_.my_creator_obj=this;this.img_.container=container;this.img_.dic=dic;
+  this.img_.setAttribute("obj_type", dic["obj_type"]);
+  this.img_.setAttribute("id", obj_number);
+//  this.div_.setAttribute("field", field);
+  this.img_.setAttribute("container_id", dic["container_id"]);
+  this.img_.setAttribute("type", dic["element_name"]);
+  this.img_.setAttribute("alt", dic["properties"]["title"]);
+  if("width" in dic["properties"]){var width_=dic["properties"]["width"]} else {var width_="400"}
+  if("height" in dic["properties"]){var height_=dic["properties"]["height"]} else {var height_="400"}
+  var style_="position:absolute;left:"+dic["properties"]["x"]+"px;top:"+dic["properties"]["y"]+"px;"
+  style_+="width:"+width_+"px;height:"+height_+"px;";
+  this.img_.setAttribute("style", style_);
+  this.img_.setAttribute("src", "/media/"+this.parent.atm.my_app+"/images/"+dic["properties"]["src"]);
+  container.appendChild(this.img_);
+  this.img_.onclick = function(event){
+      if(event.ctrlKey && event.altKey){
+        var div_=document.createElement("div");
+        var style_="position:absolute;left:"+dic["properties"]["x"]+"px;top:"+dic["properties"]["y"]+"px;"
+        style_+="width:400px;height:400px";
+        div_.setAttribute("style", style_);
+        this.container.appendChild(div_);
+        var input_file_=document.createElement("input");
+        input_file_.setAttribute("id", "input_file_"+obj_number);
+        input_file_.setAttribute("type", "file");
+        input_file_.setAttribute("class", "filestyle");
+        input_file_.setAttribute("data-icon", "true");
+        input_file_.setAttribute("data-buttonText", "Brows");
+        input_file_.setAttribute("file_name", dic["properties"]["src"]);
+        input_file_.setAttribute("name", "driver_file");
+        div_.appendChild(input_file_);
+        input_file_.atm=this.my_creator_obj.parent.atm
+        input_file_.dic=this.dic;
+        input_file_.div_=div_;
+
+        input_file_.onchange = function(event){
+                var e = event.target;
+                var filename = "";try{filename = e.getAttribute("file_name");} catch(er){}
+                var file = this.files[0];
+                var xhr = new XMLHttpRequest();
+                try{xhr.dic=this.dic} catch(er){alert(er)}
+                (xhr.upload || xhr).addEventListener('progress', function(e) {
+                    var done = e.position || e.loaded
+                    var total = e.totalSize || e.total;
+                    console.log('xhr progress: ' + Math.round(done/total*100) + '%');
+                });
+                xhr.div_=this.div_;
+                xhr.addEventListener('load', function(e) {
+                    data = JSON.parse(this.responseText);
+                    location.reload();
+                    this.div_.outerHTML="";
+                    var s="zz="+this.dic["functions"]["on_loaded"];eval(s);zz(event)
+                });
+
+                //alert(this.atm.upload_file_link_)
+                xhr.open('post', this.atm.upload_file_link_, true);
+                xhr.setRequestHeader("X-CSRFToken", csrftoken);
+                var fd = new FormData();
+                fd.append("filename", filename);
+                fd.append("drive_file", file);
+                fd.append("app", this.atm.my_app);
+                fd.append("obj_name", this.dic["properties"]["obj_name"]);
+                fd.append("function_name", this.dic["properties"]["function_name"]);
+                fd.append("topic_id", "images");
+                fd.append("folder_type", "media");
+                fd.append("dimensions", "");
+                fd.append("fields", "");
+                fd.append("fact_model_field", "");
+                //--
+                fd.append("model_name", "");
+                //--
+                xhr.send(fd);
+                var s="zz="+dic["functions"]["onchange"];eval(s);
+                zz(event)
+      }
+      }
+  }
+    // alert("90321-2 "+JSON.stringify(dic["functions"]));
+  for(var f in dic["functions"])
+  {if((f!="onchange") && (f!="on_loaded")){var s="this.input_file_."+f+"="+dic["functions"][f];eval(s);}}
 }
 
 
@@ -2934,26 +3071,36 @@ acGroupCreator.prototype.create_obj = function()
       //alert("click: \n\n"+e.outerHTML)
       //alert("90100-4\n"+JSON.stringify(this.dic));
       var my_class_members=e.getAttribute("my_class_members")
+
+      //alert("90142-2 acGroupCreator.prototype.create_obj\n"+JSON.stringify(this.dic));
+      //alert(this.dic["properties"]["present"])
       if(my_class_members!=null){
+      // alert(this.dic["properties"]["present"])
         var c = document.getElementsByClassName(my_class_members)[0]
         var etype_=e.getAttribute("type")
         if(etype_=="checkbox"){
-         //alert(e.outerHTML)
-         //alert(e.checked)
-         var cc=c.getElementsByTagName("input");
-         var ec=new Event("change", {bubbles: true});
-         var n_=0
-         for(k in cc)
-         {
-          cc[k].checked=e.checked;
-         }
-         for(k in cc)
-         {
-          cc[k].dispatchEvent(ec)
-         }
+          if(this.dic["properties"]["present"]=="detail")
+          {
+             //alert(e.outerHTML)
+             //alert(e.checked)
+             var cc=c.getElementsByTagName("input");
+             var ec=new Event("change", {bubbles: true});
+             var n_=0
+             for(k in cc)
+             {
+              cc[k].checked=e.checked;
+             }
+             for(k in cc)
+             {
+              cc[k].dispatchEvent(ec)
+             }
+          }
         } else if (etype_=="span"){
-            if(c.style.display=="block"){c.style.display="none"}
-            else{c.style.display="block";this.my_creator_obj.get_entity_list({"e":e,"c":c})}
+          if(c.style.display=="block"){c.style.display="none"}else{c.style.display="block";
+          if(this.dic["properties"]["present"]=="detail")
+          {
+            this.my_creator_obj.get_entity_list({"e":e,"c":c})}
+          }
         }
       } else{
         var etype_=e.getAttribute("type")
@@ -2970,6 +3117,7 @@ acGroupCreator.prototype.create_obj = function()
   else {this.main_div.innerHTML="Group Pluging working"}
   //--
   for(f in dic["functions"]){var s="this.main_div."+f+"="+dic["functions"][f];eval(s);}
+ // alert(this.main_div.outerHTML)
 }
 
 acGroupCreator.prototype.obj_was_clicked = function(e)
@@ -2989,8 +3137,9 @@ acGroupCreator.prototype.open_close_lists = function(n=0)
 
 acGroupCreator.prototype.set_obj_structure = function(display_="none")
 {
- var f=function(s_link, dic, d_div, n=0, spaces="")
- {
+   //alert("90105-55\n"+JSON.stringify(this.parent.data));
+  var f=function(s_link, dic, d_div, n=0, spaces="")
+  {
      var spaces_=spaces+"&nbsp;&nbsp;&nbsp;"; var n_=n+1;
      for(k in dic)
      {
@@ -2999,7 +3148,8 @@ acGroupCreator.prototype.set_obj_structure = function(display_="none")
         var class_="group_"+title_;var id_="id_"+title_;var sid_="sid_"+title_
         //&#45;&#45;
         var s=spaces_+'<span type="span" style="cursor: pointer" id="'+sid_+'"'
-        if(n_>2){s+='my_members_status="empty" link="'+s_link_+'"'}
+        if(n_>2)
+        {s+='my_members_status="empty" link="'+s_link_+'"'}
         s+='my_class_members="'+class_+'">+</span><input type="checkbox" id="'+id_+'" my_class_members="'+class_+'"><label>'+title+'</label><br/>'
         //alert(s)
         d_div.innerHTML+=s;
@@ -3012,7 +3162,7 @@ acGroupCreator.prototype.set_obj_structure = function(display_="none")
         d_div.appendChild(d_div_);
         if(n_<3){f(s_link_, dic[k]["data"], d_div_, n_, spaces_)}
      }
- }
+  }
 
   var dic=this.parent.data;
   //alert("acRadioCreator 90446-16  "+JSON.stringify(dic));
@@ -3023,16 +3173,16 @@ acGroupCreator.prototype.set_obj_structure = function(display_="none")
        this.entity_list = eval("this.parent.atm.general."+general_entity_name+"_list")
        this.entity_dic = eval("this.parent.atm.general."+general_entity_name+"_dic")
        //alert("90000-010  "+JSON.stringify(this.entity_dic));
-
        var s_link="this.units_structure";
        this.main_div.innerHTML="";
        f(s_link, this.units_structure, this.main_div, 0)
      } catch(er){alert("1155-515: "+er)}
-  // alert("done acGroupCreator.prototype.set_obj_structure")
+ //  alert("done acGroupCreator.prototype.set_obj_structure\n\n"+this.main_div.outerHTML)
 }
 
 acGroupCreator.prototype.set_data = function(record_id=null, ll=null)
 {
+//alert(22222222)
   if(this.active_record_id==record_id){return}
   this.active_record_id=record_id;
   // --
@@ -3054,10 +3204,8 @@ acGroupCreator.prototype.set_data = function(record_id=null, ll=null)
     {try{var s_id="soldier_"+data["soldier_number"][j];var n=1*data["value"][j];s_id=getEBI(s_id);
          if(n==1){s_id.checked=true}else{s_id.checked=false};
          s_id.setAttribute("record_id",data["id"][j])
-
          this_obj.members_list["entity_number"].push(data["soldier_number"][j])
          this_obj.members_list["record_id"].push(data["id"][j])
-
      } catch(er){alert(er)}}
      get_creator(this_obj.recording_tests_number).set_obj_structure(group_list=this_obj.members_list, test_list=null)
      get_creator(this_obj.recording_tests_number).set_data(record_id)
@@ -3138,7 +3286,7 @@ acRecordingTestsCreator.prototype.create_obj = function()
 
   this.main_div.addEventListener("change", function(event){
       var e=event.target;
-      if(e.value==""){e.value=0.00}
+      //if(e.value==""){e.value=0.00}
    //alert("90150-3 change\n\n"+e.outerHTML)
   })
 
@@ -3158,10 +3306,12 @@ acRecordingTestsCreator.prototype.set_obj_structure = function(group_list=null, 
   var width_=80;
  if(test_list!=null){this.horizontal_field_list=test_list}
  if(group_list!=null){this.vertical_field_list=group_list}
- //alert("acRecordingTests 90000-033\n\n"+JSON.stringify(this.vertical_field_list)+"\n"+JSON.stringify(this.horizontal_field_list));
  if(this.horizontal_field_list!=null && this.vertical_field_list!=null)
  {
+  //alert("acRecordingTests 90000-033\n\n"+JSON.stringify(this.vertical_field_list)+"\n"+JSON.stringify(this.horizontal_field_list));
+  //alert("acRecordingTests 90000-034\n\n"+JSON.stringify(this.test_dic));
    var dic=this.parent.data;
+   if(!(dic["properties"]["table_class"])){dic["properties"]["table_class"]="basic"}
    var general_entity_name = dic["properties"]["entity"];
    this.entity_list = eval("this.parent.atm.general."+general_entity_name+"_list")
    this.entity_dic = eval("this.parent.atm.general."+general_entity_name+"_dic")
@@ -3170,43 +3320,89 @@ acRecordingTestsCreator.prototype.set_obj_structure = function(group_list=null, 
    this.horizontal_field=dic["properties"]["horizontal_field"];
    this.vertical_field=dic["properties"]["vertical_field"];
    var table=dic["properties"]["table"];
-   var s="<table><thead><tr><th>Soldier</th>";
+   this.main_div.innerHTML="";
+   this.table_=document.createElement("table");this.main_div.appendChild(this.table_);
+   this.table_.setAttribute("class", dic["properties"]["table_class"]);
+   this.thead_=document.createElement("thead");this.table_.appendChild(this.thead_);
+   this.tr_=document.createElement("tr");this.thead_.appendChild(this.tr_);
+    this.tr_.my_creator_obj=this;
+   this.tr_.onclick=function(event){
+    var e=event.target;
+    var sort_by=e.getAttribute("sort_by");var sort_ascending=e.getAttribute("sort_ascending");
+    if(sort_by!=null)
+    {
+      var new_sort=[];var kk=[...this.my_creator_obj.matching_set[sort_by]]
+      if(sort_ascending=="true"){kk.sort();e.setAttribute("sort_ascending","false")}else{kk.sort().reverse();e.setAttribute("sort_ascending","true")}
+      for(var j in kk)
+      {new_sort.push(this.my_creator_obj.matching_set["record_id"][this.my_creator_obj.matching_set[sort_by].indexOf(kk[j])])}
+      //alert(JSON.stringify(this.my_creator_obj.matching_set["record_id"])+"\n\n"+JSON.stringify(new_sort));
+      this.my_creator_obj.tbody_.innerHTML=this.my_creator_obj.create_sorted_structure(v_list=new_sort, width_, field, container_id, table)
+
+ try{if(this.my_creator_obj.data != null){this.my_creator_obj.fill_up_data(this.my_creator_obj.data, this.my_creator_obj)}} catch(er){alert(er)}
+
+    }
+   }
+
+   var th_=document.createElement("th");this.tr_.appendChild(th_);th_.innerHTML="User id";
+   th_.setAttribute("sort_by", "userid");th_.setAttribute("sort_ascending", "true");
+   var th_=document.createElement("th");this.tr_.appendChild(th_);th_.innerHTML="Name";
+   th_.setAttribute("sort_by", "name");th_.setAttribute("sort_ascending", "true");
+
    for(var i in this.horizontal_field_list["record_id"])
    {
     var hf_idx=this.horizontal_field_list["record_id"][i];
     var test_number=this.horizontal_field_list["test_number"][i]+"";
     var test_number_idx=this.test_dic["test_number"].indexOf(test_number)
     var hf_name=this.test_dic["test_name"][test_number_idx]
-    s+="<th style='width:"+width_+"px'>"+hf_name+"</th>";
+    var th_=document.createElement("th");this.tr_.appendChild(th_);
+    th_.setAttribute("style", "width:"+width_+"px");th_.innerHTML=hf_name;
    }
-   s+="</tr></thead><tbody>";
-   for(var j in this.vertical_field_list["record_id"])
+   this.tbody_=document.createElement("tbody");this.table_.appendChild(this.tbody_);
+   var v_list=this.vertical_field_list["record_id"]
+   this.matching_set={"record_id":[], "userid":[], "name":[]}
+   for(var j in v_list)
    {
-     var vf_idx=this.vertical_field_list["record_id"][j];
+     this.matching_set["record_id"].push(v_list[j]);
      var vf_entity_idx=this.vertical_field_list["entity_number"][j]+"";
      var idx_=this.entity_dic["id"].indexOf(vf_entity_idx)
-     var vf_name=this.entity_dic["userid"][idx_]+":"+this.entity_dic["name"][idx_];
-     s+="<tr><td>"+vf_name+"</td>";
-     for(var i in this.horizontal_field_list["record_id"])
-     {
-      var hf_idx=this.horizontal_field_list["record_id"][i];//var hf_name=hf_idx;
-      s+="<td><input id='tg_"+vf_idx+"_"+hf_idx+"' style='width:"+width_+"px;text-align:right' type_='recording' field='"+field+"' "
-      s+=" container_id='"+container_id+"' record_id='new' table='"+table+"'";
-      s+="vertical_field='"+this.vertical_field+"' "
-      s+="horizontal_field='"+this.horizontal_field+"' type='text'/></td>"
-     }
-     s+="<td></tr>";
+     this.matching_set["userid"].push(this.entity_dic["userid"][idx_]);
+     this.matching_set["name"].push(this.entity_dic["name"][idx_]);
    }
-   s+="</tbody></table>"
- this.main_div.innerHTML=s;
+   this.tbody_.innerHTML=this.create_sorted_structure(v_list, width_, field, container_id, table)
  }
  try{if(this.data != null){this.fill_up_data(this.data, this)}} catch(er){alert(er)}
 }
 
-//acRecordingTestsCreator.prototype.clean_data = function(record_id, ll=null)
-//{
-//  //try{alert("90000-000  "+JSON.stringify(this.data));} catch(er){alert(er)}
-//}
+
+acRecordingTestsCreator.prototype.create_sorted_structure = function(v_list, width_, field, container_id, table)
+{
+  var s="";
+   for(var jj in v_list)
+   {
+     var j=this.vertical_field_list["record_id"].indexOf(v_list[jj])
+     var vf_idx=this.vertical_field_list["record_id"][j];
+     var vf_entity_idx=this.vertical_field_list["entity_number"][j]+"";
+     var idx_=this.entity_dic["id"].indexOf(vf_entity_idx)
+     //var vf_name=this.entity_dic["userid"][idx_]+":"+this.entity_dic["name"][idx_];
+     s+="<tr><td>"+this.entity_dic["userid"][idx_]+"</td><td>"+this.entity_dic["name"][idx_]+"</td>";
+     for(var i in this.horizontal_field_list["record_id"])
+     {
+      var hf_idx=this.horizontal_field_list["record_id"][i];//var hf_name=hf_idx;
+      var test_number=this.horizontal_field_list["test_number"][i]+"";
+      var test_number_idx=this.test_dic["test_number"].indexOf(test_number)
+      var hf_type=this.test_dic["test_type"][test_number_idx];
+      var field_type_="text"; if(hf_type=="b"){field_type_="checkbox"}
+      //alert(hf_type+" "+field_type_)
+      s+="<td><input id='tg_"+vf_idx+"_"+hf_idx+"' style='width:"+width_+"px;text-align:right' type_='recording' field='"+field+"' "
+      s+=" container_id='"+container_id+"' record_id='new' table='"+table+"'";
+      s+="vertical_field='"+this.vertical_field+"' "
+      s+="horizontal_field='"+this.horizontal_field+"' type='"+field_type_+"'/></td>"
+     }
+     s+="<td></tr>";
+   }
+   return s;
+}
+
 
 acRecordingTestsCreator.prototype.set_data = function(record_id, ll=null)
 {
@@ -3225,7 +3421,9 @@ acRecordingTestsCreator.prototype.set_data = function(record_id, ll=null)
 
 acRecordingTestsCreator.prototype.fill_up_data = function(data, this_obj)
 {
-    //alert("943010: "+JSON.stringify(data));
+  //alert("943010: "+JSON.stringify(data));
+  //alert("acRecordingTests this_obj.test_dic 93300-033\n\n"+JSON.stringify(this_obj.test_dic));
+  //alert("acRecordingTests this_obj.test_dic 93300-035\n\n"+JSON.stringify(this_obj.horizontal_field_list));
     this_obj.data=data;
     this_obj.members_list={"entity_number":[], "record_id":[]};
     var n_=data[this_obj.fields[0]].length;if(n_<1){return}
@@ -3233,8 +3431,12 @@ acRecordingTestsCreator.prototype.fill_up_data = function(data, this_obj)
     {
      try{
          var s_id="tg_"+data["soldiersforevent"][j]+"_"+data["testsforevent"][j];
-         var n=1*data["value"][j];s_id=getEBI(s_id);s_id.setAttribute("record_id",data["id"][j])
-         s_id.value=data["value"][j];
+         var test_number=""+this_obj.horizontal_field_list["test_number"][this_obj.horizontal_field_list["record_id"].indexOf(data["testsforevent"][j])]
+         var test_type=this_obj.test_dic["test_type"][this_obj.test_dic["test_number"].indexOf(test_number)]
+         var n=1*data["value"][j];
+         s_id=getEBI(s_id);s_id.setAttribute("record_id",data["id"][j])
+         if(test_type=="b"){if(n==1){s_id.checked=true} else {s_id.checked=false}
+         } else{s_id.value=data["value"][j]}
          //alert(s_id.outerHTML)
          } catch(er){}
     }
@@ -5120,7 +5322,7 @@ function TabNavLink(tab_nav, link_dic){
         {this.parent.tab.PopWinObjects[w].resume_win()}
    }} catch(er){}
 
-   if(event.ctrlKey){
+   if(event.ctrlKey && !event.altKey){
       this.parent.tab.parent.editor.active_link=this.parent;
       this.parent.tab.parent.editor.main_menus["TabNavLink"].btn.click();
       this.parent.tab.parent.editor.sub_menus["TabNavLinkitem"].btn.click();
@@ -5172,11 +5374,13 @@ function TabNav(tab_=null){
 TabNav.prototype.create_main_tab_nav_content = function()
 {
    this.nav_container=document.createElement("div");
+   this.nav_container.editor=this.tab.parent.editor;
    this.nav_container.setAttribute("my_name", "TabNav.nav_container_"+this.properties["obj_number"]);
    this.nav_container.setAttribute("id", this.properties["obj_number"]);
    this.nav_container.setAttribute("style", "float:left;border:1px solid #ccc;background-color: "+this.properties["background_color"]+";width:"+this.nav_width+"%;");
    // --
    this.nav = document.createElement("div");
+
    for(f in this.tab.tab_nav_links["functions"])
    {
      eval(f+"_zz"+this.properties["obj_number"]+"="+this.tab.tab_nav_links["functions"][f]);
@@ -5187,7 +5391,6 @@ TabNav.prototype.create_main_tab_nav_content = function()
    //--
    this.nav.set_active_link=function(link_obj){this.active_link=link_obj;this.my_creator_obj.tab.tab_active_link=link_obj;
    // alert(this.active_link.link_number);
-
    }
 
    //--

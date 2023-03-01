@@ -21,7 +21,7 @@ from ..webcompanies.WebCompanies import WebSiteCompany
 
 def home(request):
     # return render(request, 'partners/home_test.html', {})
-    # print('partners home0: ')
+    print('partners home0: ')
     log_debug('partners home_0: ')
     host = request.META["HTTP_HOST"]
     log_debug('partners host_1: ' + host)

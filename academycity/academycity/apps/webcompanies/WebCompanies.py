@@ -41,11 +41,11 @@ class WebSiteCompany(object):
         # print("1234-1", settings.WEB_SITE_COMPANY_ID)
         try:
             self.web_site_company = request.session[settings.WEB_SITE_COMPANY_ID]
-            print(self.web_site_company)
+            # print(self.web_site_company)
         except Exception as ex:
-            print("="*50)
+            print("1="*50)
             print(str(ex))
-            print("="*50)
+            print("2="*50)
 
         if (not is_test) and self.is_registered_domain():
             self.web_company_id = self.web_site_company['web_company_id']
@@ -59,15 +59,17 @@ class WebSiteCompany(object):
         # print('-' * 20)
 
     def is_registered_domain(self):
-
         # print('self.web_site_company')
         # print(self.web_site_company)
         # print('self.web_site_company')
         # print(self.web_site_company['domain'] != 'null')
-
-        return self.web_site_company['domain'] != 'null'
+        try:
+            return self.web_site_company['domain'] != 'null'
+        except Exception as ex:
+            return False
 
     def get_redirect_link(self):
+        log_debug(self.web_site_company['app_label'] + ':home')
         return HttpResponseRedirect(reverse(self.web_site_company['app_label'] + ':home'))
 
     def add(self, request, key, value):

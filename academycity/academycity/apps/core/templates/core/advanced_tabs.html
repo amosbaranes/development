@@ -12,7 +12,7 @@
 </head>
 <body id="body_">
 
-<script src="{% static 'js/academycity/core/AT_v82.js' %}"></script>
+<script src="{% static 'js/academycity/core/AT_v93.js' %}"></script>
 <script src="{% static 'vendor/jquery/jquery.min.js' %}"></script>
 <script src="{% static 'js/npm/cookie/js.cookie.min.js' %}"></script>
 <script src="{% static 'vendor/fontawesome-free-5.11.2-web/a076d05399.js' %}"></script>
@@ -39,17 +39,26 @@ beforeSend: function(xhr, settings) {
   }
 }
 });
+var dic={
+"my_name":"{{atm_name}}",
+"my_app":"{{app}}",
+"logmein_link":'{{logmein_link}}',
+"activate_function_link":'{% url "core:activate_function" %}',
+"company_obj_id":{{company_obj_id}},
+"body_":document.getElementById("body_"),
+"update_field_link":'{% url "core:update_field_model_by_id" %}',
+"activate_obj_function_link":'{{app_activate_function_link}}',
+"upload_file_link":'{% url "core:upload_file" %}',
+"get_data_link":'{% url "core:get_data_link" %}',
+"get_data_json_link":'{% url "core:get_data_json_link" %}',
+"is_show_btns":{%if request.user|has_group:"admins"%}true{% else %}false{%endif%},
+"user_id":"{{ user_id }}"
+}
 
 $(document).ready(function(){
- var {{atm_name}}=new AdvancedTabsManager(my_name="{{atm_name}}", my_app="{{app}}", body_=document.getElementById("body_"),
- activate_function_link='{% url "core:activate_function" %}',
- update_field_link='{% url "core:update_field_model_by_id" %}',
- activate_obj_function_link='{{app_activate_function_link}}',
- upload_file_link='{% url "core:upload_file" %}',
- get_data_link='{% url "core:get_data_link" %}',get_data_json_link='{% url "core:get_data_json_link" %}',
- company_obj_id={{company_obj_id}}, is_show_btns={%if request.user|has_group:"admins"%}true{% else %}false{%endif%},
- user_id={{ user.id }})
- var atm = {{atm_name}}
+ var {{atm_name}}=new AdvancedTabsManager();
+ //atm = {{atm_name}}
+ atm = {{atm_name}}.create_atm(dic)
 {% block domready %}
 {% endblock %}
 });
