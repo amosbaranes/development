@@ -125,11 +125,9 @@ function AdvancedTabsManager(dic=null)
                                                   "attributes":{},
                                                   "functions":["onclick", "onchange", "onmouseover", "onmouseout"]},
                                         "RecordingTests":{"title":"R", "width":3,
-                                                  "setting": {"entity":[], "width":[], "height":[], "table":[],
-                                                  "vertical_field":[],
-                                                  "horizontal_field":[],
-                                                  "field":[]},
-                                                  "attributes":{"table_class":["","basic", "payment"]},
+                                                  "setting": {"entity":[],"width":[],"userid_width":[],"name_width":[],
+                                                  "height":[],"table":[],"vertical_field":[],"horizontal_field":[],
+                                                  "field":[]},"attributes":{"table_class":["","basic","payment","data_entry"]},
                                                   "functions":["onclick", "onchange", "onmouseover", "onmouseout"]},
                                         "Image":{"title":"Img", "width":4,
                                                   "setting": {"height":[], "src":[], "width":[]},
@@ -2752,7 +2750,9 @@ acTestCreator.prototype.create_obj = function()
           div_.setAttribute("style", style_);
           h_=document.createElement("h3");
           div_.appendChild(h_);
-          h_.innerHTML = structure_dic[h]["title"]+"<hr/>"
+          var img_=structure_dic[h]["img"];
+          var s_img="";if(img_!=null && img_!=""){s_img="<img style='width:25px;height:25px;' src='/media/training/images/"+structure_dic[h]["img"]+"'>&nbsp;&nbsp;&nbsp;"}
+          h_.innerHTML = s_img+structure_dic[h]["title"]+"<hr/>"
           this.main_div.appendChild(div_);
           var dic_tests=structure_dic[h]["sub_tests"]
           if(dic_tests!=null)
@@ -2923,8 +2923,12 @@ acVariableCreator.prototype.create_obj = function()
           style_ += color_+";border: 2px solid #73AD21;";
           div_.setAttribute("style", style_);
           h_=document.createElement("h3");
+
+          var img_=structure_dic[h]["img"];
+          var s_img="";if(img_!=null && img_!=""){s_img="<img style='width:25px;height:25px;' src='/media/training/images/"+structure_dic[h]["img"]+"'>&nbsp;&nbsp;&nbsp;"}
+          h_.innerHTML = s_img+structure_dic[h]["title"]+"<hr/>"
+
           div_.appendChild(h_);
-          h_.innerHTML = structure_dic[h]["title"]+"<hr/>"
           this.main_div.appendChild(div_);
           var dic_variables=structure_dic[h]["sub_tests"]
           if(dic_variables!=null)
@@ -3303,7 +3307,8 @@ acRecordingTestsCreator.prototype.set_obj_structure = function(group_list=null, 
   //--
   this.test_dic = eval("this.parent.atm.general.test_dic")
   //--
-  var width_=80;
+  var dic=this.parent.data;
+  var width_=80;var userid_width_=dic["properties"]["userid_width"];var name_width_=dic["properties"]["name_width"];
  if(test_list!=null){this.horizontal_field_list=test_list}
  if(group_list!=null){this.vertical_field_list=group_list}
  if(this.horizontal_field_list!=null && this.vertical_field_list!=null)
@@ -3345,18 +3350,23 @@ acRecordingTestsCreator.prototype.set_obj_structure = function(group_list=null, 
 
    var th_=document.createElement("th");this.tr_.appendChild(th_);th_.innerHTML="User id";
    th_.setAttribute("sort_by", "userid");th_.setAttribute("sort_ascending", "true");
-   var th_=document.createElement("th");this.tr_.appendChild(th_);th_.innerHTML="Name";
+   th_.setAttribute("style", "width:"+userid_width_+"px;border-top-left-radius: 10px");
+   var th_=document.createElement("th");this.tr_.appendChild(th_);th_.innerHTML="Name";th_.setAttribute("style", "width:"+name_width_+"px");
    th_.setAttribute("sort_by", "name");th_.setAttribute("sort_ascending", "true");
 
+   var n_=this.horizontal_field_list["record_id"].length
    for(var i in this.horizontal_field_list["record_id"])
    {
     var hf_idx=this.horizontal_field_list["record_id"][i];
     var test_number=this.horizontal_field_list["test_number"][i]+"";
     var test_number_idx=this.test_dic["test_number"].indexOf(test_number)
     var hf_name=this.test_dic["test_name"][test_number_idx]
-    var th_=document.createElement("th");this.tr_.appendChild(th_);
-    th_.setAttribute("style", "width:"+width_+"px");th_.innerHTML=hf_name;
+    var th_=document.createElement("th");this.tr_.appendChild(th_);th_.innerHTML=hf_name;
+    var style_="width:"+width_+"px"
+    if(i==(n_-1)){style_+=";border-top-right-radius: 10px"}
+    th_.setAttribute("style", style_)
    }
+
    this.tbody_=document.createElement("tbody");this.table_.appendChild(this.tbody_);
    var v_list=this.vertical_field_list["record_id"]
    this.matching_set={"record_id":[], "userid":[], "name":[]}
@@ -3998,8 +4008,11 @@ acMSearchTableCreator.prototype.create_obj = function()
     })
     var th_=document.createElement("th");
     th_.innerHTML=dic["fields"][f]["field_title"];
+
     table_width+=1*width_;
-    th_.setAttribute("style", "width:"+width_+"px;");
+    var style_="width:"+width_+"px;"
+    if(f==1){style_+=";border-top-left-radius: 10px"} else if (f==Object.keys(dic["fields"]).length) {{style_+=";border-top-right-radius: 10px"}}
+    th_.setAttribute("style", style_);
     tr_h.appendChild(th_);
     th_.setAttribute("filter_field", dic["fields"][f]["field_name"])
     th_.setAttribute("filter_field_foreign_table", foreign_table)
