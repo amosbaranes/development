@@ -15,10 +15,8 @@ function AdvancedTabsManager(dic=null)
  this.buttons =
  {"Tab":{"title":"Tab", "obj_type":"none",
                         "sub_buttons": {}},
-
                  "TabContent":{"title":"Tab Content", "obj_type":"none",
                         "sub_buttons": {"content":{"title":"Content", "width":10, "setting":[], "attributes":[], "functions":[]}}},
-
                  "Component":{"title":"Component", "obj_type":"acObj",
                         "sub_buttons": {"Button":{"title":"Button", "width":5,
                                                   "setting": {"color":[],"background-color":[], "font-weight":["normal","lighter","bold","900"]},
@@ -83,7 +81,6 @@ function AdvancedTabsManager(dic=null)
                  "TabNavLink":{"title":"Tab Nav Link", "obj_type":"none",
                         "sub_buttons": {"nav":{"title":"Navigator", "width":10},
                                         "item":{"title":"Item", "width":10}}},
-
                  "PopWin":{"title":"Pop Win", "obj_type":"PopWin",
                         "sub_buttons": {"NewPopWin":{"title":"New Pop Win", "width":10}
 //                        ,
@@ -133,6 +130,10 @@ function AdvancedTabsManager(dic=null)
                                                   "setting": {"height":[], "src":[], "width":[]},
                                                   "attributes":{},
                                                   "functions":["onclick", "onchange", "on_loaded", "onmouseover", "onmouseout"]},
+                                        "Video":{"title":"Vid", "width":4,
+                                        "setting": {"height":[], "src":[], "width":[]},
+                                        "attributes":{},
+                                        "functions":["onclick", "onchange", "on_loaded", "onmouseover", "onmouseout"]},
                                         "Activity": {"title":"Activity", "width":6,
                                                   "setting": {"table_class":["","basic", "payment"], "parent_table":[], "table":[],
                                                               "number_of_radios":[]},
@@ -1642,6 +1643,22 @@ acGradesCreator.prototype.create_html = function(type=null)
 acGradesCreator.prototype.set_obj_structure = function(group_list=null, test_list=null)
 {
   alert(333333);
+  var dic={"1":{"title":"battalion 1","data":
+        {"1":{"title":"XRAY", "data":{
+                  "1":{"title":"XRAY 1", "data":{
+                                  "2036":{"title":"231001:name", "model":"soldier", "data":{}},
+                                  "2037":{"title":"231002:name", "model":"soldier", "data":{}}
+                  }},
+                  "2":{"title":"XRAY 2", "data":{}},
+                  "3":{"title":"XRAY 3", "data":{}},
+                  "4":{"title":"XRAY 4", "data":{}}
+                 }
+              },
+         "2":{"title":"Yakee"},
+         "3":{"title":"Zulu"}
+        }
+  }}
+
 //  dic = {"horizontal": {"table": "testsforvariables", "foreign_table": "testsVariables", "id": 1} }
 //  try{alert("90000-101  "+JSON.stringify(dic)) } catch(er){alert(er)}
 //  //try{alert("90000-101  "+JSON.stringify(group_list) + "" + JSON.stringify(test_list));} catch(er){alert(er)}
@@ -2336,6 +2353,105 @@ acImageCreator.prototype.create_obj = function()
   {if((f!="onchange") && (f!="on_loaded")){var s="this.input_file_."+f+"="+dic["functions"][f];eval(s);}}
 }
 
+// -- Video --
+function acVideoCreator(parent){this.parent=parent;}
+
+acVideoCreator.prototype.create_obj = function()
+{
+  var dic=this.parent.data;
+//  alert("903542 "+JSON.stringify(dic));
+  var obj_number = dic["properties"]["obj_number"]
+  var title = dic["properties"]["title"]
+//  var field = dic["properties"]["field"]
+  var container = document.getElementById("content_"+dic["container_id"]);
+  //--
+  this.vid_=document.createElement("video");
+  this.vid_.controls = "control";
+  this.src_=document.createElement("source");
+//  "https://archive.org/download/C.E.PriceCatWalksTowardCamera/cat_walks_toward_camera_512kb.mp4"
+  this.src_.setAttribute("src",  "/media/"+this.parent.atm.my_app+"/video/"+dic["properties"]["src"]);
+  this.src_.setAttribute("type", "video/mp4");
+  this.vid_.appendChild(this.src_);
+  this.vid_.my_creator_obj=this;this.vid_.container=container;this.vid_.dic=dic;
+  this.vid_.setAttribute("obj_type", dic["obj_type"]);
+  this.vid_.setAttribute("id", obj_number);
+//  this.div_.setAttribute("field", field);
+  this.vid_.setAttribute("container_id", dic["container_id"]);
+  this.vid_.setAttribute("type", dic["element_name"]);
+  this.vid_.setAttribute("alt", dic["properties"]["title"]);
+  if("width" in dic["properties"]){var width_=dic["properties"]["width"]} else {var width_="400"}
+  if("height" in dic["properties"]){var height_=dic["properties"]["height"]} else {var height_="400"}
+  var style_="position:absolute;left:"+dic["properties"]["x"]+"px;top:"+dic["properties"]["y"]+"px;"
+  style_+="width:"+width_+"px;height:"+height_+"px;";
+  this.vid_.setAttribute("style", style_);
+  //alert(this.vid_.outerHTML)
+  container.appendChild(this.vid_);
+  this.vid_.onclick = function(event){
+      if(event.ctrlKey && event.altKey){
+        var div_=document.createElement("div");
+        var style_="position:absolute;left:"+dic["properties"]["x"]+"px;top:"+dic["properties"]["y"]+"px;"
+        style_+="width:400px;height:400px";
+        div_.setAttribute("style", style_);
+        this.container.appendChild(div_);
+        var input_file_=document.createElement("input");
+        input_file_.setAttribute("id", "input_file_"+obj_number);
+        input_file_.setAttribute("type", "file");
+        input_file_.setAttribute("class", "filestyle");
+        input_file_.setAttribute("data-icon", "true");
+        input_file_.setAttribute("data-buttonText", "Brows");
+        input_file_.setAttribute("file_name", dic["properties"]["src"]);
+        input_file_.setAttribute("name", "driver_file");
+        div_.appendChild(input_file_);
+        input_file_.atm=this.my_creator_obj.parent.atm
+        input_file_.dic=this.dic;
+        input_file_.div_=div_;
+
+        input_file_.onchange = function(event){
+                var e = event.target;
+                var filename = "";try{filename = e.getAttribute("file_name");} catch(er){}
+                var file = this.files[0];
+                var xhr = new XMLHttpRequest();
+                try{xhr.dic=this.dic} catch(er){alert(er)}
+                (xhr.upload || xhr).addEventListener('progress', function(e) {
+                    var done = e.position || e.loaded
+                    var total = e.totalSize || e.total;
+                    console.log('xhr progress: ' + Math.round(done/total*100) + '%');
+                });
+                xhr.div_=this.div_;
+                xhr.addEventListener('load', function(e) {
+                    data = JSON.parse(this.responseText);
+                    location.reload();
+                    this.div_.outerHTML="";
+                    var s="zz="+this.dic["functions"]["on_loaded"];eval(s);zz(event)
+                });
+
+                //alert(this.atm.upload_file_link_)
+                xhr.open('post', this.atm.upload_file_link_, true);
+                xhr.setRequestHeader("X-CSRFToken", csrftoken);
+                var fd = new FormData();
+                fd.append("filename", filename);
+                fd.append("drive_file", file);
+                fd.append("app", this.atm.my_app);
+                fd.append("obj_name", this.dic["properties"]["obj_name"]);
+                fd.append("function_name", this.dic["properties"]["function_name"]);
+                fd.append("topic_id", "video");
+                fd.append("folder_type", "media");
+                fd.append("dimensions", "");
+                fd.append("fields", "");
+                fd.append("fact_model_field", "");
+                //--
+                fd.append("model_name", "");
+                //--
+                xhr.send(fd);
+                var s="zz="+dic["functions"]["onchange"];eval(s);
+                zz(event)
+      }
+      }
+  }
+    // alert("90321-2 "+JSON.stringify(dic["functions"]));
+  for(var f in dic["functions"])
+  {if((f!="onchange") && (f!="on_loaded")){var s="this.input_file_."+f+"="+dic["functions"][f];eval(s);}}
+}
 
 // Radio --
 function acActivityCreator(parent){this.parent=parent;
@@ -3828,7 +3944,6 @@ acSearchTableCreator.prototype.row_click = function(event)
 {
  var e=event.target;
  while(e.tagName!="TR"){e=e.parentNode;}
- //alert(e.outerHTML)
  //alert(this.my_creator_obj.table_.outerHTML)
  var n_row=e.getAttribute("row"); if(n_row==null){return;}
  var container_id=this.my_creator_obj.parent.data["container_id"];
@@ -3838,27 +3953,24 @@ acSearchTableCreator.prototype.row_click = function(event)
  var result={}
  var dic=this.my_creator_obj.tbody.data;
   //alert(JSON.stringify(dic))
-
  if(this.my_creator_obj.is_json_data==true){
    container.my_creator_obj.clear_objects_data()
    var id_=e.getAttribute("id_")
    result=JSON.parse(JSON.stringify(dic[id_]))
    result["id"]=id_;
    container.my_creator_obj.set_objects_data(result, is_json_data=true);
- } else{for(var f in dic){
+ } else{
+ for(var f in dic){
   if(f != "pkf_name"){result[f]=dic[f][n_row]} else {result["pkf_name"]=dic[f]}
  };
   //alert(JSON.stringify(result))
    container.my_creator_obj.set_objects_data(result, is_json_data=false);
  }
-
  container.my_creator_obj.current_record_data=result;
  container.my_creator_obj.link_content.setAttribute("parent_id", this.my_creator_obj.json_record_id);
-
  try{eval('var zz='+this.my_creator_obj.parent.data["functions"]["onclick"]);zz(event);} catch(er){}
  var p=e.parentNode;for (let i=0;i<p.children.length;i++){p.children[i].style.backgroundColor=""};
  e.style.backgroundColor="lightblue"
-
 }
 
 acSearchTableCreator.prototype.editor_properties_func = function(tab, tab_properties_)
@@ -5224,6 +5336,7 @@ TabContent.prototype.clear_objects_data = function()
    var dic = this.current_record_data;
    this.link_content.setAttribute("record_id", "new");var container_dic=this.tab.tab_objects[this.link_number];
    this.link_content.foreign_keys={};this.link_content.dependents={};
+   var table_=getEBI(this.link_number).getAttribute(table);if(table_==null || table_==""){return}
    for(o in container_dic)
    {
     //alert('90 container_dic= ' + JSON.stringify(container_dic[o]));
