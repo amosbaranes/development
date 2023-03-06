@@ -5,6 +5,7 @@ from academycity.apps.core.sql import TruncateTableMixin
 
 class GeneDim(TruncateTableMixin, models.Model):
     gene_code = models.CharField(max_length=40, default='', blank=True, null=True)
+    clusters = models.JSONField(null=True)
 
     def __str__(self):
         return str(self.gene_code)

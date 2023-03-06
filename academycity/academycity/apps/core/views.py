@@ -562,13 +562,16 @@ def get_data_json_link(request):
 
 def upload_file(request):
     # print("9005", "\n", "-"*30)
+    log_debug("upload_file 0000")
     upload_file_ = request.FILES['drive_file']
     ret = {}
     if upload_file_:
         filename = request.POST['filename']
         # print("9005-1", filename, "\n", "-"*30)
+        log_debug("upload_file 1111: "+filename)
         app_ = request.POST['app']
         # print("9005-2", app_, "\n", "-"*30)
+        log_debug("upload_file 2222: "+app_)
         obj_name_ = request.POST['obj_name']
         function_name_ = request.POST['function_name']
         topic_id_ = request.POST['topic_id']
@@ -576,12 +579,18 @@ def upload_file(request):
         if folder_type_ == "media":
             # print("media")
             data_dir = settings.MEDIA_ROOT + '/' + app_ + '/' + topic_id_
+            log_debug("upload_file 3333: "+data_dir)
+
             upload_file_ = request.FILES['drive_file']
             os.makedirs(data_dir, exist_ok=True)
             filename = request.POST['filename']
             file_path = os.path.join(data_dir, filename)
 
+            log_debug("upload_file 4444: "+file_path)
+
             model_name = request.POST['model_name']
+            log_debug("upload_file 4444-0: ="+model_name+"=")
+            log_debug("upload_file 4444-1: ")
             if model_name !="":
                 record_id = request.POST['record_id']
                 model_field_name = request.POST['model_field_name']
@@ -591,10 +600,13 @@ def upload_file(request):
                 exec(s)
                 obj.save()
                 # print(file_path)
+            log_debug("upload_file 5555:")
             with open(file_path, 'wb+') as destination:
                 for c in upload_file_.chunks():
                     destination.write(c)
             ret['status'] = "ok"
+            log_debug("upload_file 7777: OK")
+
             return HttpResponse(json.dumps(ret))
         # print("9005-16", folder_type_, "\n", "-"*30)
         #

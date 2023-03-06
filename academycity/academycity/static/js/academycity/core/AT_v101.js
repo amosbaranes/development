@@ -127,7 +127,7 @@ function AdvancedTabsManager(dic=null)
                                                   "field":[]},"attributes":{"table_class":["","basic","payment","data_entry"]},
                                                   "functions":["onclick", "onchange", "onmouseover", "onmouseout"]},
                                         "Image":{"title":"Img", "width":4,
-                                                  "setting": {"height":[], "src":[], "width":[]},
+                                                  "setting": {"height":[], "src":[], "width":[], "border_radius":[]},
                                                   "attributes":{},
                                                   "functions":["onclick", "onchange", "on_loaded", "onmouseover", "onmouseout"]},
                                         "Video":{"title":"Vid", "width":4,
@@ -1633,6 +1633,7 @@ function acGradesCreator(parent){
   this.parent=parent;
   //try{alert("90000-121  "+JSON.stringify(this.parent.data)) } catch(er){alert(er)}
   this.my_name="grades";
+  this.tests_dic=null;this.group_dic=null;
 }
 
 acGradesCreator.prototype.create_html = function(type=null)
@@ -1640,10 +1641,18 @@ acGradesCreator.prototype.create_html = function(type=null)
  alert(2222222);
 }
 
-acGradesCreator.prototype.set_obj_structure = function(group_list=null, test_list=null)
+acGradesCreator.prototype.set_obj_structure = function(tests_dic=null, group_dic=null)
 {
-  alert(333333);
-  var dic={"1":{"title":"battalion 1","data":
+ //var dic=this.parent.data;
+ //alert("90100-2\n"+JSON.stringify(dic));
+ alert("90100-3\n"+JSON.stringify(tests_dic));
+ if(tests_dic!=null){this.tests_dic=tests_dic};if(tests_dic!=null){this.group_dic=group_dic};
+ if(this.tests_dic!=null && this.group_dic!=null){
+  alert("ready")
+ }
+
+ // group_list=null, test_list=null
+ var dic={"1":{"title":"battalion 1","data":
         {"1":{"title":"XRAY", "data":{
                   "1":{"title":"XRAY 1", "data":{
                                   "2036":{"title":"231001:name", "model":"soldier", "data":{}},
@@ -2271,6 +2280,7 @@ acImageCreator.prototype.create_obj = function()
 //  var field = dic["properties"]["field"]
   var container = document.getElementById("content_"+dic["container_id"]);
   //--
+  var pp_=dic["properties"];
   this.img_=document.createElement("img");
   this.img_.my_creator_obj=this;this.img_.container=container;this.img_.dic=dic;
   this.img_.setAttribute("obj_type", dic["obj_type"]);
@@ -2283,6 +2293,7 @@ acImageCreator.prototype.create_obj = function()
   if("height" in dic["properties"]){var height_=dic["properties"]["height"]} else {var height_="400"}
   var style_="position:absolute;left:"+dic["properties"]["x"]+"px;top:"+dic["properties"]["y"]+"px;"
   style_+="width:"+width_+"px;height:"+height_+"px;";
+  if(pp_["border_radius"]!=null && pp_["border_radius"]!=""){style_+="border-radius:"+pp_["border_radius"]+"px;"}
   this.img_.setAttribute("style", style_);
   this.img_.setAttribute("src", "/media/"+this.parent.atm.my_app+"/images/"+dic["properties"]["src"]);
   container.appendChild(this.img_);
@@ -2353,6 +2364,7 @@ acImageCreator.prototype.create_obj = function()
   {if((f!="onchange") && (f!="on_loaded")){var s="this.input_file_."+f+"="+dic["functions"][f];eval(s);}}
 }
 
+
 // -- Video --
 function acVideoCreator(parent){this.parent=parent;}
 
@@ -2413,16 +2425,16 @@ acVideoCreator.prototype.create_obj = function()
                 var xhr = new XMLHttpRequest();
                 try{xhr.dic=this.dic} catch(er){alert(er)}
                 (xhr.upload || xhr).addEventListener('progress', function(e) {
-                    var done = e.position || e.loaded
+                    try{var done = e.position || e.loaded
                     var total = e.totalSize || e.total;
-                    console.log('xhr progress: ' + Math.round(done/total*100) + '%');
+                    console.log('xhr progress: ' + Math.round(done/total*100) + '%');} catch(er) {}
                 });
                 xhr.div_=this.div_;
                 xhr.addEventListener('load', function(e) {
-                    data = JSON.parse(this.responseText);
+                    //data = JSON.parse(this.responseText);
                     location.reload();
                     this.div_.outerHTML="";
-                    var s="zz="+this.dic["functions"]["on_loaded"];eval(s);zz(event)
+                    try{var s="zz="+this.dic["functions"]["on_loaded"];eval(s);zz(event)} catch(er){}
                 });
 
                 //alert(this.atm.upload_file_link_)
@@ -2444,7 +2456,7 @@ acVideoCreator.prototype.create_obj = function()
                 //--
                 xhr.send(fd);
                 var s="zz="+dic["functions"]["onchange"];eval(s);
-                zz(event)
+                try{zz(event)} catch(er){}
       }
       }
   }
