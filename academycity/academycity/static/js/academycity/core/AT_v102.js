@@ -127,7 +127,9 @@ function AdvancedTabsManager(dic=null)
                                                   "field":[]},"attributes":{"table_class":["","basic","payment","data_entry"]},
                                                   "functions":["onclick", "onchange", "onmouseover", "onmouseout"]},
                                         "Image":{"title":"Img", "width":4,
-                                                  "setting": {"height":[], "src":[], "width":[], "border_radius":[]},
+                                                  "setting": {"height":[], "src":[], "width":[], "border_radius":[],
+                                                  "border_width":[], "border_color":[]
+                                                  },
                                                   "attributes":{},
                                                   "functions":["onclick", "onchange", "on_loaded", "onmouseover", "onmouseout"]},
                                         "Video":{"title":"Vid", "width":4,
@@ -700,7 +702,7 @@ AdvancedTabsManager.prototype.activate_obj_function = function(call_back_fun, di
      //alert(this.activate_obj_function_link_)
      //alert(call_back_fun)
 
-     $.post(this.activate_obj_function_link_,
+     $.post(atm.activate_obj_function_link_,
           {dic : JSON.stringify(dic_)},
           function(dic){
           //alert(JSON.stringify(dic))
@@ -1389,6 +1391,7 @@ acReport.prototype.create_obj = function(){
   var container = document.getElementById("content_"+dic["container_id"]);
   this.table_=document.createElement("table");this.table_.my_creator_obj=this;
   container.appendChild(this.table_);
+  if(!(dic["properties"]["table_class"])){dic["properties"]["table_class"]="basic"}
   this.table_.setAttribute("class", dic["properties"]["table_class"]);
   this.table_.setAttribute("container_id", dic["container_id"]);
   this.table_.setAttribute("id", dic["properties"]["obj_number"]);
@@ -1632,8 +1635,7 @@ acFSPivotCreator.prototype.row_col_click = function(event)
 function acGradesCreator(parent){
   this.parent=parent;
   //try{alert("90000-121  "+JSON.stringify(this.parent.data)) } catch(er){alert(er)}
-  this.my_name="grades";
-  this.tests_dic=null;this.group_dic=null;
+  this.my_name="grades";this.tests_dic=null;this.group_dic=[];
 }
 
 acGradesCreator.prototype.create_html = function(type=null)
@@ -1641,14 +1643,82 @@ acGradesCreator.prototype.create_html = function(type=null)
  alert(2222222);
 }
 
-acGradesCreator.prototype.set_obj_structure = function(tests_dic=null, group_dic=null)
+acGradesCreator.prototype.set_obj_structure = function(tests_dic=null, group_dic=null, tests_config=null, entity_config=null)
 {
+ //alert("90160-2\n"+JSON.stringify(tests_config));
  //var dic=this.parent.data;
- //alert("90100-2\n"+JSON.stringify(dic));
- alert("90100-3\n"+JSON.stringify(tests_dic));
- if(tests_dic!=null){this.tests_dic=tests_dic};if(tests_dic!=null){this.group_dic=group_dic};
- if(this.tests_dic!=null && this.group_dic!=null){
-  alert("ready")
+ //alert("90100-2\n"+JSON.stringify(group_dic));
+ //alert("90100-3\n"+JSON.stringify(tests_dic));
+ if(tests_dic!=null){this.tests_dic=tests_dic};
+ if(group_dic!=null){
+  if(group_dic["checked"] == true){this.group_dic = this.group_dic.concat(group_dic["entities"])}
+  else {this.parent.tbody.innerHTML=""; this.group_dic = this.group_dic.filter((item) => !group_dic["entities"].includes(item))}
+ };
+
+ if(this.tests_dic!=null && this.group_dic.length>0){
+    var dic= {"obj":"TrainingDataProcessing", "atm":atm.my_name, "app":atm.my_app, "obj_param":{"app":atm.my_app, "topic_id":"general"},
+              "fun":"get_variable_data", "params":{"app":atm.my_app,"group_dic":this.group_dic,"tests_dic":this.tests_dic}}
+    //alert("90100-22\n"+JSON.stringify(dic));
+    var fun=function(data, ll)
+    {
+      var f=function(v, tc){var n__=tc["from"].length;var r_=-1;
+      for(var h=0; h<n__;h++){if(tc["from"][h] <= v && v < tc["to"][h]){r_=tc["grade"][h];break}};return r_;}
+      var this_obj=ll[0];var tests_config=ll[1];var group_dic=ll[2];var var_name=ll[3];
+      var entity_name=group_dic["entity_name"];
+      var result=data["result"];var test_dic=data["test_dic"];
+      result["value_converted"]=[];
+      // var n_=result[entity_name+"_number"].length;
+      var n_group=group_dic["entities"].length;
+      var n_tests = Object.keys(test_dic).length;
+      var userid_width=70;
+      var name_width=250;
+      var col_width=80;
+      //alert("90100-2\n"+JSON.stringify(group_dic)+"\n\n"+result[entity_name+"_number"]);
+      var s="<tr><th style='width:"+userid_width+"px'>UserId</th><th style='width:"+name_width+"px'>Name</th>"
+      for(var test_number in test_dic){
+       var test_name=tests_config["test_name"][tests_config["test_number"].indexOf(""+test_number)];
+       s+="<th style='width:"+col_width+"px'>"+test_name+"</th>";
+      };
+      s+="<th style='width:"+col_width+"px'>"+var_name+"</th>";s+="</tr>";this_obj.parent.tr_h.innerHTML=s;s="";
+      for(var i=0; i<n_group;i++)
+      {
+        var entity_test_value={}
+         try{var entity_number=parseInt(group_dic["entities"][i]);}catch(er){alert(er)}
+         var e_idx=entity_config["id"].indexOf(""+entity_number)
+         var e_name=entity_config["name"][e_idx];var e_userid=entity_config["userid"][e_idx];
+         s+="<tr><td style='width:"+userid_width+"px'>"+e_userid+"</td><td style='width:"+name_width+"px'>"+e_name+"</td>"
+         try{var entity_idx=result[entity_name+"_number"].indexOf(entity_number)}catch(er){};
+         if(entity_idx > -1){
+              var l_=[];l_idx=[];
+              while(entity_idx>-1){l_.push(result["test_number"][entity_idx]);l_idx.push(entity_idx);
+               entity_idx=result[entity_name+"_number"].indexOf(entity_number, entity_idx+1)}
+              //alert("90100-222\n"+entity_number+"\n\n"+JSON.stringify(l_)+"\n\n"+JSON.stringify(l_idx));
+              var nn_=l_.length;
+              for(var g=0;g<nn_;g++){var test_number=l_[g];var value=result["value"][l_idx[g]];
+                  var idx=tests_config["test_number"].indexOf(""+test_number);
+                  var tc=tests_config["test_grade_conversion"][idx];
+                  var converted_value=f(value,tc);result["value_converted"].push(converted_value)
+                  entity_test_value[test_number]={"value":value, "converted_value":converted_value}
+              }
+              //alert(JSON.stringify(entity_test_value)+"\n"+n_tests+"\n"+JSON.stringify(test_dic))
+              var var_value=0
+              for(var test_number in test_dic)
+              {var etv=entity_test_value[""+test_number];
+               if(etv!=null){s+="<td style=';text-align:right;width:"+col_width+"px'>"+etv["converted_value"]+"</td>";
+                var_value+=1*etv["converted_value"]*test_dic[test_number]["value"]/100;
+               }
+               else{s+="<td></td>"}
+              }
+         } else {for(var j=0;j<n_tests;j++){s+="<td></td>"}}
+         s+="<td style=';text-align:right;width:"+col_width+"px'>"+var_value+"</td>";
+         s+="</tr>";
+      }
+      //alert(JSON.stringify(result));
+      //alert(JSON.stringify(result)+"\n\n"+JSON.stringify(test_dic)+"\n\ntests_config:\n"+JSON.stringify(tests_config));
+      //alert(this_obj.parent.tbody.outerHTML)
+      this_obj.parent.tbody.innerHTML=s
+    }
+    atm.activate_obj_function(fun, dic, [this, tests_config, group_dic, this.tests_dic["var_name"]])
  }
 
  // group_list=null, test_list=null
@@ -2294,6 +2364,8 @@ acImageCreator.prototype.create_obj = function()
   var style_="position:absolute;left:"+dic["properties"]["x"]+"px;top:"+dic["properties"]["y"]+"px;"
   style_+="width:"+width_+"px;height:"+height_+"px;";
   if(pp_["border_radius"]!=null && pp_["border_radius"]!=""){style_+="border-radius:"+pp_["border_radius"]+"px;"}
+  if(pp_["border_width"]!=null && pp_["border_width"]!="" && pp_["border_color"]!=null && pp_["border_color"]!="")
+  {style_+="border: "+pp_["border_width"]+"px solid "+pp_["border_color"]}
   this.img_.setAttribute("style", style_);
   this.img_.setAttribute("src", "/media/"+this.parent.atm.my_app+"/images/"+dic["properties"]["src"]);
   container.appendChild(this.img_);
@@ -3207,7 +3279,7 @@ acGroupCreator.prototype.create_obj = function()
       //alert("90142-2 acGroupCreator.prototype.create_obj\n"+JSON.stringify(this.dic));
       //alert(this.dic["properties"]["present"])
       if(my_class_members!=null){
-      // alert(this.dic["properties"]["present"])
+       // alert(this.dic["properties"]["present"])
         var c = document.getElementsByClassName(my_class_members)[0]
         var etype_=e.getAttribute("type")
         if(etype_=="checkbox"){
@@ -3299,8 +3371,8 @@ acGroupCreator.prototype.set_obj_structure = function(display_="none")
   var dic=this.parent.data;
   //alert("acRadioCreator 90446-16  "+JSON.stringify(dic));
   try{
-       var general_dic_name = dic["properties"]["setup_dictionary"];
-       this.units_structure = eval("this.parent.atm.general."+general_dic_name)
+       var setup_dictionary = dic["properties"]["setup_dictionary"];
+       this.units_structure = eval("this.parent.atm.general."+setup_dictionary)
        var general_entity_name = dic["properties"]["entity"];
        this.entity_list = eval("this.parent.atm.general."+general_entity_name+"_list")
        this.entity_dic = eval("this.parent.atm.general."+general_entity_name+"_dic")

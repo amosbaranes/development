@@ -191,6 +191,7 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
             for q in qs:
                 if p_key_field_name=="user":
                     qid_ = eval("q."+p_key_field_name+".id")
+                    # print("q." + p_key_field_name, model_, qid_, q.userid)
                 else:
                     qid_ = eval("q."+p_key_field_name)
                 result[qid_]={"title":str(q), "model":nav_tables_[n-1], "data":{}}
@@ -736,6 +737,41 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
                 log_debug("9095-100 Error updating guns: save ramonsn"  + " " + str(q.ramonsn))
 
         result = {"status": "ok"}
+        return result
+
+    def get_variable_data(self, dic):
+        # print('90065-11 dic', dic)
+        app_ = dic["app"]
+        record_id = dic["tests_dic"]["record_id"]
+        group_list = dic["group_dic"]
+        #
+        parent_test_table = dic["tests_dic"]["parent_table"]
+        parent_test_model_ = apps.get_model(app_label=app_, model_name=parent_test_table)
+        parent_test_obj = parent_test_model_.objects.get(id=record_id)
+        test_table = dic["tests_dic"]["table"]
+        test_model_ = apps.get_model(app_label=app_, model_name=test_table)
+        #
+        tests_objs = test_model_.objects.filter(testsvariable=parent_test_obj).all()
+        # print(tests_objs)
+        test_list = []
+        test_dic = {}
+        for q in tests_objs:
+            test_list.append(str(q.test_number))
+            test_dic[str(q.test_number)] = {"id": q.id , "value": round(float(q.value),2)}
+        # print('test_dic')
+        # print(test_dic)
+
+        grades_model_ = apps.get_model(app_label=app_, model_name="gradesforevents")
+        q_gs = grades_model_.objects.filter(soldiersforevent__soldier_number__in=group_list,
+                                            testsforevent__test_number__in=test_list).order_by("soldiersforevent__soldier_number").all()
+        result={"soldier_number":[], "test_number":[], "value":[]}
+        for q in q_gs:
+            result["soldier_number"].append(q.soldiersforevent.soldier_number)
+            result["test_number"].append(q.testsforevent.test_number)
+            result["value"].append(round(float(q.value),2))
+
+        result = {"status": "ok", "result":result, "test_dic":test_dic}
+        # print(result)
         return result
 
 
