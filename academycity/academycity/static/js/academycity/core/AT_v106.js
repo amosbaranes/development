@@ -1645,45 +1645,65 @@ acGradesCreator.prototype.create_html = function(type=null)
 
 acGradesCreator.prototype.set_obj_structure = function(tests_dic=null, group_dic=null, tests_config=null, entity_config=null)
 {
- //alert("90160-2\n"+JSON.stringify(tests_config));
- //var dic=this.parent.data;
+ //alert("90100-1\n"+JSON.stringify(tests_dic));
  //alert("90100-2\n"+JSON.stringify(group_dic));
- //alert("90100-3\n"+JSON.stringify(tests_dic));
+ //alert("90160-3\n"+JSON.stringify(tests_config));
+ //alert("90160-4\n"+JSON.stringify(entity_config));
+ //var dic=this.parent.data;
  if(tests_dic!=null){this.tests_dic=tests_dic};
  if(group_dic!=null){
   if(group_dic["checked"] == true){this.group_dic = this.group_dic.concat(group_dic["entities"])}
   else {this.parent.tbody.innerHTML=""; this.group_dic = this.group_dic.filter((item) => !group_dic["entities"].includes(item))}
  };
 
+ //alert("90100-11\n"+JSON.stringify(this.tests_dic));
+ //alert(this.group_dic.length)
+
  if(this.tests_dic!=null && this.group_dic.length>0){
+    this.tests_config=tests_config;this.entity_config=entity_config;
+
     var dic= {"obj":"TrainingDataProcessing", "atm":atm.my_name, "app":atm.my_app, "obj_param":{"app":atm.my_app, "topic_id":"general"},
               "fun":"get_variable_data", "params":{"app":atm.my_app,"group_dic":this.group_dic,"tests_dic":this.tests_dic}}
     //alert("90100-22\n"+JSON.stringify(dic));
-    var fun=function(data, ll)
+
+    var fun=function(data, this_obj)
     {
+      var tests_config=this_obj.tests_config;var group_dic=this_obj.group_dic;
+      var var_name=this_obj.tests_dic["var_name"];
       var f=function(v, tc){var n__=tc["from"].length;var r_=-1;
       for(var h=0; h<n__;h++){if(tc["from"][h] <= v && v < tc["to"][h]){r_=tc["grade"][h];break}};return r_;}
-      var this_obj=ll[0];var tests_config=ll[1];var group_dic=ll[2];var var_name=ll[3];
-      var entity_name=group_dic["entity_name"];
+      var entity_name="soldier";
       var result=data["result"];var test_dic=data["test_dic"];
       result["value_converted"]=[];
-      // var n_=result[entity_name+"_number"].length;
-      var n_group=group_dic["entities"].length;
+
+      //alert("90160-6\n"+JSON.stringify(result));
+      //alert("90160-6\n"+JSON.stringify(result[entity_name+"_number"]));
+      //alert("90160-6\n"+JSON.stringify(group_dic));
+      //alert("90160-61\n"+JSON.stringify(group_dic["entities"]));
+
+      var n_group=group_dic.length;
       var n_tests = Object.keys(test_dic).length;
       var userid_width=70;
       var name_width=250;
       var col_width=80;
-      //alert("90100-2\n"+JSON.stringify(group_dic)+"\n\n"+result[entity_name+"_number"]);
+
+      //alert("90160-7\n"+JSON.stringify(group_dic)+"\n\n"+result[entity_name+"_number"]);
+
       var s="<tr><th style='width:"+userid_width+"px'>UserId</th><th style='width:"+name_width+"px'>Name</th>"
+      //alert("90160-7\n"+JSON.stringify(tests_config));
+
       for(var test_number in test_dic){
        var test_name=tests_config["test_name"][tests_config["test_number"].indexOf(""+test_number)];
        s+="<th style='width:"+col_width+"px'>"+test_name+"</th>";
       };
-      s+="<th style='width:"+col_width+"px'>"+var_name+"</th>";s+="</tr>";this_obj.parent.tr_h.innerHTML=s;s="";
+      s+="<th style='width:"+col_width+"px'>"+var_name+"</th>";s+="</tr>";this_obj.parent.tr_h.innerHTML=s;
+      //alert("2\n"+s)
+
+      s="";
       for(var i=0; i<n_group;i++)
       {
         var entity_test_value={}
-         try{var entity_number=parseInt(group_dic["entities"][i]);}catch(er){alert(er)}
+         try{var entity_number=parseInt(group_dic[i]);}catch(er){alert(er)}
          var e_idx=entity_config["id"].indexOf(""+entity_number)
          var e_name=entity_config["name"][e_idx];var e_userid=entity_config["userid"][e_idx];
          s+="<tr><td style='width:"+userid_width+"px'>"+e_userid+"</td><td style='width:"+name_width+"px'>"+e_name+"</td>"
@@ -1692,7 +1712,7 @@ acGradesCreator.prototype.set_obj_structure = function(tests_dic=null, group_dic
               var l_=[];l_idx=[];
               while(entity_idx>-1){l_.push(result["test_number"][entity_idx]);l_idx.push(entity_idx);
                entity_idx=result[entity_name+"_number"].indexOf(entity_number, entity_idx+1)}
-              //alert("90100-222\n"+entity_number+"\n\n"+JSON.stringify(l_)+"\n\n"+JSON.stringify(l_idx));
+               //alert("90160-7\n"+entity_number+"\n\n"+JSON.stringify(l_)+"\n\n"+JSON.stringify(l_idx));
               var nn_=l_.length;
               for(var g=0;g<nn_;g++){var test_number=l_[g];var value=result["value"][l_idx[g]];
                   var idx=tests_config["test_number"].indexOf(""+test_number);
@@ -1700,7 +1720,7 @@ acGradesCreator.prototype.set_obj_structure = function(tests_dic=null, group_dic
                   var converted_value=f(value,tc);result["value_converted"].push(converted_value)
                   entity_test_value[test_number]={"value":value, "converted_value":converted_value}
               }
-              //alert(JSON.stringify(entity_test_value)+"\n"+n_tests+"\n"+JSON.stringify(test_dic))
+              //alert("90160-8\n"+JSON.stringify(entity_test_value)+"\n"+n_tests+"\n"+JSON.stringify(test_dic))
               var var_value=0
               for(var test_number in test_dic)
               {var etv=entity_test_value[""+test_number];
@@ -1709,8 +1729,9 @@ acGradesCreator.prototype.set_obj_structure = function(tests_dic=null, group_dic
                }
                else{s+="<td></td>"}
               }
+              //alert("222\n")
          } else {for(var j=0;j<n_tests;j++){s+="<td></td>"}}
-         s+="<td style=';text-align:right;width:"+col_width+"px'>"+var_value+"</td>";
+         s+="<td style=';text-align:right;width:"+col_width+"px'>"+(Math.round(100*var_value)/100)+"</td>";
          s+="</tr>";
       }
       //alert(JSON.stringify(result));
@@ -1718,7 +1739,7 @@ acGradesCreator.prototype.set_obj_structure = function(tests_dic=null, group_dic
       //alert(this_obj.parent.tbody.outerHTML)
       this_obj.parent.tbody.innerHTML=s
     }
-    atm.activate_obj_function(fun, dic, [this, tests_config, group_dic, this.tests_dic["var_name"]])
+    atm.activate_obj_function(fun, dic, this)
  }
 
  // group_list=null, test_list=null
@@ -1737,10 +1758,6 @@ acGradesCreator.prototype.set_obj_structure = function(tests_dic=null, group_dic
          "3":{"title":"Zulu"}
         }
   }}
-
-//  dic = {"horizontal": {"table": "testsforvariables", "foreign_table": "testsVariables", "id": 1} }
-//  try{alert("90000-101  "+JSON.stringify(dic)) } catch(er){alert(er)}
-//  //try{alert("90000-101  "+JSON.stringify(group_list) + "" + JSON.stringify(test_list));} catch(er){alert(er)}
 }
 
 // -- acPlugin --
