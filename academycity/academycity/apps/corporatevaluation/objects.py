@@ -1,9 +1,12 @@
 # https://www.codeproject.com/Articles/1227268/Accessing-Financial-Reports-in-the-EDGAR-Database
 # https://www.codeproject.com/Articles/1227765/Parsing-XBRL-with-Python
 
+from django.apps import apps
+
 from bs4 import BeautifulSoup
 import re
 import os
+import shutil
 from django.conf import settings
 import pandas as pd
 import numpy as np
@@ -18,6 +21,7 @@ from django.db.models import Q
 
 from six.moves import urllib
 import xlrd
+from openpyxl import Workbook, load_workbook
 import statistics
 from django.utils.translation import get_language
 import math
@@ -31,7 +35,6 @@ from tda import auth, client, orders
 from tda.orders.common import Duration, Session
 
 from channels.db import database_sync_to_async
-
 from channels.layers import get_channel_layer
 
 import yfinance as yf
@@ -56,6 +59,7 @@ from .models import (XBRLMainIndustryInfo, XBRLIndustryInfo, XBRLCompanyInfoInPr
                      XBRLRealEquityPrices, XBRLRealEquityPricesArchive,
                      ETFS, ETFWatchLists, StockPricesMinutes, StockPricesDays)
 
+from ..acapps.ml.basic_ml_objects import BaseDataProcessing
 
 # cik = '0000051143'
 # type = '10-K'
@@ -5193,3 +5197,98 @@ class FinancialAnalysis(object):
         result = {"data": {"r": i_r, "sd": i_sd, "w": optimal_risky_port.tolist()}}
         return result
 
+#
+class BaseCorporateValuationAlgo(object):
+    def __init__(self, dic):  # to_data_path, target_field
+        # print("90050-01 BaseTrainingAlgo", dic, '\n', '-'*50)
+        # super(BaseTrainingAlgo, self).__init__()
+        # print("90050-02 BaseTrainingAlgo", dic, '\n', '-'*50)
+        app_ = dic["app"]
+        self.PROJECT_ROOT_DIR = os.path.join(settings.WEB_DIR, "data", dic["app"])
+        # print(self.PROJECT_ROOT_DIR)
+        # print('-'*50)
+        os.makedirs(self.PROJECT_ROOT_DIR, exist_ok=True)
+        self.TOPIC_ID = dic["topic_id"]  # "general"
+        self.TO_DATA_PATH = os.path.join(self.PROJECT_ROOT_DIR, "datasets")
+        os.makedirs(self.TO_DATA_PATH, exist_ok=True)
+        self.TO_EXCEL = os.path.join(self.TO_DATA_PATH, "excel", self.TOPIC_ID)
+        os.makedirs(self.TO_EXCEL, exist_ok=True)
+
+        self.excel_dir = settings.MEDIA_ROOT + '/' + app_ + '/excel'
+        os.makedirs(self.excel_dir, exist_ok=True)
+        self.save_to_file = None
+        self.second_time_save = ''
+
+    def save_to_excel(self, df, folder, file_name=None):
+        if file_name:
+            self.save_to_file = os.path.join(self.excel_dir, file_name)
+        wb2 = Workbook()
+        wb2.save(self.save_to_file)
+        wb2.close()
+        wb2 = None
+        with pd.ExcelWriter(self.save_to_file, engine='openpyxl', mode="a") as writer_o:
+            try:
+                df.to_excel(writer_o, sheet_name="Data")
+            except Exception as ex:
+                print("9006-3 " + str(ex))
+            try:
+                writer_o.save()
+            except Exception as ex:
+                print("9006-4 " + str(ex))
+        wb = load_workbook(filename=self.save_to_file, read_only=False)
+        del wb['Sheet']
+        wb.save(self.save_to_file)
+        wb.close()
+
+class CorporateValuationDataProcessing(BaseDataProcessing, BaseCorporateValuationAlgo):
+    def __init__(self, dic):
+        super().__init__(dic)
+
+    def download_companies_to_excel(self, dic):
+        print('    90033-100 dic\n', '-'*100, '\n', dic, '\n', '-'*100)
+        app_ = dic["app"]
+        etfwatchlist_symbol_ = dic["etfwatchlist_symbol"]
+        file_name_ = dic['file_name']
+        model_name_ = "xbrlcompanyinfo"
+        model_xci = apps.get_model(app_label=app_, model_name=model_name_)
+        model_name_ = "etfwatchlists"
+        qs = model_xci.objects.filter(etfwatchlist__symbol=etfwatchlist_symbol_).all()
+        df = pd.DataFrame(list(qs.values('exchange', 'company_name', 'ticker', 'company_letter', 'cik', 'is_active')))
+        try:
+            self.save_to_excel(df, "Data", file_name=file_name_)
+        except Exception as ex:
+            print("Error 90876-5543"+ex)
+        result = {"status": "ok"}
+        return result
+
+    def upload_companies_to_excel(self, dic):
+        # print('    90033-100 dic\n', '-'*100, '\n', dic, '\n', '-'*100)
+        app_ = dic["app"]
+        file_path = self.upload_file(dic)["file_path"]
+        # print('90022-1 dic')
+        # print(file_path)
+        dic = dic["cube_dic"]
+        # print('90022-1 dic', dic)
+
+        model_name_ = "etfwatchlists"
+        model_etfwl = apps.get_model(app_label=app_, model_name=model_name_)
+        etfwl_obj, is_created = model_etfwl.objects.get_or_create(symbol="HighV")
+
+        model_name_ = "xbrlcompanyinfo"
+        model_xci = apps.get_model(app_label=app_, model_name=model_name_)
+        df = pd.read_excel(file_path, sheet_name="Data", header=0)
+        # print(df)
+        for index, row in df.iterrows():
+            # print(str(row["ticker"]))
+            o, is_created = model_xci.objects.get_or_create(ticker=str(row["ticker"]))
+            o.etfwatchlist = etfwl_obj
+            o.company_name = str(row["company_name"])
+            o.company_letter = str(row["company_letter"])
+            o.cik = str(row["cik"])
+            o.is_active = bool(row["is_active"])
+            o.financial_data = {"a":"a"}
+            o.financial_dataq = {"a":"a"}
+            o.save()
+            # print("saved", str(row["ticker"]))
+        result = {"status": "ok"}
+        return result
