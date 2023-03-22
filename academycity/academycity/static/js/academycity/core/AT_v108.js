@@ -183,7 +183,8 @@ function AdvancedTabsManager(dic=null)
                                         "UploadFile":{"title":"UploadFile", "width":8,
                                                "setting": {"height":[],"width":[],"obj_name":[],"function_name":[],
                                                            "topic_id":[], "folder_type":["", "excel", "media", "other"],
-                                                            "dimensions":[], "fields":[], "fact_model_field": []},
+                                                            "dimensions":[], "fields":[], "fact_model_field": [],
+                                                            "sheet_name":[]},
                                                "attributes":{"field":[]},
                                                "functions":["onchange", "on_loaded"]},
                                         "Heatmap":{"title":"Heatmap", "width":7,
@@ -2132,6 +2133,7 @@ acUploadFileCreator.prototype.create_obj = function()
 //  this.div_.setAttribute("field", field);
   this.div_.setAttribute("container_id", dic["container_id"]);
   this.div_.setAttribute("type", dic["element_name"]);
+  if("sheet_name" in dic["properties"]){var sheet_name_=dic["properties"]["sheet_name"]} else {var width_="Data"}
   if("width" in dic["properties"]){var width_=dic["properties"]["width"]} else {var width_="400"}
   if("height" in dic["properties"]){var height_=dic["properties"]["height"]} else {var height_="400"}
   var style_="position:absolute;left:"+dic["properties"]["x"]+"px;top:"+dic["properties"]["y"]+"px;"
@@ -2207,6 +2209,7 @@ acUploadFileCreator.prototype.create_obj = function()
             fd.append("dimensions", this.dic["properties"]["dimensions"]);
             fd.append("fields", this.dic["properties"]["fields"]);
             fd.append("fact_model_field", this.dic["properties"]["fact_model_field"]);
+            fd.append("sheet_name", this.dic["properties"]["sheet_name"]);
             //--
             var container = document.getElementById("content_"+this.dic["container_id"]);
             var record_id = container.getAttribute("record_id")
@@ -5045,6 +5048,25 @@ acChartCreator.prototype.set_chart_data = function(chart_type)
     };
     Plotly.newPlot(this.chart, data, layout);
  }
+ else if(chart_type["type"]=='bars'){
+    //alert("9023-550-1\n"+JSON.stringify(chart_type));
+    var data = [];
+    for(var k in chart_type["series"])
+    {
+         var trace = {
+          x: chart_type["x"]["data"],
+          y: chart_type["series"][k]["data"],
+          name: chart_type["series"][k]["name"],
+          type: "bar"
+        };
+        data.push(trace);
+    }
+    var layout = {
+      title: chart_type["title"],
+      barmode: 'relative'
+    };
+    Plotly.newPlot(this.chart, data, layout);
+ }
  else {
   //alert(chart_type["type"])
    for(y in data["series"]){
@@ -5068,8 +5090,6 @@ acChartCreator.prototype.set_chart_data = function(chart_type)
                        showgrid: true, zeroline: true, showline: true, showticklabels: true}
                }
  }
-
-
 }
 
 acChartCreator.prototype.get_data = function()

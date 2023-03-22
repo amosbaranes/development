@@ -152,79 +152,104 @@ class AviDataProcessing(BaseDataProcessing, BasePotentialAlgo):
             if row["Series Name"] == "Population, total":
                 measure_name = "TotalPop"
                 group_measure_name = "General"
+                description = "Population, total"
             elif row["Series Name"] == "High-technology exports (current US$)":
                 measure_name = "HighTech"
                 group_measure_name = "Technology"
+                description = "High-technology exports (current US$)"
             elif row["Series Name"] == "ICT service exports (BoP, current US$)":
                 measure_name = "ICT"
                 group_measure_name = "Technology"
+                description = "ICT service exports (BoP, current US$)"
             elif row["Series Name"] == "GDP per capita (current US$)":
                 measure_name = "GDPPCCUS$"
                 group_measure_name = "GDP"
+                description = "GDP per capita (current US$)"
             elif row["Series Name"] == "GDP per capita (constant 2015 US$)":
                 measure_name = "GDPPC2015$"
                 group_measure_name = "GDP"
+                description = "GDP per capita (constant 2015 US$)"
             elif row["Series Name"] == "GDP per capita, PPP (current international $)":
                 measure_name = "GDPPCINT$"
                 group_measure_name = "GDP"
+                description = "GDP per capita, PPP (current international $)"
             elif row["Series Name"] == "GDP per capita, PPP (constant 2017 international $)":
                 measure_name = "GDPPC2017INT$"
                 group_measure_name = "GDP"
+                description = "GDP per capita, PPP (constant 2017 international $)"
             elif row["Series Name"] == "GNI per capita, Atlas method (current US$)":
-                measure_name = "GNIPCINT$"
+                measure_name = "GNIPCAINT$"
                 group_measure_name = "GDP"
+                description = "GNI per capita, Atlas method (current US$)"
             elif row["Series Name"] == "GNI per capita (constant 2015 US$)":
                 measure_name = "GNIPC2015$"
                 group_measure_name = "GDP"
+                description = "GNI per capita (constant 2015 US$)"
             elif row["Series Name"] == "GNI per capita, PPP (current international $)":
-                measure_name = "GNIPCINT$"
+                measure_name = "GNIPCPPINT$"
                 group_measure_name = "GDP"
+                description = "GNI per capita, PPP (current international $)"
             elif row["Series Name"] == "GNI per capita, PPP (constant 2017 international $)":
                 measure_name = "GNIPC2017INT$"
                 group_measure_name = "GDP"
+                description = "GNI per capita, PPP (constant 2017 international $)"
             elif row["Series Name"] == "Military expenditure (current USD)":
                 measure_name = "MExpCUS$"
                 group_measure_name = "Military"
+                description = "Military expenditure (current USD)"
             elif row["Series Name"] == "Armed forces personnel, total":
                 measure_name = "ArmedFPT"
                 group_measure_name = "Military"
+                description = "Armed forces personnel, total"
             elif row["Series Name"] == "Researchers in R&D (per million people)":
                 measure_name = "ResearchersPMP"
                 group_measure_name = "RandD"
+                description = "Researchers in R&D (per million people)"
             elif row["Series Name"] == "Technicians in R&D (per million people)":
                 measure_name = "TechniciansPMP"
                 group_measure_name = "RandD"
+                description = "Technicians in R&D (per million people)"
             elif row["Series Name"] == "Exports of goods and services (constant 2015 US$)":
                 measure_name = "GSC2015US$"
                 group_measure_name = "Exports"
+                description = "Exports of goods and services (constant 2015 US$)"
             elif row["Series Name"] == "Exports of goods and services (current US$)":
                 measure_name = "GSCUS$"
                 group_measure_name = "Exports"
+                description = "Exports of goods and services (current US$)"
             elif row["Series Name"] == "Exports of goods, services and primary income (BoP, current US$)":
                 measure_name = "GSPIBOPCUS$"
                 group_measure_name = "Exports"
+                description = "Exports of goods, services and primary income (BoP, current US$)"
             elif row["Series Name"] == "Merchandise exports (current US$)":
                 measure_name = "MerCUS$"
                 group_measure_name = "Exports"
+                description = "Merchandise exports (current US$)"
             elif row["Series Name"] == "Exports of goods and services (BoP, current US$)":
                 measure_name = "GSBOPCUS$"
                 group_measure_name = "Exports"
+                description = "Exports of goods and services (BoP, current US$)"
             elif row["Series Name"] == "Industry (including construction), value added (current US$)":
                 measure_name = "IndCUS$"
                 group_measure_name = "Industry"
+                description = "Industry (including construction), value added (current US$)"
             elif row["Series Name"] == "Industry (including construction), value added (constant 2015 US$)":
                 measure_name = "IndC2015$"
                 group_measure_name = "Industry"
+                description = "Industry (including construction), value added (constant 2015 US$)"
             elif row["Series Name"] == "Scientific and technical journal articles":
                 measure_name = "SciTechJA"
                 group_measure_name = "Science"
+                description = "Scientific and technical journal articles"
             elif row["Series Name"] == "Natural gas rents (% of GDP)":
                 measure_name = "GasPerGDP"
                 group_measure_name = "NaturalRes"
+                description = "Natural gas rents (% of GDP)"
             elif row["Series Name"] == "Total natural resources rents (% of GDP)":
                 measure_name = "TNRPerGDP"
                 group_measure_name = "NaturalRes"
-            print(group_measure_name, measure_name)
+                description = "Total natural resources rents (% of GDP)"
+            print(group_measure_name, measure_nam, description)
             #
             try:
                 gm, is_created = model_group_measure_dim.objects.get_or_create(group_name=group_measure_name)
@@ -232,6 +257,7 @@ class AviDataProcessing(BaseDataProcessing, BasePotentialAlgo):
                 m, is_created = model_measure_dim.objects.get_or_create(measure_code=mm, measure_group_dim=gm)
                 if is_created:
                     s = 'm.' + dic["dimensions"]["measure_dim"]["field_name"] + ' = "' + measure_name + '"'
+                    s = 'm.description = "' + description + '"'
                     # print(s)
                     exec(s)
                     m.save()
@@ -294,14 +320,17 @@ class AviDataProcessing(BaseDataProcessing, BasePotentialAlgo):
                 measure_name = "OECD#AIRePub"
                 group_measure_name = "AI"
                 country_field = "country_code"
+                description = "number of AI Research Publication"
             elif row["Measurement"] == "Total number of number of All Research Publication":
                 measure_name = "OECD#AllRePub"
                 group_measure_name = "AllRePub"
                 country_field = "country_code"
+                description = "Total number of number of All Research Publication"
             elif row["Measurement"] == "AI publications":
                 measure_name = "OECD#AIPub"
                 group_measure_name = "AI"
                 country_field = "country_name"
+                description = "AI publications"
 
             try:
                 if str(row["Value"]) != "nan":
@@ -343,6 +372,7 @@ class AviDataProcessing(BaseDataProcessing, BasePotentialAlgo):
                             m, is_created = model_measure_dim.objects.get_or_create(measure_name=mm, measure_group_dim=gm)
                             if is_created:
                                 s = 'm.' + dic["dimensions"]["measure_dim"]["field_name"] + ' = mm'
+                                s = 'm.description = description'
                                 exec(s)
                                 m.save()
                         except Exception as ex:
@@ -407,11 +437,13 @@ class AviDataProcessing(BaseDataProcessing, BasePotentialAlgo):
         try:
             gm, is_created = model_group_measure_dim.objects.get_or_create(group_name="URanking")
             mm = "shanghai"
+            description = "Shanghai Universities Ranking"
             m, is_created = model_measure_dim.objects.get_or_create(measure_name=mm,
                                                                     measure_group_dim=gm)
             if is_created:
                 # m.measure_code = mm
                 s = 'm.' + dic["dimensions"]["measure_dim"]["field_name"] + ' = mm'
+                s = 'm.description = description'
                 # print(s)
                 exec(s)
                 m.save()
@@ -557,11 +589,13 @@ class AviDataProcessing(BaseDataProcessing, BasePotentialAlgo):
         try:
             gm, is_created = model_group_measure_dim.objects.get_or_create(group_name="URankingEng")
             mm = "shanghaiEng"
+            description = "Shanghai Engineering Ranking"
             m, is_created = model_measure_dim.objects.get_or_create(measure_name=mm,
                                                                     measure_group_dim=gm)
             if is_created:
                 # m.measure_code = mm
                 s = 'm.' + dic["dimensions"]["measure_dim"]["field_name"] + ' = mm'
+                s = 'm.description = description'
                 # print(s)
                 exec(s)
                 m.save()
@@ -726,25 +760,30 @@ class AviDataProcessing(BaseDataProcessing, BasePotentialAlgo):
                 llg = [12]
                 ll = ["score"]
                 llgm = ["URanking"]
+                lld=["University Ranking (score)"]
             elif yy in [2018]:
                 llg = [7, 11]
                 ll = ["research", "score"]
                 llgm = ["URankingRes", "URanking"]
+                lld=["University Research Ranking", "University Ranking (score)"]
             else:
                 llg = [7, 8]
                 ll = ["research", "score"]
                 llgm = ["URankingRes", "URanking"]
+                lld=["University Research Ranking", "University Ranking (score)"]
             nll_ = len(ll)
             for jj in range(nll_):
                 k = ll[jj]
                 gm, is_created = model_group_measure_dim.objects.get_or_create(group_name=llgm[jj])
                 smm = "cwur"+k
+                smd = lld[jj] + " (cwur)"
                 # print(smm)
                 s = "mm"+k+", is_created = model_measure_dim.objects.get_or_create(measure_name='"+smm+"', measure_group_dim=gm)"
                 # print(s)
                 exec(s)
                 if is_created:
                     s = 'mm'+k+'.' + dic["dimensions"]["measure_dim"]["field_name"] + ' = '+smm
+                    s = 'mm'+k+'.description = '+smd
                     # print(s)
                     exec(s)
                     m.save()
@@ -919,9 +958,11 @@ class AviDataProcessing(BaseDataProcessing, BasePotentialAlgo):
             gm, is_created = model_group_measure_dim.objects.get_or_create(group_name="AI")
             print(gm)
             mm = "oxford"
+            description = "AI Readiness Index by Oxford"
             m, is_created = model_measure_dim.objects.get_or_create(measure_name=mm, measure_group_dim=gm)
             if is_created:
                 s = 'm.' + dic["dimensions"]["measure_dim"]["field_name"] + ' = mm'
+                s = 'm.description = description'
                 exec(s)
                 m.save()
         except Exception as ex:
@@ -1139,12 +1180,14 @@ class AviDataProcessing(BaseDataProcessing, BasePotentialAlgo):
                 k = ll[jj]
                 gm, is_created = model_group_measure_dim.objects.get_or_create(group_name=llgm[jj])
                 smm = "the"+k
+                smd = "Time Higher Education "+k
                 # print(smm)
                 s = "mm"+k+", is_created = model_measure_dim.objects.get_or_create(measure_name='"+smm+"', measure_group_dim=gm)"
                 # print(s)
                 exec(s)
                 if is_created:
                     s = 'mm'+k+'.' + dic["dimensions"]["measure_dim"]["field_name"] + ' = '+smm
+                    s = 'mm'+k+'.description = '+smd
                     # print(s)
                     exec(s)
                     m.save()
@@ -1339,12 +1382,14 @@ class AviDataProcessing(BaseDataProcessing, BasePotentialAlgo):
             gm, is_created = model_group_measure_dim.objects.get_or_create(group_name="URankingEng")
             for k in ll:
                 smm = "Res"+k
+                smd = "University Engineering ranking based on: " + k
                 print(smm)
                 s = "mm"+k+", is_created = model_measure_dim.objects.get_or_create(measure_name='"+smm+"', measure_group_dim=gm)"
                 # print(s)
                 exec(s)
                 if is_created:
-                    s = 'mm'+k+'.' + dic["dimensions"]["measure_dim"]["field_name"] + ' = '+smm
+                    s = 'mm'+k+'.' + dic["dimensions"]["measure_dim"]["field_name"] + ' = '+smd
+                    s = 'mm'+k+'.description = '+smm
                     # print(s)
                     exec(s)
                     m.save()

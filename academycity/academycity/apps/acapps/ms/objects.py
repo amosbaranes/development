@@ -317,3 +317,81 @@ class MSDataProcessing(BaseDataProcessing, MSAlgo):
         result = {"status": "ok", "clusters": clusters}
         return result
 
+    def upload_personal_info_to_db(self, dic):
+        # print("90121-1: \n", dic, "\n", "="*50)
+        app_ = dic["app"]
+        sheet_name_ = dic["sheet_name"]
+        file_path = self.upload_file(dic)["file_path"]
+        # file_path = "/home/amos/projects/development/academycity/data/ms/datasets/excel/raw_data/RAW DATA (607).xlsx"
+        # print('file_path')
+        # print(file_path)
+        # print('file_path')
+        # print('90121-2 dic')
+        dic = dic["cube_dic"]
+        # print('90121-3 dic', dic)
+        model_name_ = dic["dimensions"]["person_dim"]["model"]
+
+        model_person_dim = apps.get_model(app_label=app_, model_name=model_name_)
+        wb = load_workbook(filename=file_path, read_only=False)
+        sheet_names = wb.sheetnames
+        f = sheet_name_
+        ws = wb[f]
+        data = ws.values
+        columns = next(data)[0:]
+        # print(columns)
+        df = pd.DataFrame(data, columns=columns)
+        # print(df)
+        for index, row in df.iterrows():
+            try:
+                if row["gender"] == "M":
+                    row["gender"] = 0
+                else:
+                    row["gender"] = 1
+                # print(row["gender"])
+                model_person_dim_ = model_person_dim.objects.get(person_code=row["ID"])
+                model_person_dim_.gender = row["gender"]
+                model_person_dim_.age_at_cdna = row["age_at_cDNA"]
+                model_person_dim_.set_num = row["set_num"]
+                model_person_dim_.save()
+            except Exception as ex:
+                print(ex)
+        result = {"status": "ok"}
+        return result
+
+    def get_gene_structure(self, dic):
+        # print("90950-10: \n", dic, "\n", "=" * 50)
+        # print(dic)
+        # print('dic')
+        gene_id_ = int(dic["gene_id"])
+
+        app_ = dic["app"]
+        model_name_ = dic["dimensions"]["gene_dim"]["model"]
+        model_gene_dim = apps.get_model(app_label=app_, model_name=model_name_)
+        model_name_ = dic["dimensions"]["person_dim"]["model"]
+        model_person_dim = apps.get_model(app_label=app_, model_name=model_name_)
+        gene_obj = model_gene_dim.objects.get(id=gene_id_)
+        clusters = gene_obj.clusters
+        # print(clusters)
+
+        for c in clusters:
+            # print(1, c)
+            entity_list = clusters[c]['entity']
+            qs = model_person_dim.objects.filter(id__in=entity_list).all()
+            df = pd.DataFrame(list(qs.values()))
+            dfm = df[df["gender"] == 0]
+            dff = df[df["gender"] == 1]
+            dfmb = dfm[dfm["age_at_cdna"] <= 30]["id"]
+            dfma = dfm[dfm["age_at_cdna"] > 30]["id"]
+            dffb = dff[dff["age_at_cdna"] <= 30]["id"]
+            dffa = dff[dff["age_at_cdna"] > 30]["id"]
+            # print("="*10)
+            # print(c, dfmb.count(), dfma.count(), dffb.count(), dffa.count())
+            clusters[c]["mb"] = int(dfmb.count())
+            clusters[c]["ma"] = int(dfma.count())
+            clusters[c]["fb"] = int(dffb.count())
+            clusters[c]["fa"] = int(dffa.count())
+            # print(100)
+
+        result = {"status": "ok", "clusters": clusters}
+        # print(result)
+        return result

@@ -23,7 +23,7 @@ class MeasureGroupDimAdmin(admin.ModelAdmin):
 
 @admin.register(MeasureDim)
 class MeasureDimAdmin(admin.ModelAdmin):
-    list_display = ('id', 'measure_name', 'measure_code')
+    list_display = ('id', 'measure_group_dim', 'measure_name', 'measure_code', 'description')
 
 
 @admin.register(WorldBankFact)

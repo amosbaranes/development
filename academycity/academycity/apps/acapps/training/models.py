@@ -318,6 +318,26 @@ class TestsForVariables(TruncateTableMixin, models.Model):
         return str(self.test_number)
 #
 
+#
+class ComplianceWithPlans(TruncateTableMixin, models.Model):
+    class Meta:
+        verbose_name = 'compliance_with_plan'
+        verbose_name_plural = 'compliance_with_plans'
+        ordering = ['week']
+    battalion = models.ForeignKey(Battalions, on_delete=models.CASCADE, default=1, related_name='battalion_compliance_with_plans')
+    week = models.TextField(blank=True, null=True)
+    description = models.TextField(blank=True, null=True)
+
+class ComplianceDay(TruncateTableMixin, models.Model):
+    class Meta:
+        verbose_name = 'compliance_day'
+        verbose_name_plural = 'compliance_days'
+
+    time_dim = models.ForeignKey(TimeDim, on_delete=models.CASCADE, default=1, related_name='time_dim_compliance_day')
+    company = models.ForeignKey(Companys, on_delete=models.CASCADE, default=1, related_name='company_compliance_days')
+    compliance_with_plan = models.ForeignKey(ComplianceWithPlans, on_delete=models.CASCADE, default=1, related_name='compliance_with_plan_compliance_days')
+
+
 # To Be Deleted ###
 class TestsStructures(TruncateTableMixin, models.Model):
     class Meta:
@@ -332,6 +352,7 @@ class TestsStructures(TruncateTableMixin, models.Model):
     def __str__(self):
         return str(self.battalion)
 
+
 # ToBeDeleted
 class Tests(TruncateTableMixin, models.Model):
     class Meta:
@@ -341,7 +362,9 @@ class Tests(TruncateTableMixin, models.Model):
     soldier = models.ForeignKey(Soldiers, on_delete=models.CASCADE, default=1, related_name='soldier_tests')
     test = models.PositiveSmallIntegerField(default=0)
     grade = models.PositiveSmallIntegerField(default=0)
+#
 
+#
 class DoubleShoot(TruncateTableMixin, models.Model):
     soldier = models.OneToOneField(Soldiers, on_delete=models.CASCADE, default=1,
                                    related_name='soldier_double_shoot')
@@ -352,7 +375,6 @@ class DoubleShoot(TruncateTableMixin, models.Model):
         return str(self.id) + ": " + str(self.double_shoot_id)
 
 # class PlanningVsExecution(TruncateTableMixin, models.Model):
-
 
 class SoldierFact(TruncateTableMixin, models.Model):
     class Meta:

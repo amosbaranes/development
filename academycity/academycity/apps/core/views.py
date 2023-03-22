@@ -365,10 +365,10 @@ def update_field_model_by_id(request, foreign=None):
 def get_data_link(request):
     dic_ = request.POST["dic"]
     dic_ = eval(dic_)
-    # try:
-    #     print('9050-1 core views get_data_link dic_= ', dic_, '\n', dic_["fields"])
-    # except Exception as ex:
-    #     pass
+    try:
+        print('9050-1 core views get_data_link dic_= ', dic_, '\n', dic_["fields"])
+    except Exception as ex:
+        pass
 
     multiple_select_fields = None
     if "multiple_select_fields" in dic_:
@@ -473,12 +473,14 @@ def get_data_link(request):
             foreign_table_ = ""
             try:
                 foreign_table_ = filters[f]["foreign_table"]
+                print(foreign_table_)
             except Exception as exx:
                 pass
                 # print(exx)
             if filter_value_ != "":
                 if foreign_table_ != "":
-                    filter_field_ = "id"
+                    if filter_field_ == "":
+                        filter_field_ = "id"
                     s += '.filter('+foreign_table_+'__'+filter_field_+'__icontains='+filter_value_+')'
                 else:
                     s += '.filter('+filter_field_+'__icontains="'+filter_value_+'")'
@@ -567,6 +569,7 @@ def upload_file(request):
     ret = {}
     if upload_file_:
         filename = request.POST['filename']
+        sheet_name_ = request.POST['sheet_name']
         # print("9005-1", filename, "\n", "-"*30)
         log_debug("upload_file 1111: "+filename)
         app_ = request.POST['app']
@@ -645,7 +648,7 @@ def upload_file(request):
             pass
 
         add_dic = {"obj": obj_name_, "app": app_, "fun": function_name_,
-                   "params": {"request": request, "folder_type": folder_type_, "app": app_, "cube_dic": cube_dic},
+                   "params": {"request": request, "folder_type": folder_type_, "sheet_name": sheet_name_, "app": app_, "cube_dic": cube_dic},
                    "obj_param": {"topic_id": topic_id_, "app": app_}}
         try:
             add_dic["obj_param"]["country_model"] = cube_dic["dimensions"]["country_dim"]["model"]

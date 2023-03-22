@@ -11,6 +11,7 @@ import time
 import shutil
 from statistics import mean
 import pickle
+from django.db.models import Q
 #
 from ...core.utils import Debug
 #
@@ -104,11 +105,8 @@ class BaseDataProcessing(object):
 
         # print("target_folder = self.TO_"+dic["folder_type"].upper())
         self.target_folder = eval("self.TO_" + dic["folder_type"].upper())
-
         filename = dic["request"].POST['filename']
-
-        print(filename)
-
+        # print(filename)
         self.uploaded_filename = filename
         file_path = os.path.join(self.target_folder, filename)
         with open(file_path, 'wb+') as destination:
@@ -181,24 +179,30 @@ class BasePotentialAlgo(object):
         self.is_calculate_min_max = None
 
     def process_algo(self, dic):
-        # print("9015 BasePotentialAlgo process_algo\n", dic)
+        def get_culomns_names(self, l):
+            cs = []
+            for c in l:
+                k_ = str(self.measures_name[self.measures_name["id"] == c]["measure_name"]).split("    ")[1].split("\n")[0]
+                cs.append(k_)
+            return cs
+        # print("9015-1 BasePotentialAlgo process_algo\n", dic)
         app_ = dic["app"]
         fact_model_name_ = dic["fact_model"]
         dependent_group = dic["dependent_group"]
         do_not_include_groups = ["General", "URanking", "UrankingEng", "URankingRes"]
-        print(dependent_group)
+        # print('dependent_group', dependent_group)
         min_max_model_name_ = dic["min_max_model"]
         measure_group_model_name_ = dic["measure_group_model"]
         model_fact = apps.get_model(app_label=app_, model_name=fact_model_name_)
-        try:
-            self.is_calculate_min_max = eval(dic["is_calculate_min_max"])
-            # print(self.is_calculate_min_max)
-        except Exception as ex:
-            print("Error 9016: \n"+str(ex))
-        if not self.is_calculate_min_max:
-            model_min_max = apps.get_model(app_label=app_, model_name=min_max_model_name_)
-        else:
-            self.calculate_min_max_cuts(dic)
+        # try:
+        #     self.is_calculate_min_max = eval(dic["is_calculate_min_max"])
+        #     # print(self.is_calculate_min_max)
+        # except Exception as ex:
+        #     print("Error 9016: \n"+str(ex))
+        # if not self.is_calculate_min_max:
+        model_min_max = apps.get_model(app_label=app_, model_name=min_max_model_name_)
+        # else:
+        #     self.calculate_min_max_cuts(dic)
         model_measure_group = apps.get_model(app_label=app_, model_name=measure_group_model_name_)
 
         # print("90060-10 PotentialAlgo: \n", dic, "\n", "="*50)
@@ -218,66 +222,306 @@ class BasePotentialAlgo(object):
         similarity_n1.columns = self.options
         similarity_n2.columns = self.options
         group_d = ""
-        ll_groups = [dependent_group]
-        for k in groups:
-            group = k.group_name
-            if group not in ll_groups and group not in do_not_include_groups:
-                ll_groups.append(group)
-        lll_groups = []  # this will have only the groups that do not have problems
-        for k in ll_groups:
+        # ll_groups = [dependent_group]
+        # for k in groups:
+        #     group = k.group_name
+        #     if group not in ll_groups and group not in do_not_include_groups:
+        #         ll_groups.append(group)
+        # lll_groups = []  # this will have only the groups that do not have problems
+        # for k in ll_groups:
+        #     group = k #.group_name
+        #     print("="*50)
+        #     print(group)
+        #     # print("="*50)
+        #     try:
+        #         self.save_to_file = os.path.join(self.TO_EXCEL_OUTPUT, str(dic["time_dim_value"]) + "_" + group + "_o.xlsx")
+        #         self.to_save = []
+        #         # print("file_path\n", self.save_to_file, "\n", "="*50)
+        #         s = ""
+        #         for v in dic["axes"]:
+        #             s += "'" + v + "',"
+        #         s += "'" + dic["value"] + "'"
+        #         # print(dic["time_dim_value"])
+        #         qs = model_fact.objects.filter(measure_dim__measure_group_dim__group_name=group,
+        #                                        time_dim_id=dic["time_dim_value"]).all()
+        #         s = "pd.DataFrame(list(qs.values(" + s + ")))"
+        #         df = eval(s)
+        #         if df.shape[0] == 0:
+        #             continue
+        #         # print("50001-21")
+        #         df = df.pivot(index="country_dim", columns='measure_dim', values='amount')
+        #         # print(df)
+        #         # print("50001-22")
+        #         self.df_index = df.index
+        #         df_columns = df.columns
+        #         # print(df)
+        #         # print("50001-22-1")
+        #         df_ = self.add_country_to_df(df)
+        #         self.to_save.append((df_.copy(), 'Data'))
+        #         #
+        #         if not self.is_calculate_min_max:
+        #             qs_mm = model_min_max.objects.filter(measure_dim__measure_group_dim__group_name=group,
+        #                                                  time_dim_id=dic["time_dim_value"]).all()
+        #             df_mm = pd.DataFrame(list(qs_mm.values('measure_dim', 'min', 'max')))
+        #             first_row = pd.DataFrame(df_mm.T.loc["min"]).T.reset_index().drop(['index'], axis=1)
+        #             # print(first_row)
+        #             second_row = pd.DataFrame(df_mm.T.loc["max"]).T.reset_index().drop(['index'], axis=1)
+        #             # print(second_row)
+        #         else:
+        #             df = df.apply(pd.to_numeric, errors='coerce').round(6)
+        #             df_q=df.quantile([0.25, 0.5, 0.75])
+        #             diff_qm25 = df_q.iloc[1].subtract(df_q.iloc[0], fill_value=None)*1.5
+        #             diff_qm75 = df_q.iloc[2].subtract(df_q.iloc[1], fill_value=None)*1.5
+        #             first_row = pd.DataFrame(df_q.iloc[0] - diff_qm25).T
+        #             second_row = pd.DataFrame(df_q.iloc[1] + diff_qm75).T
+        #         first_row.columns = df_columns
+        #         second_row.columns = df_columns
+        #         diff_row = second_row.subtract(first_row, fill_value=None)
+        #         diff_row.columns = df_columns
+        #         # print(first_row)
+        #         # print(second_row)
+        #         # print("4000-2")
+        #         # print("6 df_columns\n", df_columns, "\ndiff_row\n", diff_row, "\n", "="*100)
+        #         df_n1 = df.copy()
+        #         try:
+        #             df_n1 = df_n1.astype(float)
+        #         except Exception as ex:
+        #             print("1000: " + str(ex))
+        #         for i, r in df_n1.iterrows():
+        #             for j in df_columns:
+        #                 try:
+        #                     z = (r[j] - first_row[j].astype(float)) / diff_row[j].astype(float)
+        #                     df_n1.loc[i][j] = z
+        #                 except Exception as ex:
+        #                     print("Error i " + str(i) + " " + str(ex))
+        #         # print("1 df_n1\n", df_n1, "\n", "="*100)
+        #         df_n1 = df_n1.apply(pd.to_numeric, errors='coerce').round(6)
+        #         self.add_to_save(title='Normalized-1', a=df_n1, cols=None)
+        #         #
+        #         # print("50001-2")
+        #         df_n2 = df_n1.copy()
+        #         df_n2[df_n2 < 0] = 0
+        #         df_n2[df_n2 > 1] = 1
+        #         self.add_to_save(title='Normalized-2', a=df_n2, cols=None)
+        #         #
+        #         # print(group)
+        #         if len(df_n1.columns) < 2:
+        #             df_n1["max"] = df_n1[df_n1.columns[0]]  # df_n1["Birth Rate"]
+        #             df_n2["max"] = df_n2[df_n2.columns[0]]  # df_n2["Birth Rate"]
+        #             df_1_2 = pd.merge(left=df_n1, right=df_n2, left_index=True, right_index=True)
+        #             # df_1_2.columns = ['min-n1', 'max-n1', 'min-n2', 'max-n2']
+        #             # cols = df_1_2.columns
+        #             # cols = cols.insert(0, 'country_name')
+        #             # self.add_to_save(title='min-max', a=df_1_2, cols=cols)
+        #         elif len(df_n1.columns) < 5:
+        #             # print("-1"*30)
+        #             # print(group)
+        #             # print("-000"*30)
+        #             df_n1 = df_n1.apply(lambda x: np.sort(x), axis=1, raw=True)
+        #             df_n2 = df_n2.apply(lambda x: np.sort(x), axis=1, raw=True)
+        #             df_n1["max"] = df_n1.max(axis=1)
+        #             df_n1["min"] = df_n1.min(axis=1)
+        #             df_n2["max"] = df_n2.max(axis=1)
+        #             df_n2["min"] = df_n2.min(axis=1)
+        #             # df_n1 = df_n1.drop(df_n1_columns, axis=1)
+        #             # df_n2 = df_n2.drop(df_n2_columns, axis=1)
+        #             df_n1 = df_n1[["min", "max"]]
+        #             df_n2 = df_n2[["min", "max"]]
+        #             df_1_2 = pd.merge(left=df_n1, right=df_n2, left_index=True, right_index=True)
+        #             # df_1_2.columns = ['min-n1', 'max-n1', 'min-n2', 'max-n2']
+        #             # cols = df_1_2.columns
+        #             # cols = cols.insert(0, 'country_name')
+        #             # df_ = self.add_country_to_df(df_1_2, cols)
+        #             # print(df_)
+        #             # self.to_save.append((df_.copy(), 'min-max'))
+        #         else:
+        #             zero_list = {}
+        #             one_list = {}
+        #             # print(df_n1)
+        #             for i in df_n1.index:
+        #                 n0 = []
+        #                 n1 = []
+        #                 for num in df_n1.loc[i]:
+        #                     if not pd.isna(num):
+        #                         if num <= 0:
+        #                             n0.append(num)
+        #                         elif num >= 1:
+        #                             n1.append(num)
+        #                 if len(n0) > 0:
+        #                     # print("n0\n", n0)
+        #                     n0.sort(reverse=True)
+        #                     # print("A n0\n", n0)
+        #                     # print("="*10)
+        #                     zero_list[i] = n0
+        #                 elif len(n1) > 0:
+        #                     n1.sort()
+        #                     one_list[i] = n1
+        #             # # #
+        #             a = df_n2.values
+        #             a_1 = a.copy()
+        #             a_1.sort(axis=1)
+        #             self.add_to_save(title='Sort L', a=a_1, cols=-1)
+        #             a_1 = self.clean_rows(a=a_1, j=1, side="L")
+        #             #
+        #             a_1m = pd.DataFrame(a_1)
+        #             a_1m = a_1m.apply(self.move_elements_to_right, axis=1)
+        #             a_1m = a_1m.apply(self.revers_elements_in_row, axis=1)
+        #             self.add_to_save(title='R arranged', a=a_1m, cols=-1)
+        #             #
+        #             a_1 = -1 * a_1.copy()
+        #             a_1.sort(axis=1)
+        #             self.add_to_save(title='Sort R', a=a_1, cols=-1)
+        #             a_1 = self.clean_rows(a=a_1, j=1, side="R")
+        #             a_1 = -1 * a_1.copy()
+        #             a_1.sort(axis=1)
+        #             #
+        #             # move the numbers to the right.
+        #             # a_1 = pd.DataFrame(a_1)
+        #             # a_1 = a_1.apply(self.revers_elements_in_row, axis=1)
+        #             # print(a_1)
+        #             #
+        #             self.add_to_save(title='Final R', a=a_1, cols=-1)
+        #             # print(a_1)
+        #             # a_1 = -1 * a_1
+        #             # a_1 = a_1.apply(self.revers_elements_in_row, axis=1)
+        #             # a_1.sort(axis=1)  #
+        #             # self.add_to_save(title='Final-1', a=a_1, cols=-1)
+        #             # # #
+        #             a_1 = pd.DataFrame(a_1)
+        #             a_1.dropna(how='all', axis=1, inplace=True)
+        #             # print("600000000-100-1")
+        #             #
+        #             a_1 = a_1.apply(self.twenty_rule, axis=1)
+        #             # print("600000000-100-12")
+        #             a_1 = a_1.apply(lambda x: np.sort(x), axis=1, raw=True)
+        #             # print("600000000-100-13")
+        #             self.add_to_save(title='Final-20-rule', a=a_1, cols=-1)
+        #
+        #             # print("600000000-100-2")
+        #
+        #             a_1 = a_1.apply(self.twentyfive_rule, axis=1)
+        #             self.add_to_save(title='Final-25-rule', a=a_1, cols=-1)
+        #             a_2 = a_1.copy()
+        #             #
+        #             # print("zero_list\n", zero_list)
+        #             ff = []
+        #             for j in a_1.index:
+        #                 nn = list(a_1.loc[j])
+        #                 # print("nn == \n", nn)
+        #                 if min(nn) == 0:
+        #                     # print("nn zero_list[j]\n", zero_list[j])
+        #                     nn = [zero_list[j].pop(0) if i == 0 else i for i in nn]
+        #                     # print("nn 0\n", nn)
+        #                 if max(nn) == 1:
+        #                     nn = [one_list[j].pop() if i == 1 else i for i in nn]
+        #                     # print("nn 1\n", nn)
+        #                 # nn.insert(0, j)
+        #                 nn.sort()
+        #                 ff.append(nn)
+        #             self.add_to_save(title='Final-25-rule-n1', a=ff, cols=-1)
+        #             a_1 = pd.DataFrame(ff, index=list(self.df_index))
+        #             #
+        #             df_n1 = a_1.apply(self.min_max_rule, axis=1)
+        #             df_n1.columns = ['min-n1', 'max-n1']
+        #             #
+        #             df_n2 = a_2.apply(self.min_max_rule, axis=1)
+        #             df_n2.columns = ['min-n2', 'max-n2']
+        #             df_1_2 = pd.merge(left=df_n1, right=df_n2, left_index=True, right_index=True)
+        #         # print("50001-3")
+        #
+        #         df_1_2.columns = ['min-n1', 'max-n1', 'min-n2', 'max-n2']
+        #         cols = df_1_2.columns
+        #         cols = cols.insert(0, 'country_name')
+        #         # print("50001-3-6")
+        #         self.add_to_save(title='min-max', a=df_1_2, cols=cols)
+        #         # self.add_to_save(title='min-max', a=df_1_2, cols=-1)
+        #         # print("50001-3-9")
+        #         self.save_to_excel_()
+        #
+        #         # print("50001-3-9-1")
+        #     except Exception as ex:
+        #         print("Error 50001-135: " + str(ex))
+        #     df_n1_ = df_n1.copy()
+        #     df_n1_.columns = ['m-' + group, 'x-' + group]
+        #     df_n2_ = df_n2.copy()
+        #     df_n2_.columns = ['m-' + group, 'x-' + group]
+        #     if group == dependent_group:
+        #         ss_n_mm = ""
+        #         ss_n_xm = ""
+        #         ss_n_mx = ""
+        #         ss_n_xx = ""
+        #         group_d = group
+        #         df_n1_all = df_n1_
+        #         df_n2_all = df_n2_
+        #     else:
+        #         # print(group_d, group)
+        #         group_d, group, df_n1_all, df_n2_all, df_n1_, df_n2_, sign_n1, sign_n2, similarity_n1, similarity_n2 = \
+        #             self.create_similarity(group_d, group, df_n1_all, df_n2_all, df_n1_, df_n2_, sign_n1, sign_n2,
+        #                                    similarity_n1, similarity_n2)
+        #         ss_n_mm += '"' + group_d + '-' + group + '-mm",'
+        #         ss_n_mx += '"' + group_d + '-' + group + '-mx",'
+        #         ss_n_xm += '"' + group_d + '-' + group + '-xm",'
+        #         ss_n_xx += '"' + group_d + '-' + group + '-xx",'
+        #     lll_groups.append(group)
+
+        ll_dfs = self.pre_process_data(dic)
+        # print(ll_dfs)
+
+        lll_groups = []
+        for k in ll_dfs:
             group = k #.group_name
-            print("="*50)
-            print(group)
+            # print("="*50)
+            # print(group)
             # print("="*50)
             try:
                 self.save_to_file = os.path.join(self.TO_EXCEL_OUTPUT, str(dic["time_dim_value"]) + "_" + group + "_o.xlsx")
                 self.to_save = []
                 # print("file_path\n", self.save_to_file, "\n", "="*50)
                 s = ""
-                for v in dic["axes"]:
-                    s += "'" + v + "',"
-                s += "'" + dic["value"] + "'"
-                # print(dic["time_dim_value"])
-                qs = model_fact.objects.filter(measure_dim__measure_group_dim__group_name=group,
-                                               time_dim_id=dic["time_dim_value"]).all()
-                s = "pd.DataFrame(list(qs.values(" + s + ")))"
-                df = eval(s)
-                if df.shape[0] == 0:
-                    continue
-                # print("50001-21")
-                df = df.pivot(index="country_dim", columns='measure_dim', values='amount')
-                # print(df)
-                # print("50001-22")
-                self.df_index = df.index
+                # for v in dic["axes"]:
+                #     s += "'" + v + "',"
+                # s += "'" + dic["value"] + "'"
+                # # print(dic["time_dim_value"])
+                # qs = model_fact.objects.filter(measure_dim__measure_group_dim__group_name=group,
+                #                                time_dim_id=dic["time_dim_value"]).all()
+                # s = "pd.DataFrame(list(qs.values(" + s + ")))"
+                # df = eval(s)
+                # if df.shape[0] == 0:
+                #     continue
+                # # print("50001-21")
+                # df = df.pivot(index="country_dim", columns='measure_dim', values='amount')
+                # # print(df)
+                # # print("50001-22")
+                # self.df_index = df.index
+                # df_columns = df.columns
+                # # print(df)
+                # # print("50001-22-1")
+                # df_ = self.add_country_to_df(df)
+                # self.to_save.append((df_.copy(), 'Data'))
+                # #
+                # if not self.is_calculate_min_max:
+
+                df = ll_dfs[group]
                 df_columns = df.columns
-                # print(df)
-                # print("50001-22-1")
+                self.df_index = df.index
+                # print(self.df_index)
                 df_ = self.add_country_to_df(df)
                 self.to_save.append((df_.copy(), 'Data'))
-                #
-                if not self.is_calculate_min_max:
-                    qs_mm = model_min_max.objects.filter(measure_dim__measure_group_dim__group_name=group,
-                                                         time_dim_id=dic["time_dim_value"]).all()
-                    df_mm = pd.DataFrame(list(qs_mm.values('measure_dim', 'min', 'max')))
-                    first_row = pd.DataFrame(df_mm.T.loc["min"]).T.reset_index().drop(['index'], axis=1)
-                    # print(first_row)
-                    second_row = pd.DataFrame(df_mm.T.loc["max"]).T.reset_index().drop(['index'], axis=1)
-                    # print(second_row)
-                else:
-                    df = df.apply(pd.to_numeric, errors='coerce').round(6)
-                    df_q=df.quantile([0.25, 0.5, 0.75])
-                    diff_qm25 = df_q.iloc[1].subtract(df_q.iloc[0], fill_value=None)*1.5
-                    diff_qm75 = df_q.iloc[2].subtract(df_q.iloc[1], fill_value=None)*1.5
-                    first_row = pd.DataFrame(df_q.iloc[0] - diff_qm25).T
-                    second_row = pd.DataFrame(df_q.iloc[1] + diff_qm75).T
+
+                qs_mm = model_min_max.objects.filter(measure_dim__measure_group_dim__group_name=group,
+                                                     time_dim_id=dic["time_dim_value"]).all()
+                df_mm = pd.DataFrame(list(qs_mm.values('measure_dim', 'min', 'max')))
+                first_row = pd.DataFrame(df_mm.T.loc["min"]).T.reset_index().drop(['index'], axis=1)
+                second_row = pd.DataFrame(df_mm.T.loc["max"]).T.reset_index().drop(['index'], axis=1)
+
                 first_row.columns = df_columns
                 second_row.columns = df_columns
                 diff_row = second_row.subtract(first_row, fill_value=None)
                 diff_row.columns = df_columns
-                # print(first_row)
-                # print(second_row)
-                # print("4000-2")
-                # print("6 df_columns\n", df_columns, "\ndiff_row\n", diff_row, "\n", "="*100)
+                df = ll_dfs[group]
+                df_columns = df.columns
+                # print(df.columns, df_columns)
+                # print(df)
                 df_n1 = df.copy()
                 try:
                     df_n1 = df_n1.astype(float)
@@ -300,7 +544,6 @@ class BasePotentialAlgo(object):
                 df_n2[df_n2 > 1] = 1
                 self.add_to_save(title='Normalized-2', a=df_n2, cols=None)
                 #
-                # print(group)
                 if len(df_n1.columns) < 2:
                     df_n1["max"] = df_n1[df_n1.columns[0]]  # df_n1["Birth Rate"]
                     df_n2["max"] = df_n2[df_n2.columns[0]]  # df_n2["Birth Rate"]
@@ -424,7 +667,6 @@ class BasePotentialAlgo(object):
                     df_n2.columns = ['min-n2', 'max-n2']
                     df_1_2 = pd.merge(left=df_n1, right=df_n2, left_index=True, right_index=True)
                 # print("50001-3")
-
                 df_1_2.columns = ['min-n1', 'max-n1', 'min-n2', 'max-n2']
                 cols = df_1_2.columns
                 cols = cols.insert(0, 'country_name')
@@ -459,6 +701,13 @@ class BasePotentialAlgo(object):
                 ss_n_xm += '"' + group_d + '-' + group + '-xm",'
                 ss_n_xx += '"' + group_d + '-' + group + '-xx",'
             lll_groups.append(group)
+        qs_mm = model_min_max.objects.filter(measure_dim__measure_group_dim__group_name=group,
+                                             time_dim_id=dic["time_dim_value"]).all()
+        df_mm = pd.DataFrame(list(qs_mm.values('measure_dim', 'min', 'max')))
+        first_row = pd.DataFrame(df_mm.T.loc["min"]).T.reset_index().drop(['index'], axis=1)
+        # print(first_row)
+        second_row = pd.DataFrame(df_mm.T.loc["max"]).T.reset_index().drop(['index'], axis=1)
+
         ss_n_mm = ss_n_mm[:-1]
         ss_n_mx = ss_n_mx[:-1]
         ss_n_xm = ss_n_xm[:-1]
@@ -480,8 +729,8 @@ class BasePotentialAlgo(object):
             for k in lll_groups:
                 try:
                     group = k #.group_name
-                    print("-"*10)
-                    print(group)
+                    # print("-"*10)
+                    # print(group)
                     if nn__ > 0:
                         ll = []
                         for z in self.options:
@@ -500,11 +749,11 @@ class BasePotentialAlgo(object):
                         nn__ += 1
                 except Exception as ex:
                     print("Error 50008-8: " + str(ex))
-            print("="*100)
+            # print("="*100)
             self.add_to_save_all(title="all-n" + n, a=eval("df_n" + n + "_all"), cols=-1)
             exec("contribution_n" + n + ".columns = self.options")
             exec("contribution_n" + n + ".drop([0], axis=0, inplace=True)")
-            print("=1"*50)
+            # print("=1"*50)
             npg = np.array(llg)
             npgs = np.sum(llg, axis=0)
             df_relimp = pd.DataFrame(npg/npgs, index=contribution_n1.index)
@@ -512,276 +761,383 @@ class BasePotentialAlgo(object):
             # print(df_relimp)
             self.add_to_save_all(title='contribution-n' + n, a=eval("contribution_n" + n), cols=-1)
             self.add_to_save_all(title='relimp-n' + n, a=df_relimp, cols=-1)
-            print("=2"*50)
+            # print("=2"*50)
         self.save_to_excel_all_(dic["time_dim_value"])
         result = {"status": "ok"}
         return result
 
-    def calculate_min_max_cuts(self, dic):
-        print("90066-106 PotentialAlgo calculate_min_max_cuts: \n", dic, "\n", "="*50)
+    def get_dim_data_frame(self, dic):
+        # print("90066-106 PotentialAlgo calculate_min_max_cuts: \n", dic, "\n", "="*50)
+
+        # dic =  {'app': 'avi', 'filter_dim': 'time_dim', 'filter_value': 2019, 'value': 'amount',
+        #         'axes': ['country_dim', 'measure_dim'],
+        #         'model_name': 'worldbankfact', 'filter_amount': 1000000, 'measure_id': '19',
+        #         'measure_name': 'TotalPop'}
+        app_ = dic["app"]
+        filter_dim = dic["filter_dim"]
+        filter_value = dic["filter_value"]
+        value_ = dic["value"]
+        axes_ = dic["axes"]
+        model_name = dic["model_name"]
+        filter_amount = dic["filter_amount"]  # 1000000
+        measure_id = dic["measure_id"]
+        #
+        return_dim = ""
+        for k in axes_:
+            if k not in ["measure_dim", filter_dim]:
+                return_dim = k
+        #
+        model = apps.get_model(app_label=app_, model_name=model_name)
+
+        if measure_id is None or measure_id == "":
+            measure_name = dic["measure_name"]
+            s = 'model.objects.filter(measure_dim__measure_name="'+measure_name+'", '
+        else:
+            # print(measure_id)
+            s = 'model.objects.filter(measure_dim='+measure_id+', '
+        s += filter_dim+'='+str(filter_value)+', amount__gte='+str(filter_amount)+').all()'
+        # print(s)
+        qs = eval(s)
+        df = pd.DataFrame(list(qs.values(return_dim+"_id", value_)))
+        # print(df)
+        # print(df[return_dim+"_id"].tolist())
+
+        # print(df.shape)
+        # df=df[df["amount"]>filter_amount]
+        # print(df.shape)
+
+        result = {"status": "ok", "result": [df, df[return_dim+"_id"].tolist()]}
+        return result
+
+    def convert_total_to_per_capita(self, f, df_var, df_countries):
+        # print("="*100)
+        df_ = df_var.reset_index()
+        # print(df_var, "\n" , df_)
+        df_ = df_.merge(df_countries, how='inner', left_on='country_dim', right_on='country_dim_id')
+        # .drop(['country_dim', 'id'], axis=1)
+        # print(df_)
+        df_["pc"] = df_[f]/df_["amount"].astype(float)
+        # print(df_, "\n", "-"*10)
+        df_ = df_.drop(['country_dim_id', 'amount', f], axis=1)
+        df_ = df_.set_index('country_dim')
+        #
+        # print(df_, "\n", "="*50)
+
+        return df_
+
+    def multiply_two_variables(self, f__, df_var1, f__2, df_var2):
+        # print("="*100)
+        df_var1 = df_var1.reset_index()
+        df_var2 = df_var2.reset_index()
+        # print("\n", df_var1, "\n", df_var2, "\n", "="*50)
+
+        df_ = df_var1.merge(df_var2, how='inner', left_on='country_dim', right_on='country_dim')
+        # print(df_)
+        df_["m"] = df_[f__].astype(float)*df_[f__2].astype(float)
+        df_ = df_.drop([f__, f__2], axis=1)
+        # print(df_)
+        df_ = df_.set_index('country_dim')
+        # print(df_)
+
+        return df_
+
+    def pre_process_data(self, dic):
+        # print("90033-133 pre_process_data: \n", dic, "\n", "="*50)
         app_ = dic["app"]
         fact_model_name_ = dic["fact_model"]
-        dependent_group = dic["dependent_group"]
-        do_not_include_groups = ["General"]
-        print(dependent_group)
         year_ = str(dic["time_dim_value"])
-        print(year_)
-        min_max_model_name_ = dic["min_max_model"]
+        dic_ = {'app': app_, 'filter_dim': 'time_dim', 'filter_value': year_, 'value': 'amount',
+                'axes': ['country_dim', 'measure_dim'],
+                'model_name': 'worldbankfact',
+                'filter_amount': dic["population_filter_amount"], 'measure_id': None,
+                'measure_name': dic["measure_name"]}
+        # print(dic_)
+        returned_ = self.get_dim_data_frame(dic_)
+        country_list = returned_["result"][1]
+        df_countries = returned_["result"][0]
+        # print(country_list)
+
         measure_group_model_name_ = dic["measure_group_model"]
+        dependent_group = dic["dependent_group"]
         model_fact = apps.get_model(app_label=app_, model_name=fact_model_name_)
         model_measure_group = apps.get_model(app_label=app_, model_name=measure_group_model_name_)
-        wb2 = None
-        groups = model_measure_group.objects.all()
+        #
+        do_not_include_measures = ["URanking",
+                                   "URankingRes"]  # URanking=13, 17, 9 ; URankingRes=10, 12 ; URankingEng I removed only 18
+        #  "thescore", "shanghai", "GasPerGDP", "shanghaiEng"]
+        total_variables = [3,
+                           9, 13, 17,
+                           14, 15, 16, 18,
+                           10, 12,
+                           33, 38,
+                           43, 44,
+                           54,
+                           2, 4, 11,
+                           57, 58, 59, 60,
+                           21, 48]
+        multiply_two_variables = {"var1": [50, 51], "var2": [23, 23], "var2_group": ["GDP", "GDP"]}
 
-        sign_ = pd.DataFrame([[0, 0, 0, 0]])
-        sign_.columns = self.options
-        similarity_ = pd.DataFrame([[0, 0, 0, 0]])
-        similarity_.columns = self.options
-
+        # AllRePub:      3=OECD#AllRePub
+        # URanking:      9=cwurscore 13=thescore 17=shanghai
+        # URankingEng:   14=ResScholars, 15=ResPub, 16=ResDIndex, 18=shanghaiEng
+        # URankingRes:   10=cwurresearch, 12=theresearch
+        # General:       19=TotalPop
+        # GDP PerCapita: 23-31
+        # RandD:         35=ResearchersPMP 36=	TechniciansPMP
+        # Military:      33=MExpCUS$ 38=ArmedFPT
+        # Industry:      43=IndC2015$ 44=IndCUS$
+        # ** NaturalRes:  50=GasPerGDP, 51=TNRPerGDP need to multiply by GDP per capita
+        # Science:       54=SciTechJA
+        # AI:            2=OECD#AIRePub 4=OECD#AIPub 11=oxford
+        # Exports:       57=GSCUS$ 58=GSPIBOPCUS$ 59=MerCUS$ 60=GSBOPCUS$
+        # Technology:    21=HighTech 48=ICT
+        do_not_include_measures_objs = [] # 13, 17 ,12]  # , [9], [10] , [18]  # , 35, 50] # model_deasuredim.objects.filter(measure_name__in=do_not_include_measures)
+        do_not_include_groups = ["General"]  # , "URankingEng", "URankingRes", "URanking", "RandD"]
+        #
+        groups = model_measure_group.objects.filter(~Q(group_name__in=do_not_include_groups)).all()
         ll_groups = [dependent_group]
         for k in groups:
             group = k.group_name
             if group not in ll_groups and group not in do_not_include_groups:
                 ll_groups.append(group)
         lll_groups = []  # this will have only the groups that do not have problems (have data)
-        ll_dfs = {}
-        best_cut = {}
+        ll_dfs = {}  # includes all the df of all groups with data
         for k in ll_groups:
-            group = k #.group_name
-            # print("="*50, "\n", group, "\n", "="*50)
+            # print("="*50, "\n", k, "\n", "="*50)
             try:
                 s = ""
                 for v in dic["axes"]:
                     s += "'" + v + "',"
                 s += "'" + dic["value"] + "'"
-                qs = model_fact.objects.filter(measure_dim__measure_group_dim__group_name=group,
-                                               time_dim_id=year_).all()
+                qs = model_fact.objects.filter(measure_dim__measure_group_dim__group_name=k,
+                                               time_dim_id=year_,
+                                               country_dim_id__in=country_list).filter(
+                    ~Q(measure_dim__in=do_not_include_measures_objs)).all()
                 s = "pd.DataFrame(list(qs.values(" + s + ")))"
                 df = eval(s)
+                # print(df)
                 if df.shape[0] == 0:
                     continue
-                lll_groups.append(group)
-                if group != dependent_group:
-                    best_cut[group] = {}
+                lll_groups.append(k)
                 df = df.pivot(index="country_dim", columns='measure_dim', values='amount')
-                # print("="*50, "\n", df, "\n", "="*50)
-                ll_dfs[group] = df.apply(pd.to_numeric, errors='coerce').round(6)
+                ll_dfs[k] = df.apply(pd.to_numeric, errors='coerce').round(6)
+                for f__ in ll_dfs[k]:
+                    # print(f__)
+                    if f__ in total_variables:
+                        ll_dfs[k][f__] = self.convert_total_to_per_capita(f__, ll_dfs[k][f__], df_countries)
+                    elif f__ in multiply_two_variables["var1"]:
+                        # print("two1 : ", f__, multiply_two_variables["var1"].index(f__))
+                        idx__ = multiply_two_variables["var1"].index(f__)
+                        f__var2 = multiply_two_variables["var2"][idx__]
+                        f__var2_group = multiply_two_variables["var2_group"][idx__]
+                        # print("two2: ", f__, f__var2, f__var2_group)
+                        # print("two3: ", k, f__, f__var2, "\n")
+                        ll_dfs[k][f__] = self.multiply_two_variables(f__, ll_dfs[k][f__], f__var2,
+                                                                     ll_dfs[f__var2_group][f__var2])
+                        # print("two4: ", k, f__, f__var2, "\n", ll_dfs[k][f__])
             except Exception as ex:
                 print("Error 50661-12 PotentialAlgo calculate_min_max_cuts: " + str(ex))
 
-        print("-=" * 30)
+        return ll_dfs
+
+    def calculate_min_max_cuts(self, dic):
+        print("90066-100 PotentialAlgo calculate_min_max_cuts: \n", dic, "\n", "="*50)
+        app_ = dic["app"]
+        f = int(dic["dim_field"])
+        dependent_group = dic["dependent_group"]
+        year_ = str(dic["time_dim_value"])
+        min_max_model_name_ = dic["min_max_model"]
+        #
+        ll_dfs = self.pre_process_data(dic)
+
+        #
+        # sign_ = pd.DataFrame([[0, 0, 0, 0]])
+        # sign_.columns = self.options
+        # similarity_ = pd.DataFrame([[0, 0, 0, 0]])
+        # similarity_.columns = self.options
+
         high_group_cut = [0.4, 0.30, 0.2, 0.1]
         low_group_cut = [0.4, 0.30, 0.2, 0.1]
-        stepo = 0.1
-        stepi = 0.05
+        steps = [0.95, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1]
         df_d = ll_dfs[dependent_group]
-        # print("-"*50, "\n", df_d, "\n", "-"*50, "\n")
-
         results = {}
-        n___ = 0
+        best_cut = {"bv": -1}
         for h in high_group_cut:
             hh = 1- h
-            while hh <= .95:
-                hh = round(hh*100)/100
-                results[hh] = {}
-                for l in low_group_cut:
-                    ll = l
-                    while ll >= 0.05:
-                        ll = round(ll*100)/100
-                        results[hh][ll] = {}
-                        df_q = df_d.quantile([hh, ll])
-                        # print("-" * 10, df_q, "\n", "=" * 50, "\n")
-                        for f in df_d:
-                            # print(df_q[f].iloc[0], df_q[f].iloc[1])
-                            results[hh][ll][f] = {}
-                            results[hh][ll][f]["max_cut"] = df_q[f].iloc[0]
-                            results[hh][ll][f]["min_cut"] = df_q[f].iloc[1]
-                            df_hi = df_d[df_d[f] >= df_q[f].iloc[0]].index
-                            df_li = df_d[df_d[f] <= df_q[f].iloc[1]].index
-                            # print(df_i)
-                            # print("-i"*30)
-                            results[hh][ll][f]["groups"] = {}
-                            for g in ll_dfs:
-                                if g != dependent_group:
-                                    if f not in best_cut[g]:
-                                        best_cut[g][f] = {"mean_similarity": -1}
-                                    results[hh][ll][f]["groups"][g] = {}
-                                    df = ll_dfs[g]
-                                    iih = []
-                                    iil = []
-                                    for j in df.index:
-                                        if j in df_hi:
-                                            iih.append(j)
-                                        if j in df_li:
-                                            iil.append(j)
+            results[hh] = {}
+            for ll in low_group_cut:
+                results[hh][ll] = {}
+                df_q = df_d.quantile([hh, ll])
+                # print("df_d.shape", df_d.shape)
+                # print("df_q", df_q)
 
-                                    # print(g, "\n", "-"*30, "\n", df,"\n", df.shape, "\n", "="*30)
-                                    dfh = df.loc[iih]
-                                    dfl = df.loc[iil]
-                                    # print(dfh,"\n", dfl,"\n", dfh.shape, dfl.shape)
-                                    # print("==df"*30)
-                                    dfhm = dfh.min()
-                                    dflm = dfl.max()
-                                    n__ = 0
-                                    is_evaluate = True
-                                    for ff in dfhm:
-                                        ffn = dfhm.index[n__]
-                                        results[hh][ll][f]["groups"][g][ffn] = {}
-                                        if str(ff) == "nan":
-                                            ff = np.nan
-                                            is_evaluate = False
-                                        try:
-                                            results[hh][ll][f]["groups"][g][ffn]["max_cut"] = ff
-                                        except Exception as ex:
-                                            print(ex)
-                                        n__ += 1
-                                    n__ = 0
-                                    for ff in dflm:
-                                        if str(ff) == "nan":
-                                            ff = np.nan
-                                            is_evaluate = False
-                                        ffn = dflm.index[n__]
-                                        if ffn not in results[hh][ll][f]["groups"][g]:
-                                            results[hh][ll][f]["groups"][g][ffn] = {}
-                                        results[hh][ll][f]["groups"][g][ffn]["min_cut"] = ff
-                                        n__ += 1
-                                    # print(results[hh][ll][f]["groups"][g])
-                                    # print("-"*100, "\n", hh, ll, g, "\n", "-"*10,
-                                    #       "\n",results[hh][ll][f], "\n", "-"*10,
-                                    #       "\n",results[hh][ll][f]["groups"][g],
-                                    #       "\n", "-"*10)
-                                    dic = {"f": f, "g": g, "df_d": df_d, "ll_dfs": ll_dfs, "mmf": results[hh][ll][f]}
-                                    # if n___ < 15:
-                                    if is_evaluate:
-                                        self.get_similarity(dic)
-                                        print(results[hh][ll][f]["groups"][g]["mean_similarity"])
-                                    else:
-                                        results[hh][ll][f]["groups"][g]["mean_similarity"] = -1
-                                        # n___ += 1
-                                    sim_ = results[hh][ll][f]["groups"][g]["mean_similarity"]
-                                    if sim_ > best_cut[g][f]["mean_similarity"]:
-                                        best_cut[g][f]["mean_similarity"] = sim_
-                                        best_cut[g][f]["mm_cut"] = results[hh][ll][f]["groups"][g]
-                        ll -= 0.05
-                hh += 0.05
-        print(results)
-        print("="*30)
-        print(best_cut)
-        file_path = os.path.join(self.PICKLE_PATH, "results_"+year_+".pkl")
+                results[hh][ll][f] = {}
+                # results[hh][ll][f]["max_cut"] = df_q[f].iloc[0]
+                # results[hh][ll][f]["min_cut"] = df_q[f].iloc[1]
+                df_hi = df_d[df_d[f] >= df_q[f].iloc[0]].index
+                df_li = df_d[df_d[f] <= df_q[f].iloc[1]].index
+                # print("df", "\n", df_d[df_d[f] >= df_q[f].iloc[0]], "\n\n")
+                # print("df", "\n", df_d[df_d[f] >= df_q[f].iloc[0]].index, "\n\n")
+
+                # print("df", "\n", float(df_d[df_d[f] >= df_q[f].iloc[0]][f].median()), "\n")
+
+                # results[hh][ll][f]["max_cut"] = float(df_d[df_d[f] >= df_q[f].iloc[0]][f].median())
+                # results[hh][ll][f]["min_cut"] = float(df_d[df_d[f] <= df_q[f].iloc[1]][f].median())
+
+                for steph in steps:
+                    for stepl in steps:
+                        for g in ll_dfs:
+                            # if g != dependent_group:
+                            df = ll_dfs[g]
+                            # print("\n",g, "\n",df.columns)
+                            iih = []
+                            iil = []
+                            for j in df.index:
+                                if j in df_hi:
+                                    iih.append(j)
+                                if j in df_li:
+                                    iil.append(j)
+                            dfh = df.loc[iih]
+                            dfl = df.loc[iil]
+                            dfh_q = dfh.quantile(steph)
+                            dfl_q = dfl.quantile(stepl)
+                            # print('dfh, dfh', 'steph ', steph, 'dfh_q ', dfh_q)
+                            # , '\n', 'dfl', dfl, 'stepl', stepl, 'dfl_q', dfl_q)
+
+                            if steph not in results[hh][ll][f]:
+                                results[hh][ll][f][steph] = {}
+                            if stepl not in results[hh][ll][f][steph]:
+                                results[hh][ll][f][steph][stepl] = {}
+                                results[hh][ll][f][steph][stepl]["groups"] = {}
+                            if g not in results[hh][ll][f][steph][stepl]["groups"]:
+                                results[hh][ll][f][steph][stepl]["groups"][g] = {}
+
+                            for k in df.columns:
+                                # print(steph, stepl, k, dfh_q[k], dfl_q[k])
+                                dfh_ik = dfh[dfh[k] >= dfh_q[k]][k]
+                                dfl_ik = dfl[dfl[k] <= dfl_q[k]][k]
+                                # print('dfh[dfh[k] >= dfh_q[k]]', dfh[dfh[k] >= dfh_q[k]].index, 'dfh_ik.median()', dfh_ik.median(), 'dfl_ik.median()', dfl_ik.median())
+                                # print('g, k, dfh_ik.shape', g, k, dfh_ik.shape)
+                                if dfh_ik.shape == 0 or dfl_ik.shape == 0:
+                                    continue
+                                results[hh][ll][f][steph][stepl]["groups"][g][k] = {"min_cut": dfl_ik.median(), "max_cut": dfh_ik.median()}
+                        # print(results)
+                        dic = {"dependent_group": dependent_group, "f":f, "steph":steph, "stepl":stepl, "df_d": df_d, "ll_dfs": ll_dfs, "groups": results[hh][ll][f]}
+                        bv = self.get_similarity(dic)
+                        if bv > best_cut["bv"]:
+                            best_cut = {"bv": bv, "hh": hh, "ll": ll, "steph":steph, "stepl":stepl, "f":f,
+                                        "dependent_group": dependent_group, "year": year_,
+                                        "f_groups":results[hh][ll][f][steph][stepl]["groups"]}
+
+                            # print('best_cut\n', 'hh', hh, 'll', ll, 'results 1 steph', steph, 'stepl', stepl, "dv", bv, "\n",
+                            #       best_cut)
+                        print('hh', hh, 'll', ll, 'results 1 steph', steph, 'stepl', stepl, 'dv', bv, 'best', best_cut['bv'])
+
+        print("="*100)
+        best_cut["df_d"] = df_d
+        print("final", best_cut)
+        print("="*100)
+        #
+        file_path = os.path.join(self.PICKLE_PATH, "result_"+str(f)+"_"+year_+".pkl")
         print(file_path)
         with open(file_path, 'wb') as handle:
             pickle.dump(results, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
-        file_path = os.path.join(self.PICKLE_PATH, "best_cut_"+year_+".pkl")
+        file_path = os.path.join(self.PICKLE_PATH, "best_cut_"+str(f)+"_"+year_+".pkl")
         print(file_path)
         with open(file_path, 'wb') as handle:
             pickle.dump(best_cut, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+        # # #
+        print("=" * 100)
+        #
 
         result = {"status": "ok"}
         return result
 
     def get_similarity(self, dic):
-        # print("="*50)
+        # print("s="*50)
         f = dic["f"]
-        g = dic["g"]
-        df = dic["ll_dfs"][g]
+        dependent_group = dic["dependent_group"]
         df_d = dic["df_d"]
-        mmf = dic["mmf"]
-        mmxs = mmf["groups"][g]
-        # print(f, mmf["max_cut"], mmf["min_cut"], mmxs)
-
+        steph = dic["steph"]
+        stepl = dic["stepl"]
+        ll_dfs = dic["ll_dfs"]
+        f_groups = dic["groups"]
+        groups = f_groups[steph][stepl]["groups"]
         dff = pd.DataFrame(df_d.loc[:, f].astype(float))
-        dffn = dff.copy()
-        dffn = dffn.apply(lambda x: (x - mmf["min_cut"].astype(float)) / (mmf["max_cut"].astype(float) - mmf["min_cut"].astype(float)))
-        dffn[dffn < 0] = 0
-        dffn[dffn > 1] = 1
+        df_f = dff.copy()
 
-        dfn = df.copy()
-        for c in dfn.columns:
-            max_cut = mmxs[c]["max_cut"]
-            min_cut = mmxs[c]["min_cut"]
-            mm_cut = max_cut - min_cut
-            # print(mm_cut)
-            dfn.loc[:, c] = dfn.loc[:, c].apply(lambda x: (x - min_cut)/mm_cut)
-        dfn[dfn < 0] = 0
-        dfn[dfn > 1] = 1
-        # print(dfn)
-        dfm = pd.merge(left=dffn, how='outer', right=dfn, left_index=True, right_index=True)
-        # print(dfm)
-        nc = len(dfm.columns)
-        lls = []
-        for n in range(1, nc):
-            c = dfm.columns[n]
-            dfd = abs(dfm[dfm.columns[0]] - dfm[c])
-            s_d = dfd.sum()
-            # print(s_d)
-            dfr = abs(dfm[dfm.columns[0]] - (1-dfm[c]))
-            s_r = dfr.sum()
-            # print(s_r)
-            if s_d < s_r:
-                d_ = s_d
-                lls.append(1 - dfd.mean())
-            else:
-                d_ = s_r
-                lls.append(1 - dfr.mean())
-        # print(lls)
-        # print(mean(lls))
-        mmxs["mean_similarity"] = mean(lls)
-        # return mean(lls)
+        max_cut = groups[dependent_group][f]["max_cut"]
+        min_cut = groups[dependent_group][f]["min_cut"]
+
+        # max_cut = f_groups["max_cut"]
+        # min_cut = f_groups["min_cut"]
+
+        df_f = df_f.apply(lambda x: (x - min_cut) / (max_cut - min_cut))
+        df_f[df_f < 0] = 0
+        df_f[df_f > 1] = 1
+        dffn = df_f.copy()
+        llg_ = []
+        for g in groups:
+            dfg = ll_dfs[g].copy()
+            lls = []
+            if len(groups[g]) == 0:
+                return 0
+            for f_g in groups[g]:
+                max_cut = groups[g][f_g]["max_cut"]
+                min_cut = groups[g][f_g]["min_cut"]
+                dfg_f = dfg[f_g]
+                dfg_f = dfg_f.apply(lambda x: (x - min_cut) / (max_cut - min_cut))
+                dfg_f[dfg_f < 0] = 0
+                dfg_f[dfg_f > 1] = 1
+                dfm = pd.merge(left=dffn, how='outer', right=dfg_f, left_index=True, right_index=True)
+                dfm['diffd'] = dfm.apply(lambda x: abs(x[dfm.columns[0]] - x[dfm.columns[1]]), axis=1)
+                dfm['diffr'] = dfm.apply(lambda x: abs(x[dfm.columns[0]] - (1-x[dfm.columns[1]])), axis=1)
+                s_d = dfm['diffd'].mean()
+                s_r = dfm['diffr'].mean()
+                if s_d < s_r:
+                    s = (1 - s_d)-0.7
+                else:
+                    s = (1 - s_r)-0.7
+                if s < 0:
+                    s = 0
+                lls.append(s)
+            llg_.append(mean(lls))
+        return mean(llg_)
 
     def update_min_max_cuts(self, dic):
+        # print("90055-156 PotentialAlgo update_min_max_cuts: \n", dic, "\n", "="*50)
         app_ = dic["app"]
         year_ = str(dic["time_dim_value"])
+        f = str(dic["var_obj"])
+        # dependent_group = str(dic["dependent_group"])
         min_max_model_name_ = dic["min_max_model"]
         model_min_max = apps.get_model(app_label=app_, model_name=min_max_model_name_)
-        model_measure_dim = apps.get_model(app_label=app_, model_name="measuredim")
+        # model_measure_dim = apps.get_model(app_label=app_, model_name="measuredim")
 
-        file_path = os.path.join(self.PICKLE_PATH, "results_"+year_+".pkl")
-        print(file_path)
-        with open(file_path, 'rb') as handle:
-            results = pickle.load(handle)
-        print(results)
-
-        file_path = os.path.join(self.PICKLE_PATH, "best_cut_"+year_+".pkl")
-        print(file_path)
+        file_path = os.path.join(self.PICKLE_PATH, "best_cut_"+f+"_"+year_+".pkl")
+        # print(file_path)
         with open(file_path, 'rb') as handle:
             best_cut = pickle.load(handle)
-        print(best_cut)
-        for g in best_cut:
-            dg = best_cut[g]
-            # print("-"*60, "\n", g, "\n", dg)
-            dd_ff_cc = {}
-            for f in dg:
-                # print("-"*10, "\n", f, "\n", dg[f])
-                if dg[f]['mean_similarity'] == -1:
-                    continue
-                for c in dg[f]["mm_cut"]:
-                    if c != 'mean_similarity':
-                        if c not in dd_ff_cc:
-                            dd_ff_cc[c] = {}
-                        if f not in dd_ff_cc[c]:
-                            dd_ff_cc[c][f] = {}
-                        # print(g, f, c)
-                        dd_ff_cc[c][f]["max_cut"] = dg[f]["mm_cut"][c]["max_cut"]
-                        dd_ff_cc[c][f]["min_cut"] = dg[f]["mm_cut"][c]["min_cut"]
-            if len(dd_ff_cc) > 0:
-                # print(g, "\n", dd_ff_cc)
-                # print("-"*30)
-                for c in dd_ff_cc:
-                    ll_max = []
-                    ll_min = []
-                    for f in dd_ff_cc[c]:
-                        ll_max.append(dd_ff_cc[c][f]["max_cut"])
-                        ll_min.append(dd_ff_cc[c][f]["min_cut"])
-                    # print(ll_max, "\n", ll_min)
-                    # print(year_, c, mean(ll_max), mean(ll_min))
-                    m_obj = model_measure_dim.objects.get(id=c)
-                    mm_obj, is_created = model_min_max.objects.get_or_create(measure_dim=m_obj, time_dim_id=year_)
-                    mm_obj.min = mean(ll_min)
-                    mm_obj.max = mean(ll_max)
-                    mm_obj.save()
-            else:
-                print("g with noe cut", g)
+        # hh = best_cut["hh"]
+        # ll = best_cut["ll"]
+        # steph = best_cut["steph"]
+        # stepl = best_cut["stepl"]
+        file_path = os.path.join(self.PICKLE_PATH, "result_"+f+"_"+year_+".pkl")
+        # print(file_path)
+        with open(file_path, 'rb') as handle:
+            results = pickle.load(handle)
+        # print(results[hh][ll][int(f)])
+        model_min_max.truncate()
+        # print("1111 best_cut\n", best_cut)
+        f_groups = best_cut['f_groups']
+        for g in f_groups:
+            gfs = f_groups[g]
+            # print("-"*60, "\n", g, "\n", gfs)
+            for f in gfs:
+                # print("-"*10, "\n", f, "\n", gfs[f])
+                obj = model_min_max.objects.create(time_dim_id=year_, measure_dim_id=f, min=gfs[f]["min_cut"], max=gfs[f]["max_cut"])
         result = {"status": "ok"}
         return result
 

@@ -40,6 +40,7 @@ class MeasureDim(TruncateTableMixin, models.Model):
     measure_group_dim = models.ForeignKey(MeasureGroupDim, on_delete=models.CASCADE, default=1,
                                           related_name='country_dim_world_Bank_fact')
     measure_code = models.CharField(max_length=100, default='', blank=True, null=True)
+    description = models.CharField(max_length=256, default='', blank=True, null=True)
 
     def __str__(self):
         return str(self.measure_name)

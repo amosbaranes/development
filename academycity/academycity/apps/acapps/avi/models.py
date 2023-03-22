@@ -41,6 +41,8 @@ class MeasureDim(TruncateTableMixin, models.Model):
     measure_group_dim = models.ForeignKey(MeasureGroupDim, on_delete=models.CASCADE, default=1,
                                           related_name='country_dim_world_Bank_fact')
     measure_code = models.CharField(max_length=100, default='', blank=True, null=True)
+    description = models.CharField(max_length=256, default='', blank=True, null=True)
+
 
     def __str__(self):
         return str(self.measure_name)
@@ -79,8 +81,8 @@ class MinMaxCut(TruncateTableMixin, models.Model):
                                  related_name='time_dim_min_max_cut')
     measure_dim = models.ForeignKey(MeasureDim, on_delete=models.CASCADE, default=1,
                                     related_name='country_dim_min_max_cut')
-    min = models.DecimalField(max_digits=18, decimal_places=6, default=0, blank=True, null=True)
-    max = models.DecimalField(max_digits=18, decimal_places=6, default=0, blank=True, null=True)
+    min = models.DecimalField(max_digits=24, decimal_places=10, default=0, blank=True, null=True)
+    max = models.DecimalField(max_digits=24, decimal_places=10, default=0, blank=True, null=True)
 
     def __str__(self):
         return str(self.time_dim)+" "+str(self.measure_dim)+" min:"+str(self.min)+" max:"+str(self.max)

@@ -6,7 +6,7 @@ from .models import (PersonDim, GeneDim, Fact)
 
 @admin.register(PersonDim)
 class PersonDimAdmin(admin.ModelAdmin):
-    list_display = ('id', 'person_code')
+    list_display = ('id', 'person_code', 'gender', 'age_at_cdna', 'set_num')
 
 
 @admin.register(GeneDim)

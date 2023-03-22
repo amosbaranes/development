@@ -5245,13 +5245,13 @@ class CorporateValuationDataProcessing(BaseDataProcessing, BaseCorporateValuatio
         super().__init__(dic)
 
     def download_companies_to_excel(self, dic):
-        print('    90033-100 dic\n', '-'*100, '\n', dic, '\n', '-'*100)
+        # print('    90033-100 dic\n', '-'*100, '\n', dic, '\n', '-'*100)
         app_ = dic["app"]
         etfwatchlist_symbol_ = dic["etfwatchlist_symbol"]
         file_name_ = dic['file_name']
+
         model_name_ = "xbrlcompanyinfo"
         model_xci = apps.get_model(app_label=app_, model_name=model_name_)
-        model_name_ = "etfwatchlists"
         qs = model_xci.objects.filter(etfwatchlist__symbol=etfwatchlist_symbol_).all()
         df = pd.DataFrame(list(qs.values('exchange', 'company_name', 'ticker', 'company_letter', 'cik', 'is_active')))
         try:

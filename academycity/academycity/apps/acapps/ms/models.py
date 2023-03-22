@@ -12,7 +12,10 @@ class GeneDim(TruncateTableMixin, models.Model):
 
 
 class PersonDim(TruncateTableMixin, models.Model):
+    gender = models.SmallIntegerField(default=0, blank=True, null=True)
     person_code = models.CharField(max_length=40, default='', blank=True, null=True)
+    age_at_cdna = models.SmallIntegerField(blank=True, null=True)
+    set_num = models.SmallIntegerField(blank=True, null=True)
 
     def __str__(self):
         return str(self.person_code)
