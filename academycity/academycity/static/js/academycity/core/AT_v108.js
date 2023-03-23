@@ -4910,7 +4910,8 @@ acChartCreator.prototype.set_chart_data = function(chart_type)
                     "lines":{"type_name":"mode", "type_value":"lines", "marker_attribute":"size", "marker_attribute_value":"8"},
                     "bars":{"type_name":"type", "type_value":"bar", "marker_attribute":"opacity", "marker_attribute_value":"0.7"},
                     "histogram":{"type_name":"type", "type_value":"histogram"},
-                    "bubbles":{"type_name":"", "type_value":""}
+                    "bubbles":{"type_name":"", "type_value":""},
+                    "indicator":{"type_name":"mode", "type_value":"indicator"}
                    }
 
     //alert("9023-550 chart_attributes\n"+JSON.stringify(chart_attributes));
@@ -5066,6 +5067,39 @@ acChartCreator.prototype.set_chart_data = function(chart_type)
       barmode: 'relative'
     };
     Plotly.newPlot(this.chart, data, layout);
+ }
+ else if(chart_type["type"]=='indicator') {
+    var width_ = chart_type["width"]; if(width_==null || width_==""){width_=400}
+    var height_ = chart_type["height"]; if(height_==null || height_==""){height_=400}
+    var rows_ = chart_type["rows"]; if(rows_==null || rows_==""){rows_=1}
+    var columns_ = chart_type["columns"]; if(columns_==null || columns_==""){columns_=400}
+//    shape: "angular" or "bullet"
+
+   //alert(JSON.stringify(chart_type));
+   var ctc = chart_type["charts"];
+   for(var i in ctc)
+   {
+        if(ctc[i]["shape"]=="bullet"){var domain_={ x: ctc[i]["x"], y: ctc[i]["y"]}
+        } else {var domain_={ row: ctc[i]["row"], column: ctc[i]["column"]}}
+        var trace = {
+          title:ctc[i]["title"],
+          type:"indicator",
+          delta: { reference: ctc[i]["reference"] },
+          value: ctc[i]["value"],
+          mode: ctc[i]["mode"],
+          gauge: {shape: ctc[i]["shape"],axis: { visible: ctc[i]["visible"], range: ctc[i]["range"]}},
+          domain: domain_
+        }
+        data_.push(trace);
+    }
+
+   //alert(JSON.stringify(data_));
+    var layout = {width: width_, height: height_,
+                margin: { t: 25, b: 25, l: 25, r: 25 },
+                grid: { rows: rows_, columns: columns_, pattern: "independent" },
+                template: {data: {indicator: [{}]}}
+                };
+   Plotly.newPlot(this.chart, data_, layout);
  }
  else {
   //alert(chart_type["type"])

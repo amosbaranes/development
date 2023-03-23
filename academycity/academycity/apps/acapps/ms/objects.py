@@ -144,6 +144,7 @@ class MSDataProcessing(BaseDataProcessing, MSAlgo):
         result = {"status": "ok"}
         return result
 
+    # add the functions below to this function
     def calculate_clusters(self, dic):
         # print("90921-0: \n", dic, "\n", "="*50)
         # print(dic)
@@ -358,6 +359,7 @@ class MSDataProcessing(BaseDataProcessing, MSAlgo):
         result = {"status": "ok"}
         return result
 
+    # NeedToDo to move to function calculate_clusters
     def get_gene_structure(self, dic):
         # print("90950-10: \n", dic, "\n", "=" * 50)
         # print(dic)
@@ -395,3 +397,49 @@ class MSDataProcessing(BaseDataProcessing, MSAlgo):
         result = {"status": "ok", "clusters": clusters}
         # print(result)
         return result
+
+    # NeedToDo to move to function calculate_clusters
+    def create_homogeneous_genes_list(self, dic):
+        print("90950-10: \n", dic, "\n", "=" * 50)
+        print(dic)
+        print('dic')
+        data_name_ = dic["data_name"]
+        number_of_patients_ = dic["number_of_patients"]
+
+        model_name_ = ["gene_dim_model"]
+        model_gene_dim = apps.get_model(app_label=app_, model_name=model_name_)
+        qs_genes = model_name_.objects.all()
+
+        ll = []
+
+        # loop over all genes
+        #
+        # for q in qs_genes:
+        #      pull json of gene
+        #     loop all clusters:
+                # 1) have patients >= number_of_patients
+                # 2) all patients are mail or females
+                # ll.append()
+
+        model_name_ = dic["dimensions"]["gene_dim"]["model"]
+        model_general_data = apps.get_model(app_label=app_, model_name="generaldata")
+        obj, is_created = model_general_data.objects.get_or_create(data_name=data_name_)
+        obj.data_json = {"data": ll}
+        obj.save()
+        result = {"status": "ok"}
+        # print(result)
+        return result
+
+    def get_homogeneous_genes_list(self, dic):
+        print("90950-10: \n", dic, "\n", "=" * 50)
+        print(dic)
+        print('dic')
+        data_name_ = dic["data_name"]
+
+        model_general_data = apps.get_model(app_label=app_, model_name="generaldata")
+        obj = model_general_data.objects.get(data_name=data_name_)
+        data_json = obj.data_json
+
+        result = {"status": "ok", "data":data_json["data"]}
+
+

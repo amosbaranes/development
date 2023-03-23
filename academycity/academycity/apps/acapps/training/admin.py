@@ -5,7 +5,8 @@ from .models import (TrainingWeb, Instructors, Brigades, Battalions, Companys, P
                      Compliances, Courses, Soldiers, Tests, TimeDim, SoldierFact,
                      TestEvents, TestsForEvents, SoldiersForEvents, GradesForEvents,
                      InventoryCategorys,Inventorys,TestsVariables, TestsForVariables,
-                     DoubleShoot)
+                     DoubleShoot,
+                     GeneralData)
 
 
 @admin.register(TrainingWeb)
@@ -101,3 +102,7 @@ class TestsForVariablesAdmin(admin.ModelAdmin):
 @admin.register(DoubleShoot)
 class DoubleShootAdmin(admin.ModelAdmin):
     list_display = ('id', 'soldier')
+
+@admin.register(GeneralData)
+class GeneralDataAdmin(admin.ModelAdmin):
+    list_display = ('id', 'data_name')

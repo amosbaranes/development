@@ -393,3 +393,10 @@ class SoldierFact(TruncateTableMixin, models.Model):
     test = models.SmallIntegerField(default=0)
     value = models.SmallIntegerField(default=0)
 
+# # #
+class GeneralData(TruncateTableMixin, models.Model):
+    data_name = models.CharField(max_length=40, default='', blank=True, null=True)
+    data_json = models.JSONField(null=True)
+
+    def __str__(self):
+        return str(self.data_name)
