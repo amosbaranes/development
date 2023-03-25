@@ -111,3 +111,11 @@ class Debug(TruncateTableMixin, models.Model):
         return self.value
 
 
+class GeneralData(TruncateTableMixin, models.Model):
+    app = models.CharField(max_length=40, default='', blank=True, null=True)
+    group = models.CharField(max_length=40, default='general', blank=True, null=True)
+    data_name = models.CharField(max_length=40, default='', blank=True, null=True)
+    data_json = models.JSONField(null=True)
+
+    def __str__(self):
+        return str(self.data_name)

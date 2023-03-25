@@ -172,7 +172,7 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
                                           "position_name": ['מפקד גדוד', 'מפקד פלוגה', 'מספר 2 – צ', 'מוביל צוות', 'מספר 2',
                                                             'אימון גופני', 'מתגבר', 'קמ”ג']})
 
-    def process(self, app_, n, nav_tables_, result, qid=None):
+    def process_weeks_1_5(self, app_, n, nav_tables_, result, qid=None):
         nn = len(nav_tables_)
         if n < nn:
             title = nav_tables_[n]
@@ -195,18 +195,42 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
                 else:
                     qid_ = eval("q."+p_key_field_name)
                 result[qid_]={"title":str(q), "model":nav_tables_[n-1], "data":{}}
-                self.process(app_, n, nav_tables_, result[qid_]["data"], qid=qid_)
+                self.process_weeks_1_5(app_, n, nav_tables_, result[qid_]["data"], qid=qid_)
         return result
 
+    def process_weeks_6_10(self, app_, weeks, weeks_dic, result, qid=None):
+        model_ = apps.get_model(app_label=app_, model_name="unitesoldiers")
+        objs = model_.objects.filter(weeks = weeks).all()
+
+        print(weeks_dic)
+
+        return weeks_dic
+
     def get_units_structure(self, dic):
-        # print('90035-1 dic', dic)
+        print("\n", "-"*50, '\n90035-1 dic\n', dic, "\n", "-"*50)
         app_ = dic["app"]
+        weeks_ = dic["weeks"]
+        unite_soldiers_number_ = dic["unite_soldiers_number"]
+
         groups_ = dic["groups"]
         nav_tables_ = groups_["nav_tables"]
         result = {"title":"title-top", "data":{}}
-        result = self.process(app_, 0, nav_tables_, result["data"])
-        # print(result)
-        # print("-"*100, "\n", "Done")
+        if weeks_ == "1-5":
+            result = self.process_weeks_1_5(app_, 0, nav_tables_, result["data"])
+        elif weeks_ == "6-10":
+            weeks_dic_ = dic["weeks_dic"]
+            result = self.process_weeks_6_10(app_, weeks=weeks_, weeks_dic=weeks_dic_, result=result["data"])
+
+        # print("-"*100, "\n", result, "\n", "-"*100)
+        # dd = {}
+        # for k in result:
+        #     dd[k] = {"title": result[k]["title"], "data":{}}
+        #     for i in result[k]["data"]:
+        #         dd[k]["data"][i] = {"title": result[k]["data"][i]["title"], "data":{}}
+        #         for j in result[k]["data"][i]["data"]:
+        #             dd[k]["data"][i]["data"][j] = {"title": result[k]["data"][i]["data"][j]["title"], "data":{}}
+
+        # print("-"*100, "\n", dd, "\n", "-"*100)
         result = {"status": "ok", "result":result}
         return result
 

@@ -12,7 +12,7 @@
 </head>
 <body id="body_">
 
-<script src="{% static 'js/academycity/core/AT_v108.js' %}"></script>
+<script src="{% static 'js/academycity/core/AT_v109.js' %}"></script>
 <script src="{% static 'vendor/jquery/jquery.min.js' %}"></script>
 <script src="{% static 'js/npm/cookie/js.cookie.min.js' %}"></script>
 <script src="{% static 'vendor/fontawesome-free-5.11.2-web/a076d05399.js' %}"></script>
@@ -50,6 +50,7 @@ var dic={
 "activate_obj_function_link":'{{app_activate_function_link}}',
 "upload_file_link":'{% url "core:upload_file" %}',
 "get_data_link":'{% url "core:get_data_link" %}',
+"general_data":'{% url "core:general_data" %}',
 "get_data_json_link":'{% url "core:get_data_json_link" %}',
 "is_show_btns":{%if request.user|has_group:"admins"%}true{% else %}false{%endif%},
 "user_id":"{{ user_id }}"

@@ -266,6 +266,7 @@ AdvancedTabsManager.prototype.create_atm = function(dic)
  this.activate_obj_function_link_=dic["activate_obj_function_link"];
  this.upload_file_link_ = dic["upload_file_link"]
  this.get_data_link_=dic["get_data_link"];
+ this.general_data_=dic["general_data"]
  this.get_data_json_link_=dic["get_data_json_link"];
  this.company_obj_id=dic["company_obj_id"];
  this.user_id=dic["user_id"];
@@ -809,6 +810,19 @@ return this.content["last_obj_number"]
 
 AdvancedTabsManager.prototype.set_obj_to_copy=function(dic){
  this.new_obj_to_create = dic;
+}
+
+AdvancedTabsManager.prototype.general_data = function(call_back_fun, dic_, obj_)
+{
+  //alert("In the function: AdvancedTabsManager.prototype.general_data")
+  dic_["app"]=this.my_app;
+  dic_["company_obj_id"]=this.company_obj_id;
+  call_back_fun.atm=this
+  //alert("90112:\n"+JSON.stringify(dic_));
+  $.post(this.general_data_, {dic : JSON.stringify(dic_)},
+          function(data){
+            if(data["status"]!="ok") {alert("Error in General_Data.")} else {call_back_fun(data["json"], obj_)}
+          })
 }
 
 // -- FunctionsPropertiesEditor --
@@ -3675,7 +3689,8 @@ acRecordingTestsCreator.prototype.fill_up_data = function(data, this_obj)
 
 // -- acSearchTableCreator --
 function acSearchTableCreator(parent){this.parent=parent;this.is_json_data=false;this.json_record_id=-1;
-                                      this.json_last_record_number=0}
+                                      this.json_last_record_number=0, this.primary_key_list_filter=[],
+                                      this.data_table_name=null}
 
 acSearchTableCreator.prototype.create_obj = function()
 {
@@ -3862,14 +3877,22 @@ acSearchTableCreator.prototype.create_obj = function()
   for(f in dic["functions"]){if(f!="onclick" && f!="on_new_record"){var s="this.table_."+f+"="+dic["functions"][f];eval(s);}}
 }
 
-acSearchTableCreator.prototype.get_data = function(data_table_name=null,parent_model=null,parent_id=null,company_obj_id=null)
+acSearchTableCreator.prototype.set_primary_key_list_filter = function(list=[])
+{
+ this.primary_key_list_filter=list;
+}
+
+acSearchTableCreator.prototype.get_data = function(data_table_name=null,parent_model=null,parent_id=null,
+                                                   company_obj_id=null)
 {
   var dic=this.parent.data;
    //alert("9044  "+JSON.stringify(dic));
   var container = document.getElementById("content_"+dic["container_id"]);
   //alert(container.outerHTML);
 
-  if(data_table_name!==null){this.data_table_name=data_table_name} else {this.data_table_name=container.getAttribute("table")}
+  if(data_table_name!==null){this.data_table_name=data_table_name}
+  else {this.data_table_name=container.getAttribute("table")}
+
   try{
     var parent_id_="";
     var model_=container.my_creator_obj.link_dic["properties"]["table"];
@@ -3885,7 +3908,7 @@ acSearchTableCreator.prototype.get_data = function(data_table_name=null,parent_m
     var dic_={"model":this.data_table_name, "number_of_rows":this.number_of_rows, "fields":this.fields}
   } catch(er){alert("er90132: "+er)}
 
-  //alert("90441-1  "+JSON.stringify(dic_));
+  // alert("90441-1  "+JSON.stringify(dic_));
   var fun=function(data, ttbody_){
     console.log("get_data search table inside call back function")
      // alert("9081 data: "+JSON.stringify(data));
@@ -3975,6 +3998,7 @@ acSearchTableCreator.prototype.get_data = function(data_table_name=null,parent_m
        }
     }
   if(company_obj_id!=null){dic__["company_obj_id"]=company_obj_id}
+  dic__["primary_key_list_filter"]=this.primary_key_list_filter
 
 //  alert("9010: "+JSON.stringify(dic__));
 

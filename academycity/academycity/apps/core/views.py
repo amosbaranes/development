@@ -28,7 +28,6 @@ def home(request):
 
     return render(request, 'core/home.html', {'title': title})
 
-
 def app(request, app_name):
     app_ = "core"
     app_activate_function_link_ = reverse(app_+':activate_obj_function', kwargs={})
@@ -36,7 +35,6 @@ def app(request, app_name):
                                                "app_activate_function_link": app_activate_function_link_,
                                                "company_obj_id": 0, "title": "Core"}
                   )
-
 
 def post_ajax_create_action(request):
     try:
@@ -58,7 +56,6 @@ def post_ajax_create_action(request):
     except Exception as err:
         JsonResponse({'status': 'ko'})
     return JsonResponse({'status': 'ok'})
-
 
 def update_field_model(request):
     app_ = request.POST.get('app')
@@ -123,14 +120,11 @@ def update_field_model(request):
         pass
         return JsonResponse({'status': 'ko'})
 
-
 def create_db_backup():
     call_command('dbbackup', compress=True, clean=True)
 
-
 def clean_registrations(request):
     clean_accounting_registrations()
-
 
 def activate_function(request):
     # var dic_ = {"obj": "AdvancedTabs", "atm": atm_.my_name, "app": atm_.my_app, "fun": "add_tab",
@@ -156,7 +150,6 @@ def activate_function(request):
         print("90265-55 Error core activate_function: "+str(ex))
         dic = {'status': 'ko', 'result': "{}"}
     return JsonResponse(dic)
-
 
 def update_field_model_by_id(request, foreign=None):
     # log_debug("update_field_model_by_id 0")
@@ -361,7 +354,6 @@ def update_field_model_by_id(request, foreign=None):
         log_debug("erro600 " + str(e))
         return JsonResponse({'status': 'ko'})
 
-
 def get_data_link(request):
     dic_ = request.POST["dic"]
     dic_ = eval(dic_)
@@ -369,7 +361,7 @@ def get_data_link(request):
     #     print('9050-1 core views get_data_link dic_= ', dic_, '\n', dic_["fields"])
     # except Exception as ex:
     #     pass
-
+    primary_key_list_filter_ = dic_["primary_key_list_filter"]
     multiple_select_fields = None
     if "multiple_select_fields" in dic_:
         if len(dic_["multiple_select_fields"]) > 0:
@@ -484,6 +476,14 @@ def get_data_link(request):
                     s += '.filter('+foreign_table_+'__'+filter_field_+'__icontains='+filter_value_+')'
                 else:
                     s += '.filter('+filter_field_+'__icontains="'+filter_value_+'")'
+        n_ = -1
+        try:
+            n_ = len(primary_key_list_filter_)
+        except Exception as ex:
+            ("Error 90855-23 "+str(ex))
+
+        if primary_key_list_filter_ and n_ > 0:
+            s += '.filter('+p_key_field_name+'__in=primary_key_list_filter_)'
         if order_by != "":
             s += '.order_by("'+order_by["field"]+'")'
             if order_by["direction"] == "descending":
@@ -544,7 +544,6 @@ def get_data_link(request):
     # print('core view 9055 get_data_link dic_= ', dic)
     return JsonResponse(dic)
 
-
 def get_data_json_link(request):
     dic_ = request.POST["dic"]
     dic_ = eval(dic_)
@@ -560,7 +559,6 @@ def get_data_json_link(request):
     data = eval("row."+model_)
     dic = {'status': 'ok', "dic": data}
     return JsonResponse(dic)
-
 
 def upload_file(request):
     # print("9005", "\n", "-"*30)
@@ -670,6 +668,113 @@ def upload_file(request):
 
     return HttpResponse(json.dumps(ret))
 
+def upload_file(request):
+    # print("9005", "\n", "-"*30)
+    log_debug("upload_file 0000")
+    upload_file_ = request.FILES['drive_file']
+    ret = {}
+    if upload_file_:
+        filename = request.POST['filename']
+        sheet_name_ = request.POST['sheet_name']
+        # print("9005-1", filename, "\n", "-"*30)
+        log_debug("upload_file 1111: "+filename)
+        app_ = request.POST['app']
+        # print("9005-2", app_, "\n", "-"*30)
+        log_debug("upload_file 2222: "+app_)
+        obj_name_ = request.POST['obj_name']
+        function_name_ = request.POST['function_name']
+        topic_id_ = request.POST['topic_id']
+        folder_type_ = request.POST['folder_type']
+        if folder_type_ == "media":
+            # print("media")
+            data_dir = settings.MEDIA_ROOT + '/' + app_ + '/' + topic_id_
+            log_debug("upload_file 3333: "+data_dir)
+
+            upload_file_ = request.FILES['drive_file']
+            os.makedirs(data_dir, exist_ok=True)
+            filename = request.POST['filename']
+            file_path = os.path.join(data_dir, filename)
+
+            log_debug("upload_file 4444: "+file_path)
+
+            model_name = request.POST['model_name']
+            log_debug("upload_file 4444-0: ="+model_name+"=")
+            log_debug("upload_file 4444-1: ")
+            if model_name !="":
+                record_id = request.POST['record_id']
+                model_field_name = request.POST['model_field_name']
+                model = apps.get_model(app_label=app_, model_name=model_name)
+                obj = model.objects.get(id=record_id)
+                s = "obj."+model_field_name+"='"+filename+"'"
+                exec(s)
+                obj.save()
+                # print(file_path)
+            log_debug("upload_file 5555:")
+            with open(file_path, 'wb+') as destination:
+                for c in upload_file_.chunks():
+                    destination.write(c)
+            ret['status'] = "ok"
+            log_debug("upload_file 7777: OK")
+
+            return HttpResponse(json.dumps(ret))
+        # print("9005-16", folder_type_, "\n", "-"*30)
+        #
+        try:
+            cube_dic = {}
+            dimensions_ = request.POST['dimensions']
+            fields_ = request.POST['fields']
+            fact_model_field_ = request.POST['fact_model_field']
+            # print("9005-161", fact_model_field_, "\n", "-"*30)
+            #
+            dimensions_s = dimensions_.split(",")
+            # time_dim,country_dim,measure_dim
+            # year,country_name,measure_name
+            # WorldBankFact,amount
+            fields_s = fields_.split(",")
+            # print(fields_)
+            # print(fact_model_field_)
+            fact_model_field_s = fact_model_field_.split(",")
+            cube_dic = {"dimensions": {}, "fact": {"model": fact_model_field_s[0], "field_name": fact_model_field_s[1]}}
+            for j in range(len(dimensions_s)):
+                f = fields_s[j]
+                d = dimensions_s[j]
+                dm = d.replace("_", "")
+                cube_dic["dimensions"][d] = {"model": dm, "field_name": f}
+
+            # print("90876 upload file: ")
+            # print(cube_dic)
+            # cube_dic = {"dimensions": {"time_dim": {"model": "TimeDim", "field_name": "year"},
+            #                            "country_dim": {"model": "CountryDim", "field_name": "country_name"},
+            #                            "measure_dim": {"model": "MeasureDim", "field_name": "measure_name"}},
+            #             "fact": {"model": "WorldBankFact", "field_name": "amount"}
+            #             }
+            # print("90876-1 upload file: ")
+            # print(cube_dic)
+        except Exception as ex:
+            pass
+
+        add_dic = {"obj": obj_name_, "app": app_, "fun": function_name_,
+                   "params": {"request": request, "folder_type": folder_type_, "sheet_name": sheet_name_, "app": app_, "cube_dic": cube_dic},
+                   "obj_param": {"topic_id": topic_id_, "app": app_}}
+        try:
+            add_dic["obj_param"]["country_model"] = cube_dic["dimensions"]["country_dim"]["model"]
+        except Exception as ex:
+            pass
+        try:
+            add_dic["obj_param"]["measure_model"] = cube_dic["dimensions"]["measure_dim"]["model"]
+        except Exception as ex:
+            pass
+
+        # print("9010")
+        # print(add_dic)
+        # print("9010")
+        activate_obj_function(request, add_dic)
+        # print("9011")
+        ret['status'] = "ok"
+    else:
+        ret['status'] = "ko"
+
+    return HttpResponse(json.dumps(ret))
 
 def logmein(request):
     try:
@@ -695,3 +800,28 @@ def logmein(request):
            return JsonResponse({"status":"inactive"})
     else:
        return JsonResponse({"status":"bad"})
+
+def general_data(request):
+    dic_ = request.POST["dic"]
+    dic_ = eval(dic_)
+    # try:
+    #     print('9050-1 core views general_data dic_= \n', dic_, '\n', "-"*50)
+    # except Exception as ex:
+    #     pass
+    general_data_model = apps.get_model(app_label="core", model_name="generaldata")
+    action_= dic_['action']
+    app_= dic_['app']
+    group_ = dic_['group']
+    data_name_ = dic_['data_name']
+    result = {"status": "ok", "json":{}}
+    if action_ == "set":
+        data_json_ = dic_['data_json']
+        obj, is_created = general_data_model.objects.get_or_create(app=app_, group=group_, data_name = data_name_)
+        obj.data_json = data_json_
+        obj.save()
+    else:
+        obj = general_data_model.objects.get(app=app_, group=group_, data_name = data_name_)
+        result["json"] = obj.data_json
+    return JsonResponse(result)
+
+

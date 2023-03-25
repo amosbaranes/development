@@ -1,7 +1,8 @@
 from django.contrib import admin
 from django.utils.translation import ugettext_lazy as _
 
-from .models import (Debug, DataAdvancedTabs, DataAdvancedTabsManager, DataAdvancedApps, Adjectives, AdjectivesValues)
+from .models import (Debug, DataAdvancedTabs, DataAdvancedTabsManager, DataAdvancedApps, Adjectives, AdjectivesValues,
+                     GeneralData)
 
 
 @admin.register(Debug)
@@ -32,4 +33,9 @@ class AdjectivesAdmin(admin.ModelAdmin):
 @admin.register(AdjectivesValues)
 class AdjectivesValuesAdmin(admin.ModelAdmin):
     list_display = ['id', 'adjective', 'order', 'value']
+
+
+@admin.register(GeneralData)
+class GeneralDataAdmin(admin.ModelAdmin):
+    list_display = ['id', 'app', 'group', 'data_name']
 

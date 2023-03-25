@@ -226,6 +226,20 @@ class Soldiers(TruncateTableMixin, models.Model):
     def __str__(self):
         return str(self.userid) + ": " + str(self.first_name) + " " + str(self.last_name)
 
+class UniteSoldiers(TruncateTableMixin, models.Model):
+    class Meta:
+        verbose_name = 'unite_soldier'
+        verbose_name_plural = 'unite_soldiers'
+        ordering = ['weeks', 'unit']
+
+    unite_soldiers_number = models.IntegerField(default=0)
+    weeks = models.CharField(max_length=10, default='W1-5', blank=True, null=True)
+    unit = models.IntegerField(default=0)
+    soldier = models.IntegerField(default=0)
+
+    def __str__(self):
+        return str(self.unit)+":"+str(self.soldier)
+
 class TimeDim(TruncateTableMixin, models.Model):
     id = models.PositiveIntegerField(primary_key=True)
     year = models.PositiveSmallIntegerField(default=0)
@@ -393,10 +407,5 @@ class SoldierFact(TruncateTableMixin, models.Model):
     test = models.SmallIntegerField(default=0)
     value = models.SmallIntegerField(default=0)
 
-# # #
-class GeneralData(TruncateTableMixin, models.Model):
-    data_name = models.CharField(max_length=40, default='', blank=True, null=True)
-    data_json = models.JSONField(null=True)
 
-    def __str__(self):
-        return str(self.data_name)
+
