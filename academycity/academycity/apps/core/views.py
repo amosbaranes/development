@@ -361,7 +361,6 @@ def get_data_link(request):
     #     print('9050-1 core views get_data_link dic_= ', dic_, '\n', dic_["fields"])
     # except Exception as ex:
     #     pass
-    primary_key_list_filter_ = dic_["primary_key_list_filter"]
     multiple_select_fields = None
     if "multiple_select_fields" in dic_:
         if len(dic_["multiple_select_fields"]) > 0:
@@ -478,12 +477,13 @@ def get_data_link(request):
                     s += '.filter('+filter_field_+'__icontains="'+filter_value_+'")'
         n_ = -1
         try:
+            primary_key_list_filter_ = dic_["primary_key_list_filter"]
             n_ = len(primary_key_list_filter_)
+            if primary_key_list_filter_ and n_ > 0:
+                s += '.filter('+p_key_field_name+'__in=primary_key_list_filter_)'
         except Exception as ex:
             ("Error 90855-23 "+str(ex))
 
-        if primary_key_list_filter_ and n_ > 0:
-            s += '.filter('+p_key_field_name+'__in=primary_key_list_filter_)'
         if order_by != "":
             s += '.order_by("'+order_by["field"]+'")'
             if order_by["direction"] == "descending":

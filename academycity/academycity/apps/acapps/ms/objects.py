@@ -394,26 +394,31 @@ class MSDataProcessing(BaseDataProcessing, MSAlgo):
             clusters[c]["fa"] = int(dffa.count())
             # print(100)
 
-        result = {"status": "ok", "clusters": clusters, "primary_key_list_filter": primary_key_list_filter}
+        result = {"status": "ok", "clusters": clusters}
         # print(result)
         return result
 
     # NeedToDo to move to function calculate_clusters
     def create_homogeneous_genes_list(self, dic):
+        clear_log_debug()
+        log_debug("=== create_homogeneous ===")
         # print("90950-10: create_homogeneous_genes_list\n", dic, "\n", "=" * 50)
         app_ = dic["app"]
         data_name_ = dic["data_name"]
         group_ = dic["group"]
         number_of_patients_ = dic["number_of_patients"]
+        # log_debug("number_of_patients_=="+str(number_of_patients_))
         model_name_ = dic["dimensions"]["gene_dim"]["model"]
         model_gene_dim = apps.get_model(app_label=app_, model_name=model_name_)
         qs_genes = model_gene_dim.objects.all()
         model_name_ = dic["dimensions"]["person_dim"]["model"]
         model_person_dim = apps.get_model(app_label=app_, model_name=model_name_)
-        number_of_females = 0
-        number_of_male = 0
+
         ll_g = []
+        log_debug("= create_homogeneous 1 =")
+        n_ = 0
         for q in qs_genes:
+            n_ += 1
             # print("q: ", q, "\n", "=" * 50)
             clusters = q.clusters
             # print(clusters)
@@ -421,28 +426,48 @@ class MSDataProcessing(BaseDataProcessing, MSAlgo):
             for i in clusters:
                 entity = clusters[i]["entity"]
                 # print("i: ", i, "\nentity=", entity, "\n", "=" * 50)
+                # print("number_of_patients_: ", str(number_of_patients_))
+                # print("len(entity)=", str(len(entity)), "\n", "=" * 50)
+                number_of_females = 0
+                number_of_male = 0
                 if len(entity) >= int(number_of_patients_):
                     for x in entity:
                         person_obj_ = model_person_dim.objects.get(id=x)
-                        # print(x, person_obj_.gender)
+                        # log_debug("x="+str(x) +" gender="+str(person_obj_.gender))
                         if person_obj_.gender == 1:
                             number_of_females += 1
-                        else:
+                        elif person_obj_.gender == 0:
                             number_of_male += 1
                         # print(number_of_females, number_of_male)
-                if number_of_females == 0 or number_of_male == 0:
-                    ll_c.append(i)
+                    # log_debug("f=" + str(number_of_females) + " m " + str(number_of_male))
+                    if number_of_females == 0 or number_of_male == 0:
+                        ll_c.append(i)
+                        # log_debug("cluster num:" + str(i))
+                        # log_debug("cluster num:" + str(i)+" : ll_c: " +str(ll_c))
             # print("cluster number:", i, "\ll_c:", ll_c)
             if len(ll_c) > 0:
                 ll_g.append(q.id)
+                log_debug("gene w =" + str(q.id))
+            if n_ % 100 == 0:
+                log_debug("run gene =" + str(n_))
+
         # print("gene number:", q.id, "\ll_g:", ll_g)
-        model_general_data = apps.get_model(app_label="core", model_name="generaldata")
+        # print("done processing gene: " + str(ll_g))
+        # print("ll_g : " + str(ll_g)[:25])
+        log_debug("done processing gene: ")
+        log_debug("ll_g : " + str(ll_g)[:25])
+
         try:
+            model_general_data = apps.get_model(app_label="core", model_name="generaldata")
             obj, is_created = model_general_data.objects.get_or_create(app=app_, group=group_, data_name=data_name_)
             obj.data_json = {"data": ll_g}
             obj.save()
         except Exception as ex:
             print("Error 9026-67: "+str(ex))
+            log_debug("9002 Error saving genes: ")
+
+        log_debug("saved gene data")
+
         result = {"status": "ok", "data": ll_g}
         return result
 

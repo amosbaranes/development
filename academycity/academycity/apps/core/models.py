@@ -112,6 +112,10 @@ class Debug(TruncateTableMixin, models.Model):
 
 
 class GeneralData(TruncateTableMixin, models.Model):
+    class Meta:
+        verbose_name = 'general_data'
+        verbose_name_plural = 'general_datas'
+        ordering = ['app', 'group', 'data_name']
     app = models.CharField(max_length=40, default='', blank=True, null=True)
     group = models.CharField(max_length=40, default='general', blank=True, null=True)
     data_name = models.CharField(max_length=40, default='', blank=True, null=True)
