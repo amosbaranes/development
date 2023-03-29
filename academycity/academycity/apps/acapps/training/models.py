@@ -18,10 +18,14 @@ class InventoryCategorys(TruncateTableMixin, models.Model):
     class Meta:
         verbose_name = 'inventorycategory'
         verbose_name_plural = 'inventorycategorys'
-        ordering = ['category_name']
+        ordering = ['category', 'category_name_1']
     training_web = models.ForeignKey(TrainingWeb, on_delete=models.CASCADE, default=1,
                                      related_name='training_web_inventory_categorys')
-    category_name = models.CharField(max_length=50, default='', blank=True, null=True)
+    Item_number = models.SmallIntegerField(default=0)
+    pn = models.CharField(max_length=200, default='', blank=True, null=True)
+    category_name_1 = models.CharField(max_length=100, default='', blank=True, null=True)
+    category_name_2 = models.CharField(max_length=100, default='', blank=True, null=True)
+    category = models.CharField(max_length=100, default='', blank=True, null=True)
 
     def __str__(self):
         return str(self.category_name)
@@ -36,6 +40,8 @@ class Inventorys(TruncateTableMixin, models.Model):
     inventorycategory = models.ForeignKey(InventoryCategorys, on_delete=models.CASCADE, default=1,
                                           related_name='inventory_category_inventorys')
     inventory_number = models.CharField(max_length=50, default='', blank=True, null=True)
+    item_number = models.IntegerField(default=0, blank=True, null=True)
+    pn = models.CharField(max_length=50, default='', blank=True, null=True)
 
     def __str__(self):
         return str(self.inventory_number)
@@ -82,6 +88,23 @@ class Battalions(TruncateTableMixin, models.Model):
 
     def __str__(self):
         return str(self.battalion_name)
+
+
+class Periods(TruncateTableMixin, models.Model):
+    class Meta:
+        verbose_name = 'period'
+        verbose_name_plural = 'periods'
+        ordering = ['battalion', 'period_number']
+
+    training_web = models.ForeignKey(TrainingWeb, on_delete=models.CASCADE, default=1,
+                                     related_name='training_web_periods')
+    battalion = models.ForeignKey(Battalions, on_delete=models.CASCADE, default=1, related_name='battalion_periods')
+    period_number = models.SmallIntegerField(default=1)
+    period_name = models.CharField(max_length=50, default='', blank=True, null=True)
+    structure = models.JSONField(null=True)
+
+    def __str__(self):
+        return str(self.period_number) + ": " + str(self.period_name)
 
 # פלוגה/פלגה
 class Companys(TruncateTableMixin, models.Model):
@@ -314,6 +337,11 @@ class TestsVariables(TruncateTableMixin, models.Model):
 
     variable_name = models.CharField(max_length=100, default='', blank=True, null=True)
     variable_description = models.CharField(max_length=500, default='', blank=True, null=True)
+    up_value = models.SmallIntegerField(default=70)
+    up_color = models.CharField(max_length=50, default='green', blank=True, null=True)
+    down_value = models.SmallIntegerField(default=70)
+    down_color = models.CharField(max_length=50, default='red', blank=True, null=True)
+    other_color = models.CharField(max_length=50, default='yellow', blank=True, null=True)
 
     def __str__(self):
         return str(self.variable_name)

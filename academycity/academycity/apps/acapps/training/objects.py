@@ -161,6 +161,27 @@ class BaseTrainingAlgo(object):
                 self.second_time_save = self.save_to_file
 
 
+    #
+    # a = {"1": {"title": "ALPHA", "data":
+    #       {"21": {"title": "ALPHA 1", "data": {}},
+    #        "22": {"title": "ALPHA 2", "data": {}},
+    #        "23": {"title": "ALPHA 3", "data": {}},
+    #        "24": {"title": "ALPHA 4", "data": {}}}},
+    #      "2": {"title": "BRAVO", "data": {
+    #        "25": {"title": "BRAVO 1", "data": {}},
+    #        "26": {"title": "BRAVO 2", "data": {}},
+    #        "27": {"title": "BRAVO 3", "data": {}},
+    #        "28": {"title": "BRAVO 4", "data": {}}}},
+    #     "3": {"title": "CHARLY", "data": {
+    #        "29": {"title": "CHARLY 1", "data": {}},
+    #        "30": {"title": "CHARLY 2", "data": {}},
+    #        "31": {"title": "CHARLY 3", "data": {}},
+    #        "32": {"title": "CHARLY 4", "data": {}}}}
+    #      }
+
+
+
+
 class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
     def __init__(self, dic):
         super().__init__(dic)
@@ -207,19 +228,19 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
         return weeks_dic
 
     def get_units_structure(self, dic):
-        print("\n", "-"*50, '\n90035-1 dic\n', dic, "\n", "-"*50)
+        # print("\n", "-"*50, '\n90035-1 dic\n', dic, "\n", "-"*50)
         app_ = dic["app"]
         weeks_ = dic["weeks"]
-        unite_soldiers_number_ = dic["unite_soldiers_number"]
-
+        # unite_soldiers_number_ = dic["unite_soldiers_number"]
+        #
         groups_ = dic["groups"]
         nav_tables_ = groups_["nav_tables"]
         result = {"title":"title-top", "data":{}}
         if weeks_ == "1-5":
             result = self.process_weeks_1_5(app_, 0, nav_tables_, result["data"])
-        elif weeks_ == "6-10":
-            weeks_dic_ = dic["weeks_dic"]
-            result = self.process_weeks_6_10(app_, weeks=weeks_, weeks_dic=weeks_dic_, result=result["data"])
+        # elif weeks_ == "6-10":
+        #     weeks_dic_ = dic["weeks_dic"]
+        #     result = self.process_weeks_6_10(app_, weeks=weeks_, weeks_dic=weeks_dic_, result=result["data"])
 
         # print("-"*100, "\n", result, "\n", "-"*100)
         # dd = {}
@@ -779,6 +800,13 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
         # print(tests_objs)
         test_list = []
         test_dic = {}
+        up_value = parent_test_obj.up_value
+        up_color = parent_test_obj.up_color
+        down_value = parent_test_obj.down_value
+        down_color = parent_test_obj.down_color
+        other_color = parent_test_obj.other_color
+        var_dic = {"up_value":up_value, "up_color":up_color, "down_value":down_value,
+                   "down_color":down_color, "other_color":other_color}
         for q in tests_objs:
             test_list.append(str(q.test_number))
             test_dic[str(q.test_number)] = {"id": q.id , "value": round(float(q.value),2)}
@@ -794,7 +822,7 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
             result["test_number"].append(q.testsforevent.test_number)
             result["value"].append(round(float(q.value),2))
 
-        result = {"status": "ok", "result":result, "test_dic":test_dic}
+        result = {"status": "ok", "result":result, "test_dic":test_dic, "var_dic": var_dic}
         # print(result)
         return result
 

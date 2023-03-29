@@ -1676,11 +1676,9 @@ acGradesCreator.prototype.set_obj_structure = function(tests_dic=null, group_dic
 
  if(this.tests_dic!=null && this.group_dic.length>0){
     this.tests_config=tests_config;this.entity_config=entity_config;
-
     var dic= {"obj":"TrainingDataProcessing", "atm":atm.my_name, "app":atm.my_app, "obj_param":{"app":atm.my_app, "topic_id":"general"},
               "fun":"get_variable_data", "params":{"app":atm.my_app,"group_dic":this.group_dic,"tests_dic":this.tests_dic}}
     //alert("90100-22\n"+JSON.stringify(dic));
-
     var fun=function(data, this_obj)
     {
       var tests_config=this_obj.tests_config;var group_dic=this_obj.group_dic;
@@ -1688,7 +1686,13 @@ acGradesCreator.prototype.set_obj_structure = function(tests_dic=null, group_dic
       var f=function(v, tc){var n__=tc["from"].length;var r_=-1;
       for(var h=0; h<n__;h++){if(tc["from"][h] <= v && v < tc["to"][h]){r_=tc["grade"][h];break}};return r_;}
       var entity_name="soldier";
-      var result=data["result"];var test_dic=data["test_dic"];
+      var result=data["result"];var test_dic=data["test_dic"];var var_dic=data["var_dic"]
+      //alert("90122-22\n"+JSON.stringify(var_dic));
+      var up_value=var_dic["up_value"];
+      var up_color=var_dic["up_color"];
+      var down_value=var_dic["down_value"];
+      var down_color=var_dic["down_color"];
+      var other_color=var_dic["other_color"];
       result["value_converted"]=[];
 
       //alert("90160-6\n"+JSON.stringify(result));
@@ -1746,7 +1750,17 @@ acGradesCreator.prototype.set_obj_structure = function(tests_dic=null, group_dic
               }
               //alert("222\n")
          } else {for(var j=0;j<n_tests;j++){s+="<td></td>"}}
-         s+="<td style=';text-align:right;width:"+col_width+"px'>"+(Math.round(100*var_value)/100)+"</td>";
+
+         try{
+             var ss_=""
+             if(Math.round(100*var_value)/100 > up_value)
+             {ss_="background-color:"+up_color+";color:white;"} else if (Math.round(100*var_value)/100 < down_value){
+              ss_="background-color:"+down_color+";color:white;";
+             } else {ss_="background-color:"+other_color+";color:white;"}
+         } catch(er){}
+
+         s+="<td style=';text-align:right;width:"+col_width+"px;"+ss_+"'>"+(Math.round(100*var_value)/100)+"</td>";
+
          s+="</tr>";
       }
       //alert(JSON.stringify(result));
@@ -3067,6 +3081,7 @@ acTestCreator.prototype.on_record_created_deleted = function(e,action="created")
 // Variable --
 function acVariableCreator(parent){this.parent=parent;this.structure_dic=null;this.variable_list=[];this.fields=[];
                    this.members_list={"variable_number":[], "record_id":[]};
+    // alert("acVariableCreator=\n" + JSON.stringify(this.parent.data))
 }
 
 acVariableCreator.prototype.create_obj = function()
@@ -3486,6 +3501,7 @@ acGroupCreator.prototype.on_record_created_deleted = function(e,action="created"
 //  alert(get_creator(this.recording_tests_number).set_obj_structure)
 //  get_creator(this.recording_tests_number).set_obj_structure(group_list=this.members_list, test_list=null)
 }
+
 
 
 // RecordingTests --
@@ -5462,13 +5478,18 @@ TabContent.prototype.set_objects_data = function(dic, is_json_data=false)
  {
    if(container_dic[o]["obj_type"]=="acObj" && ((container_dic[o]["obj_name"]=="acInput" || container_dic[o]["obj_name"]=="acTextarea" )
       || container_dic[o]["obj_name"]=="acSelect")){
-     //alert("9023 "+JSON.stringify(container_dic[o]["properties"]))
+
+     alert("9023 "+JSON.stringify(container_dic[o]["properties"]))
+
      var multiple_=false;if("multiple" in container_dic[o]["properties"]){multiple_ = true}
      var eI=document.getElementById(o);
      var v=dic[container_dic[o]["properties"]["field"]]
      if(v=="" || v==null){continue;}
      //var m=dic[container_dic[o]["properties"]["field"]]
-
+     if(container_dic[o]["obj_name"]=="acTextarea"){
+     v = JSON.stringify(v)
+     alert(v)
+     }
      if(container_dic[o]["properties"]["field"]=="time_dim")
      {
       var v_=v+"";v_=v_.substr(0, 4)+"-"+v_.substring(4,6)+"-"+v_.substring(6,8)

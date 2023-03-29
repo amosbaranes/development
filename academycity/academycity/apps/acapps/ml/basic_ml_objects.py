@@ -155,6 +155,20 @@ class BaseDataProcessing(object):
         name_ = name.replace("-", "").replace(" ", "").replace("_", "")
         return name_
 
+    def general_data(self, dic):
+        action_ = dic['action']
+        app_ = dic['app']
+        group_ = dic['group']
+        data_name_ = dic['data_name']
+        general_data_model = apps.get_model(app_label="core", model_name="generaldata")
+        if action_ == "set":
+            data_json_ = dic['data_json']
+            obj, is_created = general_data_model.objects.get_or_create(app=app_, group=group_, data_name=data_name_)
+            obj.data_json = data_json_
+            obj.save()
+        else:
+            obj = general_data_model.objects.get(app=app_, group=group_, data_name=data_name_)
+            return obj.data_json
 
 class BasePotentialAlgo(object):
     def __init__(self, dic):  # to_data_path, target_field
