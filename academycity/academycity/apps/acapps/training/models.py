@@ -18,14 +18,14 @@ class InventoryCategorys(TruncateTableMixin, models.Model):
     class Meta:
         verbose_name = 'inventorycategory'
         verbose_name_plural = 'inventorycategorys'
-        ordering = ['category', 'category_name_1']
+        ordering = ['category_name', 'category_name_1']
     training_web = models.ForeignKey(TrainingWeb, on_delete=models.CASCADE, default=1,
                                      related_name='training_web_inventory_categorys')
-    Item_number = models.SmallIntegerField(default=0)
+    item_number = models.SmallIntegerField(default=0)
     pn = models.CharField(max_length=200, default='', blank=True, null=True)
     category_name_1 = models.CharField(max_length=100, default='', blank=True, null=True)
     category_name_2 = models.CharField(max_length=100, default='', blank=True, null=True)
-    category = models.CharField(max_length=100, default='', blank=True, null=True)
+    category_name = models.CharField(max_length=100, default='', blank=True, null=True)
 
     def __str__(self):
         return str(self.category_name)
@@ -139,6 +139,24 @@ class Platoons(TruncateTableMixin, models.Model):
     def __str__(self):
         return str(self.platoon_name)
 
+# מחלקה
+class Sections(TruncateTableMixin, models.Model):
+    class Meta:
+        verbose_name = 'section'
+        verbose_name_plural = 'sections'
+        ordering = ['platoon', 'section_name']
+    training_web = models.ForeignKey(TrainingWeb, on_delete=models.CASCADE, default=1,
+                                     related_name='training_web_sections')
+    platoon = models.ForeignKey(Platoons, on_delete=models.CASCADE, null=True, related_name='platoon_sections')
+    section_name = models.CharField(max_length=50, default='', blank=True, null=True)
+    section_number = models.SmallIntegerField(default=1)
+
+    @property
+    def complete_name(self):
+        return str(self.platoon.company.company_name) +": " + str(self.platoon.platoon_name) +": " + str(self.section_name)
+
+    def __str__(self):
+        return str(self.section_name)
 # כיתה
 class Squads(TruncateTableMixin, models.Model):
     class Meta:
@@ -199,9 +217,9 @@ class Soldiers(TruncateTableMixin, models.Model):
                                      related_name='training_web_soldiers')
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, primary_key=True,
                                 related_name='user_training')
+    battalion = models.ForeignKey(Battalions, on_delete=models.CASCADE, default=1, related_name='platoon_soldiers')
     platoon = models.ForeignKey(Platoons, on_delete=models.CASCADE, null=True, related_name='platoon_soldiers')
-    course = models.ManyToManyField(Courses, default=[1],
-                                    related_name='course_soldiers')
+    course = models.ManyToManyField(Courses, default=[1], related_name='course_soldiers')
     #
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
@@ -249,19 +267,18 @@ class Soldiers(TruncateTableMixin, models.Model):
     def __str__(self):
         return str(self.userid) + ": " + str(self.first_name) + " " + str(self.last_name)
 
-class UniteSoldiers(TruncateTableMixin, models.Model):
+class UnitSoldiers(TruncateTableMixin, models.Model):
     class Meta:
-        verbose_name = 'unite_soldier'
-        verbose_name_plural = 'unite_soldiers'
-        ordering = ['weeks', 'unit']
+        verbose_name = 'unit_soldier'
+        verbose_name_plural = 'unit_soldiers'
+        ordering = ['soldier', 'unit_number']
 
-    unite_soldiers_number = models.IntegerField(default=0)
-    weeks = models.CharField(max_length=10, default='W1-5', blank=True, null=True)
-    unit = models.IntegerField(default=0)
-    soldier = models.IntegerField(default=0)
+    period = models.ForeignKey(Periods, on_delete=models.CASCADE, default=1, related_name='period_unit_soldiers')
+    soldier = models.ForeignKey(Soldiers, on_delete=models.CASCADE, default=1, related_name='soldier_unit_soldiers')
+    unit_number = models.IntegerField(default=0)
 
     def __str__(self):
-        return str(self.unit)+":"+str(self.soldier)
+        return str(self.unit_number)+":"+str(self.soldier)
 
 class TimeDim(TruncateTableMixin, models.Model):
     id = models.PositiveIntegerField(primary_key=True)

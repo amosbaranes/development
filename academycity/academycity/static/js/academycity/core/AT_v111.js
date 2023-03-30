@@ -4942,7 +4942,7 @@ acChartCreator.prototype.create_obj = function()
 
 acChartCreator.prototype.set_chart_data = function(chart_type)
 {
-  //alert("9023-550\n"+JSON.stringify(chart_type));
+  //alert("90213-550\n"+JSON.stringify(chart_type));
   var data_=[];
   chart_attributes={"pies":{"type_name":"type", "type_value":"pie", "marker_attribute":"opacity", "marker_attribute_value":"0.7"},
                     "areas":{"type_name":"type", "type_value":"scatter", "marker_attribute":"opacity", "marker_attribute_value":"0.7"},
@@ -4954,7 +4954,7 @@ acChartCreator.prototype.set_chart_data = function(chart_type)
                     "indicator":{"type_name":"mode", "type_value":"indicator"}
                    }
 
-    //alert("9023-550 chart_attributes\n"+JSON.stringify(chart_attributes));
+    //alert("90223-550 chart_attributes\n"+JSON.stringify(chart_attributes));
 //    chart_type["type_name"]=chart_attributes[chart_type["type"]]["type_name"];
 //    chart_type["type_name_value"]=chart_attributes[chart_type["type"]]["type_value"]
     data={"type":chart_type["type"],
@@ -5069,7 +5069,7 @@ acChartCreator.prototype.set_chart_data = function(chart_type)
     }
  }
  else if(chart_type["type"]=='lines'){
-    // alert("9023-550-1\n"+JSON.stringify(chart_type));
+    // alert("90233-550-1\n"+JSON.stringify(chart_type));
     var data = [];
     for(var k in chart_type["series"])
     {
@@ -5090,7 +5090,7 @@ acChartCreator.prototype.set_chart_data = function(chart_type)
     Plotly.newPlot(this.chart, data, layout);
  }
  else if(chart_type["type"]=='bars'){
-    //alert("9023-550-1\n"+JSON.stringify(chart_type));
+    //alert("90243-550-1\n"+JSON.stringify(chart_type));
     var data = [];
     for(var k in chart_type["series"])
     {
@@ -5478,9 +5478,7 @@ TabContent.prototype.set_objects_data = function(dic, is_json_data=false)
  {
    if(container_dic[o]["obj_type"]=="acObj" && ((container_dic[o]["obj_name"]=="acInput" || container_dic[o]["obj_name"]=="acTextarea" )
       || container_dic[o]["obj_name"]=="acSelect")){
-
-     alert("9023 "+JSON.stringify(container_dic[o]["properties"]))
-
+     // alert("9023 "+JSON.stringify(container_dic[o]["properties"]))
      var multiple_=false;if("multiple" in container_dic[o]["properties"]){multiple_ = true}
      var eI=document.getElementById(o);
      var v=dic[container_dic[o]["properties"]["field"]]
@@ -5488,7 +5486,7 @@ TabContent.prototype.set_objects_data = function(dic, is_json_data=false)
      //var m=dic[container_dic[o]["properties"]["field"]]
      if(container_dic[o]["obj_name"]=="acTextarea"){
      v = JSON.stringify(v)
-     alert(v)
+     //alert(v)
      }
      if(container_dic[o]["properties"]["field"]=="time_dim")
      {

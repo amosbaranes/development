@@ -161,7 +161,7 @@ class BaseTrainingAlgo(object):
                 self.second_time_save = self.save_to_file
 
 
-    #
+
     # a = {"1": {"title": "ALPHA", "data":
     #       {"21": {"title": "ALPHA 1", "data": {}},
     #        "22": {"title": "ALPHA 2", "data": {}},
@@ -178,8 +178,6 @@ class BaseTrainingAlgo(object):
     #        "31": {"title": "CHARLY 3", "data": {}},
     #        "32": {"title": "CHARLY 4", "data": {}}}}
     #      }
-
-
 
 
 class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
@@ -253,6 +251,47 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
 
         # print("-"*100, "\n", dd, "\n", "-"*100)
         result = {"status": "ok", "result":result}
+        return result
+
+    def get_units_structure_new(self, dic):
+        # print("\n", "-"*50, '\n90035-1 dic\n', dic, "\n", "-"*50)
+        app_ = dic["app"]
+        battalion_ = dic["battalion"]
+        period_ = dic["period"]
+        print(battalion_, period_)
+        try:
+            soldiers = {"user_id":[], "first_name":[], "last_name":[]}
+            model_soldiers = apps.get_model(app_label=app_, model_name="soldiers")
+            qs = model_soldiers.objects.filter(battalion__id=battalion_).all()
+            # print(qs)
+            df_s = pd.DataFrame(list(qs.values("user_id", "first_name", "last_name")))
+            # print(df_s)
+            for index, row in df_s.iterrows():
+                soldiers["user_id"].append(int(row["user_id"]))
+                soldiers["first_name"].append(str(row["first_name"]))
+                soldiers["last_name"].append(str(row["last_name"]))
+        except Exception as ex:
+            print(ex)
+
+        try:
+            model_unitsoldiers = apps.get_model(app_label=app_, model_name="unitsoldiers")
+            print(model_unitsoldiers)
+            qs = model_unitsoldiers.objects.filter(period__id=period_).all()
+            print(qs)
+            df_us = pd.DataFrame(list(qs.values()))
+            print(df_us)
+
+        except Exception as ex:
+            print(ex)
+
+        try:
+            model_periods = apps.get_model(app_label=app_, model_name="periods")
+            period_obj = model_periods.objects.get(id=period_, battalion__id=battalion_)
+            result = period_obj.structure
+        except Exception as ex:
+            print(ex)
+        # print("-"*100, "\n", dd, "\n", "-"*100)
+        result = {"status": "ok", "soldiers": soldiers, "result":result}
         return result
 
     def set_instructors(self, dic):
@@ -748,6 +787,104 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
         result = {"status": "ok"}
         return result
 
+    def set_new_structure(self, dic):
+        print('90088-1 dic', dic)
+        app_ = dic["app"]
+        battalion_name = dic["cube_dic"]["fact"]["model"]
+        battalion_id = int(dic["cube_dic"]["fact"]["field_name"])
+        period_number = int(dic["cube_dic"]["dimensions"]["time_dim"]["field_name"])
+
+        units_dic = {battalion_id: {'title': battalion_name, 'data': {}}}
+        file_path = self.upload_file(dic)["file_path"]
+        sheet_name_ = eval(dic["sheet_name"])
+
+        model_periods = apps.get_model(app_label=app_, model_name="periods")
+        period_obj, is_created = model_periods.objects.get_or_create(battalion__id=battalion_id, period_number=period_number)
+        model_unit_soldiers = apps.get_model(app_label=app_, model_name="unitsoldiers")
+        model_unit_soldiers.truncate()
+        model_soldiers = apps.get_model(app_label=app_, model_name="soldiers")
+        missing_soldiers = []
+        multiple_soldiers = []
+        for sheet in sheet_name_:
+            number = self.get_next_number({"app": app_})
+            # company
+            units_dic[battalion_id]["data"][number] = {"title": sheet, "data": {}}
+            data_ = units_dic[battalion_id]["data"][number]["data"]
+            df = pd.read_excel(file_path, sheet_name=sheet, header=0)
+            # print(df)
+            platoons_ = []
+            n__ = 0
+            for index, row in df.iterrows():
+                n__+= 1
+                # print("=====", n__, "=====")
+                platoon = str(row["Unit"])
+                if platoon not in platoons_:
+                    # platoon
+                    platoons_.append(platoon)
+                    number_ = self.get_next_number({"app": app_})
+                    data_[number_] = {"title": platoon, "data": {}}
+                    sections_ = []
+                section = str(row["Sub"])
+                if section not in sections_:
+                    sections_.append(section)
+                    # print(platoon, section)
+                    # print(platoons_, sections_)
+                    number__ = self.get_next_number({"app": app_})
+                    data_[number_]["data"][number__] = {"title": section, "data": {}}
+
+                full_name = string.capwords(str(row["FULLNAME"]))
+                if full_name == "Nan":
+                    continue
+                nn__ = full_name.find(" ")
+                first_name = full_name[:nn__].rstrip().lstrip()
+                last_name = full_name[nn__+1:].rstrip().lstrip()
+
+                try:
+                    soldier_obj = model_soldiers.objects.filter(first_name=first_name).all()
+                    count = soldier_obj.count()
+                    if count == 0:
+                        soldier_obj = model_soldiers.objects.filter(last_name=last_name).all()
+                        count = soldier_obj.count()
+                        if count == 0:
+                            missing_soldiers.append(platoon+": " + section + ": " + full_name)
+                            print(n__, " AAA (count == 0)=", platoon+": " + section + ": " + full_name)
+                            continue
+                    elif count > 1:
+                        soldier_obj = model_soldiers.objects.filter(first_name=first_name, last_name=last_name).all()
+                        count = soldier_obj.count()
+                        if count > 1:
+                            multiple_soldiers.append("2 "+full_name)
+                            print(n__, "BBB(count >1)=", platoon+": " + section + ": " + full_name)
+                            continue
+                        elif count == 0:
+                            print(n__, "DDD (count == 1 w LN count=0)=", platoon+": " + section + ": " + full_name)
+                            multiple_soldiers.append("2 "+full_name)
+                            continue
+                    if soldier_obj.count() == 1:
+                        try:
+                            u_obj, is_created = model_unit_soldiers.objects.get_or_create(period=period_obj, soldier=soldier_obj[0])
+                            u_obj.unit_number = number__
+                            u_obj.save()
+                            # print("saved: "+ str(n__))
+                        except Exception as ex:
+                            print("error 200: ", full_name)
+                    else:
+                        print(str(n__)+" HHH Not saved: (count="+str(soldier_obj.count())+")= ", platoon+": " + section + ": " + full_name)
+
+                except Exception as ex:
+                    print("Missin soldier in DB: platoon=" + platoon + ": section=" + section + ": first_name=" + first_name + "= last_name=" + last_name + "=\n" + str(ex))
+                    # missing_soldiers.append(full_name)
+
+        period_obj.structure = units_dic
+        period_obj.save()
+        print('\n missing_soldiers')
+        print(missing_soldiers)
+        print('\n multiple_soldiers')
+        print(multiple_soldiers)
+        print(units_dic)
+
+        print("-"*50, "\n\nDone")
+
     def update_gun_list(self, dic):
         print('900100-1 dic', dic)
         clear_log_debug()
@@ -826,6 +963,34 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
         # print(result)
         return result
 
+a = {"1":
+         {"data":
+              {"3855":{"data":
+                        {"3856":{"data":
+                                     {"3857":{"data":{},"title":"Section 0"}},
+                                 "title":"Commend"},"3858":{"data":{"3859":{"data":{},"title":"Section 0"},
+                                                                    "3860":{"data":{},"title":"Section 1"},
+                                                                    "3861":{"data":{},"title":"Section 2"},
+                                                                    "3862":{"data":{},"title":"Section 3"}},
+                                                            "title":"Charly 1"},
+                         "3863":{"data":{"3864":{"data":{},"title":"Section 0"},
+                                         "3865":{"data":{},"title":"Section 1"},
+                                         "3866":{"data":{},"title":"Section 2"},
+                                         "3867":{"data":{},"title":"Section 3"}},
+                                 "title":"Charly 2"},"3868":{"data":{"3869":{"data":{},"title":"Section 1"},
+                                                                     "3870":{"data":{},"title":"Section 2"},
+                                                                     "3871":{"data":{},"title":"Section 3"}},"title":"Charly 3"},
+                         "3872":{"data":{"3873":{"data":{},"title":"Sniper"},"3874":{"data":{},"title":"Observation"},
+                                         "3875":{"data":{},"title":"Drone"}},"title":"Charly 4"}},"title":"Charly"},
+               "3876":{"data":{"3877":{"data":{"3878":{"data":{},"title":"Section 0"}},"title":"Commend"},
+                               "3879":{"data":{"3880":{"data":{},"title":"Section 0"},
+                                               "3881":{"data":{},"title":"Section 1"},
+                                               "3882":{"data":{},"title":"Section 2"},
+                                               "3883":{"data":{},"title":"Section 3"}},"title":"Alpha 1"},
+                               "3884":{"data":{"3885":{"data":{},"title":"Section 0"},
+                                               "3886":{"data":{},"title":"Section 1"},"3887":{"data":{},"title":"Section 2"},
+                                               "3888":{"data":{},"title":"Section 3"}},"title":"Alpha 2"},"3889":{"data":{"3890":{"data":{},"title":"Section 1"},"3891":{"data":{},"title":"Section 2"},"3892":{"data":{},"title":"Section 3"}},"title":"Alpha 3"},"3893":{"data":{"3894":{"data":{},"title":"Sniper"},"3895":{"data":{},"title":"Observation"},"3896":{"data":{},"title":"Drone"}},"title":"Alpha 4"}},"title":"Alpha"},"3897":{"data":{"3898":{"data":{"3899":{"data":{},"title":"Section 0"}},"title":"Commend"},"3900":{"data":{"3901":{"data":{},"title":"Section 0"},"3902":{"data":{},"title":"Section 1"},"3903":{"data":{},"title":"Section 2"},"3904":{"data":{},"title":"Section 3"}},"title":"Bravo 1"},"3905":{"data":{"3906":{"data":{},"title":"Section 0"},"3907":{"data":{},"title":"Section 1"},"3908":{"data":{},"title":"Section 2"},"3909":{"data":{},"title":"Section 3"}},"title":"Bravo 2"},"3910":{"data":{"3911":{"data":{},"title":"Section 1"},"3912":{"data":{},"title":"Section 2"},"3913":{"data":{},"title":"Section 3"}},"title":"Bravo 3"},"3914":{"data":{"3915":{"data":{},"title":"Sniper"},"3916":{"data":{},"title":"Observation"},"3917":{"data":{},"title":"Drone"}},"title":"Bravo 4"}},"title":"Bravo"}},
+          "title":"battalion 1"}}
 
 # double_shoot = DoubleShoot()
 # # function = "getSolderData"

@@ -170,6 +170,27 @@ class BaseDataProcessing(object):
             obj = general_data_model.objects.get(app=app_, group=group_, data_name=data_name_)
             return obj.data_json
 
+    def get_next_number(self, dic):
+        app_ = dic['app']
+        group_ = "general"
+        data_name_ = "number"
+        general_data_model = apps.get_model(app_label="core", model_name="generaldata")
+        data_json_ = {"number": 1}
+        return_number = 1
+        obj, is_created = general_data_model.objects.get_or_create(app=app_, group=group_, data_name=data_name_)
+        if is_created:
+            obj.data_json = data_json_
+            obj.save()
+        else:
+            obj = general_data_model.objects.get(app=app_, group=group_, data_name=data_name_)
+            data_json_ = obj.data_json
+            return_number = data_json_["number"] + 1
+            data_json_["number"] = return_number
+            obj.data_json = data_json_
+            obj.save()
+        return return_number
+
+
 class BasePotentialAlgo(object):
     def __init__(self, dic):  # to_data_path, target_field
         # print("90050-01 BasePotentialAlgo", dic, '\n', '-'*50)
