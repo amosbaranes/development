@@ -229,6 +229,7 @@ class Soldiers(TruncateTableMixin, models.Model):
     last_name = models.CharField(max_length=50, default='', blank=True, null=True)
     image = models.ImageField(upload_to='training/%Y/%m/%d/', blank=True, null=True)
     userid = models.CharField(max_length=100, default='', blank=True, null=True)
+    uniqueid = models.CharField(max_length=100, default='', blank=True, null=True)
     #
     mz4psn = models.CharField(max_length=100, default='', blank=True, null=True)
     ramonsn = models.CharField(max_length=100, default='', blank=True, null=True)

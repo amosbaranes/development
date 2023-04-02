@@ -46,7 +46,7 @@ class CompliancesAdmin(admin.ModelAdmin):
 
 @admin.register(Soldiers)
 class SoldiersAdmin(admin.ModelAdmin):
-    list_display = ('userid', 'first_name', 'last_name')
+    list_display = ('user_id', 'userid', 'first_name', 'last_name')
 
 @admin.register(Courses)
 class CoursesAdmin(admin.ModelAdmin):

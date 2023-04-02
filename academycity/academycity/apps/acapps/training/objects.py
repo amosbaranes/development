@@ -191,7 +191,69 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
                                           "position_name": ['מפקד גדוד', 'מפקד פלוגה', 'מספר 2 – צ', 'מוביל צוות', 'מספר 2',
                                                             'אימון גופני', 'מתגבר', 'קמ”ג']})
 
-    def process_weeks_1_5(self, app_, n, nav_tables_, result, qid=None):
+    # To be deleted
+    def process_period_1(self, app_, n, nav_tables_, result, qid=None, battalion=None):
+        nn = len(nav_tables_)
+        if n < nn:
+            model_ = apps.get_model(app_label=app_, model_name=nav_tables_[n]+"s")
+            p_key_field_name = model_._meta.pk.name
+            if qid:
+                model_name = nav_tables_[n-1]
+                model_p = apps.get_model(app_label=app_, model_name=model_name+"s").objects.get(id=qid)
+                qs = eval("model_.objects.filter("+model_name+"=model_p).all()")
+            else:
+                qs = model_.objects.filter(id=battalion).all()
+            n += 1
+            if nav_tables_[n-1] == "soldier":
+                model_periods = apps.get_model(app_label=app_, model_name="periods")
+                period_obj, is_created = model_periods.objects.get_or_create(battalion__id=battalion, period_number=1)
+                model_soldiers = apps.get_model(app_label=app_, model_name="soldiers")
+                model_unit_soldiers = apps.get_model(app_label=app_, model_name="unitsoldiers")
+                df = pd.DataFrame(list(qs.values('user_id', 'platoon_id')))
+                # print(df)
+                for index, row in df.iterrows():
+                    soldier_obj = model_soldiers.objects.get(user_id=row["user_id"])
+                    u_obj, is_created = model_unit_soldiers.objects.get_or_create(period=period_obj, soldier=soldier_obj)
+                    u_obj.unit_number = row["platoon_id"]
+                    u_obj.save()
+                return result
+            for q in qs:
+                if p_key_field_name=="user":
+                    qid_ = eval("q."+p_key_field_name+".id")
+                else:
+                    qid_ = eval("q."+p_key_field_name)
+                if n < nn-1:
+                    n_ = self.get_next_number({"app": app_})
+                else:
+                    n_ = qid_
+                result[n_]={"title":str(q), "data":{}}
+                self.process_period_1(app_, n, nav_tables_, result[n_]["data"], qid=qid_, battalion=battalion)
+        return result
+
+    # To be deleted
+    def get_units_structure_battallion_1_Period_1(self, dic):
+        # print("\n", "-"*50, '\n90035-1 dic\n', dic, "\n", "-"*50)
+        app_ = dic["app"]
+        battalion_ = dic["battalion"]
+        period_ = dic["period"]
+        # unite_soldiers_number_ = dic["unite_soldiers_number"]
+        #
+        groups_ = dic["groups"]
+        nav_tables_ = groups_["nav_tables"]
+        result = {"title":"title-top", "data":{}}
+
+        result = self.process_period_1(app_, 0, nav_tables_, result["data"], battalion=battalion_)
+        model_periods = apps.get_model(app_label=app_, model_name="periods")
+        period_obj, is_created = model_periods.objects.get_or_create(battalion__id=battalion_, period_number=period_)
+        period_obj.structure = result
+        period_obj.period_name = "Battalion: " + str(battalion_) +" Period: " + str(period_)
+        period_obj.save()
+
+        # print("-"*100, "\n", result, "\n", "-"*100)
+        result = {"status": "ok", "result":result}
+        return result
+
+    def process_weeks_1_5(self, app_, n, nav_tables_, result, qid=None, battalion=None):
         nn = len(nav_tables_)
         if n < nn:
             title = nav_tables_[n]
@@ -205,7 +267,7 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
                 model_p = apps.get_model(app_label=app_, model_name=model_name+"s").objects.get(id=qid)
                 qs = eval("model_.objects.filter("+model_name+"=model_p).all()")
             else:
-                qs = model_.objects.all()
+                qs = model_.objects.filter(id=battalion).all()
             n += 1
             for q in qs:
                 if p_key_field_name=="user":
@@ -214,7 +276,7 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
                 else:
                     qid_ = eval("q."+p_key_field_name)
                 result[qid_]={"title":str(q), "model":nav_tables_[n-1], "data":{}}
-                self.process_weeks_1_5(app_, n, nav_tables_, result[qid_]["data"], qid=qid_)
+                self.process_weeks_1_5(app_, n, nav_tables_, result[qid_]["data"], qid=qid_, battalion=battalion)
         return result
 
     def process_weeks_6_10(self, app_, weeks, weeks_dic, result, qid=None):
@@ -229,27 +291,16 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
         # print("\n", "-"*50, '\n90035-1 dic\n', dic, "\n", "-"*50)
         app_ = dic["app"]
         weeks_ = dic["weeks"]
+        battalion_ = dic["battalion"]
         # unite_soldiers_number_ = dic["unite_soldiers_number"]
         #
         groups_ = dic["groups"]
         nav_tables_ = groups_["nav_tables"]
         result = {"title":"title-top", "data":{}}
         if weeks_ == "1-5":
-            result = self.process_weeks_1_5(app_, 0, nav_tables_, result["data"])
-        # elif weeks_ == "6-10":
-        #     weeks_dic_ = dic["weeks_dic"]
-        #     result = self.process_weeks_6_10(app_, weeks=weeks_, weeks_dic=weeks_dic_, result=result["data"])
+            result = self.process_weeks_1_5(app_, 0, nav_tables_, result["data"], battalion=battalion_)
 
         # print("-"*100, "\n", result, "\n", "-"*100)
-        # dd = {}
-        # for k in result:
-        #     dd[k] = {"title": result[k]["title"], "data":{}}
-        #     for i in result[k]["data"]:
-        #         dd[k]["data"][i] = {"title": result[k]["data"][i]["title"], "data":{}}
-        #         for j in result[k]["data"][i]["data"]:
-        #             dd[k]["data"][i]["data"][j] = {"title": result[k]["data"][i]["data"][j]["title"], "data":{}}
-
-        # print("-"*100, "\n", dd, "\n", "-"*100)
         result = {"status": "ok", "result":result}
         return result
 
@@ -258,40 +309,58 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
         app_ = dic["app"]
         battalion_ = dic["battalion"]
         period_ = dic["period"]
-        print(battalion_, period_)
+        # print(battalion_, period_)
+        # soldiers
         try:
-            soldiers = {"user_id":[], "first_name":[], "last_name":[]}
+            soldiers = {"id":[], "userid":[], "first_name":[], "last_name":[], "name":[]}
             model_soldiers = apps.get_model(app_label=app_, model_name="soldiers")
             qs = model_soldiers.objects.filter(battalion__id=battalion_).all()
             # print(qs)
-            df_s = pd.DataFrame(list(qs.values("user_id", "first_name", "last_name")))
+            df_s = pd.DataFrame(list(qs.values("user_id", "userid", "first_name", "last_name")))
             # print(df_s)
             for index, row in df_s.iterrows():
-                soldiers["user_id"].append(int(row["user_id"]))
+                soldiers["id"].append(str(row["user_id"]))
+                soldiers["userid"].append(str(row["userid"]))
                 soldiers["first_name"].append(str(row["first_name"]))
                 soldiers["last_name"].append(str(row["last_name"]))
+                soldiers["name"].append(str(row["first_name"])+" "+str(row["last_name"]))
         except Exception as ex:
-            print(ex)
+            print("Error 1: "+str(ex))
 
+        # unitsoldiers
         try:
+            unitsoldiers = {}
             model_unitsoldiers = apps.get_model(app_label=app_, model_name="unitsoldiers")
-            print(model_unitsoldiers)
-            qs = model_unitsoldiers.objects.filter(period__id=period_).all()
-            print(qs)
+            qs = model_unitsoldiers.objects.filter(period__battalion__id=battalion_).all()
             df_us = pd.DataFrame(list(qs.values()))
-            print(df_us)
-
+            # print(df_us)
+            period_id_ = []
+            unit_number_ = []
+            for index, row in df_us.iterrows():
+                if row["period_id"] not in period_id_:
+                    unitsoldiers[int(row["period_id"])] = {}
+                    period_id_.append(row["period_id"])
+                if row["unit_number"] not in unit_number_:
+                    unitsoldiers[int(row["period_id"])][int(row["unit_number"])] = []
+                    unit_number_.append(row["unit_number"])
+                unitsoldiers[int(row["period_id"])][int(row["unit_number"])].append(int(row["soldier_id"]))
+            # print(unitsoldiers)
         except Exception as ex:
-            print(ex)
+            print("Error 2: "+str(ex))
 
+        # structure
         try:
+            structure = {}
             model_periods = apps.get_model(app_label=app_, model_name="periods")
-            period_obj = model_periods.objects.get(id=period_, battalion__id=battalion_)
-            result = period_obj.structure
+            period_objs = model_periods.objects.filter(battalion__id=battalion_).all()
+            # print(period_objs)
+            for period_obj in period_objs:
+                structure[period_obj.id] = period_obj.structure
         except Exception as ex:
-            print(ex)
-        # print("-"*100, "\n", dd, "\n", "-"*100)
-        result = {"status": "ok", "soldiers": soldiers, "result":result}
+            print("Error 3: "+str(ex))
+        print("-"*100, "\n", structure, "\n", "-"*100)
+        result = {"status": "ok", "soldiers": soldiers, "structure":structure, "unitsoldiers":unitsoldiers}
+        # print(result)
         return result
 
     def set_instructors(self, dic):
@@ -797,7 +866,6 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
         units_dic = {battalion_id: {'title': battalion_name, 'data': {}}}
         file_path = self.upload_file(dic)["file_path"]
         sheet_name_ = eval(dic["sheet_name"])
-
         model_periods = apps.get_model(app_label=app_, model_name="periods")
         period_obj, is_created = model_periods.objects.get_or_create(battalion__id=battalion_id, period_number=period_number)
         model_unit_soldiers = apps.get_model(app_label=app_, model_name="unitsoldiers")
@@ -870,12 +938,12 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
                             print("error 200: ", full_name)
                     else:
                         print(str(n__)+" HHH Not saved: (count="+str(soldier_obj.count())+")= ", platoon+": " + section + ": " + full_name)
-
                 except Exception as ex:
                     print("Missin soldier in DB: platoon=" + platoon + ": section=" + section + ": first_name=" + first_name + "= last_name=" + last_name + "=\n" + str(ex))
                     # missing_soldiers.append(full_name)
 
         period_obj.structure = units_dic
+        period_obj.period_name = "Battalion: " + str(battalion_id) + " Period: " + str(period_number)
         period_obj.save()
         print('\n missing_soldiers')
         print(missing_soldiers)

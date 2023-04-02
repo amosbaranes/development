@@ -3269,7 +3269,6 @@ acGroupCreator.prototype.get_entity_list = function(e_dic)
  var dic=this.parent.data;
  //alert("90100-1\n"+JSON.stringify(dic));
  var obj_number=dic["properties"]["obj_number"]
-
  var container_id=dic["container_id"]
  var e=e_dic["e"];var c=e_dic["c"];
  var table=dic["properties"]["table"];
@@ -3282,11 +3281,11 @@ acGroupCreator.prototype.get_entity_list = function(e_dic)
      var dic_=eval(e.getAttribute("link"))
      for(var i in dic_)
      {
-      var id_=i
+      var id_=i; var title_=dic_[i]["title"];
       var s='&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' //<span style="cursor: pointer">+</span>'
       s+='<input type="checkbox" my_creator_number="'+obj_number+'" container_id="'+container_id+'" id="soldier_'+id_+'" soldier_number="'+id_+'" record_id="new" value="" table="'+table
       s+='" field="'+field+'" value_field="'+value_field+'" type_="groups">'
-      s+='<label>'+dic_[i]["title"]+'</label><br/>'
+      s+='<label>'+title_+'</label><br/>'
       c.innerHTML+=s
      }
  }
@@ -3558,7 +3557,8 @@ acRecordingTestsCreator.prototype.set_obj_structure = function(group_list=null, 
   this.test_dic = eval("this.parent.atm.general.test_dic")
   //--
   var dic=this.parent.data;
-  var width_=80;var userid_width_=dic["properties"]["userid_width"];var name_width_=dic["properties"]["name_width"];
+  var width_=80;var userid_width_=dic["properties"]["userid_width"];
+  var name_width_=dic["properties"]["name_width"];
  if(test_list!=null){this.horizontal_field_list=test_list}
  if(group_list!=null){this.vertical_field_list=group_list}
  if(this.horizontal_field_list!=null && this.vertical_field_list!=null)
@@ -3569,6 +3569,7 @@ acRecordingTestsCreator.prototype.set_obj_structure = function(group_list=null, 
    if(!(dic["properties"]["table_class"])){dic["properties"]["table_class"]="basic"}
    var general_entity_name = dic["properties"]["entity"];
    this.entity_list = eval("this.parent.atm.general."+general_entity_name+"_list")
+   //alert("this.parent.atm.general."+general_entity_name+"_dic")
    this.entity_dic = eval("this.parent.atm.general."+general_entity_name+"_dic")
    var container_id=dic["container_id"];
    var field=dic["properties"]["field"];
@@ -3601,8 +3602,14 @@ acRecordingTestsCreator.prototype.set_obj_structure = function(group_list=null, 
    var th_=document.createElement("th");this.tr_.appendChild(th_);th_.innerHTML="User id";
    th_.setAttribute("sort_by", "userid");th_.setAttribute("sort_ascending", "true");
    th_.setAttribute("style", "width:"+userid_width_+"px;border-top-left-radius: 10px");
-   var th_=document.createElement("th");this.tr_.appendChild(th_);th_.innerHTML="Name";th_.setAttribute("style", "width:"+name_width_+"px");
-   th_.setAttribute("sort_by", "name");th_.setAttribute("sort_ascending", "true");
+
+   var th_=document.createElement("th");this.tr_.appendChild(th_);th_.innerHTML="First Name";
+   th_.setAttribute("style", "width:"+name_width_+"px");
+   th_.setAttribute("sort_by", "first_name");th_.setAttribute("sort_ascending", "true");
+
+   var th_=document.createElement("th");this.tr_.appendChild(th_);th_.innerHTML="Last Name";
+   th_.setAttribute("style", "width:"+name_width_+"px");
+   th_.setAttribute("sort_by", "last_name");th_.setAttribute("sort_ascending", "true");
 
    var n_=this.horizontal_field_list["record_id"].length
    for(var i in this.horizontal_field_list["record_id"])
@@ -3619,15 +3626,21 @@ acRecordingTestsCreator.prototype.set_obj_structure = function(group_list=null, 
 
    this.tbody_=document.createElement("tbody");this.table_.appendChild(this.tbody_);
    var v_list=this.vertical_field_list["record_id"]
-   this.matching_set={"record_id":[], "userid":[], "name":[]}
+   this.matching_set={"record_id":[], "userid":[], "name":[], "first_name":[], "last_name":[]}
+
+    //alert("acRecordingTests entity_dic 90000-040\n\n"+JSON.stringify(this.entity_dic["first_name"]));
+
    for(var j in v_list)
    {
      this.matching_set["record_id"].push(v_list[j]);
      var vf_entity_idx=this.vertical_field_list["entity_number"][j]+"";
      var idx_=this.entity_dic["id"].indexOf(vf_entity_idx)
      this.matching_set["userid"].push(this.entity_dic["userid"][idx_]);
+     this.matching_set["first_name"].push(this.entity_dic["first_name"][idx_]);
+     this.matching_set["last_name"].push(this.entity_dic["last_name"][idx_]);
      this.matching_set["name"].push(this.entity_dic["name"][idx_]);
    }
+   //alert("acRecordingTests entity_dic 90000-040\n\n"+JSON.stringify(this.matching_set["name"]));
    this.tbody_.innerHTML=this.create_sorted_structure(v_list, width_, field, container_id, table)
  }
  try{if(this.data != null){this.fill_up_data(this.data, this)}} catch(er){alert(er)}
@@ -3644,7 +3657,10 @@ acRecordingTestsCreator.prototype.create_sorted_structure = function(v_list, wid
      var vf_entity_idx=this.vertical_field_list["entity_number"][j]+"";
      var idx_=this.entity_dic["id"].indexOf(vf_entity_idx)
      //var vf_name=this.entity_dic["userid"][idx_]+":"+this.entity_dic["name"][idx_];
-     s+="<tr><td>"+this.entity_dic["userid"][idx_]+"</td><td>"+this.entity_dic["name"][idx_]+"</td>";
+     s+="<tr><td>"+this.entity_dic["userid"][idx_]+"</td>"
+     s+="<td>"+this.entity_dic["first_name"][idx_]+"</td>";
+     s+="<td>"+this.entity_dic["last_name"][idx_]+"</td>";
+
      for(var i in this.horizontal_field_list["record_id"])
      {
       var hf_idx=this.horizontal_field_list["record_id"][i];//var hf_name=hf_idx;
@@ -5532,12 +5548,16 @@ TabContent.prototype.clear_objects_data = function()
 {
  try{
    var dic = this.current_record_data;
-   this.link_content.setAttribute("record_id", "new");var container_dic=this.tab.tab_objects[this.link_number];
+   this.link_content.setAttribute("record_id", "new");
+   var container_dic=this.tab.tab_objects[this.link_number];
+   // alert('92 container_dic= ' + JSON.stringify(container_dic));
    this.link_content.foreign_keys={};this.link_content.dependents={};
-   var table_=getEBI(this.link_number).getAttribute(table);if(table_==null || table_==""){return}
+   var table_=getEBI("content_"+this.link_number)
+   var table_=getEBI("content_"+this.link_number).getAttribute("table");
+   if(table_==null || table_==""){return}
    for(o in container_dic)
    {
-    //alert('90 container_dic= ' + JSON.stringify(container_dic[o]));
+    //alert('95 container_dic= ' + JSON.stringify(container_dic[o]));
     var obj_name=container_dic[o]["obj_name"];
     if(container_dic[o]["obj_type"]=="acObj" && (obj_name=="acInput" || obj_name=="acTextarea" || obj_name=="acSelect"))
     {if(obj_name=="acSelect"){document.getElementById(o).value=-1} else {document.getElementById(o).value="";}}
