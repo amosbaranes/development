@@ -42,7 +42,8 @@ function AdvancedTabsManager(dic=null)
                                                               "data_app":[], "data_model":[],"data_field":[],
                                                               "data_filter_field":[], "data_filter_field_value":[],
                                                               "data_filter_field_ft":["","Yes"],
-                                                              "multiple":["regular", "multiple"]},
+                                                              "multiple":["regular", "multiple"],
+                                                              "default_value":[]},
                                                   "attributes":{"field":[], "size":[], "foreign_table":[],
                                                                 "dependent":[]},
                                                   "functions":["onchange"]},
@@ -146,12 +147,12 @@ function AdvancedTabsManager(dic=null)
                                                        "is_del_button":["","Yes","No"]},
                                                        "attributes":{"number_of_rows":[], "table_class":["","basic",
                                                        "payment"], "height":[]},
-                                                       "functions":["onclick", "onchange", "onmouseover", "onmouseout", "on_new_record"],
+                                                       "functions":["onclick", "onchange", "onmouseover", "onmouseout", "on_new_record", "before_get_data"],
                                                        "field_setting":["field_title","field_name","field_width","field_align","foreign_table","filter"]},
                                         "MSearchTable":{"title":"MSearchTable", "width":10,
                                                        "setting": {"is_new_button":["","Yes","No"], "is_del_button":["","Yes","No"]},
                                                        "attributes":{"number_of_rows":[], "table_class":["","basic", "payment"], "height":[]},
-                                                       "functions":["onchange"],
+                                                       "functions":["onchange", "before_get_data"],
                                                        "field_setting":["field_title","field_name","field_width","field_align","foreign_table"]},
                                         "GeneralLedger":{"title":"GenLedger", "width":8,
                                                          "setting": {},
@@ -748,7 +749,7 @@ AdvancedTabsManager.prototype.get_data = function(call_back_fun, dic_, tbody_)
   //alert("1001213  "+JSON.stringify(dic_));
   dic_["app"]=this.my_app;
   if(dic_["company_obj_id"]==null){dic_["company_obj_id"]=this.company_obj_id;}
-  //alert("9090 AdvancedTabsManager.prototype.get_data: "+this.get_data_link_)
+  //alert("9090-9090 AdvancedTabsManager.prototype.get_data: "+this.get_data_link_)
   call_back_fun.atm=this
   $.post(this.get_data_link_,
           {dic : JSON.stringify(dic_)},
@@ -798,7 +799,7 @@ AdvancedTabsManager.prototype.get_list = function(call_back_fun, dic_, html_obj)
             if(dic["status"]=="ok"){
                 //alert(JSON.stringify(dic["result"]))
                 call_back_fun(dic["result"], html_obj);
-                html_obj.data=dic["result"];
+                html_obj.data=dic["result"];try{eval(html_obj.run_eval)} catch(er){}
             } else {alert("Error getting data for select.")}
           });
 }
@@ -1287,17 +1288,17 @@ acObj.prototype.get_select_data = function()
 {
   this.new_obj.innerHTML = "";
   var dic=this.data;
-  //alert("5087-87 acObj.prototype.get_select_data dic=\n"+JSON.stringify(dic));
-  //alert(JSON.stringify(dic["settings"]));
+  //alert("5087-87 acObj.prototype.get_select_data dic=\n"+JSON.stringify(dic["properties"]));
   var options=dic["properties"]["options"];
   var multiple_=dic["properties"]["multiple"];
   if(!(multiple_==null)){this.new_obj.setAttribute("multiple", "multiple")}
-    var option = document.createElement("option");
-    option.value = "-1"; option.text = "----";
-    this.new_obj.appendChild(option);
   var fun=function(data, html_obj){
                 //alert(html_obj.outerHTML)
                 //alert(JSON.stringify(data));
+                html_obj.innerHTML=""
+                var option = document.createElement("option");
+                option.value = "-1"; option.text = "----";
+                html_obj.appendChild(option);
                 for(i in data){
                  var l=data[i];
                  var option = document.createElement("option");
@@ -1356,6 +1357,8 @@ acObj.prototype.get_select_data = function()
                            "data_filter_field_ft":data_filter_field_ft
                          }
               }
+    try{var v_=dic["properties"]["default_value"];this.new_obj.run_eval="html_obj.value="+v_} catch(er){}
+    //try{var i_=dic["properties"]["default_index"];this.new_obj.run_eval="html_obj.options["+i_+"].selected=true"} catch(er){}
     this.atm.get_list(call_back_fun=fun, dic_, this.new_obj);
   }
 }
@@ -2117,8 +2120,9 @@ var container_on_click=function(event){
           var dic_={"properties":{"id":obj_number, "link_number":obj_number, "container_id":container_id, "tab_id":this.tab.tab_id,"name":popup_name_,"title":popup_name_,"zindex":50,"height":"500","width":"500","right":"25%","top":"25%",
                     "background_color":"white", "title_color": "#fff", "title_background_color": "#2196F3", "is_panel":"true"},
                      "functions":{"__init___":"function(win_obj){\ntry{\n\n} catch(er){alert('er903: '+ er)}}",
-                                  "__get_panel_structure___":"function(win_obj){\ntry{\nvar dic={};\n\nwin_obj.buttons=dic;\n} catch(er){alert('er903: '+ er)}}",
-                                  "__set_panel___":"function(win_obj){\ntry{\n\n} catch(er){alert('er903: '+ er)}}"},
+                                  "__get_panel_structure___":"function(win_obj){\ntry{\nvar dic={};\n\nwin_obj.buttons=dic;\n} catch(er){alert('er904: '+ er)}}",
+                                  "__set_panel___":"function(win_obj){\ntry{\n\n} catch(er){alert('er906: '+ er)}}"
+                                  },
                      "popwin_content":{"properties":{"link_number":obj_number, "container_id":container_id, "content_type": "simple", "width":"400","table":""},
                                        "functions":{}}
                    };
@@ -3277,8 +3281,10 @@ acGroupCreator.prototype.get_entity_list = function(e_dic)
  //alert(e.outerHTML)
  if(e.getAttribute("my_members_status")=="empty")
  {
-   e.setAttribute("my_members_status", "filled")
+     e.setAttribute("my_members_status", "filled")
+     //alert(e.getAttribute("link"))
      var dic_=eval(e.getAttribute("link"))
+     //alert("901540-24 acGroupCreator\n"+JSON.stringify(dic_));
      for(var i in dic_)
      {
       var id_=i; var title_=dic_[i]["title"];
@@ -3382,25 +3388,26 @@ acGroupCreator.prototype.open_close_lists = function(n=0)
   var ll=atm.general.get_platoons_ids();ll=ll[n]
   //alert("90667-77\n"+JSON.stringify(ll));
   var ec=new Event("click", {bubbles: true});
-  for(l in ll){
-  try{getEBI(ll[l]).dispatchEvent(ec)
-  } catch(er){alert(er)}}
+  for(l in ll){try{getEBI(ll[l]).dispatchEvent(ec)} catch(er){alert(er)}}
 }
 
-acGroupCreator.prototype.set_obj_structure = function(display_="none")
+acGroupCreator.prototype.set_obj_structure = function(display_="none", nlimit=-1)
 {
-   //alert("90105-55\n"+JSON.stringify(this.parent.data));
-  var f=function(s_link, dic, d_div, n=0, spaces="")
+  //alert("90105-55\n"+nlimit+"\n"+JSON.stringify(this.parent.data));
+
+  var f=function(s_link, s_title, dic, d_div, n=0, n_limit_=-1, spaces="")
   {
      var spaces_=spaces+"&nbsp;&nbsp;&nbsp;"; var n_=n+1;
      for(k in dic)
      {
         s_link_=s_link+"["+k+"]['data']";var title = dic[k]["title"];
-        var title_=title.replace(/ /g, '').toLowerCase();
-        var class_="group_"+title_;var id_="id_"+title_;var sid_="sid_"+title_
+//1111111111        var title_=title.replace(/ /g, '').toLowerCase();
+        s_title+=title.replace(/ /g, '').toLowerCase();
+
+        var class_="group_"+s_title;var id_="id_"+s_title;var sid_="sid_"+s_title
         //&#45;&#45;
         var s=spaces_+'<span type="span" style="cursor: pointer" id="'+sid_+'"'
-        if(n_>2)
+        if(n_>n_limit_)
         {s+='my_members_status="empty" link="'+s_link_+'"'}
         s+='my_class_members="'+class_+'">+</span><input type="checkbox" id="'+id_+'" my_class_members="'+class_+'"><label>'+title+'</label><br/>'
         //alert(s)
@@ -3409,10 +3416,11 @@ acGroupCreator.prototype.set_obj_structure = function(display_="none")
         d_div_.setAttribute("id", "div_"+id_);d_div_.setAttribute("class", class_);
         //var display_='block';
         //var display_='none';
-        if(n_>2){display_='none'}
+        if(n_>n_limit_){display_='none'}
         d_div_.setAttribute("style", 'display:'+display_);
         d_div.appendChild(d_div_);
-        if(n_<3){f(s_link_, dic[k]["data"], d_div_, n_, spaces_)}
+        if(n_<=n_limit_){
+         f(s_link_, s_title, dic[k]["data"], d_div_, n_, n_limit_, spaces_)}
      }
   }
 
@@ -3425,36 +3433,59 @@ acGroupCreator.prototype.set_obj_structure = function(display_="none")
        this.entity_list = eval("this.parent.atm.general."+general_entity_name+"_list")
        this.entity_dic = eval("this.parent.atm.general."+general_entity_name+"_dic")
        //alert("90000-010  "+JSON.stringify(this.entity_dic));
-       var s_link="this.units_structure";
+       //alert("90000-020  "+JSON.stringify(this.units_structure));
+       var s_link="this.units_structure"; var s_title=""
        this.main_div.innerHTML="";
-       f(s_link, this.units_structure, this.main_div, 0)
+       //alert(nlimit)
+       f(s_link, s_title, this.units_structure, this.main_div, 0, n_limit_=nlimit)
      } catch(er){alert("1155-515: "+er)}
  //  alert("done acGroupCreator.prototype.set_obj_structure\n\n"+this.main_div.outerHTML)
 }
 
 acGroupCreator.prototype.set_data = function(record_id=null, ll=null)
 {
-//alert(22222222)
   if(this.active_record_id==record_id){return}
   this.active_record_id=record_id;
   // --
    try{this.open_close_lists(0)} catch(er){}
   // --
   var dic=this.parent.data;
+    //alert("90333-103\n"+JSON.stringify(dic));
   var model_=dic["properties"]["table"]
   var container = document.getElementById("content_"+dic["container_id"]);
   var parent_model_=container.my_creator_obj.link_dic["properties"]["table"];
+
   var dic_={"model":model_,"parent_model":parent_model_,"parent_id":record_id,"number_of_rows":"10000",
             "fields":this.fields,"filters":{},"order_by":{}}
+
   //alert("90000-099\n"+JSON.stringify(dic_));
+
   var fun=function(data, this_obj){
     //alert("90000-100\n"+JSON.stringify(data));
+
     this_obj.members_list={"entity_number":[], "record_id":[]}
     var n_=data[this_obj.fields[0]].length;
     if(n_<1){return}
+
+    //alert(555555555)
+    //alert(this_obj.fields[0])
+    //alert("90000-100\n"+JSON.stringify(data["soldier_number"]));
+
     for(var j=0; j<n_; j++)
-    {try{var s_id="soldier_"+data["soldier_number"][j];var n=1*data["value"][j];s_id=getEBI(s_id);
+    {
+      try{var s_id_="soldier_"+data["soldier_number"][j];
+
+      var n=1*data["value"][j];
+      var s_id=getEBI(s_id_);
+      //alert(s_id_)
+      if(s_id==null){
+         alert("Error "+s_id_);
+         continue}
+      //alert(s_id)
+      //alert(s_id.outerHTML)
+
          if(n==1){s_id.checked=true}else{s_id.checked=false};
+
          s_id.setAttribute("record_id",data["id"][j])
          this_obj.members_list["entity_number"].push(data["soldier_number"][j])
          this_obj.members_list["record_id"].push(data["id"][j])
@@ -3462,6 +3493,7 @@ acGroupCreator.prototype.set_data = function(record_id=null, ll=null)
      get_creator(this_obj.recording_tests_number).set_obj_structure(group_list=this_obj.members_list, test_list=null)
      get_creator(this_obj.recording_tests_number).set_data(record_id)
   }
+
   //alert("90555-55\n"+JSON.stringify(dic_));
   this.parent.atm.get_data(call_back_fun=fun, dic_, this)
   // --)
@@ -3500,7 +3532,6 @@ acGroupCreator.prototype.on_record_created_deleted = function(e,action="created"
 //  alert(get_creator(this.recording_tests_number).set_obj_structure)
 //  get_creator(this.recording_tests_number).set_obj_structure(group_list=this.members_list, test_list=null)
 }
-
 
 
 // RecordingTests --
@@ -3865,6 +3896,7 @@ acSearchTableCreator.prototype.create_obj = function()
   this.order_by={"field":"","direction":"ascending"};
   var width__=1*0;
   var nd_=Object.keys(dic["fields"]).length;var n_=0
+
   for(f in dic["fields"])
   {
     n_+=1;
@@ -3918,10 +3950,12 @@ acSearchTableCreator.prototype.get_data = function(data_table_name=null,parent_m
                                                    company_obj_id=null)
 {
   var dic=this.parent.data;
-   //alert("9044  "+JSON.stringify(dic));
+  //  alert("9044-441  "+JSON.stringify(dic));
+  //alert("9044-441  "+JSON.stringify(dic["functions"]));
+  try{var f_=dic["functions"]["before_get_data"]; var s_="var zz="+f_;eval(s_); zz(dic);} catch(er){}
+  // alert("0000  "+JSON.stringify(dic["fields"]));
   var container = document.getElementById("content_"+dic["container_id"]);
   //alert(container.outerHTML);
-
   if(data_table_name!==null){this.data_table_name=data_table_name}
   else {this.data_table_name=container.getAttribute("table")}
 
@@ -3940,7 +3974,7 @@ acSearchTableCreator.prototype.get_data = function(data_table_name=null,parent_m
     var dic_={"model":this.data_table_name, "number_of_rows":this.number_of_rows, "fields":this.fields}
   } catch(er){alert("er90132: "+er)}
 
-  // alert("90441-1  "+JSON.stringify(dic_));
+   //alert("90441-1  "+JSON.stringify(dic_));
   var fun=function(data, ttbody_){
     console.log("get_data search table inside call back function")
      // alert("9081 data: "+JSON.stringify(data));
@@ -3975,7 +4009,7 @@ acSearchTableCreator.prototype.get_data = function(data_table_name=null,parent_m
   }
 
   var dic__=[]; for(i in dic_["fields"]){dic__.push(dic_["fields"][i])}
-  //alert("9060-1 dic__ \n"+JSON.stringify(dic__))
+  //alert("90442-2 dic__ \n"+JSON.stringify(dic__))
 
   var container_id=this.parent.data["container_id"];
   var container_dic=this.parent.tab.tab_objects[container_id];
@@ -4000,20 +4034,19 @@ acSearchTableCreator.prototype.get_data = function(data_table_name=null,parent_m
         if(f!=null){if(!dic__.includes(f)){dic__.push(f)}}
       }
   }
-  //alert("90601 dic__ \n"+JSON.stringify(dic__))
+  //alert("90445-55 dic__ \n"+JSON.stringify(dic__))
   var dic__={"model":this.data_table_name, "parent_model": parent_model_, "parent_id":parent_id_,
              "number_of_rows":this.number_of_rows, "multiple_select_fields": this.multiple_select_fields,
              "filters":{}, "order_by":this.order_by, "fields":dic__
              }
-  //alert("906012 dic__ \n"+JSON.stringify(dic__))
+  //alert("90446-66 dic__ \n"+JSON.stringify(dic__))
       dic__["filters"][this.filter_field]={"value":this.filter_value, "foreign_table":this.filter_field_foreign_table}
-
-  //alert("90603 dic__ \n"+JSON.stringify(dic__))
+  //alert("90447-77 dic__ \n"+JSON.stringify(dic__))
   console.log("get_data search table ", JSON.stringify(dic__))
 
     for(j in dic["fields"])
     {
-       //alert(JSON.stringify(dic["fields"][j]));
+       // alert("90447-77-1 dic["+j+"] \n"+JSON.stringify(dic["fields"][j]));
        if("filter" in dic["fields"][j] && dic["fields"][j]["filter"]!="")
        {
           var fn_=dic["fields"][j]["field_name"]
@@ -4022,17 +4055,16 @@ acSearchTableCreator.prototype.get_data = function(data_table_name=null,parent_m
             var foreign_table_="";
             if ("foreign_table" in dic["fields"][j])
             {
-              foreign_table_==dic["fields"][j]["foreign_table"];
+              foreign_table_=dic["fields"][j]["foreign_table"];
             }
             dic__["filters"][fn_]={"value":dic["fields"][j]["filter"], "foreign_table": foreign_table_}
-
           }
        }
     }
   if(company_obj_id!=null){dic__["company_obj_id"]=company_obj_id}
   dic__["primary_key_list_filter"]=this.primary_key_list_filter
 
-//  alert("9010: "+JSON.stringify(dic__));
+  //alert("90449-99: "+JSON.stringify(dic__));
 
   this.parent.atm.get_data(call_back_fun=fun, dic__, this.tbody)
 }
@@ -4404,6 +4436,9 @@ acMSearchTableCreator.prototype.get_data = function(data_table_name=null,parent_
              "number_of_rows":this.number_of_rows,
              "filters": this.filters,"order_by":this.order_by,
              "fields":dic__}
+
+  try{var f_=dic["functions"]["before_get_data"]; var s_="var zz="+f_;eval(s_); zz(dic__);} catch(er){}
+
   //alert(JSON.stringify(dic__));
   console.log("get_data search table ", JSON.stringify(dic__))
   this.parent.atm.get_data(call_back_fun=fun, dic__, this.tbody)
@@ -5518,6 +5553,7 @@ TabContent.prototype.set_objects_data = function(dic, is_json_data=false)
        for (var i=0;i<eILen;i++) {
        //alert(eI.options[i].value)
         if (sv.indexOf(eI.options[i].value) >= 0) {eI.options[i].selected = true}
+
        }
      }else {eI.value=v}
 
@@ -5845,7 +5881,9 @@ function Tab(parent, data, id)
    this.tab_functions[this.tab_name+"__init__"]=this.tab_name+"__init__=function(called_tab, calling_tab){\ntry{\n\n} catch(er){alert('er9020: '+ er)}}";
    this.tab_functions[this.tab_name+"__myclick__"]=this.tab_name+"__myclick__=function(called_tab, calling_tab){\ntry{\n\n} catch(er){alert('er9021: '+ er)}}";
    this.tab_functions[this.tab_name+"__otherclick__"]=this.tab_name+"__otherclick__=function(called_tab, calling_tab){\ntry{\n\n} catch(er){alert('er9022: '+ er)}}";
- } else {this.tab_functions=data["functions"]};
+  } else {this.tab_functions=data["functions"]
+ //alert(JSON.stringify(this.tab_functions=data["functions"]));
+ };
  //--
  if(!("tab_pop_win_buttons" in data)){this.tab_pop_win_buttons={"properties":{},"pop_wins":{}}} else
  {this.tab_pop_win_buttons=data["tab_pop_win_buttons"]}
@@ -5923,7 +5961,6 @@ try{
        var win_obj=this.get_pop_win_obj(dic_);
        win_obj.__init__();
        var pp_=dic_["properties"]
-       //alert("BBBBBB"+JSON.stringify(pp_));
        win_obj.set_win_frame_style(pp_["zindex"], pp_["height"], pp_["width"], pp_["right"], pp_["top"], pp_["background_color"])
        win_obj.set_acWinStatEventListeners(this.parent.editor);       //win_obj.set_acWinStat('block');
        win_obj.resume_win()
@@ -6071,6 +6108,7 @@ Tab.prototype.get_pop_win_obj = function(dic)
  s+='this.id='+link_number+';'
  s+='this.set_title(this.win_title_);'
  s+='dic_fs=this.tab_obj_.tab_pop_win_buttons["pop_wins"]['+link_number+']["functions"];'
+
  //s+='alert(JSON.stringify(dic_fs));'
  s+='for(f in dic_fs) {var s_= "this."+f+"'+link_number+'="+dic_fs[f];eval(s_);};'
  s+='try{this.__init___'+link_number+'(this)} catch(er){alert("er90358: "+ er)};';
@@ -6097,6 +6135,8 @@ Tab.prototype.get_pop_win_obj = function(dic)
  s+='}'
  //alert("90620\n" + s);
  eval(s);
+
+ // ---
  //alert("90620-1\n");
  // this.set_panel();
  // this.main_menus["Tab"].btn.click()
@@ -6870,8 +6910,6 @@ TabContentcontent_click = function(obj, event)
 //  alert(JSON.stringify(obj.parent.parent.atm.active_tab.tab_nav_links))
 //   alert(133)
   //var tab_=obj.parent.parent.atm.active_tab;
-
-//alert("BBB "+obj.parent.parent.atm.active_tab_content.outerHTML)
 
 try{
   var my_creator_obj_=obj.parent.parent.atm.active_tab_content.my_creator_obj;

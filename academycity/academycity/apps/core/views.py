@@ -357,10 +357,10 @@ def update_field_model_by_id(request, foreign=None):
 def get_data_link(request):
     dic_ = request.POST["dic"]
     dic_ = eval(dic_)
-    # try:
-    #     print('9050-1 core views get_data_link dic_= ', dic_, '\n', dic_["fields"])
-    # except Exception as ex:
-    #     pass
+    try:
+        print('\n 9050-1 core views get_data_link dic_= ', dic_, '\n', dic_["fields"])
+    except Exception as ex:
+        pass
     multiple_select_fields = None
     if "multiple_select_fields" in dic_:
         if len(dic_["multiple_select_fields"]) > 0:
@@ -459,22 +459,31 @@ def get_data_link(request):
     # print("9030-2")
     try:
         for f in filters:
-            filter_field_ = f
-            filter_value_ = filters[f]["value"]
+            # filter_field_ = ""
+            # try:
+            filter_field_ = f  # filters[f]["filter_field"] #
+                # print(filter_field_)
+            # except Exception as exx:
+            #     pass
+            filter_value_ = str(filters[f]["value"])
             foreign_table_ = ""
             try:
                 foreign_table_ = filters[f]["foreign_table"]
-                print(foreign_table_)
+                # print(foreign_table_)
             except Exception as exx:
                 pass
                 # print(exx)
             if filter_value_ != "":
+                # print(foreign_table_)
                 if foreign_table_ != "":
-                    if filter_field_ == "":
-                        filter_field_ = "id"
+                    # if filter_field_ == "":
+                    filter_field_ = "id"
                     s += '.filter('+foreign_table_+'__'+filter_field_+'__icontains='+filter_value_+')'
                 else:
-                    s += '.filter('+filter_field_+'__icontains="'+filter_value_+'")'
+                    if filter_field_ == "id":
+                        s += '.filter('+filter_field_+'__icontains='+filter_value_+')'
+                    else:
+                        s += '.filter('+filter_field_+'__icontains="'+filter_value_+'")'
         n_ = -1
         try:
             primary_key_list_filter_ = dic_["primary_key_list_filter"]
@@ -496,7 +505,7 @@ def get_data_link(request):
             data__ = eval(ss__)
         s += '.all()[:number_of_rows_].values('+fields_str+')'
         # print('s111 for data')
-        # print("\n\n", s, 's11')
+        print("\n\n", s, 's11')
         data = eval(s)
         # print(data)
     except Exception as ex:

@@ -161,25 +161,6 @@ class BaseTrainingAlgo(object):
                 self.second_time_save = self.save_to_file
 
 
-
-    # a = {"1": {"title": "ALPHA", "data":
-    #       {"21": {"title": "ALPHA 1", "data": {}},
-    #        "22": {"title": "ALPHA 2", "data": {}},
-    #        "23": {"title": "ALPHA 3", "data": {}},
-    #        "24": {"title": "ALPHA 4", "data": {}}}},
-    #      "2": {"title": "BRAVO", "data": {
-    #        "25": {"title": "BRAVO 1", "data": {}},
-    #        "26": {"title": "BRAVO 2", "data": {}},
-    #        "27": {"title": "BRAVO 3", "data": {}},
-    #        "28": {"title": "BRAVO 4", "data": {}}}},
-    #     "3": {"title": "CHARLY", "data": {
-    #        "29": {"title": "CHARLY 1", "data": {}},
-    #        "30": {"title": "CHARLY 2", "data": {}},
-    #        "31": {"title": "CHARLY 3", "data": {}},
-    #        "32": {"title": "CHARLY 4", "data": {}}}}
-    #      }
-
-
 class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
     def __init__(self, dic):
         super().__init__(dic)
@@ -236,7 +217,6 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
         app_ = dic["app"]
         battalion_ = dic["battalion"]
         period_ = dic["period"]
-        # unite_soldiers_number_ = dic["unite_soldiers_number"]
         #
         groups_ = dic["groups"]
         nav_tables_ = groups_["nav_tables"]
@@ -292,7 +272,6 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
         app_ = dic["app"]
         weeks_ = dic["weeks"]
         battalion_ = dic["battalion"]
-        # unite_soldiers_number_ = dic["unite_soldiers_number"]
         #
         groups_ = dic["groups"]
         nav_tables_ = groups_["nav_tables"]
@@ -305,11 +284,9 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
         return result
 
     def get_units_structure_new(self, dic):
-        # print("\n", "-"*50, '\n90035-1 dic\n', dic, "\n", "-"*50)
+        print("\n", "-"*50, '\n90035-1 dic\n', dic, "\n", "-"*50)
         app_ = dic["app"]
         battalion_ = dic["battalion"]
-        period_ = dic["period"]
-        # print(battalion_, period_)
         # soldiers
         try:
             soldiers = {"id":[], "userid":[], "first_name":[], "last_name":[], "name":[]}
@@ -348,18 +325,21 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
         except Exception as ex:
             print("Error 2: "+str(ex))
 
-        # structure
+        # structure periods
         try:
             structure = {}
+            period = {}
             model_periods = apps.get_model(app_label=app_, model_name="periods")
             period_objs = model_periods.objects.filter(battalion__id=battalion_).all()
             # print(period_objs)
             for period_obj in period_objs:
                 structure[period_obj.id] = period_obj.structure
+                period[period_obj.id] = {"n_limit": period_obj.n_limit}
         except Exception as ex:
             print("Error 3: "+str(ex))
         print("-"*100, "\n", structure, "\n", "-"*100)
-        result = {"status": "ok", "soldiers": soldiers, "structure":structure, "unitsoldiers":unitsoldiers}
+        result = {"status": "ok", "soldiers": soldiers, "structure":structure, "unitsoldiers":unitsoldiers,
+                  "period":period}
         # print(result)
         return result
 
@@ -1031,34 +1011,40 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
         # print(result)
         return result
 
-a = {"1":
-         {"data":
-              {"3855":{"data":
-                        {"3856":{"data":
-                                     {"3857":{"data":{},"title":"Section 0"}},
-                                 "title":"Commend"},"3858":{"data":{"3859":{"data":{},"title":"Section 0"},
-                                                                    "3860":{"data":{},"title":"Section 1"},
-                                                                    "3861":{"data":{},"title":"Section 2"},
-                                                                    "3862":{"data":{},"title":"Section 3"}},
-                                                            "title":"Charly 1"},
-                         "3863":{"data":{"3864":{"data":{},"title":"Section 0"},
-                                         "3865":{"data":{},"title":"Section 1"},
-                                         "3866":{"data":{},"title":"Section 2"},
-                                         "3867":{"data":{},"title":"Section 3"}},
-                                 "title":"Charly 2"},"3868":{"data":{"3869":{"data":{},"title":"Section 1"},
-                                                                     "3870":{"data":{},"title":"Section 2"},
-                                                                     "3871":{"data":{},"title":"Section 3"}},"title":"Charly 3"},
-                         "3872":{"data":{"3873":{"data":{},"title":"Sniper"},"3874":{"data":{},"title":"Observation"},
-                                         "3875":{"data":{},"title":"Drone"}},"title":"Charly 4"}},"title":"Charly"},
-               "3876":{"data":{"3877":{"data":{"3878":{"data":{},"title":"Section 0"}},"title":"Commend"},
-                               "3879":{"data":{"3880":{"data":{},"title":"Section 0"},
-                                               "3881":{"data":{},"title":"Section 1"},
-                                               "3882":{"data":{},"title":"Section 2"},
-                                               "3883":{"data":{},"title":"Section 3"}},"title":"Alpha 1"},
-                               "3884":{"data":{"3885":{"data":{},"title":"Section 0"},
-                                               "3886":{"data":{},"title":"Section 1"},"3887":{"data":{},"title":"Section 2"},
-                                               "3888":{"data":{},"title":"Section 3"}},"title":"Alpha 2"},"3889":{"data":{"3890":{"data":{},"title":"Section 1"},"3891":{"data":{},"title":"Section 2"},"3892":{"data":{},"title":"Section 3"}},"title":"Alpha 3"},"3893":{"data":{"3894":{"data":{},"title":"Sniper"},"3895":{"data":{},"title":"Observation"},"3896":{"data":{},"title":"Drone"}},"title":"Alpha 4"}},"title":"Alpha"},"3897":{"data":{"3898":{"data":{"3899":{"data":{},"title":"Section 0"}},"title":"Commend"},"3900":{"data":{"3901":{"data":{},"title":"Section 0"},"3902":{"data":{},"title":"Section 1"},"3903":{"data":{},"title":"Section 2"},"3904":{"data":{},"title":"Section 3"}},"title":"Bravo 1"},"3905":{"data":{"3906":{"data":{},"title":"Section 0"},"3907":{"data":{},"title":"Section 1"},"3908":{"data":{},"title":"Section 2"},"3909":{"data":{},"title":"Section 3"}},"title":"Bravo 2"},"3910":{"data":{"3911":{"data":{},"title":"Section 1"},"3912":{"data":{},"title":"Section 2"},"3913":{"data":{},"title":"Section 3"}},"title":"Bravo 3"},"3914":{"data":{"3915":{"data":{},"title":"Sniper"},"3916":{"data":{},"title":"Observation"},"3917":{"data":{},"title":"Drone"}},"title":"Bravo 4"}},"title":"Bravo"}},
-          "title":"battalion 1"}}
+    # def get_periods_of_battalion(self, dic):
+    #     # print('90065-11 dic', dic)
+    #     app_ = dic["app"]
+    #     battalion_id = int(dic["battalion_id"])
+    #     periods_model_ = apps.get_model(app_label=app_, model_name="periods")
+    #     period_objs = periods_model_.objects.filter(battalion__id=battalion_id).all()
+    #
+    #     periods = []
+    #     test_dic = {}
+    #     up_value = parent_test_obj.up_value
+    #     up_color = parent_test_obj.up_color
+    #     down_value = parent_test_obj.down_value
+    #     down_color = parent_test_obj.down_color
+    #     other_color = parent_test_obj.other_color
+    #     var_dic = {"up_value":up_value, "up_color":up_color, "down_value":down_value,
+    #                "down_color":down_color, "other_color":other_color}
+    #     for q in tests_objs:
+    #         test_list.append(str(q.test_number))
+    #         test_dic[str(q.test_number)] = {"id": q.id , "value": round(float(q.value),2)}
+    #     # print('test_dic')
+    #     # print(test_dic)
+    #
+    #     grades_model_ = apps.get_model(app_label=app_, model_name="gradesforevents")
+    #     q_gs = grades_model_.objects.filter(soldiersforevent__soldier_number__in=group_list,
+    #                                         testsforevent__test_number__in=test_list).order_by("soldiersforevent__soldier_number").all()
+    #     result={"soldier_number":[], "test_number":[], "value":[]}
+    #     for q in q_gs:
+    #         result["soldier_number"].append(q.soldiersforevent.soldier_number)
+    #         result["test_number"].append(q.testsforevent.test_number)
+    #         result["value"].append(round(float(q.value),2))
+    #
+    #     result = {"status": "ok", "result":result, "test_dic":test_dic, "var_dic": var_dic}
+    #     # print(result)
+    #     return result
 
 # double_shoot = DoubleShoot()
 # # function = "getSolderData"

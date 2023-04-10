@@ -101,6 +101,7 @@ class Periods(TruncateTableMixin, models.Model):
     battalion = models.ForeignKey(Battalions, on_delete=models.CASCADE, default=1, related_name='battalion_periods')
     period_number = models.SmallIntegerField(default=1)
     period_name = models.CharField(max_length=50, default='', blank=True, null=True)
+    n_limit = models.SmallIntegerField(default=2)
     structure = models.JSONField(null=True)
 
     def __str__(self):
@@ -298,6 +299,8 @@ class TestEvents(TruncateTableMixin, models.Model):
 
     instructor = models.ForeignKey(Instructors, on_delete=models.CASCADE, default=1,
                                    related_name='training_instructor_test_events')
+    period = models.ForeignKey(Periods, on_delete=models.CASCADE, default=1,
+                                 related_name='period_test_events')
     time_dim = models.ForeignKey(TimeDim, on_delete=models.CASCADE, default=1,
                                  related_name='time_dim_test_events')
     test_event_name = models.CharField(max_length=100, default='', blank=True, null=True)
