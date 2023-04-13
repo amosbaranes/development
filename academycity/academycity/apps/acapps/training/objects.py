@@ -970,7 +970,7 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
         return result
 
     def get_variable_data(self, dic):
-        # print('90065-11 dic', dic)
+        print('90065-11 dic', dic, "\n", "-"*50)
         app_ = dic["app"]
         record_id = dic["tests_dic"]["record_id"]
         group_list = dic["group_dic"]
@@ -1000,13 +1000,18 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
 
         grades_model_ = apps.get_model(app_label=app_, model_name="gradesforevents")
         q_gs = grades_model_.objects.filter(soldiersforevent__soldier_number__in=group_list,
-                                            testsforevent__test_number__in=test_list).order_by("soldiersforevent__soldier_number").all()
-        result={"soldier_number":[], "test_number":[], "value":[]}
+                                            testsforevent__test_number__in=test_list).order_by("soldiersforevent__soldier_number",
+                                                                                               "testevent__id").all()
+
+        result={"soldier_number":[], "event_id":[], "event_date":[], "test_number":[], "value":[]}
         for q in q_gs:
+            # print(q.testevent.test_event_name)
+            # print(q.testevent.id)
+            result["event_id"].append(q.testevent.id)
+            result["event_date"].append(q.testevent.time_dim.id)
             result["soldier_number"].append(q.soldiersforevent.soldier_number)
             result["test_number"].append(q.testsforevent.test_number)
             result["value"].append(round(float(q.value),2))
-
         result = {"status": "ok", "result":result, "test_dic":test_dic, "var_dic": var_dic}
         # print(result)
         return result

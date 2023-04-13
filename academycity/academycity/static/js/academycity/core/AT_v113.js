@@ -127,6 +127,10 @@ function AdvancedTabsManager(dic=null)
                                                   "height":[],"table":[],"vertical_field":[],"horizontal_field":[],
                                                   "field":[]},"attributes":{"table_class":["","basic","payment","data_entry"]},
                                                   "functions":["onclick", "onchange", "onmouseover", "onmouseout"]},
+                                        "Compliance":{"title":"C", "width":3,
+                                                  "setting": {"start_date":[], "number_of_weeks":[],"width":[],"table":[]},
+                                                  "attributes":{"table_class":["","basic","payment","data_entry"]},
+                                                  "functions":["onclick", "onchange", "onmouseover", "onmouseout"]},
                                         "Image":{"title":"Img", "width":4,
                                                   "setting": {"height":[], "src":[], "width":[], "border_radius":[],
                                                   "border_width":[], "border_color":[]
@@ -1706,65 +1710,97 @@ acGradesCreator.prototype.set_obj_structure = function(tests_dic=null, group_dic
       var n_group=group_dic.length;
       var n_tests = Object.keys(test_dic).length;
       var userid_width=70;
-      var name_width=250;
+      var name_width=125;
+      var event_date_width=100;
       var col_width=80;
-
       //alert("90160-7\n"+JSON.stringify(group_dic)+"\n\n"+result[entity_name+"_number"]);
-
-      var s="<tr><th style='width:"+userid_width+"px'>UserId</th><th style='width:"+name_width+"px'>Name</th>"
+      var s="<tr><th style='width:"+userid_width+"px'>UserId</th>"
+      s+="<th style='width:"+name_width+"px'>First Name</th>"
+      s+="<th style='width:"+name_width+"px'>Last Name</th>"
+      s+="<th style='width:"+event_date_width+"px'>Event Date</th>"
       //alert("90160-7\n"+JSON.stringify(tests_config));
 
       for(var test_number in test_dic){
        var test_name=tests_config["test_name"][tests_config["test_number"].indexOf(""+test_number)];
        s+="<th style='width:"+col_width+"px'>"+test_name+"</th>";
       };
-      s+="<th style='width:"+col_width+"px'>"+var_name+"</th>";s+="</tr>";this_obj.parent.tr_h.innerHTML=s;
-      //alert("2\n"+s)
+      s+="<th style='width:"+col_width+"px'>"+var_name+"</th>";s+="</tr>";
+      this_obj.parent.tr_h.innerHTML=s;
+      var ff=function(dic_, idx=0){
+          var entity_number=dic_["entity_number"];
+          var entity_name=dic_["entity_name"];
+          var result=dic_["result"];
+          var n_tests=dic_["n_tests"];
+          var tests_config=dic_["tests_config"];
+          var test_dic=dic_["test_dic"];
+          var e_first_name=dic_["e_first_name"];
+          var e_last_name=dic_["e_last_name"];
+          var s="";
+          try{var idx=result[entity_name+"_number"].indexOf(entity_number, idx)}catch(er){};
+          var test_events={};
+          if(idx > -1){
+              while(idx>-1){
+                 var event_id=result["event_id"][idx]; var event_date=result["event_date"][idx]
+                 if(!(event_id in test_events)){test_events[event_id]={"event_date":event_date, "data":{}};
+                                                test_events[event_id]["data"]["l_"]=[];
+                                                test_events[event_id]["data"]["l_idx"]=[];}
+                 test_events[event_id]["data"]["l_"].push(result["test_number"][idx]);          //alert(idx+" : "+event_id+" : "+result["test_number"][idx])
+                 test_events[event_id]["data"]["l_idx"].push(idx);
+                 try{idx=result[entity_name+"_number"].indexOf(entity_number, idx+1)} catch(er){}
+              }
+              //alert(JSON.stringify(test_events));
+              var entity_test_value={}
+              for(event_id_ in test_events)
+              {
+                 var l_=test_events[event_id_]["data"]["l_"];var l_idx=test_events[event_id_]["data"]["l_idx"];
+                 var nn_=l_.length;
+                 entity_test_value[event_id_]={}
+                  for(var g=0;g<nn_;g++){var test_number=l_[g];var value=result["value"][l_idx[g]];
+                      var idx=tests_config["test_number"].indexOf(""+test_number);
+                      var tc=tests_config["test_grade_conversion"][idx];
+                      var converted_value=f(value,tc);result["value_converted"].push(converted_value);
+                      entity_test_value[event_id_][test_number]={"value":value, "converted_value":converted_value}
+                  }
+                  s+="<tr><td style='width:"+userid_width+"px'>"
+                  s+=e_userid+"</td>"
+                  s+="<td style='width:"+name_width+"px'>"+e_first_name+"</td>";
+                  s+="<td style='width:"+name_width+"px'>"+e_last_name+"</td>";
+                  s+="<td style='width:"+event_date_width+"px'>"+test_events[event_id_]["event_date"]+"</td>"
+                  var var_value=0
+                  for(var test_number in test_dic)
+                  {var etv=entity_test_value[event_id_][""+test_number];
+                   if(etv!=null)
+                   {s+="<td style=';text-align:right;width:"+col_width+"px'>"+etv["converted_value"]+"</td>";
+                    var_value+=1*etv["converted_value"]*test_dic[test_number]["value"]/100;
+                   } else{s+="<td></td>"}
+                  }
+
+                 try{
+                     var ss_=""
+                     if(Math.round(100*var_value)/100 > up_value){ss_="background-color:"+up_color+";color:white;"}
+                     else if (Math.round(100*var_value)/100 < down_value){ss_="background-color:"+down_color+";color:white;";
+                     } else {ss_="background-color:"+other_color+";color:white;"}
+                 } catch(er){}
+                 s+="<td style=';text-align:right;width:"+col_width+"px;"+ss_+"'>"+(Math.round(100*var_value)/100)+"</td>";
+                 s+="</tr>";
+              }
+         }
+          return s;
+        }
 
       s="";
       for(var i=0; i<n_group;i++)
       {
-        var entity_test_value={}
          try{var entity_number=parseInt(group_dic[i]);}catch(er){alert(er)}
-         var e_idx=entity_config["id"].indexOf(""+entity_number)
-         var e_name=entity_config["name"][e_idx];var e_userid=entity_config["userid"][e_idx];
-         s+="<tr><td style='width:"+userid_width+"px'>"+e_userid+"</td><td style='width:"+name_width+"px'>"+e_name+"</td>"
-         try{var entity_idx=result[entity_name+"_number"].indexOf(entity_number)}catch(er){};
-         if(entity_idx > -1){
-              var l_=[];l_idx=[];
-              while(entity_idx>-1){l_.push(result["test_number"][entity_idx]);l_idx.push(entity_idx);
-               entity_idx=result[entity_name+"_number"].indexOf(entity_number, entity_idx+1)}
-               //alert("90160-7\n"+entity_number+"\n\n"+JSON.stringify(l_)+"\n\n"+JSON.stringify(l_idx));
-              var nn_=l_.length;
-              for(var g=0;g<nn_;g++){var test_number=l_[g];var value=result["value"][l_idx[g]];
-                  var idx=tests_config["test_number"].indexOf(""+test_number);
-                  var tc=tests_config["test_grade_conversion"][idx];
-                  var converted_value=f(value,tc);result["value_converted"].push(converted_value)
-                  entity_test_value[test_number]={"value":value, "converted_value":converted_value}
-              }
-              //alert("90160-8\n"+JSON.stringify(entity_test_value)+"\n"+n_tests+"\n"+JSON.stringify(test_dic))
-              var var_value=0
-              for(var test_number in test_dic)
-              {var etv=entity_test_value[""+test_number];
-               if(etv!=null){s+="<td style=';text-align:right;width:"+col_width+"px'>"+etv["converted_value"]+"</td>";
-                var_value+=1*etv["converted_value"]*test_dic[test_number]["value"]/100;
-               }
-               else{s+="<td></td>"}
-              }
-              //alert("222\n")
-         } else {for(var j=0;j<n_tests;j++){s+="<td></td>"}}
+         var e_idx=entity_config["id"].indexOf(""+entity_number);
+         var e_first_name=entity_config["first_name"][e_idx];
+         var e_last_name=entity_config["last_name"][e_idx];
+         var e_userid=entity_config["userid"][e_idx];
 
-         try{
-             var ss_=""
-             if(Math.round(100*var_value)/100 > up_value)
-             {ss_="background-color:"+up_color+";color:white;"} else if (Math.round(100*var_value)/100 < down_value){
-              ss_="background-color:"+down_color+";color:white;";
-             } else {ss_="background-color:"+other_color+";color:white;"}
-         } catch(er){}
-
-         s+="<td style=';text-align:right;width:"+col_width+"px;"+ss_+"'>"+(Math.round(100*var_value)/100)+"</td>";
-
-         s+="</tr>";
+         var dic_={"entity_number":entity_number, "entity_name":entity_name,
+                   "result":result, "n_tests":n_tests, "e_first_name":e_first_name, "e_last_name":e_last_name,
+                   "tests_config":tests_config,"test_dic":test_dic}
+         s+=ff(dic_, 0)
       }
       //alert(JSON.stringify(result));
       //alert(JSON.stringify(result)+"\n\n"+JSON.stringify(test_dic)+"\n\ntests_config:\n"+JSON.stringify(tests_config));
@@ -1789,7 +1825,7 @@ acGradesCreator.prototype.set_obj_structure = function(tests_dic=null, group_dic
          "2":{"title":"Yakee"},
          "3":{"title":"Zulu"}
         }
-  }}
+        }}
 }
 
 // -- acPlugin --
@@ -3747,6 +3783,126 @@ acRecordingTestsCreator.prototype.fill_up_data = function(data, this_obj)
          //alert(s_id.outerHTML)
          } catch(er){}
     }
+}
+
+
+// -- acComplianceCreator --
+function acComplianceCreator(parent){this.parent=parent;}
+
+acComplianceCreator.prototype.create_obj = function()
+{
+  var dic=this.parent.data;
+  //--
+  var start_date=dic["properties"]["start_date"];
+  var number_of_weeks=dic["properties"]["number_of_weeks"];
+  //
+  var container = document.getElementById("content_"+dic["container_id"]);
+  //--
+  this.main_div=document.createElement("div");
+  if("width" in dic["properties"]){var width_=dic["properties"]["width"]} else {var width_="400"}
+  var style_ = "position:absolute;left:"+dic["properties"]["x"]+"px;top:"+dic["properties"]["y"]+"px;width:"+width_+"px"
+  this.main_div.setAttribute("style", style_);
+  container.appendChild(this.main_div);
+  this.main_div.setAttribute("container_id", dic["container_id"]);
+  this.main_div.setAttribute("id", dic["properties"]["obj_number"]);
+  this.main_div.setAttribute("obj_type", dic["obj_type"]);
+
+  this.weeks=document.createElement("select");
+  this.main_div.appendChild(this.weeks);
+  this.days=document.createElement("select");
+  this.main_div.appendChild(this.days);
+  this.companies=document.createElement("select");
+  this.main_div.appendChild(this.companies);
+
+//  this.table_=document.createElement("table");
+//
+//  //if("width" in dic["properties"]){var width_=dic["properties"]["width"]} else {var width_="400"}
+//  var style_ = "position:absolute;left:"+dic["properties"]["x"]+"px;top:"+dic["properties"]["y"]+"px;width:"
+//  this.thead=document.createElement("thead");
+//  this.thead.setAttribute("style", "display: block;overflow-x: hidden;");
+//  this.table_.appendChild(this.thead);
+//  var tr_h=document.createElement("tr");
+//  tr_h.my_creator_obj=this;
+//  tr_h.addEventListener("click", function(event){
+//       var e=event.target;
+//       var mco=e.parentNode.my_creator_obj;
+//       var filter_field=e.getAttribute("filter_field");
+//       var filter_field_foreign_table=e.getAttribute("filter_field_foreign_table");
+//       mco.search_input_.setAttribute("filter_field", filter_field);
+//       mco.search_input_.setAttribute("filter_field_foreign_table", filter_field_foreign_table);
+//       mco.search_input_.setAttribute("placeholder", "Search "+e.innerHTML+"..");
+//       mco.filter_field=filter_field;
+//       mco.filter_field_foreign_table=filter_field_foreign_table;
+//       var field = mco.order_by["field"]
+//       if(field==filter_field)
+//       {if(mco.order_by["direction"]=="ascending"){mco.order_by["direction"]="descending"}else{mco.order_by["direction"]="ascending"}}
+//       else{mco.order_by["field"]=filter_field;mco.order_by["direction"]="ascending"}
+//       if(mco.is_json_data==true){
+//         var sorted_data={};var temp_list=[];
+//         for(var i in mco.tbody.data){temp_list.push(mco.tbody.data[i][mco.order_by["field"]])}
+//         emp_list = temp_list.sort();if(mco.order_by["direction"]=="ascending"){temp_list=temp_list.reverse()};
+//         temp_list = [...new Set(temp_list)];
+//         //  alert("90357 "+JSON.stringify(temp_list));
+//         var temp_data=JSON.parse(JSON.stringify(mco.tbody.data));var n=1;
+//         for(var z in temp_list)
+//         {for(var j in temp_data){if(temp_data[j][mco.order_by["field"]]==temp_list[z]){sorted_data[n]=temp_data[j];n+=1;delete temp_data[j]}}}
+//         mco.create_tbody(sorted_data, [mco.tbody, this.my_creator_obj.parent.data]);
+//         var container_id=this.my_creator_obj.parent.data["container_id"];
+//         var container = document.getElementById("content_"+container_id);
+//         container.my_creator_obj.clear_objects_data()
+//       } else{
+//           e.parentNode.my_creator_obj.get_data();
+//       }
+//  })
+//
+//  tr_h.setAttribute("style","cursor:pointer");
+//  this.thead.appendChild(tr_h);
+//  var n__=0;
+//  this.order_by={"field":"","direction":"ascending"};
+//  var width__=1*0;
+//  var nd_=Object.keys(dic["fields"]).length;var n_=0
+//
+//  for(f in dic["fields"])
+//  {
+//    n_+=1;
+//    var th_=document.createElement("th");
+//    th_.innerHTML=dic["fields"][f]["field_title"];
+//    var width_=1*100;try{width_=dic["fields"][f]["field_width"]} catch(er){}
+//    width__+=1*width_;
+//    var foreign_table="";if(dic["fields"][f]["foreign_table"]!=null){foreign_table=dic["fields"][f]["foreign_table"]}
+//    if(n__==0){
+//      th_.setAttribute("style", "width:"+width_+"px;border-top-left-radius: 15px")
+//      this.filter_field=dic["fields"][f]["field_name"];
+//      this.filter_field_foreign_table=dic["fields"][f]["foreign_table"]
+//      this.search_input_.setAttribute("filter_field", dic["fields"][f]["field_name"]);
+//      this.search_input_.setAttribute("filter_field_foreign_table", foreign_table);
+//      this.search_input_.setAttribute("placeholder", "Search "+dic["fields"][f]["field_title"]+"..");
+//      this.order_by["field"]=dic["fields"][f]["field_name"];
+//    }
+//    else{if(n_==nd_){width_=width_*1+1*17} th_.setAttribute("style", "width:"+width_+"px;")}; n__+=1;
+//    tr_h.appendChild(th_);
+//    th_.setAttribute("filter_field", dic["fields"][f]["field_name"])
+//    th_.setAttribute("filter_field_foreign_table", foreign_table)
+//  }
+//  width__+=1*17; style_ += width__+"px"
+//  th_.setAttribute("style", "width:"+width_+"px;border-top-right-radius: 15px");
+//  this.tbody=document.createElement("tbody");
+//  this.tbody.setAttribute("id", "tbody_"+dic["properties"]["obj_number"]);
+//  this.tbody.setAttribute("style", "display: block;height: "+dic["properties"]["height"]+"px;overflow-y: auto;overflow-x: hidden;");
+//
+//  this.tbody.my_creator_obj=this;
+//  this.table_.appendChild(this.tbody);
+//  this.table_.my_creator_obj=this;
+//  //alert(style_)
+//  this.table_.setAttribute("style", style_);
+//  this.search_input_.my_creator_obj=this;
+//
+//  for (i in dic["attributes"]){var s=dic["attributes"][i];
+//   if(s in dic["properties"]){this.table_.setAttribute(s, dic["properties"][s])}
+//   else{this.table_.setAttribute(s, "")}}
+//
+//  container.appendChild(this.table_);
+  for(f in dic["functions"]){var s="this.main_div."+f+"="+dic["functions"][f];eval(s);}
 }
 
 
