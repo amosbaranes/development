@@ -970,7 +970,7 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
         return result
 
     def get_variable_data(self, dic):
-        print('90065-11 dic', dic, "\n", "-"*50)
+        # print('90065-11 dic', dic, "\n", "-"*50)
         app_ = dic["app"]
         record_id = dic["tests_dic"]["record_id"]
         group_list = dic["group_dic"]

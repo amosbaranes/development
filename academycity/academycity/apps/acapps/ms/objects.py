@@ -303,21 +303,6 @@ class MSDataProcessing(BaseDataProcessing, MSAlgo):
         result = {"status": "ok"}
         return result
 
-    def get_gene_structure(self, dic):
-        print("90950-10: \n", dic, "\n", "="*50)
-        print(dic)
-        print('dic')
-        gene_id_ = int(dic["gene_id"])
-
-        app_ = dic["app"]
-        model_name_ = dic["dimensions"]["gene_dim"]["model"]
-        model_gene_dim = apps.get_model(app_label=app_, model_name=model_name_)
-        gene_obj = model_gene_dim.objects.get(id=gene_id_)
-        clusters = gene_obj.clusters
-        # print(clusters)
-        result = {"status": "ok", "clusters": clusters}
-        return result
-
     def upload_personal_info_to_db(self, dic):
         # print("90121-1: \n", dic, "\n", "="*50)
         app_ = dic["app"]
@@ -471,5 +456,91 @@ class MSDataProcessing(BaseDataProcessing, MSAlgo):
         result = {"status": "ok", "data": ll_g}
         return result
 
+    def get_peaks(self, dic):
+        print("90955-50: get_peaks\n", dic, "\n", "=" * 50)
 
+        l = dic["cl_all"]
+        lb = 0
+        ub = len(l)
+        peak_array = {}
+        num_peaks = 0
 
+        def get_location_of_left_low(l_, lb_, ub_):
+            i = ub_
+            x = 0
+            y = 0
+            while i > lb_ and x < 2:
+                if l_[i] < l_[i - 1]:
+                    x += 1
+                    y += 1
+                elif l_[i] > l_[i - 1]:
+                    x = 0
+                    y = 0
+                else:
+                    y += 1
+                i -= 1
+            if x > 1:
+                ret = i + y
+            else:
+                ret = i
+            return ret
+
+        def get_location_of_right_low(l_, lb_, ub_):
+            i = lb_
+            x = 0
+            y = 0
+            while i < (ub_-1) and x < 2:
+                if l_[i] < l_[i + 1]:
+                    x += 1
+                    y += 1
+                elif l_[i] > l_[i + 1]:
+                    x = 0
+                    y = 0
+                else:
+                    y += 1
+                i += 1
+            if x > 1:
+                ret = i - y
+            else:
+                ret = i + 1
+            return ret
+
+        def get_global_high(l_, lb_, ub_):
+            temp_ = 0
+            ret = -1
+            # print(range(lb_, ub_))
+            for i in range(lb_, ub_):
+                # print(i, ub_)
+                if l_[i] > temp_:
+                    temp_ = l_[i]
+                    ret = i
+            # print(ret, temp_)
+            return ret
+
+        def get_peaks_(l_, lb_, ub_, peak_array_, num_peaks_):
+            num_peaks_ += 1
+            # print(l_, num_peaks_, lb_, ub_)
+            gh = get_global_high(l_, lb_, ub_)
+            # print("gh", gh)
+            ll = get_location_of_left_low(l_, lb_, gh)
+            # print("ll", ll)
+            rl = get_location_of_right_low(l_, gh, ub_)
+            # print("rl", rl)
+
+            peak_array[num_peaks_] = {}
+            peak_array[num_peaks_]["peak"] = gh + 1
+            peak_array[num_peaks_]["lb"] = ll + 1
+            peak_array[num_peaks_]["ub"] = rl
+            peak_array[num_peaks_]["valid"] = True
+            if (ll - lb_) > 0:
+                # print("ll - lb_", ll - lb_)
+                get_peaks_(l_, lb_, ll, peak_array_, num_peaks_)
+            if (ub_ - rl) > 0:
+                # print("ub_ - rl", ub_ - rl)
+                get_peaks_(l_, rl, ub_, peak_array_, num_peaks_)
+
+        get_peaks_(l, lb, ub, peak_array, num_peaks)
+        peak_array["number_of_supper_clusters"] = len(peak_array)
+        # print(peak_array)
+        result = {"status": "ok", "result": peak_array}
+        return result
