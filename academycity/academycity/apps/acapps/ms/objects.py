@@ -457,7 +457,7 @@ class MSDataProcessing(BaseDataProcessing, MSAlgo):
         return result
 
     def get_peaks(self, dic):
-        print("90955-50: get_peaks\n", dic, "\n", "=" * 50)
+        # print("90955-50: get_peaks\n", dic, "\n", "=" * 50)
 
         l = dic["cl_all"]
         lb = 0

@@ -358,7 +358,7 @@ def get_data_link(request):
     dic_ = request.POST["dic"]
     dic_ = eval(dic_)
     try:
-        print('\n 9050-1 core views get_data_link dic_= ', dic_, '\n', dic_["fields"])
+        print('\n 9050-150 core views get_data_link dic_= ', dic_, '\n', dic_["fields"])
     except Exception as ex:
         pass
     multiple_select_fields = None
@@ -477,11 +477,14 @@ def get_data_link(request):
                 # print(foreign_table_)
                 if foreign_table_ != "":
                     # if filter_field_ == "":
-                    filter_field_ = "id"
-                    s += '.filter('+foreign_table_+'__'+filter_field_+'__icontains='+filter_value_+')'
+                    # need need need to check this one. I changed it and it might have effect on other reports
+                    # filter_field_ = "id"
+                    s += '.filter('+foreign_table_+'__'+filter_field_+'='+filter_value_+')'
+                    #s += '.filter('+foreign_table_+'__'+filter_field_+'__icontains='+filter_value_+')'
                 else:
                     if filter_field_ == "id":
-                        s += '.filter('+filter_field_+'__icontains='+filter_value_+')'
+                        #s += '.filter('+filter_field_+'__icontains='+filter_value_+')'
+                        s += '.filter('+filter_field_+'='+filter_value_+')'
                     else:
                         s += '.filter('+filter_field_+'__icontains="'+filter_value_+'")'
         n_ = -1

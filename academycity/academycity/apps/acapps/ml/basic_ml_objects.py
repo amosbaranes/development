@@ -193,7 +193,7 @@ class BaseDataProcessing(object):
 
 class BasePotentialAlgo(object):
     def __init__(self, dic):  # to_data_path, target_field
-        # print("90050-01 BasePotentialAlgo", dic, '\n', '-'*50)
+        print('-'*50, '\n', "90050-01 BasePotentialAlgo", dic, '\n', '-'*50)
         super(BasePotentialAlgo, self).__init__()
         # print("90050-02 PotentialAlgo", dic, '\n', '-'*50)
         self.second_time_save = ''
@@ -202,18 +202,25 @@ class BasePotentialAlgo(object):
         self.save_to_file = None
         self.df_index = None
         app_ = dic["app"]
-        country_model_name_ = dic["country_model"]
         measure_model_name_ = dic["measure_model"]
-        model_country_dim = apps.get_model(app_label=app_, model_name=country_model_name_)
         model_measure_dim = apps.get_model(app_label=app_, model_name=measure_model_name_)
-        # print(model_measure_dim)
-        self.countries_name = pd.DataFrame(model_country_dim.objects.all().values('id', 'country_name'))
         self.measures_name = pd.DataFrame(model_measure_dim.objects.all().values('id', 'measure_name'))
+        #
+        # need to fix country or city ...
+        #
+        try:
+            country_model_name_ = dic["country_model"]
+            model_country_dim = apps.get_model(app_label=app_, model_name=country_model_name_)
+            # print(model_measure_dim)
+            self.countries_name = pd.DataFrame(model_country_dim.objects.all().values('id', 'country_name'))
+        except Exception as ex:
+            pass
         # print(self.measures_name)
         self.options = ["mm", "mx", "xm", "xx"]
         self.is_calculate_min_max = None
 
     def process_algo(self, dic):
+        print("90011-111 process_algo: \n", dic, "\n", "="*50)
         def get_culomns_names(self, l):
             cs = []
             for c in l:
@@ -748,6 +755,23 @@ class BasePotentialAlgo(object):
         ss_n_xm = ss_n_xm[:-1]
         ss_n_xx = ss_n_xx[:-1]
 
+
+        df_n2_all_corr = df_n2_all.copy()
+        # print(df_n2_all_corr)
+        # print(df_n2_all_corr.columns)
+        for o in ["m", "x"]:
+            s_corr = ""
+            n__ = 0
+            for g in ll_dfs:
+                if n__ > 1:
+                    s_corr += "'"+o+"-"+g+"',"
+                n__ += 1
+            s_corr = s_corr[:-1]
+            df_corr = eval("df_n2_all_corr[["+s_corr+"]]")
+            corr_ = df_corr.corr(method='pearson')
+            print(corr_,"\n", type(corr_))
+            self.add_to_save_all(title='corr-' + o, a=corr_, cols=-1)
+
         for n in ["1", "2"]:
             ll = []
             for k in self.options:
@@ -758,6 +782,8 @@ class BasePotentialAlgo(object):
             self.add_to_save_all(title='sign-n' + n, a=eval("sign_n" + n), cols=-1)
             exec("similarity_n" + n + ".drop([0], axis=0, inplace=True)")
             self.add_to_save_all(title='similarity-n' + n, a=eval("similarity_n" + n), cols=-1)
+
+
         for n in ["1", "2"]:
             nn__ = 0
             llg = []
@@ -775,10 +801,8 @@ class BasePotentialAlgo(object):
                             exec(s_)
                             # print('ll.append(1-df_n'+n+'_all["dc_'+group+'_' + z+'"].mean())')
                             exec('ll.append(1-df_n' + n + '_all["dc_' + group + '_' + z + '"].mean())')
-
-                        llc = [x - 0.7 for x in ll]
+                        llc = [(x - 0.7) if x > 0.7 else 0 for x in ll]
                         llg.append(llc)
-                        llc = llc / sum(llc)
                         exec("contribution_n" + n + ".loc[group] = ll")
                     else:
                         nn__ += 1
@@ -802,7 +826,7 @@ class BasePotentialAlgo(object):
         return result
 
     def get_dim_data_frame(self, dic):
-        # print("90066-106 PotentialAlgo calculate_min_max_cuts: \n", dic, "\n", "="*50)
+        print("90066-106 PotentialAlgo calculate_min_max_cuts: \n", dic, "\n", "="*50)
 
         # dic =  {'app': 'avi', 'filter_dim': 'time_dim', 'filter_value': 2019, 'value': 'amount',
         #         'axes': ['country_dim', 'measure_dim'],
@@ -829,19 +853,19 @@ class BasePotentialAlgo(object):
             s = 'model.objects.filter(measure_dim__measure_name="'+measure_name+'", '
         else:
             # print(measure_id)
-            s = 'model.objects.filter(measure_dim='+measure_id+', '
-        s += filter_dim+'='+str(filter_value)+', amount__gte='+str(filter_amount)+').all()'
-        # print(s)
+            s = 'model.objects.filter(measure_dim__id='+measure_id+', '
+        s += filter_dim+'__id='+str(filter_value)+', amount__gte='+str(filter_amount)+').all()'
+        # print("1 s="+s)
         qs = eval(s)
+        # print(qs)
         df = pd.DataFrame(list(qs.values(return_dim+"_id", value_)))
         # print(df)
         # print(df[return_dim+"_id"].tolist())
-
         # print(df.shape)
-        # df=df[df["amount"]>filter_amount]
+        df=df[df["amount"]>filter_amount]
         # print(df.shape)
-
         result = {"status": "ok", "result": [df, df[return_dim+"_id"].tolist()]}
+        # print(result)
         return result
 
     def convert_total_to_per_capita(self, f, df_var, df_countries):
@@ -926,8 +950,8 @@ class BasePotentialAlgo(object):
         # AI:            2=OECD#AIRePub 4=OECD#AIPub 11=oxford
         # Exports:       57=GSCUS$ 58=GSPIBOPCUS$ 59=MerCUS$ 60=GSBOPCUS$
         # Technology:    21=HighTech 48=ICT
-        do_not_include_measures_objs = [] # 13, 17 ,12]  # , [9], [10] , [18]  # , 35, 50] # model_deasuredim.objects.filter(measure_name__in=do_not_include_measures)
-        do_not_include_groups = ["General"]  # , "URankingEng", "URankingRes", "URanking", "RandD"]
+        do_not_include_measures_objs = [13, 17 ,12]  # , [9], [10] , [18]  # , 35, 50] # model_deasuredim.objects.filter(measure_name__in=do_not_include_measures)
+        do_not_include_groups = ["General"] # , "DemocracyIndex"]  # , "URankingEng", "URankingRes", "URanking", "RandD"]
         #
         groups = model_measure_group.objects.filter(~Q(group_name__in=do_not_include_groups)).all()
         ll_groups = [dependent_group]
@@ -979,11 +1003,22 @@ class BasePotentialAlgo(object):
         print("90066-100 PotentialAlgo calculate_min_max_cuts: \n", dic, "\n", "="*50)
         app_ = dic["app"]
         f = int(dic["dim_field"])
+        method = dic["method"]
+        u_method = "median"
+        l_method = "median"
+        if method == "min":
+            u_method = "min"
+            l_method = "max"
+
         dependent_group = dic["dependent_group"]
         year_ = str(dic["time_dim_value"])
         min_max_model_name_ = dic["min_max_model"]
         #
         ll_dfs = self.pre_process_data(dic)
+        # print(ll_dfs)
+
+        # result = {"status": "ok"}
+        # return result
 
         #
         # sign_ = pd.DataFrame([[0, 0, 0, 0]])
@@ -991,17 +1026,36 @@ class BasePotentialAlgo(object):
         # similarity_ = pd.DataFrame([[0, 0, 0, 0]])
         # similarity_.columns = self.options
 
-        high_group_cut = [0.4, 0.30, 0.2, 0.1]
-        low_group_cut = [0.4, 0.30, 0.2, 0.1]
-        steps = [0.95, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1]
+        high_group_cut = [0.4, 0.35, 0.30, 0.25, 0.2, 0.15, 0.1]
+        low_group_cut = [0.4, 0.35, 0.30, 0.25, 0.2, 0.15, 0.1]
+        step_ = 10
         df_d = ll_dfs[dependent_group]
         results = {}
         best_cut = {"bv": -1}
+
         for h in high_group_cut:
             hh = 1- h
             results[hh] = {}
+            #
+            # z = 5
+            # steps_h = list(range(z, 100, z))
+            # if h == high_group_cut[0]:
+            #     steps_h.append(95)
+            # print(h)
+            steps_h = list(range(5, round(h * 100), 5))
+            steps_h = [a/100 for a in steps_h]
+            print("hhhhhhh", h, steps_h)
+            #
             for ll in low_group_cut:
                 results[hh][ll] = {}
+                # z_ = 5
+                # steps_l = list(range(z_, 100, z_))
+                # if ll == low_group_cut[0]:
+                #     steps_l.append(95)
+                steps_l = list(range(5, round(ll * 100), 5))
+                steps_l = [a/100 for a in steps_l]
+                print("llllll", ll, steps_l)
+                #
                 df_q = df_d.quantile([hh, ll])
                 # print("df_d.shape", df_d.shape)
                 # print("df_q", df_q)
@@ -1019,8 +1073,8 @@ class BasePotentialAlgo(object):
                 # results[hh][ll][f]["max_cut"] = float(df_d[df_d[f] >= df_q[f].iloc[0]][f].median())
                 # results[hh][ll][f]["min_cut"] = float(df_d[df_d[f] <= df_q[f].iloc[1]][f].median())
 
-                for steph in steps:
-                    for stepl in steps:
+                for steph in steps_h:
+                    for stepl in steps_l:
                         for g in ll_dfs:
                             # if g != dependent_group:
                             df = ll_dfs[g]
@@ -1034,8 +1088,9 @@ class BasePotentialAlgo(object):
                                     iil.append(j)
                             dfh = df.loc[iih]
                             dfl = df.loc[iil]
-                            dfh_q = dfh.quantile(steph)
-                            dfl_q = dfl.quantile(stepl)
+
+                            dfh_q = dfh.quantile(steph/h)
+                            dfl_q = dfl.quantile(stepl/ll)
                             # print('dfh, dfh', 'steph ', steph, 'dfh_q ', dfh_q)
                             # , '\n', 'dfl', dfl, 'stepl', stepl, 'dfl_q', dfl_q)
 
@@ -1055,7 +1110,7 @@ class BasePotentialAlgo(object):
                                 # print('g, k, dfh_ik.shape', g, k, dfh_ik.shape)
                                 if dfh_ik.shape == 0 or dfl_ik.shape == 0:
                                     continue
-                                results[hh][ll][f][steph][stepl]["groups"][g][k] = {"min_cut": dfl_ik.median(), "max_cut": dfh_ik.median()}
+                                results[hh][ll][f][steph][stepl]["groups"][g][k] = eval('{"min_cut": dfl_ik.'+l_method+'(), "max_cut": dfh_ik.'+u_method+'()}')
                         # print(results)
                         dic = {"dependent_group": dependent_group, "f":f, "steph":steph, "stepl":stepl, "df_d": df_d, "ll_dfs": ll_dfs, "groups": results[hh][ll][f]}
                         bv = self.get_similarity(dic)
@@ -1066,7 +1121,7 @@ class BasePotentialAlgo(object):
 
                             # print('best_cut\n', 'hh', hh, 'll', ll, 'results 1 steph', steph, 'stepl', stepl, "dv", bv, "\n",
                             #       best_cut)
-                        print('hh', hh, 'll', ll, 'results 1 steph', steph, 'stepl', stepl, 'dv', bv, 'best', best_cut['bv'])
+                        print('hh', hh, 'll', ll, 'results 1 steph', round(100*steph)/100, 'stepl', round(100*stepl)/100, 'dv', bv, 'best', best_cut['bv'])
 
         print("="*100)
         best_cut["df_d"] = df_d

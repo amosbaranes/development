@@ -42,7 +42,11 @@ def activate_obj_function(request, add_dic=None):
             s += 'acapps.'
         s += app_+'.objects import '+obj_
         # print('9081 dic_ activate_obj_function s=', '\n', s, '\n', '-'*10)
-        exec(s)
+        try:
+            exec(s)
+        except Exception as ex:
+            print("9077-77 core view activate_obj_function: "+str(ex))
+
         # print('9082-1 dic_ activate_obj_function params=', '\n', params, '\n', '-'*10)
         # print('9082-2 dic_ activate_obj_function params=', '\n', obj_param, '\n', '-'*10)
 

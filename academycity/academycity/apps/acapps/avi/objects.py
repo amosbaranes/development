@@ -47,13 +47,17 @@ class AviDataProcessing(BaseDataProcessing, BasePotentialAlgo):
             cc = "Democratic Republic of the Congo"
         elif cc == "DR Congo":
             cc = "Democratic Republic of the Congo"
-        elif cc == "Congo":
-            cc = "Republic of the Congo"
         elif cc == "Democratic Republic Of The Congo":
             cc = "Democratic Republic of the Congo"
+        elif cc == "Congo":
+            cc = "Republic of the Congo"
+        elif cc == "Republic of the Congo":
+            cc = "Congo, Rep."
         elif cc == "Russian Federation":
             cc = "Russia"
         elif cc == "Côte d’Ivoire":
+            cc = "Cote d'Ivoire"
+        elif cc == "Ivory Coast":
             cc = "Cote d'Ivoire"
         elif cc == "Eswatini (Swaziland)":
             cc = "Eswatini"
@@ -1745,6 +1749,72 @@ class AviDataProcessing(BaseDataProcessing, BasePotentialAlgo):
         result = {"status": "ok"}
         return result
 
+    def load_the_economist_democracy_index_to_db(self, dic):
+        # print("90126-666: \n", dic, "\n", "="*50)
+        file_path = self.upload_file(dic)["file_path"]
+        # print("file_path", file_path, "\n", "="*50)
+        app_ = dic["app"]
+        # print('90022-1 dic')
+        dic = dic["cube_dic"]
+        # print('90022-1 dic', dic, "\n", "="*50)
+
+        df = pd.read_excel(file_path, sheet_name="Data", header=0)
+        # print(df)
+
+        model_name_ = dic["dimensions"]["time_dim"]["model"]
+        model_time_dim = apps.get_model(app_label=app_, model_name=model_name_)
+        model_name_ = dic["dimensions"]["country_dim"]["model"]
+        model_country_dim = apps.get_model(app_label=app_, model_name=model_name_)
+        model_name_ = "measuregroupdim"
+        model_group_measure_dim = apps.get_model(app_label=app_, model_name=model_name_)
+        model_name_ = dic["dimensions"]["measure_dim"]["model"]
+        model_measure_dim = apps.get_model(app_label=app_, model_name=model_name_)
+        model_name_ = dic["fact"]["model"]
+        model_fact = apps.get_model(app_label=app_, model_name=model_name_)
+        group_measure_name = "DemocracyIndex"
+        measure_name = "TheEconomist"
+        description = "Democracy Index by The Economist"
+        try:
+            gm, is_created = model_group_measure_dim.objects.get_or_create(group_name=group_measure_name)
+            m, is_created = model_measure_dim.objects.get_or_create(measure_code=measure_name, measure_group_dim=gm)
+            if is_created:
+                s = 'm.' + dic["dimensions"]["measure_dim"]["field_name"] + ' = "' + measure_name + '"'
+                # print(s)
+                exec(s)
+                s = 'm.description = "' + description + '"'
+                # print(s)
+                exec(s)
+                m.save()
+        except Exception as ex:
+            print("90986-1 Error measure:"+str(ex))
+
+        for index, row in df.iterrows():
+            try:
+                cc = str(row["Country"]).strip()
+                country = self.check_country(cc)
+                c = model_country_dim.objects.get(country_name=country)
+                # print(country, c)
+            except Exception as ex:
+                pass
+                # print("not found: "+str(row["Country"]))
+                # only East Timor is not fount. it is very small country and does not exist in the other studies.
+            for k in df.columns:
+                if str(k).isnumeric():
+                    t, is_created = model_time_dim.objects.get_or_create(id=k)
+                    # print(c, t, row[k])
+                    a, is_created = model_fact.objects.get_or_create(time_dim=t, country_dim=c, measure_dim=m)
+                    if is_created:
+                        # a.amount = float(row[k])
+                        try:
+                            s = 'a.' + dic["fact"]["field_name"] + ' = ' + str(float("{:.2f}".format((row[k]))))
+                            # print(s)
+                            exec(s)
+                            a.save()
+                        except Exception as ex:
+                            print("error: " + str(ex) + "  s= " + s)
+
+        result = {"status": "ok"}
+        return result
 
 # class BaseDataProcessing(object):
 #     def __init__(self, dic):  # to_data_path, target_field

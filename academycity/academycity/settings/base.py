@@ -196,6 +196,7 @@ acApps = [
     'academycity.apps.acapps.potential',
     'academycity.apps.acapps.ms',
     'academycity.apps.acapps.avi',
+    'academycity.apps.acapps.avia',
     'academycity.apps.acapps.dl',
     'academycity.apps.acapps.ml',
     'academycity.apps.acapps.accounting',

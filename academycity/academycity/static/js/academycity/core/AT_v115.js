@@ -1498,7 +1498,7 @@ acReport.prototype.set_data = function(type, is_level=true){
      report.raw_data=data
      report.creator.create_html(type)
    }
-  //alert(is_level)
+//  alert(is_level)
   if(is_level==false){this.get_data_dic["fields"] = this.get_data_dic["fields"].filter(item => item !== "level")}
 //  alert("90876\n"+JSON.stringify(this.get_data_dic));
   this.atm.get_data(fun, this.get_data_dic, [this.table_, this.get_data_dic])
