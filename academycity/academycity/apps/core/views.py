@@ -697,6 +697,7 @@ def upload_file(request):
         function_name_ = request.POST['function_name']
         topic_id_ = request.POST['topic_id']
         folder_type_ = request.POST['folder_type']
+        entity_name_ = request.POST['entity_name']
         if folder_type_ == "media":
             # print("media")
             data_dir = settings.MEDIA_ROOT + '/' + app_ + '/' + topic_id_
@@ -729,7 +730,6 @@ def upload_file(request):
             log_debug("upload_file 7777: OK")
 
             return HttpResponse(json.dumps(ret))
-        # print("9005-16", folder_type_, "\n", "-"*30)
         #
         try:
             cube_dic = {}
@@ -766,10 +766,12 @@ def upload_file(request):
             pass
 
         add_dic = {"obj": obj_name_, "app": app_, "fun": function_name_,
-                   "params": {"request": request, "folder_type": folder_type_, "sheet_name": sheet_name_, "app": app_, "cube_dic": cube_dic},
-                   "obj_param": {"topic_id": topic_id_, "app": app_}}
+                   "params": {"request": request, "folder_type": folder_type_, "sheet_name": sheet_name_, "app": app_,
+                              "cube_dic": cube_dic},
+                   "obj_param": {"topic_id": topic_id_, "app": app_, "entity_name": entity_name_}}
+
         try:
-            add_dic["obj_param"]["country_model"] = cube_dic["dimensions"]["country_dim"]["model"]
+            add_dic["obj_param"]["entity_model"] = cube_dic["dimensions"][entity_name_+"_dim"]["model"]
         except Exception as ex:
             pass
         try:

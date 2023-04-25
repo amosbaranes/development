@@ -205,14 +205,16 @@ class BasePotentialAlgo(object):
         measure_model_name_ = dic["measure_model"]
         model_measure_dim = apps.get_model(app_label=app_, model_name=measure_model_name_)
         self.measures_name = pd.DataFrame(model_measure_dim.objects.all().values('id', 'measure_name'))
-        #
-        # need to fix country or city ...
-        #
         try:
-            country_model_name_ = dic["country_model"]
-            model_country_dim = apps.get_model(app_label=app_, model_name=country_model_name_)
+            entity_name_ = dic["entity_name"]
+            entity_model_name_ = dic["entity_model"]
+            model_entity_dim = apps.get_model(app_label=app_, model_name=entity_model_name_)
             # print(model_measure_dim)
-            self.countries_name = pd.DataFrame(model_country_dim.objects.all().values('id', 'country_name'))
+            self.entities_name = pd.DataFrame(model_entity_dim.objects.all().values('id', entity_name_+'_name'))
+            # print(self.entities_name)
+
+            # need to delete the next line
+            # self.countries_name = pd.DataFrame(model_entity_dim.objects.all().values('id', 'country_name'))
         except Exception as ex:
             pass
         # print(self.measures_name)
@@ -298,7 +300,7 @@ class BasePotentialAlgo(object):
         #         df_columns = df.columns
         #         # print(df)
         #         # print("50001-22-1")
-        #         df_ = self.add_country_to_df(df)
+        #         df_ = self.add_entity_to_df(df)
         #         self.to_save.append((df_.copy(), 'Data'))
         #         #
         #         if not self.is_calculate_min_max:
@@ -373,7 +375,7 @@ class BasePotentialAlgo(object):
         #             # df_1_2.columns = ['min-n1', 'max-n1', 'min-n2', 'max-n2']
         #             # cols = df_1_2.columns
         #             # cols = cols.insert(0, 'country_name')
-        #             # df_ = self.add_country_to_df(df_1_2, cols)
+        #             # df_ = self.add_entity_to_df(df_1_2, cols)
         #             # print(df_)
         #             # self.to_save.append((df_.copy(), 'min-max'))
         #         else:
@@ -538,7 +540,7 @@ class BasePotentialAlgo(object):
                 # df_columns = df.columns
                 # # print(df)
                 # # print("50001-22-1")
-                # df_ = self.add_country_to_df(df)
+                # df_ = self.add_entity_to_df(df)
                 # self.to_save.append((df_.copy(), 'Data'))
                 # #
                 # if not self.is_calculate_min_max:
@@ -547,7 +549,7 @@ class BasePotentialAlgo(object):
                 df_columns = df.columns
                 self.df_index = df.index
                 # print(self.df_index)
-                df_ = self.add_country_to_df(df)
+                df_ = self.add_entity_to_df(df)
                 self.to_save.append((df_.copy(), 'Data'))
 
                 qs_mm = model_min_max.objects.filter(measure_dim__measure_group_dim__group_name=group,
@@ -612,7 +614,7 @@ class BasePotentialAlgo(object):
                     # df_1_2.columns = ['min-n1', 'max-n1', 'min-n2', 'max-n2']
                     # cols = df_1_2.columns
                     # cols = cols.insert(0, 'country_name')
-                    # df_ = self.add_country_to_df(df_1_2, cols)
+                    # df_ = self.add_entity_to_df(df_1_2, cols)
                     # print(df_)
                     # self.to_save.append((df_.copy(), 'min-max'))
                 else:
@@ -1267,7 +1269,7 @@ class BasePotentialAlgo(object):
 
         return group_d, group, df_n1_all, df_n2_all, df_n1_, df_n2_, sign_n1, sign_n2, similarity_n1, similarity_n2
 
-    def add_country_to_df(self, df, cols=None):
+    def add_entity_to_df(self, df, cols=None):
         df_ = df.copy()
         if cols is None:
             # print("BB2")
@@ -1277,10 +1279,10 @@ class BasePotentialAlgo(object):
                 k = str(self.measures_name[self.measures_name["id"] == j]["measure_name"]).split("    ")[1].split("\n")[
                     0]
                 cols.append(k)
-        # print("add_country_to_df", 1)
+        # print("add_entity_to_df", 1)
         df_ = df_.reset_index()
         # print("-"*10, "\nAA\n", "\n", df_)
-        df_ = df_.merge(self.countries_name, how='inner', left_on='country_dim', right_on='id').drop(
+        df_ = df_.merge(self.entities_name, how='inner', left_on='country_dim', right_on='id').drop(
             ['country_dim', 'id'], axis=1)
         # print("BB3\n", "\n", df_)
         c_ = df_.pop('country_name')
@@ -1366,7 +1368,7 @@ class BasePotentialAlgo(object):
     def add_to_save(self, title, a, cols):
         ai = pd.DataFrame(a)
         ai.index = self.df_index
-        df_ = self.add_country_to_df(ai, cols=cols)
+        df_ = self.add_entity_to_df(ai, cols=cols)
         df_.dropna(how='all', axis=1, inplace=True)
         self.to_save.append((df_.copy(), title))
 
@@ -1395,7 +1397,7 @@ class BasePotentialAlgo(object):
             #
             df_d = pd.DataFrame(d)
             df_d.index = self.df_index
-            df_ = self.add_country_to_df(df_d, cols=-1)
+            df_ = self.add_entity_to_df(df_d, cols=-1)
             self.to_save.append((df_.copy(), 'D_' + side + ' - ' + str(j)))
             # print("d=\n", d)
             #
@@ -1403,7 +1405,7 @@ class BasePotentialAlgo(object):
             b.loc[b.apply(lambda x: x.count(), axis=1) > 4, [j]] = np.nan
             #
             b.index = self.df_index
-            df_ = self.add_country_to_df(b, cols=-1)
+            df_ = self.add_entity_to_df(b, cols=-1)
             self.to_save.append((df_.copy(), side + ' b ' + str(j)))
             #
             b = b.to_numpy()

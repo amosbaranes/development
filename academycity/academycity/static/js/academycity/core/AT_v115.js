@@ -189,7 +189,7 @@ function AdvancedTabsManager(dic=null)
                                                "setting": {"height":[],"width":[],"obj_name":[],"function_name":[],
                                                            "topic_id":[], "folder_type":["", "excel", "media", "other"],
                                                             "dimensions":[], "fields":[], "fact_model_field": [],
-                                                            "sheet_name":[]},
+                                                            "entity_name":[], "sheet_name":[]},
                                                "attributes":{"field":[]},
                                                "functions":["onchange", "on_loaded"]},
                                         "Heatmap":{"title":"Heatmap", "width":7,
@@ -2274,6 +2274,8 @@ acUploadFileCreator.prototype.create_obj = function()
             fd.append("function_name", this.dic["properties"]["function_name"]);
             fd.append("topic_id", this.dic["properties"]["topic_id"]);
             fd.append("folder_type", this.dic["properties"]["folder_type"]);
+            fd.append("entity_name", this.dic["properties"]["entity_name"]);
+
             fd.append("dimensions", this.dic["properties"]["dimensions"]);
             fd.append("fields", this.dic["properties"]["fields"]);
             fd.append("fact_model_field", this.dic["properties"]["fact_model_field"]);

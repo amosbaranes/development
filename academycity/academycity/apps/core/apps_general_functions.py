@@ -7,8 +7,8 @@ from ..acapps.potential.objects import PotentialDataProcessing
 # from ...core.apps_general_functions import activate_obj_function
 def activate_obj_function(request, add_dic=None):
     try:
-        # print("activate_obj_function 9020")
-        # print(add_dic)
+        print("activate_obj_function 9020")
+        print(add_dic)
         if add_dic:
             app_ = add_dic["app"]
             obj_ = add_dic['obj']
@@ -28,7 +28,7 @@ def activate_obj_function(request, add_dic=None):
             obj_ = dic_['obj']
             fun_ = dic_['fun']
             params = dic_["params"]
-            # print("9047:\nparams:\n", params)
+            print("9047:\nparams:\n", params)
             obj_param = None
             try:
                 obj_param = dic_['obj_param']
