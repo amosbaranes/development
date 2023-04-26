@@ -243,6 +243,13 @@ class AviaDataProcessing(BaseDataProcessing, BasePotentialAlgo):
             except Exception as ex:
                 print("90987-2 Error measure:"+str(ex))
 
+            for k in df.columns[2:]:
+                # print(k, row[k])
+                g, is_created = model_group_measure_dim.objects.get_or_create(group_name=k)
+                m, is_created = model_measure_dim.objects.get_or_create(measure_group_dim=g, measure_name=k)
+                f, is_created = model_fact.objects.get_or_create(time_dim=t, city_dim=city, measure_dim=m)
+                f.amount=row[k]
+                f.save()
         result = {"status": "ok"}
         return result
 

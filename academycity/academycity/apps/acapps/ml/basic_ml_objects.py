@@ -118,7 +118,7 @@ class BaseDataProcessing(object):
         return result
 
     def get_general_data(self, dic):
-        # print("9012 BaseDataProcessing get_general_data:\n", dic)
+        print("9012 BaseDataProcessing get_general_data:\n", dic, "\n", "="*50, "\n")
         app_ = dic["app"]
 
         # dic = {"app": "avi",
@@ -148,7 +148,7 @@ class BaseDataProcessing(object):
 
             # print('result[k] = ' + k)
             exec('result[k] = ' + k)
-        # print(result)
+        print(result)
         return result
 
     def clean_name(self, name):
