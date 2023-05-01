@@ -357,10 +357,10 @@ def update_field_model_by_id(request, foreign=None):
 def get_data_link(request):
     dic_ = request.POST["dic"]
     dic_ = eval(dic_)
-    try:
-        print('\n 9050-150 core views get_data_link dic_= ', dic_, '\n', dic_["fields"])
-    except Exception as ex:
-        pass
+    # try:
+    #     print('\n 9050-150 core views get_data_link dic_= ', dic_, '\n', dic_["fields"])
+    # except Exception as ex:
+    #     pass
     multiple_select_fields = None
     if "multiple_select_fields" in dic_:
         if len(dic_["multiple_select_fields"]) > 0:
@@ -508,9 +508,9 @@ def get_data_link(request):
             data__ = eval(ss__)
         s += '.all()[:number_of_rows_].values('+fields_str+')'
         # print('s111 for data')
-        print("\n\n", s, 's11')
+        # print("\n\n", s, 's11')
         data = eval(s)
-        # print(data)
+        # print("data", data)
     except Exception as ex:
         print("3030-1 core error 300 "+str(ex))
         # pass

@@ -762,6 +762,7 @@ AdvancedTabsManager.prototype.get_data = function(call_back_fun, dic_, tbody_)
            //alert("9001"+JSON.stringify(data));
            if(data["status"]!="ok"){return}
            //alert("9005-0 data in atm "+JSON.stringify(data));
+           //alert(call_back_fun)
            call_back_fun(data["dic"], tbody_)
            //alert("after call_back_fun")
            tbody_.data=data["dic"];
@@ -4108,7 +4109,7 @@ acSearchTableCreator.prototype.get_data = function(data_table_name=null,parent_m
                                                    company_obj_id=null)
 {
   var dic=this.parent.data;
-  //  alert("9044-441  "+JSON.stringify(dic));
+  // alert("9044-441  "+JSON.stringify(dic));
   //alert("9044-441  "+JSON.stringify(dic["functions"]));
   try{var f_=dic["functions"]["before_get_data"]; var s_="var zz="+f_;eval(s_); zz(dic);} catch(er){}
   // alert("0000  "+JSON.stringify(dic["fields"]));
@@ -4135,7 +4136,7 @@ acSearchTableCreator.prototype.get_data = function(data_table_name=null,parent_m
    //alert("90441-1  "+JSON.stringify(dic_));
   var fun=function(data, ttbody_){
     console.log("get_data search table inside call back function")
-     // alert("9081 data: "+JSON.stringify(data));
+    // alert("9081 data: "+JSON.stringify(data));
     try{if(Object.keys(data).length==0){return;}} catch (er) {}
     //alert(dic_["fields"][0])
     //alert(JSON.stringify(data[dic_["fields"][0]]))
@@ -4550,14 +4551,14 @@ acMSearchTableCreator.prototype.get_data = function(data_table_name=null,parent_
 
   var fun=function(data, ttbody_){
 
-  console.log("get_data search table inside call back function")
+  //alert("get_data search table inside call back function")
 
     //alert(JSON.stringify(data));
     //alert(dic_["fields"][0])
     //alert(JSON.stringify(data[dic_["fields"][0]]))
     var n_=data[dic_["fields"][0]].length;
     //alert(n_)
-  console.log("get_data search table inside call back function n=" + n_)
+  //alert("get_data search table inside call back function n=" + n_)
     var s='';
     for(i=0; i<n_; i++)
     {
@@ -4574,7 +4575,7 @@ acMSearchTableCreator.prototype.get_data = function(data_table_name=null,parent_
      s+='</tr>';
     }
 
-  console.log("get_data search table inside call back function s=" + s)
+  //alert("get_data search table inside call back function s=" + s)
 
     ttbody_.innerHTML=s;
   }
@@ -4597,7 +4598,7 @@ acMSearchTableCreator.prototype.get_data = function(data_table_name=null,parent_
 
   try{var f_=dic["functions"]["before_get_data"]; var s_="var zz="+f_;eval(s_); zz(dic__);} catch(er){}
 
-  //alert(JSON.stringify(dic__));
+  //alert("AAAAAAAAAAAA\n"+JSON.stringify(dic__));
   console.log("get_data search table ", JSON.stringify(dic__))
   this.parent.atm.get_data(call_back_fun=fun, dic__, this.tbody)
 }

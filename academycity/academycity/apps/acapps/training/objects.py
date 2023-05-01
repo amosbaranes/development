@@ -284,7 +284,7 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
         return result
 
     def get_units_structure_new(self, dic):
-        print("\n", "-"*50, '\n90035-1 dic\n', dic, "\n", "-"*50)
+        # print("\n", "-"*50, '\n90035-1 dic\n', dic, "\n", "-"*50)
         app_ = dic["app"]
         battalion_ = dic["battalion"]
         # soldiers
@@ -337,7 +337,7 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
                 period[period_obj.id] = {"n_limit": period_obj.n_limit}
         except Exception as ex:
             print("Error 3: "+str(ex))
-        print("-"*100, "\n", structure, "\n", "-"*100)
+        # print("-"*100, "\n", structure, "\n", "-"*100)
         result = {"status": "ok", "soldiers": soldiers, "structure":structure, "unitsoldiers":unitsoldiers,
                   "period":period}
         # print(result)
@@ -837,7 +837,7 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
         return result
 
     def set_new_structure(self, dic):
-        print('90088-1 dic', dic)
+        # print('90088-1 dic', dic)
         app_ = dic["app"]
         battalion_name = dic["cube_dic"]["fact"]["model"]
         battalion_id = int(dic["cube_dic"]["fact"]["field_name"])
