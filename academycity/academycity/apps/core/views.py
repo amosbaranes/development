@@ -466,6 +466,12 @@ def get_data_link(request):
             # except Exception as exx:
             #     pass
             filter_value_ = str(filters[f]["value"])
+            filter_field_a = ""
+            try:
+                filter_field_a = str(filters[f]["field"])
+            except Exception as exx:
+                pass
+
             foreign_table_ = ""
             try:
                 foreign_table_ = filters[f]["foreign_table"]
@@ -476,17 +482,18 @@ def get_data_link(request):
             if filter_value_ != "":
                 # print(foreign_table_)
                 if foreign_table_ != "":
-                    # if filter_field_ == "":
-                    # need need need to check this one. I changed it and it might have effect on other reports
-                    # filter_field_ = "id"
-                    s += '.filter('+foreign_table_+'__'+filter_field_+'='+filter_value_+')'
-                    #s += '.filter('+foreign_table_+'__'+filter_field_+'__icontains='+filter_value_+')'
+                    if filter_field_a != "":
+                        # need need need to check this one. I changed it and it might have effect on other reports
+                        filter_field_ = filter_field_a
+                    # s += '.filter('+foreign_table_+'__'+filter_field_+'='+filter_value_+')'
+                    s += '.filter('+foreign_table_+'__'+filter_field_+'__icontains='+filter_value_+')'
                 else:
                     if filter_field_ == "id":
                         #s += '.filter('+filter_field_+'__icontains='+filter_value_+')'
                         s += '.filter('+filter_field_+'='+filter_value_+')'
                     else:
                         s += '.filter('+filter_field_+'__icontains="'+filter_value_+'")'
+        # print(s)
         n_ = -1
         try:
             primary_key_list_filter_ = dic_["primary_key_list_filter"]

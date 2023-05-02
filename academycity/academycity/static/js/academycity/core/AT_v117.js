@@ -4109,7 +4109,7 @@ acSearchTableCreator.prototype.get_data = function(data_table_name=null,parent_m
                                                    company_obj_id=null)
 {
   var dic=this.parent.data;
-  // alert("9044-441  "+JSON.stringify(dic));
+  //alert("9044-441  "+JSON.stringify(dic));
   //alert("9044-441  "+JSON.stringify(dic["functions"]));
   try{var f_=dic["functions"]["before_get_data"]; var s_="var zz="+f_;eval(s_); zz(dic);} catch(er){}
   // alert("0000  "+JSON.stringify(dic["fields"]));
@@ -4198,9 +4198,13 @@ acSearchTableCreator.prototype.get_data = function(data_table_name=null,parent_m
              "number_of_rows":this.number_of_rows, "multiple_select_fields": this.multiple_select_fields,
              "filters":{}, "order_by":this.order_by, "fields":dic__
              }
-  //alert("90446-66 dic__ \n"+JSON.stringify(dic__))
-      dic__["filters"][this.filter_field]={"value":this.filter_value, "foreign_table":this.filter_field_foreign_table}
-  //alert("90447-77 dic__ \n"+JSON.stringify(dic__))
+  //alert("90446-66 dic__ \n"+JSON.stringify(dic__["filters"]))
+
+   dic__["filters"][this.filter_field]={"value":this.filter_value, "foreign_table":this.filter_field_foreign_table}
+   // I do not have to put the next line it but good readability
+   if(this.filter_field_foreign_table != ""){dic__["filters"][this.filter_field]["field"]="id"}
+
+  //alert("90447-77 dic__ \n"+JSON.stringify(dic__["filters"]))
   console.log("get_data search table ", JSON.stringify(dic__))
 
     for(j in dic["fields"])
@@ -4216,7 +4220,7 @@ acSearchTableCreator.prototype.get_data = function(data_table_name=null,parent_m
             {
               foreign_table_=dic["fields"][j]["foreign_table"];
             }
-            dic__["filters"][fn_]={"value":dic["fields"][j]["filter"], "foreign_table": foreign_table_}
+            dic__["filters"][fn_]={"value":dic["fields"][j]["filter"], "field":"id", "foreign_table": foreign_table_}
           }
        }
     }
