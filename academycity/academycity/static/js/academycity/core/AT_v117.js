@@ -304,7 +304,14 @@ AdvancedTabsManager.prototype.init_timer = function()
     fun=function(this_obj){
       //alert("in this.fun\n"+JSON.stringify(this_obj.fun_to_run_by_timer))
       var date = new Date;
-      this_obj.h=date.getHours();this_obj.m=date.getMinutes();this_obj.s=date.getSeconds();this_obj.y=date.getFullYear()
+      this.date=date;
+      this_obj.h=date.getHours();this_obj.m=date.getMinutes();this_obj.s=date.getSeconds();
+      this_obj.d=date.getDay();this_obj.y=date.getFullYear();this_obj.day_of_month=date.getDate()
+      this_obj.month_number=date.getMonth();
+
+      this_obj.day_name=days_of_name[this_obj.d]
+
+      //alert("1 "+this_obj.day_name)
        //alert(this_obj.h +":"+ this_obj.m +":"+ this_obj.s +":"+ this_obj.y)
       for(i in this_obj.fun_to_run_by_timer){
       //alert(i)
@@ -1749,7 +1756,7 @@ acGradesCreator.prototype.set_obj_structure = function(tests_dic=null, group_dic
                  test_events[event_id]["data"]["l_idx"].push(idx);
                  try{idx=result[entity_name+"_number"].indexOf(entity_number, idx+1)} catch(er){}
               }
-              //alert(JSON.stringify(test_events));
+              //alert("test_event\n"+JSON.stringify(test_events));
               var entity_test_value={}
               for(event_id_ in test_events)
               {
@@ -1773,7 +1780,7 @@ acGradesCreator.prototype.set_obj_structure = function(tests_dic=null, group_dic
                    if(etv!=null)
                    {s+="<td style=';text-align:right;width:"+col_width+"px'>"+etv["converted_value"]+"</td>";
                     var_value+=1*etv["converted_value"]*test_dic[test_number]["value"]/100;
-                   } else{s+="<td></td>"}
+                   } else{s+="<td style=';text-align:right;width:"+col_width+"px'></td>"}
                   }
 
                  try{
@@ -1786,6 +1793,9 @@ acGradesCreator.prototype.set_obj_structure = function(tests_dic=null, group_dic
                  s+="</tr>";
               }
          }
+
+         //if(s!=""){ alert("s\n"+s)}
+
           return s;
         }
 
@@ -3439,10 +3449,10 @@ acGroupCreator.prototype.set_obj_structure = function(display_="none", nlimit=-1
      var spaces_=spaces+"&nbsp;&nbsp;&nbsp;"; var n_=n+1;
      for(k in dic)
      {
+        //alert(k+"\n"+dic[k]["title"])
         s_link_=s_link+"["+k+"]['data']";var title = dic[k]["title"];
 //1111111111        var title_=title.replace(/ /g, '').toLowerCase();
         s_title+=title.replace(/ /g, '').toLowerCase();
-
         var class_="group_"+s_title;var id_="id_"+s_title;var sid_="sid_"+s_title
         //&#45;&#45;
         var s=spaces_+'<span type="span" style="cursor: pointer" id="'+sid_+'"'
@@ -3476,6 +3486,10 @@ acGroupCreator.prototype.set_obj_structure = function(display_="none", nlimit=-1
        var s_link="this.units_structure"; var s_title=""
        this.main_div.innerHTML="";
        //alert(nlimit)
+
+
+  //alert("acRadioCreator 90446-17  "+JSON.stringify(this.units_structure));
+
        f(s_link, s_title, this.units_structure, this.main_div, 0, n_limit_=nlimit)
      } catch(er){alert("1155-515: "+er)}
  //  alert("done acGroupCreator.prototype.set_obj_structure\n\n"+this.main_div.outerHTML)
@@ -3795,13 +3809,14 @@ function acComplianceCreator(parent){this.parent=parent;}
 acComplianceCreator.prototype.create_obj = function()
 {
   var dic=this.parent.data;
+  //alert("90358-88 "+JSON.stringify(dic));
   //--
-  var start_date=dic["properties"]["start_date"];
-  var number_of_weeks=dic["properties"]["number_of_weeks"];
+  if("start_date" in dic["properties"]){var start_date_=dic["properties"]["start_date"]} else {var start_date_=-1}
+  if("number_of_weeks" in dic["properties"]){var number_of_weeks_=dic["properties"]["number_of_weeks"]} else {var number_of_weeks_=20}
   //
   var container = document.getElementById("content_"+dic["container_id"]);
   //--
-  this.main_div=document.createElement("div");
+  this.main_div=document.createElement("div");this.main_div.my_creator_obj=this;
   if("width" in dic["properties"]){var width_=dic["properties"]["width"]} else {var width_="400"}
   var style_ = "position:absolute;left:"+dic["properties"]["x"]+"px;top:"+dic["properties"]["y"]+"px;width:"+width_+"px"
   this.main_div.setAttribute("style", style_);
@@ -3809,13 +3824,88 @@ acComplianceCreator.prototype.create_obj = function()
   this.main_div.setAttribute("container_id", dic["container_id"]);
   this.main_div.setAttribute("id", dic["properties"]["obj_number"]);
   this.main_div.setAttribute("obj_type", dic["obj_type"]);
-
   this.weeks=document.createElement("select");
+  this.weeks.my_creator=this;
+  this.weeks.addEventListener("change", function(event){
+    var e=event.target;
+    var today_date_d=e.value;
+    var today_date_=e.value;
+    var y=today_date_.substring(0,4);var m=today_date_.substring(4,6);var d=today_date_.substring(6,8);
+    var today_=new Date(y+"-"+m+"-"+d);
+    e.my_creator.days.innerHTML="";
+    //--days--
+    var o = document.createElement("option");o.value="-1";o.innerHTML="-------";e.my_creator.days.appendChild(o);
+    for (var j=0;j<7;j++)
+    {var o=document.createElement("option");o.value=today_date_;
+     today_.setDate(today_.getDate()+1);
+     var y=today_.getFullYear()+""; var m=complete_zeros((today_.getMonth()+1)+"",2); var d=complete_zeros(today_.getDate()+"",2);
+     var today_date_=y+m+d;
+     o.innerHTML=num_to_day(j);e.my_creator.days.appendChild(o);
+    }
+    e.my_creator.days.value=today_date_d;
+    var ec=new Event("change", {bubbles: true});
+    e.my_creator.days.dispatchEvent(ec)
+    var ec=new Event("change", {bubbles: true});
+    e.my_creator.days.dispatchEvent(ec)
+
+
+  })
+
   this.main_div.appendChild(this.weeks);
   this.days=document.createElement("select");
+  this.days.my_creator=this;
+  this.days.addEventListener("change", function(event){
+    var e=event.target;
+    //alert("days change: "+e.value)
+  })
   this.main_div.appendChild(this.days);
-  this.companies=document.createElement("select");
-  this.main_div.appendChild(this.companies);
+  this.units=document.createElement("select");
+  this.main_div.appendChild(this.units);
+
+  if(start_date_!=-1){
+  var y=start_date_.substring(0,4);var m=start_date_.substring(4,6);var d=start_date_.substring(6,8);
+  var date_=new Date(y+"-"+m+"-"+d);
+  while (date_.getDay()>0){date_.setDate(date_.getDate() -1);}
+  var y=date_.getFullYear()+"";var m=complete_zeros((date_.getMonth()+1)+"",2);var d=complete_zeros(date_.getDate()+"",2);
+  var s_date=y+m+d;
+  // -- weeks --
+  var o = document.createElement("option");o.value="-1";o.innerHTML="-------";this.weeks.appendChild(o);
+  for (var j=1; j<=number_of_weeks_; j++)
+  {var o = document.createElement("option");
+       o.value=s_date;
+       o.innerHTML="Week "+j+" : "+s_date;
+       date_.setDate(date_.getDate()+7)
+       var y=date_.getFullYear()+"";
+       var m=complete_zeros((date_.getMonth()+1)+"",2);
+       var d=complete_zeros(date_.getDate()+"",2);
+       var s_date=y+m+d;
+       this.weeks.appendChild(o);
+   }
+
+  var today_=new Date()
+  var y=today_.getFullYear()+"";var m=complete_zeros((today_.getMonth()+1)+"",2);var d=complete_zeros(today_.getDate()+"",2);
+  var today_date_d=y+m+d;
+  while (today_.getDay()>0){today_.setDate(today_.getDate() -1);}
+  var y=today_.getFullYear()+"";var m=complete_zeros((today_.getMonth()+1)+"",2);var d=complete_zeros(today_.getDate()+"",2);
+  var today_date_=y+m+d;
+  this.weeks.value=today_date_;
+  //--days--
+   var o = document.createElement("option");o.value="-1";o.innerHTML="-------";this.days.appendChild(o);
+   for (var j=0; j<7; j++)
+   {var o = document.createElement("option");
+    o.value=today_date_;
+    today_.setDate(today_.getDate()+1);
+    var y=today_.getFullYear()+"";var m=complete_zeros((today_.getMonth()+1)+"",2);var d=complete_zeros(today_.getDate()+"",2);
+    var today_date_=y+m+d;
+    o.innerHTML=num_to_day(j);this.days.appendChild(o);
+   }
+   this.days.value=today_date_d;
+   var ec=new Event("change", {bubbles: true});
+   this.days.dispatchEvent(ec)
+
+  } else {alert("You need to ste start date")}
+
+
 
 //  this.table_=document.createElement("table");
 //
@@ -7193,12 +7283,14 @@ var nice_number = function(z){
  while (n_.length>0) {if(n__.length>0){n__=","+n__};n__=n_.substring(n_.length-3,n_.length)+n__;n_=n_.substring(0,n_.length-3)}
  return kk+n__+"."+dn;
 }
+var complete_zeros = function(s,n){for(var i=0;i<(n-s.length);i++){s="0"+s};return s;}
 
 var clean_number = function(z){
  try{if(z==null){return z}; z=""+z;z=z.replace(/,/g, ''); z=1*z}catch(er){}
  return z
 }
-
+var num_to_day = function(n){return days_of_name[n]}
 //-- General Dictionaries --
 var months_dic={"01":"Jan", "02":"Feb","03":"Mar", "04":"Apr","05":"May", "06":"Jun",
                 "07":"Jul", "08":"Aug","09":"Sep", "10":"Oct","11":"Nov", "12":"Dec"}
+var days_of_name=["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
