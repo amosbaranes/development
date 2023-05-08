@@ -33,9 +33,14 @@ import joblib
 
 class BaseDataProcessing(object):
     def __init__(self, dic):  # to_data_path, target_field
-        # print("90001-03 BaseDataProcessing", dic, '\n', '-'*50)
-        super(BaseDataProcessing, self).__init__(dic)
-        # print("90001-04 BaseDataProcessing", dic, '\n', '-'*50)
+        # print("90002-000 BaseDataProcessing\n", dic, '\n', '-'*50)
+        try:
+            super(BaseDataProcessing, self).__init__(dic)  # (dic)
+        except Exception as ex:
+            print("Error 90002-010 \n" + str(ex),"\n", "-"*50)
+
+        # print("90002-010 BaseDataProcessing\n", dic, '\n', '-'*50)
+
         self.name = 'DataProcessing'
         self.uploaded_filename = None
         # print("90003-0 PBaseDataProcessing", dic, '-'*50)
@@ -193,9 +198,15 @@ class BaseDataProcessing(object):
 
 class BasePotentialAlgo(object):
     def __init__(self, dic):  # to_data_path, target_field
-        # print('-'*50, '\n', "90050-01 BasePotentialAlgo", dic, '\n', '-'*50)
-        super(BasePotentialAlgo, self).__init__()
-        # print("90050-02 PotentialAlgo", dic, '\n', '-'*50)
+        # print('-'*50, '\n', "90003-000 BasePotentialAlgo", dic, '\n', '-'*50)
+        try:
+            super(BasePotentialAlgo, self).__init__(dic)
+        except Exception as ex:
+            print("Error 90003-010 " + str(ex))
+
+        # print("90003-020 PotentialAlgo", dic, '\n', '-'*50)
+
+        self.entity_name = dic["entity_name"]
         self.second_time_save = ''
         self.to_save = []
         self.to_save_all = []
@@ -653,7 +664,7 @@ class BasePotentialAlgo(object):
             # print(measure_id)
             s = 'model.objects.filter(measure_dim__id='+measure_id+', '
         s += filter_dim+'__id='+str(filter_value)+', amount__gte='+str(filter_amount)+').all()'
-        # print("1 s="+s)
+        # print("1 \ns="+s)
         qs = eval(s)
         # qs = model.objects.filter(measure_dim__measure_name="TotalPop", time_dim__id=2019, amount__gte=1).all()
         # print(qs)
@@ -714,7 +725,7 @@ class BasePotentialAlgo(object):
 
         # print("90022-122-111 pre_process_data: \n", dic_, "\n", "="*50)
         returned_ = self.get_dim_data_frame(dic_)
-        # print("90011-111 pre_process_data: \n", "="*50)
+        # print("90011-111-1 pre_process_data: \n", returned_, "\n", "="*50)
         entity_list = returned_["result"][1]
         df_entities = returned_["result"][0]
         # print("entity_list\n", entity_list, "\n df_entities\n", df_entities)
@@ -777,11 +788,10 @@ class BasePotentialAlgo(object):
                             # print("four4: ", k, f__, f__var2, "\n", ll_dfs[k][f__])
             except Exception as ex:
                 print("Error 50661-12 PotentialAlgo calculate_min_max_cuts: \n" + str(ex), "\n", "90-111-222-2-"+k+" "+f__)
-
         return ll_dfs
 
     def calculate_min_max_cuts(self, dic):
-        print("90066-100 PotentialAlgo calculate_min_max_cuts: \n", dic, "\n", "="*50)
+        # print("90066-100 PotentialAlgo calculate_min_max_cuts: \n", dic, "\n", "="*50)
         app_ = dic["app"]
         f = int(dic["dim_field"])
         method = dic["method"]
@@ -791,12 +801,12 @@ class BasePotentialAlgo(object):
             u_method = "min"
             l_method = "max"
 
-        print("90066-100-1 PotentialAlgo calculate_min_max_cuts: \n", "="*50)
+        # print("90066-100-1 PotentialAlgo calculate_min_max_cuts: \n", "="*50)
         dependent_group = dic["dependent_group"]
         year_ = str(dic["time_dim_value"])
         min_max_model_name_ = dic["min_max_model"]
         #
-        print("90066-100-2 PotentialAlgo calculate_min_max_cuts: \n", "="*50)
+        # print("90066-100-2 PotentialAlgo calculate_min_max_cuts: \n", "="*50)
         ll_dfs = self.pre_process_data(dic)
         # print(ll_dfs)
 
@@ -816,7 +826,7 @@ class BasePotentialAlgo(object):
         results = {}
         best_cut = {"bv": -1}
 
-        print("90066-100-5 PotentialAlgo calculate_min_max_cuts: \n", "="*50)
+        # print("90066-100-5 PotentialAlgo calculate_min_max_cuts: \n", "="*50)
 
         for h in high_group_cut:
             hh = 1- h
@@ -960,7 +970,9 @@ class BasePotentialAlgo(object):
         qs = model_entity_dim.objects.all()
         for e in qs:
             # print(e)
-            ef, is_created = model_fact.objects.get_or_create(time_dim=t, city_dim=e, measure_dim=m)
+            s = 'model_fact.objects.get_or_create(time_dim=t, ' + self.entity_name + '_dim=e, measure_dim=m)'
+            # print(s)
+            ef, is_created = eval(s)
             ef.amount=1
             ef.save()
 
@@ -1027,7 +1039,6 @@ class BasePotentialAlgo(object):
         min_max_model_name_ = dic["min_max_model"]
         model_min_max = apps.get_model(app_label=app_, model_name=min_max_model_name_)
         # model_measure_dim = apps.get_model(app_label=app_, model_name="measuredim")
-
         file_path = os.path.join(self.PICKLE_PATH, "best_cut_"+f+"_"+year_+".pkl")
         # print(file_path)
         with open(file_path, 'rb') as handle:
@@ -1041,7 +1052,11 @@ class BasePotentialAlgo(object):
         with open(file_path, 'rb') as handle:
             results = pickle.load(handle)
         # print(results[hh][ll][int(f)])
-        model_min_max.truncate()
+
+        return
+
+        model_min_max.objects.filter(time_dim_id=year_).delete()
+
         # print("1111 best_cut\n", best_cut)
         f_groups = best_cut['f_groups']
         for g in f_groups:

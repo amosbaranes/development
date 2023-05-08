@@ -20,32 +20,33 @@ import numpy as np
 from ..ml.basic_ml_objects import BaseDataProcessing, BasePotentialAlgo
 from django.apps import apps
 
+class FuzzyForcastAlgo(object):
+    def __init__(self, dic):  # to_data_path, target_field
+        # print("90004-000 FuzzyForcastAlgo", dic, '\n', '-'*50)
+        try:
+            super(FuzzyForcastAlgo, self).__init__()
+        except Exception as ex:
+            print("Error 90004-010 FuzzyForcastDataProcessing:\n"+str(ex), "\n", '-'*50)
+        # print("90004-020 FuzzyForcastAlgo", dic, '\n', '-'*50)
 
-class FuzzyForcastDataProcessing(BaseDataProcessing, BasePotentialAlgo):
+
+class FuzzyForcastDataProcessing(BaseDataProcessing, BasePotentialAlgo, FuzzyForcastAlgo):
     def __init__(self, dic):
-        # print("90001-00 PotentialDataProcessing", dic, '\n', '-'*50)
-        super(PotentialDataProcessing, self).__init__(dic)
-        # print("90002-00 PotentialDataProcessing", dic, '\n', '-'*50)
-        mdg_fn = "id"
-        # try:
-        #     mdg_fn = dic["measure_group_dim_field_name"]
-        # except Exception as ex:
-        #     print("Exc90002-1" + str(ex))
-        # mdg_fv = dic["measure_group_dim_field_value"]
-        # td_fv = dic["time_dim_value"]
-        # # notice in the measure group, we should include index for every category
-        # s = 'sq = Fact.objects.filter(measure_dim__measure_group_dim__'+mdg_fn+'='+mdg_fv+', time_dim__id=td_fv)'
-        # exec(s)
-        # df = pd.DataFrame(sq.values('country_dim', 'measure_dim', 'amount'))
-        # print(df)
+        # print("90001-00 FuzzyForcastDataProcessing\n", dic, '\n', '-'*50)
+        try:
+            super(FuzzyForcastDataProcessing, self).__init__(dic)
+        except Exception as ex:
+            print("Error 90001-00 FuzzyForcastDataProcessing:\n"+str(ex), "\n", '-'*50)
+        # print("90001-01 FuzzyForcastDataProcessing\n", '-'*50)
+
 
     def load_file_to_db(self, dic):
-        print("90121-1: \n", dic, "="*50)
+        # print("90001-010 load_file_to_db: \n", dic, "\n", "="*50)
         app_ = dic["app"]
         file_path = self.upload_file(dic)["file_path"]
-        # print('90121-2 dic')
+        # print('90001-020 dic')
         dic = dic["cube_dic"]
-        # print('90121-3 dic', dic)
+        print('90001-030 dic\n', dic)
         model_name_ = dic["dimensions"]["time_dim"]["model"]
         model_time_dim = apps.get_model(app_label=app_, model_name=model_name_)
         model_name_ = dic["dimensions"]["country_dim"]["model"]
@@ -155,6 +156,7 @@ class FuzzyForcastDataProcessing(BaseDataProcessing, BasePotentialAlgo):
                                 except Exception as ex:
                                     print("Error 9055-33: "+str(ex))
         wb.close()
+        print("Done")
 
         result = {"status": "ok"}
         return result

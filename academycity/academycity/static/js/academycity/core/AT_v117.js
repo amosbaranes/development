@@ -1461,19 +1461,17 @@ acReport.prototype.create_obj = function(){
 }
 
 acReport.prototype.set_data = function(type, is_level=true){
+  //alert("9087-770-1 acReport.prototype.set_data\n")
   try{eval('var zz='+this.data["functions"]["on_receive_data"])} catch(er){}
   try{eval('var aa='+this.data["functions"]["on_amount_paint"])} catch(er){}
   var report=this;
 
   var fun = function(data,ll){
 
-    var html_obj = ll[0];
-    var get_data_dic = ll[1]
-
+    var html_obj = ll[0];var get_data_dic = ll[1];
 //    alert(JSON.stringify(data));
 //    alert(JSON.stringify(get_data_dic));
 //    alert(html_obj.outerHTML)
-
      data["dim_titles"]={}
      try{zz(data)} catch(er){};
 //       alert(JSON.stringify(data));
@@ -1913,7 +1911,7 @@ var process_content=function(){
 var container_on_change=function (event){
   event.stopPropagation();
   var e=event.target;
-  //alert("c9001-1 "+e.outerHTML+"\nn"+event.target.outerHTML)
+  //alert("c9001-1 "+e.outerHTML);
   var e_container_id_=e.getAttribute("container_id")
   var container = getEBI("content_"+e_container_id_)
   //alert("c9002 container \n"+container.outerHTML) //alert("9050 " + JSON.stringify(container.my_creator_obj.link_dic))
@@ -3804,7 +3802,7 @@ acRecordingTestsCreator.prototype.fill_up_data = function(data, this_obj)
 
 
 // -- acComplianceCreator --
-function acComplianceCreator(parent){this.parent=parent;}
+function acComplianceCreator(parent){this.parent=parent;this.is_set_unit=true}
 
 acComplianceCreator.prototype.create_obj = function()
 {
@@ -3817,7 +3815,7 @@ acComplianceCreator.prototype.create_obj = function()
   var container = document.getElementById("content_"+dic["container_id"]);
   //--
   this.main_div=document.createElement("div");this.main_div.my_creator_obj=this;
-  if("width" in dic["properties"]){var width_=dic["properties"]["width"]} else {var width_="400"}
+  if("width" in dic["properties"]){var width_=dic["properties"]["width"]} else {var width_="1300"}
   var style_ = "position:absolute;left:"+dic["properties"]["x"]+"px;top:"+dic["properties"]["y"]+"px;width:"+width_+"px"
   this.main_div.setAttribute("style", style_);
   container.appendChild(this.main_div);
@@ -3845,10 +3843,6 @@ acComplianceCreator.prototype.create_obj = function()
     e.my_creator.days.value=today_date_d;
     var ec=new Event("change", {bubbles: true});
     e.my_creator.days.dispatchEvent(ec)
-    var ec=new Event("change", {bubbles: true});
-    e.my_creator.days.dispatchEvent(ec)
-
-
   })
 
   this.main_div.appendChild(this.weeks);
@@ -3856,11 +3850,99 @@ acComplianceCreator.prototype.create_obj = function()
   this.days.my_creator=this;
   this.days.addEventListener("change", function(event){
     var e=event.target;
+    var units=e.my_creator.units;
+    var units_value=units.value;
+    if(units_value!=-1)
+    {
+       var ec=new Event("change", {bubbles: true});
+       units.dispatchEvent(ec)
+    }
     //alert("days change: "+e.value)
   })
   this.main_div.appendChild(this.days);
   this.units=document.createElement("select");
+  this.units.my_creator=this;this.units.dic=dic;
   this.main_div.appendChild(this.units);
+  this.content_div=document.createElement("div");
+  this.main_div.appendChild(this.content_div);
+  this.table_=document.createElement("table");
+  this.content_div.appendChild(this.table_);
+  this.thead_=document.createElement("thead");
+  this.table_.appendChild(this.thead_);
+  this.tbody_=document.createElement("tbody");
+  this.table_.appendChild(this.tbody_);
+  this.thead_tr=document.createElement("tr");
+  this.thead_.appendChild(this.thead_tr);
+  var table_class_=dic["properties"]["table_class"];if(table_class_==null || table_class_==""){table_class_="basic"}
+  this.table_.setAttribute("class", table_class_)
+
+  this.units.addEventListener("change", function(event){
+    var e=event.target;var c=e.my_creator;var s_col_width=150;var s_col_time_width=100;var s_buttons_width=62;
+    var ll=e.my_creator.units_structure[e.value]
+    //alert("90357 "+JSON.stringify(ll));
+    th=document.createElement("th");c.thead_tr.appendChild(th);th.setAttribute("style", 'width:'+s_col_time_width+'px');th.innerHTML="Time From"
+    th=document.createElement("th");c.thead_tr.appendChild(th);th.setAttribute("style", 'width:'+s_col_time_width+'px');th.innerHTML="Time To"
+    //--
+    th=document.createElement("th");c.thead_tr.appendChild(th);th.setAttribute("style", 'width:'+s_buttons_width+'px');
+    c.button_add_time=document.createElement("button");c.button_add_time.innerHTML="+"
+    th.appendChild(c.button_add_time);
+    c.button_add_time.ll=ll;
+    c.button_add_time.addEventListener("click", function(event){
+     var e=event.target;
+     //alert(e.outerHTML)
+     //alert(c.tbody_.outerHTML)
+        var tr=document.createElement("tr");c.tbody_.appendChild(tr);
+
+        // Time columns
+        var td=document.createElement("td");tr.appendChild(td);
+        td.setAttribute("style", 'width:'+s_col_time_width+'px')
+        var input=document.createElement("input");td.appendChild(input);
+        input.setAttribute("style", 'width:'+s_col_time_width+'px');
+        input.setAttribute("type", 'time');
+        input.setAttribute("time_from", "time_from");
+        //--
+        var td=document.createElement("td");tr.appendChild(td);
+        td.setAttribute("style", 'width:'+s_col_time_width+'px')
+        var input=document.createElement("input");td.appendChild(input);
+        input.setAttribute("style", 'width:'+s_col_time_width+'px')
+        input.setAttribute("type", 'time');
+        input.setAttribute("time_to", "time_to")
+        //--
+        td=document.createElement("td");tr.appendChild(td);td.innerHTML+="&nbsp;"
+        td.setAttribute("style", 'width:'+s_buttons_width+'px');
+        button_add_description=document.createElement("button");button_add_description.innerHTML="D"
+        td.appendChild(button_add_description);
+        button_add_description.addEventListener("click", function(event){
+           var e=event.target;
+           var s=e.innerHTML;if(s=="D"){e.innerHTML="A"}else{e.innerHTML="D"}
+         })
+        button_delete=document.createElement("button");button_delete.innerHTML="--"
+        td.appendChild(button_delete);
+        button_delete.addEventListener("click", function(event){
+            var id_ = prompt("Are you sure you want to delete this record? if so type y" , 'No')
+            if(id_ != 'y') {return;}; var e=event.target;var g=e.parentNode.parentNode;g.outerHTML="";
+            // update DB
+         })
+        //--
+        for(j in e.ll["data"])
+        {
+          var td=document.createElement("td");tr.appendChild(td);
+          td.setAttribute("style", 'width:'+s_col_width+'px')
+          var input=document.createElement("input");td.appendChild(input);
+          input.setAttribute("style", 'width:'+s_col_width+'px')
+          input.setAttribute("unit_number", j)
+        };
+     //alert(c.tbody_.outerHTML)
+    })
+    //--
+    for(j in ll["data"])
+    { th=document.createElement("th");c.thead_tr.appendChild(th);
+      th.setAttribute("style", 'width:'+s_col_width+'px')
+      th.setAttribute("unit_number", j)
+      th.innerHTML=ll["data"][j]["title"]
+    };
+
+  })
 
   if(start_date_!=-1){
   var y=start_date_.substring(0,4);var m=start_date_.substring(4,6);var d=start_date_.substring(6,8);
@@ -3998,6 +4080,28 @@ acComplianceCreator.prototype.create_obj = function()
   for(f in dic["functions"]){var s="this.main_div."+f+"="+dic["functions"][f];eval(s);}
 }
 
+acComplianceCreator.prototype.set_units = function()
+{
+  if(this.is_set_unit==true)
+  {
+    this.units.innerHTML="";
+    var ll=atm.general.get_platoons_ids();
+     ll=ll[3];
+     this.units_structure=ll;
+     var o=document.createElement("option");
+     o.value="-1";
+     o.innerHTML="-------";this.units.appendChild(o);
+     for(var j in ll)
+     {
+       //alert(j+" "+JSON.stringify(ll[j]));
+       var o=document.createElement("option");
+       o.value=j;
+       o.innerHTML=ll[j]["title"];
+       this.units.appendChild(o);
+      }
+      this.is_set_unit==false;
+  }
+}
 
 // -- acSearchTableCreator --
 function acSearchTableCreator(parent){this.parent=parent;this.is_json_data=false;this.json_record_id=-1;

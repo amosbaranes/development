@@ -63,6 +63,7 @@ urlpatterns += i18n_patterns(
     url(r'avi/', include('academycity.apps.acapps.avi.urls')),
     url(r'avia/', include('academycity.apps.acapps.avia.urls')),
     url(r'potential/', include('academycity.apps.acapps.potential.urls')),
+    url(r'fuzzyforcast/', include('academycity.apps.acapps.fuzzyforcast.urls')),
     url(r'ms/', include('academycity.apps.acapps.ms.urls')),
     url(r'training/', include('academycity.apps.acapps.training.urls')),
     url(r'dl/', include('academycity.apps.acapps.dl.urls')),
@@ -71,7 +72,6 @@ urlpatterns += i18n_patterns(
     url(r'accounting/', include('academycity.apps.acapps.accounting.urls')),
     url(r'l/', include('academycity.apps.acapps.liongold.urls')),
     #
-
     url(r'c/', include('academycity.apps.webapps.checkcashingchicago.urls')),
     url(r'e/', include('academycity.apps.webapps.education.urls')),
     url(r'p/', include('academycity.apps.webapps.portfolio.urls')),
