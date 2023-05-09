@@ -2,7 +2,7 @@ from __future__ import unicode_literals
 from django.contrib import admin
 from django.utils.translation import ugettext_lazy as _
 from .models import (TrainingWeb, Instructors, Brigades, Battalions, Companys, Platoons, Squads, TestsStructures,
-                     Compliances, Courses, Soldiers, Tests, TimeDim, SoldierFact,
+                     ComplianceWeeks, ComplianceDays, Courses, Soldiers, Tests, TimeDim, SoldierFact,
                      TestEvents, TestsForEvents, SoldiersForEvents, GradesForEvents,
                      InventoryCategorys,Inventorys,TestsVariables, TestsForVariables, Periods, UnitSoldiers,
                      DoubleShoot)
@@ -40,9 +40,13 @@ class SquadsAdmin(admin.ModelAdmin):
 class TestsStructuresAdmin(admin.ModelAdmin):
     list_display = ('battalion', )
 
-@admin.register(Compliances)
-class CompliancesAdmin(admin.ModelAdmin):
-    list_display = ('id', 'week', 'platoon', 'extra_done', 'not_done', 'conclusion', 'file_name')
+@admin.register(ComplianceWeeks)
+class ComplianceWeeksAdmin(admin.ModelAdmin):
+    list_display = ('id', 'battalion', 'company', 'week')
+
+@admin.register(ComplianceDays)
+class ComplianceDaysAdmin(admin.ModelAdmin):
+    list_display = ('id', 'time_dim', 'compliance_week')
 
 @admin.register(Soldiers)
 class SoldiersAdmin(admin.ModelAdmin):

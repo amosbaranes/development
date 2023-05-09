@@ -177,22 +177,6 @@ class Squads(TruncateTableMixin, models.Model):
     def __str__(self):
         return str(self.squad_name)
 
-# תכנון מול ביצוע
-class Compliances(TruncateTableMixin, models.Model):
-    class Meta:
-        verbose_name = 'compliance'
-        verbose_name_plural = 'compliances'
-        ordering = ['week']
-    week = models.SmallIntegerField(default=0)
-    platoon = models.ForeignKey(Platoons, on_delete=models.CASCADE, default=1, related_name='platoon_compliences')
-    extra_done = models.TextField(blank=True, null=True)
-    not_done = models.TextField(blank=True, null=True)
-    conclusion = models.TextField(blank=True, null=True)
-    file_name = models.CharField(max_length=100, default='', blank=True, null=True)
-
-    def __str__(self):
-        return str(self.week) + " : " + str(self.platoon)
-
 # קורסים
 class Courses(TruncateTableMixin, models.Model):
     class Meta:
@@ -381,25 +365,25 @@ class TestsForVariables(TruncateTableMixin, models.Model):
         return str(self.test_number)
 #
 
-#
-class ComplianceWithPlans(TruncateTableMixin, models.Model):
+# -- Compliance --
+class ComplianceWeeks(TruncateTableMixin, models.Model):
     class Meta:
-        verbose_name = 'compliance_with_plan'
-        verbose_name_plural = 'compliance_with_plans'
+        verbose_name = 'compliance_week'
+        verbose_name_plural = 'compliance_weeks'
         ordering = ['week']
-    battalion = models.ForeignKey(Battalions, on_delete=models.CASCADE, default=1, related_name='battalion_compliance_with_plans')
-    week = models.TextField(blank=True, null=True)
-    description = models.TextField(blank=True, null=True)
+    battalion = models.ForeignKey(Battalions, on_delete=models.CASCADE, default=1, related_name='battalion_compliance_weeks')
+    company = models.ForeignKey(Companys, on_delete=models.CASCADE, default=1, related_name='company_compliance_weeks')
+    week = models.IntegerField(blank=True, null=True)
+    conclusion = models.TextField(blank=True, null=True)
 
-class ComplianceDay(TruncateTableMixin, models.Model):
+class ComplianceDays(TruncateTableMixin, models.Model):
     class Meta:
         verbose_name = 'compliance_day'
         verbose_name_plural = 'compliance_days'
 
-    time_dim = models.ForeignKey(TimeDim, on_delete=models.CASCADE, default=1, related_name='time_dim_compliance_day')
-    company = models.ForeignKey(Companys, on_delete=models.CASCADE, default=1, related_name='company_compliance_days')
-    compliance_with_plan = models.ForeignKey(ComplianceWithPlans, on_delete=models.CASCADE, default=1, related_name='compliance_with_plan_compliance_days')
-
+    time_dim = models.ForeignKey(TimeDim, on_delete=models.CASCADE, default=1, related_name='time_dim_compliance_days')
+    compliance_week = models.ForeignKey(ComplianceWeeks, on_delete=models.CASCADE, default=1, related_name='compliance_week_compliance_days')
+    day_time = models.JSONField(null=True)
 
 # To Be Deleted ###
 class TestsStructures(TruncateTableMixin, models.Model):
