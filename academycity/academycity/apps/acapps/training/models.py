@@ -372,7 +372,7 @@ class ComplianceWeeks(TruncateTableMixin, models.Model):
         verbose_name_plural = 'compliance_weeks'
         ordering = ['week']
     battalion = models.ForeignKey(Battalions, on_delete=models.CASCADE, default=1, related_name='battalion_compliance_weeks')
-    company = models.ForeignKey(Companys, on_delete=models.CASCADE, default=1, related_name='company_compliance_weeks')
+    company = models.IntegerField(blank=True, null=True)
     week = models.IntegerField(blank=True, null=True)
     conclusion = models.TextField(blank=True, null=True)
 
@@ -381,9 +381,9 @@ class ComplianceDays(TruncateTableMixin, models.Model):
         verbose_name = 'compliance_day'
         verbose_name_plural = 'compliance_days'
 
-    time_dim = models.ForeignKey(TimeDim, on_delete=models.CASCADE, default=1, related_name='time_dim_compliance_days')
     compliance_week = models.ForeignKey(ComplianceWeeks, on_delete=models.CASCADE, default=1, related_name='compliance_week_compliance_days')
-    day_time = models.JSONField(null=True)
+    time_dim = models.ForeignKey(TimeDim, on_delete=models.CASCADE, default=1, related_name='time_dim_compliance_days')
+    time_unit = models.JSONField(null=True)
 
 # To Be Deleted ###
 class TestsStructures(TruncateTableMixin, models.Model):

@@ -46,7 +46,7 @@ class FuzzyForcastDataProcessing(BaseDataProcessing, BasePotentialAlgo, FuzzyFor
         file_path = self.upload_file(dic)["file_path"]
         # print('90001-020 dic')
         dic = dic["cube_dic"]
-        print('90001-030 dic\n', dic)
+        # print('90001-030 dic\n', dic)
         model_name_ = dic["dimensions"]["time_dim"]["model"]
         model_time_dim = apps.get_model(app_label=app_, model_name=model_name_)
         model_name_ = dic["dimensions"]["country_dim"]["model"]

@@ -128,7 +128,8 @@ function AdvancedTabsManager(dic=null)
                                                   "field":[]},"attributes":{"table_class":["","basic","payment","data_entry"]},
                                                   "functions":["onclick", "onchange", "onmouseover", "onmouseout"]},
                                         "Compliance":{"title":"C", "width":3,
-                                                  "setting": {"start_date":[], "number_of_weeks":[],"width":[],"table":[]},
+                                                  "setting": {"start_date":[], "number_of_weeks":[],"width":[],
+                                                  "week_table":[], "day_table":[]},
                                                   "attributes":{"table_class":["","basic","payment","data_entry"]},
                                                   "functions":["onclick", "onchange", "onmouseover", "onmouseout"]},
                                         "Image":{"title":"Img", "width":4,
@@ -1467,20 +1468,24 @@ acReport.prototype.set_data = function(type, is_level=true){
   var report=this;
 
   var fun = function(data,ll){
-
     var html_obj = ll[0];var get_data_dic = ll[1];
-//    alert(JSON.stringify(data));
-//    alert(JSON.stringify(get_data_dic));
-//    alert(html_obj.outerHTML)
+     //alert("data=\n"+JSON.stringify(data));
+     //for(k in data){alert("k="+k+"\n"+JSON.stringify(data[k]))}
+     //alert(JSON.stringify(get_data_dic));
+     //alert(html_obj.outerHTML)
      data["dim_titles"]={}
      try{zz(data)} catch(er){};
-//       alert(JSON.stringify(data));
-//       alert(JSON.stringify(data["dim_titles"]));
-//       alert(JSON.stringify(report.get_data_dic));
+     //alert(JSON.stringify(data["amount"]));
+     //alert(JSON.stringify(data["dim_titles"]));
+     //alert(JSON.stringify(report.get_data_dic));
 
      var vertical_field_=report.data["properties"]["vertical_field"];
      var horizontal_field_=report.data["properties"]["horizontal_field"];
+
+     //alert("k="+vertical_field_+"\n"+JSON.stringify(data[vertical_field_]))
+
      var n_=data[vertical_field_].length;
+     //alert(n_)
      var pdata={};var v_=[];var h_=[];
      for(var j=0; j<n_;j++)
      {
@@ -1490,6 +1495,7 @@ acReport.prototype.set_data = function(type, is_level=true){
               {
                  if(!(h_.includes(data[horizontal_field_][j]))){h_.push(data[horizontal_field_][j])}
               }
+              //alert(data[vertical_field_][j]+"\n"+data[horizontal_field_][j]+"\n"+data["amount"][j])
               pdata[data[vertical_field_][j]][data[horizontal_field_][j]]={"value":data["amount"][j],"color":"black"};
               try{aa(v=data[vertical_field_][j],
                      h=data[horizontal_field_][j],
@@ -1497,6 +1503,8 @@ acReport.prototype.set_data = function(type, is_level=true){
                      f=get_data_dic["filters"]
                      )} catch(er){}
      }
+     //alert("pdata=\n"+JSON.stringify(pdata));
+
      v_=v_.sort();//h_=h_.sort();
      //alert(JSON.stringify(data["dim_titles"][horizontal_field_]));
      report.axes={"v":v_, "h":h_}
@@ -1506,7 +1514,7 @@ acReport.prototype.set_data = function(type, is_level=true){
    }
 //  alert(is_level)
   if(is_level==false){this.get_data_dic["fields"] = this.get_data_dic["fields"].filter(item => item !== "level")}
-//  alert("90876\n"+JSON.stringify(this.get_data_dic));
+  //alert("90876\n"+JSON.stringify(this.get_data_dic));
   this.atm.get_data(fun, this.get_data_dic, [this.table_, this.get_data_dic])
 }
 
@@ -3878,20 +3886,29 @@ acComplianceCreator.prototype.create_obj = function()
 
   var onchange_input=function(event){
            var e=event.target;
-    alert("90357-101\n"+JSON.stringify(e.data_dic));
-           alert(e.outerHTML)
-           var s=e.getAttribute("id");var ll=s.split("-")
-           alert(ll)
-           var week_idx=ll[0];
-           var day_idx=ll[1];
+
+    //alert("90357-101\n"+JSON.stringify(e.data_dic));
+    //alert("90357-102\n"+JSON.stringify(e.dic));
+    //alert(e.outerHTML)
+           var s=e.getAttribute("id");var ll=s.split("-");
+           var week_table=e.dic["properties"]["week_table"]
            var parent_unit_idx=ll[2];
-           var unit_idx=ll[3];
-           var row_number=ll[4];
-           e.data_dic["row_number"]=row_number;
-           e.data_dic["row_number"]["week_idx"]=week_idx;
-           e.data_dic["row_number"]["unit_idx"]=unit_idx;
-           e.data_dic["row_number"][""]=;
-           e.data_dic["row_number"][""]=;
+           var week_idx=ll[0];
+           // --
+           var day_idx=ll[1];
+           var day_table=e.dic["properties"]["day_table"]
+           // --
+           var row_number=ll[4];var unit=ll[3];
+           if(!("data" in e.data_dic)){e.data_dic["data"]={}}
+           if(!(row_number in e.data_dic["data"])){e.data_dic["data"][row_number]={}}
+           e.data_dic["data"][row_number][unit]=e.value;
+           //--
+           var dic_={"week":{"table":week_table, "parent_unit_idx":parent_unit_idx, "week":week_idx},
+                     "day":{"table":day_table,"time_dim":day_idx, "time_unit":e.data_dic}}
+
+           //alert("90357-555-1\n"+JSON.stringify(dic_));
+
+           e.save_data(dic_);
   }
 
   this.units.addEventListener("change", function(event){
@@ -3900,6 +3917,11 @@ acComplianceCreator.prototype.create_obj = function()
     //alert(e.value)
     var ll=e.my_creator.units_structure[e.value]
     //alert("90357 "+JSON.stringify(ll));
+    if(c.thead_tr.innerHTML!=""){
+      var id_ = prompt("Are you sure you want to Change Unit? if so type y" , 'No')
+      if(id_ != 'y') {return;}
+    }
+    c.thead_tr.innerHTML="";c.tbody_.innerHTML="";
     th=document.createElement("th");c.thead_tr.appendChild(th);th.setAttribute("style", 'width:'+s_col_time_width+'px');th.innerHTML="Time From"
     th=document.createElement("th");c.thead_tr.appendChild(th);th.setAttribute("style", 'width:'+s_col_time_width+'px');th.innerHTML="Time To"
     //--
@@ -3924,7 +3946,7 @@ acComplianceCreator.prototype.create_obj = function()
         input.setAttribute("style", 'width:'+s_col_time_width+'px');
         input.setAttribute("type", 'time');
         input.setAttribute("id", e.weeks.value+"-"+e.days.value+"-"+e.parent_unit+"-time_from-"+row_number);
-        input.onchange=onchange_input;input.data_dic=e.data_dic;
+        input.onchange=onchange_input;input.data_dic=e.data_dic;input.dic=c.units.dic;input.save_data=c.save_data;
         //--
         var td=document.createElement("td");tr.appendChild(td);
         td.setAttribute("style", 'width:'+s_col_time_width+'px')
@@ -3932,7 +3954,7 @@ acComplianceCreator.prototype.create_obj = function()
         input.setAttribute("style", 'width:'+s_col_time_width+'px')
         input.setAttribute("type", 'time');
         input.setAttribute("id", e.weeks.value+"-"+e.days.value+"-"+e.parent_unit+"-time_to-"+row_number);
-        input.onchange=onchange_input;input.data_dic=e.data_dic;
+        input.onchange=onchange_input;input.data_dic=e.data_dic;input.dic=c.units.dic;input.save_data=c.save_data;
         //--
         td=document.createElement("td");tr.appendChild(td);td.innerHTML+="&nbsp;"
         td.setAttribute("style", 'width:'+s_buttons_width+'px');
@@ -3987,7 +4009,11 @@ acComplianceCreator.prototype.create_obj = function()
           input.setAttribute("style", 'width:'+s_col_width+'px')
           input.setAttribute("unit_number", j)
           input.setAttribute("id", e.weeks.value+"-"+e.days.value+"-"+e.parent_unit+"-"+j+"-"+row_number);
-          input.onchange=onchange_input;input.data_dic=e.data_dic;
+          input.onchange=onchange_input;
+          input.data_dic=e.data_dic;
+          input.dic=c.units.dic;
+          //alert("c.save_data\n"+c.save_data);
+          input.save_data=c.save_data;
         };
      //alert(c.tbody_.outerHTML)
     })
@@ -3999,6 +4025,10 @@ acComplianceCreator.prototype.create_obj = function()
       th.innerHTML=ll["data"][j]["title"]
     };
 
+//    var dic_={"week":{"table":week_table, "parent_unit_idx":parent_unit_idx, "week":week_idx},
+//              "day":{"table":day_table,"time_dim":day_idx, "time_unit":e.data_dic}}
+
+    c.get_data_week(dic_);
   })
 
   if(start_date_!=-1){
@@ -4056,6 +4086,31 @@ acComplianceCreator.prototype.get_next_time_number = function()
  return n_
 }
 
+acComplianceCreator.prototype.save_data = function(dic_)
+{
+   alert("90357-555-110\n"+JSON.stringify(dic_));
+}
+
+acComplianceCreator.prototype.get_data_week = function(dic_)
+{
+   alert("90357-555-120\n"+JSON.stringify(dic_));
+
+   var fun=function(data, obj){
+        alert("90756-999 "+JSON.stringify(data));
+
+     // obj.data_dic = data["result"]
+
+       obj.get_data_day(dic_)
+
+   }
+
+   atm.get_data(fun, dic_, this)
+}
+
+acComplianceCreator.prototype.get_data_day = function(dic_)
+{
+
+}
 acComplianceCreator.prototype.set_units = function()
 {
   if(this.is_set_unit==true)

@@ -357,10 +357,12 @@ def update_field_model_by_id(request, foreign=None):
 def get_data_link(request):
     dic_ = request.POST["dic"]
     dic_ = eval(dic_)
-    # try:
-    #     print('\n 9050-150 core views get_data_link dic_= ', dic_, '\n', dic_["fields"])
-    # except Exception as ex:
-    #     pass
+    try:
+        print('\n 9050-150 core views get_data_link dic_= ', dic_)
+    except Exception as ex:
+        print(str(ex))
+        # pass
+
     multiple_select_fields = None
     if "multiple_select_fields" in dic_:
         if len(dic_["multiple_select_fields"]) > 0:
@@ -471,7 +473,6 @@ def get_data_link(request):
                 filter_field_a = str(filters[f]["field"])
             except Exception as exx:
                 pass
-
             foreign_table_ = ""
             try:
                 foreign_table_ = filters[f]["foreign_table"]
@@ -482,18 +483,36 @@ def get_data_link(request):
             if filter_value_ != "":
                 # print(foreign_table_)
                 if foreign_table_ != "":
+                    print(1111111111)
                     if filter_field_a != "":
                         # need need need to check this one. I changed it and it might have effect on other reports
                         filter_field_ = filter_field_a
+
+                    print(filter_field_)
+                    # print(111122222)
+                    # f__ = model._meta.get_field(filter_field_)
+                    # print(f__)
+                    # t__ = f__.get_internal_type()
+                    # print(t__)
+                    # print(str(t__))
                     # s += '.filter('+foreign_table_+'__'+filter_field_+'='+filter_value_+')'
-                    s += '.filter('+foreign_table_+'__'+filter_field_+'__icontains='+filter_value_+')'
+                    # if str(t__)=="AutoField":
+                    #     print(3333333)
+
+                    index = filter_field_.find("id")
+                    if index != -1:
+                        s += '.filter(' + foreign_table_ + '__' + filter_field_ + '=' + filter_value_ + ')'
+                    else:
+                        print(44444)
+                        s += '.filter('+foreign_table_+'__'+filter_field_+'__icontains='+filter_value_+')'
                 else:
+                    print(22222222222)
                     if filter_field_ == "id":
                         #s += '.filter('+filter_field_+'__icontains='+filter_value_+')'
                         s += '.filter('+filter_field_+'='+filter_value_+')'
                     else:
                         s += '.filter('+filter_field_+'__icontains="'+filter_value_+'")'
-        # print(s)
+        print(s)
         n_ = -1
         try:
             primary_key_list_filter_ = dic_["primary_key_list_filter"]

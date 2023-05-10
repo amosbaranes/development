@@ -812,7 +812,6 @@ class BasePotentialAlgo(object):
 
         # result = {"status": "ok"}
         # return result
-
         #
         # sign_ = pd.DataFrame([[0, 0, 0, 0]])
         # sign_.columns = self.options
@@ -919,10 +918,9 @@ class BasePotentialAlgo(object):
                             #       best_cut)
                         print('hh', hh, 'll', ll, 'steph', round(100*(steph+hh))/100, 'stepl', round(100*(ll-stepl))/100, 'dv', bv, 'best', best_cut['bv'])
 
-        print("="*100)
+        # print("="*100)
         best_cut["df_d"] = df_d
-        print("final", best_cut)
-        print("="*100)
+        # print("final", best_cut, "="*100)
         #
         file_path = os.path.join(self.PICKLE_PATH, "result_"+str(f)+"_"+year_+".pkl")
         print(file_path)
