@@ -907,7 +907,8 @@ class BasePotentialAlgo(object):
                                     continue
                                 results[hh][ll][f][steph][stepl]["groups"][g][k] = eval('{"min_cut": dfl_ik.'+l_method+'(), "max_cut": dfh_ik.'+u_method+'()}')
                         # print(results)
-                        dic = {"dependent_group": dependent_group, "f":f, "steph":steph, "stepl":stepl, "df_d": df_d, "ll_dfs": ll_dfs, "groups": results[hh][ll][f]}
+                        dic = {"dependent_group": dependent_group, "f":f, "steph":steph, "stepl":stepl,
+                               "df_d": df_d, "ll_dfs": ll_dfs, "groups": results[hh][ll][f]}
                         bv = self.get_similarity(dic)
                         if bv > best_cut["bv"]:
                             best_cut = {"bv": bv, "hh": hh, "ll": ll, "steph":steph, "stepl":stepl, "f":f,

@@ -371,9 +371,10 @@ class ComplianceWeeks(TruncateTableMixin, models.Model):
         verbose_name = 'compliance_week'
         verbose_name_plural = 'compliance_weeks'
         ordering = ['week']
+
+    id = models.PositiveIntegerField(primary_key=True)
     battalion = models.ForeignKey(Battalions, on_delete=models.CASCADE, default=1, related_name='battalion_compliance_weeks')
-    company = models.IntegerField(blank=True, null=True)
-    week = models.IntegerField(blank=True, null=True)
+    unit = models.IntegerField(blank=True, null=True)
     conclusion = models.TextField(blank=True, null=True)
 
 class ComplianceDays(TruncateTableMixin, models.Model):

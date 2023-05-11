@@ -361,7 +361,7 @@ def get_data_link(request):
         print('\n 9050-150 core views get_data_link dic_= ', dic_)
     except Exception as ex:
         print(str(ex))
-        # pass
+        pass
 
     multiple_select_fields = None
     if "multiple_select_fields" in dic_:
@@ -391,9 +391,7 @@ def get_data_link(request):
             print("error 4000-1: "+str(ex))
     fields_str = fields_str[:len(fields_str)-2]
 
-    # print("9030")
-    # print(fields_str)
-    # print("=2"*50)
+    # print("9030","\n", fields_str,"\n","=2"*50)
     # fields_ = model._meta.get_fields(include_parents=True, include_hidden=True)
     # print(fields_)
 

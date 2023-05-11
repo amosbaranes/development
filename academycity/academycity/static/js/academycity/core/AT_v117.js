@@ -4024,10 +4024,12 @@ acComplianceCreator.prototype.create_obj = function()
       th.setAttribute("unit_number", j)
       th.innerHTML=ll["data"][j]["title"]
     };
-
-//    var dic_={"week":{"table":week_table, "parent_unit_idx":parent_unit_idx, "week":week_idx},
-//              "day":{"table":day_table,"time_dim":day_idx, "time_unit":e.data_dic}}
-
+    var week_table=e.dic["properties"]["week_table"];
+    var parent_unit_idx =e.value;
+    var week_idx = c.weeks.value
+    var day_table=e.dic["properties"]["day_table"]
+    var dic_={"week":{"table":week_table, "parent_unit_idx":parent_unit_idx, "week":week_idx},
+              "day":{"table":day_table,"time_dim":c.days.value, "time_unit":c.data_dic}}
     c.get_data_week(dic_);
   })
 
@@ -4094,23 +4096,41 @@ acComplianceCreator.prototype.save_data = function(dic_)
 acComplianceCreator.prototype.get_data_week = function(dic_)
 {
    alert("90357-555-120\n"+JSON.stringify(dic_));
+   var dic = {"model":dic_["week"]["table"], "number_of_rows": 5000000,
+              "filters": {'id': {'value': dic_["week"]["week"], 'foreign_table': ''},
+                          'unit': {'value': dic_["week"]["parent_unit_idx"], 'foreign_table': ''},
+                          'battalion': {'value': 1, 'foreign_table': 'battalion'}
+                         },
+              "order_by": {},
+              "fields": ['id', 'battalion', 'unit', 'conclusion']
+            }
 
-   var fun=function(data, obj){
+        alert("90756-888 "+JSON.stringify(dic));
+
+   var fun=function(data, ll){
+     var obj=ll[0]
+     var dic_=ll[1]
         alert("90756-999 "+JSON.stringify(data));
+//
+//     // obj.data_dic = data["result"]
+//
 
-     // obj.data_dic = data["result"]
+   alert("90357-666-120\n"+JSON.stringify(dic_));
 
-       obj.get_data_day(dic_)
-
+       if(Object.keys(dic_).length>0){obj.get_data_day(dic_)}
    }
 
-   atm.get_data(fun, dic_, this)
+
+   alert("90357-777-120-day\n"+JSON.stringify(dic_));
+
+   atm.get_data(fun, dic, [this, dic_["day"]["time_unit"]])
 }
 
 acComplianceCreator.prototype.get_data_day = function(dic_)
 {
-
+   alert("90357-555-130\n"+JSON.stringify(dic_));
 }
+
 acComplianceCreator.prototype.set_units = function()
 {
   if(this.is_set_unit==true)
