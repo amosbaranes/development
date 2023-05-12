@@ -186,6 +186,11 @@ function AdvancedTabsManager(dic=null)
                                                              "scale_type":["linear", "logarithmic"],"height":[],"width":[]},
                                                  "attributes":{},
                                                  "functions":[]},
+                                        "Candle":{"title":"Candle", "width":6,
+                                                 "setting": {"border_width":[],"border_color":[],
+                                                             "scale_type":["linear", "logarithmic"],"height":[],"width":[]},
+                                                 "attributes":{},
+                                                 "functions":[]},
                                         "UploadFile":{"title":"UploadFile", "width":8,
                                                "setting": {"height":[],"width":[],"obj_name":[],"function_name":[],
                                                            "topic_id":[], "folder_type":["", "excel", "media", "other"],
@@ -197,6 +202,19 @@ function AdvancedTabsManager(dic=null)
                                                    "setting": {"width":[], "height":[]},
                                                    "attributes":{},
                                                    "functions":[]}}},
+                 "Dashboard":{"title":"Dash Board", "obj_type":"acDashboard",
+                        "sub_buttons":{"Basic":{"title":"Basic", "width":10,
+                                                "setting": {"app":[], "table":[], "height":[], "width":[],
+                                                            "border_style":["none","solid","Dotted","dashed",
+                                                                   "double","groove","ridge","inset","outset",
+                                                                   "hidden"],
+                                                             "border_width":[],"border_color":[], "border_radius":[]
+                                                },
+                                                "attributes":{"background-color":[], "color":[], "table_class":["","basic", "payment"]},
+                                                "functions":["on_amount_paint", "on_receive_data", "onclick", "onmouseover", "onmouseout"]
+                                               }
+                        }
+                 },
                  "Report":{"title":"Reports", "obj_type":"acReport",
                         "sub_buttons": {"Pivot":{"title":"Pivot Table", "width":10,
                                                  "setting": {"app":[], "table":[],
@@ -217,6 +235,12 @@ function AdvancedTabsManager(dic=null)
                                                    "attributes":{"table_class":["","basic", "payment"]},
                                                    "setting": {"app":[],"table":[],"vertical_field":[],
                                                    "horizontal_field":[],"horizontal_title":[],"value_field":[], "order_by":[]},
+                                                   "functions":["on_amount_paint", "on_receive_data", "onclick", "onmouseover", "onmouseout"]
+                                                  },
+                                       "DashBoard":{"title":"Dash Board", "width":20,
+                                                   "attributes":{"table_class":["","basic", "payment"]},
+                                                   "setting": {"app":[],"table":[],
+                                                   },
                                                    "functions":["on_amount_paint", "on_receive_data", "onclick", "onmouseover", "onmouseout"]
                                                   }
                                        }
@@ -1394,6 +1418,100 @@ acObj.prototype.update_data_by_dic = function(dic)
      option.text = dic[i];
      this.new_obj.appendChild(option);
   }
+}
+
+
+// -- acDashboard --
+function acDashboard(){}
+acDashboard.prototype.create_obj = function(){this.creator.create_obj();}
+
+// -- acBasicCreator --
+function acBasicCreator(parent){this.parent=parent;
+ //alert(JSON.stringify(this.parent.data));
+}
+
+acBasicCreator.prototype.create_obj = function()
+{
+  var dic=this.parent.data;
+  var pp_=dic["properties"]
+  //alert("90441-200 acBasicCreator.prototype.create_obj\n "+JSON.stringify(dic));
+//
+//  var field=dic["properties"]["field"]; this.fields.push(field);
+//  var value_field=dic["properties"]["value_field"]; this.fields.push(value_field);
+//
+//    //alert("90441-200  "+JSON.stringify(this.fields));
+//
+  //--
+  var container = document.getElementById("content_"+dic["container_id"]);
+  //--
+  var obj_number = dic["properties"]["obj_number"]
+  this.main_div=document.createElement("div");
+  container.appendChild(this.main_div);
+  this.main_div.my_creator_obj=this;
+  this.main_div.my_creator_obj.dic=dic;
+  this.main_div.setAttribute("id", obj_number);
+  this.main_div.setAttribute("obj_type", dic["obj_type"]);
+  this.main_div.setAttribute("type", dic["element_name"]);
+  var width_=dic["properties"]["width"]; if(width_==null || width_==""){width_=80};
+  var height_=dic["properties"]["height"]; if(height_==null || height_==""){height_=300};
+  var color_="black";if((pp_["color"]!=null && pp_["color"]!="")){color_=pp_["color"]}
+  var style_ = "position:absolute;left:"+dic["properties"]["x"]+"px;top:"+dic["properties"]["y"]+"px;width:"+width_+"px;height:"+height_+"px;display:block;"
+  var background_color_="white";if(pp_["background-color"]!=null && pp_["background-color"]!=""){background_color_=pp_["background-color"]}
+  style_+="background-color:"+background_color_+";color:"+color_+";";
+  if(pp_["border_style"]!=null && pp_["border_style"]!=""){style_+="border-style:"+pp_["border_style"]+";"}
+  if(pp_["border_width"]!=null && pp_["border_width"]!=""){style_+="border-width:"+pp_["border_width"]+"px;"}
+  if(pp_["border_color"]!=null && pp_["border_color"]!=""){style_+="border-color:"+pp_["border_color"]+";"}
+  if(pp_["border_radius"]!=null && pp_["border_radius"]!=""){style_+="border-radius:"+pp_["border_radius"]+"px;"}
+  //alert(style_)
+  this.main_div.setAttribute("style", style_);
+//  this.main_div.setAttribute("class", "row");
+  this.main_div.setAttribute("container_id", dic["container_id"]);
+
+  var grades_for_fields = {"1": {"title":"Fitness", "color":"red", "grade": 80},
+                           "2": {"title":"Gun", "grade": 85},
+                           "3":{"title":"War", "grade": 90}
+                           }
+        var w=150;
+        var wlr=100;
+        var n_objs=Object.keys(grades_for_fields).length
+        //alert(n_objs)
+        var wb=(1*width_-2*wlr-n_objs*w)/(n_objs-1)
+        var w_=wlr
+        //alert(wb)
+
+  for(k in grades_for_fields){
+      var div_=document.createElement("div");
+      this.main_div.appendChild(div_);
+
+      var style_ = "position:absolute;left:"+w_+"px;top:"+20+"px;width:"+50+"px;height:"+50+"px;"
+      w_= wlr+1*k*(1*w+1*wb)
+      div_.setAttribute("style", style_);
+      div_.innerHTML=grades_for_fields[k]["title"]
+   }
+
+
+
+
+
+
+//  this.main_div.addEventListener("click", function(event){
+//      var e=event.target;
+//      //alert(e.outerHTML)
+//      //alert("90765-57\n"+JSON.stringify(this.dic));
+//      var etype_=e.getAttribute("type")
+//      if(etype_=="checkbox"){
+//         //alert(e.outerHTML)
+//         //alert(e.checked)
+//          var etype_=e.getAttribute("type")
+//          if(etype_=="checkbox"){
+//             //alert("test66")
+//             this.my_creator_obj.obj_was_clicked(e)
+//          }
+//      }
+//  })
+//
+  //--
+
 }
 
 
@@ -6110,7 +6228,7 @@ function TabNavLink(tab_nav, link_dic){
    for(i=0;i<tabcontent.length;i++){tabcontent[i].style.display='none';}
    var btns=document.getElementsByClassName("nav_button"+tab_name);
    for(i=0;i<btns.length;i++){btns[i].className=btns[i].className.replace(" active","")}
-   try{e.parent.link_content.style.display="block";this.parent.link_btn.className+=" active";}catch(er){alert("er9014: "+er)}
+   try{e.parent.link_content.style.display="block";this.parent.link_btn.className+=" active";}catch(er){alert("er9014-11: "+er)}
  }
  for(f in this.nav_link_functions)
  {if(f != "onclick"){var fun=this.nav_link_functions[f]; eval("this.link_btn."+f+"="+fun)}}
@@ -6845,8 +6963,10 @@ acWin.prototype.get_main_button_objs = function()
    s+='parent.main_menus[this.my_name]=this;};';
    eval(s);
    s = 'MenuBtn'+b+'.prototype = Object.create(MenuBtn.prototype);';
+   //alert(s)
    eval(s);
    s='try{MenuBtn'+b+'.prototype.create_main_content = '+b+'_create_main_content} catch(er){};';
+   //alert(s)
    eval(s);
 
 // NEED TO COMPLETE: it should be similar to the click event of sub buttons
@@ -7370,6 +7490,17 @@ Report_create_main_content = function()
 ReportPivot_click = function(obj, event)
 {
  //alert(333444)
+}
+
+// --
+Dashboard_create_main_content = function()
+{
+ //alert("4444 Dashboard_create_main_content")
+}
+
+ReportBasic_click = function(obj, event)
+{
+ alert("55555 ReportBasic_click")
 }
 
 //-- AppObjs --
