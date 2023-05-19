@@ -357,11 +357,11 @@ def update_field_model_by_id(request, foreign=None):
 def get_data_link(request):
     dic_ = request.POST["dic"]
     dic_ = eval(dic_)
-    try:
-        print('\n 9050-150 core views get_data_link dic_= ', dic_)
-    except Exception as ex:
-        print(str(ex))
-        pass
+    # try:
+    #     print('\n 9050-150 core views get_data_link dic_ ', "\n", dic_,"\n", "-"*100)
+    # except Exception as ex:
+    #     print(str(ex))
+    #     pass
 
     multiple_select_fields = None
     if "multiple_select_fields" in dic_:
@@ -385,13 +385,15 @@ def get_data_link(request):
     fields_str = '"'
     for f in dic_["fields"]:
         try:
-            exec(f + ' = []')
-            fields_str += f + '","'
+            if f != "":
+                exec(f + ' = []')
+                fields_str += f + '","'
         except Exception as ex:
             print("error 4000-1: "+str(ex))
     fields_str = fields_str[:len(fields_str)-2]
 
     # print("9030","\n", fields_str,"\n","=2"*50)
+
     # fields_ = model._meta.get_fields(include_parents=True, include_hidden=True)
     # print(fields_)
 
@@ -481,12 +483,12 @@ def get_data_link(request):
             if filter_value_ != "":
                 # print(foreign_table_)
                 if foreign_table_ != "":
-                    print(1111111111)
+                    # print(1111111111)
                     if filter_field_a != "":
                         # need need need to check this one. I changed it and it might have effect on other reports
                         filter_field_ = filter_field_a
 
-                    print(filter_field_)
+                    # print(filter_field_)
                     # print(111122222)
                     # f__ = model._meta.get_field(filter_field_)
                     # print(f__)
@@ -510,7 +512,8 @@ def get_data_link(request):
                         s += '.filter('+filter_field_+'='+filter_value_+')'
                     else:
                         s += '.filter('+filter_field_+'__icontains="'+filter_value_+'")'
-        print(s)
+        # print(s)
+        # print("9030-22")
         n_ = -1
         try:
             primary_key_list_filter_ = dic_["primary_key_list_filter"]
@@ -519,6 +522,8 @@ def get_data_link(request):
                 s += '.filter('+p_key_field_name+'__in=primary_key_list_filter_)'
         except Exception as ex:
             ("Error 90855-23 "+str(ex))
+
+        # print("9030-221")
 
         if order_by != "":
             s += '.order_by("'+order_by["field"]+'")'
@@ -530,15 +535,17 @@ def get_data_link(request):
             # print(ss__)
             # print('ss__')
             data__ = eval(ss__)
+
+        # print("9030-222")
+
         s += '.all()[:number_of_rows_].values('+fields_str+')'
-        # print('s111 for data')
+        # print('s111 for d_data')
         # print("\n\n", s, 's11')
-        data = eval(s)
-        # print("data", data)
+        d_data = eval(s)
+        # print("d_data", d_data)
     except Exception as ex:
         print("3030-1 core error 300 "+str(ex))
         # pass
-
     # print("9030-3")
     dic = {}
     if multiple_select_fields:
@@ -559,19 +566,21 @@ def get_data_link(request):
                     s += str(eval('q_.'+p_key_field_z_name))
                 dic[z].append(s)
     try:
-        for q in data:
+        for q in d_data:
             for f in dic_["fields"]:
-                # print(f+'.append(q[\''+f+'\'])')
-                eval(f+'.append(q[\''+f+'\'])')
-                # print(eval(f))
-
+                if f != "":
+                    # print(f+'.append(q[\''+f+'\'])')
+                    eval(f+'.append(q[\''+f+'\'])')
+                    # print(eval(f))
         for ff in dic_["fields"]:
-            dic[ff] = eval(ff)
+            if ff != "":
+                dic[ff] = eval(ff)
     except Exception as ex:
         pass
         print(ex)
 
     # print("=2"*50)
+
     dic["pkf_name"] = p_key_field_name
     # print(dic)
     # print("=2"*50)

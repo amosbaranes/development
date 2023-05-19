@@ -370,7 +370,6 @@ class ComplianceWeeks(TruncateTableMixin, models.Model):
     class Meta:
         verbose_name = 'compliance_week'
         verbose_name_plural = 'compliance_weeks'
-        ordering = ['week']
 
     id = models.PositiveIntegerField(primary_key=True)
     battalion = models.ForeignKey(Battalions, on_delete=models.CASCADE, default=1, related_name='battalion_compliance_weeks')
@@ -422,6 +421,20 @@ class DoubleShoot(TruncateTableMixin, models.Model):
     def __str__(self):
         return str(self.id) + ": " + str(self.double_shoot_id)
 
+
+class DoubleShootMembers(TruncateTableMixin, models.Model):
+    class Meta:
+        verbose_name = 'double_shoot_member'
+        verbose_name_plural = 'double_shoot_members'
+        ordering = ['ds_id']
+
+    ds_id = models.CharField(max_length=128, default='', blank=True, null=True)
+    ds_name = models.CharField(max_length=128, default='', blank=True, null=True)
+    data = models.JSONField(null=True)
+
+    def __str__(self):
+        return str(self.ds_name) + ": " + str(self.ds_id)
+
 # class PlanningVsExecution(TruncateTableMixin, models.Model):
 
 class SoldierFact(TruncateTableMixin, models.Model):
@@ -442,4 +455,15 @@ class SoldierFact(TruncateTableMixin, models.Model):
     value = models.SmallIntegerField(default=0)
 
 
+class SoldierQualificationFact(TruncateTableMixin, models.Model):
+    class Meta:
+        verbose_name = 'soldier_qualification_fact'
+        verbose_name_plural = 'soldier_qualification_facts'
+
+    training_web = models.ForeignKey(TrainingWeb, on_delete=models.CASCADE, default=1,
+                                     related_name='training_web_soldier_qualification_facts')
+    soldier = models.ForeignKey(Soldiers, on_delete=models.CASCADE, default=1,
+                                related_name='soldier_soldier_qualification_facts')
+    skill = models.SmallIntegerField(default=0)
+    value = models.SmallIntegerField(default=0)
 

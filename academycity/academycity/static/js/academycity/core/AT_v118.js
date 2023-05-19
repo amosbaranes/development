@@ -204,11 +204,13 @@ function AdvancedTabsManager(dic=null)
                                                    "functions":[]}}},
                  "Dashboard":{"title":"Dash Board", "obj_type":"acDashboard",
                         "sub_buttons":{"Basic":{"title":"Basic", "width":10,
-                                                "setting": {"app":[], "table":[], "height":[], "width":[],
+                                                "setting": {"app":[], "table":[], "setup_dictionary":[], "entity":[],
+                                                            "height":[], "width":[],
                                                             "border_style":["none","solid","Dotted","dashed",
                                                                    "double","groove","ridge","inset","outset",
                                                                    "hidden"],
-                                                             "border_width":[],"border_color":[], "border_radius":[]
+                                                             "border_width":[],"border_color":[], "border_radius":[],
+                                                             "board1_color":[],"board2_color":[],"board3_color":[]
                                                 },
                                                 "attributes":{"background-color":[], "color":[], "table_class":["","basic", "payment"]},
                                                 "functions":["on_amount_paint", "on_receive_data", "onclick", "onmouseover", "onmouseout"]
@@ -1422,12 +1424,16 @@ acObj.prototype.update_data_by_dic = function(dic)
 
 
 // -- acDashboard --
-function acDashboard(){}
+function acDashboard(){
+}
+
 acDashboard.prototype.create_obj = function(){this.creator.create_obj();}
 
 // -- acBasicCreator --
 function acBasicCreator(parent){this.parent=parent;
  //alert(JSON.stringify(this.parent.data));
+ this.is_run_set_obj_structure=false;
+ this.grades={}
 }
 
 acBasicCreator.prototype.create_obj = function()
@@ -1435,16 +1441,20 @@ acBasicCreator.prototype.create_obj = function()
   var dic=this.parent.data;
   var pp_=dic["properties"]
   //alert("90441-200 acBasicCreator.prototype.create_obj\n "+JSON.stringify(dic));
-//
-//  var field=dic["properties"]["field"]; this.fields.push(field);
-//  var value_field=dic["properties"]["value_field"]; this.fields.push(value_field);
-//
-//    //alert("90441-200  "+JSON.stringify(this.fields));
-//
+ //
+ //  var field=dic["properties"]["field"]; this.fields.push(field);
+ //  var value_field=dic["properties"]["value_field"]; this.fields.push(value_field);
+ //
+ //    //alert("90441-200  "+JSON.stringify(this.fields));
+ //
   //--
   var container = document.getElementById("content_"+dic["container_id"]);
   //--
-  var obj_number = dic["properties"]["obj_number"]
+  var board1_color="white";if((pp_["board1_color"]!=null && pp_["board1_color"]!="")){board1_color=pp_["board1_color"]}
+  var board2_color="white";if((pp_["board2_color"]!=null && pp_["board2_color"]!="")){board2_color=pp_["board2_color"]}
+  var board3_color="white";if((pp_["board3_color"]!=null && pp_["board3_color"]!="")){board3_color=pp_["board3_color"]}
+  //--
+  var obj_number = pp_["obj_number"]
   this.main_div=document.createElement("div");
   container.appendChild(this.main_div);
   this.main_div.my_creator_obj=this;
@@ -1452,48 +1462,87 @@ acBasicCreator.prototype.create_obj = function()
   this.main_div.setAttribute("id", obj_number);
   this.main_div.setAttribute("obj_type", dic["obj_type"]);
   this.main_div.setAttribute("type", dic["element_name"]);
-  var width_=dic["properties"]["width"]; if(width_==null || width_==""){width_=80};
-  var height_=dic["properties"]["height"]; if(height_==null || height_==""){height_=300};
-  var color_="black";if((pp_["color"]!=null && pp_["color"]!="")){color_=pp_["color"]}
-  var style_ = "position:absolute;left:"+dic["properties"]["x"]+"px;top:"+dic["properties"]["y"]+"px;width:"+width_+"px;height:"+height_+"px;display:block;"
-  var background_color_="white";if(pp_["background-color"]!=null && pp_["background-color"]!=""){background_color_=pp_["background-color"]}
-  style_+="background-color:"+background_color_+";color:"+color_+";";
-  if(pp_["border_style"]!=null && pp_["border_style"]!=""){style_+="border-style:"+pp_["border_style"]+";"}
-  if(pp_["border_width"]!=null && pp_["border_width"]!=""){style_+="border-width:"+pp_["border_width"]+"px;"}
-  if(pp_["border_color"]!=null && pp_["border_color"]!=""){style_+="border-color:"+pp_["border_color"]+";"}
-  if(pp_["border_radius"]!=null && pp_["border_radius"]!=""){style_+="border-radius:"+pp_["border_radius"]+"px;"}
-  //alert(style_)
-  this.main_div.setAttribute("style", style_);
-//  this.main_div.setAttribute("class", "row");
   this.main_div.setAttribute("container_id", dic["container_id"]);
+  this.main_div.setAttribute("class", "row");
+  var style_="position:absolute;left:"+pp_["x"]+"px;top:"+pp_["y"]+"px;"
+  this.main_div.setAttribute("style", style_);
+  // --
+  var width_=pp_["width"]; if(width_==null || width_==""){width_=80};
+  var height_=pp_["height"]; if(height_==null || height_==""){height_=300};
+  var color_="black";if((pp_["color"]!=null && pp_["color"]!="")){color_=pp_["color"]}
+  var background_color_="white";if(pp_["background-color"]!=null && pp_["background-color"]!=""){background_color_=pp_["background-color"]}
+     var style_ = "float:left;width:"+width_+"px;height:"+height_+"px;"
+     if(pp_["border_style"]!=null && pp_["border_style"]!=""){style_+="border-style:"+pp_["border_style"]+";"}
+     if(pp_["border_width"]!=null && pp_["border_width"]!=""){style_+="border-width:"+pp_["border_width"]+"px;"}
+     if(pp_["border_color"]!=null && pp_["border_color"]!=""){style_+="border-color:"+pp_["border_color"]+";"}
+     if(pp_["border_radius"]!=null && pp_["border_radius"]!=""){style_+="border-radius:"+pp_["border_radius"]+"px;"}
 
-  var grades_for_fields = {"1": {"title":"Fitness", "color":"red", "grade": 80},
-                           "2": {"title":"Gun", "grade": 85},
-                           "3":{"title":"War", "grade": 90}
-                           }
-        var w=150;
-        var wlr=100;
-        var n_objs=Object.keys(grades_for_fields).length
-        //alert(n_objs)
-        var wb=(1*width_-2*wlr-n_objs*w)/(n_objs-1)
-        var w_=wlr
-        //alert(wb)
+  var get_board = function(dic_){
+     var obj_name="BasicDashboard"+pp_["obj_number"]+dic_["board_name"];
+     var obj_number = pp_["obj_number"]
+     var s='function '+obj_name+'(dic)'
+     s+='{'
+     s+=' this.content=document.createElement("div");';
+     s+=' var d=document.createElement("div");';
 
-  for(k in grades_for_fields){
-      var div_=document.createElement("div");
-      this.main_div.appendChild(div_);
+     //s+=' d.innerHTML="'+dic_["board_name"]+'";';
 
-      var style_ = "position:absolute;left:"+w_+"px;top:"+20+"px;width:"+50+"px;height:"+50+"px;"
-      w_= wlr+1*k*(1*w+1*wb)
-      div_.setAttribute("style", style_);
-      div_.innerHTML=grades_for_fields[k]["title"]
-   }
+     s+=' this.content.appendChild(d);';
+
+     s+=' dic["container"].appendChild(this.content);';
+     s+=' this.content.my_creator_obj=this;';
+     style_+="float:left;background-color:"+dic_["background-color"]+";color:"+dic_["color"]+";display:"+dic_["display"]+";";
+     s+=' this.content.setAttribute("style", "'+style_+'");';
+     s+='};'
+     //alert(s)
+     try{eval(s)} catch(er){alert("er9002-221: "+er)}
+     s = 'new '+ obj_name+'(dic=dic_)'
+     try{obj_=eval(s)} catch(er){alert(er)}
+     return obj_;
+    }
+
+  this.nav=document.createElement("div");this.nav.my_creator_obj=this;
+  var style_nav="float:left;"
+  this.nav.setAttribute("style", style_nav)
+  this.main_div.appendChild(this.nav);
+
+  var dic_objs={1:{"board_name": "battalion", "background-color": board1_color, "color":"black",
+                   "display":"block",
+                   "container":this.main_div},
+                2:{"board_name": "company", "background-color": board2_color, "color":"black",
+                   "display":"none",
+                   "container":this.main_div},
+                3:{"board_name": "platoon", "background-color": board3_color, "color":"black",
+                   "display":"none",
+                   "container":this.main_div}
+               }
+
+  this.board_objs = {}
+  this.button_objs = {}
+  for (var j in dic_objs){this.board_objs[j]=get_board(dic_objs[j])}
+  for (var j in dic_objs)
+  {
+    var s_='var br=document.createElement("br");this.nav.appendChild(br);'
+    s_+='this.b_'+j+'=document.createElement("button");this.b_'+j+'.innerHTML="'+dic_objs[j]["board_name"][0].toUpperCase()+'";';
+    s_+='this.b_'+j+'.my_creator_obj=this;';
+    s_+='this.b_'+j+'.setAttribute("style", "border-radius: 12px;background-color:#04AA6D;border: none;color: white;padding: 10px;text-align: center;text-decoration: none;display: inline-block;font-size: 16px;margin: 2px 2px;cursor: pointer;")'
+    eval(s_);
+    var ss='this.b_'+j+'.addEventListener("click", function(event){';
+    ss+='var e=event.target;e.my_creator_obj.hide_boards('+j+');e.my_creator_obj.board_objs['+j+'].content.style.display="block"';
+    ss+='});this.nav.appendChild(this.b_'+j+');';
+    eval(ss)
+    var s='this.button_objs[j]=this.b_'+j;eval(s)
+  }
 
 
-
-
-
-
+//    this.units.innerHTML="";
+//    var ll=atm.general.get_platoons_ids();ll=ll[3];
+//    this.units_structure=ll;
+//    var o=document.createElement("option");o.value="-1";
+//    o.innerHTML="-------";this.units.appendChild(o);
+//    for(var j in ll){var o=document.createElement("option");o.value=j;o.innerHTML=ll[j]["title"];this.units.appendChild(o)};
+//    this.is_set_unit==false;
+//
 //  this.main_div.addEventListener("click", function(event){
 //      var e=event.target;
 //      //alert(e.outerHTML)
@@ -1510,10 +1559,279 @@ acBasicCreator.prototype.create_obj = function()
 //      }
 //  })
 //
-  //--
+//  --
 
 }
 
+
+acBasicCreator.prototype.set_detail_data = function(ll){
+
+   // alert("set_detail_data=\n"+ll)
+
+  }
+
+acBasicCreator.prototype.hide_boards = function(n_)
+{
+    for(var j in this.board_objs){this.board_objs[j].content.style.display="none";this.button_objs[j].style.display="none"}
+    for(var i=1; i<n_;i++){this.button_objs[i].style.display="block"}
+}
+
+
+acBasicCreator.prototype.get_grade = function(skill_id, unit_id)
+{
+ ret = 0;
+ try{ret=this.grades[unit_id][skill_id]} catch(er){}
+ return ret;
+}
+
+acBasicCreator.prototype.set_board_data = function(ll=[])
+{
+//alert("set data1")
+//alert(this.is_run_set_obj_structure)
+  if(this.is_run_set_obj_structure==false){return}
+//alert("set data2")
+
+  if(ll.length==0){for(var k in this.data_dic){ll.push(k)}}
+
+ // alert("acBasicCreator.prototype.set_board_data 90446-25 \n"+JSON.stringify(this.data_dic));
+
+ // alert(ll)
+
+   //--
+   var dic_=this.parent.data;var pp_=dic_["properties"]
+   var width_=pp_["width"]; if(width_==null || width_==""){width_=80};
+   var height_=pp_["height"]; if(height_==null || height_==""){height_=300};
+    var dic=this.data_dic;
+    var z=-1;
+    for(var j in ll){
+    z+=1;var dic=dic[ll[z]];var container_=this.board_objs[(1*z+1)].content;
+    try{var kpi=dic["kpi"];var board_title=dic["title"];dic=dic["data"]} catch(er){alert(er)}}
+    if(z<0){try{var container_=this.board_objs[1].content} catch(er){alert(er)}}
+    //alert("90441-550-1  "+JSON.stringify(kpi));
+    //alert("90441-550-2  "+JSON.stringify(dic));
+
+    try{this.hide_boards((1*z+1)); container_.style.display="block";} catch(er){alert(er)}
+    //alert("90441-550  "+JSON.stringify(dic));
+    var n_kpi_objs=Object.keys(kpi).length;
+
+    var w_kpi=125;var h_kpi=150; wl_kpi=75;var wr_kpi=25;
+    var n_objs=Object.keys(dic).length;var w=150;var wl=100;var wr=50;
+    var wb_kpi=(1*width_-wl_kpi-wr_kpi-n_kpi_objs*w_kpi)/(n_kpi_objs-1);var w_kpi_=wl_kpi;
+    var wb=(1*width_-wl-wr-n_objs*w)/(n_objs-1);var w_=wl;var th2_=1*height_/2
+   container_.innerHTML="";
+   //--
+   var title__=document.createElement("h1");
+   title__.innerHTML="<u><b>"+board_title+"</b></u>";
+   var top_=15
+   var style_ = "position:absolute;left:"+(width_/2-50)+"px;top:"+top_+"px;color:blue"
+   title__.setAttribute("style", style_);
+   container_.appendChild(title__);
+   //--
+   for(j in kpi)
+   {
+     var div_=document.createElement("div");
+     var top_=80
+     var style_ = "position:absolute;left:"+w_kpi_+"px;top:"+top_+"px;width:"+w_kpi+"px;height:"+h_kpi+"px;"
+     style_+="border-style:solid;border-width:2px;border-color:blue;border-radius:10px;display: flex;align-items: center;justify-content: center;"
+     div_.setAttribute("style", style_);
+
+     var div__=document.createElement("div");
+     var ww_=100; var ll_=w_kpi_+(w_kpi-ww_)/2;var hh_=60;var tt_=top_+(h_kpi-hh_)/8
+     var style__ = "position:absolute;left:"+ll_+"px;top:"+tt_+"px;width:"+ww_+"px;height:"+hh_+"px;"
+     style__+="border-style:solid;border-width:1px;border-color:gray;border-radius:10px;display: flex;"
+     style__+="background-color:lightgray; align-items: center;justify-content: center;"
+     div__.setAttribute("style", style__);
+     div__.innerHTML=kpi[j]["title"]
+     container_.appendChild(div__);
+
+     //-- Grade --
+     var div__=document.createElement("div");
+     var ww_=60; var llg_=w_kpi_+(w_kpi-ww_)/2;
+     var hh_=60;var hh_2=hh_/2
+     var tt_=tt_+h_kpi/2
+
+     var color__="green";if(kpi[j]["grade"]<kpi[j]["pass"]){color__="red"}
+
+     var style__ = "position:absolute;left:"+llg_+"px;top:"+tt_+"px;width:"+ww_+"px;height:"+hh_+"px;"
+     style__+="border-style:solid;border-width:2px;border-color:blue;border-radius:"+hh_2+"px;display: flex;"
+     style__+="background-color:"+color__+"; align-items: center;justify-content: center;"
+     div__.setAttribute("style", style__);
+     div__.innerHTML=kpi[j]["grade"]
+
+     container_.appendChild(div__);
+     w_kpi_=wl_kpi+1*j*(1*w_kpi+1*wb_kpi);
+     container_.appendChild(div_);
+   }
+   //--
+   var k = 0
+   //alert("90441-350-35  "+JSON.stringify(dic));
+   if(ll.length<3)
+   {for(z in dic){
+      k +=1
+      color__="lightblue"
+      var div_=document.createElement("div");
+      var ll_=clone_dic(ll);ll_.push(1*z);div_.ll=ll_;div_.obj=this;
+      div_.addEventListener("click", function(event){
+       var e=event.target;
+        //alert(e.outerHTML)
+        //alert("90441-750  "+JSON.stringify(e.ll));
+        e.obj.set_board_data(ll=e.ll, obj=e.obj);
+       if(e.ll.length>2){e.obj.set_detail_data(ll=e.ll)}
+      })
+      var style_ = "position:absolute;left:"+w_+"px;top:"+(th2_+20)+"px;width:"+w+"px;height:"+w+"px;"
+      style_+="border-style:solid;border-width:1px;border-color:blue;border-radius:75px;display: flex;"
+      style_+="background-color:"+color__+";align-items: center;justify-content: center;"
+      div_.setAttribute("style", style_);
+      w_=wl+1*k*(1*w+1*wb);
+      div_.innerHTML=dic[z]["title"];
+      container_.appendChild(div_);
+    }
+   } else {
+      k +=1
+      color__="lightblue"
+      var div_=document.createElement("div");
+      div_.ll=ll_;div_.obj=this;
+      div_.addEventListener("click", function(event){
+       var e=event.target;
+        alert(e.outerHTML)
+        //alert("90441-750  "+JSON.stringify(e.ll));
+      })
+      var style_ = "position:absolute;left:50px;top:"+(th2_+20)+"px;width:"+(width_-50)+"px;height:"+(height_/2.5)+"px;"
+      style_+="border-style:solid;border-width:0px;border-color:blue;display: flex;"
+      style_+="background-color:"+color__+";align-items: center;justify-content: center;"
+      div_.setAttribute("style", style_);
+
+   //alert(ll)
+   s_data=this.units_structure[ll[0]]["data"][ll[1]]["data"][ll[2]]["data"]
+   //alert("90441-750  \n"+JSON.stringify(s_data));
+
+   this.fields_skills=["Fitness","Shooting","Professional","Equipment"]
+   var s="<table class='basic' style='display: block;height:"+(Math.round(height_/2.5)-40)+"px;overflow-y: auto;'><tr>"
+   s+="<th style='width:350px'>Name</th>"
+   for(var i in this.fields_skills){s+="<th style='width:100px'>"+this.fields_skills[i]+"</th>";}
+   s+="</tr>"
+   s+="<tbody >"
+   for(var s_ in s_data){
+    s+="<tr><td soldier_id='"+s_+"' style='width:350px'>"+s_data[s_]["title"]+"</td>"
+    for(var i in this.fields_skills)
+    {
+     var grade=this.get_grade(skill_id=i, unit_id=s_);
+     var color="white";var background_color = "green"
+     if(grade==0){color="black";background_color = "white"} else if(grade<70)
+     {background_color="red"; color="white"}
+     s+="<td style='text-align:center;width:100px;color:"+color+";background-color:"+background_color+"'>"+grade+"</td>"
+    }
+    s+="</tr>"
+   }
+   s+="</tbody></table>"
+      div_.innerHTML=s;
+      container_.appendChild(div_);
+   }
+}
+
+
+acBasicCreator.prototype.set_obj_structure = function()
+{
+//alert("set obj1")
+//alert(this.is_run_set_obj_structure)
+  if(this.is_run_set_obj_structure==true){return}
+
+  this.data_dic={}
+  var f=function(dic, data_dic, grades, n=0, n_limit_=-1)
+  {
+     //alert("acBasicCreator.prototype.set_obj_structure 90999-11\n"+JSON.stringify(dic));
+     //alert("acBasicCreator.prototype.set_obj_structure 90999-11\n"+JSON.stringify(data_dic));
+     var n_=n+1;
+     for(k in dic)
+     {
+        //alert(k+"\n"+dic[k]["title"])
+        var title = dic[k]["title"];
+        data_dic[k]={};data_dic[k]["title"]=dic[k]["title"]
+        if(n_==1){data_dic[k]["type"]="battalion"}
+
+        data_dic[k]["kpi"]={};var nn_=0;
+
+        var fields_=["Fitness","Shooting","Professional","Equipment","Execution<br>     vs<br>Planning"]
+        for(j in fields_)
+        {nn_+=1;
+         var grade=65;if(j>=3){grade=100} else if(j==0){grade=92} else if(j==1){grade=84} else if(j==2){grade=88}
+         data_dic[k]["kpi"][nn_]={"title":"", "pass":70, "grade": grade};data_dic[k]["kpi"][nn_]["title"]=fields_[j];
+        }
+        data_dic[k]["data"]={};
+        if(n_<=n_limit_){
+         f(dic[k]["data"], data_dic[k]["data"], grades, n_, n_limit_)}
+        else {
+  //alert("acBasicCreator.prototype.set_obj_structure 90999-99\n"+JSON.stringify(dic));
+
+//  for(var q in dic){
+//   //alert(JSON.stringify(dic[q]));
+//   for(var v in dic[q]["data"])
+//   {if(!(v in grades)){grades[v]=[0,0,0,0]}}
+//  }
+
+        }
+     }
+  }
+  var dic=this.parent.data;
+  var nlimit=atm.general.period[atm.general.current_period]["n_limit"]
+  //alert("acRadioCreator 90446-16  "+JSON.stringify(dic));
+
+  try{
+       var setup_dictionary = dic["properties"]["setup_dictionary"];
+       //alert(setup_dictionary)
+       this.units_structure = eval("this.parent.atm.general."+setup_dictionary)
+       var general_entity_name = dic["properties"]["entity"];
+       this.entity_list = eval("this.parent.atm.general."+general_entity_name+"_list")
+       this.entity_dic = eval("this.parent.atm.general."+general_entity_name+"_dic")
+       //alert("90000-010  "+JSON.stringify(this.entity_dic));
+       //alert("90000-020  "+JSON.stringify(this.units_structure));
+       //alert("90000-020-10\n"+JSON.stringify(this.grades));
+       //alert(Object.keys(this.grades).length)
+       //   f(this.units_structure, this.data_dic, this.grades, 0, n_limit_=nlimit)
+
+      var dic=this.parent.data;
+      //alert("9044-441  "+JSON.stringify(dic));
+      var table_=dic["properties"]["table"]
+      var fields_=["soldier", "skill", "value"]
+
+      var fun=function(data, ll){
+        var grades=ll[0];var f=ll[1]; obj=ll[2];var nlimit=ll[3]
+
+        //alert("90449-00: "+JSON.stringify(obj.data_dic));
+
+        try{if(Object.keys(data).length==0){return;}} catch (er) {}
+        // alert("90446-77 data \n"+JSON.stringify(data))
+        var n_=data[fields_[0]].length;
+        for(var i=0;i<n_;i++)
+        {
+         if(!(data["soldier"][i] in grades)){grades[data["soldier"][i]]=[0,0,0,0]}
+         grades[data["soldier"][i]][data["skill"][i]]=data["value"][i]
+        }
+        //alert("90488-88 data \n"+JSON.stringify(grades))
+        //alert("90488-88-00 data \n"+JSON.stringify(obj.units_structure))
+
+        f(obj.units_structure, obj.data_dic, grades, 0, n_limit_=nlimit)
+
+        //alert("90449-33: "+JSON.stringify(obj.data_dic));
+
+        obj.is_run_set_obj_structure=true;
+        obj.set_board_data()
+        //alert(data["pkf_name"])
+      }
+      var dic__={"model":table_,"number_of_rows":1000000,"filters":{},
+                 "fields":fields_, "order_by":{"field":"soldier", "direction":"ascending"}
+                }
+
+      dic__["filters"]["id"]={"value":1, "foreign_table":"soldier__battalion"}
+      //alert("90449-99: "+JSON.stringify(dic__));
+
+      //alert("90488-88-01 data \n"+JSON.stringify(this.units_structure))
+
+      this.parent.atm.get_data(call_back_fun=fun, dic__, [this.grades, f, this, nlimit])
+
+     } catch(er){alert("1155-515: "+er)}
+
+}
 
 // -- acReport --
 function acReport(){}
@@ -3610,10 +3928,7 @@ acGroupCreator.prototype.set_obj_structure = function(display_="none", nlimit=-1
        var s_link="this.units_structure"; var s_title=""
        this.main_div.innerHTML="";
        //alert(nlimit)
-
-
-  //alert("acRadioCreator 90446-17  "+JSON.stringify(this.units_structure));
-
+       //alert("acGroupCreator.prototype.set_obj_structure 90446-17\n"+JSON.stringify(this.units_structure));
        f(s_link, s_title, this.units_structure, this.main_div, 0, n_limit_=nlimit)
      } catch(er){alert("1155-515: "+er)}
  //  alert("done acGroupCreator.prototype.set_obj_structure\n\n"+this.main_div.outerHTML)

@@ -3,9 +3,10 @@ from django.contrib import admin
 from django.utils.translation import ugettext_lazy as _
 from .models import (TrainingWeb, Instructors, Brigades, Battalions, Companys, Platoons, Squads, TestsStructures,
                      ComplianceWeeks, ComplianceDays, Courses, Soldiers, Tests, TimeDim, SoldierFact,
+                     SoldierQualificationFact,
                      TestEvents, TestsForEvents, SoldiersForEvents, GradesForEvents,
                      InventoryCategorys,Inventorys,TestsVariables, TestsForVariables, Periods, UnitSoldiers,
-                     DoubleShoot)
+                     DoubleShoot, DoubleShootMembers)
 
 
 @admin.register(TrainingWeb)
@@ -42,7 +43,7 @@ class TestsStructuresAdmin(admin.ModelAdmin):
 
 @admin.register(ComplianceWeeks)
 class ComplianceWeeksAdmin(admin.ModelAdmin):
-    list_display = ('id', 'battalion', 'company', 'week')
+    list_display = ('id', 'battalion', 'unit')
 
 @admin.register(ComplianceDays)
 class ComplianceDaysAdmin(admin.ModelAdmin):
@@ -106,6 +107,10 @@ class TestsForVariablesAdmin(admin.ModelAdmin):
 class DoubleShootAdmin(admin.ModelAdmin):
     list_display = ('id', 'soldier')
 
+@admin.register(DoubleShootMembers)
+class DoubleShootMembersAdmin(admin.ModelAdmin):
+    list_display = ('ds_id', 'ds_name')
+
 @admin.register(Periods)
 class DoubleShootAdmin(admin.ModelAdmin):
     list_display = ('id', 'battalion', 'period_number', 'period_name')
@@ -114,3 +119,6 @@ class DoubleShootAdmin(admin.ModelAdmin):
 class UnitSoldiersAdmin(admin.ModelAdmin):
     list_display = ('id', 'period', 'soldier', 'unit_number')
 
+@admin.register(SoldierQualificationFact)
+class SoldierQualificationFactAdmin(admin.ModelAdmin):
+    list_display = ('id', 'soldier', 'skill', 'value')
