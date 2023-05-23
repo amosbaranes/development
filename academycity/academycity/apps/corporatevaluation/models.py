@@ -1398,7 +1398,7 @@ class ToDoList(TruncateTableMixin, models.Model):
         ordering = ['-is_active', '-priority']
 
     user = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, on_delete=models.CASCADE,
-                             related_name='user_todolists')
+                             related_name='user_to_do_lists')
     created = models.DateField(auto_now_add=True)
     updated = models.DateField(auto_now=True)
     subject = models.CharField(max_length=150, null=False)
