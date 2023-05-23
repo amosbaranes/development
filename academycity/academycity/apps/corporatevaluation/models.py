@@ -1409,7 +1409,6 @@ class ToDoList(TruncateTableMixin, models.Model):
     def __str__(self):
         return self.subject
 
-
 #
 class CorporateValuationWeb(TruncateTableMixin, models.Model):
     company_name = models.CharField(max_length=100, default='', blank=True, null=True)

@@ -848,6 +848,23 @@ def logmein(request):
     else:
        return JsonResponse({"status":"bad"})
 
+def delete_record_from_table(request):
+    ret = {"status":"ko"}
+    try:
+        dic_ = request.POST["dic"]
+        dic_ = eval(dic_)
+        # print(dic_)
+        app = dic_["app"]
+        model = dic_["model"]
+        pky = dic_["pky"]
+        model_ = apps.get_model(app_label=app, model_name=model)
+        obj = model_.objects.get(id=pky)
+        obj.delete()
+        ret = {"status":"ok"}
+    except Exception as ex:
+        print("Error 200-21: "+str(ex))
+    return JsonResponse(ret)
+
 def general_data(request):
     dic_ = request.POST["dic"]
     dic_ = eval(dic_)

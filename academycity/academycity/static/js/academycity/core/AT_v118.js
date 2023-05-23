@@ -249,7 +249,7 @@ function AdvancedTabsManager(dic=null)
                            },
                  "Admin":{"title":"Admins", "obj_type":"acAdmin",
                         "sub_buttons": {"ToDo":{"title":"To Do", "width":10,
-                                                "setting": {"width":[]},
+                                                "setting": {"width":[], "table":[]},
                                                 "attributes":{"table_class":["","basic","payment","data_entry"]},
                                                 "functions":["onclick", "onchange", "onmouseover", "onmouseout"]
                                                 }
@@ -301,6 +301,7 @@ AdvancedTabsManager.prototype.create_atm = function(dic)
  this.my_app=dic["my_app"];
  this.elm_body=dic["body_"];
  this.logmein_link_=dic["logmein_link"];
+ this.delete_record_from_table_link_=dic["delete_record_from_table_link"];
  this.activate_function_link_=dic["activate_function_link"];
  this.update_field_link_=dic["update_field_link"];
  this.activate_obj_function_link_=dic["activate_obj_function_link"];
@@ -858,6 +859,21 @@ return this.content["last_obj_number"]
 
 AdvancedTabsManager.prototype.set_obj_to_copy=function(dic){
  this.new_obj_to_create = dic;
+}
+
+AdvancedTabsManager.prototype.delete_record_from_table=function(call_back_fun, dic_, html_obj=null){
+  //alert("1001213  "+JSON.stringify(dic_));
+  dic_["app"]=this.my_app;
+  if(dic_["company_obj_id"]==null){dic_["company_obj_id"]=this.company_obj_id;}
+  $.post(this.delete_record_from_table_link_,
+          {dic : JSON.stringify(dic_)},
+          function(data){
+          try{
+           //alert("9001-78-200"+JSON.stringify(data));
+           if(data["status"]!="ok"){return}
+           call_back_fun(data, html_obj)
+           } catch(er){alert("9090-120 AdvancedTabsManager.delete_record_from_table:\n"+er)}
+          });
 }
 
 AdvancedTabsManager.prototype.general_data = function(call_back_fun, dic_, obj_)
@@ -2222,9 +2238,9 @@ acAdmin.prototype.create_obj = function(){this.creator.create_obj();}
 function acToDoCreator(parent){this.parent=parent;}
 acToDoCreator.prototype.create_obj = function()
 {
-  var dic=this.parent.data;
-  var width_=dic["properties"]["width"]; if(width_==null || width_==""){width_=80};
-  var height_=dic["properties"]["height"]; if(height_==null || height_==""){height_=300};
+  var dic=this.parent.data;var pp_=dic["properties"];
+  var width_=pp_["width"]; if(width_==null || width_==""){width_=80};
+  var height_=pp_["height"]; if(height_==null || height_==""){height_=300};
   var obj_number = dic["properties"]["obj_number"]
   //--
   var container = document.getElementById("content_"+dic["container_id"]);
@@ -2237,12 +2253,94 @@ acToDoCreator.prototype.create_obj = function()
   var style_ = "position:absolute;left:"+dic["properties"]["x"]+"px;top:"+dic["properties"]["y"]+"px;width:"+width_+"%"
   this.main_div.setAttribute("style", style_);
   this.main_div.setAttribute("container_id", dic["container_id"]);
-  this.main_div.innerHTML="Todo";
+  //this.main_div.innerHTML="Todo";
   //--
   container.appendChild(this.main_div);
+  this.add_task_btn=document.createElement("button");
+  this.main_div.appendChild(this.add_task_btn);
+  this.add_task_btn.innerHTML="Add Task";
+  this.add_task_btn.addEventListener("click", function(event){
+    var e=event.target;
+    alert(e.outerHTML)
+  })
+  //--
+  this.table_=document.createElement("table");
+  this.table_.setAttribute("class", "basic")
+  this.main_div.appendChild(this.table_);
+  this.thead_=document.createElement("thead");
+  this.table_.appendChild(this.thead_);
+  this.thead_tr=document.createElement("tr");
+  this.thead_.appendChild(this.thead_tr);
+  var th=document.createElement("th");th.innerHTML="Priority";this.thead_tr.appendChild(th);
+  var th=document.createElement("th");th.innerHTML="Subject";this.thead_tr.appendChild(th);
+  var th=document.createElement("th");th.innerHTML="Description";this.thead_tr.appendChild(th);
+  var th=document.createElement("th");th.innerHTML="Is Active";this.thead_tr.appendChild(th);
+  var th=document.createElement("th");this.thead_tr.appendChild(th);
+  //--
+  this.tbody_=document.createElement("tbody");
+  this.table_.appendChild(this.tbody_);
   //--
   for(f in dic["functions"]){var s="this.main_div."+f+"="+dic["functions"][f];eval(s);}
  // alert(this.main_div.outerHTML)
+  //--
+  this.set_data();
+}
+
+acToDoCreator.prototype.set_data = function()
+{
+  var dic=this.parent.data;var pp_=dic["properties"];
+  var fun = function(data,ll){
+    var html_obj=ll[0]; var pp_=ll[1]
+     //alert("data=\n"+JSON.stringify(data));
+     var n=data[data["pkf_name"]].length;
+
+     for(var i=0;i<n;i++)
+     {
+      var tr=document.createElement("tr");
+      tr.setAttribute("pky", data["id"][i]);
+      html_obj.appendChild(tr);
+      var td=document.createElement("td");tr.appendChild(td);
+      var input=document.createElement("input");td.appendChild(input);
+      input.setAttribute("size", 4)
+      input.value=data["priority"][i];
+
+      var td=document.createElement("td");tr.appendChild(td);
+      var ta=document.createElement("textarea");td.appendChild(ta);
+      ta.setAttribute("rows", 3);ta.setAttribute("cols", 40);
+      ta.value=data["subject"][i];
+
+      var td=document.createElement("td");tr.appendChild(td);
+      var ta=document.createElement("textarea");td.appendChild(ta);
+      ta.setAttribute("rows", 3);ta.setAttribute("cols", 40);
+      ta.value=data["description"][i];
+
+      var td=document.createElement("td");tr.appendChild(td);
+      var input=document.createElement("input");input.setAttribute("type", "checkbox");
+      td.appendChild(input);input.checked=data["is_active"][i];
+
+      var td=document.createElement("td");tr.appendChild(td);
+      var b=document.createElement("button");td.appendChild(b);b.innerHTML="D";
+      b.pp_=pp_;
+      b.addEventListener("click", function(event){
+          var id_ = prompt("Are you sure you want to delete this record? if so type y" , 'No')
+          if(id_ != 'y') {return;};
+          var e=event.target;var r = e.parentNode.parentNode
+          pky_ = r.getAttribute("pky");r.parentNode.removeChild(r);
+          var dic__={"model":this.pp_["table"], "pky":pky_}
+          var fun=function(data, html_obj)
+          {
+           if(data["status"]=="ok"){alert("Record "+pky_+" was deleted.")}else{alert("Error deleting record "+pky_+".")};
+          }
+          atm.delete_record_from_table(fun, dic__, null)
+       })
+     }
+   }
+  fun.pp_=pp_;
+   var dic_={"model": pp_["table"], "parent_model":"", "parent_id": "", "number_of_rows": "1000000",
+               "fields": ["subject","description", "priority", "is_active"],
+               "filters":{}, "order_by": {}}
+  //alert("90876-760-1\n"+JSON.stringify(dic_));
+  atm.get_data(fun, dic_, [this.tbody_, pp_]);
 }
 
 // -- acPlugin --

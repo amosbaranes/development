@@ -6,7 +6,8 @@ from .models import (TrainingWeb, Instructors, Brigades, Battalions, Companys, P
                      SoldierQualificationFact,
                      TestEvents, TestsForEvents, SoldiersForEvents, GradesForEvents,
                      InventoryCategorys,Inventorys,TestsVariables, TestsForVariables, Periods, UnitSoldiers,
-                     DoubleShoot, DoubleShootMembers)
+                     DoubleShoot, DoubleShootMembers,
+                     ToDoList)
 
 
 @admin.register(TrainingWeb)
@@ -122,3 +123,7 @@ class UnitSoldiersAdmin(admin.ModelAdmin):
 @admin.register(SoldierQualificationFact)
 class SoldierQualificationFactAdmin(admin.ModelAdmin):
     list_display = ('id', 'soldier', 'skill', 'value')
+
+@admin.register(ToDoList)
+class ToDoListAdmin(admin.ModelAdmin):
+    list_display = ('id', 'subject', 'description', 'priority', "is_active")
