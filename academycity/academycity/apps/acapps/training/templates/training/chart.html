@@ -1,0 +1,95 @@
+<head>
+	<!-- Load plotly.js into the DOM -->
+	<script src='https://cdn.plot.ly/plotly-2.20.0.min.js'></script>
+</head>
+
+<body>
+	<div id='myDiv' style="position:absolute; left 100px:width:400px; height:300"><!-- Plotly chart will be drawn inside this DIV --></div>
+
+<script>
+var xData = ['XRay', 'Yankee', 'Zulu'];
+
+function getrandom(num , mul) {
+    var value = [ ];
+    for ( i = 0; i < num; i++ ) {
+        var rand = Math.random() * mul;
+        value.push(rand);
+    }
+    value.push(40);value.push(35);value.push(60);
+    return value;
+}
+
+var yData = [
+        getrandom(30 ,10),
+        getrandom(30, 20),
+        getrandom(30, 25)
+    ];
+var colors = ['rgba(93, 164, 214, 0.5)', 'rgba(255, 144, 14, 0.5)', 'rgba(44, 160, 101, 0.5)'];
+
+var data = [];
+
+for ( var i = 0; i < xData.length; i ++ ) {
+    var result = {
+        type: 'box',
+        y: yData[i],
+        name: xData[i],
+        boxpoints: 'suspectedoutliers',
+        marker: {
+			color: 'rgb(8,81,156)',
+			outliercolor: 'rgba(219, 64, 82, 0.6)',
+			line: {
+			  outliercolor: 'rgba(219, 64, 82, 1.0)',
+			  outlierwidth: 2
+			}
+  		}
+    };
+    data.push(result);
+};
+
+data.push({
+  y: [0.75, 5.25, 5.5, 6, 6.2, 6.6, 6.80, 7.0, 7.2, 7.5, 7.5, 7.75, 8.15, 8.15, 8.65, 8.93, 9.2, 9.5, 10, 10.25, 11.5, 12, 16, 20.90, 22.3, 23.25],
+  type: 'box',
+  name: 'Suspected Outlier',
+  marker: {
+    color: 'rgb(8,81,156)',
+    outliercolor: 'rgba(219, 64, 82, 0.6)',
+    line: {
+      outliercolor: 'rgba(219, 64, 82, 1.0)',
+      outlierwidth: 2
+    }
+  },
+  boxpoints: 'suspectedoutliers'
+})
+
+
+layout = {
+    title: 'Battalion',
+    yaxis: {
+        autorange: true,
+        showgrid: true,
+        zeroline: true,
+        dtick: 5,
+        gridcolor: 'rgb(255, 255, 255)',
+        gridwidth: 1,
+        zerolinecolor: 'rgb(255, 255, 255)',
+        zerolinewidth: 2
+    },
+    margin: {
+        l: 40,
+        r: 30,
+        b: 80,
+        t: 100
+    },
+    paper_bgcolor: 'rgb(243, 243, 243)',
+    plot_bgcolor: 'rgb(243, 243, 243)',
+    showlegend: false
+};
+const config = {
+  displayModeBar: false, // this is the line that hides the bar.
+};
+
+Plotly.newPlot('myDiv', data, layout, config);
+
+
+</script>
+</body>

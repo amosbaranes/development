@@ -247,14 +247,6 @@ function AdvancedTabsManager(dic=null)
                                                   }
                                        }
                            },
-                 "Admin":{"title":"Admins", "obj_type":"acAdmin",
-                        "sub_buttons": {"ToDo":{"title":"To Do", "width":10,
-                                                "setting": {"width":[]},
-                                                "attributes":{"table_class":["","basic","payment","data_entry"]},
-                                                "functions":["onclick", "onchange", "onmouseover", "onmouseout"]
-                                                }
-                                       }
-                         },
                  "AppObjs":{"title":"App objects", "obj_type":"none",
                         "sub_buttons": {}
                            }
@@ -1440,47 +1432,53 @@ acDashboard.prototype.create_obj = function(){this.creator.create_obj();}
 // -- acBasicCreator --
 function acBasicCreator(parent){this.parent=parent;
  //alert(JSON.stringify(this.parent.data));
- this.is_run_set_obj_structure=false;this.nlimit=-1;
+ this.is_run_set_obj_structure=false;
  this.grades={}
 }
 
-acBasicCreator.prototype.get_board = function(dic_,pp_, style_)
+
+acBasicCreator.prototype.get_board = function(dic_,pp_)
 {
+  //alert("pp_\n "+JSON.stringify(pp_));
+  //alert("dic_\n "+JSON.stringify(dic_));
+
+  //alert(container.outerHTML)
+  var style_=dic_["style_"]
      var obj_name="BasicDashboard"+pp_["obj_number"]+dic_["board_name"];
      var obj_number = pp_["obj_number"]
-     var s='function '+obj_name+'(dic, obj)'
+     var s='function '+obj_name+'(dic, container)'
      s+='{'
+     s+=' alert(container.outerHTML);'
      s+=' this.content=document.createElement("div");';
-     s+=' obj.main_div.appendChild(this.content);';
+     s+=' var d=document.createElement("div");';
+     s+=' container.appendChild(this.content);';
      s+=' this.content.my_creator_obj=this;';
      style_+="float:left;background-color:"+dic_["background-color"]+";color:"+dic_["color"]+";display:"+dic_["display"]+";";
      s+=' this.content.setAttribute("style", "'+style_+'");';
-     s+='};'; try{eval(s)} catch(er){alert("er9002-221: "+er)}
-     s = 'new '+ obj_name+'(dic=dic_, obj=this)'; try{obj_=eval(s)} catch(er){alert(er)}
+     s+='};'
+//     alert(s)
+
+     try{eval(s)} catch(er){alert("er9002-221: "+er)}
+     try{
+     s = 'new '+ obj_name+'(dic=dic_,  container=this.main_div)'
+
+     try{obj_=eval(s)} catch(er){alert(er)}
+     } catch(er){alert("er9002-221-2: "+er)}
      return obj_;
 }
+
 
 acBasicCreator.prototype.create_obj = function()
 {
   var dic=this.parent.data;
-  var pp_=dic["properties"];
+  var pp_=dic["properties"]
   var ll_boards=["battalion","company","platoon","section"]
   //--
   var container = document.getElementById("content_"+dic["container_id"]);
-  //--
-  var dic_objs={}
-  for(var h in ll_boards){var n=1*h+1;
-   var s='var board'+n+'_color="white";if((pp_["board'+n+'_color"]!=null && pp_["board'+n+'_color"]!="")){board'+n+'_color=pp_["board1_color"]}';eval(s);
-   //--
-   dic_objs[1*n]={};
-   dic_objs[1*n]["board_name"]=ll_boards[h];dic_objs[1*n]["color"]="black";if(n==1){dic_objs[1*n]["display"]="block";}
-   var s='dic_objs['+n+']["background-color"]=board'+n+'_color';eval(s);
-  }
-  //alert("acRadioCreator 90446-16  "+JSON.stringify(dic_objs));
-  //--
   var obj_number = pp_["obj_number"]
+  var dic_objs={}
+  //--
   this.main_div=document.createElement("div");
-  container.appendChild(this.main_div);
   this.main_div.my_creator_obj=this;
   this.main_div.my_creator_obj.dic=dic;
   this.main_div.setAttribute("id", obj_number);
@@ -1490,6 +1488,7 @@ acBasicCreator.prototype.create_obj = function()
   this.main_div.setAttribute("class", "row");
   var style_="position:absolute;left:"+pp_["x"]+"px;top:"+pp_["y"]+"px;"
   this.main_div.setAttribute("style", style_);
+  alert(style_)
   // --
   var width_=pp_["width"]; if(width_==null || width_==""){width_=80};
   var height_=pp_["height"]; if(height_==null || height_==""){height_=300};
@@ -1500,14 +1499,36 @@ acBasicCreator.prototype.create_obj = function()
      if(pp_["border_width"]!=null && pp_["border_width"]!=""){style_+="border-width:"+pp_["border_width"]+"px;"}
      if(pp_["border_color"]!=null && pp_["border_color"]!=""){style_+="border-color:"+pp_["border_color"]+";"}
      if(pp_["border_radius"]!=null && pp_["border_radius"]!=""){style_+="border-radius:"+pp_["border_radius"]+"px;"}
-
+  //--
+  alert(style_)
+  for(var h in ll_boards){
+   var n=1*h+1;
+   var s='var board'+n+'_color="white";if((pp_["board'+n+'_color"]!=null && pp_["board'+n+'_color"]!="")){board'+n+'_color=pp_["board1_color"]}';
+   eval(s);
+   dic_objs[1*n]={};
+   dic_objs[1*n]["board_name"]=ll_boards[h];
+   dic_objs[1*n]["color"]="black";
+   dic_objs[1*n]["style"]=style_;
+   var s='dic_objs['+n+']["background-color"]=board'+n+'_color';
+   eval(s);
+   if(n==1){dic_objs[1*n]["display"]="block";}
+  }
+  //--
   this.nav=document.createElement("div");this.nav.my_creator_obj=this;
   var style_nav="float:left;"
   this.nav.setAttribute("style", style_nav)
   this.main_div.appendChild(this.nav);
+
+   //alert("90441-200-2\n  "+JSON.stringify(dic_objs));
+
   this.board_objs = {}
   this.button_objs = {}
-  for (var j in dic_objs){this.board_objs[j]=this.get_board(dic_objs[j], pp_, style_)}
+  for (var j in dic_objs){
+
+  this.board_objs[j]=this.get_board(dic_objs[j], pp_)
+  }
+
+   alert(6613)
   for (var j in dic_objs)
   {
     var s_='var br=document.createElement("br");this.nav.appendChild(br);'
@@ -1521,7 +1542,38 @@ acBasicCreator.prototype.create_obj = function()
     eval(ss)
     var s='this.button_objs[j]=this.b_'+j;eval(s)
   }
+
+   alert(6614)
+   alert(this.main_div.outerHTML)
+
+//    this.units.innerHTML="";
+//    var ll=atm.general.get_platoons_ids();ll=ll[3];
+//    this.units_structure=ll;
+//    var o=document.createElement("option");o.value="-1";
+//    o.innerHTML="-------";this.units.appendChild(o);
+//    for(var j in ll){var o=document.createElement("option");o.value=j;o.innerHTML=ll[j]["title"];this.units.appendChild(o)};
+//    this.is_set_unit==false;
+//
+//  this.main_div.addEventListener("click", function(event){
+//      var e=event.target;
+//      //alert(e.outerHTML)
+//      //alert("90765-57\n"+JSON.stringify(this.dic));
+//      var etype_=e.getAttribute("type")
+//      if(etype_=="checkbox"){
+//         //alert(e.outerHTML)
+//         //alert(e.checked)
+//          var etype_=e.getAttribute("type")
+//          if(etype_=="checkbox"){
+//             //alert("test66")
+//             this.my_creator_obj.obj_was_clicked(e)
+//          }
+//      }
+//  })
+//
+//  --
+
 }
+
 
 acBasicCreator.prototype.set_detail_data = function(ll){
 
@@ -1535,6 +1587,7 @@ acBasicCreator.prototype.hide_boards = function(n_)
     for(var i=1; i<n_;i++){this.button_objs[i].style.display="block"}
 }
 
+
 acBasicCreator.prototype.get_grade = function(skill_id, unit_id)
 {
  ret = 0;
@@ -1544,11 +1597,17 @@ acBasicCreator.prototype.get_grade = function(skill_id, unit_id)
 
 acBasicCreator.prototype.set_board_data = function(ll=[])
 {
-  //alert("set data1")
+//alert("set data1")
+//alert(this.is_run_set_obj_structure)
   if(this.is_run_set_obj_structure==false){return}
+//alert("set data2")
+
   if(ll.length==0){for(var k in this.data_dic){ll.push(k)}}
-  // alert("acBasicCreator.prototype.set_board_data 90446-25 \n"+JSON.stringify(this.data_dic));
-  // alert(ll)
+
+ // alert("acBasicCreator.prototype.set_board_data 90446-25 \n"+JSON.stringify(this.data_dic));
+
+ // alert(ll)
+
    //--
    var dic_=this.parent.data;var pp_=dic_["properties"]
    var width_=pp_["width"]; if(width_==null || width_==""){width_=80};
@@ -1561,9 +1620,11 @@ acBasicCreator.prototype.set_board_data = function(ll=[])
     if(z<0){try{var container_=this.board_objs[1].content} catch(er){alert(er)}}
     //alert("90441-550-1  "+JSON.stringify(kpi));
     //alert("90441-550-2  "+JSON.stringify(dic));
+
     try{this.hide_boards((1*z+1)); container_.style.display="block";} catch(er){alert(er)}
     //alert("90441-550  "+JSON.stringify(dic));
     var n_kpi_objs=Object.keys(kpi).length;
+
     var w_kpi=125;var h_kpi=150; wl_kpi=75;var wr_kpi=25;
     var n_objs=Object.keys(dic).length;var w=150;var wl=100;var wr=50;
     var wb_kpi=(1*width_-wl_kpi-wr_kpi-n_kpi_objs*w_kpi)/(n_kpi_objs-1);var w_kpi_=wl_kpi;
@@ -1615,8 +1676,7 @@ acBasicCreator.prototype.set_board_data = function(ll=[])
    //--
    var k = 0
    //alert("90441-350-35  "+JSON.stringify(dic));
-   //alert(this.nlimit)
-   if(ll.length<(this.nlimit+1))
+   if(ll.length<3)
    {for(z in dic){
       k +=1
       color__="lightblue"
@@ -1651,11 +1711,16 @@ acBasicCreator.prototype.set_board_data = function(ll=[])
       style_+="border-style:solid;border-width:0px;border-color:blue;display: flex;"
       style_+="background-color:"+color__+";align-items: center;justify-content: center;"
       div_.setAttribute("style", style_);
-   //   s_data=this.units_structure[ll[0]]["data"][ll[1]]["data"][ll[2]]["data"]
-   var s='s_data=this.units_structure';for(var w=0;w<ll.length;w++){s+='[ll['+w+']]["data"]'};eval(s);
+
+   //alert(ll)
+   s_data=this.units_structure[ll[0]]["data"][ll[1]]["data"][ll[2]]["data"]
    //alert("90441-750  \n"+JSON.stringify(s_data));
+
    this.fields_skills=["Fitness","Shooting","Professional","Equipment"]
+
    var s="<table class='basic' style='display: block;height:"+(Math.round(height_/2.5)-40)+"px;overflow-y: auto;'><tr>"
+   //var s="<table class='basic' style='display: block;height:"+(Math.round(height_/2.5)-40)+"px;overflow-y: auto;'><tr>"
+
    s+="<th style='width:350px'>Name</th>"
    for(var i in this.fields_skills){s+="<th style='width:100px'>"+this.fields_skills[i]+"</th>";}
    s+="</tr>"
@@ -1673,19 +1738,24 @@ acBasicCreator.prototype.set_board_data = function(ll=[])
     s+="</tr>"
    }
    s+="</tbody></table>"
+
       div_.innerHTML=s;
       container_.appendChild(div_);
    }
 }
 
+
 acBasicCreator.prototype.set_obj_structure = function()
 {
-  //alert("set obj1")
-  //alert(this.is_run_set_obj_structure)
+//alert("set obj1")
+//alert(this.is_run_set_obj_structure)
   if(this.is_run_set_obj_structure==true){return}
+
   this.data_dic={}
   var f=function(dic, data_dic, grades, n=0, n_limit_=-1)
   {
+     //alert("acBasicCreator.prototype.set_obj_structure 90999-11\n"+JSON.stringify(dic));
+     //alert("acBasicCreator.prototype.set_obj_structure 90999-11\n"+JSON.stringify(data_dic));
      var n_=n+1;
      for(k in dic)
      {
@@ -1718,12 +1788,11 @@ acBasicCreator.prototype.set_obj_structure = function()
      }
   }
   var dic=this.parent.data;
-  this.nlimit=atm.general.period[atm.general.current_period]["n_limit"]
-
+  var nlimit=atm.general.period[atm.general.current_period]["n_limit"]
   //alert("acRadioCreator 90446-16  "+JSON.stringify(dic));
-
   try{
        var setup_dictionary = dic["properties"]["setup_dictionary"];
+       //alert(setup_dictionary)
        this.units_structure = eval("this.parent.atm.general."+setup_dictionary)
        var general_entity_name = dic["properties"]["entity"];
        this.entity_list = eval("this.parent.atm.general."+general_entity_name+"_list")
@@ -1732,14 +1801,18 @@ acBasicCreator.prototype.set_obj_structure = function()
        //alert("90000-020  "+JSON.stringify(this.units_structure));
        //alert("90000-020-10\n"+JSON.stringify(this.grades));
        //alert(Object.keys(this.grades).length)
-       //f(this.units_structure, this.data_dic, this.grades, 0, n_limit_=this.nlimit)
+       //   f(this.units_structure, this.data_dic, this.grades, 0, n_limit_=nlimit)
 
-       var dic=this.parent.data;
-       //alert("9044-441  "+JSON.stringify(dic));
-       var table_=dic["properties"]["table"]
-       var fields_=["soldier", "skill", "value"]
-       var fun=function(data, ll){
+      var dic=this.parent.data;
+      //alert("9044-441  "+JSON.stringify(dic));
+      var table_=dic["properties"]["table"]
+      var fields_=["soldier", "skill", "value"]
+
+      var fun=function(data, ll){
         var grades=ll[0];var f=ll[1]; obj=ll[2];var nlimit=ll[3]
+
+        //alert("90449-00: "+JSON.stringify(obj.data_dic));
+
         try{if(Object.keys(data).length==0){return;}} catch (er) {}
         // alert("90446-77 data \n"+JSON.stringify(data))
         var n_=data[fields_[0]].length;
@@ -1748,21 +1821,29 @@ acBasicCreator.prototype.set_obj_structure = function()
          if(!(data["soldier"][i] in grades)){grades[data["soldier"][i]]=[0,0,0,0]}
          grades[data["soldier"][i]][data["skill"][i]]=data["value"][i]
         }
+        //alert("90488-88 data \n"+JSON.stringify(grades))
+        //alert("90488-88-00 data \n"+JSON.stringify(obj.units_structure))
 
-        f(obj.units_structure, obj.data_dic, this.grades, 0, n_limit_=nlimit)
+        f(obj.units_structure, obj.data_dic, grades, 0, n_limit_=nlimit)
+
         //alert("90449-33: "+JSON.stringify(obj.data_dic));
+
         obj.is_run_set_obj_structure=true;
         obj.set_board_data()
         //alert(data["pkf_name"])
       }
-       var dic__={"model":table_,"number_of_rows":1000000,"filters":{},
-          "fields":fields_, "order_by":{"field":"soldier", "direction":"ascending"}
-          }
-       dic__["filters"]["id"]={"value":1, "foreign_table":"soldier__battalion"}
-       //alert("90449-99: "+JSON.stringify(dic__));
-       this.parent.atm.get_data(call_back_fun=fun, dic__, [this.grades,f, this, this.nlimit])
+      var dic__={"model":table_,"number_of_rows":1000000,"filters":{},
+                 "fields":fields_, "order_by":{"field":"soldier", "direction":"ascending"}
+                }
 
-  } catch(er){alert("1155-515: "+er)}
+      dic__["filters"]["id"]={"value":1, "foreign_table":"soldier__battalion"}
+      //alert("90449-99: "+JSON.stringify(dic__));
+
+      //alert("90488-88-01 data \n"+JSON.stringify(this.units_structure))
+
+      this.parent.atm.get_data(call_back_fun=fun, dic__, [this.grades, f, this, nlimit])
+
+     } catch(er){alert("1155-515: "+er)}
 
 }
 
@@ -2214,40 +2295,11 @@ acGradesCreator.prototype.set_obj_structure = function(tests_dic=null, group_dic
         }}
 }
 
-// -- acAdmin --
-function acAdmin(){}
-acAdmin.prototype.create_obj = function(){this.creator.create_obj();}
-
-//-- acToDo --
-function acToDoCreator(parent){this.parent=parent;}
-acToDoCreator.prototype.create_obj = function()
-{
-  var dic=this.parent.data;
-  var width_=dic["properties"]["width"]; if(width_==null || width_==""){width_=80};
-  var height_=dic["properties"]["height"]; if(height_==null || height_==""){height_=300};
-  var obj_number = dic["properties"]["obj_number"]
-  //--
-  var container = document.getElementById("content_"+dic["container_id"]);
-   //alert("90100-2 acGroupCreator.prototype.create_obj\n"+JSON.stringify(dic));
-  this.main_div=document.createElement("div");
-  this.main_div.my_creator_obj=this;
-  this.main_div.dic=dic;
-  this.main_div.setAttribute("id", obj_number);
-  this.main_div.setAttribute("obj_type", dic["obj_type"]);
-  var style_ = "position:absolute;left:"+dic["properties"]["x"]+"px;top:"+dic["properties"]["y"]+"px;width:"+width_+"%"
-  this.main_div.setAttribute("style", style_);
-  this.main_div.setAttribute("container_id", dic["container_id"]);
-  this.main_div.innerHTML="Todo";
-  //--
-  container.appendChild(this.main_div);
-  //--
-  for(f in dic["functions"]){var s="this.main_div."+f+"="+dic["functions"][f];eval(s);}
- // alert(this.main_div.outerHTML)
-}
 
 // -- acPlugin --
 function acPlugin(){}
 acPlugin.prototype.create_obj = function(){this.creator.create_obj();}
+
 
 // -- acContainerCreator --
 function acContainerCreator(parent){this.parent=parent;this.tab=parent.tab}
@@ -7740,12 +7792,6 @@ try{
   } catch(er) {alert('er9036: '+ er)}
 }
 
-
-//-- Plugin --
-Admin_create_main_content = function()
-{
- //alert(333)
-}
 
 //-- Plugin --
 Plugin_create_main_content = function()

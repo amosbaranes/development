@@ -13,39 +13,6 @@ class TrainingWeb(TruncateTableMixin, models.Model):
     def __str__(self):
         return str(self.program_name)
 
-# Inventory
-class InventoryCategorys(TruncateTableMixin, models.Model):
-    class Meta:
-        verbose_name = 'inventorycategory'
-        verbose_name_plural = 'inventorycategorys'
-        ordering = ['category_name', 'category_name_1']
-    training_web = models.ForeignKey(TrainingWeb, on_delete=models.CASCADE, default=1,
-                                     related_name='training_web_inventory_categorys')
-    item_number = models.SmallIntegerField(default=0)
-    pn = models.CharField(max_length=200, default='', blank=True, null=True)
-    category_name_1 = models.CharField(max_length=100, default='', blank=True, null=True)
-    category_name_2 = models.CharField(max_length=100, default='', blank=True, null=True)
-    category_name = models.CharField(max_length=100, default='', blank=True, null=True)
-
-    def __str__(self):
-        return str(self.category_name)
-
-class Inventorys(TruncateTableMixin, models.Model):
-    class Meta:
-        verbose_name = 'inventory'
-        verbose_name_plural = 'inventorys'
-        ordering = ['inventory_number']
-    training_web = models.ForeignKey(TrainingWeb, on_delete=models.CASCADE, default=1,
-                                     related_name='training_web_inventories')
-    inventorycategory = models.ForeignKey(InventoryCategorys, on_delete=models.CASCADE, default=1,
-                                          related_name='inventory_category_inventorys')
-    inventory_number = models.CharField(max_length=50, default='', blank=True, null=True)
-    item_number = models.IntegerField(default=0, blank=True, null=True)
-    pn = models.CharField(max_length=50, default='', blank=True, null=True)
-
-    def __str__(self):
-        return str(self.inventory_number)
-
 # מדריכים
 class Instructors(TruncateTableMixin, models.Model):
     class Meta:
@@ -191,6 +158,41 @@ class Courses(TruncateTableMixin, models.Model):
     start_date = models.DateField(default=timezone.now)
     end_date = models.DateField(default=timezone.now)
 
+# Inventory
+class InventoryCategorys(TruncateTableMixin, models.Model):
+    class Meta:
+        verbose_name = 'inventorycategory'
+        verbose_name_plural = 'inventorycategorys'
+        ordering = ['category_name', 'category_name_1']
+
+    training_web = models.ForeignKey(TrainingWeb, on_delete=models.CASCADE, default=1,
+                                     related_name='training_web_inventory_categorys')
+    item_number = models.SmallIntegerField(default=0)
+    pn = models.CharField(max_length=200, default='', blank=True, null=True)
+    category_name_1 = models.CharField(max_length=100, default='', blank=True, null=True)
+    category_name_2 = models.CharField(max_length=100, default='', blank=True, null=True)
+    category_name = models.CharField(max_length=100, default='', blank=True, null=True)
+
+    def __str__(self):
+        return str(self.category_name)
+
+class Inventorys(TruncateTableMixin, models.Model):
+    class Meta:
+        verbose_name = 'inventory'
+        verbose_name_plural = 'inventorys'
+        ordering = ['inventory_number']
+
+    training_web = models.ForeignKey(TrainingWeb, on_delete=models.CASCADE, default=1,
+                                     related_name='training_web_inventories')
+    inventorycategory = models.ForeignKey(InventoryCategorys, on_delete=models.CASCADE, default=1,
+                                          related_name='inventory_category_inventorys')
+    inventory_number = models.CharField(max_length=50, default='', blank=True, null=True)
+    item_number = models.IntegerField(default=0, blank=True, null=True)
+    pn = models.CharField(max_length=50, default='', blank=True, null=True)
+
+    def __str__(self):
+        return str(self.inventory_number)
+
 # חייל
 class Soldiers(TruncateTableMixin, models.Model):
     class Meta:
@@ -252,6 +254,20 @@ class Soldiers(TruncateTableMixin, models.Model):
 
     def __str__(self):
         return str(self.userid) + ": " + str(self.first_name) + " " + str(self.last_name)
+
+class InventoryFact(TruncateTableMixin, models.Model):
+    class Meta:
+        verbose_name = 'grades_for_event'
+        verbose_name_plural = 'grades_for_events'
+
+    inventory = models.ForeignKey(Inventorys, on_delete=models.CASCADE, default=1,
+                                  related_name='inventory_inventory_facts')
+    soldier = models.ForeignKey(Soldiers, on_delete=models.CASCADE, default=1,
+                                         related_name='soldier_inventory_facts')
+    value = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+
+    def __str__(self):
+        return str(self.inventory) + "-" + str(self.soldier) + "-" + str(self.value)
 
 class UnitSoldiers(TruncateTableMixin, models.Model):
     class Meta:
@@ -363,7 +379,7 @@ class TestsForVariables(TruncateTableMixin, models.Model):
 
     def __str__(self):
         return str(self.test_number)
-#
+
 
 # -- Compliance --
 class ComplianceWeeks(TruncateTableMixin, models.Model):
@@ -385,31 +401,19 @@ class ComplianceDays(TruncateTableMixin, models.Model):
     time_dim = models.ForeignKey(TimeDim, on_delete=models.CASCADE, default=1, related_name='time_dim_compliance_days')
     time_unit = models.JSONField(null=True)
 
-# To Be Deleted ###
-class TestsStructures(TruncateTableMixin, models.Model):
+
+# SoldierQualificationFact
+class SoldierQualificationFact(TruncateTableMixin, models.Model):
     class Meta:
-        verbose_name = 'test_structure'
-        verbose_name_plural = 'test_structures'
+        verbose_name = 'soldier_qualification_fact'
+        verbose_name_plural = 'soldier_qualification_facts'
+
     training_web = models.ForeignKey(TrainingWeb, on_delete=models.CASCADE, default=1,
-                                     related_name='training_web_tests')
-    battalion = models.OneToOneField(Battalions, on_delete=models.CASCADE, primary_key=True,
-                                     related_name='battalion_testsstructures')
-    tests_structures_content = models.JSONField(null=True)
-
-    def __str__(self):
-        return str(self.battalion)
-
-
-# ToBeDeleted
-class Tests(TruncateTableMixin, models.Model):
-    class Meta:
-        verbose_name = 'test'
-        verbose_name_plural = 'tests'
-
-    soldier = models.ForeignKey(Soldiers, on_delete=models.CASCADE, default=1, related_name='soldier_tests')
-    test = models.PositiveSmallIntegerField(default=0)
-    grade = models.PositiveSmallIntegerField(default=0)
-#
+                                     related_name='training_web_soldier_qualification_facts')
+    soldier = models.ForeignKey(Soldiers, on_delete=models.CASCADE, default=1,
+                                related_name='soldier_soldier_qualification_facts')
+    skill = models.SmallIntegerField(default=0)
+    value = models.SmallIntegerField(default=0)
 
 #
 class DoubleShoot(TruncateTableMixin, models.Model):
@@ -455,15 +459,48 @@ class SoldierFact(TruncateTableMixin, models.Model):
     value = models.SmallIntegerField(default=0)
 
 
-class SoldierQualificationFact(TruncateTableMixin, models.Model):
+# -- Admin tables --
+class ToDoList(TruncateTableMixin, models.Model):
     class Meta:
-        verbose_name = 'soldier_qualification_fact'
-        verbose_name_plural = 'soldier_qualification_facts'
+        verbose_name = 'todolist'
+        verbose_name_plural = 'todolist'
+        ordering = ['-is_active', '-priority']
 
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, on_delete=models.CASCADE,
+                             related_name='user_todolists')
+    created = models.DateField(auto_now_add=True)
+    updated = models.DateField(auto_now=True)
+    subject = models.CharField(max_length=150, null=False)
+    description = models.CharField(max_length=1000, null=False)
+    priority = models.PositiveSmallIntegerField(default=0)
+    is_active = models.BooleanField(default=True)
+
+    def __str__(self):
+        return self.subject
+
+
+
+# To Be Deleted ###
+class TestsStructures(TruncateTableMixin, models.Model):
+    class Meta:
+        verbose_name = 'test_structure'
+        verbose_name_plural = 'test_structures'
     training_web = models.ForeignKey(TrainingWeb, on_delete=models.CASCADE, default=1,
-                                     related_name='training_web_soldier_qualification_facts')
-    soldier = models.ForeignKey(Soldiers, on_delete=models.CASCADE, default=1,
-                                related_name='soldier_soldier_qualification_facts')
-    skill = models.SmallIntegerField(default=0)
-    value = models.SmallIntegerField(default=0)
+                                     related_name='training_web_tests')
+    battalion = models.OneToOneField(Battalions, on_delete=models.CASCADE, primary_key=True,
+                                     related_name='battalion_testsstructures')
+    tests_structures_content = models.JSONField(null=True)
 
+    def __str__(self):
+        return str(self.battalion)
+
+# ToBeDeleted
+class Tests(TruncateTableMixin, models.Model):
+    class Meta:
+        verbose_name = 'test'
+        verbose_name_plural = 'tests'
+
+    soldier = models.ForeignKey(Soldiers, on_delete=models.CASCADE, default=1, related_name='soldier_tests')
+    test = models.PositiveSmallIntegerField(default=0)
+    grade = models.PositiveSmallIntegerField(default=0)
+#

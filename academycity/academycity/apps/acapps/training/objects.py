@@ -4549,6 +4549,20 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
         result = {"status": "ok"}
         return result
 
+    def set_soldiersand_org_structure(self, dic):
+        # print('90022-1 dic', dic)
+        app_ = dic["app"]
+        file_path = self.upload_file(dic)["file_path"]
+        # print("-"*100, "\n", file_path, "\n", "-"*100)
+        df = pd.read_excel(file_path, sheet_name="Data", header=0)
+        print(df)
+        print("-"*100)
+
+        result = {"status": "ok"}
+        return result
+
+
+    #  -- To be deleted --
     def set_soldiers(self, dic):
         # print('90022-1 dic', dic)
         app_ = dic["app"]
