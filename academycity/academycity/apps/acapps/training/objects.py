@@ -4549,6 +4549,7 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
         result = {"status": "ok"}
         return result
 
+    # v2 --
     def set_soldiersand_org_structure(self, dic):
         # print('90022-1 dic', dic)
         app_ = dic["app"]

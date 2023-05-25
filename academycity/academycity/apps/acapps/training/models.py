@@ -23,6 +23,7 @@ class Instructors(TruncateTableMixin, models.Model):
                                      related_name='training_web_instructors')
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, primary_key=True,
                                 related_name='training_user_instructors')
+    default_battalion = models.IntegerField(default=1)
     first_name = models.CharField(max_length=50, default='', blank=True, null=True)
     last_name = models.CharField(max_length=50, default='', blank=True, null=True)
     position = models.SmallIntegerField(default=0)
@@ -52,6 +53,8 @@ class Battalions(TruncateTableMixin, models.Model):
     brigade = models.ForeignKey(Brigades, on_delete=models.CASCADE, default=1, related_name='brigade_battalions')
     battalion_name = models.CharField(max_length=50, default='', blank=True, null=True)
     battalion_number = models.SmallIntegerField(default=1)
+    start_date = models.IntegerField(blank=True, null=True, default=230101)
+    number_of_weeks = models.SmallIntegerField(default=20)
 
     def __str__(self):
         return str(self.battalion_name)
@@ -220,7 +223,6 @@ class Soldiers(TruncateTableMixin, models.Model):
     #
     mz4psn = models.CharField(max_length=100, default='', blank=True, null=True)
     ramonsn = models.CharField(max_length=100, default='', blank=True, null=True)
-    #
     gun_mz4psn = models.ForeignKey(Inventorys, on_delete=models.CASCADE, null=True, related_name='inventory_mz4psn_soldiers')
     gun_ramonsn = models.ForeignKey(Inventorys, on_delete=models.CASCADE, null=True, related_name='inventory_ramonsn_soldiers')
     #
@@ -464,10 +466,10 @@ class ToDoList(TruncateTableMixin, models.Model):
     class Meta:
         verbose_name = 'todolist'
         verbose_name_plural = 'todolist'
-        ordering = ['-is_active', '-priority']
+        ordering = ['-is_active', 'priority']
 
     user = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, on_delete=models.CASCADE,
-                             related_name='user_todolists')
+                             related_name='training_user_todolists')
     created = models.DateField(auto_now_add=True)
     updated = models.DateField(auto_now=True)
     subject = models.CharField(max_length=150, null=False)

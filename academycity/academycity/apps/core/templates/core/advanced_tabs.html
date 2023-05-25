@@ -12,7 +12,7 @@
 </head>
 <body id="body_">
 
-<script src="{% static 'js/academycity/core/AT_v118.js' %}"></script>
+<script src="{% static 'js/academycity/core/AT_v119.js' %}"></script>
 <script src="{% static 'vendor/jquery/jquery.min.js' %}"></script>
 <script src="{% static 'js/npm/cookie/js.cookie.min.js' %}"></script>
 <script src="{% static 'vendor/fontawesome-free-5.11.2-web/a076d05399.js' %}"></script>
@@ -54,6 +54,7 @@ var dic={
 "general_data":'{% url "core:general_data" %}',
 "get_data_json_link":'{% url "core:get_data_json_link" %}',
 "is_show_btns":{%if request.user|has_group:"admins"%}true{% else %}false{%endif%},
+"default_battalion":"{{ default_battalion }}",
 "user_id":"{{ user_id }}"
 }
 

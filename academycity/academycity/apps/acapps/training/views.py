@@ -95,15 +95,19 @@ def app_id(request, app_name, company_obj_id):
             # print("not login")
         else:
             user_id = request.user.id
+            user_ = request.user
+            default_battalion = user_.training_user_instructors.default_battalion
             if request.user.groups.filter(name="t_senior_manager").exists():
                 app_name = "senm"
             elif request.user.groups.filter(name="t_admin").exists():
-                app_name = "admin"
+                app_name = "tadmin"
             elif request.user.groups.filter(name="admins").exists():
+                # app_name = "admin"
                 log_debug("training home : 60-04: "+app_name)
                 pass
             else:
                 app_name = "default"
+            # print(app_name)
 
     except Exception as ex:
         print(ex)
@@ -121,7 +125,7 @@ def app_id(request, app_name, company_obj_id):
                                                 "logmein_link":logmein_link_,
                                                 "app_activate_function_link": app_activate_function_link_,
                                                 "company_obj_id": company_obj_id_,
-                                                "user_id":user_id,
+                                                "user_id":user_id, "default_battalion":default_battalion,
                                                 "title": app_}
                   )
 

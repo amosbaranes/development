@@ -45,7 +45,7 @@ class WebSiteCompany(object):
         except Exception as ex:
             print("1="*50)
             print(str(ex))
-            print("2="*50)
+            print("2-"*50)
 
         if (not is_test) and self.is_registered_domain():
             self.web_company_id = self.web_site_company['web_company_id']

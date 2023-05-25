@@ -154,10 +154,10 @@ def activate_function(request):
 def update_field_model_by_id(request, foreign=None):
     # log_debug("update_field_model_by_id 0")
     dic_ = request.POST["dic"]
-    # print('-1'*50)
-    print('90155-100 core update_field_model_by_id: dic_', dic_, "\n", '-'*50)
+    # print('90155-100 core update_field_model_by_id: dic_\n', '-'*50,"\n", dic_, "\n", '-'*50)
     log_debug(dic_) # size is 1024 chars
     dic_ = eval(dic_)
+    # print('90155-100-1 core update_field_model_by_id: dic_\n', '-'*50,"\n", dic_, "\n", '-'*50)
     element_id_ = ""
     try:
         element_id_ = dic_["element_id"]
@@ -361,7 +361,7 @@ def get_data_link(request):
     #     print('\n 9050-150 core views get_data_link dic_ ', "\n", dic_,"\n", "-"*100)
     # except Exception as ex:
     #     print(str(ex))
-    #     pass
+    #     # pass
 
     multiple_select_fields = None
     if "multiple_select_fields" in dic_:
@@ -856,9 +856,9 @@ def delete_record_from_table(request):
         # print(dic_)
         app = dic_["app"]
         model = dic_["model"]
-        pky = dic_["pky"]
+        record_id = dic_["record_id"]
         model_ = apps.get_model(app_label=app, model_name=model)
-        obj = model_.objects.get(id=pky)
+        obj = model_.objects.get(id=record_id)
         obj.delete()
         ret = {"status":"ok"}
     except Exception as ex:
