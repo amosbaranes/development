@@ -128,7 +128,7 @@ function AdvancedTabsManager(dic=null)
                                                   "field":[]},"attributes":{"table_class":["","basic","payment","data_entry"]},
                                                   "functions":["onclick", "onchange", "onmouseover", "onmouseout"]},
                                         "Compliance":{"title":"C", "width":3,
-                                                  "setting": {"start_date":[], "number_of_weeks":[],"width":[],
+                                                  "setting": {"width":[],
                                                   "week_table":[], "day_table":[]},
                                                   "attributes":{"table_class":["","basic","payment","data_entry"]},
                                                   "functions":["onclick", "onchange", "onmouseover", "onmouseout"]},
@@ -1428,9 +1428,9 @@ acObj.prototype.get_select_data = function()
                          }
               }
     try{var v_=dic["properties"]["default_value"];
-    if(v_==null || v_==""){var field_=dic["properties"]["field"];v_=eval('atm.'+field_);}
-
+    if(v_==null || v_==""){var field_=dic["properties"]["field"];try{v_=eval('atm.'+field_)}catch(er){};}
     this.new_obj.run_eval="html_obj.value="+v_} catch(er){}
+
 //alert(this.new_obj.run_eval)
     //try{var i_=dic["properties"]["default_index"];this.new_obj.run_eval="html_obj.options["+i_+"].selected=true"} catch(er){}
     this.atm.get_list(call_back_fun=fun, dic_, this.new_obj);
@@ -4386,17 +4386,15 @@ acRecordingTestsCreator.prototype.fill_up_data = function(data, this_obj)
 }
 
 
-// -- acComplianceCreator --
-function acComplianceCreator(parent){this.parent=parent;this.is_set_unit=true, this.data_dic={}}
+// -- acCompliance --
+function acComplianceCreator(parent){this.parent=parent;this.is_set_unit=true, this.is_set_parameters=false,
+                                     this.data_dic={}}
 
 acComplianceCreator.prototype.create_obj = function()
 {
   var dic=this.parent.data;
   //alert("90358-88 "+JSON.stringify(dic));
   //--
-  if("start_date" in dic["properties"]){var start_date_=dic["properties"]["start_date"]} else {var start_date_=-1}
-  if("number_of_weeks" in dic["properties"]){var number_of_weeks_=dic["properties"]["number_of_weeks"]} else {var number_of_weeks_=20}
-  //
   var container = document.getElementById("content_"+dic["container_id"]);
   //--
   this.main_div=document.createElement("div");this.main_div.my_creator_obj=this;
@@ -4609,9 +4607,18 @@ acComplianceCreator.prototype.create_obj = function()
               "day":{"table":day_table,"time_dim":c.days.value, "time_unit":c.data_dic}}
     c.get_data_week(dic_);
   })
+  //-- functions --
+  for(f in dic["functions"]){var s="this.main_div."+f+"="+dic["functions"][f];eval(s);}
+}
 
-  if(start_date_!=-1){
-  var y=start_date_.substring(0,4);var m=start_date_.substring(4,6);var d=start_date_.substring(6,8);
+acComplianceCreator.prototype.set_parameters = function()
+{
+ if(this.is_set_parameters==true){return}
+
+  var start_date_=""+atm.general.start_date
+  var number_of_weeks_=1*atm.general.number_of_weeks
+  var y=atm.general.y;var m=atm.general.m;var d=atm.general.d;
+
   var date_=new Date(y+"-"+m+"-"+d);
   while (date_.getDay()>0){date_.setDate(date_.getDate() -1);}
   var y=date_.getFullYear()+"";var m=complete_zeros((date_.getMonth()+1)+"",2);var d=complete_zeros(date_.getDate()+"",2);
@@ -4651,10 +4658,8 @@ acComplianceCreator.prototype.create_obj = function()
    var ec=new Event("change", {bubbles: true});
    this.days.dispatchEvent(ec)
 
-  } else {alert("You need to ste start date")}
-  //-- functions --
-  for(f in dic["functions"]){var s="this.main_div."+f+"="+dic["functions"][f];eval(s);}
 }
+
 
 
 acComplianceCreator.prototype.get_next_time_number = function()

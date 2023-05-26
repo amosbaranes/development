@@ -55,6 +55,7 @@ class Battalions(TruncateTableMixin, models.Model):
     battalion_number = models.SmallIntegerField(default=1)
     start_date = models.IntegerField(blank=True, null=True, default=230101)
     number_of_weeks = models.SmallIntegerField(default=20)
+    number_of_weeks_in_period_1 = models.SmallIntegerField(default=9)
 
     def __str__(self):
         return str(self.battalion_name)

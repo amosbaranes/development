@@ -24,7 +24,7 @@ class BrigadesAdmin(admin.ModelAdmin):
 
 @admin.register(Battalions)
 class BattalionsAdmin(admin.ModelAdmin):
-    list_display = ('id', 'battalion_name', 'battalion_number')
+    list_display = ('id', 'battalion_name', 'battalion_number', 'number_of_weeks', 'number_of_weeks_in_period_1')
 
 @admin.register(Companys)
 class CompanysAdmin(admin.ModelAdmin):
