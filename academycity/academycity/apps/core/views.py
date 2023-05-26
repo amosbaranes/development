@@ -487,7 +487,6 @@ def get_data_link(request):
                     if filter_field_a != "":
                         # need need need to check this one. I changed it and it might have effect on other reports
                         filter_field_ = filter_field_a
-
                     # print(filter_field_)
                     # print(111122222)
                     # f__ = model._meta.get_field(filter_field_)
@@ -498,7 +497,6 @@ def get_data_link(request):
                     # s += '.filter('+foreign_table_+'__'+filter_field_+'='+filter_value_+')'
                     # if str(t__)=="AutoField":
                     #     print(3333333)
-
                     index = filter_field_.find("id")
                     if index != -1:
                         s += '.filter(' + foreign_table_ + '__' + filter_field_ + '=' + filter_value_ + ')'
@@ -586,7 +584,7 @@ def get_data_link(request):
     # print("=2"*50)
 
     dic = {'status': 'ok', "dic": dic}
-    # print('core view 9055 get_data_link dic_= ', dic)
+    print('core view 9055 get_data_link dic_= ', dic)
     return JsonResponse(dic)
 
 def get_data_json_link(request):
