@@ -1409,7 +1409,7 @@ acObj.prototype.get_select_data = function()
       this.atm.get_list(call_back_fun=fun, dic_, this.new_obj);
   } else if(dic["properties"]["data_app"]!="" & dic["properties"]["data_app"]!=null)
   {
-//    alert("5089-89 acObj.prototype.get_select_data dic=\n"+JSON.stringify(dic["properties"]));
+    //alert("5089-89 acObj.prototype.get_select_data dic=\n"+JSON.stringify(dic["properties"]));
     var data_app=dic["properties"]["data_app"];
     var data_model=dic["properties"]["data_model"];
     var data_field=dic["properties"]["data_field"];
@@ -1428,10 +1428,12 @@ acObj.prototype.get_select_data = function()
                          }
               }
     try{var v_=dic["properties"]["default_value"];
-    if(v_==null || v_==""){var field_=dic["properties"]["field"];try{v_=eval('atm.'+field_)}catch(er){};}
-    this.new_obj.run_eval="html_obj.value="+v_} catch(er){}
+    if(v_==null || v_==""){var field_=dic["properties"]["field"];
 
-//alert(this.new_obj.run_eval)
+    //alert("field_= "+field_); alert('atm.'+field_+' = '+eval('atm.'+field_))
+    try{v_=eval('atm.'+field_)}catch(er){};}
+    this.new_obj.run_eval="html_obj.value="+v_} catch(er){}
+    //alert(this.new_obj.run_eval)
     //try{var i_=dic["properties"]["default_index"];this.new_obj.run_eval="html_obj.options["+i_+"].selected=true"} catch(er){}
     this.atm.get_list(call_back_fun=fun, dic_, this.new_obj);
   }

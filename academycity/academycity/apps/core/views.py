@@ -584,7 +584,7 @@ def get_data_link(request):
     # print("=2"*50)
 
     dic = {'status': 'ok', "dic": dic}
-    print('core view 9055 get_data_link dic_= ', dic)
+    # print('core view 9055 get_data_link dic_= ', dic)
     return JsonResponse(dic)
 
 def get_data_json_link(request):
