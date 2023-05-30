@@ -1867,7 +1867,7 @@ acReport.prototype.set_data = function(type, is_level=true){
 
   var fun = function(data,ll){
     var html_obj = ll[0];var get_data_dic = ll[1];
-     //alert("data=\n"+JSON.stringify(data));
+     //alert("90876-1 data=\n"+JSON.stringify(data));
      //for(k in data){alert("k="+k+"\n"+JSON.stringify(data[k]))}
      //alert(JSON.stringify(get_data_dic));
      //alert(html_obj.outerHTML)
@@ -1926,7 +1926,7 @@ acReport.prototype.row_col_click = function(event)
  }
 }
 
-// -- acPivotCreator --
+// -- acPivot --
 function acPivotCreator(parent){
   this.parent=parent;this.sort_by_col_num=null;this.sort_ascending=true;
   // alert(JSON.stringify(this.parent.data));
@@ -4604,19 +4604,25 @@ acComplianceCreator.prototype.create_obj = function()
     var week_table=e.dic["properties"]["week_table"];
     var parent_unit_idx =e.value;
     var week_idx = c.weeks.value
-    var day_table=e.dic["properties"]["day_table"]
-    var dic_={"week":{"table":week_table, "parent_unit_idx":parent_unit_idx, "week":week_idx},
-              "day":{"table":day_table,"time_dim":c.days.value, "time_unit":c.data_dic}}
+    var day_table=e.dic["properties"]["day_table"];
+    var dic_={"week":{"app":atm.my_app, "model":week_table,"company_obj_id":atm.company_obj_id,
+                      "fields": ['id', 'battalion', 'unit', 'conclusion'],
+                      "filters": {'id': {'value': week_idx, 'foreign_table': ''},
+                                  'unit': {'value': parent_unit_idx, 'foreign_table': ''},
+                                  'battalion': {'value': atm.general.current_battalion, 'foreign_table': 'battalion'}
+                         }
+                      },
+              "day":{"model":day_table, "parent_model":week_table, "parent_id":parent_unit_idx,
+                     "time_dim":c.days.value, "time_unit":c.data_dic}}
     c.get_data_week(dic_);
   })
   //-- functions --
   for(f in dic["functions"]){var s="this.main_div."+f+"="+dic["functions"][f];eval(s);}
 }
 
-acComplianceCreator.prototype.set_parameters = function()
+acComplianceCreator.prototype.set_weeks_days = function()
 {
  if(this.is_set_parameters==true){return}
-
   var start_date_=""+atm.general.start_date
   var number_of_weeks_=1*atm.general.number_of_weeks
   var y=atm.general.y;var m=atm.general.m;var d=atm.general.d;
@@ -4659,10 +4665,7 @@ acComplianceCreator.prototype.set_parameters = function()
    this.days.value=today_date_d;
    var ec=new Event("change", {bubbles: true});
    this.days.dispatchEvent(ec)
-
 }
-
-
 
 acComplianceCreator.prototype.get_next_time_number = function()
 {
@@ -4679,35 +4682,44 @@ acComplianceCreator.prototype.save_data = function(dic_)
 
 acComplianceCreator.prototype.get_data_week = function(dic_)
 {
-   alert("90357-555-120\n"+JSON.stringify(dic_));
-   var dic = {"model":dic_["week"]["table"], "number_of_rows": 5000000,
-              "filters": {'id': {'value': dic_["week"]["week"], 'foreign_table': ''},
-                          'unit': {'value': dic_["week"]["parent_unit_idx"], 'foreign_table': ''},
-                          'battalion': {'value': 1, 'foreign_table': 'battalion'}
-                         },
-              "order_by": {},
-              "fields": ['id', 'battalion', 'unit', 'conclusion']
-            }
-
-        alert("90756-888 "+JSON.stringify(dic));
+   //alert("90357-555-120\n"+JSON.stringify(dic_));
+//   var dic = {"model":dic_["week"]["table"],
+//              "filters": {'id': {'value': dic_["week"]["week"], 'foreign_table': ''},
+//                          'unit': {'value': dic_["week"]["parent_unit_idx"], 'foreign_table': ''},
+//                          'battalion': {'value': dic_["week"]["battalion"], 'foreign_table': 'battalion'}
+//                         },
+//              "order_by": {},
+//              "fields": ['id', 'battalion', 'unit', 'conclusion']
+//            }
+//
+//   alert("90756-666 "+JSON.stringify(dic));
 
    var fun=function(data, ll){
-     var obj=ll[0]
-     var dic_=ll[1]
-        alert("90756-999 "+JSON.stringify(data));
+   alert(9999)
+
+//     var obj=ll[0]
+//     var dic_=ll[1]
+        alert("90357-888-1 "+JSON.stringify(data));
 //
 //     // obj.data_dic = data["result"]
 //
-
-   alert("90357-666-120\n"+JSON.stringify(dic_));
-
-       if(Object.keys(dic_).length>0){obj.get_data_day(dic_)}
+//
+//   alert("90357-888-2\n"+JSON.stringify(dic_));
+//
+//       if(Object.keys(dic_).length>0){obj.get_data_day(dic_)}
    }
 
+var dic=
+ {"obj":"TrainingDataProcessing",
+  "atm":atm.my_name,"app":atm.my_app,
+  "obj_param":{"topic_id":"general", "app":atm.my_app},
+  "fun":"get_compliance_data",
+  "params":dic_["week"]}
 
-   alert("90357-777-120-day\n"+JSON.stringify(dic_));
+  alert("dic:\n"+JSON.stringify(dic));
 
-   atm.get_data(fun, dic, [this, dic_["day"]["time_unit"]])
+  atm.activate_obj_function(fun, dic, [this])
+
 }
 
 acComplianceCreator.prototype.get_data_day = function(dic_)

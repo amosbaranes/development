@@ -61,6 +61,7 @@ def activate_obj_function(request, add_dic=None):
         except Exception as ex:
             print("9088-8 core view activate_obj_function: "+str(ex))
         # print(dic)
+
         return JsonResponse({'status': 'ok', 'result': dic})
     except Exception as ex:
         print("9090-9 core view activate_obj_function: "+str(ex))

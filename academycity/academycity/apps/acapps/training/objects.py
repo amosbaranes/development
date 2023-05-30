@@ -27,6 +27,7 @@ from openpyxl import Workbook, load_workbook
 from ...core.utils import log_debug, clear_log_debug
 
 from .models import Soldiers, DoubleShoot as DoubleShootModel
+from django.db.models.fields.related import ForeignKey
 from django.http import JsonResponse
 import requests
 from django.shortcuts import render, get_object_or_404, redirect
@@ -4207,7 +4208,6 @@ class DoubleShoot(object):
         return result
 
 
-
 class BaseTrainingAlgo(object):
     def __init__(self, dic):  # to_data_path, target_field
         # print("90050-01 BaseTrainingAlgo", dic, '\n', '-'*50)
@@ -4550,18 +4550,378 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
         return result
 
     # v2 --
-    def set_soldiersand_org_structure(self, dic):
-        # print('90022-1 dic', dic)
+    def set_soldiers_and_org_structure(self, dic):
+        print('90022-1 dic', dic)
         app_ = dic["app"]
         file_path = self.upload_file(dic)["file_path"]
         # print("-"*100, "\n", file_path, "\n", "-"*100)
+        battalion_number_ = int(self.uploaded_filename.split(".")[0])
+        model_name_ = "battalions"
+        model_periods = apps.get_model(app_label=app_, model_name="periods")
+        model_battalions = apps.get_model(app_label=app_, model_name=model_name_)
+        model_unit_soldiers = apps.get_model(app_label=app_, model_name="unitsoldiers")
+        model_soldiers = apps.get_model(app_label=app_, model_name="soldiers")
+        # model_name_ = "companys"
+        # model_companys = apps.get_model(app_label=app_, model_name=model_name_)
+        # model_name_ = "platoons"
+        # model_platoons = apps.get_model(app_label=app_, model_name=model_name_)
+        battalion_obj, is_created = model_battalions.objects.get_or_create(battalion_number=battalion_number_)
+        if is_created:
+            battalion_obj.battalion_name = "Battalion " + str(battalion_number_)
+            battalion_obj.save()
+        period_obj, is_created = model_periods.objects.get_or_create(battalion=battalion_obj, period_number=1)
+        if is_created:
+            period_obj.period_name = "Battalion: "+ str(battalion_number_) + " Period " + str(battalion_number_)
+            period_obj.save()
+        n__ = self.get_next_number({"app": app_})
+        units_dic = {n__: {'title': battalion_obj.battalion_name, 'data': {}}}
+        units_dic_b = units_dic[n__]["data"]
+
         df = pd.read_excel(file_path, sheet_name="Data", header=0)
         print(df)
         print("-"*100)
+        ll_c = []
+        ll_p = []
+        for index, row in df.iterrows():
+            # print(row, "\n", row["company"])
+            company_name_ = str(row["company"]).upper()
+            company_number = int(row["company_number"])
+            if company_number not in ll_c:
+                ll_c.append(company_number)
+                n__ = self.get_next_number({"app": app_})
+                units_dic_b[n__] = {}
+                units_dic_c = units_dic_b[n__]
+                units_dic_c['title'] = company_name_
+                units_dic_c['data'] = {}
+            platoon_number = int(row["platoon"])
+            platoon_name_ = company_name_ + " " +str(platoon_number)
+            if platoon_name_ not in ll_p:
+                ll_p.append(platoon_name_)
+                n__ = self.get_next_number({"app": app_})
+                units_dic_c['data'][n__] = {}
+                units_dic_p = units_dic_c['data'][n__]
+                units_dic_p['title'] = platoon_name_
+                units_dic_p['data'] = {}
+            username_ = "u"+str(row["dshn"])
+            u_sername_ = "U"+str(row["dshn"])
+            userid = str(row["dshn"])
+            uniqueid = str(row["dshn"])
+            try:
+                u = User.objects.get(username=username_)
+                count = u.delete()
+                # print("B count\n", count, "\n")
+            except Exception as ex:
+                pass
+                # print("9055-55 Error " + str(ex))
+            full_name = string.capwords(str(row["full_name"]))
+            nnf = full_name.find(" ")
+            first_name = full_name[:nnf]
+            last_name = full_name[nnf+1:]
+            rank = str(row["rank"])
+            my_group, is_created = Group.objects.get_or_create(name='t_simple_user')
+            print(my_group)
+            try:
+                u = User.objects.create_user(username=username_, email=username_+'@gmail.com', password=u_sername_+'#')
+                print(u.password)
+                u.first_name = first_name
+                u.last_name = last_name
+                u.save()
+                print(u)
+                my_group.user_set.add(u)
+                my_group.save()
+            except Exception as ex:
+                print("9011-11 Error " + str(ex))
+            try:
+                soldier_obj, is_created = model_soldiers.objects.get_or_create(user=u)
+                if is_created:
+                    soldier_obj.first_name = first_name
+                    soldier_obj.last_name = last_name
+                    soldier_obj.rank = rank
+                    soldier_obj.save()
+            except Exception as ex:
+                print("9011-22 Error " + str(ex))
+            try:
+                u_obj, is_created = model_unit_soldiers.objects.get_or_create(period=period_obj, soldier=soldier_obj)
+                u_obj.unit_number = platoon_number
+                u_obj.save()
+                # print("saved: "+ str(n__))
+            except Exception as ex:
+                print("error 200: ", full_name)
 
+            # units_dic_p =
+
+            # # print("-"*100, "\n", squad_obj, "  ", is_created, "\n", "-"*100)
+
+            # mz4psn = str(row["MZ4PSN"])
+            # ramonsn = str(row["RAMONSN"])
+            # shoes_size = float(row["shoes_size"])
+            # uniform_size = str(row["uniform_size"])
+            # sport_size = str(row["sport_size"])
+            # if mz4psn not in ll:
+            #     ll.append(mz4psn)
+            # else:
+            #     ll_.append(mz4psn)
+            #     print("mz4psn= ", mz4psn)
+            # if ramonsn not in ll1:
+            #     ll1.append(ramonsn)
+            # else:
+            #     ll1_.append(ramonsn)
+            #     print("ramonsn= ", ramonsn)
+            #
+            #
+            # position = str(row["POSITION"]).upper()
+            #
+            # if position == "NAN":
+            #     position = ""
+            # #  "A \n", "-"*100, "\n",
+            # print("full name", full_name, " first name=", first_name,"username_",username_,
+            #       " last name=", last_name, " position=", position,
+            #       " mz4psn", mz4psn, " ramonsn=", ramonsn,
+            #       shoes_size, uniform_size, sport_size)
+            #
+
+
+            # try:
+            #     soldier, is_created = model_soldier.objects.get_or_create(user=u, platoon=platoon_obj)
+            #     soldier.first_name = first_name
+            #     soldier.last_name = last_name
+            #     soldier.userid = username_
+            #     try:
+            #         p_ = position.lower().strip()
+            #         if p_ == "":
+            #             p_ = "Other"
+            #         elif p_ == "officier":
+            #             p_ = "Officer"
+            #         elif p_ == "soldeir":
+            #             p_ = "Soldier"
+            #         elif p_ == "sous officier":
+            #             p_ = "Sous Officer"
+            #         else:
+            #             p_ = p_.title()
+            #         position = int(self.df_positions[self.df_positions["position_name"]==p_]["id"])
+            #     except Exception as ex:
+            #         print("90888-66 Training objects set_soldiers Error: " + p_ +str(ex))
+            #     soldier.position = position
+            #     soldier.mz4psn = mz4psn
+            #     soldier.ramonsn = ramonsn
+            #     #
+            #     soldier.shoes_size = shoes_size
+            #     soldier.uniform_size = uniform_size
+            #     soldier.sport_size = sport_size
+            #     soldier.save()
+            #     course_obj.course_soldiers.add(soldier)
+            #     course_obj.save()
+            # except Exception as ex:
+            #     print("9033-53 Error " + str(ex))
+
+        # -----
+        print(units_dic)
+        period_obj.structure=units_dic
+        period_obj.save()
         result = {"status": "ok"}
         return result
 
+    def get_compliance_data(self, dic):
+        try:
+            print('\n 90100-160 get_compliance_data dic ', "\n", dic, "\n", "-" * 100)
+        except Exception as ex:
+            print(str(ex))
+            # pass
+
+        app_ = dic['app']
+        model_ = dic['model']
+
+        # print("model_: "+model_)
+        if model_ == "":
+            dic = {'status': 'ko', "dic": {}}
+            return JsonResponse(dic)
+
+        model = apps.get_model(app_label=app_, model_name=model_)
+
+        p_key_field_name = model._meta.pk.name
+
+        if p_key_field_name not in dic["fields"]:
+            dic["fields"].insert(0, p_key_field_name)
+
+        fields_str = '"'
+        for f in dic["fields"]:
+            try:
+                if f != "":
+                    exec(f + ' = []')
+                    fields_str += f + '","'
+            except Exception as ex:
+                print("error 4000-1: " + str(ex))
+        fields_str = fields_str[:len(fields_str) - 2]
+
+        # print("9030","\n", fields_str,"\n","=2"*50)
+
+        # fields_ = model._meta.get_fields(include_parents=True, include_hidden=True)
+        # print(fields_)
+
+        parent_id_ = -1
+        try:
+            parent_id_ = int(dic['parent_id'])
+        except Exception as ex:
+            # print("error 500 "+str(ex))
+            pass
+        try:
+            company_obj_id_ = dic['company_obj_id']
+            # print("902055 "+str(company_obj_id_))
+        except Exception as ex:
+            print("error 440: " + str(ex))
+
+        print(999999999999)
+
+        filters = dic['filters']
+        try:
+            order_by = ""
+            if len(dic['order_by']) > 0:
+                order_by = dic['order_by']
+        except Exception as ex:
+            print("error 441: " + str(ex))
+
+        if company_obj_id_ != "-1" and company_obj_id_ != -1:
+            # print("90201 ")
+            parent_model = apps.get_model(app_label=app_, model_name=app_ + "web")
+            # print(parent_model)
+            company_obj = parent_model.objects.get(id=company_obj_id_)
+            s = 'model.objects'
+            s_ = ''
+            if model.model_field_exists(app_ + '_web') and isinstance(model._meta.get_field(app_ + '_web'),
+                                                                      ForeignKey):
+                s_ += app_ + '_web=company_obj '
+            if parent_id_ > -1:
+                parent_model_ = dic['parent_model']
+                parent_pkey_ = parent_id_
+                parent_model__ = apps.get_model(app_label=app_, model_name=parent_model_)
+                parent_model_fk_name = parent_model_[:-1]
+                parent_obj__ = parent_model__.objects.get(id=parent_pkey_)
+                if s_ != '':
+                    s_ += ', '
+                s_ += parent_model_fk_name + '=parent_obj__'
+            if s_ != '':
+                s += '.filter(' + s_ + ')'
+            # print('s00111')
+            # print(s)
+            # print('s00111')
+        else:
+            if parent_id_ > -1:
+                parent_model_ = dic['parent_model']
+                parent_pkey_ = parent_id_
+                parent_model__ = apps.get_model(app_label=app_, model_name=parent_model_)
+                parent_model_fk_name = parent_model_[:-1]
+                parent_obj__ = parent_model__.objects.get(id=parent_pkey_)
+                s = 'model.objects.filter(' + parent_model_fk_name + '=parent_obj__)'
+            else:
+                s = 'model.objects'
+            # print('90500 s '+s)
+
+        print("9030-2")
+        try:
+            for f in filters:
+                # filter_field_ = ""
+                # try:
+                filter_field_ = f  # filters[f]["filter_field"] #
+                # print(filter_field_)
+                # except Exception as exx:
+                #     pass
+                filter_value_ = str(filters[f]["value"])
+                filter_field_a = ""
+                try:
+                    filter_field_a = str(filters[f]["field"])
+                except Exception as exx:
+                    pass
+                foreign_table_ = ""
+                try:
+                    foreign_table_ = filters[f]["foreign_table"]
+                    # print(foreign_table_)
+                except Exception as exx:
+                    pass
+                    # print(exx)
+                if filter_value_ != "":
+                    # print(foreign_table_)
+                    if foreign_table_ != "":
+                        # print(1111111111)
+                        if filter_field_a != "":
+                            # need need need to check this one. I changed it and it might have effect on other reports
+                            filter_field_ = filter_field_a
+                        # print(filter_field_)
+                        # print(111122222)
+                        # f__ = model._meta.get_field(filter_field_)
+                        # print(f__)
+                        # t__ = f__.get_internal_type()
+                        # print(t__)
+                        # print(str(t__))
+                        # s += '.filter('+foreign_table_+'__'+filter_field_+'='+filter_value_+')'
+                        # if str(t__)=="AutoField":
+                        #     print(3333333)
+                        index = filter_field_.find("id")
+                        if index != -1:
+                            s += '.filter(' + foreign_table_ + '__' + filter_field_ + '=' + filter_value_ + ')'
+                        else:
+                            print(44444)
+                            s += '.filter(' + foreign_table_ + '__' + filter_field_ + '__icontains=' + filter_value_ + ')'
+                    else:
+                        print(22222222222)
+                        if filter_field_ == "id":
+                            # s += '.filter('+filter_field_+'__icontains='+filter_value_+')'
+                            s += '.filter(' + filter_field_ + '=' + filter_value_ + ')'
+                        else:
+                            s += '.filter(' + filter_field_ + '__icontains="' + filter_value_ + '")'
+            print(s)
+            print("9030-22")
+            n_ = -1
+            try:
+                primary_key_list_filter_ = dic["primary_key_list_filter"]
+                n_ = len(primary_key_list_filter_)
+                if primary_key_list_filter_ and n_ > 0:
+                    s += '.filter(' + p_key_field_name + '__in=primary_key_list_filter_)'
+            except Exception as ex:
+                ("Error 90855-23 " + str(ex))
+
+            # print("9030-221")
+
+        #     if order_by != "":
+        #         s += '.order_by("' + order_by["field"] + '")'
+        #         if order_by["direction"] == "descending":
+        #             s += '.reverse()'
+        #
+        #     s += '.all().values(' + fields_str + ')'
+        #     print('s111 for d_data')
+        #     print("\n\n", s, 's11')
+        #     d_data = eval(s)
+        #     # print("d_data", d_data)
+        except Exception as ex:
+            print("3030-1 core error 300 " + str(ex))
+            # pass
+        # print("9030-3")
+        dic = {}
+
+
+
+        # try:
+        #     for q in d_data:
+        #         for f in dic["fields"]:
+        #             if f != "":
+        #                 # print(f+'.append(q[\''+f+'\'])')
+        #                 eval(f + '.append(q[\'' + f + '\'])')
+        #                 # print(eval(f))
+        #     for ff in dic["fields"]:
+        #         if ff != "":
+        #             dic[ff] = eval(ff)
+        # except Exception as ex:
+        #     pass
+        #     print(ex)
+        #
+        # # print("=2"*50)
+        #
+        # dic["pkf_name"] = p_key_field_name
+        # # print(dic)
+        # # print("=2"*50)
+
+        dic = {'status': 'ok', "dic": dic}
+        # print('core view 9055 get_data_link dic= ', dic)
+        return JsonResponse(dic)
 
     #  -- To be deleted --
     def set_soldiers(self, dic):

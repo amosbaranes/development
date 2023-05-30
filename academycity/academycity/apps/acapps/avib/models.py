@@ -10,6 +10,7 @@ class TimeDim(TruncateTableMixin, models.Model):
     def __str__(self):
         return str(self.id)
 
+
 class CountryDim(TruncateTableMixin, models.Model):
     country_name = models.CharField(max_length=100, default='', blank=True, null=True)
     country_code = models.CharField(max_length=100, default='', blank=True, null=True)
@@ -18,13 +19,6 @@ class CountryDim(TruncateTableMixin, models.Model):
     def __str__(self):
         return str(self.country_name)
 
-class CityDim(TruncateTableMixin, models.Model):
-    country_dim = models.ForeignKey(CountryDim, on_delete=models.CASCADE, default=1,
-                                    related_name='country_dim_cities')
-    city_name = models.CharField(max_length=100, default='', blank=True, null=True)
-
-    def __str__(self):
-        return str(self.city_name)
 
 class MeasureGroupDim(TruncateTableMixin, models.Model):
     group_name = models.CharField(max_length=100, default='', blank=True, null=True)
@@ -32,26 +26,31 @@ class MeasureGroupDim(TruncateTableMixin, models.Model):
     def __str__(self):
         return str(self.group_name)
 
+
 class MeasureDim(TruncateTableMixin, models.Model):
     measure_name = models.CharField(max_length=100, default='', blank=True, null=True)
     measure_group_dim = models.ForeignKey(MeasureGroupDim, on_delete=models.CASCADE, default=1,
-                                          related_name='measure_group_measure')
+                                          related_name='country_dim_world_Bank_fact')
+    measure_code = models.CharField(max_length=100, default='', blank=True, null=True)
     description = models.CharField(max_length=256, default='', blank=True, null=True)
+
 
     def __str__(self):
         return str(self.measure_name)
 
-class CitiesFact(TruncateTableMixin, models.Model):
+
+class Fact(TruncateTableMixin, models.Model):
     time_dim = models.ForeignKey(TimeDim, on_delete=models.CASCADE, default=1,
-                                 related_name='time_dim_cities_fact_fact')
-    city_dim = models.ForeignKey(CityDim, on_delete=models.CASCADE, default=1,
-                                 related_name='country_dim_cities_fact_fact')
+                                 related_name='time_dim_world_Bank_fact')
+    country_dim = models.ForeignKey(CountryDim, on_delete=models.CASCADE, default=1,
+                                    related_name='country_dim_world_Bank_fact')
     measure_dim = models.ForeignKey(MeasureDim, on_delete=models.CASCADE, default=1,
-                                    related_name='measure_dim_cities_fact_fact')
+                                    related_name='measure_dim_world_Bank_fact')
     amount = models.DecimalField(max_digits=16, decimal_places=2, default=0, blank=True, null=True)
 
     def __str__(self):
-        return str(self.city_dim) + " - " + str(self.time_dim) + ": " + str(self.amount)
+        return str(self.country_dim) + " - " + str(self.time_dim) + ": " + str(self.amount)
+
 
 class MinMaxCut(TruncateTableMixin, models.Model):
     time_dim = models.ForeignKey(TimeDim, on_delete=models.CASCADE, default=1,

@@ -53,7 +53,7 @@ class Battalions(TruncateTableMixin, models.Model):
     brigade = models.ForeignKey(Brigades, on_delete=models.CASCADE, default=1, related_name='brigade_battalions')
     battalion_name = models.CharField(max_length=50, default='', blank=True, null=True)
     battalion_number = models.SmallIntegerField(default=1)
-    start_date = models.IntegerField(blank=True, null=True, default=230101)
+    start_date = models.IntegerField(blank=True, null=True, default=20230101)
     number_of_weeks = models.SmallIntegerField(default=20)
     number_of_weeks_in_period_1 = models.SmallIntegerField(default=9)
 
@@ -249,7 +249,7 @@ class Soldiers(TruncateTableMixin, models.Model):
     blood_type =  models.CharField(max_length=10, default='', blank=True, null=True)
     #
     position = models.SmallIntegerField(default=0)
-    rank = models.SmallIntegerField(default=0)
+    rank = models.CharField(max_length=20, default='', blank=True, null=True)
     profession = models.SmallIntegerField(default=0)
     sub_profession = models.SmallIntegerField(default=0)
     #
@@ -391,6 +391,8 @@ class ComplianceWeeks(TruncateTableMixin, models.Model):
         verbose_name_plural = 'compliance_weeks'
 
     id = models.PositiveIntegerField(primary_key=True)
+    training_web = models.ForeignKey(TrainingWeb, on_delete=models.CASCADE, default=1,
+                                     related_name='training_web_compliance_weeks')
     battalion = models.ForeignKey(Battalions, on_delete=models.CASCADE, default=1, related_name='battalion_compliance_weeks')
     unit = models.IntegerField(blank=True, null=True)
     conclusion = models.TextField(blank=True, null=True)
@@ -467,7 +469,7 @@ class ToDoList(TruncateTableMixin, models.Model):
     class Meta:
         verbose_name = 'todolist'
         verbose_name_plural = 'todolist'
-        ordering = ['-is_active', 'priority']
+        ordering = ['-is_active', 'priority', 'description']
 
     user = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, on_delete=models.CASCADE,
                              related_name='training_user_todolists')

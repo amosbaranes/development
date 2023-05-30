@@ -7,7 +7,7 @@ mpl.use('Agg')
 import matplotlib.pyplot as plt
 
 import numpy as np
-from openpyxl import Workbook, load_workbook
+# from openpyxl import Workbook, load_workbook
 
 from sklearn import linear_model, neighbors
 from sklearn import preprocessing

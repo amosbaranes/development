@@ -62,6 +62,7 @@ urlpatterns += i18n_patterns(
     url(r'acmath/', include('academycity.apps.acapps.acmath.urls')),
     url(r'avi/', include('academycity.apps.acapps.avi.urls')),
     url(r'avia/', include('academycity.apps.acapps.avia.urls')),
+    url(r'avib/', include('academycity.apps.acapps.avib.urls')),
     url(r'potential/', include('academycity.apps.acapps.potential.urls')),
     url(r'fuzzyforcast/', include('academycity.apps.acapps.fuzzyforcast.urls')),
     url(r'ms/', include('academycity.apps.acapps.ms.urls')),

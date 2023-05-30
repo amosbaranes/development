@@ -267,7 +267,7 @@ class BasePotentialAlgo(object):
         # else:
         #     self.calculate_min_max_cuts(dic)
         model_measure_group = apps.get_model(app_label=app_, model_name=measure_group_model_name_)
-
+        # print(2001)
         # print("90060-10 PotentialAlgo: \n", "="*50)
         wb2 = None
         groups = model_measure_group.objects.all()
@@ -285,7 +285,7 @@ class BasePotentialAlgo(object):
         similarity_n1.columns = self.options
         similarity_n2.columns = self.options
         group_d = ""
-
+        # print(2002)
         ll_dfs = self.pre_process_data(dic)
         # print(ll_dfs)
 
@@ -465,8 +465,8 @@ class BasePotentialAlgo(object):
 
                     # print("600000000-100-2")
 
-                    a_1 = a_1.apply(self.twentyfive_rule, axis=1)
-                    self.add_to_save(title='Final-25-rule', a=a_1, cols=-1)
+                    a_1 = a_1.apply(self.thirty_rule, axis=1)
+                    self.add_to_save(title='Final-30-rule', a=a_1, cols=-1)
                     a_2 = a_1.copy()
                     #
                     # print("zero_list\n", zero_list)
@@ -484,7 +484,7 @@ class BasePotentialAlgo(object):
                         # nn.insert(0, j)
                         nn.sort()
                         ff.append(nn)
-                    self.add_to_save(title='Final-25-rule-n1', a=ff, cols=-1)
+                    self.add_to_save(title='Final-30-rule-n1', a=ff, cols=-1)
                     a_1 = pd.DataFrame(ff, index=list(self.df_index))
                     #
                     df_n1 = a_1.apply(self.min_max_rule, axis=1)
@@ -542,8 +542,7 @@ class BasePotentialAlgo(object):
         ss_n_xx = ss_n_xx[:-1]
 
         df_n2_all_corr = df_n2_all.copy()
-        print("1 - df_n2_all_corr\n", df_n2_all_corr, "\n", ll_dfs)
-
+        # print("1 - df_n2_all_corr\n", df_n2_all_corr, "\n", ll_dfs)
         # print(df_n2_all_corr.columns)
         for o in ["m", "x"]:
             s_corr = ""
@@ -554,16 +553,16 @@ class BasePotentialAlgo(object):
                     s_corr += "'"+o+"-"+g+"',"
                     print(0, n__, s_corr)
                 n__ += 1
-            print(1, s_corr)
+            # print(1, s_corr)
             s_corr = s_corr[:-1]
-            print(2, s_corr)
+            # print(2, s_corr)
 
             df_corr = eval("df_n2_all_corr[["+s_corr+"]]")
             corr_ = df_corr.corr(method='pearson')
-            # print("90050-25\n", corr_,"\n", type(corr_))
+            # print("90050-30\n", corr_,"\n", type(corr_))
             self.add_to_save_all(title='corr-' + o, a=corr_, cols=-1)
 
-        print("2 - ")
+        # print("2 - ")
 
         for n in ["1", "2"]:
             ll = []
@@ -576,10 +575,10 @@ class BasePotentialAlgo(object):
                 exec(s_)
 
             s_ = "similarity_n" + n + ".loc['SComb'] = ll"
-            print(s_)
+            # print(s_)
             exec(s_)
             s_ = "sign_n" + n + ".drop([0], axis=0, inplace=True)"
-            print(s_)
+            # print(s_)
             exec(s_)
 
             self.add_to_save_all(title='sign-n' + n, a=eval("sign_n" + n), cols=-1)
@@ -629,7 +628,10 @@ class BasePotentialAlgo(object):
             self.add_to_save_all(title='relimp-n' + n, a=df_relimp, cols=-1)
             # print("=2"*50)
 
+        # print("90050-28\n")
         self.save_to_excel_all_(dic["time_dim_value"])
+        # print("90050-29\n")
+
         result = {"status": "ok"}
         return result
 
@@ -737,6 +739,8 @@ class BasePotentialAlgo(object):
 
         groups = model_measure_group.objects.filter(~Q(group_name__in=self.do_not_include_groups)).all()
         ll_groups = [dependent_group]
+
+        # print("90-111-222-0 for k in groups")
         for k in groups:
             group = k.group_name
             if group not in ll_groups and group not in self.do_not_include_groups:
@@ -803,7 +807,9 @@ class BasePotentialAlgo(object):
 
         # print("90066-100-1 PotentialAlgo calculate_min_max_cuts: \n", "="*50)
         dependent_group = dic["dependent_group"]
+        # print(dependent_group)
         year_ = str(dic["time_dim_value"])
+        # print(year_)
         min_max_model_name_ = dic["min_max_model"]
         #
         # print("90066-100-2 PotentialAlgo calculate_min_max_cuts: \n", "="*50)
@@ -822,6 +828,7 @@ class BasePotentialAlgo(object):
         low_group_cut = [0.4, 0.35, 0.30, 0.25, 0.2, 0.15, 0.1]
         step_ = 10
         df_d = ll_dfs[dependent_group]
+        # print(df_d)
         results = {}
         best_cut = {"bv": -1}
 
@@ -941,7 +948,7 @@ class BasePotentialAlgo(object):
         return result
 
     def create_total_pop(self, dic):
-        # print("900443-155 PotentialAlgo create_total_pop: \n", dic, "\n", "="*50)
+        print("900443-155 PotentialAlgo create_total_pop: \n", dic, "\n", "="*50)
         app_ = dic["app"]
         year= dic["year"]
         group = dic["group"]
@@ -1030,7 +1037,7 @@ class BasePotentialAlgo(object):
         return mean(llg_)
 
     def update_min_max_cuts(self, dic):
-        # print("90055-156 PotentialAlgo update_min_max_cuts: \n", dic, "\n", "="*50)
+        print("90055-156 PotentialAlgo update_min_max_cuts: \n", dic, "\n", "="*50)
         app_ = dic["app"]
         year_ = str(dic["time_dim_value"])
         f = str(dic["var_obj"])
@@ -1039,7 +1046,7 @@ class BasePotentialAlgo(object):
         model_min_max = apps.get_model(app_label=app_, model_name=min_max_model_name_)
         # model_measure_dim = apps.get_model(app_label=app_, model_name="measuredim")
         file_path = os.path.join(self.PICKLE_PATH, "best_cut_"+f+"_"+year_+".pkl")
-        # print(file_path)
+        print(file_path)
         with open(file_path, 'rb') as handle:
             best_cut = pickle.load(handle)
         # hh = best_cut["hh"]
@@ -1052,8 +1059,6 @@ class BasePotentialAlgo(object):
             results = pickle.load(handle)
         # print(results[hh][ll][int(f)])
 
-        return
-
         model_min_max.objects.filter(time_dim_id=year_).delete()
 
         # print("1111 best_cut\n", best_cut)
@@ -1063,19 +1068,21 @@ class BasePotentialAlgo(object):
             # print("-"*60, "\n", g, "\n", gfs)
             for f in gfs:
                 # print("-"*10, "\n", f, "\n", gfs[f])
-                obj = model_min_max.objects.create(time_dim_id=year_, measure_dim_id=f, min=gfs[f]["min_cut"], max=gfs[f]["max_cut"])
+                obj = model_min_max.objects.create(time_dim_id=year_, measure_dim_id=f,
+                                                   min=round(100*gfs[f]["min_cut"])/100,
+                                                   max=round(100*gfs[f]["max_cut"])/100)
         result = {"status": "ok"}
         return result
 
     def create_similarity(self, group_d, group, df_n1_all, df_n2_all, df_n1_, df_n2_, sign_n1, sign_n2,
                           similarity_n1, similarity_n2):
 
-        # print("1 create_similarity df_n2_all\n", group, "\n", df_n2_all)
+        # print("1 create_similarity df_n2_all\n", group, "\n", df_n2_all, df_n2_all.shape)
 
         df_n1_all = pd.merge(left=df_n1_all, how='outer', right=df_n1_, left_index=True, right_index=True)
         df_n2_all = pd.merge(left=df_n2_all, how='outer', right=df_n2_, left_index=True, right_index=True)
 
-        # print("2 create_similarity df_n2_all\n", group, "\n", df_n2_all)
+        # print("2 create_similarity df_n2_all\n", group, "\n", df_n2_all, df_n2_all.shape)
 
         # print(df_n2_all.head(100))
         for n in ["1", "2"]:
@@ -1087,8 +1094,10 @@ class BasePotentialAlgo(object):
                 s_ = "abs(df_n" + n + "_all['" + k[0] + "-" + group_d + "'] - df_n" + n + "_all['" + k[1] + "-" + group + "'])"
                 # print(s_)
                 df_d = eval(s_)
-                # print(df_d)
-
+                df_d_na=df_d.dropna()
+                s_ = title='sim-n' + n + group + k
+                df_d_na_ = self.add_entity_to_df1(df_d_na)
+                self.add_to_save_all(title=s_, a=df_d_na_, cols=-1)
                 s_d = df_d.sum()
                 # print("s_d", s_d, df_d.mean())
 
@@ -1124,7 +1133,6 @@ class BasePotentialAlgo(object):
     def add_entity_to_df(self, df, cols=None):
         df_ = df.copy()
         if cols is None:
-            # print("BB2")
             cols = [self.entity_name+'_name']
             df_c = df.columns
             for j in df_c:
@@ -1136,14 +1144,23 @@ class BasePotentialAlgo(object):
         # print("-"*10, "\nAA\n", "\n", df_)
         df_ = df_.merge(self.entities_name, how='inner', left_on=self.entity_name+'_dim', right_on='id').drop(
             [self.entity_name+'_dim', 'id'], axis=1)
-        # print("BB3\n", "\n", df_)
         c_ = df_.pop(self.entity_name+'_name')
         df_.insert(0, self.entity_name+'_name', c_)
         # print("CC\n", "\n", df_)
         # print("CC1\n", df_.columns, "\n", cols)
         if isinstance(cols, pd.core.indexes.base.Index) or cols != -1:
             df_.columns = cols
-        # print("DD\n", "\n", df_)
+        return df_
+
+    def add_entity_to_df1(self, df, cols=None):
+        df_ = df.copy()
+        df_ = df_.reset_index()
+        df_.columns=["id", "amount"]
+        # print(1000, "\n", "-"*10, "\nAA\n", "\n", df_, self.entities_name)
+        df_ = self.entities_name.merge(df_, how='inner', left_on='id', right_on='id')\
+            # .drop(
+            # [self.entity_name+'_dim', 'id'], axis=1)
+        # print("BB3\n", "\n", df_)
         return df_
 
     # It seems that I can delete this function
@@ -1333,10 +1350,10 @@ class BasePotentialAlgo(object):
                 row_best = row_c.copy()
         return row_best
 
-    def twentyfive_rule(self, row):
+    def thirty_rule(self, row):
         n_row = row.count()
         row_best = row
-        if (n_row > 4) and (row.max() - row.min() > 0.25):
+        if (n_row > 4) and abs(row.max() - row.min()) >= 0.3:
             n = 1
             min = n_row
             for j in range(n + 1):
@@ -1346,7 +1363,7 @@ class BasePotentialAlgo(object):
                 if (row_c.max() - row_c.min()) < min:
                     min = row_c.max() - row_c.min()
                     row_best = row_c.copy()
-        if row_best.max() - row_best.min() > 0.25:
+        if abs(row_best.max() - row_best.min()) >= 0.3:
             row_best[:] = np.nan
         return row_best
 
