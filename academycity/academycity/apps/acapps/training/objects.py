@@ -4619,14 +4619,14 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
             last_name = full_name[nnf+1:]
             rank = str(row["rank"])
             my_group, is_created = Group.objects.get_or_create(name='t_simple_user')
-            print(my_group)
+            # print(my_group)
             try:
                 u = User.objects.create_user(username=username_, email=username_+'@gmail.com', password=u_sername_+'#')
-                print(u.password)
+                # print(u.password)
                 u.first_name = first_name
                 u.last_name = last_name
                 u.save()
-                print(u)
+                # print(u)
                 my_group.user_set.add(u)
                 my_group.save()
             except Exception as ex:
@@ -4636,20 +4636,30 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
                 if is_created:
                     soldier_obj.first_name = first_name
                     soldier_obj.last_name = last_name
+                    soldier_obj.userid = userid
+                    soldier_obj.uniqueid = uniqueid
                     soldier_obj.rank = rank
                     soldier_obj.save()
             except Exception as ex:
                 print("9011-22 Error " + str(ex))
             try:
                 u_obj, is_created = model_unit_soldiers.objects.get_or_create(period=period_obj, soldier=soldier_obj)
-                u_obj.unit_number = platoon_number
+                u_obj.unit_number = n__
                 u_obj.save()
                 # print("saved: "+ str(n__))
             except Exception as ex:
                 print("error 200: ", full_name)
+        # -----
+        print(units_dic)
+        period_obj.structure=units_dic
+        period_obj.save()
+        result = {"status": "ok"}
+        return result
 
-            # units_dic_p =
-
+    def set_soldiers_inventory(self, dic):
+        print('900333-10 dic', dic)
+        app_ = dic["app"]
+        file_path = self.upload_file(dic)["file_path"]
             # # print("-"*100, "\n", squad_obj, "  ", is_created, "\n", "-"*100)
 
             # mz4psn = str(row["MZ4PSN"])
@@ -4668,8 +4678,6 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
             #     ll1_.append(ramonsn)
             #     print("ramonsn= ", ramonsn)
             #
-            #
-            # position = str(row["POSITION"]).upper()
             #
             # if position == "NAN":
             #     position = ""
@@ -4715,11 +4723,10 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
             #     print("9033-53 Error " + str(ex))
 
         # -----
-        print(units_dic)
-        period_obj.structure=units_dic
-        period_obj.save()
         result = {"status": "ok"}
         return result
+
+
 
     def get_compliance_data(self, dic):
         try:

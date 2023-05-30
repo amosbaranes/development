@@ -222,11 +222,6 @@ class Soldiers(TruncateTableMixin, models.Model):
     userid = models.CharField(max_length=100, default='', blank=True, null=True)
     uniqueid = models.CharField(max_length=100, default='', blank=True, null=True)
     #
-    mz4psn = models.CharField(max_length=100, default='', blank=True, null=True)
-    ramonsn = models.CharField(max_length=100, default='', blank=True, null=True)
-    gun_mz4psn = models.ForeignKey(Inventorys, on_delete=models.CASCADE, null=True, related_name='inventory_mz4psn_soldiers')
-    gun_ramonsn = models.ForeignKey(Inventorys, on_delete=models.CASCADE, null=True, related_name='inventory_ramonsn_soldiers')
-    #
     address = models.CharField(max_length=100, default='', blank=True, null=True)
     city = models.CharField(max_length=50, default='', blank=True, null=True)
     state = models.CharField(max_length=50, default='', blank=True, null=True)
@@ -254,6 +249,14 @@ class Soldiers(TruncateTableMixin, models.Model):
     sub_profession = models.SmallIntegerField(default=0)
     #
     medical_condition = models.TextField(blank=True, null=True)
+    mz4psn = models.CharField(max_length=100, default='', blank=True, null=True)
+    ramonsn = models.CharField(max_length=100, default='', blank=True, null=True)
+    gun_mz4psn = models.ForeignKey(Inventorys, on_delete=models.CASCADE, null=True, related_name='inventory_mz4psn_soldiers')
+    gun_ramonsn = models.ForeignKey(Inventorys, on_delete=models.CASCADE, null=True, related_name='inventory_ramonsn_soldiers')
+    #
+    @property
+    def full_name(self):
+        return str(self.first_name) + " " + str(self.last_name)
 
     def __str__(self):
         return str(self.userid) + ": " + str(self.first_name) + " " + str(self.last_name)
