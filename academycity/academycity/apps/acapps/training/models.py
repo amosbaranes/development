@@ -222,6 +222,9 @@ class Soldiers(TruncateTableMixin, models.Model):
     userid = models.CharField(max_length=100, default='', blank=True, null=True)
     uniqueid = models.CharField(max_length=100, default='', blank=True, null=True)
     #
+    shoes_size = models.DecimalField(max_digits=4, decimal_places=2, default=0)
+    uniform_size = models.CharField(max_length=2, default='', blank=True, null=True)
+    #
     address = models.CharField(max_length=100, default='', blank=True, null=True)
     city = models.CharField(max_length=50, default='', blank=True, null=True)
     state = models.CharField(max_length=50, default='', blank=True, null=True)
@@ -235,8 +238,6 @@ class Soldiers(TruncateTableMixin, models.Model):
     num_of_children = models.SmallIntegerField(default=0)
     marital_status = models.SmallIntegerField(default=0)
     #
-    shoes_size = models.DecimalField(max_digits=4, decimal_places=2, default=0)
-    uniform_size = models.CharField(max_length=2, default='', blank=True, null=True)
     sport_size = models.CharField(max_length=2, default='', blank=True, null=True)
     #
     height = models.SmallIntegerField(default=0)

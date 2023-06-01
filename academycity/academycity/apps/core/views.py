@@ -172,7 +172,10 @@ def update_field_model_by_id(request, foreign=None):
     parent_model_ = dic_['parent_model']
     parent_model = apps.get_model(app_label=app_, model_name=app_+"web")
     company_obj = parent_model.objects.get(id=company_obj_id_)
-    model = apps.get_model(app_label=app_, model_name=model_)
+    try:
+        model = apps.get_model(app_label=app_, model_name=model_)
+    except Exception as ex:
+        return JsonResponse({'status': 'ko'})
     p_key_field_name = ""
 
     # print("9087-67 pkey_", pkey_)

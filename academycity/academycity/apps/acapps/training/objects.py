@@ -4393,13 +4393,14 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
     def get_units_structure_new(self, dic):
         # print("\n", "-"*50, '\n90035-1 dic\n', dic, "\n", "-"*50)
         app_ = dic["app"]
-        battalion_ = dic["battalion"]
+        battalion_ = int(dic["battalion"])
         # soldiers
         try:
             soldiers = {"id":[], "userid":[], "first_name":[], "last_name":[], "name":[]}
             model_soldiers = apps.get_model(app_label=app_, model_name="soldiers")
             qs = model_soldiers.objects.filter(battalion__id=battalion_).all()
             # print(qs)
+
             df_s = pd.DataFrame(list(qs.values("user_id", "userid", "first_name", "last_name")))
             # print(df_s)
             for index, row in df_s.iterrows():
@@ -4421,13 +4422,15 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
             period_id_ = []
             unit_number_ = []
             for index, row in df_us.iterrows():
-                if row["period_id"] not in period_id_:
+                if int(row["period_id"]) not in period_id_:
                     unitsoldiers[int(row["period_id"])] = {}
-                    period_id_.append(row["period_id"])
-                if row["unit_number"] not in unit_number_:
+                    period_id_.append(int(row["period_id"]))
+                if int(row["unit_number"]) not in unit_number_:
                     unitsoldiers[int(row["period_id"])][int(row["unit_number"])] = []
-                    unit_number_.append(row["unit_number"])
+                    unit_number_.append(int(row["unit_number"]))
                 unitsoldiers[int(row["period_id"])][int(row["unit_number"])].append(int(row["soldier_id"]))
+
+            # print(period_id_, "\n", unit_number_)
             # print(unitsoldiers)
         except Exception as ex:
             print("Error 2: "+str(ex))
@@ -4578,11 +4581,12 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
         units_dic_b = units_dic[n__]["data"]
 
         df = pd.read_excel(file_path, sheet_name="Data", header=0)
-        print(df)
-        print("-"*100)
+        # print(df)
+        # print("-"*100)
         ll_c = []
         ll_p = []
         for index, row in df.iterrows():
+            # print(index)
             # print(row, "\n", row["company"])
             company_name_ = str(row["company"]).upper()
             company_number = int(row["company_number"])
@@ -4620,6 +4624,7 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
             rank = str(row["rank"])
             my_group, is_created = Group.objects.get_or_create(name='t_simple_user')
             # print(my_group)
+            # Users
             try:
                 u = User.objects.create_user(username=username_, email=username_+'@gmail.com', password=u_sername_+'#')
                 # print(u.password)
@@ -4631,15 +4636,16 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
                 my_group.save()
             except Exception as ex:
                 print("9011-11 Error " + str(ex))
+            # Soldiers
             try:
                 soldier_obj, is_created = model_soldiers.objects.get_or_create(user=u)
-                if is_created:
-                    soldier_obj.first_name = first_name
-                    soldier_obj.last_name = last_name
-                    soldier_obj.userid = userid
-                    soldier_obj.uniqueid = uniqueid
-                    soldier_obj.rank = rank
-                    soldier_obj.save()
+                soldier_obj.battalion=battalion_obj
+                soldier_obj.first_name = first_name
+                soldier_obj.last_name = last_name
+                soldier_obj.userid = userid
+                soldier_obj.uniqueid = uniqueid
+                soldier_obj.rank = rank
+                soldier_obj.save()
             except Exception as ex:
                 print("9011-22 Error " + str(ex))
             try:
@@ -4650,7 +4656,8 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
             except Exception as ex:
                 print("error 200: ", full_name)
         # -----
-        print(units_dic)
+        # print(units_dic)
+        # print("\n", "Done")
         period_obj.structure=units_dic
         period_obj.save()
         result = {"status": "ok"}
@@ -4725,8 +4732,6 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
         # -----
         result = {"status": "ok"}
         return result
-
-
 
     def get_compliance_data(self, dic):
         try:

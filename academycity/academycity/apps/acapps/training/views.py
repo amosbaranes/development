@@ -97,6 +97,7 @@ def app_id(request, app_name, company_obj_id):
             user_id = request.user.id
             user_ = request.user
             default_battalion = user_.training_user_instructors.default_battalion
+            # print(default_battalion)
             if request.user.groups.filter(name="t_senior_manager").exists():
                 app_name = "senm"
             elif request.user.groups.filter(name="t_admin").exists():

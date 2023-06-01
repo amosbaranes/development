@@ -43,7 +43,7 @@ function AdvancedTabsManager(dic=null)
                                                               "data_filter_field":[], "data_filter_field_value":[],
                                                               "data_filter_field_ft":["","Yes"],
                                                               "multiple":["regular", "multiple"],
-                                                              "default_value":[]},
+                                                              "default_value":[], "call_on_change":["", true, false]},
                                                   "attributes":{"field":[], "size":[], "foreign_table":[],
                                                                 "dependent":[]},
                                                   "functions":["onchange"]},
@@ -149,7 +149,7 @@ function AdvancedTabsManager(dic=null)
                                                   "functions":["onclick", "onchange", "onmouseover", "onmouseout"]},
                                         "SearchTable":{"title":"Search Table", "width":10,
                                                        "setting": {"is_new_button":["","Yes","No"],
-                                                       "is_del_button":["","Yes","No"]},
+                                                       "is_del_button":["","Yes","No"], "call_get_data":["", true, false]},
                                                        "attributes":{"number_of_rows":[], "table_class":["","basic",
                                                        "payment"], "height":[]},
                                                        "functions":["onclick", "onchange", "onmouseover", "onmouseout", "on_new_record", "before_get_data"],
@@ -805,15 +805,16 @@ AdvancedTabsManager.prototype.get_data = function(call_back_fun, dic_, tbody_)
           {dic : JSON.stringify(dic_)},
           function(data){
           try{
-           //alert("9001"+JSON.stringify(data));
+           //alert("9001-9001"+JSON.stringify(data));
            if(data["status"]!="ok"){return}
            //alert("9005-0 data in atm "+JSON.stringify(data));
            //alert(call_back_fun)
            call_back_fun(data["dic"], tbody_)
            //alert("after call_back_fun")
-           tbody_.data=data["dic"];
+          } catch(er){alert("ERROR\n9090-9090-1 AdvancedTabsManager.prototype.get_data:\n"+JSON.stringify(dic_)+"\n"+er)}
+          try{tbody_.data=data["dic"];} catch(er){alert("ERROR\n9090-9090-2 AdvancedTabsManager.prototype.get_data:\n"+JSON.stringify(dic_)+"\n"+er)}
            //alert("9005"+JSON.stringify(data));
-           } catch(er){alert("9090-1 AdvancedTabsManager.prototype.get_data: "+er)}
+
           });
 }
 
@@ -852,7 +853,13 @@ AdvancedTabsManager.prototype.get_list = function(call_back_fun, dic_, html_obj)
                 call_back_fun(dic["result"], html_obj);
                 html_obj.data=dic["result"];try{eval(html_obj.run_eval);
                 //alert(html_obj.run_eval)
-                try{var ce = new Event("change", {bubbles: true});html_obj.dispatchEvent(ce);} catch (er){alert("er9029: "+ er)}
+                try{
+                     //alert(html_obj.is_call_on_change==true)
+                     if(html_obj.is_call_on_change==true){
+                      try{var ce = new Event("change", {bubbles: true});html_obj.dispatchEvent(ce);} catch (er){alert("er9029: "+ er)}
+                     }
+                     html_obj.is_call_on_change=true;
+                    } catch(er){}
                 } catch(er){}
 
             } else {alert("Error getting data for select.")}
@@ -1277,12 +1284,13 @@ acObj.prototype.create_obj = function(){
   //alert(container) //alert(container.outerHTML)
   this.new_obj=document.createElement(this.data["element_name"]);
   this.new_obj.my_creator_obj=this;
-
+  this.new_obj.is_call_on_change=true;
+  var call_on_change=dic["properties"]["call_on_change"];
+  if(call_on_change!=null && call_on_change!=""){this.new_obj.is_call_on_change=call_on_change;}
   this.new_obj.setAttribute("container_id", this.data["container_id"]);
   this.new_obj.setAttribute("id", this.data["properties"]["obj_number"]);
   this.new_obj.setAttribute("obj_type", this.data["obj_type"]);
   this.new_obj.setAttribute("type_", this.data["element_name"]);
-
   if(this.data["element_name"]!="Textarea")
   {this.new_obj.innerHTML=this.data["properties"]["title"];}
   // -- attribute --
@@ -1356,8 +1364,8 @@ acObj.prototype.create_obj = function(){
 
 acObj.prototype.get_select_data = function()
 {
-  this.new_obj.innerHTML = "";
   var dic=this.data;
+  this.new_obj.innerHTML = "";
   //alert("5087-87 acObj.prototype.get_select_data dic=\n"+JSON.stringify(dic["properties"]));
   var options=dic["properties"]["options"];
   var multiple_=dic["properties"]["multiple"];
@@ -1416,6 +1424,7 @@ acObj.prototype.get_select_data = function()
     var data_filter_field=dic["properties"]["data_filter_field"];
     var data_filter_field_value = dic["properties"]["data_filter_field_value"];
     var data_filter_field_ft = dic["properties"]["data_filter_field_ft"];
+    //--
     //alert(data_filter_field)
     if(data_filter_field==null){data_filter_field="";data_filter_field_value="";}
     var dic_ = {"obj": "AdvancedTabs", "atm": atm_.my_name, "app": data_app, "fun": "get_list_from_model",
@@ -1788,7 +1797,7 @@ acBasicCreator.prototype.set_obj_structure = function()
           "fields":fields_, "order_by":{"field":"soldier", "direction":"ascending"}
           }
        dic__["filters"]["id"]={"value":1, "foreign_table":"soldier__battalion"}
-       //alert("90449-99: "+JSON.stringify(dic__));
+       //alert("90449-99-1: "+JSON.stringify(dic__));
        this.parent.atm.get_data(call_back_fun=fun, dic__, [this.grades,f, this, this.nlimit])
 
   } catch(er){alert("1155-515: "+er)}
@@ -2025,7 +2034,7 @@ acPivotCreator.prototype.create_html = function(type=null)
   })
 }
 
-// -- acFSPivotCreator --
+// -- acFSPivot --
 function acFSPivotCreator(parent){
   this.parent=parent;
   // alert(JSON.stringify(this.parent.data));
@@ -3389,7 +3398,7 @@ acActivityCreator.prototype.row_click = function(event)
 
 }
 
-// Radio --
+// acRadio --
 function acRadioCreator(parent){this.parent=parent;this.structure_dic=null;}
 
 acRadioCreator.prototype.create_obj = function()
@@ -3547,7 +3556,7 @@ acRadioCreator.prototype.set_data = function(ll=null)
 }
 
 
-// Test --
+// acTest --
 function acTestCreator(parent){this.parent=parent;this.structure_dic=null;this.test_list=[];this.fields=[];
                    this.members_list={"test_number":[], "record_id":[]};
 }
@@ -3719,7 +3728,7 @@ acTestCreator.prototype.on_record_created_deleted = function(e,action="created")
 }
 
 
-// Variable --
+// acVariable --
 function acVariableCreator(parent){this.parent=parent;this.structure_dic=null;this.variable_list=[];this.fields=[];
                    this.members_list={"variable_number":[], "record_id":[]};
     // alert("acVariableCreator=\n" + JSON.stringify(this.parent.data))
@@ -3901,7 +3910,7 @@ acVariableCreator.prototype.on_record_created_deleted = function(e,action="creat
 }
 
 
-// Group --
+// acGroup --
 function acGroupCreator(parent){this.parent=parent;this.fields=[];this.members_list={"entity_number":[], "record_id":[]};
                                 this.active_record_id=-1;this.is_group_updated=false}
 
@@ -4112,24 +4121,31 @@ acGroupCreator.prototype.set_data = function(record_id=null, ll=null)
     for(var j=0; j<n_; j++)
     {
       try{var s_id_="soldier_"+data["soldier_number"][j];
-
       var n=1*data["value"][j];
       var s_id=getEBI(s_id_);
       //alert(s_id_)
       if(s_id==null){
          alert("Error "+s_id_);
          continue}
-      //alert(s_id)
       //alert(s_id.outerHTML)
-
          if(n==1){s_id.checked=true}else{s_id.checked=false};
 
          s_id.setAttribute("record_id",data["id"][j])
          this_obj.members_list["entity_number"].push(data["soldier_number"][j])
          this_obj.members_list["record_id"].push(data["id"][j])
      } catch(er){alert(er)}}
-     get_creator(this_obj.recording_tests_number).set_obj_structure(group_list=this_obj.members_list, test_list=null)
+
+    //alert("90333-103\n"+JSON.stringify(this_obj.members_list));
+
+try{
+     var g = get_creator(this_obj.recording_tests_number)
+     g.set_obj_structure(group_list=this_obj.members_list, test_list=null)
+     } catch(er){alert("Error 200-200-1 "+er)}
+
+try{
      get_creator(this_obj.recording_tests_number).set_data(record_id)
+     } catch(er){alert("Error 200-200-2 "+er)}
+
   }
 
   //alert("90555-55\n"+JSON.stringify(dic_));
@@ -4172,7 +4188,7 @@ acGroupCreator.prototype.on_record_created_deleted = function(e,action="created"
 }
 
 
-// RecordingTests --
+// acRecordingTests --
 function acRecordingTestsCreator(parent){
  this.parent=parent;this.vertical_field=null;this.horizontal_field=null;this.fields=[];
 }
@@ -4741,14 +4757,20 @@ acComplianceCreator.prototype.set_units = function()
   }
 }
 
-// -- acSearchTableCreator --
+// -- acSearchTable --
 function acSearchTableCreator(parent){this.parent=parent;this.is_json_data=false;this.json_record_id=-1;
                                       this.json_last_record_number=0, this.primary_key_list_filter=[],
-                                      this.data_table_name=null}
+                                      this.data_table_name=null;
+                                      }
 
 acSearchTableCreator.prototype.create_obj = function()
 {
   var dic=this.parent.data;
+  //--
+  this.is_call_get_data=true;
+  var call_get_data=dic["properties"]["call_get_data"];
+  if(call_get_data!=null && call_get_data!=""){this.is_call_get_data=call_get_data;}
+  //--
   if(!dic["fields"]){dic["fields"]={"1":{"field_title":"1", "field_name":"","field_width":"100","field_align":"left"},
                                     "2":{"field_title":"2", "field_name":"","field_width":"100","field_align":"left"}}}
   if(!(dic["properties"]["table_class"])){dic["properties"]["table_class"]="basic"}
@@ -4806,7 +4828,6 @@ acSearchTableCreator.prototype.create_obj = function()
 
   this.search_input_.setAttribute("style", "position:absolute;left:"+nx_search+"px;top:"+ny_search+"px;width:"+n_search_width+"px");
   this.search_input_.addEventListener("keyup", function(event){
-
      var input=event.target;
      var mco=input.my_creator_obj;
      var filter_field = input.getAttribute("filter_field");
@@ -4926,7 +4947,6 @@ acSearchTableCreator.prototype.create_obj = function()
   for (i in dic["attributes"]){var s=dic["attributes"][i];
    if(s in dic["properties"]){this.table_.setAttribute(s, dic["properties"][s])}
    else{this.table_.setAttribute(s, "")}}
-
   container.appendChild(this.table_);
   this.table_.onclick=this.row_click;
   for(f in dic["functions"]){if(f!="onclick" && f!="on_new_record"){var s="this.table_."+f+"="+dic["functions"][f];eval(s);}}
@@ -4940,6 +4960,8 @@ acSearchTableCreator.prototype.set_primary_key_list_filter = function(list=[])
 acSearchTableCreator.prototype.get_data = function(data_table_name=null,parent_model=null,parent_id=null,
                                                    company_obj_id=null)
 {
+  //alert("acSearchTableCreator.prototype.get_data = "+ 1)
+
   var dic=this.parent.data;
   //alert("9044-441  "+JSON.stringify(dic));
   //alert("9044-441  "+JSON.stringify(dic["functions"]));
@@ -6904,7 +6926,13 @@ function Tab(parent, data, id)
 Tab.prototype.int_objects_data = function()
 {
  if(this.is_int_objects_data==true){return};
- for(var z in this.tab_objects_created){try{var o = this.tab_objects_created[z];o.creator.get_data();} catch(er){}};
+ for(var z in this.tab_objects_created){
+   try{var o=this.tab_objects_created[z];
+       try{if(o.creator.is_call_get_data!="false"){
+        try{o.creator.get_data();} catch (er){}};
+       o.is_call_get_data=true} catch(er){}
+      } catch(er){}
+   }
  this.is_int_objects_data=true;
 }
 
@@ -6982,8 +7010,8 @@ Tab.prototype.generate_obj=function(dic=null){
  var s='var obj = this.parent.get_obj(this, dic);'
  //alert(s)
  try{eval(s)} catch(er){alert("er200: "+er)}
- this.tab_objects_created[dic["properties"]["obj_number"]]=obj;
  obj.create_obj();
+ this.tab_objects_created[dic["properties"]["obj_number"]]=obj;
  // obj.create_editor();
  //alert(JSON.stringify(obj.data));
  this.new_obj_to_create = null;
