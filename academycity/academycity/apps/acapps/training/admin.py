@@ -5,7 +5,7 @@ from .models import (TrainingWeb, Instructors, Brigades, Battalions, Companys, P
                      ComplianceWeeks, ComplianceDays, Courses, Soldiers, Tests, TimeDim, SoldierFact,
                      SoldierQualificationFact,
                      TestEvents, TestsForEvents, SoldiersForEvents, GradesForEvents,
-                     InventoryCategorys,Inventorys,TestsVariables, TestsForVariables, Periods, UnitSoldiers,
+                     InventoryCategorys,Inventorys,TestsVariables, InventoryFact, TestsForVariables, Periods, UnitSoldiers,
                      DoubleShoot, DoubleShootMembers,
                      ToDoList)
 
@@ -16,7 +16,7 @@ class TrainingWebAdmin(admin.ModelAdmin):
 
 @admin.register(Instructors)
 class InstructorsAdmin(admin.ModelAdmin):
-    list_display = ('first_name', 'last_name')
+    list_display = ('first_name', 'last_name', 'user')
 
 @admin.register(Brigades)
 class BrigadesAdmin(admin.ModelAdmin):
@@ -89,11 +89,15 @@ class SoldiersForEventsAdmin(admin.ModelAdmin):
 #
 @admin.register(Inventorys)
 class InventorysAdmin(admin.ModelAdmin):
-    list_display = ('id', 'inventorycategory', 'inventory_number')
+    list_display = ('id', 'inventorycategory', 'item_name', 'description')
 
 @admin.register(InventoryCategorys)
 class InventoryCategorysAdmin(admin.ModelAdmin):
-    list_display = ('id', 'item_number', 'pn', 'category_name', 'category_name_1', 'category_name_2')
+    list_display = ('id', 'category_name')
+
+@admin.register(InventoryFact)
+class InventoryFactAdmin(admin.ModelAdmin):
+    list_display = ('id', 'inventory', 'soldier', 'value')
 
 @admin.register(TestsVariables)
 class TestsVariablesAdmin(admin.ModelAdmin):

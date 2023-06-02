@@ -167,14 +167,10 @@ class InventoryCategorys(TruncateTableMixin, models.Model):
     class Meta:
         verbose_name = 'inventorycategory'
         verbose_name_plural = 'inventorycategorys'
-        ordering = ['category_name', 'category_name_1']
+        ordering = ['category_name']
 
     training_web = models.ForeignKey(TrainingWeb, on_delete=models.CASCADE, default=1,
                                      related_name='training_web_inventory_categorys')
-    item_number = models.SmallIntegerField(default=0)
-    pn = models.CharField(max_length=200, default='', blank=True, null=True)
-    category_name_1 = models.CharField(max_length=100, default='', blank=True, null=True)
-    category_name_2 = models.CharField(max_length=100, default='', blank=True, null=True)
     category_name = models.CharField(max_length=100, default='', blank=True, null=True)
 
     def __str__(self):
@@ -184,18 +180,20 @@ class Inventorys(TruncateTableMixin, models.Model):
     class Meta:
         verbose_name = 'inventory'
         verbose_name_plural = 'inventorys'
-        ordering = ['inventory_number']
+        ordering = ['item_number']
 
     training_web = models.ForeignKey(TrainingWeb, on_delete=models.CASCADE, default=1,
                                      related_name='training_web_inventories')
     inventorycategory = models.ForeignKey(InventoryCategorys, on_delete=models.CASCADE, default=1,
                                           related_name='inventory_category_inventorys')
-    inventory_number = models.CharField(max_length=50, default='', blank=True, null=True)
-    item_number = models.IntegerField(default=0, blank=True, null=True)
     pn = models.CharField(max_length=50, default='', blank=True, null=True)
+    item_number = models.SmallIntegerField(default=0, blank=True, null=True)
+    item_name = models.CharField(max_length=50, default='', blank=True, null=True)
+    description = models.CharField(max_length=128, default='', blank=True, null=True)
+    qty_per_soldier = models.SmallIntegerField(default=0, blank=True, null=True)
 
     def __str__(self):
-        return str(self.inventory_number)
+        return str(self.item_name)
 
 # חייל
 class Soldiers(TruncateTableMixin, models.Model):
@@ -223,7 +221,10 @@ class Soldiers(TruncateTableMixin, models.Model):
     uniqueid = models.CharField(max_length=100, default='', blank=True, null=True)
     #
     shoes_size = models.DecimalField(max_digits=4, decimal_places=2, default=0)
-    uniform_size = models.CharField(max_length=2, default='', blank=True, null=True)
+    clothes_size = models.CharField(max_length=2, default='', blank=True, null=True)
+    #
+    mz4psn = models.CharField(max_length=100, default='', blank=True, null=True)
+    ramonsn = models.CharField(max_length=100, default='', blank=True, null=True)
     #
     address = models.CharField(max_length=100, default='', blank=True, null=True)
     city = models.CharField(max_length=50, default='', blank=True, null=True)
@@ -238,8 +239,6 @@ class Soldiers(TruncateTableMixin, models.Model):
     num_of_children = models.SmallIntegerField(default=0)
     marital_status = models.SmallIntegerField(default=0)
     #
-    sport_size = models.CharField(max_length=2, default='', blank=True, null=True)
-    #
     height = models.SmallIntegerField(default=0)
     weight = models.SmallIntegerField(default=0)
     blood_type =  models.CharField(max_length=10, default='', blank=True, null=True)
@@ -250,10 +249,6 @@ class Soldiers(TruncateTableMixin, models.Model):
     sub_profession = models.SmallIntegerField(default=0)
     #
     medical_condition = models.TextField(blank=True, null=True)
-    mz4psn = models.CharField(max_length=100, default='', blank=True, null=True)
-    ramonsn = models.CharField(max_length=100, default='', blank=True, null=True)
-    gun_mz4psn = models.ForeignKey(Inventorys, on_delete=models.CASCADE, null=True, related_name='inventory_mz4psn_soldiers')
-    gun_ramonsn = models.ForeignKey(Inventorys, on_delete=models.CASCADE, null=True, related_name='inventory_ramonsn_soldiers')
     #
     @property
     def full_name(self):
@@ -264,17 +259,17 @@ class Soldiers(TruncateTableMixin, models.Model):
 
 class InventoryFact(TruncateTableMixin, models.Model):
     class Meta:
-        verbose_name = 'grades_for_event'
-        verbose_name_plural = 'grades_for_events'
+        verbose_name = 'inventory_fact'
+        verbose_name_plural = 'inventory_facts'
 
     inventory = models.ForeignKey(Inventorys, on_delete=models.CASCADE, default=1,
                                   related_name='inventory_inventory_facts')
     soldier = models.ForeignKey(Soldiers, on_delete=models.CASCADE, default=1,
                                          related_name='soldier_inventory_facts')
-    value = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+    value = models.SmallIntegerField(default=0)
 
     def __str__(self):
-        return str(self.inventory) + "-" + str(self.soldier) + "-" + str(self.value)
+        return str(self.inventory) + " : " + str(self.soldier) + " : " + str(self.value)
 
 class UnitSoldiers(TruncateTableMixin, models.Model):
     class Meta:

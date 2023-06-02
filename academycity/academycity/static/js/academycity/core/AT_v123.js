@@ -807,9 +807,9 @@ AdvancedTabsManager.prototype.get_data = function(call_back_fun, dic_, tbody_)
           try{
            //alert("9001-9001"+JSON.stringify(data));
            if(data["status"]!="ok"){return}
-           //alert("9005-0 data in atm "+JSON.stringify(data));
-           //alert(call_back_fun)
-           call_back_fun(data["dic"], tbody_)
+           //alert("9001-9001-100 data in atm "+JSON.stringify(data));
+           //try{alert(call_back_fun)} catch(er){"call_back 9001-9001-200\n"+alert(er)}
+           try{call_back_fun(data["dic"], tbody_)} catch(er){"call_back 9001-9001-300\n"+alert(er)}
            //alert("after call_back_fun")
           } catch(er){alert("ERROR\n9090-9090-1 AdvancedTabsManager.prototype.get_data:\n"+JSON.stringify(dic_)+"\n"+er)}
           try{tbody_.data=data["dic"];} catch(er){alert("ERROR\n9090-9090-2 AdvancedTabsManager.prototype.get_data:\n"+JSON.stringify(dic_)+"\n"+er)}
@@ -1888,11 +1888,10 @@ acReport.prototype.set_data = function(type, is_level=true){
 
      var vertical_field_=report.data["properties"]["vertical_field"];
      var horizontal_field_=report.data["properties"]["horizontal_field"];
-
+     var value_field=get_data_dic["fields"][(get_data_dic["fields"].length-1)]
      //alert("k="+vertical_field_+"\n"+JSON.stringify(data[vertical_field_]))
-
+     //alert("h="+horizontal_field_+"\n"+JSON.stringify(data[horizontal_field_]))
      var n_=data[vertical_field_].length;
-     //alert(n_)
      var pdata={};var v_=[];var h_=[];
      for(var j=0; j<n_;j++)
      {
@@ -1903,15 +1902,15 @@ acReport.prototype.set_data = function(type, is_level=true){
                  if(!(h_.includes(data[horizontal_field_][j]))){h_.push(data[horizontal_field_][j])}
               }
               //alert(data[vertical_field_][j]+"\n"+data[horizontal_field_][j]+"\n"+data["amount"][j])
-              pdata[data[vertical_field_][j]][data[horizontal_field_][j]]={"value":data["amount"][j],"color":"black"};
+              pdata[data[vertical_field_][j]][data[horizontal_field_][j]]={"value":data[value_field][j],"color":"black"};
               try{aa(v=data[vertical_field_][j],
                      h=data[horizontal_field_][j],
                      a=pdata[data[vertical_field_][j]][data[horizontal_field_][j]],
                      f=get_data_dic["filters"]
                      )} catch(er){}
      }
-     //alert("pdata=\n"+JSON.stringify(pdata));
 
+     //alert("pdata=\n"+JSON.stringify(pdata));
      v_=v_.sort();//h_=h_.sort();
      //alert(JSON.stringify(data["dim_titles"][horizontal_field_]));
      report.axes={"v":v_, "h":h_}
@@ -1919,7 +1918,7 @@ acReport.prototype.set_data = function(type, is_level=true){
      report.raw_data=data
      report.creator.create_html(type)
    }
-//  alert(is_level)
+  // alert(is_level)
   if(is_level==false){this.get_data_dic["fields"] = this.get_data_dic["fields"].filter(item => item !== "level")}
   //alert("90876\n"+JSON.stringify(this.get_data_dic));
   this.atm.get_data(fun, this.get_data_dic, [this.table_, this.get_data_dic])
@@ -1947,12 +1946,15 @@ acPivotCreator.prototype.create_html = function(type=null)
   var p=this.parent
   var h_=p.axes["h"];var v_=p.axes["v"]
 
-//  alert(JSON.stringify(v_));
-  //alert(JSON.stringify(h_));
-  //alert(p.pdata[v_[0]][h_[5]]["value"])
-
   var vertical_field_=p.data["properties"]["vertical_field"];
   var horizontal_field_=p.data["properties"]["horizontal_field"];
+
+  //alert(JSON.stringify(v_))
+  //alert(JSON.stringify(p.raw_data["dim_titles"][vertical_field_]));
+  //alert(JSON.stringify(h_) +"\n"+JSON.stringify(p.raw_data["dim_titles"][horizontal_field_]));
+  //alert(p.pdata[v_[0]][h_[5]]["value"])
+
+
   var sh="<thead id='thead_"+this.parent.data["properties"]["obj_number"]+"'>"
   sh+="<tr id='tr_h_"+this.parent.data["properties"]["obj_number"]+"' style='cursor:pointer'><th col_num=-1></th>";
   for(var j in h_){sh+="<th col_num="+j+">"+p.raw_data["dim_titles"][horizontal_field_][h_[j]]+"</th>"};

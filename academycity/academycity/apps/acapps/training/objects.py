@@ -4587,6 +4587,8 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
         ll_p = []
         for index, row in df.iterrows():
             # print(index)
+            # if index < 545:
+            #     continue
             # print(row, "\n", row["company"])
             company_name_ = str(row["company"]).upper()
             company_number = int(row["company_number"])
@@ -4622,6 +4624,11 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
             first_name = full_name[:nnf]
             last_name = full_name[nnf+1:]
             rank = str(row["rank"])
+            clothes_size = str(row["clothes_size"])
+            shoes_size = str(row["shoes_size"])
+            mz4psn = str(row["mz4psn"])
+            ramonsn = str(row["ramonsn"])
+
             my_group, is_created = Group.objects.get_or_create(name='t_simple_user')
             # print(my_group)
             # Users
@@ -4647,7 +4654,31 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
                 soldier_obj.rank = rank
                 soldier_obj.save()
             except Exception as ex:
-                print("9011-22 Error " + str(ex))
+                print("9011-22-1 Error " + str(ex))
+            try:
+                soldier_obj.clothes_size = clothes_size
+                soldier_obj.save()
+            except Exception as ex:
+                print("9011-22-2 Error ", clothes_size, str(ex))
+            try:
+                soldier_obj.shoes_size = shoes_size
+                soldier_obj.save()
+            except Exception as ex:
+                print("9011-22-3 Error ", shoes_size, str(ex))
+            try:
+                soldier_obj.mz4psn = mz4psn
+                soldier_obj.save()
+            except Exception as ex:
+                print("9011-22-4 Error " + str(ex))
+            try:
+                soldier_obj.ramonsn = ramonsn
+                soldier_obj.save()
+            except Exception as ex:
+                print("9011-22-5 Error " + str(ex))
+            try:
+                soldier_obj.save()
+            except Exception as ex:
+                print("9011-22-10 Error " + str(ex))
             try:
                 u_obj, is_created = model_unit_soldiers.objects.get_or_create(period=period_obj, soldier=soldier_obj)
                 u_obj.unit_number = n__
@@ -4663,73 +4694,96 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
         result = {"status": "ok"}
         return result
 
-    def set_soldiers_inventory(self, dic):
-        print('900333-10 dic', dic)
+    def upload_inventory_list(self, dic):
+        print('90055-1 upload_inventory_list dic\n', dic)
         app_ = dic["app"]
         file_path = self.upload_file(dic)["file_path"]
-            # # print("-"*100, "\n", squad_obj, "  ", is_created, "\n", "-"*100)
+        # print("-"*100, "\n", file_path, "\n", "-"*100)
+        model_name_ = "inventorys"
+        model_inventorys = apps.get_model(app_label=app_, model_name=model_name_)
+        model_name_ = "inventorycategorys"
+        model_inventorycategorys = apps.get_model(app_label=app_, model_name=model_name_)
 
-            # mz4psn = str(row["MZ4PSN"])
-            # ramonsn = str(row["RAMONSN"])
-            # shoes_size = float(row["shoes_size"])
-            # uniform_size = str(row["uniform_size"])
-            # sport_size = str(row["sport_size"])
-            # if mz4psn not in ll:
-            #     ll.append(mz4psn)
-            # else:
-            #     ll_.append(mz4psn)
-            #     print("mz4psn= ", mz4psn)
-            # if ramonsn not in ll1:
-            #     ll1.append(ramonsn)
-            # else:
-            #     ll1_.append(ramonsn)
-            #     print("ramonsn= ", ramonsn)
-            #
-            #
-            # if position == "NAN":
-            #     position = ""
-            # #  "A \n", "-"*100, "\n",
-            # print("full name", full_name, " first name=", first_name,"username_",username_,
-            #       " last name=", last_name, " position=", position,
-            #       " mz4psn", mz4psn, " ramonsn=", ramonsn,
-            #       shoes_size, uniform_size, sport_size)
-            #
+        df = pd.read_excel(file_path, sheet_name="Data", header=0)
+        print(df)
+        print("-"*100)
+        shoes_size = ["40", "41", "42", "43", "44", "45"]
+        shoes_size_ll = ["running_shoes", "boots"]
+        clothes_size = ["XL", "L", "M", "S"]
+        clothes_size_ll = ["sport_shirt", "sport_short", "working_uniform", "tactical_uniform"]
 
-
-            # try:
-            #     soldier, is_created = model_soldier.objects.get_or_create(user=u, platoon=platoon_obj)
-            #     soldier.first_name = first_name
-            #     soldier.last_name = last_name
-            #     soldier.userid = username_
-            #     try:
-            #         p_ = position.lower().strip()
-            #         if p_ == "":
-            #             p_ = "Other"
-            #         elif p_ == "officier":
-            #             p_ = "Officer"
-            #         elif p_ == "soldeir":
-            #             p_ = "Soldier"
-            #         elif p_ == "sous officier":
-            #             p_ = "Sous Officer"
-            #         else:
-            #             p_ = p_.title()
-            #         position = int(self.df_positions[self.df_positions["position_name"]==p_]["id"])
-            #     except Exception as ex:
-            #         print("90888-66 Training objects set_soldiers Error: " + p_ +str(ex))
-            #     soldier.position = position
-            #     soldier.mz4psn = mz4psn
-            #     soldier.ramonsn = ramonsn
-            #     #
-            #     soldier.shoes_size = shoes_size
-            #     soldier.uniform_size = uniform_size
-            #     soldier.sport_size = sport_size
-            #     soldier.save()
-            #     course_obj.course_soldiers.add(soldier)
-            #     course_obj.save()
-            # except Exception as ex:
-            #     print("9033-53 Error " + str(ex))
-
+        for index, row in df.iterrows():
+            # print(index)
+            category_obj, is_created = model_inventorycategorys.objects.get_or_create(category_name=str(row["category_name"]))
+            inventory_obj, is_created = model_inventorys.objects.get_or_create(pn=str(row["pn"]))
+            inventory_obj.item_number = int(row["item_number"])
+            inventory_obj.item_name = str(row["item_name"])
+            inventory_obj.description = str(row["description"])
+            inventory_obj.qty_per_soldier = int(row["qty_per_soldier"])
+            inventory_obj.save()
         # -----
+        # print("\n", "Done")
+        result = {"status": "ok"}
+        return result
+
+    def set_soldiers_inventory(self, dic):
+        # print('90033-1 inventory dic\n', dic)
+        app_ = dic["app"]
+        file_path = self.upload_file(dic)["file_path"]
+        # print("-"*100, "\n", file_path, "\n", "-"*100)
+
+        model_soldiers = apps.get_model(app_label=app_, model_name="soldiers")
+        model_name_ = "inventorys"
+        model_inventorys = apps.get_model(app_label=app_, model_name=model_name_)
+        # model_name_ = "inventorycategorys"
+        # model_inventorycategorys = apps.get_model(app_label=app_, model_name=model_name_)
+        model_soldiers = apps.get_model(app_label=app_, model_name="soldiers")
+        model_name_ = "inventoryfact"
+        model_inventoryfact = apps.get_model(app_label=app_, model_name=model_name_)
+
+        df = pd.read_excel(file_path, sheet_name="Data", header=0)
+        # print(df)
+        columns = df.columns[9:]
+        # print(columns)
+        shoes_size = ["running_shoes", "boots"]
+        clothes_size = ["sport_shirt", "sport_short", "working_uniform", "tactical_uniform"]
+        gun = ["mz4psn", "ramonsn"]
+        for index, row in df.iterrows():
+            # print(index)
+            # print(row, "\n", row["company"])
+            userid = str(row["dshn"])
+            # print(userid)
+            # Soldiers
+            try:
+                soldier_obj = model_soldiers.objects.get(userid=userid)
+                # print(soldier_obj)
+            except Exception as ex:
+                print("9011-22 Error " + str(ex))
+            for k in columns:
+                # print("\n", "-"*20, "\n", k, "\n", userid, "\n", "-"*20)
+                v = str(row[k])
+                if k == "mz4psn" or k == "ramonsn":
+                    v = 1
+                    # if not v.isnumeric():
+                    #     v = v[1:]
+                v_ = int(v)
+                # print("="+k+"=", v_)
+                try:
+                    # print(k)
+                    inventory_obj = model_inventorys.objects.get(item_name=k)
+                    # print("inventory_obj", inventory_obj)
+                except Exception as ex:
+                    print("9011-55 Error " + str(ex))
+
+                try:
+                    f_obj, is_created = model_inventoryfact.objects.get_or_create(inventory=inventory_obj, soldier=soldier_obj)
+                    f_obj.value=v_
+                    f_obj.save()
+                    # print("f_obj", f_obj)
+                except Exception as ex:
+                    print("9011-55 Error \n", k, v_, userid, str(ex))
+        # -----
+        print("\n", "Done")
         result = {"status": "ok"}
         return result
 

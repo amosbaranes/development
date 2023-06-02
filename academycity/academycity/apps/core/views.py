@@ -164,6 +164,7 @@ def update_field_model_by_id(request, foreign=None):
     except Exception as ex:
         pass
     app_ = dic_['app']
+    # print(dic_['model'])
     model_ = dic_['model']
     pkey_ = dic_['pkey']
     fields_ = dic_['fields']
@@ -245,6 +246,9 @@ def update_field_model_by_id(request, foreign=None):
             # print("9055-89\n" + s, "\n", "-"*30)
             # print(model)
             obj = eval(s)
+        except Exception as ex:
+            print("error701-701-1 "+str(ex))
+        try:
             p_key_field_name = model._meta.pk.name
             if model.model_field_exists(app_ + '_web') and isinstance(model._meta.get_field(app_ + '_web'), ManyToManyField):
                 s = "obj."+app_ + '_web.add(company_obj)'
@@ -255,7 +259,7 @@ def update_field_model_by_id(request, foreign=None):
                 print("9055")
             # print("9055-89\n", "-"*30)
         except Exception as ex:
-            print("error701 "+str(ex))
+            print("error701-701 "+str(ex))
             log_debug("error701 "+str(ex))
     else:
         try:

@@ -125,11 +125,6 @@ class BaseDataProcessing(object):
     def get_general_data(self, dic):
         # print("9012 BaseDataProcessing get_general_data:\n", dic, "\n", "="*50, "\n")
         app_ = dic["app"]
-
-        # dic = {"app": "avi",
-        #        "dimensions": {"time_dim": {"model": "TimeDim", "field_name": "year"},
-        #                       "country_dim": {"model": "CountryDim", "field_name": "country_name"} }}
-
         result = {}
         n__=0
         for k in dic["dimensions"]:
@@ -137,14 +132,37 @@ class BaseDataProcessing(object):
             s = k + ' = {}'
             try:
                 exec(s)
-                # print(eval(k))
-                model_name_ = dic["dimensions"][k]["model"]
-                # print(model_name_)
+                model_name_ = dic_["model"]
                 model_ = apps.get_model(app_label=app_, model_name=model_name_)
-                # print(model_)
-                for r in model_.objects.all():
-                    # print(r)
-                    s = k + '["'+str(r.id)+'"] = r.' + dic["dimensions"][k]["field_name"]
+                p_key_field_name = model_._meta.pk.name
+                if p_key_field_name != "id":
+                    p_key_field_name +="_id"
+                try:
+                    s_ = ""
+                    filters = dic_["filters"]
+                    if filters:
+                        for j in filters:
+                            s_ += ".filter(" + j + "=" + str(filters[j]) + ")"
+                            # print(s_)
+                except Exception as ex:
+                    print(ex)
+
+                sq = 'model_.objects'+ s_ +'.all()'
+                # print("sq1:  ", sq)
+                try:
+                    qs = eval(sq)
+                    # df_us = pd.DataFrame(list(qs.values()))
+                    # print(df_us)
+                    # print(qs)
+                except Exception as ex:
+                    print("er555-5 qs\n", str(ex))
+                for r in qs:
+                    try:
+                        k_ = eval("r."+p_key_field_name)
+                    except Exception as ex:
+                        print(ex)
+
+                    s = k + '["'+str(k_)+'"] = r.' + dic["dimensions"][k]["field_name"]
                     # print(s)
                     exec(s)
                 # print(eval(k))
