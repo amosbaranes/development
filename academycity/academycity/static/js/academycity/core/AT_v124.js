@@ -1875,7 +1875,7 @@ acReport.prototype.set_data = function(type, is_level=true){
   var report=this;
 
   var fun = function(data,ll){
-    var html_obj = ll[0];var get_data_dic = ll[1];
+     var html_obj = ll[0];var get_data_dic = ll[1];
      //alert("90876-1 data=\n"+JSON.stringify(data));
      //for(k in data){alert("k="+k+"\n"+JSON.stringify(data[k]))}
      //alert(JSON.stringify(get_data_dic));
@@ -1943,7 +1943,8 @@ function acPivotCreator(parent){
 acPivotCreator.prototype.create_html = function(type=null)
 {
   //alert(JSON.stringify(this.parent.axes));
-  var p=this.parent
+  var p=this.parent;
+  var dic=p.data;
   var h_=p.axes["h"];var v_=p.axes["v"]
 
   var vertical_field_=p.data["properties"]["vertical_field"];
@@ -1996,10 +1997,11 @@ acPivotCreator.prototype.create_html = function(type=null)
    } catch(err){alert(err)}
   }
 
-//v_[i]+":"+
-
-//alert(JSON.stringify(v_))
-
+  var ht_="";
+  if(dic["properties"]["horizontal_title"]!=null && dic["properties"]["horizontal_title"]!=""){ht_=dic["properties"]["horizontal_title"]}
+  var vt_="";
+  if(dic["properties"]["vertical_title"]!=null && dic["properties"]["vertical_title"]!=""){vt_=dic["properties"]["vertical_title"]};
+  vt_ll=[];for(var j in h_){vt_ll.push(0)};if(vt_!="" && vt_!=""){vt_ll.push(0)};
   for (var i in v_)
   {
       s+="<tr><th style='white-space: pre;text-align:left'>"+p.raw_data["dim_titles"][vertical_field_][v_[i]]+"</th>"
@@ -2013,16 +2015,36 @@ acPivotCreator.prototype.create_html = function(type=null)
          s+="<td style='text-align:right;color:"+s_color+"'>"+ssnn+"</td>"
          sss_+=ssnn
          horizontal_total+=1*p.pdata[v_[i]][h_[j]]["value"]
+         vt_ll[j]+=1*p.pdata[v_[i]][h_[j]]["value"]
          } catch(er){s+="<td style='text-align:right'></td>"}
       }
-// alert(i + " " +v_[i] + "\n" + sss_)
+      //alert(i + "  " + JSON.stringify(vt_ll));
+      //alert(i + " " +v_[i] + "\n" + sss_)
+      //alert(horizontal_total)
+      //alert(dic["properties"]["horizontal_title"])
       horizontal_total=Math.round(100*horizontal_total)/100
-      try{
-      if(dic["properties"]["horizontal_title"]!=null && dic["properties"]["horizontal_title"]!="")
-      {s+="<td style='text-align:right'>"+horizontal_total+"</td>"}}catch(er){}
+      try{if(ht_!=""){s+="<td style='text-align:right'>"+horizontal_total+"</td>";
+      //alert("j="+ j +"   vt_ll[j+1]=" + vt_ll[1*j+1] + "  i=" + i + "  horizontal_total=" + horizontal_total + " : vt_ll" + JSON.stringify(vt_ll));
+      vt_ll[1*j+1]+=1*horizontal_total;
+      //alert("j="+ j +"   vt_ll[j+1]=" + vt_ll[1*j+1] + "  i=" + i + "  horizontal_total=" + horizontal_total + " : vt_ll" + JSON.stringify(vt_ll));
+      }}catch(er){}
       s+="</tr>"
   }
-  s+="</tbody></table>";
+
+  var sv="<tr><th style='white-space: pre;text-align:left'>"+vt_+"</th>"
+  for(var j in h_)
+  {
+    sv+="<td style='text-align:right'>"+vt_ll[j]+"</td>"
+  }
+  if(ht_!=""){
+    sv+="<td style='text-align:right'>"+vt_ll[1*j+1]+"</td>"
+  }
+  sv+="</tr>"
+  // --
+  //alert(sv)
+  if(vt_!=""){s+=sv}
+
+  s+="</tbody></table></br></br>";
   p.table_.innerHTML=s;
   p.tbody=document.innerHTML=document.getElementById('tbody_'+this.parent.data["properties"]["obj_number"])
   p.tr_h=document.innerHTML=document.getElementById('tr_h_'+this.parent.data["properties"]["obj_number"])
@@ -2030,6 +2052,7 @@ acPivotCreator.prototype.create_html = function(type=null)
   p.tr_h.my_creator_obj=this;
   p.tr_h.addEventListener("click", function(event){
    var e=event.target;
+   //alert(e.outerHTML)
    //alert(e.getAttribute("col_num"))
    this.my_creator_obj.sort_by_col_num=parseInt(e.getAttribute("col_num"));
    this.my_creator_obj.create_html()
