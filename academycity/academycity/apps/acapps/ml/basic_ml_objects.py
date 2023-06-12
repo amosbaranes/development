@@ -297,7 +297,9 @@ class BasePotentialAlgo(object):
         similarity_n1 = pd.DataFrame([[0, 0, 0, 0]])
         similarity_n2 = pd.DataFrame([[0, 0, 0, 0]])
         contribution_n1 = pd.DataFrame([[0, 0, 0, 0]])
+        adj_contribution_n1 = pd.DataFrame([[0, 0, 0, 0]])
         contribution_n2 = pd.DataFrame([[0, 0, 0, 0]])
+        adj_contribution_n2 = pd.DataFrame([[0, 0, 0, 0]])
         # relimp_n1 = pd.DataFrame([[0, 0, 0, 0]])
         # relimp_n2 = pd.DataFrame([[0, 0, 0, 0]])
         similarity_n1.columns = self.options
@@ -310,9 +312,9 @@ class BasePotentialAlgo(object):
         lll_groups = []
         for k in ll_dfs:
             group = k #.group_name
-            print("="*50)
-            print(group)
-            print("="*50)
+            # print("="*50)
+            # print(group)
+            # print("="*50)
             try:
                 self.save_to_file = os.path.join(self.TO_EXCEL_OUTPUT, str(dic["time_dim_value"]) + "_" + group + "_o.xlsx")
                 self.to_save = []
@@ -566,10 +568,10 @@ class BasePotentialAlgo(object):
             s_corr = ""
             n__ = 0
             for g in ll_dfs:
-                print(g)
+                #print(g)
                 if n__ >= 1:
                     s_corr += "'"+o+"-"+g+"',"
-                    print(0, n__, s_corr)
+                    #print(0, n__, s_corr)
                 n__ += 1
             # print(1, s_corr)
             s_corr = s_corr[:-1]
@@ -579,21 +581,20 @@ class BasePotentialAlgo(object):
             corr_ = df_corr.corr(method='pearson')
             # print("90050-30\n", corr_,"\n", type(corr_))
             self.add_to_save_all(title='corr-' + o, a=corr_, cols=-1)
-
         # print("2 - ")
-
         for n in ["1", "2"]:
             ll = []
             for k in self.options:
                 s_ = "df_n" + n + "_all['d_" + k + "']=df_n" + n + "_all[[" + eval("ss_n_" + k) + "]].min(axis=1)"
-                print(s_)
+                #print(s_)
                 exec(s_)
                 s_ = "ll.append(1-df_n" + n + "_all[[" + eval("ss_n_" + k) + "]].min(axis=1).mean())"
-                print(s_)
+                #print(s_)
                 exec(s_)
 
             s_ = "similarity_n" + n + ".loc['SComb'] = ll"
-            # print(s_)
+            # print(s_, "\n", ll)
+
             exec(s_)
             s_ = "sign_n" + n + ".drop([0], axis=0, inplace=True)"
             # print(s_)
@@ -608,6 +609,7 @@ class BasePotentialAlgo(object):
         for n in ["1", "2"]:
             nn__ = 0
             llg = []
+            llg_adj = []
             for k in lll_groups:
                 try:
                     group = k #.group_name
@@ -622,29 +624,53 @@ class BasePotentialAlgo(object):
                             exec(s_)
                             # print('ll.append(1-df_n'+n+'_all["dc_'+group+'_' + z+'"].mean())')
                             exec('ll.append(1-df_n' + n + '_all["dc_' + group + '_' + z + '"].mean())')
+
+                        ll_adj = eval("ll*similarity_n" + n + ".loc['SComb'].T").tolist()
+                        print("ll\n", ll, "\n", type(ll))
+                        print("ll_adj\n", ll_adj, "\n", type(ll_adj))
+                        #
                         llc = [(x - 0.7) if x > 0.7 else 0 for x in ll]
                         llg.append(llc)
+                        print("llg\n", llg)
+                        llc_adj = [(x - 0.7) if x > 0.7 else 0 for x in ll_adj]
+                        llg_adj.append(llc_adj)
+                        print("llg_adj\n", llg_adj)
+
                         exec("contribution_n" + n + ".loc[group] = ll")
+                        exec("adj_contribution_n" + n + ".loc[group] = ll_adj")
+                        # print("A   contribution_n" + n, eval("contribution_n"+n), "\n", ll)
                     else:
                         nn__ += 1
                 except Exception as ex:
                     print("Error 50008-8: " + str(ex))
 
-            # print("90050-28\n")
-            # print("="*100)
+            print(n, "\nCC\n", llg, "\n\n", llg_adj)
 
             self.add_to_save_all(title="all-n" + n, a=eval("df_n" + n + "_all"), cols=-1)
             exec("contribution_n" + n + ".columns = self.options")
+            exec("adj_contribution_n" + n + ".columns = self.options")
             exec("contribution_n" + n + ".drop([0], axis=0, inplace=True)")
-            # print("=1"*50)
+            exec("adj_contribution_n" + n + ".drop([0], axis=0, inplace=True)")
+
+            print("=1"*50)
+
             npg = np.array(llg)
+            npg_adj = np.array(llg_adj)
+            # print("llg", "\n", llg)
+
             npgs = np.sum(llg, axis=0)
+            npgs_adj = np.sum(llg_adj, axis=0)
+
             df_relimp = pd.DataFrame(npg/npgs, index=contribution_n1.index)
+            df_relimp_adj = pd.DataFrame(npg_adj/npgs_adj, index=contribution_n1.index)
             df_relimp.columns = self.options
+            df_relimp_adj.columns = self.options
             # print(df_relimp)
             self.add_to_save_all(title='contribution-n' + n, a=eval("contribution_n" + n), cols=-1)
+            self.add_to_save_all(title='adj_contribution-n' + n, a=eval("adj_contribution_n" + n), cols=-1)
             self.add_to_save_all(title='relimp-n' + n, a=df_relimp, cols=-1)
-            # print("=2"*50)
+            self.add_to_save_all(title='adj_relimp-n' + n, a=df_relimp_adj, cols=-1)
+            print("=2"*50)
 
         # print("90050-28\n")
         self.save_to_excel_all_(dic["time_dim_value"])

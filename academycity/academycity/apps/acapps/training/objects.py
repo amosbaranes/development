@@ -4581,12 +4581,12 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
         units_dic_b = units_dic[n__]["data"]
 
         df = pd.read_excel(file_path, sheet_name="Data", header=0)
-        # print(df)
+        print(df)
         # print("-"*100)
         ll_c = []
         ll_p = []
         for index, row in df.iterrows():
-            # print(index)
+            print(index)
             # if index < 545:
             #     continue
             # print(row, "\n", row["company"])
@@ -4727,7 +4727,7 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
         return result
 
     def set_soldiers_inventory(self, dic):
-        # print('90033-1 inventory dic\n', dic)
+        print('90033-1 inventory dic\n', dic)
         app_ = dic["app"]
         file_path = self.upload_file(dic)["file_path"]
         # print("-"*100, "\n", file_path, "\n", "-"*100)
@@ -4749,7 +4749,7 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
         clothes_size = ["sport_shirt", "sport_short", "working_uniform", "tactical_uniform"]
         gun = ["mz4psn", "ramonsn"]
         for index, row in df.iterrows():
-            # print(index)
+            print(index)
             # print(row, "\n", row["company"])
             userid = str(row["dshn"])
             # print(userid)
@@ -4988,6 +4988,120 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
         dic = {'status': 'ok', "dic": dic}
         # print('core view 9055 get_data_link dic= ', dic)
         return JsonResponse(dic)
+
+
+    # Upload tests
+    def upload_tests(self, dic):
+        # print('90022-1 dic', dic)
+        cube_dic=dic["cube_dic"]
+        user_id = dic["user_id"]
+        app_ = dic["app"]
+        file_path = self.upload_file(dic)["file_path"]
+        # print("-"*100, "\n", file_path, "\n", "-"*100)
+        file_name = self.uploaded_filename.split(".")[0]
+        ll_ = file_name.split("_")
+        battalion_number = int(ll_[0])
+        period_ = int(ll_[1])
+        timedim_ = ll_[4]
+        model_instructors =  apps.get_model(app_label=app_, model_name="instructors")
+        model_timedim =  apps.get_model(app_label=app_, model_name="timedim")
+        model_battalions = apps.get_model(app_label=app_, model_name="battalions")
+        model_periods = apps.get_model(app_label=app_, model_name="periods")
+        model_test_events = apps.get_model(app_label=app_, model_name="testevents")
+        model_grades_for_events = apps.get_model(app_label=app_, model_name="gradesforevents")
+
+        b_obj = model_battalions.objects.get(battalion_number=battalion_number)
+        p_obj = model_periods.objects.get(battalion=b_obj, period_number=period_)
+        i_obj = model_instructors.objects.get(user__id=user_id)
+        t_obj = model_timedim.objects.get(id=timedim_)
+
+        model_soldiers = apps.get_model(app_label=app_, model_name="soldiers")
+        model_testsforevents =  apps.get_model(app_label=app_, model_name="testsforevents")
+        model_soldiersforevents =  apps.get_model(app_label=app_, model_name="soldiersforevents")
+
+        # print(p_obj, i_obj, t_obj)
+
+        adj_ = ll_[2]
+        company_ = ll_[3]
+        test_events_obj, is_created = model_test_events.objects.get_or_create(instructor=i_obj,
+                                                                              period=p_obj,
+                                                                              time_dim=t_obj,
+                                                                              test_event_name=adj_+" - "+company_)
+
+        test_events_obj.units_description = adj_ + " - " + company_
+        test_events_obj.save()
+        df = pd.read_excel(file_path, sheet_name="Data", header=0)
+        # print(df)
+        # print(df.columns)
+        tests = []
+        tests_names = []
+        for c in df.columns:
+            try:
+                test_number_ = int(c.split("_")[0])
+                tests.append(test_number_)
+                tests_names.append(c)
+            except Exception as ex:
+                pass
+        # print("-"*100)
+        n_ = len(tests_names)
+        result = {"Errors": {}}
+        for index, row in df.iterrows():
+            # print(index)
+            # print(row, "\n", row["full_name"])
+            full_name = string.capwords(str(row["full_name"]))
+            nnf = full_name.find(" ")
+            first_name = full_name[:nnf]
+            last_name = full_name[nnf+1:]
+            userid = str(row["userid"])
+            try:
+                s_obj = model_soldiers.objects.get(first_name=first_name, last_name=last_name)
+            except Exception as ex:
+                print("Error 202020-20: soldier FN=", first_name, "LN=", last_name, "not in db")
+                if "202020-20" not in result["Errors"]:
+                    result["Errors"]["202020-20"] = {}
+                result["Errors"]["202020-20"][first_name + " " + last_name] = " not in the database"
+                try:
+                    s_obj = model_soldiers.objects.get(first_name=first_name, last_name=last_name)
+                except Exception as ex:
+                    if "202020-21" not in result["Errors"]:
+                        result["Errors"]["202020-21"] = {}
+                        result["Errors"]["202020-21"][userid] = "soldier with userid=" + userid +" is not in the database"
+
+            try:
+                soldiersforevents_obj, is_created_e = model_soldiersforevents.objects.get_or_create(testevent=test_events_obj,
+                                                                                    soldier_number=s_obj.user_id)
+                soldiersforevents_obj.value = 1
+                soldiersforevents_obj.save()
+            except Exception as ex:
+                print("Error 202020-20-11: soldier")
+
+            for j in range(n_):
+                v_ = -1
+                try:
+                    v_ = round(100*row[tests_names[j]])/100
+                except Exception as ex:
+                    pass
+                t_ = tests[j]
+                # print(v_, t_)
+                try:
+                    testsforevents_obj, is_created_e = model_testsforevents.objects.get_or_create(testevent=test_events_obj,
+                                                                                                  test_number=t_)
+                    testsforevents_obj.value = 1
+                    testsforevents_obj.save()
+                except Exception as ex:
+                    print("Error 202020-30: ", t_, v_)
+                try:
+                    model_grades_for_events_obj, is_created = model_grades_for_events.objects.get_or_create(testevent=test_events_obj,
+                                                                                                            soldiersforevent=soldiersforevents_obj,
+                                                                                                            testsforevent=testsforevents_obj)
+
+                    model_grades_for_events_obj.value = v_
+                    model_grades_for_events_obj.save()
+                except Exception as ex:
+                    print("Error 202020-40: soldier ", t_, v_, ex)
+
+        return result
+
 
     #  -- To be deleted --
     def set_soldiers(self, dic):
@@ -5291,28 +5405,16 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
         app_ = dic["app"]
         model_name_ = "soldiers"
         model_soldier = apps.get_model(app_label=app_, model_name=model_name_)
-        model_name_ = "platoons"
-        model_platoon = apps.get_model(app_label=app_, model_name=model_name_)
-
-        qs = model_platoon.objects.all()
-        df_p = pd.DataFrame(list(qs.values("id", "platoon_name")))
         qs = model_soldier.objects.all()
-        df = pd.DataFrame(list(qs.values("platoon_id","is_confirmed","first_name","last_name","image",
+        df = pd.DataFrame(list(qs.values()))
+        print(df.columns)
+        df = pd.DataFrame(list(qs.values("is_confirmed","first_name","last_name","image",
                                          "userid","mz4psn","ramonsn","address","city","state","zip","country",
                                          "email","phone","birthday","num_of_children","marital_status",
-                                         "shoes_size", "uniform_size", "sport_size", "uniform_size","height","weight","blood_type","position","rank",
+                                         "shoes_size", "clothes_size","height","weight","blood_type","position","rank",
                                          "profession","sub_profession","medical_condition")))
 
-        dfm = df.merge(df_p, left_on='platoon_id', right_on='id')
-        dfm = dfm.drop(["platoon_id", "id"], axis=1)
-        # print(dfm.iloc[0])
-        # print("="*20)
-        dfm = dfm.merge(self.df_positions, left_on='position', right_on='id')
-        dfm = dfm.drop(["position", "id"], axis=1)
-
-        # print(dfm.iloc[0])
-        # print("="*20)
-        self.save_to_excel(dfm, "SoldiersList", file_name="daily_run.xlsx")
+        self.save_to_excel(df, "SoldiersList", file_name="daily_run.xlsx")
 
         result = {"status": "ok"}
         return result

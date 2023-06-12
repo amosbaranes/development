@@ -734,6 +734,7 @@ def upload_file(request):
         obj_name_ = request.POST['obj_name']
         function_name_ = request.POST['function_name']
         topic_id_ = request.POST['topic_id']
+        user_id_ = request.POST['user_id']
         folder_type_ = request.POST['folder_type']
         entity_name_ = request.POST['entity_name']
         if folder_type_ == "media":
@@ -804,8 +805,8 @@ def upload_file(request):
             pass
 
         add_dic = {"obj": obj_name_, "app": app_, "fun": function_name_,
-                   "params": {"request": request, "folder_type": folder_type_, "sheet_name": sheet_name_, "app": app_,
-                              "cube_dic": cube_dic},
+                   "params": {"request": request, "folder_type": folder_type_, "sheet_name": sheet_name_,
+                              "user_id": user_id_, "app": app_, "cube_dic": cube_dic},
                    "obj_param": {"topic_id": topic_id_, "app": app_, "entity_name": entity_name_}}
 
         try:
@@ -820,12 +821,14 @@ def upload_file(request):
         # print("9010")
         # print(add_dic)
         # print("9010")
-        activate_obj_function(request, add_dic)
+        return activate_obj_function(request, add_dic)
+        # print(ret)
         # print("9011")
-        ret['status'] = "ok"
+        # ret['status'] = "ok"
     else:
         ret['status'] = "ko"
 
+    # print("ret", ret)
     return HttpResponse(json.dumps(ret))
 
 def logmein(request):

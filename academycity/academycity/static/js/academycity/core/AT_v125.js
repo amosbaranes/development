@@ -2136,8 +2136,11 @@ acGradesCreator.prototype.set_obj_structure = function(tests_dic=null, group_dic
     {
       var tests_config=this_obj.tests_config;var group_dic=this_obj.group_dic;
       var var_name=this_obj.tests_dic["var_name"];
-      var f=function(v, tc){var n__=tc["from"].length;var r_=-1;
-      for(var h=0; h<n__;h++){if(tc["from"][h] <= v && v < tc["to"][h]){r_=tc["grade"][h];break}};return r_;}
+      var f=function(v, tc){
+      var n__=tc["from"].length;var r_=-1;
+      for(var h=0; h<n__;h++){if(tc["from"][h] <= v && v < tc["to"][h]){r_=tc["grade"][h];break}};return r_;
+
+      }
       var entity_name="soldier";
       var result=data["result"];var test_dic=data["test_dic"];var var_dic=data["var_dic"]
       //alert("90122-22\n"+JSON.stringify(var_dic));
@@ -2168,6 +2171,7 @@ acGradesCreator.prototype.set_obj_structure = function(tests_dic=null, group_dic
 
       for(var test_number in test_dic){
        var test_name=tests_config["test_name"][tests_config["test_number"].indexOf(""+test_number)];
+       test_name=test_name.split("(")[0]
        s+="<th style='width:"+col_width+"px'>"+test_name+"</th>";
       };
       s+="<th style='width:"+col_width+"px'>"+var_name+"</th>";s+="</tr>";
@@ -2886,7 +2890,7 @@ acUploadFileCreator.prototype.create_obj = function()
                 data = JSON.parse(this.responseText);
                     //alert("90353 "+JSON.stringify(data))
                     //alert(this.responseText)
-                    var s="zz="+this.dic["functions"]["on_loaded"];eval(s);zz(event)
+                    var s="zz="+this.dic["functions"]["on_loaded"];eval(s);zz(data)
                 if(this.status != 200){
                   $('#driver-uploader-failure-alert').show();
                   return;
@@ -2913,6 +2917,7 @@ acUploadFileCreator.prototype.create_obj = function()
             fd.append("fields", this.dic["properties"]["fields"]);
             fd.append("fact_model_field", this.dic["properties"]["fact_model_field"]);
             fd.append("sheet_name", this.dic["properties"]["sheet_name"]);
+            fd.append("user_id", atm.user_id);
             //--
             var container = document.getElementById("content_"+this.dic["container_id"]);
             var record_id = container.getAttribute("record_id")
@@ -3128,7 +3133,7 @@ acImageCreator.prototype.create_obj = function()
                     data = JSON.parse(this.responseText);
                     location.reload();
                     this.div_.outerHTML="";
-                    var s="zz="+this.dic["functions"]["on_loaded"];eval(s);zz(event)
+                    var s="zz="+this.dic["functions"]["on_loaded"];eval(s);zz(data)
                 });
 
                 //alert(this.atm.upload_file_link_)
@@ -3738,7 +3743,9 @@ acTestCreator.prototype.set_data = function(record_id, ll=null)
      this_obj.members_list["test_number"].push(data["test_number"][j])
      this_obj.members_list["record_id"].push(data["id"][j])
     }
-     get_creator(this_obj.recording_tests_number).set_obj_structure(group_list=null, test_list=this_obj.members_list)
+     try{
+       get_creator(this_obj.recording_tests_number).set_obj_structure(group_list=null, test_list=this_obj.members_list)
+     } catch(er){}
   }
   this.parent.atm.get_data(call_back_fun=fun, dic_, this)
 }
@@ -4004,7 +4011,7 @@ acGroupCreator.prototype.create_obj = function()
       //alert("90142-2 acGroupCreator.prototype.create_obj\n"+JSON.stringify(this.dic));
       //alert(this.dic["properties"]["present"])
       if(my_class_members!=null){
-       // alert(this.dic["properties"]["present"])
+        //alert(this.dic["properties"]["present"])
         var c = document.getElementsByClassName(my_class_members)[0]
         var etype_=e.getAttribute("type")
         if(etype_=="checkbox"){
@@ -4025,6 +4032,11 @@ acGroupCreator.prototype.create_obj = function()
              }
           }
         } else if (etype_=="span"){
+
+        //alert(999)
+        //alert(c.outerHTML)
+        //alert(c.style.display)
+
           if(c.style.display=="block"){c.style.display="none"}else{c.style.display="block";
           if(this.dic["properties"]["present"]=="detail")
           {
@@ -4551,6 +4563,7 @@ acComplianceCreator.prototype.create_obj = function()
     c.button_add_time.weeks=c.weeks;
     c.button_add_time.days=c.days;
     c.button_add_time.data_dic=c.data_dic;
+    // creat a new row --
     c.button_add_time.addEventListener("click", function(event){
      var e=event.target;
      //alert(e.outerHTML)
@@ -4573,11 +4586,34 @@ acComplianceCreator.prototype.create_obj = function()
         input.setAttribute("type", 'time');
         input.setAttribute("id", e.weeks.value+"-"+e.days.value+"-"+e.parent_unit+"-time_to-"+row_number);
         input.onchange=onchange_input;input.data_dic=e.data_dic;input.dic=c.units.dic;input.save_data=c.save_data;
-        //--
+        //-- delete button and detail/all button --
         td=document.createElement("td");tr.appendChild(td);td.innerHTML+="&nbsp;"
         td.setAttribute("style", 'width:'+s_buttons_width+'px');
         button_add_description=document.createElement("button");button_add_description.innerHTML="D"
         td.appendChild(button_add_description);
+
+        var ff_=function(t, c, e, tr, s_col_width, row_number, onchange_input){
+          var c=e.my_creator;
+          if(t=="D"){
+            for(j in e.ll["data"])
+            {
+              var td=document.createElement("td");tr.appendChild(td);
+              td.setAttribute("style", 'width:'+s_col_width+'px')
+              var input=document.createElement("input");td.appendChild(input);
+              input.setAttribute("style", 'width:'+s_col_width+'px')
+              input.setAttribute("unit_number", j)
+              input.setAttribute("id", e.weeks.value+"-"+e.days.value+"-"+e.parent_unit+"-"+j+"-"+row_number);
+              input.onchange=onchange_input;
+              input.data_dic=e.data_dic;
+              input.dic=c.units.dic;
+              //alert("c.save_data\n"+c.save_data);
+              input.save_data=c.save_data;
+            };
+          } else {
+
+          }
+
+        }
         button_add_description.addEventListener("click", function(event){
            var e=event.target;
            var s=e.innerHTML;if(s=="D"){e.innerHTML="A"
@@ -4610,6 +4646,7 @@ acComplianceCreator.prototype.create_obj = function()
 
            }
          })
+
         button_delete=document.createElement("button");button_delete.innerHTML="--"
         td.appendChild(button_delete);
         button_delete.addEventListener("click", function(event){
@@ -4618,21 +4655,7 @@ acComplianceCreator.prototype.create_obj = function()
             // update DB
          })
         //--
-
-        for(j in e.ll["data"])
-        {
-          var td=document.createElement("td");tr.appendChild(td);
-          td.setAttribute("style", 'width:'+s_col_width+'px')
-          var input=document.createElement("input");td.appendChild(input);
-          input.setAttribute("style", 'width:'+s_col_width+'px')
-          input.setAttribute("unit_number", j)
-          input.setAttribute("id", e.weeks.value+"-"+e.days.value+"-"+e.parent_unit+"-"+j+"-"+row_number);
-          input.onchange=onchange_input;
-          input.data_dic=e.data_dic;
-          input.dic=c.units.dic;
-          //alert("c.save_data\n"+c.save_data);
-          input.save_data=c.save_data;
-        };
+        ff_(t="D", c, e, tr, s_col_width, row_number, onchange_input)
      //alert(c.tbody_.outerHTML)
     })
     //--
@@ -4674,7 +4697,7 @@ acComplianceCreator.prototype.set_weeks_days = function()
   var s_date=y+m+d;
   // -- weeks --
   var o = document.createElement("option");o.value="-1";o.innerHTML="-------";this.weeks.appendChild(o);
-  for (var j=1; j<=number_of_weeks_; j++)
+  for (var j=0; j<=number_of_weeks_; j++)
   {var o = document.createElement("option");
        o.value=s_date;
        o.innerHTML="Week "+j+" : "+s_date;

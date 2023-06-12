@@ -377,7 +377,7 @@ class TestsForVariables(TruncateTableMixin, models.Model):
     testsvariable = models.ForeignKey(TestsVariables, on_delete=models.CASCADE, default=1,
                                       related_name='test_variables_tests_for_variables')
     test_number = models.PositiveIntegerField(default=0)
-    value = models.DecimalField(max_digits=4, decimal_places=2, default=0)
+    value = models.DecimalField(max_digits=5, decimal_places=2, default=0)
 
     def __str__(self):
         return str(self.test_number)
@@ -418,6 +418,8 @@ class SoldierQualificationFact(TruncateTableMixin, models.Model):
                                 related_name='soldier_soldier_qualification_facts')
     skill = models.SmallIntegerField(default=0)
     value = models.SmallIntegerField(default=0)
+#
+
 
 #
 class DoubleShoot(TruncateTableMixin, models.Model):
