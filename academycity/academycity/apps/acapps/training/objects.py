@@ -31,6 +31,7 @@ from django.db.models.fields.related import ForeignKey
 from django.http import JsonResponse
 import requests
 from django.shortcuts import render, get_object_or_404, redirect
+from django.db.models.fields import *
 
 
 class TestManager(object):
@@ -4694,6 +4695,145 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
         result = {"status": "ok"}
         return result
 
+    def update_soldiers_info(self, dic):
+        print('90022-1 dic', dic)
+        def get_unit_number(units_dic_, title):
+            h = -1
+            for k_ in units_dic_:
+                if title == units_dic_[k_]["title"]:
+                    return int(k_)
+                else:
+                    h = get_unit_number(units_dic_[k_]["data"], title)
+                if h != -1:
+                    break
+            return h
+        app_ = dic["app"]
+        file_path = self.upload_file(dic)["file_path"]
+        print("-"*100, "\n", file_path, "\n", "-"*100)
+        #
+        model_name_ = "inventorys"
+        model_inventorys = apps.get_model(app_label=app_, model_name=model_name_)
+        model_name_ = "inventoryfact"
+        model_inventoryfact = apps.get_model(app_label=app_, model_name=model_name_)
+        #
+        battalion_number_ = int(self.uploaded_filename.split(".")[0])
+        model_periods = apps.get_model(app_label=app_, model_name="periods")
+        model_battalions = apps.get_model(app_label=app_, model_name="battalions")
+        model_unit_soldiers = apps.get_model(app_label=app_, model_name="unitsoldiers")
+        model_soldiers = apps.get_model(app_label=app_, model_name="soldiers")
+        battalion_obj = model_battalions.objects.get(battalion_number=battalion_number_)
+        period_obj = model_periods.objects.get(battalion=battalion_obj, period_number=1)
+        units_dic = period_obj.structure
+        df = pd.read_excel(file_path, sheet_name="Data", header=0)
+        # print(df)
+        # print("-"*100)
+        columns = df.columns[9:]
+        print(columns)
+        for index, row in df.iterrows():
+            print(index)
+            # if index < 545:
+            #     continue
+            # print(row, "\n", row["company"])
+            company_name_ = str(row["company"]).upper()
+            company_number = int(row["company_number"])
+            platoon_number = int(row["platoon"])
+            platoon_name_ = company_name_ + " " +str(platoon_number)
+            username_ = "u"+str(row["dshn"])
+            userid = str(row["dshn"])
+            uniqueid = str(row["dshn"])
+            full_name = string.capwords(str(row["full_name"]))
+            nnf = full_name.find(" ")
+            first_name = full_name[:nnf]
+            last_name = full_name[nnf+1:]
+            rank = str(row["rank"])
+            clothes_size = str(row["clothes_size"])
+            shoes_size = str(row["shoes_size"])
+            mz4psn = str(row["mz4psn"])
+            ramonsn = str(row["ramonsn"])
+
+            try:
+                u = User.objects.get(username=username_)
+                u.first_name = first_name
+                u.last_name = last_name
+                u.save()
+            except Exception as ex:
+                print("9011-11 Error " + str(ex))
+            # Soldiers
+            try:
+                soldier_obj = model_soldiers.objects.get(user=u)
+                soldier_obj.first_name = first_name
+                soldier_obj.last_name = last_name
+                soldier_obj.userid = userid
+                soldier_obj.uniqueid = uniqueid
+                soldier_obj.rank = rank
+                soldier_obj.save()
+            except Exception as ex:
+                print("9011-22-1 Error " + str(ex))
+            try:
+                soldier_obj.clothes_size = clothes_size
+                soldier_obj.save()
+            except Exception as ex:
+                print("9011-22-2 Error ", clothes_size, str(ex))
+            try:
+                soldier_obj.shoes_size = shoes_size
+                soldier_obj.save()
+            except Exception as ex:
+                print("9011-22-3 Error ", shoes_size, str(ex))
+            try:
+                soldier_obj.mz4psn = mz4psn
+                soldier_obj.save()
+            except Exception as ex:
+                print("9011-22-4 Error " + str(ex))
+            try:
+                soldier_obj.ramonsn = ramonsn
+                soldier_obj.save()
+            except Exception as ex:
+                print("9011-22-5 Error " + str(ex))
+            try:
+                soldier_obj.save()
+            except Exception as ex:
+                print("9011-22-10 Error " + str(ex))
+            try:
+                u_obj, is_created = model_unit_soldiers.objects.get_or_create(period=period_obj, soldier=soldier_obj)
+                k = get_unit_number(units_dic, platoon_name_)
+                # print(u_obj.unit_number, k, platoon_name_)
+                u_obj.unit_number = k
+                u_obj.save()
+                # print("saved: "+ str(n__))
+            except Exception as ex:
+                print("error 200: ", full_name)
+
+            # Update inventory
+            for k in columns:
+                # print("\n", "-"*20, "\n", k, "\n", userid, "\n", "-"*20)
+                v = str(row[k])
+                if k == "mz4psn" or k == "ramonsn":
+                    v = 1
+                    # if not v.isnumeric():
+                    #     v = v[1:]
+                v_ = int(v)
+                # print("="+k+"=", v_)
+                try:
+                    # print(k)
+                    inventory_obj = model_inventorys.objects.get(item_name=k)
+                    # print("inventory_obj", inventory_obj)
+                except Exception as ex:
+                    print("9011-55 Error " + str(ex))
+
+                try:
+                    f_obj, is_created = model_inventoryfact.objects.get_or_create(inventory=inventory_obj, soldier=soldier_obj)
+                    f_obj.value=v_
+                    f_obj.save()
+                    # print("f_obj", f_obj)
+                except Exception as ex:
+                    print("9011-55 Error \n", k, v_, userid, str(ex))
+        # -----
+        period_obj.structure=units_dic
+        period_obj.save()
+        result = {"status": "ok"}
+        print(result)
+        return result
+
     def upload_inventory_list(self, dic):
         print('90055-1 upload_inventory_list dic\n', dic)
         app_ = dic["app"]
@@ -4716,6 +4856,7 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
             # print(index)
             category_obj, is_created = model_inventorycategorys.objects.get_or_create(category_name=str(row["category_name"]))
             inventory_obj, is_created = model_inventorys.objects.get_or_create(pn=str(row["pn"]))
+            inventory_obj.inventorycategory = category_obj
             inventory_obj.item_number = int(row["item_number"])
             inventory_obj.item_name = str(row["item_name"])
             inventory_obj.description = str(row["description"])
@@ -4732,7 +4873,6 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
         file_path = self.upload_file(dic)["file_path"]
         # print("-"*100, "\n", file_path, "\n", "-"*100)
 
-        model_soldiers = apps.get_model(app_label=app_, model_name="soldiers")
         model_name_ = "inventorys"
         model_inventorys = apps.get_model(app_label=app_, model_name=model_name_)
         # model_name_ = "inventorycategorys"
@@ -4796,19 +4936,13 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
 
         app_ = dic['app']
         model_ = dic['model']
-
-        # print("model_: "+model_)
         if model_ == "":
             dic = {'status': 'ko', "dic": {}}
             return JsonResponse(dic)
-
         model = apps.get_model(app_label=app_, model_name=model_)
-
         p_key_field_name = model._meta.pk.name
-
         if p_key_field_name not in dic["fields"]:
             dic["fields"].insert(0, p_key_field_name)
-
         fields_str = '"'
         for f in dic["fields"]:
             try:
@@ -4835,9 +4969,6 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
             # print("902055 "+str(company_obj_id_))
         except Exception as ex:
             print("error 440: " + str(ex))
-
-        print(999999999999)
-
         filters = dic['filters']
         try:
             order_by = ""
@@ -4881,8 +5012,6 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
             else:
                 s = 'model.objects'
             # print('90500 s '+s)
-
-        print("9030-2")
         try:
             for f in filters:
                 # filter_field_ = ""
@@ -4907,7 +5036,6 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
                 if filter_value_ != "":
                     # print(foreign_table_)
                     if foreign_table_ != "":
-                        # print(1111111111)
                         if filter_field_a != "":
                             # need need need to check this one. I changed it and it might have effect on other reports
                             filter_field_ = filter_field_a
@@ -4925,17 +5053,17 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
                         if index != -1:
                             s += '.filter(' + foreign_table_ + '__' + filter_field_ + '=' + filter_value_ + ')'
                         else:
-                            print(44444)
+                            # print(44444)
                             s += '.filter(' + foreign_table_ + '__' + filter_field_ + '__icontains=' + filter_value_ + ')'
                     else:
-                        print(22222222222)
-                        if filter_field_ == "id":
-                            # s += '.filter('+filter_field_+'__icontains='+filter_value_+')'
+                        # print(22222222222)
+                        type_ = type(model._meta.get_field(filter_field_))
+                        if type_ is eval('PositiveIntegerField') or type_ is eval('IntegerField') :
                             s += '.filter(' + filter_field_ + '=' + filter_value_ + ')'
                         else:
                             s += '.filter(' + filter_field_ + '__icontains="' + filter_value_ + '")'
-            print(s)
-            print("9030-22")
+            # print(s)
+            # print("9030-22")
             n_ = -1
             try:
                 primary_key_list_filter_ = dic["primary_key_list_filter"]
@@ -4945,7 +5073,12 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
             except Exception as ex:
                 ("Error 90855-23 " + str(ex))
 
-            # print("9030-221")
+            print(s)
+            print("9030-24")
+            qs = eval(s)
+            df = pd.DataFrame(list(qs.values()))
+            print(df)
+
 
         #     if order_by != "":
         #         s += '.order_by("' + order_by["field"] + '")'
@@ -4986,7 +5119,7 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
         # # print("=2"*50)
 
         dic = {'status': 'ok', "dic": dic}
-        # print('core view 9055 get_data_link dic= ', dic)
+        print(dic)
         return JsonResponse(dic)
 
 

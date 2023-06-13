@@ -4673,9 +4673,11 @@ acComplianceCreator.prototype.create_obj = function()
                       "fields": ['id', 'battalion', 'unit', 'conclusion'],
                       "filters": {'id': {'value': week_idx, 'foreign_table': ''},
                                   'unit': {'value': parent_unit_idx, 'foreign_table': ''},
-                                  'battalion': {'value': atm.general.current_battalion, 'foreign_table': 'battalion'}
-                         }
-                      },
+                                  'battalion': {'value': atm.general.current_battalion, 'foreign_table': 'battalion',
+                                                'field':"id"
+                                  }
+                         },
+                      "order_by": {"field":"id", "direction":"ascending"}},
               "day":{"model":day_table, "parent_model":week_table, "parent_id":parent_unit_idx,
                      "time_dim":c.days.value, "time_unit":c.data_dic}}
     c.get_data_week(dic_);
@@ -4780,7 +4782,7 @@ var dic=
   "fun":"get_compliance_data",
   "params":dic_["week"]}
 
-  alert("dic:\n"+JSON.stringify(dic));
+  //alert("dic:\n"+JSON.stringify(dic));
 
   atm.activate_obj_function(fun, dic, [this])
 
