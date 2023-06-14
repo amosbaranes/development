@@ -419,8 +419,6 @@ class SoldierQualificationFact(TruncateTableMixin, models.Model):
     skill = models.SmallIntegerField(default=0)
     value = models.SmallIntegerField(default=0)
 #
-
-
 #
 class DoubleShoot(TruncateTableMixin, models.Model):
     soldier = models.OneToOneField(Soldiers, on_delete=models.CASCADE, default=1,
