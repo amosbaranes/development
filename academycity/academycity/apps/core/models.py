@@ -72,6 +72,8 @@ class AdjectiveManager(models.Manager):
         return AdjectiveQuerySet(self.model, self._db)
 
     def adjectives(self, adjective_title):
+        # print(adjective_title, "\n", self.get_queryset(), "\n")
+        # print(adjective_title, "\n", self.get_queryset().adjectives(adjective_title), "\n")
         return self.get_queryset().adjectives(adjective_title).order_by("order")
 
 #

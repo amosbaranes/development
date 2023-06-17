@@ -132,14 +132,14 @@ def activate_function(request):
     try:
         dic_ = request.POST["dic"]
         dic_ = eval(dic_)
-        # print("core: 9111-1: dic\n", dic_, "-"*50)
+        # print("-"*50, "\n", "core: 9111-1: dic\n", dic_, "\n", "-"*50, "\n")
         #
         obj_ = dic_["obj"]
         atm_ = dic_["atm"]
         app_ = dic_["app"]
         fun_ = dic_["fun"]
         params_ = dic_["params"]
-        # print("core\n", "9005: params_\n", params_, '\n', "-"*50)
+        # print("core\n9005: params_\n", "-"*50, params_, '\n', "-"*50)
         s = obj_ + "('"+atm_+"', '"+app_+"')." + fun_ + "(params_)"
         # print("core\n", "9010: s=\n", s, "\n", "-"*50)
         result = eval(s)
@@ -362,33 +362,40 @@ def update_field_model_by_id(request, foreign=None):
         return JsonResponse({'status': 'ko'})
 
 def get_data_link(request):
+    errors = ""
     dic_ = request.POST["dic"]
+    log_debug("get_data_link 99999: "+dic_)
     dic_ = eval(dic_)
     # try:
     #     print('\n 9050-150 core views get_data_link dic_ ', "\n", dic_,"\n", "-"*100)
     # except Exception as ex:
     #     print(str(ex))
-    #     # pass
 
+    # errors += "1 "
+    # log_debug("get_data_link 99999: "+errors)
     multiple_select_fields = None
     if "multiple_select_fields" in dic_:
         if len(dic_["multiple_select_fields"]) > 0:
             multiple_select_fields = dic_["multiple_select_fields"]
-
     app_ = dic_['app']
     model_ = dic_['model']
     # print("model_: "+model_)
     if model_ == "":
         dic = {'status': 'ko', "dic": {}}
         return JsonResponse(dic)
-
     model = apps.get_model(app_label=app_, model_name=model_)
-
+    # for testing only --
+    # model__ = apps.get_model(app_label=app_, model_name="XBRLDimCompany")
+    # df = pd.DataFrame(model__.objects.all().values())
+    # print(df)
+    # for index, row in df.iterrows():
+    #     print(index)
+    #     # print(row, "\n", row["full_name"])
+    #     print(row["sic_code"])
+    # for testing only --
     p_key_field_name = model._meta.pk.name
-
     if p_key_field_name not in dic_["fields"]:
         dic_["fields"].insert(0, p_key_field_name)
-
     fields_str = '"'
     for f in dic_["fields"]:
         try:
@@ -398,12 +405,9 @@ def get_data_link(request):
         except Exception as ex:
             print("error 4000-1: "+str(ex))
     fields_str = fields_str[:len(fields_str)-2]
-
     # print("9030","\n", fields_str,"\n","=2"*50)
-
     # fields_ = model._meta.get_fields(include_parents=True, include_hidden=True)
     # print(fields_)
-
     number_of_rows_ = 2
     try:
         number_of_rows_ = dic_['number_of_rows']
@@ -417,10 +421,8 @@ def get_data_link(request):
     except Exception as ex:
         # print("error 500 "+str(ex))
         pass
-
     try:
         company_obj_id_ = dic_['company_obj_id']
-        # print("902055 "+str(company_obj_id_))
     except Exception as ex:
         print("error 440: "+str(ex))
     filters = dic_['filters']
@@ -429,30 +431,30 @@ def get_data_link(request):
     else:
         order_by = ""
     if company_obj_id_ != "-1" and company_obj_id_ != -1:
-
-        # print("90201 ")
-        parent_model = apps.get_model(app_label=app_, model_name=app_+"web")
-        # print(parent_model)
-        company_obj = parent_model.objects.get(id=company_obj_id_)
+        # log_debug("get_data_link company_obj_id_: "+str(company_obj_id_))
         s = 'model.objects'
         s_ = ''
-        if model.model_field_exists(app_+'_web') and isinstance(model._meta.get_field(app_+'_web'),
+        try:
+            parent_model = apps.get_model(app_label=app_, model_name=app_+"web")
+            # print(parent_model)
+            company_obj = parent_model.objects.get(id=company_obj_id_)
+            if model.model_field_exists(app_+'_web') and isinstance(model._meta.get_field(app_+'_web'),
                                                                     ForeignKey):
                 s_ += app_ + '_web=company_obj '
-        if parent_id_ > -1:
-            parent_model_ = dic_['parent_model']
-            parent_pkey_ = parent_id_
-            parent_model__ = apps.get_model(app_label=app_, model_name=parent_model_)
-            parent_model_fk_name = parent_model_[:-1]
-            parent_obj__ = parent_model__.objects.get(id=parent_pkey_)
-            if s_ != '':
-                s_ += ', '
-            s_ += parent_model_fk_name+'=parent_obj__'
+            if parent_id_ > -1:
+                parent_model_ = dic_['parent_model']
+                parent_pkey_ = parent_id_
+                parent_model__ = apps.get_model(app_label=app_, model_name=parent_model_)
+                parent_model_fk_name = parent_model_[:-1]
+                parent_obj__ = parent_model__.objects.get(id=parent_pkey_)
+                if s_ != '':
+                    s_ += ', '
+                s_ += parent_model_fk_name+'=parent_obj__'
+        except Exception as ex:
+            pass
         if s_ != '':
             s += '.filter('+s_+')'
-        # print('s00111')
-        # print(s)
-        # print('s00111')
+        # print('s00111', s, 's00111')
     else:
         if parent_id_ > -1:
             parent_model_ = dic_['parent_model']
@@ -464,16 +466,10 @@ def get_data_link(request):
         else:
             s = 'model.objects'
         # print('90500 s '+s)
-
     # print("9030-2")
     try:
         for f in filters:
-            # filter_field_ = ""
-            # try:
             filter_field_ = f  # filters[f]["filter_field"] #
-                # print(filter_field_)
-            # except Exception as exx:
-            #     pass
             filter_value_ = str(filters[f]["value"])
             filter_field_a = ""
             try:
@@ -483,10 +479,8 @@ def get_data_link(request):
             foreign_table_ = ""
             try:
                 foreign_table_ = filters[f]["foreign_table"]
-                # print(foreign_table_)
             except Exception as exx:
                 pass
-                # print(exx)
             if filter_value_ != "":
                 # print(foreign_table_)
                 if foreign_table_ != "":
@@ -508,10 +502,10 @@ def get_data_link(request):
                     if index != -1:
                         s += '.filter(' + foreign_table_ + '__' + filter_field_ + '=' + filter_value_ + ')'
                     else:
-                        print(44444)
+                        # print(44444555)
                         s += '.filter('+foreign_table_+'__'+filter_field_+'__icontains='+filter_value_+')'
                 else:
-                    print(22222222222)
+                    # print(22222222222)
                     if filter_field_ == "id":
                         #s += '.filter('+filter_field_+'__icontains='+filter_value_+')'
                         s += '.filter('+filter_field_+'='+filter_value_+')'
@@ -544,14 +538,13 @@ def get_data_link(request):
         # print("9030-222")
 
         s += '.all()[:number_of_rows_].values('+fields_str+')'
-        # print('s111 for d_data')
-        # print("\n\n", s, 's11')
+        # print("="*100, '\ns111-1 for d_data\n', "\ns=", number_of_rows_, s, "=\n", "="*100, "\n")
+        log_debug("get_data_link 99999: s="+s)
         d_data = eval(s)
-        # print("d_data", d_data)
+        # print("d_data\n", d_data)
     except Exception as ex:
         print("3030-1 core error 300 "+str(ex))
         # pass
-    # print("9030-3")
     dic = {}
     if multiple_select_fields:
         for z in multiple_select_fields:
@@ -582,14 +575,8 @@ def get_data_link(request):
                 dic[ff] = eval(ff)
     except Exception as ex:
         pass
-        print(ex)
-
-    # print("=2"*50)
-
     dic["pkf_name"] = p_key_field_name
-    # print(dic)
-    # print("=2"*50)
-
+    # print(dic, "=2"*50)
     dic = {'status': 'ok', "dic": dic}
     # print('core view 9055 get_data_link dic_= ', dic)
     return JsonResponse(dic)

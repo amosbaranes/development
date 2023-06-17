@@ -1381,8 +1381,8 @@ class XBRLDimAccount(TruncateTableMixin, models.Model):
 
 class XBRLFactCompany(TruncateTableMixin, models.Model):
     class Meta:
-        verbose_name = _('XBRL Fact')
-        verbose_name_plural = _('XBRL Facts')
+        verbose_name = _('XBRL Fact Company')
+        verbose_name_plural = _('XBRL Fact Companies')
 
     company = models.ForeignKey(XBRLDimCompany, on_delete=models.CASCADE, default=None, related_name='dim_companies')
     time = models.ForeignKey(XBRLDimTime, on_delete=models.CASCADE, default=None, related_name='dim_times')

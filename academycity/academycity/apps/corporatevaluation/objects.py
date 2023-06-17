@@ -4918,26 +4918,30 @@ class FinancialAnalysis(object):
     def update_companies(self, **kwargs):
         # print("update_companies")
         for company in XBRLCompanyInfo.objects.all():
+            # print(company)
             if company.is_active:
-                # print('-'*10)
-                # print(company.id, company.industry.main_sic.sic_code, company.industry.main_sic.sic_description,
-                #       company.industry.sic_code, company.industry.sic_description,
-                #       company.ticker, company.cik, company.company_name, company.exchange,
-                #       company.is_active, company.city, company.state, company.zip)
-                log_debug(company.ticker)
-                # print(company.country_of_incorporation.name)
-                # print(company)
-                a, c = XBRLDimCompany.objects.get_or_create(id=company.id,
-                                                            main_sic_code=company.industry.main_sic.sic_code,
-                                                            main_sic_description=company.industry.main_sic.sic_description,
-                                                            sic_code=company.industry.sic_code,
-                                                            sic_description=company.industry.sic_description,
-                                                            ticker=company.ticker, cik=company.cik,
-                                                            company_name=company.company_name,
-                                                            exchange=company.exchange,
-                                                            city=company.city,
-                                                            state=company.state,
-                                                            zip=company.zip, is_active=company.is_active)
+                try:
+                    # print('-'*10)
+                    # print(company)
+                    # print(company.id, company.industry.main_sic.sic_code, company.industry.main_sic.sic_description,
+                    #       company.industry.sic_code, company.industry.sic_description,
+                    #       company.ticker, company.cik, company.company_name, company.exchange,
+                    #       company.is_active, company.city, company.state, company.zip)
+
+                    log_debug(company.ticker)
+                    a, c = XBRLDimCompany.objects.get_or_create(id=company.id,
+                                                                main_sic_code=company.industry.main_sic.sic_code,
+                                                                main_sic_description=company.industry.main_sic.sic_description,
+                                                                sic_code=company.industry.sic_code,
+                                                                sic_description=company.industry.sic_description,
+                                                                ticker=company.ticker, cik=company.cik,
+                                                                company_name=company.company_name,
+                                                                exchange=company.exchange,
+                                                                city=company.city,
+                                                                state=company.state,
+                                                                zip=company.zip, is_active=company.is_active)
+                except Exception as ex:
+                    pass
         result = {'status': "ok"}
         # print(result)
         return result
@@ -4959,22 +4963,30 @@ class FinancialAnalysis(object):
     # https://github.com/nicolaskruchten/pivottable
     def update_fact_table(self, **kwargs):
         log_debug("--update_chart_of_accounts--")
+        # print("--update_chart_of_accounts--")
         ticker_ = kwargs['ticker'].upper()
-        log_debug(ticker_)
+        # log_debug(ticker_)
         # print("--update_chart_of_accounts--")
         # request = kwargs['request']
         # print(ticker_)
         company = XBRLCompanyInfo.objects.get(ticker=ticker_)
         log_debug("got company: " + ticker_)
+        # print("company", company)
         try:
             company_ = XBRLDimCompany.objects.get(ticker=ticker_)
+            # print("company_", company_)
         except Exception as ex:
             log_debug("Error 9876: " + ticker_ + str(ex))
 
         log_debug("Start yearly data")
+        print("Start yearly data")
+        # print(company.financial_data['data'])
         for y in company.financial_data['data']:
             try:
                 yd = company.financial_data['data'][y]
+                # print("-"*30, "\n", yd, "\n", "-"*30)
+                # print("-"*30, "\n", y, "\n", "-"*30)
+
                 if int(yd['dei']['documentfiscalyearfocus']) < 2012:
                     continue
                 yq = int(yd['dei']['documentfiscalyearfocus'] + "0")
@@ -4998,34 +5010,40 @@ class FinancialAnalysis(object):
                         log_debug(str(ex))
                         # print(str(account_) + "  " + str(ex))
                 log_debug("End update fact table for " + ticker_ + " year: " + str(y))
+                # print("End update fact table for " + ticker_ + " year: " + str(y))
             except Exception as ex:
                 log_debug("Err 9123: "+str(ex))
+                # print("Err 9123: "+str(ex))
                 continue
 
         log_debug("Start quarterly data")
-        for y in company.financial_dataq['data']:
-            try:
-                for sq in company.financial_dataq['data'][y]:
-                    yd = company.financial_dataq['data'][y][sq]
-                    if int(yd['dei']['documentfiscalyearfocus']) < 2012:
-                        continue
-                    q = yd['dei']['documentfiscalperiodfocus'][1]
-                    log_debug("start update fact table for ticker=" + ticker_ + " year=" + str(y) + " q=" + str(q))
-                    yq = int(yd['dei']['documentfiscalyearfocus'] + str(q))
-                    time_ = XBRLDimTime.objects.get(id=yq)
-                    for account in yd['year_data']:
-                        account_ = XBRLDimAccount.objects.get(order=int(account))
-                        amount_ = yd['year_data'][account]
-                        try:
-                            f, c = XBRLFactCompany.objects.get_or_create(company=company_, time=time_, account=account_)
-                            f.amount = amount_
-                            f.save()
-                        except Exception as ex:
-                            log_debug(str(ex))
-                    log_debug("End update fact table for ticker=" + ticker_ + " year=" + str(y) + " q=" + str(q))
-            except Exception as ex:
-                log_debug("Err 6537: "+str(ex))
-                continue
+        print("Start quarterly data")
+        try:
+            for y in company.financial_dataq['data']:
+                try:
+                    for sq in company.financial_dataq['data'][y]:
+                        yd = company.financial_dataq['data'][y][sq]
+                        if int(yd['dei']['documentfiscalyearfocus']) < 2012:
+                            continue
+                        q = yd['dei']['documentfiscalperiodfocus'][1]
+                        log_debug("start update fact table for ticker=" + ticker_ + " year=" + str(y) + " q=" + str(q))
+                        yq = int(yd['dei']['documentfiscalyearfocus'] + str(q))
+                        time_ = XBRLDimTime.objects.get(id=yq)
+                        for account in yd['year_data']:
+                            account_ = XBRLDimAccount.objects.get(order=int(account))
+                            amount_ = yd['year_data'][account]
+                            try:
+                                f, c = XBRLFactCompany.objects.get_or_create(company=company_, time=time_, account=account_)
+                                f.amount = amount_
+                                f.save()
+                            except Exception as ex:
+                                log_debug(str(ex))
+                        log_debug("End update fact table for ticker=" + ticker_ + " year=" + str(y) + " q=" + str(q))
+                except Exception as ex:
+                    log_debug("Err 6537: "+str(ex))
+                    continue
+        except Exception as exx:
+            pass
 
         log_debug("End quarterly data")
         result = {'status': "ok"}

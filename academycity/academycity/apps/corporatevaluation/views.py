@@ -639,17 +639,19 @@ def get_earning_forecast_sp500_view_main(request):
 
 
 def analysis_setup_attribute(request):
+    # print("analysis_setup_attribute")
     fun_ = request.POST.get('fun')
     attribute_ = request.POST.get('attribute')
     attribute_value_ = request.POST.get('attribute_value')
     log_debug("fun: " + fun_+" attribute: " + attribute_ + " " + attribute_value_)
     try:
         s_ = 'FinancialAnalysis().' + fun_ + '(request=request,'+attribute_+'="'+attribute_value_+'")'
+        # print(s_)
         dic = eval(s_)
         # print('dic')
         # print(dic)
     except Exception as ex:
-        # print("Error analysis_setup_attribute.")
+        print("Error analysis_setup_attribute.", ex)
         log_debug("Error 333 fun: " + fun_+" attribute: " + attribute_ + " " + attribute_value_)
     return JsonResponse(dic)
 
@@ -1048,15 +1050,17 @@ def create_company_by_ticker(request):
 
 def get_data_ticker(request):
     ticker_ = request.POST.get('ticker')
-    # print(ticker_)
+    # print("get_data_ticker", ticker_)
     is_update_ = request.POST.get('is_update')
     is_updateq_ = request.POST.get('is_updateq')
-    # print(is_update_)
+    # print(is_update_, is_updateq_)
+
     project = Project.objects.filter(translations__language_code=get_language()).get(id=request.session['cv_project_id'])
     XBRLCountryYearData.project = project
     acx = AcademyCityXBRL()
     data = acx.get_data_ticker(ticker=ticker_, is_update=is_update_, is_updateq=is_updateq_)
-    # print(data)
+    # print("data\n", data)
+
     if len(data["dic_company_info"]["data"]) > 0:
         request.session['cv_statements'] = data['dic_company_info']['statements']
     # print("request.session['cv_statements']")

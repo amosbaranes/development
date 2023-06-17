@@ -135,9 +135,7 @@ class AdvancedTabs(object):
         return result
 
     def get_adjective(self, params):
-        # print('='*50)
-        # print('params')
-        # print(params)
+        # print('='*50, '\nparams\n', params, "\n", '='*50)
 
         app_ = params['app']
         model_name_ = params['model_name']
@@ -147,7 +145,9 @@ class AdvancedTabs(object):
         manager_fun_field = params['manager_fun_field']
         model = apps.get_model(app_label=app_, model_name=model_name_)
 
-        s = "model." + manager_name + "." + manager_fun + "("+manager_fun_field+"=field_value_)"
+        # model.adjectives.adjectives(adjective_title='accounting_report')
+        s = "model." + manager_name + "." + manager_fun + "("+manager_fun_field+"='"+field_value_+"')"
+        # print(s)
         data = eval(s)
         # print(data)
         result = []
@@ -160,16 +160,15 @@ class AdvancedTabs(object):
         return result
 
     def get_list_from_model(self, params):
-        # print('90345 params')
-        # print(params)
-        # print('90345 params')
-
+        # print('-'*50, '90345 params', "\n", params, "\n", '-'*50)
         app_ = params['app']
         model_name_ = params['model_name']
         field_name_ = params['field_name']
         model = apps.get_model(app_label=app_, model_name=model_name_)
 
         # print(model._meta.get_fields(include_hidden=True))
+        # for field in model._meta.get_fields(include_hidden=True):
+        #     print(field.name)
 
         data_filter_field_ = params['data_filter_field']
         data_filter_field_value_ = params['data_filter_field_value']
@@ -199,13 +198,20 @@ class AdvancedTabs(object):
             # print("9013 \n"+squ)
 
             if data_filter_field_ft_ and data_filter_field_ft_ == "Yes":
-                squ += data_filter_field_ + '__id=' + data_filter_field_value_ + ').all()'
-                # print('squ-22:\n', squ)
-                data = eval(squ)
+                try:
+                    squ_ = squ + data_filter_field_ + '__id=' + data_filter_field_value_ + ').all()'
+                    # print('squ-2220:\n', squ_)
+                    data = eval(squ_)
+                    squ = squ_
+                except Exception as ex:
+                    squ_ = squ + data_filter_field_ + '=' + data_filter_field_value_ + ').all()'
+                    # print('squ-2222:\n', squ_)
+                    data = eval(squ_)
+                    squ = squ_
             else:
                 try:
                     squ += data_filter_field_+'__icontains="'+data_filter_field_value_+'").all()'
-                    # print("9014 \n"+squ)
+                    print("9014 \n"+squ)
                     data = eval(squ)
                 except Exception as ex:
                     # print("9015-1 \n"+squ)
@@ -221,10 +227,14 @@ class AdvancedTabs(object):
         # print(data)
         # df = pd.DataFrame(data.values())
         # print(df)
+        # print('901544-1 params \nsqu= \n'+squ)
 
         p_key_field_name = model._meta.pk.name
         if  p_key_field_name != "id":
-            p_key_field_name =  p_key_field_name+"_id"
+            for field in model._meta.get_fields(include_hidden=True):
+                if field.name == p_key_field_name+"_id":
+                    p_key_field_name =  p_key_field_name+"_id"
+                    break
         result = []
         for q in data:
             s = 'result.append((q.'+ p_key_field_name+', q.'+field_name_+'))'

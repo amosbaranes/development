@@ -123,11 +123,12 @@ class BaseDataProcessing(object):
         return result
 
     def get_general_data(self, dic):
-        # print("9012 BaseDataProcessing get_general_data:\n", dic, "\n", "="*50, "\n")
+        print("9012 BaseDataProcessing get_general_data:\n", dic, "\n", "="*50, "\n")
         app_ = dic["app"]
         result = {}
         n__=0
         for k in dic["dimensions"]:
+            # print(k)
             dic_ = dic["dimensions"][k]
             s = k + ' = {}'
             try:
@@ -135,15 +136,15 @@ class BaseDataProcessing(object):
                 model_name_ = dic_["model"]
                 model_ = apps.get_model(app_label=app_, model_name=model_name_)
                 p_key_field_name = model_._meta.pk.name
-                if p_key_field_name != "id":
-                    p_key_field_name +="_id"
+                # if p_key_field_name != "id":
+                #     p_key_field_name +="_id"
                 try:
                     s_ = ""
                     filters = dic_["filters"]
                     if filters:
                         for j in filters:
                             s_ += ".filter(" + j + "=" + str(filters[j]) + ")"
-                            # print(s_)
+                            print(s_)
                 except Exception as ex:
                     print(ex)
 
@@ -171,7 +172,7 @@ class BaseDataProcessing(object):
 
             # print('result[k] = ' + k)
             exec('result[k] = ' + k)
-        # print(result)
+        print(result)
         return result
 
     def clean_name(self, name):

@@ -26,6 +26,8 @@ class Instructors(TruncateTableMixin, models.Model):
     default_battalion = models.IntegerField(default=1)
     first_name = models.CharField(max_length=50, default='', blank=True, null=True)
     last_name = models.CharField(max_length=50, default='', blank=True, null=True)
+    s_first_name = models.CharField(max_length=50, default='', blank=True, null=True)
+    s_last_name = models.CharField(max_length=50, default='', blank=True, null=True)
     position = models.SmallIntegerField(default=0)
 
     @property

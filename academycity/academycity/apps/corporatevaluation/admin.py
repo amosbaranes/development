@@ -238,7 +238,7 @@ class XBRLDimTimeAdmin(admin.ModelAdmin):
 
 @admin.register(XBRLDimCompany)
 class XBRLDimCompanyAdmin(admin.ModelAdmin):
-    list_display = ('id', 'company_name')
+    list_display = ('id', 'company_name', 'sic_code')
 
 
 @admin.register(XBRLDimAccount)

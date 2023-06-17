@@ -796,16 +796,20 @@ AdvancedTabsManager.prototype.save_data = function(html_obj, dic_, is_json_data=
 
 AdvancedTabsManager.prototype.get_data = function(call_back_fun, dic_, tbody_)
 {
-  //alert("1001213  "+JSON.stringify(dic_));
+//  alert("1001213  "+JSON.stringify(dic_));
   dic_["app"]=this.my_app;
   if(dic_["company_obj_id"]==null){dic_["company_obj_id"]=this.company_obj_id;}
+  //for(var k in dic_){alert(dic_[k])}
+  if(dic_["from_fun"]!=null){if(dic_["from_fun"]=="acReport.prototype.set_data"){alert(dic_["from_fun"]+"\n\n"+JSON.stringify(dic_))}}
   //alert("9090-9090 AdvancedTabsManager.prototype.get_data: "+this.get_data_link_)
   call_back_fun.atm=this
   $.post(this.get_data_link_,
           {dic : JSON.stringify(dic_)},
           function(data){
           try{
-           //alert("9001-9001"+JSON.stringify(data));
+          if(dic_["from_fun"]!=null){if(dic_["from_fun"]=="acReport.prototype.set_data")
+          {alert(dic_["from_fun"]+"\n\n"+JSON.stringify(data))}}
+
            if(data["status"]!="ok"){return}
            //alert("9001-9001-100 data in atm "+JSON.stringify(data));
            //try{alert(call_back_fun)} catch(er){"call_back 9001-9001-200\n"+alert(er)}
@@ -1373,6 +1377,7 @@ acObj.prototype.get_select_data = function()
   var fun=function(data, html_obj){
                 //alert(html_obj.outerHTML)
                 //alert(JSON.stringify(data));
+                //alert("5087-87-1 acObj.prototype.get_select_data dic=\n"+JSON.stringify(dic["properties"]));
                 html_obj.innerHTML=""
                 var option = document.createElement("option");
                 option.value = "-1"; option.text = "----";
@@ -1383,6 +1388,11 @@ acObj.prototype.get_select_data = function()
                  option.value = l[0];
                  option.text = l[1];
                  html_obj.appendChild(option);
+                }
+                var call_on_change=""; try{call_on_change=dic["properties"]["call_on_change"]}catch(er){}
+                if(call_on_change!=""){
+                  var default_value=""; try{default_value=dic["properties"]["default_value"]}catch(er){}
+                  if(default_value!=""){html_obj.value=default_value}
                 }
               }
   if(options!="" & options!=null)
@@ -1921,6 +1931,7 @@ acReport.prototype.set_data = function(type, is_level=true){
   // alert(is_level)
   if(is_level==false){this.get_data_dic["fields"] = this.get_data_dic["fields"].filter(item => item !== "level")}
   //alert("90876\n"+JSON.stringify(this.get_data_dic));
+  //this.get_data_dic["from_fun"]="acReport.prototype.set_data"
   this.atm.get_data(fun, this.get_data_dic, [this.table_, this.get_data_dic])
 }
 
@@ -2002,6 +2013,9 @@ acPivotCreator.prototype.create_html = function(type=null)
   var vt_="";
   if(dic["properties"]["vertical_title"]!=null && dic["properties"]["vertical_title"]!=""){vt_=dic["properties"]["vertical_title"]};
   vt_ll=[];for(var j in h_){vt_ll.push(0)};if(vt_!="" && vt_!=""){vt_ll.push(0)};
+
+  //alert("v_\n"+JSON.stringify(v_));
+
   for (var i in v_)
   {
       s+="<tr><th style='white-space: pre;text-align:left'>"+p.raw_data["dim_titles"][vertical_field_][v_[i]]+"</th>"
@@ -4340,6 +4354,7 @@ acRecordingTestsCreator.prototype.set_obj_structure = function(group_list=null, 
     var test_number=this.horizontal_field_list["test_number"][i]+"";
     var test_number_idx=this.test_dic["test_number"].indexOf(test_number)
     var hf_name=this.test_dic["test_name"][test_number_idx]
+    hf_name=hf_name.split("(")[0];
     var th_=document.createElement("th");this.tr_.appendChild(th_);th_.innerHTML=hf_name;
     var style_="width:"+width_+"px"
     if(i==(n_-1)){style_+=";border-top-right-radius: 10px"}
