@@ -4456,8 +4456,9 @@ acRecordingTestsCreator.prototype.fill_up_data = function(data, this_obj)
 }
 
 
-// -- acCompliance --
+// -- acCom pliance --
 function acComplianceCreator(parent){this.parent=parent;this.is_set_unit=true, this.is_set_parameters=false,
+                                     this.s_col_time_width=100;this.s_buttons_width=62;this.s_col_width=150;
                                      this.data_dic={}}
 
 acComplianceCreator.prototype.create_obj = function()
@@ -4505,11 +4506,7 @@ acComplianceCreator.prototype.create_obj = function()
     var e=event.target;
     var units=e.my_creator.units;
     var units_value=units.value;
-    if(units_value!=-1)
-    {
-       var ec=new Event("change", {bubbles: true});
-       units.dispatchEvent(ec)
-    }
+    if(units_value!=-1 && units_value!=""){var ec=new Event("change", {bubbles: true});units.dispatchEvent(ec)}
     //alert("days change: "+e.value)
   })
   this.main_div.appendChild(this.days);
@@ -4529,173 +4526,37 @@ acComplianceCreator.prototype.create_obj = function()
   var table_class_=dic["properties"]["table_class"];if(table_class_==null || table_class_==""){table_class_="basic"}
   this.table_.setAttribute("class", table_class_)
 
-  var onchange_input=function(event){
-           var e=event.target;
-
-    //alert("90357-101\n"+JSON.stringify(e.data_dic));
-    //alert("90357-102\n"+JSON.stringify(e.dic));
-    //alert(e.outerHTML)
-           var s=e.getAttribute("id");var ll=s.split("-");
-           var week_table=e.dic["properties"]["week_table"]
-           var parent_unit_idx=ll[2];
-           var week_idx=ll[0];
-           // --
-           var day_idx=ll[1];
-           var day_table=e.dic["properties"]["day_table"]
-           // --
-           var row_number=ll[4];var unit=ll[3];
-           if(!("data" in e.data_dic)){e.data_dic["data"]={}}
-           if(!(row_number in e.data_dic["data"])){e.data_dic["data"][row_number]={}}
-           e.data_dic["data"][row_number][unit]=e.value;
-           //--
-           var dic_={"week":{"table":week_table, "parent_unit_idx":parent_unit_idx, "week":week_idx},
-                     "day":{"table":day_table,"time_dim":day_idx, "time_unit":e.data_dic}}
-
-           //alert("90357-555-1\n"+JSON.stringify(dic_));
-
-           e.save_data(dic_);
-  }
-
   this.units.addEventListener("change", function(event){
-    var e=event.target;var c=e.my_creator;var s_col_width=150;var s_col_time_width=100;var s_buttons_width=62;
+    var e=event.target;var c=e.my_creator;c.ll=c.units_structure[e.value]
     //alert("90357-1 "+JSON.stringify(e.my_creator.units_structure));
     //alert(e.value)
-    var ll=e.my_creator.units_structure[e.value]
-    //alert("90357 "+JSON.stringify(ll));
+    //alert("90357 "+JSON.stringify(c.ll));
     if(c.thead_tr.innerHTML!=""){
       var id_ = prompt("Are you sure you want to Change Unit? if so type y" , 'No')
       if(id_ != 'y') {return;}
     }
     c.thead_tr.innerHTML="";c.tbody_.innerHTML="";
-    th=document.createElement("th");c.thead_tr.appendChild(th);th.setAttribute("style", 'width:'+s_col_time_width+'px');th.innerHTML="Time From"
-    th=document.createElement("th");c.thead_tr.appendChild(th);th.setAttribute("style", 'width:'+s_col_time_width+'px');th.innerHTML="Time To"
+    th=document.createElement("th");c.thead_tr.appendChild(th);th.setAttribute("style",'width:'+this.s_col_time_width+'px');th.innerHTML="Time From"
+    th=document.createElement("th");c.thead_tr.appendChild(th);th.setAttribute("style",'width:'+this.s_col_time_width+'px');th.innerHTML="Time To"
     //--
-    th=document.createElement("th");c.thead_tr.appendChild(th);th.setAttribute("style", 'width:'+s_buttons_width+'px');
-    c.button_add_time=document.createElement("button");c.button_add_time.innerHTML="+"
-    th.appendChild(c.button_add_time);
-    c.button_add_time.ll=ll;
-    c.button_add_time.parent_unit=e.value;
-    c.button_add_time.weeks=c.weeks;
-    c.button_add_time.days=c.days;
-    c.button_add_time.data_dic=c.data_dic;
+    th=document.createElement("th");c.thead_tr.appendChild(th);th.setAttribute("style",'width:'+this.s_buttons_width+'px');
+    var button_add_time=document.createElement("button");button_add_time.c=c;button_add_time.innerHTML="+"
+    th.appendChild(button_add_time);
     // creat a new row --
-    c.button_add_time.addEventListener("click", function(event){
-     var e=event.target;
-     //alert(e.outerHTML)
-     //alert(c.tbody_.outerHTML)
-        var tr=document.createElement("tr");c.tbody_.appendChild(tr);
-        var row_number=c.get_next_time_number();
-        // --Time columns --
-        var td=document.createElement("td");tr.appendChild(td);
-        td.setAttribute("style", 'width:'+s_col_time_width+'px')
-        var input=document.createElement("input");td.appendChild(input);
-        input.setAttribute("style", 'width:'+s_col_time_width+'px');
-        input.setAttribute("type", 'time');
-        input.setAttribute("id", e.weeks.value+"-"+e.days.value+"-"+e.parent_unit+"-time_from-"+row_number);
-        input.onchange=onchange_input;input.data_dic=e.data_dic;input.dic=c.units.dic;input.save_data=c.save_data;
-        //--
-        var td=document.createElement("td");tr.appendChild(td);
-        td.setAttribute("style", 'width:'+s_col_time_width+'px')
-        var input=document.createElement("input");td.appendChild(input);
-        input.setAttribute("style", 'width:'+s_col_time_width+'px')
-        input.setAttribute("type", 'time');
-        input.setAttribute("id", e.weeks.value+"-"+e.days.value+"-"+e.parent_unit+"-time_to-"+row_number);
-        input.onchange=onchange_input;input.data_dic=e.data_dic;input.dic=c.units.dic;input.save_data=c.save_data;
-        //-- delete button and detail/all button --
-        td=document.createElement("td");tr.appendChild(td);td.innerHTML+="&nbsp;"
-        td.setAttribute("style", 'width:'+s_buttons_width+'px');
-        button_add_description=document.createElement("button");button_add_description.innerHTML="D"
-        td.appendChild(button_add_description);
-
-        var ff_=function(t, c, e, tr, s_col_width, row_number, onchange_input){
-          var c=e.my_creator;
-          if(t=="D"){
-            for(j in e.ll["data"])
-            {
-              var td=document.createElement("td");tr.appendChild(td);
-              td.setAttribute("style", 'width:'+s_col_width+'px')
-              var input=document.createElement("input");td.appendChild(input);
-              input.setAttribute("style", 'width:'+s_col_width+'px')
-              input.setAttribute("unit_number", j)
-              input.setAttribute("id", e.weeks.value+"-"+e.days.value+"-"+e.parent_unit+"-"+j+"-"+row_number);
-              input.onchange=onchange_input;
-              input.data_dic=e.data_dic;
-              input.dic=c.units.dic;
-              //alert("c.save_data\n"+c.save_data);
-              input.save_data=c.save_data;
-            };
-          } else {
-
-          }
-
-        }
-        button_add_description.addEventListener("click", function(event){
-           var e=event.target;
-           var s=e.innerHTML;if(s=="D"){e.innerHTML="A"
-
-
-//                for(j in e.ll["data"])
-//                {
-//                  var td=document.createElement("td");tr.appendChild(td);
-//                  td.setAttribute("style", 'width:'+s_col_width+'px')
-//                  var input=document.createElement("input");td.appendChild(input);
-//                  input.setAttribute("style", 'width:'+s_col_width+'px')
-//                  input.setAttribute("unit_number", j)
-//                };
-
-
-
-           }else{e.innerHTML="D"
-
-
-                //--
-//                for(j in e.ll["data"])
-//                {
-//                  var td=document.createElement("td");tr.appendChild(td);
-//                  td.setAttribute("style", 'width:'+s_col_width+'px')
-//                  var input=document.createElement("input");td.appendChild(input);
-//                  input.setAttribute("style", 'width:'+s_col_width+'px')
-//                  input.setAttribute("unit_number", j)
-//                };
-
-
-           }
-         })
-
-        button_delete=document.createElement("button");button_delete.innerHTML="--"
-        td.appendChild(button_delete);
-        button_delete.addEventListener("click", function(event){
-            var id_ = prompt("Are you sure you want to delete this record? if so type y" , 'No')
-            if(id_ != 'y') {return;}; var e=event.target;var g=e.parentNode.parentNode;g.outerHTML="";
-            // update DB
-         })
-        //--
-        ff_(t="D", c, e, tr, s_col_width, row_number, onchange_input)
-     //alert(c.tbody_.outerHTML)
-    })
+    button_add_time.addEventListener("click", function(event){
+        var e=event.target;var c=e.c;
+        var row_number_=c.get_next_time_number();
+        c.add_new_time_row(row_number=row_number_)
+   })
     //--
-    for(j in ll["data"])
-    { th=document.createElement("th");c.thead_tr.appendChild(th);
-      th.setAttribute("style", 'width:'+s_col_width+'px')
-      th.setAttribute("unit_number", j)
-      th.innerHTML=ll["data"][j]["title"]
+    for(var j in c.ll["data"]){th=document.createElement("th");c.thead_tr.appendChild(th);
+      th.setAttribute("style",'width:'+c.s_col_width+'px');th.setAttribute("unit_number", j);
+      th.innerHTML=c.ll["data"][j]["title"]
     };
-    var week_table=e.dic["properties"]["week_table"];
-    var parent_unit_idx =e.value;
-    var week_idx = c.weeks.value
-    var day_table=e.dic["properties"]["day_table"];
-    var dic_={"week":{"app":atm.my_app, "model":week_table,"company_obj_id":atm.company_obj_id,
-                      "fields": ['id', 'battalion', 'unit', 'conclusion'],
-                      "filters": {'id': {'value': week_idx, 'foreign_table': ''},
-                                  'unit': {'value': parent_unit_idx, 'foreign_table': ''},
-                                  'battalion': {'value': atm.general.current_battalion, 'foreign_table': 'battalion',
-                                                'field':"id"
-                                  }
-                         },
-                      "order_by": {"field":"id", "direction":"ascending"}},
-              "day":{"model":day_table, "parent_model":week_table, "parent_id":parent_unit_idx,
-                     "time_dim":c.days.value, "time_unit":c.data_dic}}
-    c.get_data_week(dic_);
+    //--
+    //c.days.value=c.weeks.value;
+    c.get_set_data(time_dim=c.days.value, time_unit="null");
+    //--
   })
   //-- functions --
   for(f in dic["functions"]){var s="this.main_div."+f+"="+dic["functions"][f];eval(s);}
@@ -4748,64 +4609,150 @@ acComplianceCreator.prototype.set_weeks_days = function()
    this.days.dispatchEvent(ec)
 }
 
+acComplianceCreator.prototype.add_new_time_row = function(row_number)
+{
+  var get_select=function(c, type, tr, j, s_col_width, row_number, onchange_input){
+    if(type=="D")
+    {
+      var ll={'1':'כש"ג', '2':'קמ"ג'}
+      var td=document.createElement("td");tr.appendChild(td);
+      td.setAttribute("style", 'width:'+s_col_width+'px')
+      var input=document.createElement("select");td.appendChild(input);
+      var o=document.createElement("option");o.value="-1";o.innerHTML="-------";input.appendChild(o);
+      for(var h in ll){var o=document.createElement("option");o.value=h;o.innerHTML=ll[h];input.appendChild(o)};
+      input.setAttribute("style",'width:'+s_col_width+'px')
+      input.setAttribute("unit_number",j);
+      input.setAttribute("id",j+"-"+row_number);
+      input.onchange=onchange_input;
+      input.c=c;
+    } else if(type=="A"){
+
+    }
+
+  }
+
+  //alert("acComplianceCreator.prototype.add_new_time_row")
+  var onchange_input=function(event){
+           var e=event.target;
+           //alert("90357-101\n"+JSON.stringify(e.c.data_dic));
+           var s=e.getAttribute("id");
+           var ll=s.split("-");var field_=ll[0];var row_number=ll[1];
+           //alert(field_ + " " + row_number)
+           var t_=e.c.data_dic["times"];
+           if(!(row_number in t_)){t_[row_number]={}};t_[row_number][field_]=e.value;
+           //alert("90357-555-2\n"+JSON.stringify(e.c.data_dic));
+           e.c.get_set_data(time_dim=e.c.days.value, time_unit=e.c.data_dic);
+  }
+
+    var tr=document.createElement("tr");this.tbody_.appendChild(tr);
+    // --Time columns --
+    var td=document.createElement("td");tr.appendChild(td);td.setAttribute("style",'width:'+this.s_col_time_width+'px')
+    var input=document.createElement("input");td.appendChild(input);
+    input.setAttribute("style",'width:'+this.s_col_time_width+'px');input.setAttribute("type",'time');
+    input.setAttribute("id","time_from-"+row_number);input.onchange=onchange_input;input.c=this;
+    //--
+    var td=document.createElement("td");tr.appendChild(td);td.setAttribute("style",'width:'+this.s_col_time_width+'px')
+    var input=document.createElement("input");td.appendChild(input);
+    input.setAttribute("style",'width:'+this.s_col_time_width+'px');input.setAttribute("type",'time');
+    input.setAttribute("id","time_to-"+row_number);input.onchange=onchange_input;input.c=this;
+    //--
+    var td=document.createElement("td");tr.appendChild(td);td.innerHTML+="&nbsp;";
+    td.setAttribute("style",'width:'+this.s_buttons_width+'px');
+    var button_add_description=document.createElement("button");button_add_description.innerHTML="D"
+    td.appendChild(button_add_description);
+    button_add_description.addEventListener("click", function(event){
+           var e=event.target;
+           var s=e.innerHTML;if(s=="D"){e.innerHTML="A"
+
+
+//                for(j in e.ll["data"])
+//                {
+//                  var td=document.createElement("td");tr.appendChild(td);
+//                  td.setAttribute("style", 'width:'+s_col_width+'px')
+//                  var input=document.createElement("input");td.appendChild(input);
+//                  input.setAttribute("style", 'width:'+s_col_width+'px')
+//                  input.setAttribute("unit_number", j)
+//                };
+
+
+
+           }else{e.innerHTML="D"
+                //--
+//                for(j in e.ll["data"])
+//                {
+//                  var td=document.createElement("td");tr.appendChild(td);
+//                  td.setAttribute("style", 'width:'+s_col_width+'px')
+//                  var input=document.createElement("input");td.appendChild(input);
+//                  input.setAttribute("style", 'width:'+s_col_width+'px')
+//                  input.setAttribute("unit_number", j)
+//                };
+           }
+         })
+    //--
+    var button_delete=document.createElement("button");button_delete.innerHTML="--"
+    td.appendChild(button_delete);
+    button_delete.addEventListener("click", function(event){
+            var id_ = prompt("Are you sure you want to delete this record? if so type y" , 'No')
+            if(id_ != 'y') {return;}; var e=event.target;var g=e.parentNode.parentNode;g.outerHTML="";
+            // update DB
+
+
+         })
+    //--
+    var ff_=function(t, c, tr, s_col_width, row_number, onchange_input, get_select){
+       if(t=="D"){for(j in c.ll["data"]){get_select(c, t, tr, j, s_col_width, row_number, onchange_input)}
+          } else {
+          }
+        }
+        ff_(t="D", this, tr, this.s_col_width, row_number, onchange_input, get_select)
+}
+
 acComplianceCreator.prototype.get_next_time_number = function()
 {
  if(!("last_number" in this.data_dic)){this.data_dic["last_number"]=0}
- var n_=this.data_dic["last_number"]+1
+ var n_=this.data_dic["last_number"]+1;
  this.data_dic["last_number"]=n_;
- return n_
+ this.get_set_data(time_dim=this.days.value, time_unit=this.data_dic);
+ return n_;
 }
 
-acComplianceCreator.prototype.save_data = function(dic_)
+acComplianceCreator.prototype.get_set_data = function(time_dim, time_unit)
 {
-   alert("90357-555-110\n"+JSON.stringify(dic_));
-}
-
-acComplianceCreator.prototype.get_data_week = function(dic_)
-{
-   //alert("90357-555-120\n"+JSON.stringify(dic_));
-//   var dic = {"model":dic_["week"]["table"],
-//              "filters": {'id': {'value': dic_["week"]["week"], 'foreign_table': ''},
-//                          'unit': {'value': dic_["week"]["parent_unit_idx"], 'foreign_table': ''},
-//                          'battalion': {'value': dic_["week"]["battalion"], 'foreign_table': 'battalion'}
-//                         },
-//              "order_by": {},
-//              "fields": ['id', 'battalion', 'unit', 'conclusion']
-//            }
-//
-//   alert("90756-666 "+JSON.stringify(dic));
-
+   //alert("acComplianceCreator.prototype.get_set_data")
    var fun=function(data, ll){
-   alert(9999)
+     var obj=ll[0]; var dic_=ll[1]
+     //alert("90357-888-1\n "+JSON.stringify(dic_["params"]["time_unit"]));
+     //alert("90357-888-2\n "+JSON.stringify(data));
+     obj.data_dic=data["time_unit"];
+     if(dic_["params"]["time_unit"]=="null")
+     {
+      //alert("update")
+      var ts=data["time_unit"]["times"]
+      for(var k in ts){
+       obj.add_new_time_row(k);
+       for(var j in ts[k]){
+       var sid=j+"-"+k
+        //alert(sid+"="+ts[k][j]);
+        //alert(getEBI(sid).outerHTML)
+        getEBI(sid).value=ts[k][j];
+       }
+       //alert("90357-888-5\n "+k+"\n"+JSON.stringify(ts[k]));
+      }
+     }
 
-//     var obj=ll[0]
-//     var dic_=ll[1]
-        alert("90357-888-1 "+JSON.stringify(data));
-//
-//     // obj.data_dic = data["result"]
-//
-//
-//   alert("90357-888-2\n"+JSON.stringify(dic_));
-//
-//       if(Object.keys(dic_).length>0){obj.get_data_day(dic_)}
    }
+    var pp_=this.parent.data["properties"];
+    var dic=
+    {"obj":"TrainingDataProcessing","atm":atm.my_name,"app":atm.my_app,
+     "obj_param":{"topic_id":"general","app":atm.my_app},"fun":"compliance_data",
+     "params":{"app":atm.my_app,"week_model":pp_["week_table"],"day_model":pp_["day_table"],
+               "company_obj_id":atm.company_obj_id,"week_start_day":this.weeks.value, "unit": this.units.value,
+               "battalion": atm.general.current_battalion,"time_dim":time_dim, "time_unit":time_unit
+             }
+     }
 
-var dic=
- {"obj":"TrainingDataProcessing",
-  "atm":atm.my_name,"app":atm.my_app,
-  "obj_param":{"topic_id":"general", "app":atm.my_app},
-  "fun":"get_compliance_data",
-  "params":dic_["week"]}
-
-  //alert("dic:\n"+JSON.stringify(dic));
-
-  atm.activate_obj_function(fun, dic, [this])
-
-}
-
-acComplianceCreator.prototype.get_data_day = function(dic_)
-{
-   alert("90357-555-130\n"+JSON.stringify(dic_));
+    //alert("dic:\n"+JSON.stringify(dic));
+    atm.activate_obj_function(fun, dic, [this, dic])
 }
 
 acComplianceCreator.prototype.set_units = function()

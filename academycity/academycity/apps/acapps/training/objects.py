@@ -4582,7 +4582,7 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
         units_dic_b = units_dic[n__]["data"]
 
         df = pd.read_excel(file_path, sheet_name="Data", header=0)
-        print(df)
+        # print(df)
         # print("-"*100)
         ll_c = []
         ll_p = []
@@ -4728,9 +4728,9 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
         # print(df)
         # print("-"*100)
         columns = df.columns[9:]
-        print(columns)
+        print("columns\n", columns)
         for index, row in df.iterrows():
-            # print(index)
+            print(index)
             # if index < 545:
             #     continue
             # print(row, "\n", row["company"])
@@ -4783,7 +4783,7 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
                 soldier_obj.mz4psn = mz4psn
                 soldier_obj.save()
             except Exception as ex:
-                print("9011-22-4 Error " + str(ex))
+                print("9011-22-4 Error ", userid, str(ex))
             try:
                 soldier_obj.ramonsn = ramonsn
                 soldier_obj.save()
@@ -4828,8 +4828,6 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
                 except Exception as ex:
                     print("9011-55 Error \n", k, v_, userid, str(ex))
         # -----
-        period_obj.structure=units_dic
-        period_obj.save()
         result = {"status": "ok"}
         print(result)
         return result
@@ -4927,200 +4925,47 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
     #     result = {"status": "ok"}
     #     return result
 
-    def get_compliance_data(self, dic):
+    def compliance_data(self, dic):
         try:
             print('\n 90100-160 get_compliance_data dic ', "\n", dic, "\n", "-" * 100)
         except Exception as ex:
             print(str(ex))
             # pass
-
         app_ = dic['app']
-        model_ = dic['model']
-        if model_ == "":
-            dic = {'status': 'ko', "dic": {}}
-            return JsonResponse(dic)
-        model = apps.get_model(app_label=app_, model_name=model_)
-        p_key_field_name = model._meta.pk.name
-        if p_key_field_name not in dic["fields"]:
-            dic["fields"].insert(0, p_key_field_name)
-        fields_str = '"'
-        for f in dic["fields"]:
-            try:
-                if f != "":
-                    exec(f + ' = []')
-                    fields_str += f + '","'
-            except Exception as ex:
-                print("error 4000-1: " + str(ex))
-        fields_str = fields_str[:len(fields_str) - 2]
+        week_model_ = dic["week_model"]
+        day_model_ = dic["day_model"]
+        company_obj_id_ = int(dic['company_obj_id'])
+        week_start_day_ = int(dic["week_start_day"])
+        time_unit_ = dic["time_unit"]
+        model_battalion = apps.get_model(app_label=app_, model_name="battalions")
+        model_week = apps.get_model(app_label=app_, model_name=week_model_)
+        model_day = apps.get_model(app_label=app_, model_name=day_model_)
+        model_time_dim = apps.get_model(app_label=app_, model_name="timedim")
+        unit_ = int(dic["unit"])
+        battalion_ = int(dic["battalion"])
+        time_dim_ = int(dic["time_dim"])
+        # print(company_obj_id_, battalion_, week_start_day_, unit_)
+        battalion_obj = model_battalion.objects.get(id=battalion_)
+        obj, is_created = model_week.objects.get_or_create(training_web__id=company_obj_id_,
+                                                           battalion = battalion_obj,
+                                                           week_start_day=week_start_day_,
+                                                           unit=unit_)
+        # print("-"*50, "\nbattalion\n", obj, "\n", "-"*50)
+        dic = {"week_unit_id": obj.id}
+        time_dim_obj = model_time_dim.objects.get(id=time_dim_)
+        obj_day, is_created = model_day.objects.get_or_create(complianceweek=obj, time_dim=time_dim_obj)
+        if is_created:
+            obj_day.time_unit = {"last_number": 0, "times": {}}
+            obj_day.save()
 
-        # print("9030","\n", fields_str,"\n","=2"*50)
-
-        # fields_ = model._meta.get_fields(include_parents=True, include_hidden=True)
-        # print(fields_)
-
-        parent_id_ = -1
-        try:
-            parent_id_ = int(dic['parent_id'])
-        except Exception as ex:
-            # print("error 500 "+str(ex))
-            pass
-        try:
-            company_obj_id_ = dic['company_obj_id']
-            # print("902055 "+str(company_obj_id_))
-        except Exception as ex:
-            print("error 440: " + str(ex))
-        filters = dic['filters']
-        try:
-            order_by = ""
-            if len(dic['order_by']) > 0:
-                order_by = dic['order_by']
-        except Exception as ex:
-            print("error 441: " + str(ex))
-
-        if company_obj_id_ != "-1" and company_obj_id_ != -1:
-            # print("90201 ")
-            parent_model = apps.get_model(app_label=app_, model_name=app_ + "web")
-            # print(parent_model)
-            company_obj = parent_model.objects.get(id=company_obj_id_)
-            s = 'model.objects'
-            s_ = ''
-            if model.model_field_exists(app_ + '_web') and isinstance(model._meta.get_field(app_ + '_web'),
-                                                                      ForeignKey):
-                s_ += app_ + '_web=company_obj '
-            if parent_id_ > -1:
-                parent_model_ = dic['parent_model']
-                parent_pkey_ = parent_id_
-                parent_model__ = apps.get_model(app_label=app_, model_name=parent_model_)
-                parent_model_fk_name = parent_model_[:-1]
-                parent_obj__ = parent_model__.objects.get(id=parent_pkey_)
-                if s_ != '':
-                    s_ += ', '
-                s_ += parent_model_fk_name + '=parent_obj__'
-            if s_ != '':
-                s += '.filter(' + s_ + ')'
-            # print('s00111')
-            # print(s)
-            # print('s00111')
+        if time_unit_ == "null":
+            time_unit_ = obj_day.time_unit
         else:
-            if parent_id_ > -1:
-                parent_model_ = dic['parent_model']
-                parent_pkey_ = parent_id_
-                parent_model__ = apps.get_model(app_label=app_, model_name=parent_model_)
-                parent_model_fk_name = parent_model_[:-1]
-                parent_obj__ = parent_model__.objects.get(id=parent_pkey_)
-                s = 'model.objects.filter(' + parent_model_fk_name + '=parent_obj__)'
-            else:
-                s = 'model.objects'
-            # print('90500 s '+s)
-        try:
-            for f in filters:
-                # filter_field_ = ""
-                # try:
-                filter_field_ = f  # filters[f]["filter_field"] #
-                # print(filter_field_)
-                # except Exception as exx:
-                #     pass
-                filter_value_ = str(filters[f]["value"])
-                filter_field_a = ""
-                try:
-                    filter_field_a = str(filters[f]["field"])
-                except Exception as exx:
-                    pass
-                foreign_table_ = ""
-                try:
-                    foreign_table_ = filters[f]["foreign_table"]
-                    # print(foreign_table_)
-                except Exception as exx:
-                    pass
-                    # print(exx)
-                if filter_value_ != "":
-                    # print(foreign_table_)
-                    if foreign_table_ != "":
-                        if filter_field_a != "":
-                            # need need need to check this one. I changed it and it might have effect on other reports
-                            filter_field_ = filter_field_a
-                        # print(filter_field_)
-                        # print(111122222)
-                        # f__ = model._meta.get_field(filter_field_)
-                        # print(f__)
-                        # t__ = f__.get_internal_type()
-                        # print(t__)
-                        # print(str(t__))
-                        # s += '.filter('+foreign_table_+'__'+filter_field_+'='+filter_value_+')'
-                        # if str(t__)=="AutoField":
-                        #     print(3333333)
-                        index = filter_field_.find("id")
-                        if index != -1:
-                            s += '.filter(' + foreign_table_ + '__' + filter_field_ + '=' + filter_value_ + ')'
-                        else:
-                            # print(44444)
-                            s += '.filter(' + foreign_table_ + '__' + filter_field_ + '__icontains=' + filter_value_ + ')'
-                    else:
-                        # print(22222222222)
-                        type_ = type(model._meta.get_field(filter_field_))
-                        if type_ is eval('PositiveIntegerField') or type_ is eval('IntegerField') :
-                            s += '.filter(' + filter_field_ + '=' + filter_value_ + ')'
-                        else:
-                            s += '.filter(' + filter_field_ + '__icontains="' + filter_value_ + '")'
-            # print(s)
-            # print("9030-22")
-            n_ = -1
-            try:
-                primary_key_list_filter_ = dic["primary_key_list_filter"]
-                n_ = len(primary_key_list_filter_)
-                if primary_key_list_filter_ and n_ > 0:
-                    s += '.filter(' + p_key_field_name + '__in=primary_key_list_filter_)'
-            except Exception as ex:
-                ("Error 90855-23 " + str(ex))
-
-            print(s)
-            print("9030-24")
-            qs = eval(s)
-            df = pd.DataFrame(list(qs.values()))
-            print(df)
-
-
-        #     if order_by != "":
-        #         s += '.order_by("' + order_by["field"] + '")'
-        #         if order_by["direction"] == "descending":
-        #             s += '.reverse()'
-        #
-        #     s += '.all().values(' + fields_str + ')'
-        #     print('s111 for d_data')
-        #     print("\n\n", s, 's11')
-        #     d_data = eval(s)
-        #     # print("d_data", d_data)
-        except Exception as ex:
-            print("3030-1 core error 300 " + str(ex))
-            # pass
-        # print("9030-3")
-        dic = {}
-
-
-
-        # try:
-        #     for q in d_data:
-        #         for f in dic["fields"]:
-        #             if f != "":
-        #                 # print(f+'.append(q[\''+f+'\'])')
-        #                 eval(f + '.append(q[\'' + f + '\'])')
-        #                 # print(eval(f))
-        #     for ff in dic["fields"]:
-        #         if ff != "":
-        #             dic[ff] = eval(ff)
-        # except Exception as ex:
-        #     pass
-        #     print(ex)
-        #
-        # # print("=2"*50)
-        #
-        # dic["pkf_name"] = p_key_field_name
-        # # print(dic)
-        # # print("=2"*50)
-
-        dic = {'status': 'ok', "dic": dic}
-        print(dic)
-        return JsonResponse(dic)
+            obj_day.time_unit = time_unit_
+            obj_day.save()
+        dic["time_unit"] = time_unit_
+        # print(dic)
+        return dic
 
     # Upload tests
     def upload_tests(self, dic):

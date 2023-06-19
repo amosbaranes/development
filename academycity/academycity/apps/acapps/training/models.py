@@ -391,22 +391,27 @@ class ComplianceWeeks(TruncateTableMixin, models.Model):
         verbose_name = 'compliance_week'
         verbose_name_plural = 'compliance_weeks'
 
-    id = models.PositiveIntegerField(primary_key=True)
+    week_start_day = models.PositiveIntegerField(default=20230101)
     training_web = models.ForeignKey(TrainingWeb, on_delete=models.CASCADE, default=1,
                                      related_name='training_web_compliance_weeks')
     battalion = models.ForeignKey(Battalions, on_delete=models.CASCADE, default=1, related_name='battalion_compliance_weeks')
     unit = models.IntegerField(blank=True, null=True)
     conclusion = models.TextField(blank=True, null=True)
 
+    def __str__(self):
+        return str(self.unit) + ":" + str(self.week_start_day)
+
 class ComplianceDays(TruncateTableMixin, models.Model):
     class Meta:
         verbose_name = 'compliance_day'
         verbose_name_plural = 'compliance_days'
 
-    compliance_week = models.ForeignKey(ComplianceWeeks, on_delete=models.CASCADE, default=1, related_name='compliance_week_compliance_days')
+    complianceweek = models.ForeignKey(ComplianceWeeks, on_delete=models.CASCADE, default=1, related_name='compliance_week_compliance_days')
     time_dim = models.ForeignKey(TimeDim, on_delete=models.CASCADE, default=1, related_name='time_dim_compliance_days')
     time_unit = models.JSONField(null=True)
 
+    def __str__(self):
+        return str(self.complianceweek) + ":" + str(self.time_dim)
 
 # SoldierQualificationFact
 class SoldierQualificationFact(TruncateTableMixin, models.Model):

@@ -44,11 +44,11 @@ class TestsStructuresAdmin(admin.ModelAdmin):
 
 @admin.register(ComplianceWeeks)
 class ComplianceWeeksAdmin(admin.ModelAdmin):
-    list_display = ('id', 'battalion', 'unit')
+    list_display = ('id', 'battalion', 'unit', 'week_start_day')
 
 @admin.register(ComplianceDays)
 class ComplianceDaysAdmin(admin.ModelAdmin):
-    list_display = ('id', 'time_dim', 'compliance_week')
+    list_display = ('id', 'time_dim', 'complianceweek')
 
 @admin.register(Soldiers)
 class SoldiersAdmin(admin.ModelAdmin):
