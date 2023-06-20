@@ -4926,17 +4926,20 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
     #     return result
 
     def compliance_data(self, dic):
-        try:
-            print('\n 90100-160 get_compliance_data dic ', "\n", dic, "\n", "-" * 100)
-        except Exception as ex:
-            print(str(ex))
-            # pass
+        # try:
+        #     print('\n 90100-160 get_compliance_data dic ', "\n", dic, "\n", "-" * 100)
+        # except Exception as ex:
+        #     print(str(ex))
+        #     # pass
         app_ = dic['app']
         week_model_ = dic["week_model"]
         day_model_ = dic["day_model"]
         company_obj_id_ = int(dic['company_obj_id'])
         week_start_day_ = int(dic["week_start_day"])
+
         time_unit_ = dic["time_unit"]
+        week_conclusion_ = dic["week_conclusion"]
+
         model_battalion = apps.get_model(app_label=app_, model_name="battalions")
         model_week = apps.get_model(app_label=app_, model_name=week_model_)
         model_day = apps.get_model(app_label=app_, model_name=day_model_)
@@ -4955,15 +4958,20 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
         time_dim_obj = model_time_dim.objects.get(id=time_dim_)
         obj_day, is_created = model_day.objects.get_or_create(complianceweek=obj, time_dim=time_dim_obj)
         if is_created:
-            obj_day.time_unit = {"last_number": 0, "times": {}}
+            obj_day.time_unit = {"last_number": 0, "times": {}, "conclusion":""}
             obj_day.save()
 
         if time_unit_ == "null":
             time_unit_ = obj_day.time_unit
+            week_conclusion_ = obj.conclusion
         else:
             obj_day.time_unit = time_unit_
             obj_day.save()
+            obj.conclusion = week_conclusion_
+            obj.save()
+
         dic["time_unit"] = time_unit_
+        dic["week_conclusion"] = week_conclusion_
         # print(dic)
         return dic
 

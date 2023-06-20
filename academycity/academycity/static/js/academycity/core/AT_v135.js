@@ -4470,7 +4470,7 @@ acComplianceCreator.prototype.create_obj = function()
   //--
   this.main_div=document.createElement("div");this.main_div.my_creator_obj=this;
   if("width" in dic["properties"]){var width_=dic["properties"]["width"]} else {var width_="1300"}
-  var style_ = "position:absolute;left:"+dic["properties"]["x"]+"px;top:"+dic["properties"]["y"]+"px;width:"+width_+"px"
+  var style_="position:absolute;left:"+dic["properties"]["x"]+"px;top:"+dic["properties"]["y"]+"px;width:"+width_+"px;"
   this.main_div.setAttribute("style", style_);
   container.appendChild(this.main_div);
   this.main_div.setAttribute("container_id", dic["container_id"]);
@@ -4513,9 +4513,15 @@ acComplianceCreator.prototype.create_obj = function()
   this.units=document.createElement("select");
   this.units.my_creator=this;this.units.dic=dic;
   this.main_div.appendChild(this.units);
+
   this.content_div=document.createElement("div");
   this.main_div.appendChild(this.content_div);
   this.table_=document.createElement("table");
+
+//  border_width_=2;border_color_="blue";
+//  style_="border:"+border_width_+"px solid "+border_color_;
+//  this.table_.setAttribute("style", style_);
+
   this.content_div.appendChild(this.table_);
   this.thead_=document.createElement("thead");
   this.table_.appendChild(this.thead_);
@@ -4525,16 +4531,38 @@ acComplianceCreator.prototype.create_obj = function()
   this.thead_.appendChild(this.thead_tr);
   var table_class_=dic["properties"]["table_class"];if(table_class_==null || table_class_==""){table_class_="basic"}
   this.table_.setAttribute("class", table_class_)
+  //--
+  this.week_conclusion=document.createElement("textarea");
+  this.week_conclusion.c=this;
+  this.week_conclusion.addEventListener("change", function(event){
+   var e=event.target;var c=e.c;c.get_set_data(time_unit=c.data_dic);
+  })
+  this.day_conclusion=document.createElement("textarea");
+  this.day_conclusion.c=this;
+  this.day_conclusion.addEventListener("change", function(event){
+   var e=event.target;var c=e.c;c.data_dic["conclusion"]=e.value;
+   c.get_set_data(time_unit=c.data_dic);
+  })
+  this.day_conclusion.setAttribute("rows", 3);this.day_conclusion.setAttribute("cols", 114);
+  this.week_conclusion.setAttribute("rows", 3);this.week_conclusion.setAttribute("cols", 114);
+
+  var br_=document.createElement("br");
+  var week_title=document.createElement("p");week_title.innerHTML="Weekly Summary"
+  var day_title=document.createElement("p");day_title.innerHTML="Daily Summary"
+
+  this.main_div.appendChild(day_title);
+  this.main_div.appendChild(this.day_conclusion);
+  this.main_div.appendChild(week_title);
+  this.main_div.appendChild(this.week_conclusion);
 
   this.units.addEventListener("change", function(event){
-    var e=event.target;var c=e.my_creator;c.ll=c.units_structure[e.value]
+    var e=event.target;var c=e.my_creator;c.ll=c.units_structure[e.value];c.llp=e.value;
     //alert("90357-1 "+JSON.stringify(e.my_creator.units_structure));
-    //alert(e.value)
-    //alert("90357 "+JSON.stringify(c.ll));
-    if(c.thead_tr.innerHTML!=""){
-      var id_ = prompt("Are you sure you want to Change Unit? if so type y" , 'No')
-      if(id_ != 'y') {return;}
-    }
+    //alert("90357 "+e.value+"\n"+JSON.stringify(c.ll));
+//    if(c.thead_tr.innerHTML!=""){
+//      var id_ = prompt("Are you sure you want to Change Unit? if so type y" , 'No')
+//      if(id_ != 'y') {return;}
+//    }
     c.thead_tr.innerHTML="";c.tbody_.innerHTML="";
     th=document.createElement("th");c.thead_tr.appendChild(th);th.setAttribute("style",'width:'+this.s_col_time_width+'px');th.innerHTML="Time From"
     th=document.createElement("th");c.thead_tr.appendChild(th);th.setAttribute("style",'width:'+this.s_col_time_width+'px');th.innerHTML="Time To"
@@ -4546,7 +4574,7 @@ acComplianceCreator.prototype.create_obj = function()
     button_add_time.addEventListener("click", function(event){
         var e=event.target;var c=e.c;
         var row_number_=c.get_next_time_number();
-        c.add_new_time_row(row_number=row_number_)
+        c.add_new_time_row(row_number=row_number_, t="D")
    })
     //--
     for(var j in c.ll["data"]){th=document.createElement("th");c.thead_tr.appendChild(th);
@@ -4555,7 +4583,7 @@ acComplianceCreator.prototype.create_obj = function()
     };
     //--
     //c.days.value=c.weeks.value;
-    c.get_set_data(time_dim=c.days.value, time_unit="null");
+    c.get_set_data(time_unit="null");
     //--
   })
   //-- functions --
@@ -4609,102 +4637,96 @@ acComplianceCreator.prototype.set_weeks_days = function()
    this.days.dispatchEvent(ec)
 }
 
-acComplianceCreator.prototype.add_new_time_row = function(row_number)
+acComplianceCreator.prototype.add_new_time_row = function(row_number, t="D")
 {
-  var get_select=function(c, type, tr, j, s_col_width, row_number, onchange_input){
-    if(type=="D")
-    {
-      var ll={'1':'כש"ג', '2':'קמ"ג'}
+  var get_select=function(c, type, tr, j, s_col_width, row_number, onchange_input, colspan=1){
       var td=document.createElement("td");tr.appendChild(td);
-      td.setAttribute("style", 'width:'+s_col_width+'px')
+      var s_col_width_=s_col_width*colspan
+      td.setAttribute("style", 'width:'+s_col_width_+'px')
+      td.setAttribute("colspan", colspan)
       var input=document.createElement("select");td.appendChild(input);
-      var o=document.createElement("option");o.value="-1";o.innerHTML="-------";input.appendChild(o);
-      for(var h in ll){var o=document.createElement("option");o.value=h;o.innerHTML=ll[h];input.appendChild(o)};
-      input.setAttribute("style",'width:'+s_col_width+'px')
       input.setAttribute("unit_number",j);
-      input.setAttribute("id",j+"-"+row_number);
+      input.setAttribute("id",j+"-"+row_number+"-"+t);
       input.onchange=onchange_input;
       input.c=c;
-    } else if(type=="A"){
-
-    }
-
+      var o=document.createElement("option");o.value="-1";o.innerHTML="-------";input.appendChild(o);
+      if(type=="D")
+      {
+        input.setAttribute("style",'text-align: right;width:'+s_col_width_+'px')
+        var ll=atm.general.platoon_tasks;
+        for(var h in ll){var o=document.createElement("option");o.value=h;o.innerHTML=ll[h];input.appendChild(o)};
+      } else if(type=="A"){
+        input.setAttribute("style",'text-align: right;width:'+(s_col_width_+(5*colspan))+'px')
+        var ll=atm.general.company_tasks;
+        for(var h in ll){var o=document.createElement("option");o.value=h;o.innerHTML=ll[h];input.appendChild(o)};
+      }
   }
 
   //alert("acComplianceCreator.prototype.add_new_time_row")
   var onchange_input=function(event){
-           var e=event.target;
-           //alert("90357-101\n"+JSON.stringify(e.c.data_dic));
-           var s=e.getAttribute("id");
-           var ll=s.split("-");var field_=ll[0];var row_number=ll[1];
-           //alert(field_ + " " + row_number)
-           var t_=e.c.data_dic["times"];
-           if(!(row_number in t_)){t_[row_number]={}};t_[row_number][field_]=e.value;
-           //alert("90357-555-2\n"+JSON.stringify(e.c.data_dic));
-           e.c.get_set_data(time_dim=e.c.days.value, time_unit=e.c.data_dic);
+       var e=event.target;
+       //alert("90357-101\n"+JSON.stringify(e.c.data_dic));
+       var s=e.getAttribute("id");
+       var ll=s.split("-");var field_=ll[0];var t=ll[2];var row_number=ll[1];
+       //alert(field_ + " " + row_number)
+       var t_=e.c.data_dic["times"];
+       if(!(row_number in t_)){t_[row_number]={};t_[row_number]["t"]=t};t_[row_number][field_]=e.value;
+       //alert("90357-555-2\n"+JSON.stringify(e.c.data_dic));
+       e.c.get_set_data(time_unit=e.c.data_dic);
   }
 
     var tr=document.createElement("tr");this.tbody_.appendChild(tr);
+    tr.setAttribute("row_number",row_number);
     // --Time columns --
     var td=document.createElement("td");tr.appendChild(td);td.setAttribute("style",'width:'+this.s_col_time_width+'px')
     var input=document.createElement("input");td.appendChild(input);
     input.setAttribute("style",'width:'+this.s_col_time_width+'px');input.setAttribute("type",'time');
-    input.setAttribute("id","time_from-"+row_number);input.onchange=onchange_input;input.c=this;
+    input.setAttribute("id","time_from-"+row_number+"-"+t);input.onchange=onchange_input;input.c=this;
     //--
     var td=document.createElement("td");tr.appendChild(td);td.setAttribute("style",'width:'+this.s_col_time_width+'px')
     var input=document.createElement("input");td.appendChild(input);
     input.setAttribute("style",'width:'+this.s_col_time_width+'px');input.setAttribute("type",'time');
-    input.setAttribute("id","time_to-"+row_number);input.onchange=onchange_input;input.c=this;
+    input.setAttribute("id","time_to-"+row_number+"-"+t);input.onchange=onchange_input;input.c=this;
     //--
     var td=document.createElement("td");tr.appendChild(td);td.innerHTML+="&nbsp;";
     td.setAttribute("style",'width:'+this.s_buttons_width+'px');
-    var button_add_description=document.createElement("button");button_add_description.innerHTML="D"
+    var button_add_description=document.createElement("button");button_add_description.innerHTML=t;
+    button_add_description.c=this;
     td.appendChild(button_add_description);
     button_add_description.addEventListener("click", function(event){
-           var e=event.target;
-           var s=e.innerHTML;if(s=="D"){e.innerHTML="A"
-
-
-//                for(j in e.ll["data"])
-//                {
-//                  var td=document.createElement("td");tr.appendChild(td);
-//                  td.setAttribute("style", 'width:'+s_col_width+'px')
-//                  var input=document.createElement("input");td.appendChild(input);
-//                  input.setAttribute("style", 'width:'+s_col_width+'px')
-//                  input.setAttribute("unit_number", j)
-//                };
-
-
-
-           }else{e.innerHTML="D"
-                //--
-//                for(j in e.ll["data"])
-//                {
-//                  var td=document.createElement("td");tr.appendChild(td);
-//                  td.setAttribute("style", 'width:'+s_col_width+'px')
-//                  var input=document.createElement("input");td.appendChild(input);
-//                  input.setAttribute("style", 'width:'+s_col_width+'px')
-//                  input.setAttribute("unit_number", j)
-//                };
-           }
-         })
+       var e=event.target;var c=e.c;var s=e.innerHTML;
+       if(s=="D"){
+         for(j in c.ll["data"]){var sid=j+"-"+row_number+"-D";var tr=getEBI(sid).parentNode.parentNode;getEBI(sid).parentNode.outerHTML="";}
+         ff_("A", c, tr, c.s_col_width, row_number, onchange_input, get_select)
+         //alert(JSON.stringify(c.data_dic["times"][row_number]));
+         c.data_dic["times"][row_number]["t"]="A";e.innerHTML="A";
+       } else{
+         var sid=c.llp+"-"+row_number+"-A";var tr=getEBI(sid).parentNode.parentNode;getEBI(sid).parentNode.outerHTML=""
+         for(j in c.ll["data"]){get_select(c, "D", tr, j, c.s_col_width, row_number, onchange_input)}
+         c.data_dic["times"][row_number]["t"]="D";e.innerHTML="D";
+       }
+       c.get_set_data(time_unit=c.data_dic);
+    })
     //--
     var button_delete=document.createElement("button");button_delete.innerHTML="--"
     td.appendChild(button_delete);
+    button_delete.c=this;
     button_delete.addEventListener("click", function(event){
             var id_ = prompt("Are you sure you want to delete this record? if so type y" , 'No')
-            if(id_ != 'y') {return;}; var e=event.target;var g=e.parentNode.parentNode;g.outerHTML="";
+            if(id_ != 'y') {return;};
+            var e=event.target;var c=e.c;
+            var g=e.parentNode.parentNode;g.outerHTML="";
+            delete c.data_dic["times"][row_number]
+            c.get_set_data(time_unit=c.data_dic);
             // update DB
-
-
          })
-    //--
     var ff_=function(t, c, tr, s_col_width, row_number, onchange_input, get_select){
        if(t=="D"){for(j in c.ll["data"]){get_select(c, t, tr, j, s_col_width, row_number, onchange_input)}
           } else {
+          get_select(c, t, tr, c.llp, s_col_width, row_number, onchange_input, colspan=Object.keys(c.ll["data"]).length)
           }
         }
-        ff_(t="D", this, tr, this.s_col_width, row_number, onchange_input, get_select)
+    ff_(t, this, tr, this.s_col_width, row_number, onchange_input, get_select)
 }
 
 acComplianceCreator.prototype.get_next_time_number = function()
@@ -4712,34 +4734,29 @@ acComplianceCreator.prototype.get_next_time_number = function()
  if(!("last_number" in this.data_dic)){this.data_dic["last_number"]=0}
  var n_=this.data_dic["last_number"]+1;
  this.data_dic["last_number"]=n_;
- this.get_set_data(time_dim=this.days.value, time_unit=this.data_dic);
+ this.get_set_data(time_unit=this.data_dic);
  return n_;
 }
 
-acComplianceCreator.prototype.get_set_data = function(time_dim, time_unit)
+acComplianceCreator.prototype.get_set_data = function(time_unit)
 {
-   //alert("acComplianceCreator.prototype.get_set_data")
+   var time_dim=this.days.value;
    var fun=function(data, ll){
      var obj=ll[0]; var dic_=ll[1]
      //alert("90357-888-1\n "+JSON.stringify(dic_["params"]["time_unit"]));
      //alert("90357-888-2\n "+JSON.stringify(data));
      obj.data_dic=data["time_unit"];
+     var cc="";var w="";var kk=data["week_conclusion"];if(kk!=null && kk!=""){cc=kk};obj.week_conclusion.innerHTML=cc;
      if(dic_["params"]["time_unit"]=="null")
      {
-      //alert("update")
       var ts=data["time_unit"]["times"]
       for(var k in ts){
-       obj.add_new_time_row(k);
-       for(var j in ts[k]){
-       var sid=j+"-"+k
-        //alert(sid+"="+ts[k][j]);
-        //alert(getEBI(sid).outerHTML)
-        getEBI(sid).value=ts[k][j];
-       }
+        obj.add_new_time_row(k, ts[k]["t"]);
+        for(var j in ts[k]){if(j=="t"){continue};var sid=j+"-"+k+"-"+ts[k]["t"];getEBI(sid).value=ts[k][j];}
        //alert("90357-888-5\n "+k+"\n"+JSON.stringify(ts[k]));
       }
+      var c="";var k=data["time_unit"]["conclusion"];if(k!=null && k!=""){c=k};obj.day_conclusion.innerHTML=c;
      }
-
    }
     var pp_=this.parent.data["properties"];
     var dic=
@@ -4747,10 +4764,10 @@ acComplianceCreator.prototype.get_set_data = function(time_dim, time_unit)
      "obj_param":{"topic_id":"general","app":atm.my_app},"fun":"compliance_data",
      "params":{"app":atm.my_app,"week_model":pp_["week_table"],"day_model":pp_["day_table"],
                "company_obj_id":atm.company_obj_id,"week_start_day":this.weeks.value, "unit": this.units.value,
-               "battalion": atm.general.current_battalion,"time_dim":time_dim, "time_unit":time_unit
+               "battalion": atm.general.current_battalion,"time_dim":time_dim,
+               "time_unit":time_unit, "week_conclusion":this.week_conclusion.value
              }
      }
-
     //alert("dic:\n"+JSON.stringify(dic));
     atm.activate_obj_function(fun, dic, [this, dic])
 }
