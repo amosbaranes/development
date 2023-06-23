@@ -1395,7 +1395,7 @@ class ToDoList(TruncateTableMixin, models.Model):
     class Meta:
         verbose_name = _('todolist')
         verbose_name_plural = _('todolist')
-        ordering = ['-is_active', '-priority']
+        ordering = ['-is_active', '-priority', 'description']
 
     user = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, on_delete=models.CASCADE,
                              related_name='user_to_do_lists')
@@ -1416,7 +1416,6 @@ class CorporateValuationWeb(TruncateTableMixin, models.Model):
 
     def __str__(self):
         return self.company_name
-
 
 #
 class Adjectives(models.Model):

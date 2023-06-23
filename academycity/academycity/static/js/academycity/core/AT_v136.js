@@ -316,6 +316,7 @@ AdvancedTabsManager.prototype.create_atm = function(dic)
  //--------------------------
  this.titles=null;this.container=null;this.content={"last_obj_number":0};this.temp_number=1;
  this.app_content={};this.app_objs={};this.tabs={};this.pop_wins={};
+ this.grades={};
  //--------------------------
  this.init_create_containers();
  this.fun_to_run_by_timer=[];this.interval=100;this.init_timer();
@@ -859,7 +860,9 @@ AdvancedTabsManager.prototype.get_list = function(call_back_fun, dic_, html_obj)
                 //alert(html_obj.run_eval)
                 try{
                      //alert(html_obj.is_call_on_change==true)
-                     if(html_obj.is_call_on_change==true){
+  //alert("9\n="+html_obj.is_call_on_change+"=\n"+html_obj.outerHTML)
+                     if(html_obj.is_call_on_change=="true"){
+  //alert("10\n="+html_obj.is_call_on_change+"=\n"+html_obj.outerHTML)
                       try{var ce = new Event("change", {bubbles: true});html_obj.dispatchEvent(ce);} catch (er){alert("er9029: "+ er)}
                      }
                      html_obj.is_call_on_change=true;
@@ -1290,7 +1293,12 @@ acObj.prototype.create_obj = function(){
   this.new_obj.my_creator_obj=this;
   this.new_obj.is_call_on_change=true;
   var call_on_change=dic["properties"]["call_on_change"];
-  if(call_on_change!=null && call_on_change!=""){this.new_obj.is_call_on_change=call_on_change;}
+  if(call_on_change!=null && call_on_change!=""){
+
+  //alert("1\n="+call_on_change+"=\n"+this.data["properties"]["obj_number"])
+
+  this.new_obj.is_call_on_change=call_on_change;}
+
   this.new_obj.setAttribute("container_id", this.data["container_id"]);
   this.new_obj.setAttribute("id", this.data["properties"]["obj_number"]);
   this.new_obj.setAttribute("obj_type", this.data["obj_type"]);
@@ -1391,6 +1399,7 @@ acObj.prototype.get_select_data = function()
                 }
                 var call_on_change=""; try{call_on_change=dic["properties"]["call_on_change"]}catch(er){}
                 if(call_on_change!=""){
+  //alert("5\n="+call_on_change+"=\n"+dic["properties"]["obj_number"])
                   var default_value=""; try{default_value=dic["properties"]["default_value"]}catch(er){}
                   if(default_value!=""){html_obj.value=default_value}
                 }
@@ -1489,7 +1498,6 @@ acDashboard.prototype.create_obj = function(){this.creator.create_obj();}
 function acBasicCreator(parent){this.parent=parent;
  //alert(JSON.stringify(this.parent.data));
  this.is_run_set_obj_structure=false;this.nlimit=-1;
- this.grades={}
 }
 
 acBasicCreator.prototype.get_board = function(dic_,pp_, style_)
@@ -1586,7 +1594,7 @@ acBasicCreator.prototype.hide_boards = function(n_)
 acBasicCreator.prototype.get_grade = function(skill_id, unit_id)
 {
  ret = 0;
- try{ret=this.grades[unit_id][skill_id]} catch(er){}
+ try{ret=atm.grades[unit_id][skill_id]} catch(er){}
  return ret;
 }
 
@@ -1726,16 +1734,27 @@ acBasicCreator.prototype.set_board_data = function(ll=[])
    }
 }
 
-acBasicCreator.prototype.set_obj_structure = function()
+acBasicCreator.prototype.set_obj_structure = function(ll_)
 {
   //alert("set obj1")
   //alert(this.is_run_set_obj_structure)
-  if(this.is_run_set_obj_structure==true){return}
-  this.data_dic={}
+  if(this.is_run_set_obj_structure==true || atm.general.period==null){return}
+  var dic=this.parent.data;
+  var table_=dic["properties"]["table"]
+  var fields_=["soldier", "skill", "value"]
+  var n_limit=atm.general.period[atm.general.current_period]["n_limit"];
+  var setup_dictionary = dic["properties"]["setup_dictionary"];
+  var general_entity_name = dic["properties"]["entity"];
+  for(var k_ in ll_){
+    var obj__=get_creator(ll_[k_]);obj__.data_dic={};obj__.nlimit=n_limit;
+    obj__.units_structure = eval("this.parent.atm.general."+setup_dictionary);
+    obj__.entity_list = eval("this.parent.atm.general."+general_entity_name+"_list")
+    obj__.entity_dic = eval("this.parent.atm.general."+general_entity_name+"_dic")
+  }
   var f=function(dic, data_dic, grades, n=0, n_limit_=-1)
   {
      var n_=n+1;
-     for(k in dic)
+     for(var k in dic)
      {
         //alert(k+"\n"+dic[k]["title"])
         var title = dic[k]["title"];
@@ -1745,7 +1764,7 @@ acBasicCreator.prototype.set_obj_structure = function()
         data_dic[k]["kpi"]={};var nn_=0;
 
         var fields_=["Fitness","Shooting","Professional","Equipment","Execution<br>     vs<br>Planning"]
-        for(j in fields_)
+        for(var j in fields_)
         {nn_+=1;
          var grade=65;if(j>=3){grade=100} else if(j==0){grade=92} else if(j==1){grade=84} else if(j==2){grade=88}
          data_dic[k]["kpi"][nn_]={"title":"", "pass":70, "grade": grade};data_dic[k]["kpi"][nn_]["title"]=fields_[j];
@@ -1754,53 +1773,32 @@ acBasicCreator.prototype.set_obj_structure = function()
         if(n_<=n_limit_){
          f(dic[k]["data"], data_dic[k]["data"], grades, n_, n_limit_)}
         else {
-  //alert("acBasicCreator.prototype.set_obj_structure 90999-99\n"+JSON.stringify(dic));
+                  //alert("acBasicCreator.prototype.set_obj_structure 90999-99\n"+JSON.stringify(dic));
 
-//  for(var q in dic){
-//   //alert(JSON.stringify(dic[q]));
-//   for(var v in dic[q]["data"])
-//   {if(!(v in grades)){grades[v]=[0,0,0,0]}}
-//  }
-
+                //  for(var q in dic){
+                //   //alert(JSON.stringify(dic[q]));
+                //   for(var v in dic[q]["data"])
+                //   {if(!(v in grades)){grades[v]=[0,0,0,0]}}
+                //  }
         }
      }
   }
-  var dic=this.parent.data;
-  this.nlimit=atm.general.period[atm.general.current_period]["n_limit"]
-
   //alert("acRadioCreator 90446-16  "+JSON.stringify(dic));
-
   try{
-       var setup_dictionary = dic["properties"]["setup_dictionary"];
-       this.units_structure = eval("this.parent.atm.general."+setup_dictionary)
-       var general_entity_name = dic["properties"]["entity"];
-       this.entity_list = eval("this.parent.atm.general."+general_entity_name+"_list")
-       this.entity_dic = eval("this.parent.atm.general."+general_entity_name+"_dic")
-       //alert("90000-010  "+JSON.stringify(this.entity_dic));
-       //alert("90000-020  "+JSON.stringify(this.units_structure));
-       //alert("90000-020-10\n"+JSON.stringify(this.grades));
-       //alert(Object.keys(this.grades).length)
-       //f(this.units_structure, this.data_dic, this.grades, 0, n_limit_=this.nlimit)
-
-       var dic=this.parent.data;
-       //alert("9044-441  "+JSON.stringify(dic));
-       var table_=dic["properties"]["table"]
-       var fields_=["soldier", "skill", "value"]
        var fun=function(data, ll){
-        var grades=ll[0];var f=ll[1]; obj=ll[2];var nlimit=ll[3]
+        var grades=ll[0];var f=ll[1]; obj=ll[2];var nlimit=ll[3]; var ll_=ll[4];
         try{if(Object.keys(data).length==0){return;}} catch (er) {}
         // alert("90446-77 data \n"+JSON.stringify(data))
         var n_=data[fields_[0]].length;
         for(var i=0;i<n_;i++)
-        {
-         if(!(data["soldier"][i] in grades)){grades[data["soldier"][i]]=[0,0,0,0]}
-         grades[data["soldier"][i]][data["skill"][i]]=data["value"][i]
+        {if(!(data["soldier"][i] in grades)){grades[data["soldier"][i]]=[0,0,0,0]}
+         grades[data["soldier"][i]][data["skill"][i]]=data["value"][i]}
+        for(var k_ in ll_){
+          var obj_=get_creator(ll_[k_])
+          f(obj_.units_structure, obj_.data_dic, atm.grades, 0, n_limit_=nlimit);
+          obj_.is_run_set_obj_structure=true;
+          obj_.set_board_data()
         }
-
-        f(obj.units_structure, obj.data_dic, this.grades, 0, n_limit_=nlimit)
-        //alert("90449-33: "+JSON.stringify(obj.data_dic));
-        obj.is_run_set_obj_structure=true;
-        obj.set_board_data()
         //alert(data["pkf_name"])
       }
        var dic__={"model":table_,"number_of_rows":1000000,"filters":{},
@@ -1808,10 +1806,8 @@ acBasicCreator.prototype.set_obj_structure = function()
           }
        dic__["filters"]["id"]={"value":1, "foreign_table":"soldier__battalion"}
        //alert("90449-99-1: "+JSON.stringify(dic__));
-       this.parent.atm.get_data(call_back_fun=fun, dic__, [this.grades,f, this, this.nlimit])
-
+       this.parent.atm.get_data(call_back_fun=fun, dic__, [atm.grades,f, this, this.nlimit, ll_])
   } catch(er){alert("1155-515: "+er)}
-
 }
 
 // -- acReport --
@@ -1965,7 +1961,6 @@ acPivotCreator.prototype.create_html = function(type=null)
   //alert(JSON.stringify(p.raw_data["dim_titles"][vertical_field_]));
   //alert(JSON.stringify(h_) +"\n"+JSON.stringify(p.raw_data["dim_titles"][horizontal_field_]));
   //alert(p.pdata[v_[0]][h_[5]]["value"])
-
 
   var sh="<thead id='thead_"+this.parent.data["properties"]["obj_number"]+"'>"
   sh+="<tr id='tr_h_"+this.parent.data["properties"]["obj_number"]+"' style='cursor:pointer'><th col_num=-1></th>";
@@ -2598,7 +2593,6 @@ var container_on_change=function (event){
   //alert("c9002-15  field__u= "+field__u+" - v__u= "+v__u)
   if (content_type_=="accounting")
   {
-  //alert("90010")
     try{
     var record_id_=e.getAttribute("record_id");
     var parent_id_=container.getAttribute("record_id");
@@ -2707,6 +2701,7 @@ var container_on_change=function (event){
                                "params": {"app":atm_.my_app,"model":model_,"id":record_id_}}
 
                      //alert('9080-1222-11 fields_= '+ JSON.stringify(dic_));
+                     //alert(JSON.stringify(dic_));
                      $.post(atm_.activate_function_link_,
                       {dic : JSON.stringify(dic_)},
                       function(dic){
