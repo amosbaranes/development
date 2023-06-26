@@ -316,7 +316,6 @@ AdvancedTabsManager.prototype.create_atm = function(dic)
  //--------------------------
  this.titles=null;this.container=null;this.content={"last_obj_number":0};this.temp_number=1;
  this.app_content={};this.app_objs={};this.tabs={};this.pop_wins={};
- this.grades={};
  //--------------------------
  this.init_create_containers();
  this.fun_to_run_by_timer=[];this.interval=100;this.init_timer();
@@ -1497,7 +1496,9 @@ acDashboard.prototype.create_obj = function(){this.creator.create_obj();}
 // -- acBasicCreator --
 function acBasicCreator(parent){this.parent=parent;
  //alert(JSON.stringify(this.parent.data));
- this.is_run_set_obj_structure=false;this.nlimit=-1;
+ if(atm.grades==null){
+  atm.grades={};atm.data_dic={};atm.is_run_set_obj_structure=false;atm.nlimit=-1;
+ }
 }
 
 acBasicCreator.prototype.get_board = function(dic_,pp_, style_)
@@ -1601,15 +1602,15 @@ acBasicCreator.prototype.get_grade = function(skill_id, unit_id)
 acBasicCreator.prototype.set_board_data = function(ll=[])
 {
   //alert("set data1")
-  if(this.is_run_set_obj_structure==false){return}
-  if(ll.length==0){for(var k in this.data_dic){ll.push(k)}}
-  // alert("acBasicCreator.prototype.set_board_data 90446-25 \n"+JSON.stringify(this.data_dic));
-  // alert(ll)
+  if(atm.is_run_set_obj_structure==false){return}
+  if(ll.length==0){for(var k in atm.data_dic){ll.push(k)}}
+   //alert("acBasicCreator.prototype.set_board_data 90446-25 \n"+JSON.stringify(atm.data_dic));
+   //alert(ll)
    //--
    var dic_=this.parent.data;var pp_=dic_["properties"]
    var width_=pp_["width"]; if(width_==null || width_==""){width_=80};
    var height_=pp_["height"]; if(height_==null || height_==""){height_=300};
-    var dic=this.data_dic;
+    var dic=atm.data_dic;
     var z=-1;
     for(var j in ll){
     z+=1;var dic=dic[ll[z]];var container_=this.board_objs[(1*z+1)].content;
@@ -1671,8 +1672,7 @@ acBasicCreator.prototype.set_board_data = function(ll=[])
    //--
    var k = 0
    //alert("90441-350-35  "+JSON.stringify(dic));
-   //alert(this.nlimit)
-   if(ll.length<(this.nlimit+1))
+   if(ll.length<(atm.nlimit+1))
    {for(z in dic){
       k +=1
       color__="lightblue"
@@ -1707,28 +1707,28 @@ acBasicCreator.prototype.set_board_data = function(ll=[])
       style_+="border-style:solid;border-width:0px;border-color:blue;display: flex;"
       style_+="background-color:"+color__+";align-items: center;justify-content: center;"
       div_.setAttribute("style", style_);
-   //   s_data=this.units_structure[ll[0]]["data"][ll[1]]["data"][ll[2]]["data"]
-   var s='s_data=this.units_structure';for(var w=0;w<ll.length;w++){s+='[ll['+w+']]["data"]'};eval(s);
-   //alert("90441-750  \n"+JSON.stringify(s_data));
-   this.fields_skills=["Fitness","Shooting","Professional","Equipment"]
-   var s="<table class='basic' style='display: block;height:"+(Math.round(height_/2.5)-40)+"px;overflow-y: auto;'><tr>"
-   s+="<th style='width:350px'>Name</th>"
-   for(var i in this.fields_skills){s+="<th style='width:100px'>"+this.fields_skills[i]+"</th>";}
-   s+="</tr>"
-   s+="<tbody >"
-   for(var s_ in s_data){
-    s+="<tr><td soldier_id='"+s_+"' style='width:350px'>"+s_data[s_]["title"]+"</td>"
-    for(var i in this.fields_skills)
-    {
-     var grade=this.get_grade(skill_id=i, unit_id=s_);
-     var color="white";var background_color = "green"
-     if(grade==0){color="black";background_color = "white"} else if(grade<70)
-     {background_color="red"; color="white"}
-     s+="<td style='text-align:center;width:100px;color:"+color+";background-color:"+background_color+"'>"+grade+"</td>"
-    }
-    s+="</tr>"
-   }
-   s+="</tbody></table>"
+      var s='s_data=atm.units_structure';for(var w=0;w<ll.length;w++){s+='[ll['+w+']]["data"]'};eval(s);
+      //alert("90441-750  \n"+JSON.stringify(s_data));
+
+      this.fields_skills=["Fitness","Shooting","Professional","Equipment"]
+      var s="<table class='basic' style='display: block;height:"+(Math.round(height_/2.5)-40)+"px;overflow-y: auto;'><tr>"
+      s+="<th style='width:350px'>Name</th>"
+      for(var i in this.fields_skills){s+="<th style='width:100px'>"+this.fields_skills[i]+"</th>";}
+      s+="</tr>"
+      s+="<tbody >"
+      for(var s_ in s_data){
+       s+="<tr><td soldier_id='"+s_+"' style='width:350px'>"+s_data[s_]["title"]+"</td>"
+       for(var i in this.fields_skills)
+       {
+        var grade=this.get_grade(skill_id=i, unit_id=s_);
+        var color="white";var background_color = "green"
+        if(grade==0){color="black";background_color = "white"} else if(grade<70)
+        {background_color="red"; color="white"}
+        s+="<td style='text-align:center;width:100px;color:"+color+";background-color:"+background_color+"'>"+grade+"</td>"
+       }
+       s+="</tr>"
+      }
+      s+="</tbody></table>"
       div_.innerHTML=s;
       container_.appendChild(div_);
    }
@@ -1737,37 +1737,48 @@ acBasicCreator.prototype.set_board_data = function(ll=[])
 acBasicCreator.prototype.set_obj_structure = function(ll_)
 {
   //alert("set obj1")
-  //alert(this.is_run_set_obj_structure)
-  if(this.is_run_set_obj_structure==true || atm.general.period==null){return}
-  var dic=this.parent.data;
-  var table_=dic["properties"]["table"]
-  var fields_=["soldier", "skill", "value"]
-  var n_limit=atm.general.period[atm.general.current_period]["n_limit"];
-  var setup_dictionary = dic["properties"]["setup_dictionary"];
-  var general_entity_name = dic["properties"]["entity"];
-  for(var k_ in ll_){
-    var obj__=get_creator(ll_[k_]);obj__.data_dic={};obj__.nlimit=n_limit;
-    obj__.units_structure = eval("this.parent.atm.general."+setup_dictionary);
-    obj__.entity_list = eval("this.parent.atm.general."+general_entity_name+"_list")
-    obj__.entity_dic = eval("this.parent.atm.general."+general_entity_name+"_dic")
-  }
+  //alert(atm.is_run_set_obj_structure)
+  if(atm.is_run_set_obj_structure==true || atm.general.period==null){return}
+  var dic=this.parent.data;var pp_=dic["properties"];var table_=pp_["table"];
+  var setup_dictionary=pp_["setup_dictionary"];var general_entity_name=pp_["entity"];
+  var fields_=["soldier", "skill", "value"];
+  atm.nlimit=atm.general.period[atm.general.current_period]["n_limit"];
+  atm.units_structure = eval("this.parent.atm.general."+setup_dictionary);
+  atm.entity_list = eval("this.parent.atm.general."+general_entity_name+"_list")
+  atm.entity_dic = eval("this.parent.atm.general."+general_entity_name+"_dic")
+
+  var ff_=function(dic_, ll, grades, sn_)
+  {
+     //alert("sn_="+sn_)
+      for(var k_ in dic_){var title=dic_[k_]["title"];
+       //alert(k_+"-ff_-"+title+"  :: "+sn_)
+       if(!title.includes(":")){ff_(dic_[k_]["data"],ll, grades, sn_)} else {
+            //alert("acRadioCreator 90446-16\n  "+k_+"\n"+JSON.stringify(grades));
+            //alert("acRadioCreator 90446-16  "+JSON.stringify(grades[""+k_]));
+            //alert(k_+":::"+sn_+":::"+grades[k_])
+                var nnn=grades[k_][sn_]
+                //alert("nnn="+nnn)
+               ll.push(nnn)
+       }
+      }
+     }
+
   var f=function(dic, data_dic, grades, n=0, n_limit_=-1)
   {
      var n_=n+1;
      for(var k in dic)
      {
-        //alert(k+"\n"+dic[k]["title"])
-        var title = dic[k]["title"];
-        data_dic[k]={};data_dic[k]["title"]=dic[k]["title"]
-        if(n_==1){data_dic[k]["type"]="battalion"}
-
-        data_dic[k]["kpi"]={};var nn_=0;
-
+        //alert(k+"\n11\n"+dic[k]["title"])
+        data_dic[k]={};data_dic[k]["kpi"]={};
+        var title=dic[k]["title"];data_dic[k]["title"]=title;if(n_==1){data_dic[k]["type"]="battalion"}
         var fields_=["Fitness","Shooting","Professional","Equipment","Execution<br>     vs<br>Planning"]
+        var nn_=0;
         for(var j in fields_)
-        {nn_+=1;
-         var grade=65;if(j>=3){grade=100} else if(j==0){grade=92} else if(j==1){grade=84} else if(j==2){grade=88}
-         data_dic[k]["kpi"][nn_]={"title":"", "pass":70, "grade": grade};data_dic[k]["kpi"][nn_]["title"]=fields_[j];
+        {
+         var ll=[];ff_(dic[k]["data"],ll, grades, sn_=j);
+         //var grade=65;if(j>=3){grade=100} else if(j==0){grade=92} else if(j==1){grade=84} else if(j==2){grade=88}
+         var grade=Math.round(100*ll.reduce((a,b) => a+b, 0)/ll.length)/100;
+         nn_+=1;data_dic[k]["kpi"][nn_]={"title":"", "pass":70, "grade": grade};data_dic[k]["kpi"][nn_]["title"]=fields_[j];
         }
         data_dic[k]["data"]={};
         if(n_<=n_limit_){
@@ -1783,30 +1794,34 @@ acBasicCreator.prototype.set_obj_structure = function(ll_)
         }
      }
   }
+
   //alert("acRadioCreator 90446-16  "+JSON.stringify(dic));
   try{
        var fun=function(data, ll){
-        var grades=ll[0];var f=ll[1]; obj=ll[2];var nlimit=ll[3]; var ll_=ll[4];
-        try{if(Object.keys(data).length==0){return;}} catch (er) {}
-        // alert("90446-77 data \n"+JSON.stringify(data))
+        var grades=ll[0];var f=ll[1]; var nlimit=ll[2]; var ll_=ll[3];
+        try{if(Object.keys(data).length==0 || data["id"].length==0){alert("There is no data for this battlion.");return;}} catch (er) {}
+         alert("90446-77 data \n"+JSON.stringify(data))
         var n_=data[fields_[0]].length;
         for(var i=0;i<n_;i++)
         {if(!(data["soldier"][i] in grades)){grades[data["soldier"][i]]=[0,0,0,0]}
-         grades[data["soldier"][i]][data["skill"][i]]=data["value"][i]}
-        for(var k_ in ll_){
-          var obj_=get_creator(ll_[k_])
-          f(obj_.units_structure, obj_.data_dic, atm.grades, 0, n_limit_=nlimit);
-          obj_.is_run_set_obj_structure=true;
-          obj_.set_board_data()
-        }
+         grades[data["soldier"][i]][data["skill"][i]]=data["value"][i]
+         }
+         //alert("90449-99-7: "+JSON.stringify(grades)+"\n"+JSON.stringify(atm.data_dic));
+         f(atm.units_structure, atm.data_dic, grades, 0, n_limit_=atm.nlimit);
+         //alert("90449-99-79: "+JSON.stringify(atm.data_dic));
+         for(var k_ in ll_){
+            var obj_=get_creator(ll_[k_])
+            atm.is_run_set_obj_structure=true;
+            obj_.set_board_data()
+          }
         //alert(data["pkf_name"])
       }
-       var dic__={"model":table_,"number_of_rows":1000000,"filters":{},
+      var dic__={"model":table_,"number_of_rows":1000000,"filters":{},
           "fields":fields_, "order_by":{"field":"soldier", "direction":"ascending"}
-          }
-       dic__["filters"]["id"]={"value":1, "foreign_table":"soldier__battalion"}
-       //alert("90449-99-1: "+JSON.stringify(dic__));
-       this.parent.atm.get_data(call_back_fun=fun, dic__, [atm.grades,f, this, this.nlimit, ll_])
+      }
+      dic__["filters"]["id"]={"value":atm.general.current_battalion, "foreign_table":"soldier__battalion"}
+      //alert("90449-99-1: "+JSON.stringify(dic__));
+      this.parent.atm.get_data(call_back_fun=fun, dic__, [atm.grades,f, atm.nlimit, ll_])
   } catch(er){alert("1155-515: "+er)}
 }
 
@@ -2122,135 +2137,157 @@ acGradesCreator.prototype.create_html = function(type=null)
 
 acGradesCreator.prototype.set_obj_structure = function(tests_dic=null, group_dic=null, tests_config=null, entity_config=null)
 {
- //alert("90100-1\n"+JSON.stringify(tests_dic));
- //alert("90100-2\n"+JSON.stringify(group_dic));
- //alert("90160-3\n"+JSON.stringify(tests_config));
- //alert("90160-4\n"+JSON.stringify(entity_config));
- //var dic=this.parent.data;
+ //alert("90100-1\n"+JSON.stringify(tests_dic)); //alert("90100-2\n"+JSON.stringify(group_dic));
+ //alert("90160-3\n"+JSON.stringify(tests_config)); //alert("90160-4\n"+JSON.stringify(entity_config));
  if(tests_dic!=null){this.tests_dic=tests_dic};
  if(group_dic!=null){
   if(group_dic["checked"] == true){this.group_dic = this.group_dic.concat(group_dic["entities"])}
   else {this.parent.tbody.innerHTML=""; this.group_dic = this.group_dic.filter((item) => !group_dic["entities"].includes(item))}
  };
 
- //alert("90100-11\n"+JSON.stringify(this.tests_dic));
- //alert(this.group_dic.length)
+ //alert("90100-11\n"+JSON.stringify(this.tests_dic)); //alert(this.group_dic.length)
 
  if(this.tests_dic!=null && this.group_dic.length>0){
     this.tests_config=tests_config;this.entity_config=entity_config;
     var dic= {"obj":"TrainingDataProcessing", "atm":atm.my_name, "app":atm.my_app, "obj_param":{"app":atm.my_app, "topic_id":"general"},
               "fun":"get_variable_data", "params":{"app":atm.my_app,"group_dic":this.group_dic,"tests_dic":this.tests_dic}}
-    //alert("90100-22\n"+JSON.stringify(dic));
     var fun=function(data, this_obj)
     {
       var tests_config=this_obj.tests_config;var group_dic=this_obj.group_dic;
       var var_name=this_obj.tests_dic["var_name"];
-      var f=function(v, tc){
-      var n__=tc["from"].length;var r_=-1;
-      for(var h=0; h<n__;h++){if(tc["from"][h] <= v && v < tc["to"][h]){r_=tc["grade"][h];break}};return r_;
-
+      var f=function(v, tc){var n__=tc["from"].length;var r_=-1;
+       for(var h=0; h<n__;h++){if(tc["from"][h] <= v && v < tc["to"][h]){r_=tc["grade"][h];break}};return r_;
       }
-      var entity_name="soldier";
-      var result=data["result"];var test_dic=data["test_dic"];var var_dic=data["var_dic"]
-      //alert("90122-22\n"+JSON.stringify(var_dic));
-      var up_value=var_dic["up_value"];
-      var up_color=var_dic["up_color"];
-      var down_value=var_dic["down_value"];
-      var down_color=var_dic["down_color"];
-      var other_color=var_dic["other_color"];
-      result["value_converted"]=[];
-
+      var entity_name="soldier";var result=data["result"];var test_dic=data["test_dic"];var var_dic=data["var_dic"]
+      var up_value=var_dic["up_value"];var up_color=var_dic["up_color"];var down_value=var_dic["down_value"];
+      var down_color=var_dic["down_color"];var other_color=var_dic["other_color"];
       //alert("90160-6\n"+JSON.stringify(result));
       //alert("90160-6\n"+JSON.stringify(result[entity_name+"_number"]));
       //alert("90160-6\n"+JSON.stringify(group_dic));
       //alert("90160-61\n"+JSON.stringify(group_dic["entities"]));
-
-      var n_group=group_dic.length;
-      var n_tests = Object.keys(test_dic).length;
-      var userid_width=70;
-      var name_width=125;
-      var event_date_width=100;
-      var col_width=80;
+      var n_group=group_dic.length;var n_tests=Object.keys(test_dic).length;
+      var userid_width=70;var name_width=125;var event_date_width=100;var col_width=80;
       //alert("90160-7\n"+JSON.stringify(group_dic)+"\n\n"+result[entity_name+"_number"]);
-      var s="<tr><th style='width:"+userid_width+"px'>UserId</th>"
-      s+="<th style='width:"+name_width+"px'>First Name</th>"
-      s+="<th style='width:"+name_width+"px'>Last Name</th>"
-      s+="<th style='width:"+event_date_width+"px'>Event Date</th>"
-      //alert("90160-7\n"+JSON.stringify(tests_config));
 
-      for(var test_number in test_dic){
-       var test_name=tests_config["test_name"][tests_config["test_number"].indexOf(""+test_number)];
-       test_name=test_name.split("(")[0]
-       s+="<th style='width:"+col_width+"px'>"+test_name+"</th>";
-      };
-      s+="<th style='width:"+col_width+"px'>"+var_name+"</th>";s+="</tr>";
-      this_obj.parent.tr_h.innerHTML=s;
       var ff=function(dic_, idx=0){
-          var entity_number=dic_["entity_number"];
-          var entity_name=dic_["entity_name"];
-          var result=dic_["result"];
-          var n_tests=dic_["n_tests"];
-          var tests_config=dic_["tests_config"];
-          var test_dic=dic_["test_dic"];
-          var e_first_name=dic_["e_first_name"];
-          var e_last_name=dic_["e_last_name"];
+          var entity_number=dic_["entity_number"];var entity_name=dic_["entity_name"];var result=dic_["result"];
+          var n_tests=dic_["n_tests"];var tests_config=dic_["tests_config"];var test_dic=dic_["test_dic"];
+          var e_first_name=dic_["e_first_name"];var e_last_name=dic_["e_last_name"];
+
           var s="";
           try{var idx=result[entity_name+"_number"].indexOf(entity_number, idx)}catch(er){};
-          var test_events={};
+          var entity_test_value={"best":{}, "worst":{}}
           if(idx > -1){
+              // in this while, we get all the tests of all events of soldier
               while(idx>-1){
-                 var event_id=result["event_id"][idx]; var event_date=result["event_date"][idx]
-                 if(!(event_id in test_events)){test_events[event_id]={"event_date":event_date, "data":{}};
-                                                test_events[event_id]["data"]["l_"]=[];
-                                                test_events[event_id]["data"]["l_idx"]=[];}
-                 test_events[event_id]["data"]["l_"].push(result["test_number"][idx]);          //alert(idx+" : "+event_id+" : "+result["test_number"][idx])
-                 test_events[event_id]["data"]["l_idx"].push(idx);
+                 var event_id=result["event_id"][idx];var event_date=result["event_date"][idx]
+                 if(!(event_id in entity_test_value)){entity_test_value[event_id]={"event_date":event_date}}
+                 var value=result["value"][idx];
+                 var idx_=tests_config["test_number"].indexOf(""+result["test_number"][idx]);
+                 var tc=tests_config["test_grade_conversion"][idx_];var converted_value=f(value,tc);
+                 //result["value_converted"].push(converted_value);
+                 entity_test_value[event_id][result["test_number"][idx]]={"value":value, "converted_value":converted_value}
+                 //--
+                 if(!(result["test_number"][idx] in entity_test_value["best"]))
+                 {entity_test_value["best"][result["test_number"][idx]]={"value":-100, "converted_value":-100}}
+                 if(!(result["test_number"][idx] in entity_test_value["worst"]))
+                 {entity_test_value["worst"][result["test_number"][idx]]={"value":1000, "converted_value":100}}
+                 //--
+                 var etvb_c=entity_test_value["best"][result["test_number"][idx]]["converted_value"]
+                 var etvw_c=entity_test_value["worst"][result["test_number"][idx]]["converted_value"]
+                 var etve_c=entity_test_value[event_id][result["test_number"][idx]]["converted_value"]
+                 if(etvb_c<etve_c){
+                  entity_test_value["best"][result["test_number"][idx]]=entity_test_value[event_id][result["test_number"][idx]]
+                 }
+                 if(etvw_c>etve_c){
+                  entity_test_value["worst"][result["test_number"][idx]]=entity_test_value[event_id][result["test_number"][idx]]
+                 }
                  try{idx=result[entity_name+"_number"].indexOf(entity_number, idx+1)} catch(er){}
               }
-              //alert("test_event\n"+JSON.stringify(test_events));
-              var entity_test_value={}
-              for(event_id_ in test_events)
+              for(event_id_ in entity_test_value)
               {
-                 var l_=test_events[event_id_]["data"]["l_"];var l_idx=test_events[event_id_]["data"]["l_idx"];
-                 var nn_=l_.length;
-                 entity_test_value[event_id_]={}
-                  for(var g=0;g<nn_;g++){var test_number=l_[g];var value=result["value"][l_idx[g]];
-                      var idx=tests_config["test_number"].indexOf(""+test_number);
-                      var tc=tests_config["test_grade_conversion"][idx];
-                      var converted_value=f(value,tc);result["value_converted"].push(converted_value);
-                      entity_test_value[event_id_][test_number]={"value":value, "converted_value":converted_value}
-                  }
+                if(event_id_=="best" || event_id_=="worst"){continue}
+
                   s+="<tr><td style='width:"+userid_width+"px'>"
                   s+=e_userid+"</td>"
                   s+="<td style='width:"+name_width+"px'>"+e_first_name+"</td>";
                   s+="<td style='width:"+name_width+"px'>"+e_last_name+"</td>";
-                  s+="<td style='width:"+event_date_width+"px'>"+test_events[event_id_]["event_date"]+"</td>"
-                  var var_value=0
+                  s+="<td style='width:"+event_date_width+"px'>"+entity_test_value[event_id_]["event_date"]+"</td>"
+                  var var_value=0;var var_weight=0
                   for(var test_number in test_dic)
                   {var etv=entity_test_value[event_id_][""+test_number];
-                   if(etv!=null)
-                   {s+="<td style=';text-align:right;width:"+col_width+"px'>"+etv["converted_value"]+"</td>";
+                   if(etv!=null && (1*etv["converted_value"])>-1)
+                   {
+                    s+="<td v='"+etv["value"]+"' style=';text-align:right;width:"+col_width+"px'>"+etv["converted_value"]+"</td>";
                     var_value+=1*etv["converted_value"]*test_dic[test_number]["value"]/100;
+                    var_weight+=1*test_dic[test_number]["value"]/100
                    } else{s+="<td style=';text-align:right;width:"+col_width+"px'></td>"}
                   }
 
                  try{
-                     var ss_=""
-                     if(Math.round(100*var_value)/100 > up_value){ss_="background-color:"+up_color+";color:white;"}
-                     else if (Math.round(100*var_value)/100 < down_value){ss_="background-color:"+down_color+";color:white;";
-                     } else {ss_="background-color:"+other_color+";color:white;"}
+                     var ss_=""; var ss_var_value="";
+                     if(var_value>0) {var_value=var_value/var_weight;
+                         if(Math.round(100*var_value)/100 > up_value){ss_="background-color:"+up_color+";color:white;"}
+                         else if (Math.round(100*var_value)/100 < down_value){ss_="background-color:"+down_color+";color:white;";
+                         } else {ss_="background-color:"+other_color+";color:white;"}
+                         ss_var_value = (Math.round(100*var_value)/100)
+                     }
                  } catch(er){}
-                 s+="<td style=';text-align:right;width:"+col_width+"px;"+ss_+"'>"+(Math.round(100*var_value)/100)+"</td>";
+                 s+="<td style=';text-align:right;width:"+col_width+"px;"+ss_+"'>"+ss_var_value+"</td>";
                  s+="</tr>";
               }
          }
 
-         //if(s!=""){ alert("s\n"+s)}
+         entity_test_value["improve"]={}
+         for(var h in entity_test_value["best"])
+         {
+          entity_test_value["improve"][h]={
+           "value":1*entity_test_value["best"][h]["value"]-1*entity_test_value["worst"][h]["value"],
+           "converted_value":1*entity_test_value["best"][h]["converted_value"]-1*entity_test_value["worst"][h]["converted_value"]
+          }
+         }
+         var tt={"best":{},"worst":{},"improve":{}}
+         for(var t_ in tt)
+         {var ss="<tr><td style='width:"+userid_width+"px'>"+e_userid+"</td>"
+          ss+="<td style='width:"+name_width+"px'>"+e_first_name+"</td>";
+          ss+="<td style='width:"+name_width+"px'>"+e_last_name+"</td>";
+          var var_value=0;var var_weight=0
+          for(var test_number in test_dic)
+          {var etv=entity_test_value[t_][""+test_number];
+                   if(etv!=null && (1*etv["converted_value"])>-1)
+                   {
+                    ss+="<td v='"+etv["value"]+"' style=';text-align:right;width:"+col_width+"px'>"+etv["converted_value"]+"</td>";
+                    var_value+=1*etv["converted_value"]*test_dic[test_number]["value"]/100;
+                    var_weight+=1*test_dic[test_number]["value"]/100
+                   } else{ss+="<td style=';text-align:right;width:"+col_width+"px'></td>"}
+           }
+          tt[t_]["s"]=ss;tt[t_]["tests"]=entity_test_value[t_]
+         }
 
-          return s;
+         //alert(e_userid+"\nBBB\n"+ s)
+
+         tt["all"]={};tt["all"]["s"]=s
+         return tt;
         }
 
-      s="";
+     var tt_={"all":{"body":""}, "best":{"body":""},"worst":{"body":""},"improve":{"body":""}}
+      var s_="<tr><th style='width:"+userid_width+"px'>UserId</th>"
+      s_+="<th style='width:"+name_width+"px'>First Name</th>"
+      s_+="<th style='width:"+name_width+"px'>Last Name</th>"
+      //var s_all=s_; var s_best=s_;var s_worst=s_;var s_improve=s_;
+      for(var k in tt_){eval('s_'+k+'=s_')}
+      s_all+="<th style='width:"+event_date_width+"px'>Event Date</th>"
+      //alert("90160-7\n"+JSON.stringify(tests_config));
+      var st_=""
+      for(var test_number in test_dic){
+       var test_name=tests_config["test_name"][tests_config["test_number"].indexOf(""+test_number)];
+       test_name=test_name.split("(")[0];
+       st_+="<th style='width:"+col_width+"px'>"+test_name+"</th>";
+      };
+      st_+="<th style='width:"+col_width+"px'>"+var_name+"</th></tr>";
+
+      for(var k in tt_){eval('tt_["'+k+'"]["thead"]=s_'+k+'+st_')}
+
       for(var i=0; i<n_group;i++)
       {
          try{var entity_number=parseInt(group_dic[i]);}catch(er){alert(er)}
@@ -2262,12 +2299,15 @@ acGradesCreator.prototype.set_obj_structure = function(tests_dic=null, group_dic
          var dic_={"entity_number":entity_number, "entity_name":entity_name,
                    "result":result, "n_tests":n_tests, "e_first_name":e_first_name, "e_last_name":e_last_name,
                    "tests_config":tests_config,"test_dic":test_dic}
-         s+=ff(dic_, 0)
+         var tt=ff(dic_, 0);for(var k in tt_){eval('tt_["'+k+'"]["body"]+=tt["'+k+'"]["s"]')}
       }
+
       //alert(JSON.stringify(result));
       //alert(JSON.stringify(result)+"\n\n"+JSON.stringify(test_dic)+"\n\ntests_config:\n"+JSON.stringify(tests_config));
       //alert(this_obj.parent.tbody.outerHTML)
-      this_obj.parent.tbody.innerHTML=s
+      this_obj.tests_reports=tt_
+      this_obj.parent.tr_h.innerHTML=tt_["best"]["thead"];
+      this_obj.parent.tbody.innerHTML=tt_["best"]["body"];
     }
     atm.activate_obj_function(fun, dic, this)
  }
