@@ -1750,18 +1750,17 @@ acBasicCreator.prototype.set_obj_structure = function(ll_)
   var ff_=function(dic_, ll, grades, sn_)
   {
      //alert("sn_="+sn_)
-      for(var k_ in dic_){var title=dic_[k_]["title"];
+      for(var k_ in dic_){
+       var title=dic_[k_]["title"];
        //alert(k_+"-ff_-"+title+"  :: "+sn_)
-       if(!title.includes(":")){ff_(dic_[k_]["data"],ll, grades, sn_)} else {
+       if(!title.includes(":")){
+         ff_(dic_[k_]["data"],ll, grades, sn_)} else {
             //alert("acRadioCreator 90446-16\n  "+k_+"\n"+JSON.stringify(grades));
-            //alert("acRadioCreator 90446-16  "+JSON.stringify(grades[""+k_]));
-            //alert(k_+":::"+sn_+":::"+grades[k_])
-                var nnn=grades[k_][sn_]
-                //alert("nnn="+nnn)
-               ll.push(nnn)
+            //alert("acRadioCreator 90446-17\n  "+JSON.stringify(grades[""+k_]));
+            try{var nnn=grades[""+k_][sn_];ll.push(nnn)} catch(er){}
        }
       }
-     }
+  }
 
   var f=function(dic, data_dic, grades, n=0, n_limit_=-1)
   {
@@ -1775,8 +1774,11 @@ acBasicCreator.prototype.set_obj_structure = function(ll_)
         var nn_=0;
         for(var j in fields_)
         {
-         var ll=[];ff_(dic[k]["data"],ll, grades, sn_=j);
+         //alert("j="+j)
+         var ll=[];
+         ff_(dic[k]["data"],ll, grades, sn_=j);
          //var grade=65;if(j>=3){grade=100} else if(j==0){grade=92} else if(j==1){grade=84} else if(j==2){grade=88}
+         //alert(ll)
          var grade=Math.round(100*ll.reduce((a,b) => a+b, 0)/ll.length)/100;
          nn_+=1;data_dic[k]["kpi"][nn_]={"title":"", "pass":70, "grade": grade};data_dic[k]["kpi"][nn_]["title"]=fields_[j];
         }
@@ -1800,14 +1802,18 @@ acBasicCreator.prototype.set_obj_structure = function(ll_)
        var fun=function(data, ll){
         var grades=ll[0];var f=ll[1]; var nlimit=ll[2]; var ll_=ll[3];
         try{if(Object.keys(data).length==0 || data["id"].length==0){alert("There is no data for this battlion.");return;}} catch (er) {}
-         alert("90446-77 data \n"+JSON.stringify(data))
+         //alert("90446-77 data \n"+JSON.stringify(data))
         var n_=data[fields_[0]].length;
         for(var i=0;i<n_;i++)
         {if(!(data["soldier"][i] in grades)){grades[data["soldier"][i]]=[0,0,0,0]}
          grades[data["soldier"][i]][data["skill"][i]]=data["value"][i]
          }
-         //alert("90449-99-7: "+JSON.stringify(grades)+"\n"+JSON.stringify(atm.data_dic));
+         //alert("90449-99-7: "+JSON.stringify(atm.units_structure))
+         //alert(JSON.stringify(atm.data_dic))
+         //alert(JSON.stringify(grades));
+
          f(atm.units_structure, atm.data_dic, grades, 0, n_limit_=atm.nlimit);
+
          //alert("90449-99-79: "+JSON.stringify(atm.data_dic));
          for(var k_ in ll_){
             var obj_=get_creator(ll_[k_])
@@ -2246,6 +2252,7 @@ acGradesCreator.prototype.set_obj_structure = function(tests_dic=null, group_dic
            "converted_value":1*entity_test_value["best"][h]["converted_value"]-1*entity_test_value["worst"][h]["converted_value"]
           }
          }
+
          var tt={"best":{},"worst":{},"improve":{}}
          for(var t_ in tt)
          {var ss="<tr><td style='width:"+userid_width+"px'>"+e_userid+"</td>"
@@ -2268,8 +2275,10 @@ acGradesCreator.prototype.set_obj_structure = function(tests_dic=null, group_dic
                  else if (Math.round(100*var_value)/100 < down_value){ss_="background-color:"+down_color+";color:white;";
                  } else {ss_="background-color:"+other_color+";color:white;"}
                  ss_var_value = (Math.round(100*var_value)/100)
+                 entity_test_value[t_]["final"]=ss_var_value;
              }
            } catch(er){}
+
            ss+="<td style=';text-align:right;width:"+col_width+"px;"+ss_+"'>"+ss_var_value+"</td>";
            ss+="</tr>";
            tt[t_]["s"]=ss;tt[t_]["tests"]=entity_test_value[t_]
@@ -2279,7 +2288,7 @@ acGradesCreator.prototype.set_obj_structure = function(tests_dic=null, group_dic
          return tt;
         }
 
-      var tt_={"all":{"body":""}, "best":{"body":""},"worst":{"body":""},"improve":{"body":""}}
+      var tt_={"all":{"body":"", "final":{}}, "best":{"body":"", "final":{}},"worst":{"body":"", "final":{}},"improve":{"body":"", "final":{}}}
       var s_="<tr><th style='width:"+userid_width+"px'>UserId</th>"
       s_+="<th style='width:"+name_width+"px'>First Name</th>"
       s_+="<th style='width:"+name_width+"px'>Last Name</th>"
@@ -2308,7 +2317,19 @@ acGradesCreator.prototype.set_obj_structure = function(tests_dic=null, group_dic
          var dic_={"entity_number":entity_number, "entity_name":entity_name,
                    "result":result, "n_tests":n_tests, "e_first_name":e_first_name, "e_last_name":e_last_name,
                    "tests_config":tests_config,"test_dic":test_dic}
-         var tt=ff(dic_, 0);for(var k in tt_){eval('tt_["'+k+'"]["body"]+=tt["'+k+'"]["s"]')}
+         var tt=ff(dic_, 0);
+         for(var k in tt_){
+          eval('tt_["'+k+'"]["body"]+=tt["'+k+'"]["s"]')
+
+try{
+      //alert(k+"\n"+JSON.stringify(tt[k]));
+          eval('tt_["'+k+'"]["final"]['+entity_number+']=tt["'+k+'"]["tests"]["final"]')
+} catch(er){}
+
+     // alert(JSON.stringify(tt_[k]["final"]));
+
+          //tt_[k]["final"][entity_number]=  tt[k]["tests"]["final"]   tt[k]["tests"]["final"]
+         }
       }
 
       //alert(JSON.stringify(result));

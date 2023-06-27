@@ -4865,6 +4865,33 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
         result = {"status": "ok"}
         return result
 
+    def update_qualification_fact(self, dic):
+        print('90033-1 dic', dic)
+        app_ = dic["app"]
+        data = dic["data"]
+        skill = data["skill"]
+        data = data["data"]
+        # print(skill)
+        # print(data)
+        company_obj_id_ = int(dic['company_obj_id'])
+        # print(company_obj_id_, battalion_)
+        model_soldier = apps.get_model(app_label=app_, model_name="soldiers")
+        model_sqf = apps.get_model(app_label=app_, model_name="soldierqualificationfact")
+        try:
+            for k in data:
+                # print(k)
+                soldier_obj = model_soldier.objects.get(user__id=int(k))
+                sqf_obj, is_created = model_sqf.objects.get_or_create(training_web__id=company_obj_id_,
+                                                                      soldier=soldier_obj, skill=skill)
+                sqf_obj.value = data[k]
+                sqf_obj.save()
+        except Exception as ex:
+            print(ex)
+
+        result = {"status": "ok"}
+        return result
+
+
     # def set_soldiers_inventory(self, dic):
     #     print('90033-1 inventory dic\n', dic)
     #     app_ = dic["app"]
