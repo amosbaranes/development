@@ -2261,16 +2261,25 @@ acGradesCreator.prototype.set_obj_structure = function(tests_dic=null, group_dic
                     var_weight+=1*test_dic[test_number]["value"]/100
                    } else{ss+="<td style=';text-align:right;width:"+col_width+"px'></td>"}
            }
-          tt[t_]["s"]=ss;tt[t_]["tests"]=entity_test_value[t_]
+           try{
+             var ss_=""; var ss_var_value="";
+             if(var_weight>0) {var_value=var_value/var_weight;
+                 if(Math.round(100*var_value)/100 > up_value){ss_="background-color:"+up_color+";color:white;"}
+                 else if (Math.round(100*var_value)/100 < down_value){ss_="background-color:"+down_color+";color:white;";
+                 } else {ss_="background-color:"+other_color+";color:white;"}
+                 ss_var_value = (Math.round(100*var_value)/100)
+             }
+           } catch(er){}
+           ss+="<td style=';text-align:right;width:"+col_width+"px;"+ss_+"'>"+ss_var_value+"</td>";
+           ss+="</tr>";
+           tt[t_]["s"]=ss;tt[t_]["tests"]=entity_test_value[t_]
          }
-
          //alert(e_userid+"\nBBB\n"+ s)
-
          tt["all"]={};tt["all"]["s"]=s
          return tt;
         }
 
-     var tt_={"all":{"body":""}, "best":{"body":""},"worst":{"body":""},"improve":{"body":""}}
+      var tt_={"all":{"body":""}, "best":{"body":""},"worst":{"body":""},"improve":{"body":""}}
       var s_="<tr><th style='width:"+userid_width+"px'>UserId</th>"
       s_+="<th style='width:"+name_width+"px'>First Name</th>"
       s_+="<th style='width:"+name_width+"px'>Last Name</th>"
@@ -2306,8 +2315,8 @@ acGradesCreator.prototype.set_obj_structure = function(tests_dic=null, group_dic
       //alert(JSON.stringify(result)+"\n\n"+JSON.stringify(test_dic)+"\n\ntests_config:\n"+JSON.stringify(tests_config));
       //alert(this_obj.parent.tbody.outerHTML)
       this_obj.tests_reports=tt_
-      this_obj.parent.tr_h.innerHTML=tt_["best"]["thead"];
-      this_obj.parent.tbody.innerHTML=tt_["best"]["body"];
+      this_obj.parent.tr_h.innerHTML=tt_["all"]["thead"];
+      this_obj.parent.tbody.innerHTML=tt_["all"]["body"];
     }
     atm.activate_obj_function(fun, dic, this)
  }
