@@ -366,10 +366,10 @@ def get_data_link(request):
     dic_ = request.POST["dic"]
     log_debug("get_data_link 99999: "+dic_)
     dic_ = eval(dic_)
-    try:
-        print('\n 9050-150-50 core views get_data_link dic_ ', "\n", dic_,"\n", "-"*100)
-    except Exception as ex:
-        print(str(ex))
+    # try:
+    #     print('\n 9050-150-50 core views get_data_link dic_ ', "\n", dic_,"\n", "-"*100)
+    # except Exception as ex:
+    #     print(str(ex))
 
     # errors += "1 "
     # log_debug("get_data_link 99999: "+errors)
@@ -578,7 +578,7 @@ def get_data_link(request):
     dic["pkf_name"] = p_key_field_name
     # print(dic, "=2"*50)
     dic = {'status': 'ok', "dic": dic}
-    print('core view 9055 get_data_link dic_= ', dic)
+    # print('core view 9055 get_data_link dic_= ', dic)
     return JsonResponse(dic)
 
 def get_data_json_link(request):

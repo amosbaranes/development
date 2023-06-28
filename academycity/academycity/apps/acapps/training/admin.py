@@ -7,6 +7,7 @@ from .models import (TrainingWeb, Instructors, Brigades, Battalions, Companys, P
                      TestEvents, TestsForEvents, SoldiersForEvents, GradesForEvents,
                      InventoryCategorys,Inventorys,TestsVariables, InventoryFact, TestsForVariables, Periods, UnitSoldiers,
                      DoubleShoot, DoubleShootMembers,
+                     Adjectives, AdjectivesValues,
                      ToDoList)
 
 
@@ -128,6 +129,16 @@ class UnitSoldiersAdmin(admin.ModelAdmin):
 class SoldierQualificationFactAdmin(admin.ModelAdmin):
     list_display = ('id', 'soldier', 'skill', 'value')
 
+#
+@admin.register(Adjectives)
+class AdjectivesAdmin(admin.ModelAdmin):
+    list_display = ['id', 'title']
+
+@admin.register(AdjectivesValues)
+class AdjectivesValuesAdmin(admin.ModelAdmin):
+    list_display = ['id', 'adjective', 'order', 'value']
+
 @admin.register(ToDoList)
 class ToDoListAdmin(admin.ModelAdmin):
     list_display = ('id', 'subject', 'description', 'priority', "is_active")
+

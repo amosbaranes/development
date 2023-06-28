@@ -470,6 +470,38 @@ class SoldierFact(TruncateTableMixin, models.Model):
     value = models.SmallIntegerField(default=0)
 
 
+# -- Adjectives --
+class Adjectives(models.Model):
+    title = models.CharField(max_length=50)
+
+    def __str__(self):
+        return str(self.title)
+
+
+class AdjectiveQuerySet(models.QuerySet):
+    def adjectives(self, adjective_title):
+        return self.filter(adjective__title=adjective_title)
+
+
+class AdjectiveManager(models.Manager):
+    def get_queryset(self):
+        return AdjectiveQuerySet(self.model, self._db)
+
+    def adjectives(self, adjective_title):
+        return self.get_queryset().adjectives(adjective_title).order_by("order")
+
+
+class AdjectivesValues(models.Model):
+    adjective = models.ForeignKey(Adjectives, on_delete=models.CASCADE)
+    order = models.SmallIntegerField(blank=True, default=1)
+    value = models.CharField(max_length=50)
+
+    objects = models.Manager()  # The default manager.
+    adjectives = AdjectiveManager()  # Our custom manager.
+
+    def __str__(self):
+        return self.value
+
 # -- Admin tables --
 class ToDoList(TruncateTableMixin, models.Model):
     class Meta:
@@ -488,7 +520,6 @@ class ToDoList(TruncateTableMixin, models.Model):
 
     def __str__(self):
         return self.subject
-
 
 
 # To Be Deleted ###
