@@ -367,7 +367,7 @@ def get_data_link(request):
     log_debug("get_data_link 99999: "+dic_)
     dic_ = eval(dic_)
     try:
-        print('\n 9050-150 core views get_data_link dic_ ', "\n", dic_,"\n", "-"*100)
+        print('\n 9050-150-50 core views get_data_link dic_ ', "\n", dic_,"\n", "-"*100)
     except Exception as ex:
         print(str(ex))
 

@@ -243,7 +243,7 @@ class XBRLDimCompanyAdmin(admin.ModelAdmin):
 
 @admin.register(XBRLDimAccount)
 class XBRLDimAccountAdmin(admin.ModelAdmin):
-    list_display = ('order', 'account')
+    list_display = ('order', 'account', 'statement_order', 'statement')
 
 
 @admin.register(XBRLFactCompany)

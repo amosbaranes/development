@@ -1389,24 +1389,45 @@ class XBRLFactCompany(TruncateTableMixin, models.Model):
     account = models.ForeignKey(XBRLDimAccount, on_delete=models.CASCADE, default=None, related_name='dim_companies')
     amount = models.DecimalField(max_digits=18, decimal_places=2, default=0)
 
-class XBRLRatioDim(TruncateTableMixin, models.Model):
-    class Meta:
-        verbose_name = _('XBRL Dim Account')
-        verbose_name_plural = _('XBRL Dim Account')
-        ordering = ['statement_order', 'order']
-    #
-    industry = models.PositiveSmallIntegerField(default=0)
-    ratio_group = models.PositiveSmallIntegerField(default=0)
-    ratio_name = models.CharField(max_length=250, null=True)
-
-class XBRLFactRatiosCompany(TruncateTableMixin, models.Model):
+# needs a matching matrix to calculate special accounts (by industry)
+# so that account will include the ones in the XBRLDimAccount and the special calculated ones
+# which will be used in XBRLRatioDim
+# (1) complete accounts
+# (2) create special accounts
+# (3) fill XBRLFactRatiosCompany.
+#     For every ration in XBRLRatioDim, calculate the ration and put it in XBRLFactRatiosCompany
+class XBRLProcessedFactCompany(TruncateTableMixin, models.Model):
     class Meta:
         verbose_name = _('XBRL Fact Company')
         verbose_name_plural = _('XBRL Fact Companies')
 
-    company = models.ForeignKey(XBRLDimCompany, on_delete=models.CASCADE, default=None, related_name='dim_companies')
-    time = models.ForeignKey(XBRLDimTime, on_delete=models.CASCADE, default=None, related_name='dim_times')
-    ratio = models.ForeignKey(XBRLRatioDim, on_delete=models.CASCADE, default=None, related_name='dim_companies')
+    company = models.ForeignKey(XBRLDimCompany, on_delete=models.CASCADE, default=None, related_name='dim_processed_companies')
+    time = models.ForeignKey(XBRLDimTime, on_delete=models.CASCADE, default=None, related_name='dim_processed_times')
+    account = models.IntegerField(default=0)
+    amount = models.DecimalField(max_digits=18, decimal_places=2, default=0)
+
+
+class XBRLRatioDim(TruncateTableMixin, models.Model):
+    class Meta:
+        verbose_name = _('XBRL Dim Account')
+        verbose_name_plural = _('XBRL Dim Account')
+        ordering = ['industry', 'ratio_group']
+    #
+    industry = models.PositiveSmallIntegerField(default=0)
+    ratio_group = models.PositiveSmallIntegerField(default=0)
+    ratio_name = models.CharField(max_length=250, null=True)
+    numerator = models.IntegerField(default=0)
+    denominator = models.IntegerField(default=0)
+
+
+class XBRLFactRatiosCompany(TruncateTableMixin, models.Model):
+    class Meta:
+        verbose_name = _('XBRL Fact Ratios Company')
+        verbose_name_plural = _('XBRL Fact Ratios Companies')
+
+    company = models.ForeignKey(XBRLDimCompany, on_delete=models.CASCADE, default=None, related_name='dim_ratio_companies')
+    time = models.ForeignKey(XBRLDimTime, on_delete=models.CASCADE, default=None, related_name='dim_ratio_times')
+    ratio = models.ForeignKey(XBRLRatioDim, on_delete=models.CASCADE, default=None, related_name='dim_ratio_ratio')
     amount = models.DecimalField(max_digits=18, decimal_places=2, default=0)
 
 

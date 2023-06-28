@@ -5310,3 +5310,12 @@ class CorporateValuationDataProcessing(BaseDataProcessing, BaseCorporateValuatio
             # print("saved", str(row["ticker"]))
         result = {"status": "ok"}
         return result
+
+    def data_transfer_to_process_fact(self, dic):
+        # print('data_transfer_to_process_fact 90033-100 dic\n', '-'*100, '\n', dic, '\n', '-'*100)
+        app_ = dic["app"]
+
+
+        result = {"status": "ok"}
+        return result
+
