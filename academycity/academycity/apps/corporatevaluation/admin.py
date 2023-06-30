@@ -13,7 +13,8 @@ from .models import (Project, RBOIC, CountryRegion, CountryRating, Industry,
                      XBRLDimTime, XBRLDimCompany, XBRLDimAccount, XBRLFactCompany,
                      XBRLRealEquityPrices, XBRLRealEquityPricesArchive, Adjectives, AdjectivesValues,
                      CorporateValuationWeb, ETFS, ETFWatchLists, CompaniesPriceData,
-                     StockPricesMinutes, StockPricesDays)
+                     StockPricesMinutes, StockPricesDays,
+                     XBRLProcessedFactCompany, XBRLRatioDim, XBRLAccountsGroupsFactCompany, XBRLFactRatiosCompany)
 
 
 # -*- coding: utf-8 -*-
@@ -21,6 +22,27 @@ from cms.admin.placeholderadmin import PlaceholderAdminMixin
 from parler.admin import TranslatableAdmin, TranslatableStackedInline, TranslatableTabularInline
 
 
+@admin.register(XBRLProcessedFactCompany)
+class XBRLProcessedFactCompanyAdmin(admin.ModelAdmin):
+    list_display = ('company', 'time', 'account', 'amount')
+    list_filter = ('company', 'time', 'account')
+
+@admin.register(XBRLRatioDim)
+class XBRLRatioDimAdmin(admin.ModelAdmin):
+    list_display = ('industry', 'ratio_group', 'ratio_name', 'numerator', 'denominator')
+    list_filter = ('industry', 'ratio_group', 'numerator', 'denominator')
+
+@admin.register(XBRLAccountsGroupsFactCompany)
+class XBRLAccountsGroupsFactCompanyAdmin(admin.ModelAdmin):
+    list_display = ('company', 'time', 'account', 'amount')
+    list_filter = ('company', 'time', 'account')
+
+@admin.register(XBRLFactRatiosCompany)
+class XBRLFactRatiosCompanyAdmin(admin.ModelAdmin):
+    list_display = ('company', 'time', 'ratio', 'amount')
+    list_filter = ('company', 'time', 'ratio')
+
+#
 @admin.register(ToDoList)
 class ToDoListAdmin(admin.ModelAdmin):
     list_display = ('priority', 'subject', 'id', 'user')

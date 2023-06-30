@@ -1398,19 +1398,29 @@ class XBRLFactCompany(TruncateTableMixin, models.Model):
 #     For every ration in XBRLRatioDim, calculate the ration and put it in XBRLFactRatiosCompany
 class XBRLProcessedFactCompany(TruncateTableMixin, models.Model):
     class Meta:
-        verbose_name = _('XBRL Fact Company')
-        verbose_name_plural = _('XBRL Fact Companies')
+        verbose_name = _('XBRL Processed Fact Company')
+        verbose_name_plural = _('XBRL Processed Fact Companies')
 
     company = models.ForeignKey(XBRLDimCompany, on_delete=models.CASCADE, default=None, related_name='dim_processed_companies')
     time = models.ForeignKey(XBRLDimTime, on_delete=models.CASCADE, default=None, related_name='dim_processed_times')
     account = models.IntegerField(default=0)
     amount = models.DecimalField(max_digits=18, decimal_places=2, default=0)
 
+# in the adjectives we have accounts_group
+class XBRLAccountsGroupsFactCompany(TruncateTableMixin, models.Model):
+    class Meta:
+        verbose_name = _('XBRL Accounts Groups Fact Company')
+        verbose_name_plural = _('XBRL Accounts Groups Fact Companies')
+
+    company = models.ForeignKey(XBRLDimCompany, on_delete=models.CASCADE, default=None, related_name='dim_accounts_groups_companies')
+    time = models.ForeignKey(XBRLDimTime, on_delete=models.CASCADE, default=None, related_name='dim_accounts_groups_times')
+    account = models.IntegerField(default=0)
+    amount = models.DecimalField(max_digits=18, decimal_places=2, default=0)
 
 class XBRLRatioDim(TruncateTableMixin, models.Model):
     class Meta:
-        verbose_name = _('XBRL Dim Account')
-        verbose_name_plural = _('XBRL Dim Account')
+        verbose_name = _('XBRL Ratio Dim')
+        verbose_name_plural = _('XBRL Ratio Dims')
         ordering = ['industry', 'ratio_group']
     #
     industry = models.PositiveSmallIntegerField(default=0)
@@ -1418,7 +1428,6 @@ class XBRLRatioDim(TruncateTableMixin, models.Model):
     ratio_name = models.CharField(max_length=250, null=True)
     numerator = models.IntegerField(default=0)
     denominator = models.IntegerField(default=0)
-
 
 class XBRLFactRatiosCompany(TruncateTableMixin, models.Model):
     class Meta:

@@ -135,11 +135,16 @@ class AdvancedTabs(object):
         return result
 
     def get_adjective(self, params):
-        # print('='*50, '\nparams\n', params, "\n", '='*50)
+        print('='*50, '\nparams\n', params, "\n", '='*50)
 
         app_ = params['app']
         model_name_ = params['model_name']
         field_value_ = params['field_value']
+        index_="id"
+        try:
+            index_ = params['index']
+        except Exception as ex:
+            pass
         manager_name = params['manager_name']
         manager_fun = params['manager_fun']
         manager_fun_field = params['manager_fun_field']
@@ -152,8 +157,11 @@ class AdvancedTabs(object):
         # print(data)
         result = []
         for q in data:
-            # print(q.order, q.id)
-            result.append((q.id, q.value))
+            print(q.order, q.id)
+            if index_ == "order":
+                result.append((q.order, q.value))
+            else:
+                result.append((q.id, q.value))
         # print('result')
         # print(result)
         # print('result')

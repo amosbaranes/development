@@ -39,6 +39,7 @@ function AdvancedTabsManager(dic=null)
                                                  "functions":["onchange", "onkeyup", "onkeydown"]},
                                         "Select":{"title":"Select", "width":5,
                                                   "setting": {"options":[], "global_adjective":[], "app_adjective":[],
+                                                              "index":["", "id", "order"],
                                                               "data_app":[], "data_model":[],"data_field":[],
                                                               "data_filter_field":[], "data_filter_field_value":[],
                                                               "data_filter_field_ft":["","Yes"],
@@ -1415,20 +1416,24 @@ acObj.prototype.get_select_data = function()
   } else if (dic["properties"]["global_adjective"]!="" & dic["properties"]["global_adjective"]!=null)
   {
    var adjective=dic["properties"]["global_adjective"];
+   var index=""; try{index=dic["properties"]["index"]} catch(er){};
    var dic_ = {"obj": "AdvancedTabs", "atm": atm_.my_name, "app": "core", "fun": "get_adjective",
                "params": {"app": "core", "model_name": "AdjectivesValues",
                "manager_name": "adjectives","manager_fun": "adjectives",
-               "manager_fun_field": "adjective_title","field_value":adjective}
+               "manager_fun_field": "adjective_title","field_value":adjective,
+               "index":index}
               }
       //alert(JSON.stringify(dic_))
       this.atm.get_list(call_back_fun=fun, dic_, this.new_obj);
   } else if (dic["properties"]["app_adjective"]!="" & dic["properties"]["app_adjective"]!=null)
   {
    var adjective=dic["properties"]["app_adjective"];
+   var index=""; try{index=dic["properties"]["index"]} catch(er){};
    var dic_ = {"obj": "AdvancedTabs", "atm": atm_.my_name, "app": this.atm.my_app, "fun": "get_adjective",
                "params": {"app": this.atm.my_app, "model_name": "AdjectivesValues",
                "manager_name": "adjectives","manager_fun": "adjectives",
                "manager_fun_field": "adjective_title","field_value":adjective,
+               "index":index
                }
               }
       //alert(JSON.stringify(dic_))
@@ -1724,7 +1729,7 @@ acBasicCreator.prototype.set_board_data = function(ll=[])
         var color="white";var background_color = "green"
         if(grade==0){color="black";background_color = "white"} else if(grade<70)
         {background_color="red"; color="white"}
-        s+="<td style='text-align:center;width:100px;color:"+color+";background-color:"+background_color+"'>"+grade+"</td>"
+        s+="<td style='text-align:center;width:100px;color:"+color+";background-color:"+background_color+"'>"+grade+"&#128512;</td>"
        }
        s+="</tr>"
       }
@@ -6060,6 +6065,51 @@ acDETableCreator.prototype.editor_properties_func = function(tab, tab_properties
  tab_properties_.appendChild(nav);
  tab_properties_.appendChild(nav_detail);
 }
+
+
+
+// https://plotly.com/javascript/gauge-charts/
+// https://plotly.com/javascript/indicator/
+// https://plotly.com/javascript/pie-charts/
+// https://www.alt-codes.net/smiley_alt_codes.php
+
+// var e=["😃","🙂","😐","☹️"]
+
+//var data = [
+//  {
+//    type: "indicator",
+//    mode: "gauge+number+delta",
+//    value: 80,
+//    title: { text: "Fitness", font: { size: 24 } },
+//    delta: { reference: 60, increasing: { color: "RebeccaPurple" } },
+//    gauge: {
+//      axis: { range: [null, 100], tickwidth: 1, tickcolor: "darkblue" },
+//      bar: { color: "white" },
+//      bgcolor: "darkblue",
+//      borderwidth: 2,
+//      bordercolor: "gray",
+//      steps: [
+//        { range: [0, 50], color: "red" },
+//        { range: [70, 100], color: "green" }
+//      ],
+//      threshold: {
+//        line: { color: "red", width: 4 },
+//        thickness: 0.75,
+//        value: 90
+//      }
+//    }
+//  }
+//];
+//
+//var layout = {
+//  width: 500,
+//  height: 400,
+//  margin: { t: 25, r: 25, l: 25, b: 25 },
+//  paper_bgcolor: "lavender",
+//  font: { color: "darkblue", family: "Arial" }
+//};
+//
+//Plotly.newPlot('myDiv', data, layout);
 
 
 // -- acChartCreator --

@@ -5315,7 +5315,100 @@ class CorporateValuationDataProcessing(BaseDataProcessing, BaseCorporateValuatio
         # print('data_transfer_to_process_fact 90033-100 dic\n', '-'*100, '\n', dic, '\n', '-'*100)
         app_ = dic["app"]
 
+        model_from = apps.get_model(app_label=app_, model_name="XBRLFactCompany")
+        model_to = apps.get_model(app_label=app_, model_name="XBRLProcessedFactCompany")
+        qs = model_from.objects.all()
+        for q in qs:
+            # print(q.company.id, q.time, q.account.order, q.amount)
+            obj, is_created = model_to.objects.get_or_create(company_id=q.company.id, time=q.time, account=q.account.order)
+            obj.amount=q.amount
+            obj.save()
 
         result = {"status": "ok"}
         return result
+
+    def create_new_group_accounts(self, dic):
+        print('data_transfer_to_process_fact 90044-100 dic\n', '-'*100, '\n', dic, '\n', '-'*100)
+        app_ = dic["app"]
+
+        model_from = apps.get_model(app_label=app_, model_name="XBRLProcessedFactCompany")
+        model_to = apps.get_model(app_label=app_, model_name="XBRLAccountsGroupsFactCompany")
+
+        #
+        # Need to add special ratios like for the banking industry.
+        #
+        ll_aggregate_accounts = [11990, 13990]
+        qs = model_from.objects.filter(account__in=ll_aggregate_accounts).all()
+        # print(qs)
+        for q in qs:
+            # print(q.company.id, q.time, q.account, q.amount)
+            obj, is_created = model_to.objects.get_or_create(company_id=q.company.id, time=q.time, account=q.account)
+            obj.amount=q.amount
+            obj.save()
+
+        result = {"status": "ok"}
+        return result
+
+    def create_ratios(self, dic):
+        # print('data_transfer_to_process_fact 90044-100 dic\n', '-'*100, '\n', dic, '\n', '-'*100)
+        app_ = dic["app"]
+
+        model_from = apps.get_model(app_label=app_, model_name="XBRLAccountsGroupsFactCompany")
+        model_to = apps.get_model(app_label=app_, model_name="XBRLFactRatiosCompany")
+        model_ratio = apps.get_model(app_label=app_, model_name="XBRLRatioDim")
+
+        cs = model_from.objects.values('company_id').distinct()
+        df_cs=pd.DataFrame(list(cs))
+
+        qs_r = model_ratio.objects.all().values()
+        df_r=pd.DataFrame(qs_r)
+        # print(df_r)
+
+        for index, row in df_cs.iterrows():
+            c_id = int(row["company_id"])
+            # print("-"*50,"\n",c_id,"\n","-"*50)
+            csi = model_from.objects.filter(company_id=c_id).values('time_id').distinct()
+            df_csi=pd.DataFrame(list(csi))
+            for index_, row_ in df_csi.iterrows():
+                time_id = int(row_["time_id"])
+                # print("-"*50,"\n",time_id,"\n","-"*50)
+                try:
+                    for index_r, row_r in df_r.iterrows():
+                        numerator = int(row_r["numerator"])
+                        denominator = int(row_r["denominator"])
+                        # print(numerator, denominator)
+                        n = model_from.objects.get(company_id=c_id, time_id=time_id, account=numerator).amount
+                        d = model_from.objects.get(company_id=c_id, time_id=time_id, account=denominator).amount
+                        r = n/d
+                        # print(n, d, r)
+                        ratio_id = row_r.id
+                        obj, is_created = model_to.objects.get_or_create(company_id=c_id, time_id=time_id, ratio_id = ratio_id)
+                        obj.amount=r
+                        obj.save()
+                except Exception as ex:
+                    print("Error 202-202", ex)
+
+
+
+        # qs = model_from.objects.all().values()
+        #
+        # df = pd.DataFrame(list(qs))
+        # print(df)
+
+        # print(qs)
+
+        # for q in qs:
+        #
+        #     print(q.company.id,
+        #           q.time,
+        #           q.account,
+        #           q.amount)
+        #     obj, is_created = model_to.objects.get_or_create(company_id=q.company.id, time=q.time, account=q.account.order)
+        #     obj.amount=q.amount
+        #     obj.save()
+
+        result = {"status": "ok"}
+        return result
+
+
 
