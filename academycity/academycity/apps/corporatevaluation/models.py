@@ -1406,6 +1406,9 @@ class XBRLProcessedFactCompany(TruncateTableMixin, models.Model):
     account = models.IntegerField(default=0)
     amount = models.DecimalField(max_digits=18, decimal_places=2, default=0)
 
+    def __str__(self):
+        return str(self.company) + ":" + str(self.amount)
+
 # in the adjectives we have accounts_group
 class XBRLAccountsGroupsFactCompany(TruncateTableMixin, models.Model):
     class Meta:
@@ -1429,6 +1432,9 @@ class XBRLRatioDim(TruncateTableMixin, models.Model):
     numerator = models.IntegerField(default=0)
     denominator = models.IntegerField(default=0)
 
+    def __str__(self):
+        return str(self.industry) + ":" + str(self.ratio_group) + ":"  + str(self.ratio_name)
+
 class XBRLFactRatiosCompany(TruncateTableMixin, models.Model):
     class Meta:
         verbose_name = _('XBRL Fact Ratios Company')
@@ -1439,6 +1445,8 @@ class XBRLFactRatiosCompany(TruncateTableMixin, models.Model):
     ratio = models.ForeignKey(XBRLRatioDim, on_delete=models.CASCADE, default=None, related_name='dim_ratio_ratio')
     amount = models.DecimalField(max_digits=18, decimal_places=2, default=0)
 
+    def __str__(self):
+        return str(self.company) + ":" + str(self.ratio) + ":"  + str(self.amount)
 
 # -- Admin tables --
 class ToDoList(TruncateTableMixin, models.Model):

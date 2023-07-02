@@ -1950,9 +1950,10 @@ acReport.prototype.set_data = function(type, is_level=true){
      report.raw_data=data
      report.creator.create_html(type)
    }
-  // alert(is_level)
+   //alert(is_level)
+  //alert("90876-2\n"+JSON.stringify(this.get_data_dic));
   if(is_level==false){this.get_data_dic["fields"] = this.get_data_dic["fields"].filter(item => item !== "level")}
-  //alert("90876\n"+JSON.stringify(this.get_data_dic));
+  //alert("90876-3\n"+JSON.stringify(this.get_data_dic));
   //this.get_data_dic["from_fun"]="acReport.prototype.set_data"
   this.atm.get_data(fun, this.get_data_dic, [this.table_, this.get_data_dic])
 }
@@ -2035,12 +2036,12 @@ acPivotCreator.prototype.create_html = function(type=null)
   if(dic["properties"]["vertical_title"]!=null && dic["properties"]["vertical_title"]!=""){vt_=dic["properties"]["vertical_title"]};
   vt_ll=[];for(var j in h_){vt_ll.push(0)};if(vt_!="" && vt_!=""){vt_ll.push(0)};
 
-  //alert("v_\n"+JSON.stringify(v_));
-
   for (var i in v_)
   {
+      //alert(i+"\n"+v_[i]+"\n"+vertical_field_+"\n")
+      //alert(p.raw_data["dim_titles"][vertical_field_][v_[i]])
       s+="<tr><th style='white-space: pre;text-align:left'>"+p.raw_data["dim_titles"][vertical_field_][v_[i]]+"</th>"
-      var horizontal_total=0
+      var horizontal_total=0;
       var sss_=""
       for(var j in h_)
       {
@@ -2065,7 +2066,6 @@ acPivotCreator.prototype.create_html = function(type=null)
       }}catch(er){}
       s+="</tr>"
   }
-
   var sv="<tr><th style='white-space: pre;text-align:left'>"+vt_+"</th>"
   for(var j in h_)
   {
@@ -2076,7 +2076,7 @@ acPivotCreator.prototype.create_html = function(type=null)
   }
   sv+="</tr>"
   // --
-  //alert(sv)
+  //alert("sv\n"+sv)
   if(vt_!=""){s+=sv}
 
   s+="</tbody></table></br></br>";
@@ -2527,7 +2527,7 @@ acToDoCreator.prototype.set_data = function()
    var dic_={"model": table_, "parent_model":"", "parent_id": "", "number_of_rows": "1000000",
                "fields": ["subject","description", "priority", "is_active"],
                "filters":{}, "order_by": {}}
-  //alert("90876-760-1\n"+JSON.stringify(dic_));
+  //alert("90876-764-4\n"+JSON.stringify(dic_));
   atm.get_data(fun, dic_, [this, dic]);
 }
 
@@ -4856,7 +4856,7 @@ acComplianceCreator.prototype.set_units = function()
   }
 }
 
-// -- acSearchTable --
+// -- acSearch Table --
 function acSearchTableCreator(parent){this.parent=parent;this.is_json_data=false;this.json_record_id=-1;
                                       this.json_last_record_number=0, this.primary_key_list_filter=[],
                                       this.data_table_name=null;
@@ -6680,7 +6680,7 @@ TabContent.prototype.process_content = process_content;
 TabContent.prototype.set_objects_data = function(dic, is_json_data=false)
 {
  this.clear_objects_data()
- // alert("90766-66 "+JSON.stringify(dic))
+  //alert("90766-66 "+JSON.stringify(dic))
  // alert(dic["pkf_name"])
  this.is_json_data=is_json_data;
 
@@ -6690,11 +6690,10 @@ TabContent.prototype.set_objects_data = function(dic, is_json_data=false)
  {
    if(container_dic[o]["obj_type"]=="acObj" && ((container_dic[o]["obj_name"]=="acInput" || container_dic[o]["obj_name"]=="acTextarea" )
       || container_dic[o]["obj_name"]=="acSelect")){
-     // alert("9023 "+JSON.stringify(container_dic[o]["properties"]))
      var multiple_=false;if("multiple" in container_dic[o]["properties"]){multiple_ = true}
      var eI=document.getElementById(o);
      var v=dic[container_dic[o]["properties"]["field"]]
-     if(v=="" || v==null){continue;}
+     if(v=="" || v==null){try{eI.value=container_dic[o]["properties"]["default_value"]} catch(er){};continue;}
      //var m=dic[container_dic[o]["properties"]["field"]]
      if(container_dic[o]["obj_name"]=="acTextarea"){
      v = JSON.stringify(v)
@@ -6717,7 +6716,6 @@ TabContent.prototype.set_objects_data = function(dic, is_json_data=false)
 
        }
      }else {eI.value=v}
-
      var foreign_table=container_dic[o]["properties"]["foreign_table"]
      if(foreign_table!=null && foreign_table!="")
      {

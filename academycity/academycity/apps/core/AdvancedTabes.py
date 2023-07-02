@@ -135,7 +135,7 @@ class AdvancedTabs(object):
         return result
 
     def get_adjective(self, params):
-        print('='*50, '\nparams\n', params, "\n", '='*50)
+        # print('='*50, '\ncore AdvancedTabes\nparams\n', params, "\n", '='*50)
 
         app_ = params['app']
         model_name_ = params['model_name']
@@ -157,14 +157,12 @@ class AdvancedTabs(object):
         # print(data)
         result = []
         for q in data:
-            print(q.order, q.id)
+            # print(q.order, q.id)
             if index_ == "order":
                 result.append((q.order, q.value))
             else:
                 result.append((q.id, q.value))
-        # print('result')
-        # print(result)
-        # print('result')
+        # print('result', result, 'result')
         return result
 
     def get_list_from_model(self, params):

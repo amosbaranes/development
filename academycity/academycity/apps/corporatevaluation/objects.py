@@ -5330,27 +5330,67 @@ class CorporateValuationDataProcessing(BaseDataProcessing, BaseCorporateValuatio
     def create_new_group_accounts(self, dic):
         print('data_transfer_to_process_fact 90044-100 dic\n', '-'*100, '\n', dic, '\n', '-'*100)
         app_ = dic["app"]
-
         model_from = apps.get_model(app_label=app_, model_name="XBRLProcessedFactCompany")
         model_to = apps.get_model(app_label=app_, model_name="XBRLAccountsGroupsFactCompany")
 
         #
         # Need to add special ratios like for the banking industry.
         #
-        ll_aggregate_accounts = [11990, 13990]
+        ll_aggregate_accounts = dic["aggregate_accounts"]
+        dic_new_accounts = dic["new_accounts"]
+        #
         qs = model_from.objects.filter(account__in=ll_aggregate_accounts).all()
         # print(qs)
+
         for q in qs:
             # print(q.company.id, q.time, q.account, q.amount)
             obj, is_created = model_to.objects.get_or_create(company_id=q.company.id, time=q.time, account=q.account)
             obj.amount=q.amount
             obj.save()
 
+        cs = model_from.objects.values('company_id').distinct()
+        df_cs=pd.DataFrame(list(cs))
+        for index, row in df_cs.iterrows():
+            c_id = int(row["company_id"])
+            # print("-"*50,"\n",c_id,"\n","-"*50)
+            csi = model_from.objects.filter(company_id=c_id).values('time_id').distinct()
+            df_csi=pd.DataFrame(list(csi))
+            for index_, row_ in df_csi.iterrows():
+                for new_account in dic_new_accounts:
+                    detail = dic_new_accounts[new_account]
+                    new_account = int(new_account)
+                    n = 0
+                    try:
+                        time_id = int(row_["time_id"])
+                        # print(c_id, time_id)
+                        add = detail["add"]
+                        subtract = detail["subtract"]
+                        for add_account in add:
+                            obj_1 = model_from.objects.get(company_id=c_id, time_id=time_id, account=add_account)
+                            n += obj_1.amount
+                            # print("add_account\n", obj_1.amount, add_account, "\n", n)
+                        for subtract_account in subtract:
+                            # print("add_account, add_account")
+                            obj_2 = model_from.objects.get(company_id=c_id, time_id=time_id, account=subtract_account)
+                            n -= obj_2.amount
+                            # print("subtract_account\n", obj_2.amount, subtract_account, "\n", n)
+                    except Exception as ex:
+                        print("Errror 560\n", ex)
+
+                    try:
+                        obj_to, is_created = model_to.objects.get_or_create(company_id=c_id, time_id=time_id, account=new_account)
+                        # print("n\n", n)
+                        obj_to.amount = n
+                        obj_to.save()
+                        # print("-"*50, "\n", obj_to, "\n", "-"*50)
+                    except Exception as ex:
+                        print("Errror 600\n", ex)
+
         result = {"status": "ok"}
         return result
 
     def create_ratios(self, dic):
-        # print('data_transfer_to_process_fact 90044-100 dic\n', '-'*100, '\n', dic, '\n', '-'*100)
+        # print('create_ratios 90044-666-66 dic\n', '-'*100, '\n', dic, '\n', '-'*100)
         app_ = dic["app"]
 
         model_from = apps.get_model(app_label=app_, model_name="XBRLAccountsGroupsFactCompany")
@@ -5372,8 +5412,8 @@ class CorporateValuationDataProcessing(BaseDataProcessing, BaseCorporateValuatio
             for index_, row_ in df_csi.iterrows():
                 time_id = int(row_["time_id"])
                 # print("-"*50,"\n",time_id,"\n","-"*50)
-                try:
-                    for index_r, row_r in df_r.iterrows():
+                for index_r, row_r in df_r.iterrows():
+                    try:
                         numerator = int(row_r["numerator"])
                         denominator = int(row_r["denominator"])
                         # print(numerator, denominator)
@@ -5385,10 +5425,8 @@ class CorporateValuationDataProcessing(BaseDataProcessing, BaseCorporateValuatio
                         obj, is_created = model_to.objects.get_or_create(company_id=c_id, time_id=time_id, ratio_id = ratio_id)
                         obj.amount=r
                         obj.save()
-                except Exception as ex:
-                    print("Error 202-202", ex)
-
-
+                    except Exception as ex:
+                        print("Error 202-202", ex)
 
         # qs = model_from.objects.all().values()
         #

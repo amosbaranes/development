@@ -20,7 +20,7 @@ from django.db.models.fields.related import ForeignKey, ManyToManyField, ManyToM
 from django.http import HttpResponse
 import json
 import pandas as pd
-
+import numbers
 
 def home(request):
     title = _('Core App')
@@ -364,6 +364,8 @@ def update_field_model_by_id(request, foreign=None):
 def get_data_link(request):
     errors = ""
     dic_ = request.POST["dic"]
+    # print(dic_)
+
     log_debug("get_data_link 99999: "+dic_)
     dic_ = eval(dic_)
     # try:
@@ -503,7 +505,7 @@ def get_data_link(request):
                         s += '.filter(' + foreign_table_ + '__' + filter_field_ + '=' + filter_value_ + ')'
                     else:
                         # print(44444555)
-                        s += '.filter('+foreign_table_+'__'+filter_field_+'__icontains='+filter_value_+')'
+                        s += '.filter(' + foreign_table_ + '__' + filter_field_ + '__icontains="'+filter_value_+'")'
                 else:
                     # print(22222222222)
                     if filter_field_ == "id":
@@ -568,7 +570,12 @@ def get_data_link(request):
             for f in dic_["fields"]:
                 if f != "":
                     # print(f+'.append(q[\''+f+'\'])')
-                    eval(f+'.append(q[\''+f+'\'])')
+                    kk__ = q[f]
+                    if (not (isinstance(q[f], float) or isinstance(q[f], int))) and isinstance(kk__, numbers.Number):
+                        # print(isinstance(q[f], numbers.Number))
+                        kk__ = float(kk__)
+                    # eval(f+'.append(q[\''+f+'\'])')
+                    eval(f+'.append(kk__)')
                     # print(eval(f))
         for ff in dic_["fields"]:
             if ff != "":
