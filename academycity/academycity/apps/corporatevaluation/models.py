@@ -1392,9 +1392,9 @@ class XBRLFactCompany(TruncateTableMixin, models.Model):
 # needs a matching matrix to calculate special accounts (by industry)
 # so that account will include the ones in the XBRLDimAccount and the special calculated ones
 # which will be used in XBRLRatioDim
-# (1) complete accounts
-# (2) create special accounts
-# (3) fill XBRLFactRatiosCompany.
+# (3) complete accounts             NEED TO BE DONE
+# () create special accounts        DONE
+# () fill XBRLFactRatiosCompany     DONE
 #     For every ration in XBRLRatioDim, calculate the ration and put it in XBRLFactRatiosCompany
 class XBRLProcessedFactCompany(TruncateTableMixin, models.Model):
     class Meta:
