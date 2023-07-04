@@ -210,7 +210,7 @@ class BaseDataProcessing(object):
             obj.data_json = data_json_
             obj.save()
         else:
-            obj = general_data_model.objects.get(app=app_, group=group_, data_name=data_name_)
+            # obj = general_data_model.objects.get(app=app_, group=group_, data_name=data_name_)
             data_json_ = obj.data_json
             return_number = data_json_["number"] + 1
             data_json_["number"] = return_number

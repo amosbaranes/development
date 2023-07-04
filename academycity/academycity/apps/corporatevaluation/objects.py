@@ -5328,7 +5328,7 @@ class CorporateValuationDataProcessing(BaseDataProcessing, BaseCorporateValuatio
         return result
 
     def create_new_group_accounts(self, dic):
-        print('data_transfer_to_process_fact 90044-100 dic\n', '-'*100, '\n', dic, '\n', '-'*100)
+        # print('data_transfer_to_process_fact 90044-100 dic\n', '-'*100, '\n', dic, '\n', '-'*100)
         app_ = dic["app"]
         model_from = apps.get_model(app_label=app_, model_name="XBRLProcessedFactCompany")
         model_to = apps.get_model(app_label=app_, model_name="XBRLAccountsGroupsFactCompany")
@@ -5375,7 +5375,8 @@ class CorporateValuationDataProcessing(BaseDataProcessing, BaseCorporateValuatio
                             n -= obj_2.amount
                             # print("subtract_account\n", obj_2.amount, subtract_account, "\n", n)
                     except Exception as ex:
-                        print("Errror 560\n", ex)
+                        pass
+                        # print("Errror 560\n", ex)
 
                     try:
                         obj_to, is_created = model_to.objects.get_or_create(company_id=c_id, time_id=time_id, account=new_account)
@@ -5426,17 +5427,15 @@ class CorporateValuationDataProcessing(BaseDataProcessing, BaseCorporateValuatio
                         obj.amount=r
                         obj.save()
                     except Exception as ex:
-                        print("Error 202-202", ex)
+                        pass
+                        # print("Error 202-202", ex)
 
         # qs = model_from.objects.all().values()
         #
         # df = pd.DataFrame(list(qs))
         # print(df)
-
         # print(qs)
-
         # for q in qs:
-        #
         #     print(q.company.id,
         #           q.time,
         #           q.account,
@@ -5447,6 +5446,4 @@ class CorporateValuationDataProcessing(BaseDataProcessing, BaseCorporateValuatio
 
         result = {"status": "ok"}
         return result
-
-
 

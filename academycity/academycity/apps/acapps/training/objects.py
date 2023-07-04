@@ -4711,10 +4711,8 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
         file_path = self.upload_file(dic)["file_path"]
         # print("-"*100, "\n", file_path, "\n", "-"*100)
         #
-        model_name_ = "inventorys"
-        model_inventorys = apps.get_model(app_label=app_, model_name=model_name_)
-        model_name_ = "inventoryfact"
-        model_inventoryfact = apps.get_model(app_label=app_, model_name=model_name_)
+        model_inventorys = apps.get_model(app_label=app_, model_name="inventorys")
+        model_inventoryfact = apps.get_model(app_label=app_, model_name="inventoryfact")
         #
         battalion_number_ = int(self.uploaded_filename.split(".")[0])
         model_periods = apps.get_model(app_label=app_, model_name="periods")
@@ -4837,10 +4835,8 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
         app_ = dic["app"]
         file_path = self.upload_file(dic)["file_path"]
         # print("-"*100, "\n", file_path, "\n", "-"*100)
-        model_name_ = "inventorys"
-        model_inventorys = apps.get_model(app_label=app_, model_name=model_name_)
-        model_name_ = "inventorycategorys"
-        model_inventorycategorys = apps.get_model(app_label=app_, model_name=model_name_)
+        model_inventorys = apps.get_model(app_label=app_, model_name="inventorys")
+        model_inventorycategorys = apps.get_model(app_label=app_, model_name="inventorycategorys")
 
         df = pd.read_excel(file_path, sheet_name="Data", header=0)
         print(df)
@@ -4862,95 +4858,213 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
             inventory_obj.save()
         # -----
         # print("\n", "Done")
+        # -----
         result = {"status": "ok"}
+        print(result)
         return result
 
-    def update_qualification_fact(self, dic):
-        # print('90033-1 dic', dic)
+    def set_new_structure(self, dic):
+        # print('90088-1 dic', dic)
         app_ = dic["app"]
-        data = dic["data"]
-        skill = data["skill"]
-        data = data["data"]
-        # print(skill)
-        # print(data)
-        company_obj_id_ = int(dic['company_obj_id'])
-        # print(company_obj_id_, battalion_)
-        model_soldier = apps.get_model(app_label=app_, model_name="soldiers")
-        model_sqf = apps.get_model(app_label=app_, model_name="soldierqualificationfact")
         try:
-            for k in data:
-                # print(k)
-                soldier_obj = model_soldier.objects.get(user__id=int(k))
-                sqf_obj, is_created = model_sqf.objects.get_or_create(training_web__id=company_obj_id_,
-                                                                      soldier=soldier_obj, skill=skill)
-                sqf_obj.value = data[k]
-                sqf_obj.save()
+            ll = eval(dic["sheet_name"])
+            battalion_name = ll[0]
+            battalion_id = int(ll[1])
+            period_number = int(ll[2])
+            n_limit = int(ll[3])
+            # print("battalion_id, period_number", battalion_name, battalion_id, period_number, n_limit)
+
+            units_dic = {battalion_id: {'title': battalion_name, 'data': {}}}
+            file_path = self.upload_file(dic)["file_path"]
+
+            # print(file_path)
+            df = pd.read_excel(file_path, sheet_name="Data", header=0)
+            # print(df)
+
+            # print("1 columns\n", df.columns)
+            columns = df.columns[11:]
+            # print("2 columns\n", columns)
+
+            model_battalion = apps.get_model(app_label=app_, model_name="battalions")
+            battalion_obj = model_battalion.objects.get(id=battalion_id)
+            try:
+                model_inventorys = apps.get_model(app_label=app_, model_name="inventorys")
+                model_inventoryfact = apps.get_model(app_label=app_, model_name="inventoryfact")
+                model_inventoryfact.objects.filter(soldier__battalion=battalion_obj).all().delete()
+            except Exception as ex:
+                print(ex)
+            model_periods = apps.get_model(app_label=app_, model_name="periods")
+            period_obj, is_created = model_periods.objects.get_or_create(battalion=battalion_obj, period_number=period_number)
+            if not is_created:
+                # by deleting the period all records in model_unit_soldiers
+                period_obj.delete()
+                period_obj, is_created = model_periods.objects.get_or_create(battalion=battalion_obj,
+                                                                             period_number=period_number)
         except Exception as ex:
             print(ex)
+        #
+        model_unit_soldiers = apps.get_model(app_label=app_, model_name="unitsoldiers")
+        model_soldiers_for_events = apps.get_model(app_label=app_, model_name="soldiersforevents")
+        #
+        model_soldiers = apps.get_model(app_label=app_, model_name="soldiers")
 
-        result = {"status": "ok"}
+        # company
+        units_dic[battalion_id] = {"title": battalion_name, "data": {}}
+        data_ = units_dic[battalion_id]["data"]
+        companies_ = []
+        companies_numbers = []
+        platoons_ = []
+        platoons_numbers = []
+        n__ = 0
+        for index, row in df.iterrows():
+            n__+= 1
+            company = str(row["company"])
+            platoon = str(row["platoon"]).strip().upper()
+            status = row["status"]
+            #
+            rank = str(row["rank"])
+            function = str(row["function"])
+            clothes_size = str(row["clothes_size"])
+            shoes_size = str(row["shoes_size"])
+            mz4psn = str(row["mz4psn"])
+            ramonsn = str(row["ramonsn"])
+            mz10 = str(row["mz10"])
+            #
+            # if (company not in ["ALPHA", "BRAVO", "CHARLIE"] or platoon == "COM") and status == 0:
+            #     continue
+            full_name = string.capwords(str(row["full_name"]))
+            nn__ = full_name.find(" ")
+            first_name = full_name[:nn__].rstrip().lstrip()
+            last_name = full_name[nn__+1:].rstrip().lstrip()
+            dshn = row["dshn"]
+            print(dshn, first_name, last_name)
+            try:
+                soldier_obj = model_soldiers.objects.get(userid=str(dshn))
+            except Exception as ex:
+                continue
+            if status == -1:
+                # print("-"*100, "\n", status, dshn, "Delete Soldier", "\n", "-"*100)
+                try:
+                    soldier_obj.delete()
+                except Exception as ex:
+                    pass
+                continue
+            if status == 1:
+                # print(dshn, status, "Delete test of soldier", "first_name", first_name, "last_name", last_name)
+                # print("soldier_obj", soldier_obj, "\n", "-"*100)
+                try:
+                    # print("soldier_obj.user_id=", soldier_obj.user_id)
+                    objs = model_soldiers_for_events.objects.filter(soldier_number=soldier_obj.user_id).all()
+                    count = objs.delete()
+                    # print(count)
+                except Exception as ex:
+                    pass
+            #
+            if company not in ["ALPHA", "BRAVO", "CHARLIE", "DELTA"]:
+                continue
+            #
+            if company not in companies_:
+                companies_.append(company)
+                number_c = self.get_next_number({"app": app_})
+                companies_numbers.append(number_c)
+                data_[number_c] = {"title": company, "data": {}}
+            else:
+                number_c = companies_numbers[companies_.index(company)]
+            data_c = data_[number_c]["data"]
+            cp = company + " " + platoon
+            if cp not in platoons_:
+                # platoon
+                platoons_.append(cp)
+                number_p = self.get_next_number({"app": app_})
+                platoons_numbers.append(number_p)
+                data_c[number_p] = {"title": cp, "data": {}}
+            else:
+                number_p = platoons_numbers[platoons_.index(cp)]
+            data_p = data_c[number_p]["data"]
+            #
+
+            soldier_obj.first_name = first_name
+            soldier_obj.last_name = last_name
+            #
+            soldier_obj.rank = rank
+            try:
+                soldier_obj.clothes_size = clothes_size
+                soldier_obj.save()
+            except Exception as ex:
+                print("9011-22-2 Error ", clothes_size, str(ex))
+            try:
+                soldier_obj.shoes_size = shoes_size
+                soldier_obj.save()
+            except Exception as ex:
+                print("9011-22-3 Error ", shoes_size, str(ex))
+            try:
+                soldier_obj.mz4psn = mz4psn
+                soldier_obj.save()
+            except Exception as ex:
+                print("9011-22-4 Error " + str(ex))
+            try:
+                soldier_obj.ramonsn = ramonsn
+                soldier_obj.save()
+            except Exception as ex:
+                print("9011-22-5 Error " + str(ex))
+            try:
+                soldier_obj.mz10 = mz10
+                soldier_obj.save()
+            except Exception as ex:
+                print("9011-22-6 Error " + str(ex))
+            soldier_obj.save()
+            # print(dshn, first_name, "first_name", soldier_obj.first_name, "last_name", soldier_obj.last_name)
+
+            # Assign soldier to unit
+            try:
+                u_obj, is_created = model_unit_soldiers.objects.get_or_create(period=period_obj, soldier=soldier_obj)
+                u_obj.unit_number = number_p
+                u_obj.save()
+                # print("saved: "+ str(n__))
+            except Exception as ex:
+                print("error 200: ", full_name)
+
+            # Update inventory
+            for k in columns:
+                # print("\n", "-"*20, "\n", k, "\n", userid, "\n", "-"*20)
+                try:
+                    v = str(row[k])
+                    # print("1","k=", k, " v=", "="+v+"=")
+                    if v == "" or v == "nan":
+                        continue
+                    # print("2","k=", k, " v=", "="+v+"=")
+                    if k == "mz4psn" or k == "ramonsn" or k == "mz10":
+                        v = 1
+                        # print("3","k=", k, " v=", "="+str(v)+"=")
+                    else:
+                        # print("1","k=", k, " v=", "="+str(v)+"=")
+                        v = int(float(v))
+                        # print("4","k=", k, " v=", "="+str(v)+"=","\n", "-"*100)
+                except Exception as ex:
+                    print("9011-77-77 Error " + str(ex))
+                try:
+                    # print(k)
+                    inventory_obj = model_inventorys.objects.get(item_name=k)
+                    # print("inventory_obj", inventory_obj)
+                except Exception as ex:
+                    print("9011-55 Error " + str(ex))
+
+                try:
+                    f_obj, is_created = model_inventoryfact.objects.get_or_create(inventory=inventory_obj, soldier=soldier_obj)
+                    f_obj.value=v
+                    f_obj.save()
+                    # print("f_obj", f_obj)
+                except Exception as ex:
+                    print("9011-55 Error \n", k, v, soldier_obj, str(ex))
+
+        period_obj.structure = units_dic
+        period_obj.period_name = "Battalion: " + str(battalion_id) + " Period: " + str(period_number)
+        period_obj.n_limit = n_limit
+        period_obj.save()
+        # -----
+        result = {"status": "ok", "units_dic":units_dic}
+        print(result)
         return result
-
-
-    # def set_soldiers_inventory(self, dic):
-    #     print('90033-1 inventory dic\n', dic)
-    #     app_ = dic["app"]
-    #     file_path = self.upload_file(dic)["file_path"]
-    #     # print("-"*100, "\n", file_path, "\n", "-"*100)
-    #
-    #     model_name_ = "inventorys"
-    #     model_inventorys = apps.get_model(app_label=app_, model_name=model_name_)
-    #     # model_name_ = "inventorycategorys"
-    #     # model_inventorycategorys = apps.get_model(app_label=app_, model_name=model_name_)
-    #     model_soldiers = apps.get_model(app_label=app_, model_name="soldiers")
-    #     model_name_ = "inventoryfact"
-    #     model_inventoryfact = apps.get_model(app_label=app_, model_name=model_name_)
-    #
-    #     df = pd.read_excel(file_path, sheet_name="Data", header=0)
-    #     # print(df)
-    #     columns = df.columns[9:]
-    #     # print(columns)
-    #     shoes_size = ["running_shoes", "boots"]
-    #     clothes_size = ["sport_shirt", "sport_short", "working_uniform", "tactical_uniform"]
-    #     gun = ["mz4psn", "ramonsn"]
-    #     for index, row in df.iterrows():
-    #         print(index)
-    #         # print(row, "\n", row["company"])
-    #         userid = str(row["dshn"])
-    #         # print(userid)
-    #         # Soldiers
-    #         try:
-    #             soldier_obj = model_soldiers.objects.get(userid=userid)
-    #             # print(soldier_obj)
-    #         except Exception as ex:
-    #             print("9011-22 Error " + str(ex))
-    #         for k in columns:
-    #             # print("\n", "-"*20, "\n", k, "\n", userid, "\n", "-"*20)
-    #             v = str(row[k])
-    #             if k == "mz4psn" or k == "ramonsn":
-    #                 v = 1
-    #                 # if not v.isnumeric():
-    #                 #     v = v[1:]
-    #             v_ = int(v)
-    #             # print("="+k+"=", v_)
-    #             try:
-    #                 # print(k)
-    #                 inventory_obj = model_inventorys.objects.get(item_name=k)
-    #                 # print("inventory_obj", inventory_obj)
-    #             except Exception as ex:
-    #                 print("9011-55 Error " + str(ex))
-    #
-    #             try:
-    #                 f_obj, is_created = model_inventoryfact.objects.get_or_create(inventory=inventory_obj, soldier=soldier_obj)
-    #                 f_obj.value=v_
-    #                 f_obj.save()
-    #                 # print("f_obj", f_obj)
-    #             except Exception as ex:
-    #                 print("9011-55 Error \n", k, v_, userid, str(ex))
-    #     # -----
-    #     print("\n", "Done")
-    #     result = {"status": "ok"}
-    #     return result
 
     def compliance_data(self, dic):
         # try:
@@ -5113,6 +5227,63 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
 
         return result
 
+    # Update Qualification
+    def update_qualification_fact(self, dic):
+        # print('90033-1 dic', dic)
+        app_ = dic["app"]
+        data = dic["data"]
+        skill = data["skill"]
+        data = data["data"]
+        # print(skill)
+        # print(data)
+        company_obj_id_ = int(dic['company_obj_id'])
+        # print(company_obj_id_, battalion_)
+        model_soldier = apps.get_model(app_label=app_, model_name="soldiers")
+        model_sqf = apps.get_model(app_label=app_, model_name="soldierqualificationfact")
+        try:
+            for k in data:
+                # print(k)
+                soldier_obj = model_soldier.objects.get(user__id=int(k))
+                sqf_obj, is_created = model_sqf.objects.get_or_create(training_web__id=company_obj_id_,
+                                                                      soldier=soldier_obj, skill=skill)
+                sqf_obj.value = data[k]
+                sqf_obj.save()
+        except Exception as ex:
+            print(ex)
+
+        # -----
+        result = {"status": "ok"}
+        print(result)
+        return result
+
+    # To Be Deleted
+    def soldier_qualification_fact(self, dic):
+        # print('90033-1 dic', dic)
+        app_ = dic["app"]
+        soldiers_id = dic["soldiers_id"]
+        # print(soldiers_id)
+        model_name_ = "soldiers"
+        model_soldier = apps.get_model(app_label=app_, model_name=model_name_)
+        model_name_ = "soldierqualificationfact"
+        model_sqf = apps.get_model(app_label=app_, model_name=model_name_)
+
+        try:
+            for k in soldiers_id:
+                # print(k)
+                soldier_obj = model_soldier.objects.get(user__id=k)
+                sqf_obj, is_created = model_sqf.objects.get_or_create(soldier=soldier_obj, skill=3)
+                sqf_obj.value = 100
+                sqf_obj.save()
+
+                sqf_obj, is_created = model_sqf.objects.get_or_create(soldier=soldier_obj, skill=0)
+                sqf_obj.value = random.randint(60, 100)
+                sqf_obj.save()
+        except Exception as ex:
+            print(ex)
+
+
+        result = {"status": "ok"}
+        return result
 
     #  -- To be deleted --
     def set_soldiers(self, dic):
@@ -5497,8 +5668,9 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
         result = {"status": "ok"}
         return result
 
-    def set_new_structure(self, dic):
-        # print('90088-1 dic', dic)
+    # need to delete
+    def set_new_structure_old(self, dic):
+        print('90088-1 dic', dic)
         app_ = dic["app"]
         battalion_name = dic["cube_dic"]["fact"]["model"]
         battalion_id = int(dic["cube_dic"]["fact"]["field_name"])
@@ -5506,11 +5678,20 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
 
         units_dic = {battalion_id: {'title': battalion_name, 'data': {}}}
         file_path = self.upload_file(dic)["file_path"]
+
+        df = pd.read_excel(file_path, sheet_name="Data", header=0)
+        print(df)
+
+        return
+
         sheet_name_ = eval(dic["sheet_name"])
         model_periods = apps.get_model(app_label=app_, model_name="periods")
+
         period_obj, is_created = model_periods.objects.get_or_create(battalion__id=battalion_id, period_number=period_number)
         model_unit_soldiers = apps.get_model(app_label=app_, model_name="unitsoldiers")
-        model_unit_soldiers.truncate()
+
+        # model_unit_soldiers.truncate()
+
         model_soldiers = apps.get_model(app_label=app_, model_name="soldiers")
         missing_soldiers = []
         multiple_soldiers = []
@@ -5708,33 +5889,6 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
         result = {"status": "ok"}
         return result
 
-    def soldier_qualification_fact(self, dic):
-        # print('90033-1 dic', dic)
-        app_ = dic["app"]
-        soldiers_id = dic["soldiers_id"]
-        # print(soldiers_id)
-        model_name_ = "soldiers"
-        model_soldier = apps.get_model(app_label=app_, model_name=model_name_)
-        model_name_ = "soldierqualificationfact"
-        model_sqf = apps.get_model(app_label=app_, model_name=model_name_)
-
-        try:
-            for k in soldiers_id:
-                # print(k)
-                soldier_obj = model_soldier.objects.get(user__id=k)
-                sqf_obj, is_created = model_sqf.objects.get_or_create(soldier=soldier_obj, skill=3)
-                sqf_obj.value = 100
-                sqf_obj.save()
-
-                sqf_obj, is_created = model_sqf.objects.get_or_create(soldier=soldier_obj, skill=0)
-                sqf_obj.value = random.randint(60, 100)
-                sqf_obj.save()
-        except Exception as ex:
-            print(ex)
-
-
-        result = {"status": "ok"}
-        return result
 
     # def get_periods_of_battalion(self, dic):
     #     # print('90065-11 dic', dic)

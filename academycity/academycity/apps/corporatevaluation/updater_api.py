@@ -1,4 +1,4 @@
-from ..corporatevaluation.objects import AcademyCityXBRL, StockPrices
+from ..corporatevaluation.objects import AcademyCityXBRL, StockPrices, CorporateValuationDataProcessing
 from ..corporatevaluation.models import XBRLRealEquityPrices
 from ..core.sql import SQL
 
@@ -9,7 +9,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 def start():
     # print('start')
     scheduler = BackgroundScheduler()
-    scheduler.add_job(update_forecast, 'interval', minutes=60, id='update_earning_forecast')
+    scheduler.add_job(update_forecast, 'interval', minutes=10, id='update_earning_forecast')
     scheduler.start()
 
 
@@ -17,6 +17,7 @@ def update_forecast():
     try:
         nday = datetime.today().weekday()  # Monday = 0
         h = datetime.today().hour
+        # print(h)
         acx = AcademyCityXBRL()
         if nday < 6:
             acx.get_earning_forecast_sp500()
@@ -27,6 +28,24 @@ def update_forecast():
                 ssql += "select ticker,t,o,h,l,c,v from corporatevaluation_XBRLRealEquityPrices"
                 count = SQL().exc_sql(ssql, data)
                 XBRLRealEquityPrices.truncate()
+            elif h == 5:
+                # print("Start")
+                dp = CorporateValuationDataProcessing(dic={"app":"corporatevaluation","topic_id":"general"})
+                # print("Start 1")
+                dp.data_transfer_to_process_fact(dic={"app":"corporatevaluation"})
+                # print("Start 2")
+                dp.create_new_group_accounts(dic={"app":"corporatevaluation",
+                                                  "aggregate_accounts":[11057, 11400, 11600, 11990, 12990, 12999,
+                                                                        13990,14100, 14145, 14999, 15390, 15990,
+                                                                        20100, 20200, 20300, 20700, 20800, 20850,
+                                                                        20900, 20970,20999],
+                                                  "new_accounts":{11991: {"add": [11990], "subtract": [11100]},
+                                                                  20997: {"add": [20999, 20850], "subtract": []},
+                                                                  20890: {"add": [20851], "subtract": [20850]}}
+                                                  })
+                # print("Start 3")
+                dp.create_ratios(dic={"app":"corporatevaluation"})
+                # print("End End End End End End End End ")
             elif h == 4:
                 sp = StockPrices()
                 # print("Start Days")
@@ -45,5 +64,4 @@ def update_forecast():
     except Exception as ex:
         pass
         # print(ex)
-
 

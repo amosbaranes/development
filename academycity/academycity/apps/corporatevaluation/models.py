@@ -472,6 +472,8 @@ class XBRLIndustryInfo(TruncateTableMixin, models.Model):
     sic_code = models.PositiveSmallIntegerField(primary_key=True)
     main_sic = models.ForeignKey(XBRLMainIndustryInfo, on_delete=models.CASCADE, default=None, blank=True, null=True)
     sic_description = models.CharField(max_length=128, default='', blank=True, null=True)
+    #
+    industry_description = models.TextField(blank=True, null=True)
 
     def __str__(self):
         return str(self.sic_code) + ': ' + str(self.sic_description)
@@ -640,6 +642,8 @@ class XBRLCompanyInfo(TruncateTableMixin, models.Model):
     #
     financial_data = models.JSONField(null=True)
     financial_dataq = models.JSONField(null=True)
+    #
+    company_description = models.TextField(blank=True, null=True)
     #
     city = models.CharField(max_length=50, default="", blank=True)
     state = models.CharField(max_length=50, default="", blank=True)

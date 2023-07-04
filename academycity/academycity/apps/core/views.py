@@ -364,8 +364,6 @@ def update_field_model_by_id(request, foreign=None):
 def get_data_link(request):
     errors = ""
     dic_ = request.POST["dic"]
-    # print(dic_)
-
     log_debug("get_data_link 99999: "+dic_)
     dic_ = eval(dic_)
     # try:
@@ -375,6 +373,11 @@ def get_data_link(request):
 
     # errors += "1 "
     # log_debug("get_data_link 99999: "+errors)
+    parent_model_fk_name=""
+    try:
+        parent_model_fk_name=dic_["parent_model_fk_name"]
+    except Exception as ex:
+        pass
     multiple_select_fields = None
     if "multiple_select_fields" in dic_:
         if len(dic_["multiple_select_fields"]) > 0:
@@ -447,7 +450,8 @@ def get_data_link(request):
                 parent_model_ = dic_['parent_model']
                 parent_pkey_ = parent_id_
                 parent_model__ = apps.get_model(app_label=app_, model_name=parent_model_)
-                parent_model_fk_name = parent_model_[:-1]
+                if parent_model_fk_name == "":
+                    parent_model_fk_name = parent_model_[:-1]
                 parent_obj__ = parent_model__.objects.get(id=parent_pkey_)
                 if s_ != '':
                     s_ += ', '
@@ -462,12 +466,15 @@ def get_data_link(request):
             parent_model_ = dic_['parent_model']
             parent_pkey_ = parent_id_
             parent_model__ = apps.get_model(app_label=app_, model_name=parent_model_)
-            parent_model_fk_name = parent_model_[:-1]
-            parent_obj__ = parent_model__.objects.get(id=parent_pkey_)
+            if parent_model_fk_name == "":
+                parent_model_fk_name = parent_model_[:-1]
+            # parent_obj__ = parent_model__.objects.get(id=parent_pkey_)
+            parent_obj__ = eval('parent_model__.objects.get('+parent_model__._meta.pk.name+'=parent_pkey_)')
+            # print("parent_obj__\n", parent_obj__)
             s = 'model.objects.filter(' + parent_model_fk_name+'=parent_obj__)'
         else:
             s = 'model.objects'
-        # print('90500 s '+s)
+        print('90500 s '+s)
     # print("9030-2")
     try:
         for f in filters:
@@ -538,9 +545,9 @@ def get_data_link(request):
             data__ = eval(ss__)
 
         # print("9030-222")
-
         s += '.all()[:number_of_rows_].values('+fields_str+')'
         # print("="*100, '\ns111-1 for d_data\n', "\ns=", number_of_rows_, s, "=\n", "="*100, "\n")
+
         log_debug("get_data_link 99999: s="+s)
         d_data = eval(s)
         # print("d_data\n", d_data)
