@@ -4902,6 +4902,7 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
                                                                              period_number=period_number)
         except Exception as ex:
             print(ex)
+        clear_log_debug()
         #
         model_unit_soldiers = apps.get_model(app_label=app_, model_name="unitsoldiers")
         model_soldiers_for_events = apps.get_model(app_label=app_, model_name="soldiersforevents")
@@ -4916,6 +4917,7 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
         platoons_ = []
         platoons_numbers = []
         n__ = 0
+        log_debug("Start 1")
         for index, row in df.iterrows():
             n__+= 1
             company = str(row["company"])
@@ -4929,19 +4931,17 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
             mz4psn = str(row["mz4psn"])
             ramonsn = str(row["ramonsn"])
             mz10 = str(row["mz10"])
+            dshn = str(row["dshn"])
+            log_debug(dshn)
             #
             # if (company not in ["ALPHA", "BRAVO", "CHARLIE"] or platoon == "COM") and status == 0:
             #     continue
-            full_name = string.capwords(str(row["full_name"]))
-            nn__ = full_name.find(" ")
-            first_name = full_name[:nn__].rstrip().lstrip()
-            last_name = full_name[nn__+1:].rstrip().lstrip()
-            dshn = row["dshn"]
-            print(dshn, first_name, last_name)
+
             try:
                 soldier_obj = model_soldiers.objects.get(userid=str(dshn))
             except Exception as ex:
                 continue
+
             if status == -1:
                 # print("-"*100, "\n", status, dshn, "Delete Soldier", "\n", "-"*100)
                 try:
@@ -4963,6 +4963,16 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
             if company not in ["ALPHA", "BRAVO", "CHARLIE", "DELTA"]:
                 continue
             #
+
+            full_name = string.capwords(str(row["full_name"]))
+            nn__ = full_name.find(" ")
+            # log_debug("index " + str(index))
+            first_name = full_name[:nn__].rstrip().lstrip()
+            last_name = full_name[nn__+1:].rstrip().lstrip()
+            s = dshn + " " + first_name + " " + last_name
+            print(s)
+            log_debug(s)
+
             if company not in companies_:
                 companies_.append(company)
                 number_c = self.get_next_number({"app": app_})
