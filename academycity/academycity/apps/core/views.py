@@ -474,7 +474,7 @@ def get_data_link(request):
             s = 'model.objects.filter(' + parent_model_fk_name+'=parent_obj__)'
         else:
             s = 'model.objects'
-        print('90500 s '+s)
+        # print('90500 s '+s)
     # print("9030-2")
     try:
         for f in filters:

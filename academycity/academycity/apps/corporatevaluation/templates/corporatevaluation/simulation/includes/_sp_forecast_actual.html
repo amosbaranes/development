@@ -95,6 +95,7 @@ function search_function() {
 <!-- function search_today_or_tomorrow_announcements_function(event) -->
 <script>
 function search_today_or_tomorrow_announcements_function(event) {
+alert("search_today_or_tomorrow_announcements_function")
   var input_elm = document.getElementById("search_input")
   n_ = input_elm.getAttribute("n");
   var input, filter, table, tr, td, i, txtValue;
@@ -159,13 +160,28 @@ function get_earning_forecast_sp500_view_main_detail(event)
 
 function get_earning_forecast_sp500_view_main_detail__(event, ticker_)
 {
+
+alert(1)
+
   if (event.ctrlKey & event.altKey) {
     //s_yf_http = "https:\/\/finance.yahoo.com\/quote\/" + ticker_ + "\/financials?p=" + ticker_
     s_yf_httpg = "https:\/\/finance.yahoo.com\/quote\/" + ticker_ + "?p=" + ticker_
     window.open(s_yf_httpg, "_blank");
-  } else if (event.ctrlKey){Orders.set_orders_screen(ticker_);return;}
+
+    alert(2)
+
+  } else if (event.ctrlKey){
+
+alert(3)
+
+  alert(Orders.set_orders_screen)
+
+  Orders.set_orders_screen(ticker_);return;}
   else if (event.altKey)
-  {$.post('{% url "corporatevaluation:admin_setup" %}',
+  {
+  alert(4)
+
+  $.post('{% url "corporatevaluation:admin_setup" %}',
       {fun: "get_earning_forecast_sp500_view_main_detail",ticker: ticker_,},
       function(data){create_table_earning_forecast_sp500_view_main_detail(data, ticker_);}
     );
@@ -441,6 +457,8 @@ function get_earning_forecast_sp500_view_main(event)
 <script>
 function get_earning_forecast_sp500_view_main_title(tab_obj)
 {
+
+alert("get_earning_forecast_sp500_view_main_title")
 //console.log("in 234001")
   // this is activated only first time the use click the tab.
   if ( vObj["earning_forecast_sp500_view_main_downloaded"] == 0 )
@@ -490,6 +508,8 @@ function get_earning_forecast_sp500_view_main_title(tab_obj)
            // --
 
 //console.log("in 234004")
+alert(9)
+alert(OrderStreamerWin)
            Orders = new OrderStreamerWin(my_name_="Orders", win_name_="Orders", win_title_="Orders", user_id=vObj["user_id"],
               tab_obj_=tab_obj, data_link='{% url "corporatevaluation:tdameritrade_setup_w_attribute" %}',
               order_link='{% url "corporatevaluation:tdameritrade_setup_w_attribute" %}',

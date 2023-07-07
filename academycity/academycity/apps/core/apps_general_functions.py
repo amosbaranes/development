@@ -35,8 +35,8 @@ def activate_obj_function(request, add_dic=None):
                 if obj_param == "":
                     obj_param = None
             except Exception as ex:
-                # pass
-                print("9045: "+str(ex))
+                pass
+                # print("9045: "+str(ex))
         s = 'from ..'
         if app_ != "corporatevaluation" and app_ != "core":
             s += 'acapps.'
@@ -57,7 +57,9 @@ def activate_obj_function(request, add_dic=None):
         # print('9084 dic_ activate_obj_function s_=', '\n', s_, '\n', '-'*10)
 
         try:
+            print(s_)
             dic = eval(s_)
+            # print(dic)
         except Exception as ex:
             print("9088-8 core view activate_obj_function: "+str(ex))
         # print(dic)

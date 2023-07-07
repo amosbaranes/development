@@ -12,6 +12,7 @@ import shutil
 from statistics import mean
 import pickle
 from django.db.models import Q
+from ...core.utils import log_debug, clear_log_debug
 #
 from ...core.utils import Debug
 #
@@ -103,6 +104,9 @@ class BaseDataProcessing(object):
 
         upload_file_ = dic["request"].FILES['drive_file']
         result = {}
+
+        log_debug("In upload_file.")
+
         # We can extend and add another property: data_folder
         # like topic_id. But, we need to add this property to: params in the core view
         # and use it here.
@@ -120,6 +124,7 @@ class BaseDataProcessing(object):
 
         # print("9888-8 Uploaded\n", "-" * 30)
         result['file_path'] = file_path
+        log_debug("End upload_file.")
         return result
 
     def get_general_data(self, dic):

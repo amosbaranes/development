@@ -4865,6 +4865,8 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
 
     def set_new_structure(self, dic):
         # print('90088-1 dic', dic)
+        clear_log_debug()
+        log_debug("Start 1")
         app_ = dic["app"]
         try:
             ll = eval(dic["sheet_name"])
@@ -4875,13 +4877,16 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
             # print("battalion_id, period_number", battalion_name, battalion_id, period_number, n_limit)
 
             units_dic = {battalion_id: {'title': battalion_name, 'data': {}}}
+            log_debug("Start 2")
             file_path = self.upload_file(dic)["file_path"]
+            log_debug(file_path)
 
             # print(file_path)
             df = pd.read_excel(file_path, sheet_name="Data", header=0)
             # print(df)
 
             # print("1 columns\n", df.columns)
+            log_debug("Start 3")
             columns = df.columns[11:]
             # print("2 columns\n", columns)
 
@@ -4893,16 +4898,19 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
                 model_inventoryfact.objects.filter(soldier__battalion=battalion_obj).all().delete()
             except Exception as ex:
                 print(ex)
+            log_debug("Start 4")
             model_periods = apps.get_model(app_label=app_, model_name="periods")
             period_obj, is_created = model_periods.objects.get_or_create(battalion=battalion_obj, period_number=period_number)
+            log_debug("Start 5")
             if not is_created:
                 # by deleting the period all records in model_unit_soldiers
                 period_obj.delete()
                 period_obj, is_created = model_periods.objects.get_or_create(battalion=battalion_obj,
                                                                              period_number=period_number)
+
+            log_debug("Start 6")
         except Exception as ex:
             print(ex)
-        clear_log_debug()
         #
         model_unit_soldiers = apps.get_model(app_label=app_, model_name="unitsoldiers")
         model_soldiers_for_events = apps.get_model(app_label=app_, model_name="soldiersforevents")
@@ -4917,7 +4925,7 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
         platoons_ = []
         platoons_numbers = []
         n__ = 0
-        log_debug("Start 1")
+        log_debug("Start 10")
         for index, row in df.iterrows():
             n__+= 1
             company = str(row["company"])

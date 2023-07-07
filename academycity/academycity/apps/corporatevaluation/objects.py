@@ -1718,9 +1718,7 @@ class StockPrices(object):
         df["y"] = df["idx"].apply(get_y)
         df["yd"] = df["idx"].apply(get_yd)
         df = df[['y', 'yd', 'open', 'high', 'low', 'close', 'volume']]
-        # print('-'*10)
-        # print(df)
-        # print('-'*10)
+        # print('-'*10, df, '-'*10)
         try:
             table = pd.pivot_table(df, values=['open', 'high', 'low', 'close', 'volume'], index=['yd'],
                                    columns=['y'],
@@ -1730,13 +1728,8 @@ class StockPrices(object):
                                             'close': np.sum,
                                             'volume': np.sum})
             table.fillna(method='bfill', inplace=True)
-            # print('-0'*10)
-            # print(table)
         except Exception as ex:
             print("10001"+str(ex))
-        # print('-'*10)
-        # print('table')
-        # print(table)
         try:
             table1 = ((table.div(table.iloc[0])-1).astype(float)).round(4)
             table1 = table1.reset_index().to_dict(orient='list')
@@ -1744,15 +1737,13 @@ class StockPrices(object):
             for k in table1:
                 if k[0] not in ['index', 'yd']:
                     if k[0] not in table11:
-                        table22[k[0]] = {}
+                        table11[k[0]] = {}
                     table11[k[0]][k[1]] = table1[k]
+                    table11[k[0]][k[1]] = [0 if pd.isna(x) else x for x in table11[k[0]][k[1]]]
                 elif k[0] == 'yd':
                     table11[k[0]] = table1[k]
         except Exception as ex:
-            print("err10003 "+str(ex))
-        print("="*100)
-        print("="*100)
-        print("="*100)
+            print("err10003 k="+ "\n" +str(ex))
         try:
             table2 = ((1/table.div(table.iloc[-1])-1).astype(float)).round(4)
             table2 = table2.reset_index().to_dict(orient='list')
@@ -1762,17 +1753,13 @@ class StockPrices(object):
                     if k[0] not in table22:
                         table22[k[0]] = {}
                     table22[k[0]][k[1]] = table2[k]
+                    # It means: if nan I treat it as no change.
+                    table22[k[0]][k[1]] = [0 if pd.isna(x) else x for x in table22[k[0]][k[1]]]
                 elif k[0] == 'yd':
                     table22[k[0]] = table2[k]
         except Exception as ex:
             print("10005"+str(ex))
-        # print('table22')
-        # print(table22)
         result = {"table1": table11, "table2": table22}
-        # print(result)
-        # print('table1')
-        # print(table1[20221110])
-        # print("9099 output dic: \n", dic, "\n"+"="*30)
         return result
 
     def create_return_statistics_minutes_bu(self, dic):
