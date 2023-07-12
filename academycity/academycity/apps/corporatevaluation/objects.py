@@ -507,9 +507,9 @@ class TDAmeriTrade(BaseTDAmeriTrade):
 
     def get_option_statistics_for_ticker(self, ticker):
         dic = {'status': 'ko'}
-        # print("-1"*50)
-        # print("atm: 90551: "+ticker)
-        # print("-2"*50)
+        print("-1"*50)
+        print("atm: 90551: "+ticker)
+        print("-2"*50)
         # ticker = "^SPX" ticker = "^GSPC" print("="*100)
         n_ = 6
         if ticker in ["SPY", "QQQ", "IWM"]:
@@ -531,6 +531,7 @@ class TDAmeriTrade(BaseTDAmeriTrade):
             options_ = self.client.get_option_chain(ticker, contract_type=self.client.Options.ContractType.ALL,
                                                     from_date=start_date_, to_date=end_date_)
         except Exception as ex:
+            print("Error 2345 in get_option_chain api options pull for : " + ticker + " = " + str(ex))
             log_debug("Error 2345 in get_option_chain api options pull for : " + ticker + " = " + str(ex))
             return dic
         return {'status': 'ok', 'option_data_ticker': options_.json()}

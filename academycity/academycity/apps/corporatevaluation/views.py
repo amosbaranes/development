@@ -602,6 +602,7 @@ def tdameritrade_setup_w_attribute(request):
             # print('TDAmeriTrade().' + fun_ + '('+attribute_+'="'+attribute_value_+'")')
             dic = eval('TDAmeriTrade().' + fun_ + '('+attribute_+'="'+attribute_value_+'")')
         else:
+            # print('TDAmeriTrade().' + fun_ + '()')
             dic = eval('TDAmeriTrade().' + fun_ + '()')
         # print(dic)
     except Exception as ex:

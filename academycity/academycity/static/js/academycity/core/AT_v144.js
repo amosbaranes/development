@@ -23,7 +23,9 @@ function AdvancedTabsManager(dic=null)
                                                   "attributes":{},
                                                   "functions":["onmouseover", "onmouseout"]},
                                         "Span":{"title":"Span", "width":5,
-                                                "setting": {"color":[], "background-color":[], "font-weight":["normal","lighter","bold","900"]},
+                                                "setting": {"color":[], "background-color":[],
+                                                            "font-weight":["normal","lighter","bold","900"],
+                                                            "text-align":["", "left", "center", "right"]},
                                                 "attributes":{},
                                                 "functions":["onmouseover", "onmouseout"]},
                                         "Input":{"title":"Input", "width":5,
@@ -56,7 +58,10 @@ function AdvancedTabsManager(dic=null)
                                                     "setting": {"overflow":[],"color":[],"background-color":[]},
                                                     "attributes":{"width":[], "height":[]}, "functions":[]},
                                         "DIV":{"title":"div", "width":3,
-                                               "setting": {"overflow":[]},
+                                               "setting": {"overflow":["visible", "clip", "auto", "hidden"],
+                                                           "width":[], "height":[], "color":[],"background-color":[],
+                                                           "text-align":["", "left", "center", "right"]
+                                               },
                                                "attributes":{},
                                                "functions":[]},
                                         "A":{"title":"a", "width":3,
@@ -903,6 +908,7 @@ AdvancedTabsManager.prototype.general_data = function(call_back_fun, dic_, obj_)
   dic_["company_obj_id"]=this.company_obj_id;
   call_back_fun.atm=this
   //alert("90112:\n"+JSON.stringify(dic_));
+  //alert(this.general_data_)
   $.post(this.general_data_, {dic : JSON.stringify(dic_)},
           function(data){
             if(data["status"]!="ok") {alert("Error in General_Data.")} else {call_back_fun(data["json"], obj_)}
@@ -1311,8 +1317,8 @@ acObj.prototype.create_obj = function(){
    else{this.new_obj.setAttribute(k, "")}
   }
 
-  if("width" in this.data["properties"]){var width_=this.data["properties"]["width"];}
-  else {var width_="100"}
+  if("width" in this.data["properties"]){var width_=this.data["properties"]["width"];} else {var width_="100"}
+  if("height" in this.data["properties"]){var height_=this.data["properties"]["height"];} else {var height_="100"}
   var u="px";if(width_.includes("%")){u=""};
 
   var font_weight_=this.data["properties"]["font-weight"];
@@ -1322,13 +1328,12 @@ acObj.prototype.create_obj = function(){
   var font_family=this.data["properties"]["font-family"];
   if(font_family==null){font_family=""} else {font_family=";font-family:"+font_family}
 
-  var align_=this.data["properties"]["text-align"];
-  if(align_=="" || align_==null){var align="right";} else {var align=align_}
-  var color_=this.data["properties"]["color"];
-  if(color_=="" || color_==null){var color="black";} else {var color=color_}
-  var background_color_=this.data["properties"]["background-color"];
-  if(background_color_=="" || background_color_==null){var background_color="";}
-  else {var background_color=";background-color:"+background_color_}
+  var align_=this.data["properties"]["text-align"];if(align_=="" || align_==null){
+    if(this.data["element_name"]=="Button"){var align="center"} else{var align="left"}} else {var align=align_}
+
+  var color_=this.data["properties"]["color"]; if(color_=="" || color_==null){var color="black";} else {var color=color_}
+  var background_color_=this.data["properties"]["background-color"];if(background_color_=="" || background_color_==null){var background_color_="";}
+  else {var background_color_=";background-color:"+background_color_}
   if(this.data["element_name"]=="Input")
   {
     var s_label=this.data["properties"]["title"]+":&nbsp;";
@@ -1341,23 +1346,21 @@ acObj.prototype.create_obj = function(){
     this.new_obj.setAttribute("style", s_style);
     var span=document.createElement("span");span.innerHTML=s_label;
     var x = 1*this.data["properties"]["x"];
-    var s_="position:absolute;left:"+x+"px;top:"+this.data["properties"]["y"]+"px;text-align:right;display:inline-block;width:"+s_label_length+"px;"
-    s_+="color:"+color+background_color;
+    var s_="position:absolute;left:"+x+"px;top:"+this.data["properties"]["y"]+"px;"
+    s+="text-align:right;display:inline-block;width:"+s_label_length+"px;"
+    s_+="color:"+color+background_color_;
     span.setAttribute("style", s_);
     container.appendChild(span);
   } else if (this.data["element_name"]=="DIV") {
-    var s_ = this.data["properties"]["overflow"]
-    if(s_!=null || s_!="")
-    {s_="overflow:"+s_}
-
-    alert(s_);
-
-    var ss="position:absolute;left:"+this.data["properties"]["x"]+"px;top:"+this.data["properties"]["y"]+"px;width:"+width_+u+";"+s_
+    var s_ = this.data["properties"]["overflow"];if(s_!=null || s_!=""){s_="overflow:"+s_+";"}
+    s_+="color:"+color+background_color_;
+    var ss="position:absolute;left:"+this.data["properties"]["x"]+"px;top:"+this.data["properties"]["y"]+"px;"
+    ss+="width:"+width_+u+";"+"height:"+height_+u+";"+s_+";text-align:"+align+";";
     this.new_obj.setAttribute("style", ss);
    //"overflow: scroll;
   } else {
-    var s_="position:absolute;left:"+this.data["properties"]["x"]+"px;top:"+this.data["properties"]["y"]+"px;width:"+width_+u+";"
-    s_+="color:"+color+background_color+font_weight+font_size+font_family;
+    var s_="position:absolute;left:"+this.data["properties"]["x"]+"px;top:"+this.data["properties"]["y"]+"px;width:"+width_+u+";text-align:"+align+";";
+    s_+="color:"+color+background_color_+font_weight+font_size+font_family;
     this.new_obj.setAttribute("style", s_);
   }
 
@@ -1670,9 +1673,13 @@ acBasicCreator.prototype.set_board_data = function(ll=[])
     //alert("90441-550  "+JSON.stringify(dic));
     var n_kpi_objs=Object.keys(kpi).length;
     var w_kpi=125;var h_kpi=150; wl_kpi=75;var wr_kpi=25;
-    var n_objs=Object.keys(dic).length;var w=150;var wl=100;var wr=50;
+    var n_objs=Object.keys(dic).length;
+    var w=200;
+    var wl=50;var wr=50;
     var wb_kpi=(1*width_-wl_kpi-wr_kpi-n_kpi_objs*w_kpi)/(n_kpi_objs-1);var w_kpi_=wl_kpi;
-    var wb=(1*width_-wl-wr-n_objs*w)/(n_objs-1);var w_=wl;var th2_=1*height_/2
+    var wb=(1*width_-wl-wr-n_objs*w)/(n_objs-1);
+    //alert(wb)
+    var w_=wl;var th2_=1*height_/2
    container_.innerHTML="";
    //--
    var title__=document.createElement("h1");
@@ -1690,72 +1697,43 @@ acBasicCreator.prototype.set_board_data = function(ll=[])
      style_+="border-style:solid;border-width:0px;border-color:blue;border-radius:10px;display: flex;align-items: center;justify-content: center;"
      div_.setAttribute("style", style_);
 
-//     var div__=document.createElement("div");
-//     var ww_=100; var ll_=w_kpi_+(w_kpi-ww_)/2;var hh_=60;var tt_=top_+(h_kpi-hh_)/8
-//     var style__ = "position:absolute;left:"+ll_+"px;top:"+tt_+"px;width:"+ww_+"px;height:"+hh_+"px;"
-//     style__+="border-style:solid;border-width:1px;border-color:gray;border-radius:10px;display: flex;"
-//     style__+="background-color:lightgray; align-items: center;justify-content: center;"
-//     div__.setAttribute("style", style__);
-//     div__.setAttribute("test", "TITLE");
-//     div__.innerHTML=kpi[j]["title"]
-//     container_.appendChild(div__);
+      var data = [
+          {
+            type: "indicator",
+            mode: "gauge+number+delta",
+            value: kpi[j]["grade"],
+            title: { text: kpi[j]["title"], font: { size: 24 } },
+            delta: { reference: 60, increasing: { color: "RebeccaPurple" } },
+            gauge: {
+              axis: { range: [null, 100], tickwidth: 1, tickcolor: "darkblue" },
+              bar: { color: "white" },
+              bgcolor: "lightyellow",
+              borderwidth: 2,
+              bordercolor: "gray",
+              steps: [
+                { range: [0, 60], color: "red" },
+                { range: [60, 100], color: "green" }
+              ],
+              threshold: {
+                line: { color: "red", width: 4 },
+                thickness: 0.75,
+                value: 90
+              }
+            }
+          }
+        ];
 
-  var data = [
-  {
-    type: "indicator",
-    mode: "gauge+number+delta",
-    value: kpi[j]["grade"],
-    title: { text: kpi[j]["title"], font: { size: 24 } },
-    delta: { reference: 60, increasing: { color: "RebeccaPurple" } },
-    gauge: {
-      axis: { range: [null, 100], tickwidth: 1, tickcolor: "darkblue" },
-      bar: { color: "white" },
-      bgcolor: "darkblue",
-      borderwidth: 2,
-      bordercolor: "gray",
-      steps: [
-        { range: [0, 50], color: "red" },
-        { range: [70, 100], color: "green" }
-      ],
-      threshold: {
-        line: { color: "red", width: 4 },
-        thickness: 0.75,
-        value: 90
-      }
-    }
-  }
-];
+        var layout = {
+          width: 150,
+          height: 120,
+          margin: { t: 5, r: 5, l: 5, b: 5 },
+          paper_bgcolor: "lavender",
+          font: { color: "darkblue", family: "Arial" }
+        };
 
-var layout = {
-  width: 150,
-  height: 120,
-  margin: { t: 5, r: 5, l: 5, b: 5 },
-  paper_bgcolor: "lavender",
-  font: { color: "darkblue", family: "Arial" }
-};
-
-Plotly.newPlot(div_, data, layout);
+        Plotly.newPlot(div_, data, layout, {displayModeBar: false});
 
      //-- Grade --
-//     var div__=document.createElement("div");
-//     var ww_=60; var llg_=w_kpi_+(w_kpi-ww_)/2;
-//     var hh_=60;var hh_2=hh_/2
-//     var tt_=tt_+h_kpi/2
-//
-//     var color__="green";if(kpi[j]["grade"]<kpi[j]["pass"]){color__="red"}
-//
-//     var style__ = "position:absolute;left:"+llg_+"px;top:"+tt_+"px;width:"+ww_+"px;height:"+hh_+"px;"
-//     style__+="border-style:solid;border-width:2px;border-color:blue;border-radius:"+hh_2+"px;display: flex;"
-//     style__+="background-color:"+color__+"; align-items: center;justify-content: center;"
-//     div__.setAttribute("style", style__);
-//
-//     div__.setAttribute("test", "Grade");
-//
-//     div__.innerHTML=kpi[j]["grade"]
-//
-//     container_.appendChild(div__);
-
-
      w_kpi_=wl_kpi+1*j*(1*w_kpi+1*wb_kpi);
      container_.appendChild(div_);
    }
@@ -1763,88 +1741,54 @@ Plotly.newPlot(div_, data, layout);
    var k = 0
    //alert("90441-350-35  "+JSON.stringify(dic));
    if(ll.length<(atm.nlimit+1))
-   {for(z in dic){
-      k +=1
-//      var color__="lightblue"
-//      var div_=document.createElement("div");
-//      var ll_=clone_dic(ll);ll_.push(1*z);div_.ll=ll_;div_.obj=this;
-//      div_.addEventListener("click", function(event){
-//       var e=event.target;
-//        //alert(e.outerHTML)
-//        //alert("90441-750  "+JSON.stringify(e.ll));
-//        e.obj.set_board_data(ll=e.ll, obj=e.obj);
-//       if(e.ll.length>2){e.obj.set_detail_data(ll=e.ll)}
-//      })
-//      var style_ = "position:absolute;left:"+w_+"px;top:"+(th2_+20)+"px;width:"+w+"px;height:"+w+"px;"
-//      style_+="border-style:solid;border-width:1px;border-color:blue;border-radius:75px;display: flex;"
-//      style_+="background-color:"+color__+";align-items: center;justify-content: center;"
-//      div_.setAttribute("style", style_);
-//      w_=wl+1*k*(1*w+1*wb);
-//      div_.innerHTML=dic[z]["title"];
-
-    var color__="lightblue"
+   {
+    var n=0;
+    for(z in dic){
+      n+=1
+        //alert("z "+JSON.stringify(dic[z]["kpi"]));
+        var labels_=[]
+        var data_=[]
+        var background_color_=[]
+        for(var k_ in dic[z]["kpi"]){
+         labels_.push(dic[z]["kpi"][k_]["title"].replaceAll("<br>", " ").replace(/\s+/g, ' '))
+         var nn__=1*dic[z]["kpi"][k_]["grade"]
+         if((dic[z]["kpi"][k_]["grade"]+"")=="NaN"){nn__=0}
+         data_.push(nn__)
+         if(nn__>=1*dic[z]["kpi"][k_]["pass"]){var g='rgb(0,128,0)'}else{var g='rgb(255, 0, 0)'}
+         background_color_.push(g)
+        }
       var div_=document.createElement("div");
-      var div__=document.createElement("div");
-      var ll_=clone_dic(ll)
-      ll_ = ll_.map(x => {return 1*x;});ll_.push(1*z);
-      div__.ll=ll_;div__.obj=this;
-      atm.temp_obj=this;atm.temp_ll=ll_;
-      //alert("90441-750  "+JSON.stringify(div_.ll));
-      div__.addEventListener("click", function(event){
-      alert("div__")
-      alert(atm)
-      alert(atm.temp_ll)
-        atm.temp_obj.set_board_data(ll=atm.temp_ll, obj=atm.temp_obj);
-       if(atm.temp_ll.length>2){atm.temp_obj.set_detail_data(ll=atm.temp_ll)}
+      var div_c=document.createElement("div");
+      div_.appendChild(div_c);
+      var canvas_=document.createElement("canvas");
+      div_.appendChild(canvas_);
+      container_.appendChild(div_);
+
+      var style_ = "position:absolute;left:"+w_+"px;top:"+(th2_+20)+"px;width:"+w+"px"
+      div_.setAttribute("style", style_);
+      w_+=wb+w
+
+      var style_c="width:100%;height:40px;position:absolute;top:50%;left:0;margin-top:-15px;line-height:19px;"
+      style_c+="text-align:center;z-index:0"
+      div_c.setAttribute("style", style_c);
+      div_c.innerHTML=dic[z]["title"]
+
+      var ll_=clone_dic(ll);ll_.push(1*z);div_.ll=ll_;div_.obj=this;
+      div_.addEventListener("click", function(event){
+       var e=event.target;
+        this.obj.set_board_data(ll=this.ll, obj=this.obj);
+       if(this.ll.length>2){this.obj.set_detail_data(ll=this.ll)}
       })
+      const data = {
+        labels: labels_,
+        datasets: [{data: data_,backgroundColor: background_color_,hoverOffset: 4}]
+      };
+      const options = {plugins: {legend: {display: false}}}
+      const config = {type: 'doughnut',data: data, options:options};
+      var c=new Chart(canvas_, config);
+   }
 
-      var style_ = "position:absolute;left:"+w_+"px;top:"+(th2_+20)+"px;width:"+w+"px;height:"+w+"px;"
-      style_+="border-style:solid;border-width:0px;border-color:blue;border-radius:75px;display: flex;"
-      style_+="background-color:"+color__+";align-items: center;justify-content: center;"
-      div__.setAttribute("style", style_);
-      w_=wl+1*k*(1*w+1*wb);
-//      div_.innerHTML=dic[z]["title"];
-
-
-      div__.appendChild(div_);
-      container_.appendChild(div__);
-
-var data = [{
-  values: [27, 11, 25, 8],
-  labels: ['US', 'China', 'European Union', 'Russian' ],
-  text: 'C5555',
-  textposition: 'inside',
-  domain: {column: 1},
-  name: 'CO2 Emissions',
-  hoverinfo: 'label+percent+name',
-  hole: .4,
-  type: 'pie'
-}];
-
-var layout = {
-  title: '',
-  annotations: [
-    {
-      font: {
-        size: 20
-      },
-      showarrow: false,
-      text: dic[z]["title"],
-      x: 0.82,
-      y: 0.5
-    }
-  ],
-  height: 300,
-  width: 400,
-  showlegend: false,
-  grid: {rows: 1, columns: 2}
-};
-
-        Plotly.newPlot(div_, data, layout)
-
-
-    }
-   } else {
+  } else {
       k +=1
       color__="lightblue"
       var div_=document.createElement("div");
@@ -1854,7 +1798,7 @@ var layout = {
         alert(e.outerHTML)
         //alert("90441-750  "+JSON.stringify(e.ll));
       })
-      var style_ = "position:absolute;left:50px;top:"+(th2_+20)+"px;width:"+(width_-50)+"px;height:"+(height_/2.5)+"px;"
+      var style_ = "position:absolute;left:50px;top:"+(th2_+20)+"px;height:"+(height_/2.5)+"px;"
       style_+="border-style:solid;border-width:0px;border-color:blue;display: flex;"
       style_+="background-color:"+color__+";align-items: center;justify-content: center;"
       div_.setAttribute("style", style_);
@@ -1862,7 +1806,7 @@ var layout = {
       //alert("90441-750  \n"+JSON.stringify(s_data));
 
       this.fields_skills=["Fitness","Shooting","Professional","Equipment"]
-      var s="<table class='basic' style='display: block;height:"+(Math.round(height_/2.5)-40)+"px;overflow-y: auto;'><tr>"
+      var s="<table class='basic' style='display: block;height:"+(Math.round(height_/2.5))+"px;overflow-y: auto;'><tr>"
       s+="<th style='width:350px'>Name</th>"
       for(var i in this.fields_skills){s+="<th style='width:100px'>"+this.fields_skills[i]+"</th>";}
       s+="</tr>"
@@ -6349,7 +6293,7 @@ acChartCreator.prototype.set_chart_data = function(chart_type)
 
     var layout = {title: data["title"],
                   xaxis: {title: chart_type["x-axis-title"]},
-                  yaxis: {title: chart_type+["y-axis-title"]}}
+                  yaxis: {title: chart_type["y-axis-title"]}}
    //alert(JSON.stringify(data_));
    //modeBarButtonsToRemove: ['toImage'], displaylogo: false,
   var ss=pp_["remove_buttons"];if(ss==null || ss=="false"){ss=true}else{ss=false}

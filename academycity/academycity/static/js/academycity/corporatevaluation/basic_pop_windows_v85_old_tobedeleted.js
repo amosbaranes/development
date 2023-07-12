@@ -318,6 +318,7 @@ StreamerWin.prototype.send_msg = function (msg){
 // -- Orders --
 function OrderStreamerWin(my_name_, win_name_, win_title_, use_id, tab_obj_, data_link, order_link, link_to_activate_obj_function)
 {
+alert("order 1")
   acWin.call(this, my_name_, win_name_, win_title_, right="2%", top="20%", is_scroll=false, zindex=21, tab_obj_=tab_obj_, is_nav_panel=true)
   this.my_name=my_name_;
   this.user_id=user_id;
@@ -384,6 +385,8 @@ function OrderStreamerWin(my_name_, win_name_, win_title_, use_id, tab_obj_, dat
                    "vertical": new VerticalStrategy(my_name='vertical', parent=this, container=vertical_content),
                    "delta": new DeltaStrategy(my_name='delta', parent=this, container=delta_content)
                    }
+
+alert("order 1-10")
 }
 OrderStreamerWin.prototype = Object.create(acWin.prototype)
 
@@ -496,7 +499,7 @@ OrderStreamerWin.prototype.set_orders_screen = function(ticker="")
 {
  try{if(this.myInterval_d !== null){this.order_content.innerHTML = "";
         clearInterval(this.myInterval_d); this.myInterval_d = null; //this.set_msg("");
-    }} catch(er){alert(er)}
+    }} catch(er){}
  this.ticker = ticker; Orders.set_ticker(ticker); Orders.set_price("");
  try{get_orders_data_();this.myInterval_d = setInterval(get_orders_data_, 3000);} catch (er) {alert(er)}
 }
@@ -506,7 +509,6 @@ function get_orders_data_()
   //Orders.set_title(Orders.ticker +" ...  <i class='fa fa-spinner fa-spin'></i><span id='orders_timer'></span>");
   //Orders.set_spinner("...<i class='fa fa-spinner fa-spin'></i>...");
   //var n_ = Orders.get_msg(); if(n_==""){n_=0}; n_=1*n_; n_+=1; Orders.set_msg(n_);
-//  alert(Orders.data_link)
   $.post(Orders.data_link,
     {fun: "get_option_statistics_for_ticker", attribute: 'ticker', attribute_value: Orders.ticker},
     function(data)
@@ -579,8 +581,6 @@ function get_orders_data_()
                 }
             }
         }
-
-//  alert("9044-441-6 dic\n "+JSON.stringify(dic));
         Orders.set_data(data=dic);
       }
      }
@@ -1110,4 +1110,3 @@ function randomBar(date) {
     return {x: date.valueOf(),o: open,h: high,l: low,c: close};
 }
 function randomNumber(min, max) {return Math.random() * (max - min) + min;}
-

@@ -239,6 +239,7 @@ class MSDataProcessing(BaseDataProcessing, MSAlgo):
         # print(n_, l_sum)
         for c in clusters:
             clusters[c]["centroid"] = round(clusters[c]["centroid"], 2)
+
         return clusters
 
     def converge_clusters_centroid(self, row, clusters_o, n):
@@ -262,6 +263,7 @@ class MSDataProcessing(BaseDataProcessing, MSAlgo):
             clusters[c_min]["entity_value"].append(float(row[j]))
         return clusters
 
+    #
     def fix_dim_names(self, dic):
         print("90121-1: \n", dic, "="*50)
         print(dic)
@@ -303,6 +305,7 @@ class MSDataProcessing(BaseDataProcessing, MSAlgo):
         result = {"status": "ok"}
         return result
 
+    #
     def upload_personal_info_to_db(self, dic):
         # print("90121-1: \n", dic, "\n", "="*50)
         app_ = dic["app"]
@@ -347,8 +350,6 @@ class MSDataProcessing(BaseDataProcessing, MSAlgo):
     # NeedToDo to move to function calculate_clusters
     def get_gene_structure(self, dic):
         # print("90950-10: \n", dic, "\n", "=" * 50)
-        # print(dic)
-        # print('dic')
         gene_id_ = int(dic["gene_id"])
 
         app_ = dic["app"]
@@ -456,10 +457,43 @@ class MSDataProcessing(BaseDataProcessing, MSAlgo):
         result = {"status": "ok", "data": ll_g}
         return result
 
+    # Create blocks
+    # pop 7
+    # count all people
+    # (1) if 7/total people < 5% (make parameters T) then combine to the biggest (by nuber of peoples) block
+    # (2) a get the lowest block it is 12 compare it to the pick of the other block if it is biger combine
+    def add_peaks_to_clusters(self, dic):
+        # print("90966-66: get_peaks\n", dic, "\n", "=" * 50)
+        app_ = dic["app"]
+        t_pop = dic["t_pop"]
+        model_gene_dim = apps.get_model(app_label=app_, model_name="genedim")
+        objs = model_gene_dim.objects.all()
+
+        def take_key(elem):
+            return elem[2]
+
+        for o in objs:
+            # print("-"*50, "\n", o.clusters, "\n", "-"*50)
+            ll = []
+            for c in o.clusters:
+                ce = o.clusters[c]["entity"]
+                cd = o.clusters[c]["centroid"]
+                n = len(ce)
+                ll.append([c, n, cd])
+            ll.sort(key=take_key)
+            ll_ = [j[1] for j in ll]
+            r = self.get_peaks({"cl_all":ll_, "t_pop": t_pop})["result"]
+            # print(ll_, "\n", o.gene_code, "\n", r)
+
+        result = {"status": "ok", "result": {"a": "a"}}
+        return result
+
     def get_peaks(self, dic):
         # print("90955-50: get_peaks\n", dic, "\n", "=" * 50)
-
         l = dic["cl_all"]
+        t_pop = int(dic["t_pop"])/100
+        # print(l, "\n", t_pop, "\n", sum(l))
+        t_pop = int(t_pop * sum(l))
         lb = 0
         ub = len(l)
         peak_array = {}
@@ -526,21 +560,61 @@ class MSDataProcessing(BaseDataProcessing, MSAlgo):
             # print("ll", ll)
             rl = get_location_of_right_low(l_, gh, ub_)
             # print("rl", rl)
-
             peak_array[num_peaks_] = {}
             peak_array[num_peaks_]["peak"] = gh + 1
             peak_array[num_peaks_]["lb"] = ll + 1
-            peak_array[num_peaks_]["ub"] = rl
+            rl_ = rl + 1
+            if rl_ > ub_:
+                rl_ = ub_
+            peak_array[num_peaks_]["ub"] = rl_
             peak_array[num_peaks_]["valid"] = True
+            p = 0
+            # print(l_, "\n", ll, rl, "\n", "-"*100)
+            z = rl + 1
+            if z > ub_:
+                z = ub_
+            for k in range(ll, z):
+                p += l_[k]
+            peak_array[num_peaks_]["pop"] = p
             if (ll - lb_) > 0:
                 # print("ll - lb_", ll - lb_)
                 get_peaks_(l_, lb_, ll, peak_array_, num_peaks_)
-            if (ub_ - rl) > 0:
+            if (ub_ - rl - 1) > 0:
                 # print("ub_ - rl", ub_ - rl)
                 get_peaks_(l_, rl, ub_, peak_array_, num_peaks_)
 
+        def two_rules_combination(ll, peaks, t):
+            llb = []
+            for b in peaks:
+                if str(b).isnumeric():
+                    if peaks[b]["pop"] < t:
+                        llb.append(b)
+            # print(llb)
+            for h in llb:
+                # print(h)
+                if ((h+1) in peaks) and ((h-1) in peaks):
+                    if peaks[h+1]["pop"] > peaks[h-1]["pop"]:
+                        peaks[h + 1]["lb"] = peaks[h]["lb"]
+                        peaks[h + 1]["pop"] += peaks[h]["pop"] - ll[peaks[h]["ub"]-1]
+                    else:
+                        peaks[h - 1]["ub"] = peaks[h]["ub"]
+                        peaks[h - 1]["pop"] += peaks[h]["pop"] - ll[peaks[h]["lb"]-1]
+                elif (h+1) in peaks:
+                    peaks[h + 1]["lb"] = peaks[h]["lb"]
+                    peaks[h + 1]["pop"] += peaks[h]["pop"] - ll[peaks[h]["ub"]-1]
+                elif (h-1) in peaks:
+                    peaks[h - 1]["ub"] = peaks[h]["ub"]
+                    peaks[h - 1]["pop"] += peaks[h]["pop"] - ll[peaks[h]["lb"]-1]
+                del peaks[h]
+                peaks["number_of_blocks"] -= 1
+            print("B Two rules: \nB1. Remove blocks lower then t_pop=", t, "\n", "-"*10, "\n", peaks, "\n", "-"*50)
+
         get_peaks_(l, lb, ub, peak_array, num_peaks)
-        peak_array["number_of_supper_clusters"] = len(peak_array)
+        peak_array["number_of_blocks"] = len(peak_array)
+        print("-"*100, "\nt_pop=", dic["t_pop"]+"%, ", t_pop)
+        print("A Create Blocks for l=", l, "sum=", sum(l), "\n", peak_array)
+        if peak_array["number_of_blocks"] > 1:
+            two_rules_combination(l, peak_array, t_pop)
         # print(peak_array)
         result = {"status": "ok", "result": peak_array}
         return result
