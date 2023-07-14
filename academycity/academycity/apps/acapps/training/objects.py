@@ -5274,33 +5274,72 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
         print(result)
         return result
 
-    # To Be Deleted
-    def soldier_qualification_fact(self, dic):
+    # Reports
+    def update_qualification_fact(self, dic):
         # print('90033-1 dic', dic)
         app_ = dic["app"]
-        soldiers_id = dic["soldiers_id"]
-        # print(soldiers_id)
-        model_name_ = "soldiers"
-        model_soldier = apps.get_model(app_label=app_, model_name=model_name_)
-        model_name_ = "soldierqualificationfact"
-        model_sqf = apps.get_model(app_label=app_, model_name=model_name_)
-
+        data = dic["data"]
+        skill = data["skill"]
+        data = data["data"]
+        # print(skill)
+        # print(data)
+        company_obj_id_ = int(dic['company_obj_id'])
+        # print(company_obj_id_, battalion_)
+        model_soldier = apps.get_model(app_label=app_, model_name="soldiers")
+        model_sqf = apps.get_model(app_label=app_, model_name="soldierqualificationfact")
         try:
-            for k in soldiers_id:
+            for k in data:
                 # print(k)
-                soldier_obj = model_soldier.objects.get(user__id=k)
-                sqf_obj, is_created = model_sqf.objects.get_or_create(soldier=soldier_obj, skill=3)
-                sqf_obj.value = 100
-                sqf_obj.save()
-
-                sqf_obj, is_created = model_sqf.objects.get_or_create(soldier=soldier_obj, skill=0)
-                sqf_obj.value = random.randint(60, 100)
+                soldier_obj = model_soldier.objects.get(user__id=int(k))
+                sqf_obj, is_created = model_sqf.objects.get_or_create(training_web__id=company_obj_id_,
+                                                                      soldier=soldier_obj, skill=skill)
+                sqf_obj.value = data[k]
                 sqf_obj.save()
         except Exception as ex:
             print(ex)
 
-
+        # -----
         result = {"status": "ok"}
+        print(result)
+        return result
+
+
+    # To Be Deleted
+    def get_soldier_report(self, dic):
+        print('90033-1 dic', dic)
+        app_ = dic["app"]
+
+        soldier_number_ = dic["soldier_number"]
+        model_soldier = apps.get_model(app_label=app_, model_name="soldiers")
+        model_tests_for_events = apps.get_model(app_label=app_, model_name="testsforevents")
+        model_sgf = apps.get_model(app_label=app_, model_name="gradesforevents")
+        model_if = apps.get_model(app_label=app_, model_name="inventoryfact")
+        # model_sqf = apps.get_model(app_label=app_, model_name="soldierqualificationfact")
+
+        try:
+            soldier_obj = model_soldier.objects.get(userid=soldier_number_)
+            sgf_objs = model_sgf.objects.filter(soldiersforevent__soldier_number=soldier_obj.user_id).all()
+
+            df = pd.DataFrame(list(sgf_objs.values()))
+            print(df)
+            dic={"tests":{}, "equipment":{}}
+            for index, row in df.iterrows():
+                t_obj = model_tests_for_events.objects.get(id=row["testsforevent_id"])
+                # print(t_obj.test_number)
+                # print(t_obj.testevent.time_dim.id)
+                if t_obj.test_number not in dic["tests"]:
+                    dic["tests"][t_obj.test_number] = {"idx": [], "test_date": [], "value": []}
+                dic["tests"][t_obj.test_number]["idx"].append(index)
+                dic["tests"][t_obj.test_number]["test_date"].append(t_obj.testevent.time_dim.id)
+                dic["tests"][t_obj.test_number]["value"].append(round(float(row["value"])*100)/100)
+
+            # sqf_obj, is_created = model_sqf.objects.get(soldier=soldier_obj, skill=3)
+        except Exception as ex:
+            print(ex)
+
+        result = {"status": "ok", "result":dic}
+        print(result)
+
         return result
 
     #  -- To be deleted --

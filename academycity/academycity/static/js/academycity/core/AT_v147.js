@@ -30,7 +30,7 @@ function AdvancedTabsManager(dic=null)
                                                 "functions":["onmouseover", "onmouseout"]},
                                         "Input":{"title":"Input", "width":5,
                                                  "setting": {"color":[], "background-color":[],
-                                                             "text-align":["", "left", "center", "right"]},
+                                                             "text-align":["", "left", "center", "right"], "span_width":[]},
                                                  "attributes":{"field":[],
                                                                "type":["text","button","checkbox","color","date",
                                                                        "datetime-local","email","file","hidden","image",
@@ -219,7 +219,8 @@ function AdvancedTabsManager(dic=null)
                                                              "board1_color":[],"board2_color":[],"board3_color":[],"board4_color":[]
                                                 },
                                                 "attributes":{"background-color":[], "color":[], "table_class":["","basic", "payment"]},
-                                                "functions":["on_amount_paint", "on_receive_data", "onclick", "onmouseover", "onmouseout"]
+                                                "functions":["on_amount_paint", "on_receive_data", "on_entity_click",
+                                                             "onclick", "onmouseover", "onmouseout"]
                                                }
                         }
                  },
@@ -589,6 +590,10 @@ AdvancedTabsManager.prototype.set_active_tab = function(btn)
 AdvancedTabsManager.prototype.get_tab = function(tab_name){for(id in this.tabs){if (this.tabs[id].tab_name==tab_name){return this.tabs[id]}}}
 
 AdvancedTabsManager.prototype.get_pop_win = function(link_number){return this.pop_wins[link_number]}
+
+// consider the following function
+//var get_pop_win = function(link_number){return atm.get_pop_win(link_number)}
+
 
 AdvancedTabsManager.prototype.truncate_model = function(model_name, app=null){
        var app_ = this.my_app; if(app!=null){app_=app}
@@ -1336,21 +1341,28 @@ acObj.prototype.create_obj = function(){
   else {var background_color_=";background-color:"+background_color_}
   if(this.data["element_name"]=="Input")
   {
+    //alert("9015-15"+JSON.stringify(this.data));
     var s_label=this.data["properties"]["title"]+":&nbsp;";
-    s_label_length=10*(1*s_label.length-5);
-    //alert(s_label+" : "+s_label_length)
+    s_label_length=7.7*(1*s_label.length-5);
+    //if(s_label=="Event Date:&nbsp;")
+    //{
+    var sw=this.data["properties"]["span_width"];if(sw!=null && sw!="") {s_label_length=1*sw}
+    //}
     var nx_=s_label_length;var x=1*this.data["properties"]["x"]+nx_;
-    //alert(JSON.stringify(this.data["properties"]));
+
     var s_style="position:absolute;left:"+x+"px;top:"+this.data["properties"]["y"]+"px;width:"+width_+"px;text-align:"+align+";";
 
     this.new_obj.setAttribute("style", s_style);
     var span=document.createElement("span");span.innerHTML=s_label;
     var x = 1*this.data["properties"]["x"];
+
     var s_="position:absolute;left:"+x+"px;top:"+this.data["properties"]["y"]+"px;"
     s+="text-align:right;display:inline-block;width:"+s_label_length+"px;"
     s_+="color:"+color+background_color_;
     span.setAttribute("style", s_);
+
     container.appendChild(span);
+
   } else if (this.data["element_name"]=="DIV") {
     var s_ = this.data["properties"]["overflow"];if(s_!=null || s_!=""){s_="overflow:"+s_+";"}
     s_+="color:"+color+background_color_;
@@ -1526,6 +1538,7 @@ acBasicCreator.prototype.get_board = function(dic_,pp_, style_)
 
 acBasicCreator.prototype.create_obj = function()
 {
+  this.nav_width=33;
   var dic=this.parent.data;
   var pp_=dic["properties"];
   var ll_boards=["battalion","company","platoon","section"]
@@ -1534,7 +1547,7 @@ acBasicCreator.prototype.create_obj = function()
   //--
   var dic_objs={}
   for(var h in ll_boards){var n=1*h+1;
-   var s='var board'+n+'_color="white";if((pp_["board'+n+'_color"]!=null && pp_["board'+n+'_color"]!="")){board'+n+'_color=pp_["board1_color"]}';eval(s);
+   var s='var board'+n+'_color="white";if((pp_["board'+n+'_color"]!=null && pp_["board'+n+'_color"]!="")){board'+n+'_color=pp_["board'+n+'_color"]}';eval(s);
    //--
    dic_objs[1*n]={};
    dic_objs[1*n]["board_name"]=ll_boards[h];dic_objs[1*n]["color"]="black";if(n==1){dic_objs[1*n]["display"]="block";}
@@ -1543,6 +1556,11 @@ acBasicCreator.prototype.create_obj = function()
   //alert("acRadioCreator 90446-16  "+JSON.stringify(dic_objs));
   //--
   var obj_number = pp_["obj_number"]
+  var width_=pp_["width"]; if(width_==null || width_==""){width_=80};
+  var height_=pp_["height"]; if(height_==null || height_==""){height_=300};
+  var color_="black";if((pp_["color"]!=null && pp_["color"]!="")){color_=pp_["color"]}
+  var background_color_="white";if(pp_["background-color"]!=null && pp_["background-color"]!=""){background_color_=pp_["background-color"]}
+  //--
   this.main_div=document.createElement("div");
   container.appendChild(this.main_div);
   this.main_div.my_creator_obj=this;
@@ -1551,14 +1569,10 @@ acBasicCreator.prototype.create_obj = function()
   this.main_div.setAttribute("obj_type", dic["obj_type"]);
   this.main_div.setAttribute("type", dic["element_name"]);
   this.main_div.setAttribute("container_id", dic["container_id"]);
-  this.main_div.setAttribute("class", "row");
-  var style_="position:absolute;left:"+pp_["x"]+"px;top:"+pp_["y"]+"px;"
+  //this.main_div.setAttribute("class", "row");
+  var style_="position:absolute;left:"+pp_["x"]+"px;top:"+pp_["y"]+"px;width:"+(width_+this.nav_width)+"px;"
   this.main_div.setAttribute("style", style_);
   // --
-  var width_=pp_["width"]; if(width_==null || width_==""){width_=80};
-  var height_=pp_["height"]; if(height_==null || height_==""){height_=300};
-  var color_="black";if((pp_["color"]!=null && pp_["color"]!="")){color_=pp_["color"]}
-  var background_color_="white";if(pp_["background-color"]!=null && pp_["background-color"]!=""){background_color_=pp_["background-color"]}
      var style_ = "float:left;width:"+width_+"px;height:"+height_+"px;"
      if(pp_["border_style"]!=null && pp_["border_style"]!=""){style_+="border-style:"+pp_["border_style"]+";"}
      if(pp_["border_width"]!=null && pp_["border_width"]!=""){style_+="border-width:"+pp_["border_width"]+"px;"}
@@ -1566,7 +1580,7 @@ acBasicCreator.prototype.create_obj = function()
      if(pp_["border_radius"]!=null && pp_["border_radius"]!=""){style_+="border-radius:"+pp_["border_radius"]+"px;"}
 
   this.nav=document.createElement("div");this.nav.my_creator_obj=this;
-  var style_nav="float:left;"
+  var style_nav="float:left;width:33px;"
   this.nav.setAttribute("style", style_nav)
   this.main_div.appendChild(this.nav);
   this.board_objs = {}
@@ -1585,6 +1599,9 @@ acBasicCreator.prototype.create_obj = function()
     eval(ss)
     var s='this.button_objs[j]=this.b_'+j;eval(s)
   }
+
+  for(f in dic["functions"]){if(f!="on_entity_click" && f!="on_receive_data"  && f!="on_amount_paint")
+  {var s="this.main_div."+f+"="+dic["functions"][f];eval(s);}}
 }
 
 acBasicCreator.prototype.set_detail_data = function(ll){
@@ -1652,14 +1669,14 @@ acBasicCreator.prototype.get_grade = function(skill_id, unit_id)
 
 acBasicCreator.prototype.set_board_data = function(ll=[])
 {
-  //alert("set data1")
+  //alert("set data1\n"+ll.length)
   if(atm.is_run_set_obj_structure==false){return}
   if(ll.length==0){for(var k in atm.data_dic){ll.push(k)}}
    //alert("acBasicCreator.prototype.set_board_data 90446-25 \n"+JSON.stringify(atm.data_dic));
    //alert(ll)
    //--
    var dic_=this.parent.data;var pp_=dic_["properties"]
-   var width_=pp_["width"]; if(width_==null || width_==""){width_=80};
+   var width_=pp_["width"]; if(width_==null || width_==""){width_=900};
    var height_=pp_["height"]; if(height_==null || height_==""){height_=300};
     var dic=atm.data_dic;
     var z=-1;
@@ -1672,20 +1689,20 @@ acBasicCreator.prototype.set_board_data = function(ll=[])
     try{this.hide_boards((1*z+1)); container_.style.display="block";} catch(er){alert(er)}
     //alert("90441-550  "+JSON.stringify(dic));
     var n_kpi_objs=Object.keys(kpi).length;
-    var w_kpi=125;var h_kpi=150; wl_kpi=75;var wr_kpi=25;
+    var w_kpi=125;var h_kpi=200; wl_kpi=50;var wr_kpi=50;
     var n_objs=Object.keys(dic).length;
-    var w=200;
-    var wl=50;var wr=50;
-    var wb_kpi=(1*width_-wl_kpi-wr_kpi-n_kpi_objs*w_kpi)/(n_kpi_objs-1);var w_kpi_=wl_kpi;
+    var wl=50;var wr=50;var w=200;var n__=(width_-wl-wr)/n_objs;if(n__<200){w=n__}
+    var wb_kpi=(1*width_-wl_kpi-wr_kpi-n_kpi_objs*w_kpi)/(n_kpi_objs-1);
     var wb=(1*width_-wl-wr-n_objs*w)/(n_objs-1);
+
     //alert(wb)
-    var w_=wl;var th2_=1*height_/2
+    var w_=wl+this.nav_width;var th2_=1*height_/2
+    var w_kpi_=wl_kpi+this.nav_width;
+
    container_.innerHTML="";
    //--
-   var title__=document.createElement("h1");
-   title__.innerHTML="<u><b>"+board_title+"</b></u>";
-   var top_=15
-   var style_ = "position:absolute;left:"+(width_/2-50)+"px;top:"+top_+"px;color:blue"
+   var title__=document.createElement("h1");title__.innerHTML="<u><b>"+board_title+"</b></u>";
+   var top_=15;var style_ = "position:absolute;left:"+(width_/2-50)+"px;top:"+top_+"px;color:blue"
    title__.setAttribute("style", style_);
    container_.appendChild(title__);
    //--
@@ -1700,9 +1717,8 @@ acBasicCreator.prototype.set_board_data = function(ll=[])
       var data = [
           {
             type: "indicator",
-            mode: "gauge+number+delta",
+            mode: "gauge+number",  //+delta
             value: kpi[j]["grade"],
-            title: { text: kpi[j]["title"], font: { size: 24 } },
             delta: { reference: 60, increasing: { color: "RebeccaPurple" } },
             gauge: {
               axis: { range: [null, 100], tickwidth: 1, tickcolor: "darkblue" },
@@ -1710,31 +1726,26 @@ acBasicCreator.prototype.set_board_data = function(ll=[])
               bgcolor: "lightyellow",
               borderwidth: 2,
               bordercolor: "gray",
-              steps: [
-                { range: [0, 60], color: "red" },
-                { range: [60, 100], color: "green" }
-              ],
-              threshold: {
-                line: { color: "red", width: 4 },
-                thickness: 0.75,
-                value: 90
-              }
+              steps: [{ range: [0, 60], color: "red" },{ range: [60, 100], color: "green" }],
+              threshold: {line: { color: "red", width: 4 },thickness: 0.75,value: 90}
             }
           }
         ];
 
         var layout = {
-          width: 150,
-          height: 120,
-          margin: { t: 5, r: 5, l: 5, b: 5 },
-          paper_bgcolor: "lavender",
+        autosize: false,
+          title: { text: kpi[j]["title"], font: { size: 15 } },
+          width: 150,height: 160,
+          margin: {l: 5, r: 5, b: 10, t: 20,  pad: 1 },
+          paper_bgcolor: container_.style.backgroundColor,
+          showlegend: false,
           font: { color: "darkblue", family: "Arial" }
         };
 
         Plotly.newPlot(div_, data, layout, {displayModeBar: false});
 
      //-- Grade --
-     w_kpi_=wl_kpi+1*j*(1*w_kpi+1*wb_kpi);
+     w_kpi_=w_kpi_+1*(1*w_kpi+1*wb_kpi);
      container_.appendChild(div_);
    }
    //--
@@ -1794,9 +1805,10 @@ acBasicCreator.prototype.set_board_data = function(ll=[])
       var div_=document.createElement("div");
       div_.ll=ll_;div_.obj=this;
       div_.addEventListener("click", function(event){
-       var e=event.target;
-        alert(e.outerHTML)
-        //alert("90441-750  "+JSON.stringify(e.ll));
+       var e=event.target;var dic=this.obj.parent.data;
+       try{var s="var zz="+dic["functions"]["on_entity_click"];eval(s);zz(event);} catch(er){}
+        //alert(e.outerHTML)
+        //alert("90441-750  "+JSON.stringify(this.ll));
       })
       var style_ = "position:absolute;left:50px;top:"+(th2_+20)+"px;height:"+(height_/2.5)+"px;"
       style_+="border-style:solid;border-width:0px;border-color:blue;display: flex;"
@@ -1865,7 +1877,7 @@ acBasicCreator.prototype.set_obj_structure = function(ll_)
         //alert(k+"\n11\n"+dic[k]["title"])
         data_dic[k]={};data_dic[k]["kpi"]={};
         var title=dic[k]["title"];data_dic[k]["title"]=title;if(n_==1){data_dic[k]["type"]="battalion"}
-        var fields_=["Fitness","Shooting","Professional","Equipment","Execution<br>     vs<br>Planning"]
+        var fields_=["Fitness","Shooting","Professional","Equipment","Exe. vs Plan"]
         var nn_=0;
         for(var j in fields_)
         {
@@ -3064,7 +3076,7 @@ acUploadFileCreator.prototype.create_obj = function()
                 data = JSON.parse(this.responseText);
                     //alert("90353 "+JSON.stringify(data))
                     //alert(this.responseText)
-                    var s="zz="+this.dic["functions"]["on_loaded"];eval(s);zz(data)
+                    try{var s="zz="+this.dic["functions"]["on_loaded"];eval(s);zz(data)} catch(er){}
                 if(this.status != 200){
                   $('#driver-uploader-failure-alert').show();
                   return;
@@ -3103,8 +3115,7 @@ acUploadFileCreator.prototype.create_obj = function()
             fd.append("model_name", table);
             //--
             xhr.send(fd);
-            var s="zz="+dic["functions"]["onchange"];eval(s);
-            zz(event)
+            try{var s="zz="+dic["functions"]["onchange"];eval(s);zz(event)} catch(er){}
   }
 
   // alert("90321-2 "+JSON.stringify(dic["functions"]));
@@ -3307,7 +3318,7 @@ acImageCreator.prototype.create_obj = function()
                     data = JSON.parse(this.responseText);
                     location.reload();
                     this.div_.outerHTML="";
-                    var s="zz="+this.dic["functions"]["on_loaded"];eval(s);zz(data)
+                    try{var s="zz="+this.dic["functions"]["on_loaded"];eval(s);zz(data)} catch(er){}
                 });
 
                 //alert(this.atm.upload_file_link_)
@@ -3328,8 +3339,7 @@ acImageCreator.prototype.create_obj = function()
                 fd.append("model_name", "");
                 //--
                 xhr.send(fd);
-                var s="zz="+dic["functions"]["onchange"];eval(s);
-                zz(event)
+                try{var s="zz="+dic["functions"]["onchange"];eval(s);zz(event)} catch(er){}
       }
       }
   }
@@ -3429,8 +3439,7 @@ acVideoCreator.prototype.create_obj = function()
                 fd.append("model_name", "");
                 //--
                 xhr.send(fd);
-                var s="zz="+dic["functions"]["onchange"];eval(s);
-                try{zz(event)} catch(er){}
+                try{var s="zz="+dic["functions"]["onchange"];eval(s);zz(event)} catch(er){}
       }
       }
   }
@@ -7796,7 +7805,9 @@ eval(s);
 //s='SubMenuBtn'+this.my_name+s_name+'.prototype.click = '+this.my_name+s_name+'_click;'
 s='SubMenuBtn'+this.my_name+s_name+'.prototype.click = function (event){';
 //s+='try{alert("'+this.my_name+s_name+'_click(obj=this, event)");} catch(er){alert("er9026: "+ er)}';
+
 s+='try{eval("this.parent.parent.onclick"+'+this.parent.id+'+"(tab=this.parent.parent.tab_obj_,win=this.parent.parent, obj=this, event)");} catch(er){alert("err403: "+er)};';
+
 s+='}';
 eval(s);
 s='SubMenuBtn'+this.my_name+s_name;
@@ -7873,7 +7884,7 @@ MenuBtn.prototype.get_sub_button_obj = function(s_name, s_title, obj_type)
 // -- SubMenuBtn --
 function SubMenuBtn(parent, my_name_, my_title_, width="width:10%;")
 {
- this.parent=parent;this.my_title=my_title_;this.my_name=parent.my_name+my_name_;
+ this.parent=parent;this.my_title=my_title_;this.my_name_=my_name_;this.my_name=parent.my_name+my_name_;
  this.btn = document.createElement("button");
  this.btn.parent=this;
  this.btn.setAttribute("id", this.my_name);
