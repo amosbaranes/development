@@ -4160,7 +4160,7 @@ acGroupCreator.prototype.get_entity_list = function(e_dic)
 
 acGroupCreator.prototype.create_obj = function()
 {
-  var dic=this.parent.data;
+  var dic=this.parent.data;var pp_=dic["properties"]
   this.recording_tests_number=dic["properties"]["recording_tests_number"];
   var field=dic["properties"]["field"]; this.fields.push(field);
   var value_field=dic["properties"]["value_field"]; this.fields.push(value_field);
@@ -4187,17 +4187,23 @@ acGroupCreator.prototype.create_obj = function()
 
   this.main_div.addEventListener("click", function(event){
       var e=event.target;
+      //alert("click: \n\n"+this.outerHTML)
       //alert("click: \n\n"+e.outerHTML)
-      //alert("90100-4\n"+JSON.stringify(this.dic));
-      var my_class_members=e.getAttribute("my_class_members")
+      //alert("90100-4\n"+JSON.stringify(this.dic["properties"]));
+
+      //alert(pp_["obj_number"]+"\n"+JSON.stringify(this.dic["properties"]))
+
+      var my_class_members=e.getAttribute("my_class_members"+pp_["obj_number"])
 
       //alert("90142-2 acGroupCreator.prototype.create_obj\n"+JSON.stringify(this.dic));
       //alert(this.dic["properties"]["present"])
+  try{
       if(my_class_members!=null){
         //alert(this.dic["properties"]["present"])
         var c = document.getElementsByClassName(my_class_members)[0]
         var etype_=e.getAttribute("type")
         if(etype_=="checkbox"){
+        try{
           if(this.dic["properties"]["present"]=="detail")
           {
              //alert(e.outerHTML)
@@ -4211,11 +4217,13 @@ acGroupCreator.prototype.create_obj = function()
              }
              for(k in cc)
              {
+             //alert(cc[k].outerHTML)
+
               cc[k].dispatchEvent(ec)
              }
           }
+        } catch(er){"Error 550: "+er}
         } else if (etype_=="span"){
-
         //alert(999)
         //alert(c.outerHTML)
         //alert(c.style.display)
@@ -4226,6 +4234,7 @@ acGroupCreator.prototype.create_obj = function()
             this.my_creator_obj.get_entity_list({"e":e,"c":c})}
           }
         }
+
       } else{
         var etype_=e.getAttribute("type")
         if(etype_=="checkbox"){
@@ -4233,6 +4242,9 @@ acGroupCreator.prototype.create_obj = function()
          this.my_creator_obj.obj_was_clicked(e)
         }
       }
+
+} catch(er){alert("Error 555\n"+er)}
+
   })
   container.appendChild(this.main_div);
   //--
@@ -4249,18 +4261,87 @@ acGroupCreator.prototype.obj_was_clicked = function(e)
   //alert("90100-10\nacGroupCreator.prototype.obj_was_clicked\n "+e.outerHTML);
 }
 
+var a=function (event){
+ try{
+
+ var f=function(dic)
+ {var ll=[];
+  for(var k in dic){ll.push(k)};return ll}
+
+ var e=event.target;
+ var sid="s"+e.getAttribute("id")
+ var s=getEBI(sid)
+ var l=s.getAttribute("link")
+
+if(l==null){
+ var my_c_m=
+  e.getAttribute("my_class_members")
+ var c =
+  document.getElementsByClassName(my_c_m)[0]
+ var etype_=e.getAttribute("type")
+ if(etype_=="checkbox"){
+    var cc=c.getElementsByTagName("input");
+    var n_=0;var ll_=[]
+    for(k in cc){
+         cc[k].checked=e.checked;
+         var n_=0;
+         try{var sid=
+             "s"+cc[k].getAttribute("id");
+           var s=getEBI(sid);
+           var l=s.getAttribute("link");
+           l=l.replace("this",
+            "atm.general");
+           var l=eval(l);
+           var ll=f(l);ll_=ll_.concat(ll)
+         } catch(er){}
+    }
+    var group_dic_={"checked": e.checked,
+     "entities":ll_, "entity_name":"soldier"}
+    var gt=get_creator(16);
+    gt.creator.set_obj_structure(
+     tests_dic=null,
+     group_dic=group_dic_,
+     tests_config=atm.general.test_dic,
+     entity_config=atm.general.soldiers_dic)
+   }
+ } else
+ {
+   //alert(l);alert(e.checked)
+   l=l.replace("this", "atm.general");
+   var l=eval(l)
+   var ll=f(l)
+   //alert(JSON.stringify(ll));
+
+   var gt=get_creator(16);
+   var group_dic_={"checked": e.checked,
+    "entities":ll, "entity_name":"soldier"}
+   gt.creator.set_obj_structure(
+     tests_dic=null,
+     group_dic=group_dic_,
+     tests_config=atm.general.test_dic,
+     entity_config=atm.general.soldiers_dic
+   )
+ }
+
+} catch(er){alert('err 9016-1: '+er)}
+}
+
+
+
+
 acGroupCreator.prototype.open_close_lists = function(n=0)
 {
+  var dic=this.parent.data;var pp_=dic["properties"]
   var ll=atm.general.get_platoons_ids();ll=ll[n]
   //alert("90667-77\n"+JSON.stringify(ll));
   var ec=new Event("click", {bubbles: true});
-  for(l in ll){try{getEBI(ll[l]).dispatchEvent(ec)} catch(er){alert(er)}}
+  for(l in ll){try{getEBI(ll[l]+pp_["obj_number"]).dispatchEvent(ec)} catch(er){alert(er)}}
 }
 
 acGroupCreator.prototype.set_obj_structure = function(display_="none", nlimit=-1)
 {
-  //alert("90105-55\n"+nlimit+"\n"+JSON.stringify(this.parent.data));
-
+  //alert("90105-55\n"+nlimit+"\n"+JSON.stringify(this.parent.data["properties"]["obj_number"]));
+  var pp_=this.parent.data["properties"];
   var f=function(s_link, s_title, dic, d_div, n=0, n_limit_=-1, spaces="")
   {
      var spaces_=spaces+"&nbsp;&nbsp;&nbsp;"; var n_=n+1;
@@ -4270,12 +4351,14 @@ acGroupCreator.prototype.set_obj_structure = function(display_="none", nlimit=-1
         s_link_=s_link+"["+k+"]['data']";var title = dic[k]["title"];
 //1111111111        var title_=title.replace(/ /g, '').toLowerCase();
         s_title+=title.replace(/ /g, '').toLowerCase();
-        var class_="group_"+s_title;var id_="id_"+s_title;var sid_="sid_"+s_title
+        var class_="group_"+pp_["obj_number"]+s_title;var id_="id_"+s_title+pp_["obj_number"];var sid_="sid_"+s_title+pp_["obj_number"]
         //&#45;&#45;
         var s=spaces_+'<span type="span" style="cursor: pointer" id="'+sid_+'"'
         if(n_>n_limit_)
         {s+='my_members_status="empty" link="'+s_link_+'"'}
-        s+='my_class_members="'+class_+'">+</span><input type="checkbox" id="'+id_+'" my_class_members="'+class_+'"><label>'+title+'</label><br/>'
+        s+='my_class_members'+pp_["obj_number"]+'="'+class_+'">+</span>'
+        s+='<input type="checkbox" id="'+id_+'" '
+        s+='my_class_members'+pp_["obj_number"]+'="'+class_+'" my_class_members="'+class_+'" ><label>'+title+'</label><br/>'
         //alert(s)
         d_div.innerHTML+=s;
         var d_div_=document.createElement("div");

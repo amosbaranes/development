@@ -4575,7 +4575,7 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
             battalion_obj.save()
         period_obj, is_created = model_periods.objects.get_or_create(battalion=battalion_obj, period_number=1)
         if is_created:
-            period_obj.period_name = "Battalion: "+ str(battalion_number_) + " Period " + str(battalion_number_)
+            period_obj.period_name = "Battalion: "+ str(battalion_number_) + " Period " + str(1)
             period_obj.save()
         n__ = self.get_next_number({"app": app_})
         units_dic = {n__: {'title': battalion_obj.battalion_name, 'data': {}}}
@@ -4624,11 +4624,11 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
             nnf = full_name.find(" ")
             first_name = full_name[:nnf]
             last_name = full_name[nnf+1:]
-            rank = str(row["rank"])
-            clothes_size = str(row["clothes_size"])
-            shoes_size = str(row["shoes_size"])
-            mz4psn = str(row["mz4psn"])
-            ramonsn = str(row["ramonsn"])
+            rank = str(row["rank"]).strip()
+            clothes_size = str(row["clothes_size"]).strip()
+            shoes_size = str(row["shoes_size"]).strip()
+            mz4psn = str(row["mz4psn"]).strip()
+            ramonsn = str(row["ramonsn"]).strip()
 
             my_group, is_created = Group.objects.get_or_create(name='t_simple_user')
             # print(my_group)
@@ -5274,39 +5274,10 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
         print(result)
         return result
 
-    # Reports
-    def update_qualification_fact(self, dic):
-        # print('90033-1 dic', dic)
-        app_ = dic["app"]
-        data = dic["data"]
-        skill = data["skill"]
-        data = data["data"]
-        # print(skill)
-        # print(data)
-        company_obj_id_ = int(dic['company_obj_id'])
-        # print(company_obj_id_, battalion_)
-        model_soldier = apps.get_model(app_label=app_, model_name="soldiers")
-        model_sqf = apps.get_model(app_label=app_, model_name="soldierqualificationfact")
-        try:
-            for k in data:
-                # print(k)
-                soldier_obj = model_soldier.objects.get(user__id=int(k))
-                sqf_obj, is_created = model_sqf.objects.get_or_create(training_web__id=company_obj_id_,
-                                                                      soldier=soldier_obj, skill=skill)
-                sqf_obj.value = data[k]
-                sqf_obj.save()
-        except Exception as ex:
-            print(ex)
-
-        # -----
-        result = {"status": "ok"}
-        print(result)
-        return result
-
 
     # To Be Deleted
     def get_soldier_report(self, dic):
-        print('90033-1 dic', dic)
+        # print('90033-1 dic', dic)
         app_ = dic["app"]
 
         soldier_number_ = dic["soldier_number"]
@@ -5316,13 +5287,24 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
         model_if = apps.get_model(app_label=app_, model_name="inventoryfact")
         # model_sqf = apps.get_model(app_label=app_, model_name="soldierqualificationfact")
 
+        soldier_obj = model_soldier.objects.get(userid=soldier_number_)
+        dic = {"tests": {}, "inventory":{"idx":[], "id":[], "value":[]}, "equipment": {}}
         try:
-            soldier_obj = model_soldier.objects.get(userid=soldier_number_)
+            sgi_objs = model_if.objects.filter(soldier=soldier_obj).order_by("inventory").all()
+            df = pd.DataFrame(list(sgi_objs.values()))
+            # print(df)
+            for index, row in df.iterrows():
+                dic["inventory"]["idx"].append(index)
+                dic["inventory"]["id"].append(int(row["inventory_id"]))
+                dic["inventory"]["value"].append(round(float(row["value"])*100)/100)
+        except Exception as ex:
+            print("Error 90-90-90", ex)
+
+        try:
             sgf_objs = model_sgf.objects.filter(soldiersforevent__soldier_number=soldier_obj.user_id).all()
 
             df = pd.DataFrame(list(sgf_objs.values()))
-            print(df)
-            dic={"tests":{}, "equipment":{}}
+            # print(df)
             for index, row in df.iterrows():
                 t_obj = model_tests_for_events.objects.get(id=row["testsforevent_id"])
                 # print(t_obj.test_number)
@@ -5335,10 +5317,10 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
 
             # sqf_obj, is_created = model_sqf.objects.get(soldier=soldier_obj, skill=3)
         except Exception as ex:
-            print(ex)
+            print("Error 90-90-91", ex)
 
         result = {"status": "ok", "result":dic}
-        print(result)
+        # print(result)
 
         return result
 
