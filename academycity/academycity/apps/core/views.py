@@ -612,7 +612,7 @@ def get_data_json_link(request):
     return JsonResponse(dic)
 
 def upload_file(request):
-    # print("9005", "\n", "-"*30)
+    print("9005", "\n", "-"*30)
     log_debug("upload_file 0000")
     upload_file_ = request.FILES['drive_file']
     ret = {}
@@ -629,7 +629,7 @@ def upload_file(request):
         topic_id_ = request.POST['topic_id']
         folder_type_ = request.POST['folder_type']
         if folder_type_ == "media":
-            # print("media")
+            print("media")
             data_dir = settings.MEDIA_ROOT + '/' + app_ + '/' + topic_id_
             log_debug("upload_file 3333: "+data_dir)
 

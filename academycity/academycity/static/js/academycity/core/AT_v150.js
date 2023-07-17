@@ -216,7 +216,8 @@ function AdvancedTabsManager(dic=null)
                                                                    "double","groove","ridge","inset","outset",
                                                                    "hidden"],
                                                              "border_width":[],"border_color":[], "border_radius":[],
-                                                             "board1_color":[],"board2_color":[],"board3_color":[],"board4_color":[]
+                                                             "board1_color":[],"board2_color":[],"board3_color":[],"board4_color":[],
+                                                             "company_logo":[], "battalion_logo":[]
                                                 },
                                                 "attributes":{"background-color":[], "color":[], "table_class":["","basic", "payment"]},
                                                 "functions":["on_amount_paint", "on_receive_data", "on_entity_click",
@@ -1706,6 +1707,22 @@ acBasicCreator.prototype.set_board_data = function(ll=[])
    title__.setAttribute("style", style_);
    container_.appendChild(title__);
    //--
+   // add company logo
+   var company_logo_src="/media/training/images/"+pp_["company_logo"]
+   var battalion_logo_src="/media/training/images/"+pp_["battalion_logo"]
+   var company_logo_style="position:absolute;left:50px;top:10px;width:150px;height:60px;"
+   var company_image=document.createElement("img");
+   company_image.setAttribute("src", company_logo_src);
+   company_image.setAttribute("style", company_logo_style);
+   container_.appendChild(company_image);
+   // add battalion logo
+   var battalion_logo_src="/media/training/images/"+pp_["battalion_logo"]
+   var battalion_logo_style="position:absolute;left:770px;top:10px;width:150px;height:60px;"
+   var battalion_image=document.createElement("img");
+   battalion_image.setAttribute("src", battalion_logo_src);
+   battalion_image.setAttribute("style", battalion_logo_style);
+   container_.appendChild(battalion_image);
+   //--
    for(j in kpi)
    {
      var div_=document.createElement("div");
@@ -1828,10 +1845,14 @@ acBasicCreator.prototype.set_board_data = function(ll=[])
        for(var i in this.fields_skills)
        {
         var grade=this.get_grade(skill_id=i, unit_id=s_);
-        var color="white";var background_color = "green"
-        if(grade==0){color="black";background_color = "white"} else if(grade<atm.general.pass_grade)
-        {background_color="red"; color="white"}
-        s+="<td style='text-align:center;width:100px;color:"+color+";background-color:"+background_color+"'>"+grade+"&#128512;</td>"
+
+        var color="white";var background_color = "green"; var img_="&#128512;"
+
+        if(grade==0){color="black";background_color = "white"; var img_=""}
+        else if(grade<atm.general.pass_grade)
+        {background_color="red"; color="white";var img_="&#128514"}
+        s+="<td style='text-align:center;width:100px;color:"+color+";background-color:"+background_color+"'>"+grade+" "+img_+"</td>"
+
        }
        s+="</tr>"
       }
@@ -3337,6 +3358,10 @@ acImageCreator.prototype.create_obj = function()
                 fd.append("fact_model_field", "");
                 //--
                 fd.append("model_name", "");
+                //--
+                fd.append("user_id", "");
+                fd.append("sheet_name", "");
+                fd.append("entity_name", "");
                 //--
                 xhr.send(fd);
                 try{var s="zz="+dic["functions"]["onchange"];eval(s);zz(event)} catch(er){}
