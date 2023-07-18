@@ -74,6 +74,7 @@ class SoldierFactAdmin(admin.ModelAdmin):
 @admin.register(TestEvents)
 class TestEventsAdmin(admin.ModelAdmin):
     list_display = ('id', 'period', 'instructor', 'time_dim', 'test_event_name')
+    list_filter = ['period']
 
 @admin.register(TestsForEvents)
 class TestsForEventsAdmin(admin.ModelAdmin):

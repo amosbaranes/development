@@ -4670,16 +4670,16 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
                 soldier_obj.mz4psn = mz4psn
                 soldier_obj.save()
             except Exception as ex:
-                print("9011-22-4 Error " + str(ex))
+                print("9011-22-4 Error ", mz4psn, str(ex))
             try:
                 soldier_obj.ramonsn = ramonsn
                 soldier_obj.save()
             except Exception as ex:
-                print("9011-22-5 Error " + str(ex))
+                print("9011-22-5 Error ", ramonsn, str(ex))
             try:
                 soldier_obj.save()
             except Exception as ex:
-                print("9011-22-10 Error " + str(ex))
+                print("9011-22-10 Error in saving ", str(ex))
             try:
                 u_obj, is_created = model_unit_soldiers.objects.get_or_create(period=period_obj, soldier=soldier_obj)
                 u_obj.unit_number = n__
@@ -4696,7 +4696,7 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
         return result
 
     def update_soldiers_info(self, dic):
-        # print('90022-1 dic', dic)
+        print('90022-1 dic', dic)
         def get_unit_number(units_dic_, title):
             h = -1
             for k_ in units_dic_:
@@ -4714,19 +4714,24 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
         model_inventorys = apps.get_model(app_label=app_, model_name="inventorys")
         model_inventoryfact = apps.get_model(app_label=app_, model_name="inventoryfact")
         #
-        battalion_number_ = int(self.uploaded_filename.split(".")[0])
+        # print(self.uploaded_filename)
+        s = self.uploaded_filename.split("_")
+        battalion_number_ = int(s[0])
+        period_number_ = int(s[1])
+        # print(battalion_number_, period_number_)
+        #
         model_periods = apps.get_model(app_label=app_, model_name="periods")
         model_battalions = apps.get_model(app_label=app_, model_name="battalions")
         model_unit_soldiers = apps.get_model(app_label=app_, model_name="unitsoldiers")
         model_soldiers = apps.get_model(app_label=app_, model_name="soldiers")
         battalion_obj = model_battalions.objects.get(battalion_number=battalion_number_)
-        period_obj = model_periods.objects.get(battalion=battalion_obj, period_number=1)
+        period_obj = model_periods.objects.get(battalion=battalion_obj, period_number=period_number_)
         units_dic = period_obj.structure
         df = pd.read_excel(file_path, sheet_name="Data", header=0)
-        # print(df)
-        # print("-"*100)
-        columns = df.columns[9:]
-        print("columns\n", columns)
+        # print(df, "\n", "-"*100)
+        columns = df.columns[10:]
+        # print("columns\n", columns)
+
         for index, row in df.iterrows():
             print(index)
             # if index < 545:
@@ -4756,9 +4761,26 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
                 u.save()
             except Exception as ex:
                 print("9011-11 Error " + str(ex))
+                try:
+                    u_sername_ = "U"+str(row["dshn"])
+                    print("creating", u_sername_)
+                    my_group, is_created = Group.objects.get_or_create(name='t_simple_user')
+                    u = User.objects.create_user(username=username_, email=username_ + '@gmail.com',
+                                                 password=u_sername_ + '#')
+                    # print(u.password)
+                    u.first_name = first_name
+                    u.last_name = last_name
+                    u.save()
+                    # print(u)
+                    my_group.user_set.add(u)
+                    my_group.save()
+                except Exception as ex:
+                    print("9011-11 Error " + str(ex))
             # Soldiers
             try:
-                soldier_obj = model_soldiers.objects.get(user=u)
+                # soldier_obj = model_soldiers.objects.get(user=u)
+                soldier_obj, is_created = model_soldiers.objects.get_or_create(user=u)
+                soldier_obj.battalion = battalion_obj
                 soldier_obj.first_name = first_name
                 soldier_obj.last_name = last_name
                 soldier_obj.userid = userid
@@ -4767,6 +4789,7 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
                 soldier_obj.save()
             except Exception as ex:
                 print("9011-22-1 Error " + str(ex))
+
             try:
                 soldier_obj.clothes_size = clothes_size
                 soldier_obj.save()
@@ -4786,11 +4809,11 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
                 soldier_obj.ramonsn = ramonsn
                 soldier_obj.save()
             except Exception as ex:
-                print("9011-22-5 Error " + str(ex))
+                print("9011-22-5 Error ", ramonsn, str(ex))
             try:
                 soldier_obj.save()
             except Exception as ex:
-                print("9011-22-10 Error " + str(ex))
+                print("9011-22-10 Error in saving ", str(ex))
             try:
                 u_obj, is_created = model_unit_soldiers.objects.get_or_create(period=period_obj, soldier=soldier_obj)
                 k = get_unit_number(units_dic, platoon_name_)
@@ -4815,10 +4838,6 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
                     # print(k)
                     inventory_obj = model_inventorys.objects.get(item_name=k)
                     # print("inventory_obj", inventory_obj)
-                except Exception as ex:
-                    print("9011-55 Error " + str(ex))
-
-                try:
                     f_obj, is_created = model_inventoryfact.objects.get_or_create(inventory=inventory_obj, soldier=soldier_obj)
                     f_obj.value=v_
                     f_obj.save()
@@ -4864,23 +4883,30 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
         return result
 
     def set_new_structure(self, dic):
-        # print('90088-1 dic', dic)
+        print('90088-1 dic', dic)
         clear_log_debug()
         log_debug("Start 1")
         app_ = dic["app"]
         try:
             ll = eval(dic["sheet_name"])
-            battalion_name = ll[0]
-            battalion_id = int(ll[1])
-            period_number = int(ll[2])
-            n_limit = int(ll[3])
             # print("battalion_id, period_number", battalion_name, battalion_id, period_number, n_limit)
 
-            units_dic = {battalion_id: {'title': battalion_name, 'data': {}}}
             log_debug("Start 2")
             file_path = self.upload_file(dic)["file_path"]
             log_debug(file_path)
+            # print(file_path)
 
+            s = self.uploaded_filename.split("_")
+            battalion_number_ = int(s[0])
+            period_number = int(s[2])
+            battalion_name = "Battalion " + s[0]
+            n_limit = int(ll[0])
+            model_battalion = apps.get_model(app_label=app_, model_name="battalions")
+            battalion_obj = model_battalion.objects.get(battalion_number=battalion_number_)
+            battalion_id = battalion_obj.id
+
+            units_dic = {battalion_id: {'title': battalion_name, 'data': {}}}
+            # print("s", s, "battalion_number_", battalion_number_, "period_number", period_number, "battalion_name", battalion_name, "n_limit", n_limit, "battalion_id", battalion_id)
             # print(file_path)
             df = pd.read_excel(file_path, sheet_name="Data", header=0)
             # print(df)
@@ -4890,8 +4916,6 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
             columns = df.columns[11:]
             # print("2 columns\n", columns)
 
-            model_battalion = apps.get_model(app_label=app_, model_name="battalions")
-            battalion_obj = model_battalion.objects.get(id=battalion_id)
             try:
                 model_inventorys = apps.get_model(app_label=app_, model_name="inventorys")
                 model_inventoryfact = apps.get_model(app_label=app_, model_name="inventoryfact")

@@ -271,6 +271,8 @@ function AdvancedTabsManager(dic=null)
  this.tab = {"functions":[],
              "settings_list":{"button_color":[],"button_bg_color":[],
                               "font-weight":["normal","lighter","bold","900"],
+                              "width":[],
+                              "border_radius":[],
                               "tab_name":[],
                               "tab_type":["simple", "navmulti", "navone"],
                               "tab_order":[],"tab_title":[],"link_number":[]},
@@ -1731,6 +1733,7 @@ acBasicCreator.prototype.set_board_data = function(ll=[])
      style_+="border-style:solid;border-width:0px;border-color:blue;border-radius:10px;display: flex;align-items: center;justify-content: center;"
      div_.setAttribute("style", style_);
 
+    if(j<3){
       var data = [
           {
             type: "indicator",
@@ -1748,7 +1751,6 @@ acBasicCreator.prototype.set_board_data = function(ll=[])
             }
           }
         ];
-
         var layout = {
         autosize: false,
           title: { text: kpi[j]["title"], font: { size: 15 } },
@@ -1758,6 +1760,31 @@ acBasicCreator.prototype.set_board_data = function(ll=[])
           showlegend: false,
           font: { color: "darkblue", family: "Arial" }
         };
+    } else{
+        var data = [
+          {
+            type: "indicator",
+            mode: "number+delta+gauge",
+            value: kpi[j]["grade"],
+            gauge: {
+              shape: "bullet",
+              axis: {visible: false, range: [0, 100]},
+              bar: { color: "white" },
+              steps: [{ range: [0, 60], color: "red" },{ range: [60, 100], color: "green" }],
+            }
+          }
+        ];
+        var layout = {
+        autosize: false,
+          title: { text: kpi[j]["title"], font: { size: 15 } },
+          width: 150,height: 100,
+          margin: {l: 5, r: 5, b: 10, t: 20,  pad: 1 },
+          paper_bgcolor: container_.style.backgroundColor,
+          showlegend: false,
+          font: { color: "darkblue", family: "Arial" }
+        };
+     }
+
 
         Plotly.newPlot(div_, data, layout, {displayModeBar: false});
 
@@ -7267,7 +7294,10 @@ Tab.prototype.create_btn_container = function(data)
  //alert(JSON.stringify(data["properties"]));
  var pp=data["properties"]
   this.btn=document.createElement("button");
-  var s_style="color:"+pp["button_color"]+";background-color:"+pp["button_bg_color"]+";font-weight:"+pp["font-weight"]
+
+  var s_style="color:"+pp["button_color"]+";background-color:"+pp["button_bg_color"]+";font-weight:"
+  s_style+=pp["font-weight"]+";border-radius:"+pp["border_radius"]+";width:"+pp["width"]+"px"
+
   this.btn.setAttribute("style", s_style);
   this.btn.setAttribute("link_number", this.link_number);
   this.btn.parent=this;
