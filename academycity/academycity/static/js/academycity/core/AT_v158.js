@@ -122,7 +122,12 @@ function AdvancedTabsManager(dic=null)
                                                   "attributes":{},
                                                   "functions":["onclick", "onchange", "onmouseover", "onmouseout"]},
                                         "Group":{"title":"G", "width":3,
-                                                  "setting": {"setup_dictionary":[], "entity":[], "width":[], "height":[],
+                                                  "setting": {"setup_dictionary":[], "entity":[], "width":[],
+                                                  //"height":[],
+                                                              "color":[], "background_color":[],
+                                                              "border_style":["none","solid","Dotted","dashed",
+                                                                   "double","groove","ridge","inset","outset","hidden"],
+                                                              "border_width":[],"border_color":[], "border_radius":[],
                                                               "table":[], "field":[], "value_field":[],
                                                               "recording_tests_number":[],
                                                               "present":["","groups", "detail"]},
@@ -244,6 +249,7 @@ function AdvancedTabsManager(dic=null)
                                        "Grades":{"title":"Grades", "width":20,
                                                    "attributes":{"table_class":["","basic", "payment"]},
                                                    "setting": {"app":[],"table":[],"vertical_field":[],
+                                                   "image":[],
                                                    "horizontal_field":[],"horizontal_title":[],"value_field":[], "order_by":[]},
                                                    "functions":["on_amount_paint", "on_receive_data", "onclick", "onmouseover", "onmouseout"]
                                                   },
@@ -1517,6 +1523,7 @@ acDashboard.prototype.create_obj = function(){this.creator.create_obj();}
 
 // -- acBasicCreator --
 function acBasicCreator(parent){this.parent=parent;
+  this.nav_width=33;
  //alert(JSON.stringify(this.parent.data));
  if(atm.grades==null){
   atm.grades={};atm.data_dic={};atm.is_run_set_obj_structure=false;atm.nlimit=-1;
@@ -1541,7 +1548,6 @@ acBasicCreator.prototype.get_board = function(dic_,pp_, style_)
 
 acBasicCreator.prototype.create_obj = function()
 {
-  this.nav_width=33;
   var dic=this.parent.data;
   var pp_=dic["properties"];
   var ll_boards=["battalion","company","platoon","section"]
@@ -1583,7 +1589,7 @@ acBasicCreator.prototype.create_obj = function()
      if(pp_["border_radius"]!=null && pp_["border_radius"]!=""){style_+="border-radius:"+pp_["border_radius"]+"px;"}
 
   this.nav=document.createElement("div");this.nav.my_creator_obj=this;
-  var style_nav="float:left;width:33px;"
+  var style_nav="float:left;width:"+this.nav_width+"px;"
   this.nav.setAttribute("style", style_nav)
   this.main_div.appendChild(this.nav);
   this.board_objs = {}
@@ -1632,43 +1638,6 @@ acBasicCreator.prototype.get_grade = function(skill_id, unit_id)
 // https://plotly.com/javascript/pie-charts/
 // https://www.alt-codes.net/smiley_alt_codes.php
 
-// var e=["😃","🙂","😐","☹️"]
-
-//var data = [
-//  {
-//    type: "indicator",
-//    mode: "gauge+number+delta",
-//    value: 80,
-//    title: { text: "Fitness", font: { size: 24 } },
-//    delta: { reference: 60, increasing: { color: "RebeccaPurple" } },
-//    gauge: {
-//      axis: { range: [null, 100], tickwidth: 1, tickcolor: "darkblue" },
-//      bar: { color: "white" },
-//      bgcolor: "darkblue",
-//      borderwidth: 2,
-//      bordercolor: "gray",
-//      steps: [
-//        { range: [0, 50], color: "red" },
-//        { range: [70, 100], color: "green" }
-//      ],
-//      threshold: {
-//        line: { color: "red", width: 4 },
-//        thickness: 0.75,
-//        value: 90
-//      }
-//    }
-//  }
-//];
-//
-//var layout = {
-//  width: 500,
-//  height: 400,
-//  margin: { t: 25, r: 25, l: 25, b: 25 },
-//  paper_bgcolor: "lavender",
-//  font: { color: "darkblue", family: "Arial" }
-//};
-//
-//Plotly.newPlot('myDiv', data, layout);
 
 acBasicCreator.prototype.set_board_data = function(ll=[])
 {
@@ -1784,9 +1753,7 @@ acBasicCreator.prototype.set_board_data = function(ll=[])
           font: { color: "darkblue", family: "Arial" }
         };
      }
-
-
-        Plotly.newPlot(div_, data, layout, {displayModeBar: false});
+     Plotly.newPlot(div_, data, layout, {displayModeBar: false});
 
      //-- Grade --
      w_kpi_=w_kpi_+1*(1*w_kpi+1*wb_kpi);
@@ -1845,8 +1812,17 @@ acBasicCreator.prototype.set_board_data = function(ll=[])
 
   } else {
       k +=1
+      var col_width=110;
+      var soldier_col_width=350
+      this.fields_skills=["Fitness","Shooting","Professional","Equipment"]
+      var n_left=(1*width_-this.fields_skills.length*col_width-soldier_col_width-this.nav_width)/2+this.nav_width
       color__="lightblue"
       var div_=document.createElement("div");
+      var style_ = "position:absolute;left:"+n_left+"px;top:"+(th2_+20)+"px;height:"+(height_/2.5)+"px;"
+      style_+="border-style:solid;border-width:0px;border-color:blue;display: flex;"
+      style_+="background-color:"+color__+";align-items: center;justify-content: center;"
+      div_.setAttribute("style", style_);
+
       div_.ll=ll_;div_.obj=this;
       div_.addEventListener("click", function(event){
        var e=event.target;var dic=this.obj.parent.data;
@@ -1854,32 +1830,26 @@ acBasicCreator.prototype.set_board_data = function(ll=[])
         //alert(e.outerHTML)
         //alert("90441-750  "+JSON.stringify(this.ll));
       })
-      var style_ = "position:absolute;left:50px;top:"+(th2_+20)+"px;height:"+(height_/2.5)+"px;"
-      style_+="border-style:solid;border-width:0px;border-color:blue;display: flex;"
-      style_+="background-color:"+color__+";align-items: center;justify-content: center;"
-      div_.setAttribute("style", style_);
+
       var s='s_data=atm.units_structure';for(var w=0;w<ll.length;w++){s+='[ll['+w+']]["data"]'};eval(s);
       //alert("90441-750  \n"+JSON.stringify(s_data));
 
-      this.fields_skills=["Fitness","Shooting","Professional","Equipment"]
       var s="<table class='basic' style='display: block;height:"+(Math.round(height_/2.5))+"px;overflow-y: auto;'><tr>"
-      s+="<th style='width:350px'>Name</th>"
-      for(var i in this.fields_skills){s+="<th style='width:100px'>"+this.fields_skills[i]+"</th>";}
+      s+="<th style='width:"+soldier_col_width+"px'>Name</th>"
+      for(var i in this.fields_skills){s+="<th style='width:"+col_width+"px'>"+this.fields_skills[i]+"</th>";}
       s+="</tr>"
       s+="<tbody >"
       for(var s_ in s_data){
-       s+="<tr><td soldier_id='"+s_+"' style='width:350px'>"+s_data[s_]["title"]+"</td>"
+       s+="<tr><td soldier_id='"+s_+"' style='width:"+soldier_col_width+"px'>"+s_data[s_]["title"]+"</td>"
        for(var i in this.fields_skills)
        {
         var grade=this.get_grade(skill_id=i, unit_id=s_);
-
         var color="white";var background_color = "green"; var img_="&#128512;"
-
         if(grade==0){color="black";background_color = "white"; var img_=""}
         else if(grade<atm.general.pass_grade)
         {background_color="red"; color="white";var img_="&#128514"}
-        s+="<td style='text-align:center;width:100px;color:"+color+";background-color:"+background_color+"'>"+grade+" "+img_+"</td>"
-
+        if(grade<100){grade="&nbsp;&nbsp;"+grade}
+        s+="<td style='text-align:center;width:100px;color:"+color+";background-color:"+background_color+"'>"+grade+"&nbsp;&nbsp;&nbsp;&nbsp;"+img_+"</td>"
        }
        s+="</tr>"
       }
@@ -2007,25 +1977,25 @@ acReport.prototype.create_obj = function(){
                                this.data["properties"]["value_field"]
                               ]
                     }
-  var dic=this.data;
+  var dic=this.data;var pp_=dic["properties"]
   var container = document.getElementById("content_"+dic["container_id"]);
   this.table_=document.createElement("table");this.table_.my_creator_obj=this;
   container.appendChild(this.table_);
-  if(!(dic["properties"]["table_class"])){dic["properties"]["table_class"]="basic"}
-  this.table_.setAttribute("class", dic["properties"]["table_class"]);
+  if(!(pp_["table_class"])){pp_["table_class"]="basic"}
+  this.table_.setAttribute("class", pp_["table_class"]);
   this.table_.setAttribute("container_id", dic["container_id"]);
-  this.table_.setAttribute("id", dic["properties"]["obj_number"]);
+  this.table_.setAttribute("id", pp_["obj_number"]);
   this.table_.setAttribute("obj_type", dic["obj_type"]);
   this.table_.setAttribute("type", dic["element_name"]);
 
   for (i in dic["attributes"]){var s=dic["attributes"][i];
-   if(s in dic["properties"]){this.table_.setAttribute(s, dic["properties"][s])}
+   if(s in pp_){this.table_.setAttribute(s, pp_[s])}
    else{this.table_.setAttribute(s, "")}}
 
   for(f in dic["functions"]){if(f!="onclick" && f!="on_receive_data"  && f!="on_amount_paint")
   {var s="this.table_."+f+"="+dic["functions"][f];eval(s);}}
 
-  this.table_.setAttribute("style", "position:absolute;left:"+dic["properties"]["x"]+"px;top:"+dic["properties"]["y"]+"px");
+  this.table_.setAttribute("style", "position:absolute;left:"+pp_["x"]+"px;top:"+pp_["y"]+"px");
 
   this.thead=document.createElement("thead");
   this.thead.setAttribute("style", "display: block;overflow-x: hidden;");
@@ -2038,14 +2008,17 @@ acReport.prototype.create_obj = function(){
   var td = document.createElement("td");
   td.setAttribute("style", "background-color:black; color:white");
 
-  td.innerHTML=dic["element_name"]+" Table";this.tr_h.appendChild(td);
+  var img_=pp_["image"];if(img_==null || img_==""){img_="default_table_img.png"}
+  td.innerHTML="<img id='img_"+pp_["obj_number"]+"' src='/media/training/images/"+img_+"' style='width:300px;height:300x;'>";
+
+  this.tr_h.appendChild(td);
 
   this.tr_h.setAttribute("style","cursor:pointer");
   this.thead.appendChild(this.tr_h);
 
   this.tbody=document.createElement("tbody");this.tbody.my_creator_obj=this;
-  this.tbody.setAttribute("id", "tbody_"+dic["properties"]["obj_number"]);
-  this.tbody.setAttribute("style", "display: block;height: "+dic["properties"]["height"]+"px;overflow-y: auto;overflow-x: hidden;");
+  this.tbody.setAttribute("id", "tbody_"+pp_["obj_number"]);
+  this.tbody.setAttribute("style", "display: block;height: "+pp_["height"]+"px;overflow-y: auto;overflow-x: hidden;");
   this.table_.appendChild(this.tbody);
   this.table_.onclick=this.row_col_click;
 }
@@ -2284,7 +2257,7 @@ acFSPivotCreator.prototype.row_col_click = function(event)
  }
 }
 
-// --
+// -- acgrades --
 function acGradesCreator(parent){
   this.parent=parent;
   //try{alert("90000-121  "+JSON.stringify(this.parent.data)) } catch(er){alert(er)}
@@ -2494,25 +2467,18 @@ try{
       this_obj.parent.tr_h.innerHTML=tt_["all"]["thead"];
       this_obj.parent.tbody.innerHTML=tt_["all"]["body"];
     }
+
+    //-- need async to make this work --
+    try{
+    var pp_=this.parent.data["properties"]; var td = document.createElement("td");
+    var img_=pp_["image"];if(img_==null || img_==""){img_="loading.png"}
+    td.innerHTML="<img id='img_"+pp_["obj_number"]+"' src='/media/training/images/"+img_+"' style='width:300px;height:300x;'>";
+    this.parent.tr_h.innerHTML=td.outerHTML;this.parent.tbody.innerHTML="";
+    }catch(er){}
+    //
     atm.activate_obj_function(fun, dic, this)
  }
 
- // group_list=null, test_list=null
- var dic={"1":{"title":"battalion 1","data":
-        {"1":{"title":"XRAY", "data":{
-                  "1":{"title":"XRAY 1", "data":{
-                                  "2036":{"title":"231001:name", "model":"soldier", "data":{}},
-                                  "2037":{"title":"231002:name", "model":"soldier", "data":{}}
-                  }},
-                  "2":{"title":"XRAY 2", "data":{}},
-                  "3":{"title":"XRAY 3", "data":{}},
-                  "4":{"title":"XRAY 4", "data":{}}
-                 }
-              },
-         "2":{"title":"Yakee"},
-         "3":{"title":"Zulu"}
-        }
-        }}
 }
 
 // -- acAdmin --
@@ -3954,10 +3920,10 @@ acTestCreator.prototype.obj_was_clicked = function(e)
 acTestCreator.prototype.set_data = function(record_id, ll=null)
 {
   this.clean_data();if(ll!=null){for(var i in ll){get_creator(ll[i]).clean_data()}}
-  var dic=this.parent.data;
-  this.recording_tests_number=dic["properties"]["recording_tests_number"];
+  var dic=this.parent.data;var pp_=dic["properties"];
+  this.recording_tests_number=pp_["recording_tests_number"];
   //alert("acRadioCreator 90446-16  "+JSON.stringify(dic));
-  var model_=dic["properties"]["table"]
+  var model_=pp_["table"]
   var container = document.getElementById("content_"+dic["container_id"]);
   var parent_model_=container.my_creator_obj.link_dic["properties"]["table"];
      var dic_={"model":model_, "parent_model":parent_model_, "parent_id": record_id, "number_of_rows": "1000",
@@ -4212,12 +4178,9 @@ acGroupCreator.prototype.get_entity_list = function(e_dic)
 
 acGroupCreator.prototype.create_obj = function()
 {
-  var dic=this.parent.data;var pp_=dic["properties"]
-  this.recording_tests_number=dic["properties"]["recording_tests_number"];
+  var dic=this.parent.data;var pp_=dic["properties"];
   var field=dic["properties"]["field"]; this.fields.push(field);
   var value_field=dic["properties"]["value_field"]; this.fields.push(value_field);
-  var width_=dic["properties"]["width"]; if(width_==null || width_==""){width_=80};
-  var height_=dic["properties"]["height"]; if(height_==null || height_==""){height_=300};
   var container = document.getElementById("content_"+dic["container_id"]);
    //alert("90100-2 acGroupCreator.prototype.create_obj\n"+JSON.stringify(dic));
   var obj_number = dic["properties"]["obj_number"]
@@ -4227,7 +4190,20 @@ acGroupCreator.prototype.create_obj = function()
   this.main_div.setAttribute("id", obj_number);
   this.main_div.setAttribute("obj_type", dic["obj_type"]);
   this.main_div.setAttribute("type", dic["element_name"]);
-  var style_ = "position:absolute;left:"+dic["properties"]["x"]+"px;top:"+dic["properties"]["y"]+"px;width:"+width_+"%"
+  var style_ = "position:absolute;left:"+pp_["x"]+"px;top:"+pp_["y"]+"px;"
+
+  var width_=pp_["width"]; if(width_==null || width_==""){width_=200};style_+="width:"+width_+"px;"
+  //var height_=pp_["height"]; if(height_==null || height_==""){height_=300};
+
+  var bs_=pp_["border_style"];if(bs_!=null && bs_!=""){style_+="border-style:"+bs_+";"}
+  var bw_=pp_["border_width"];if(bw_!=null && bw_!=""){style_+="border-width:"+bw_+"px;"}
+  var bc_=pp_["border_color"];if(bc_!=null && bc_!=""){style_+="border-color:"+bc_+";"}
+  var br_=pp_["border_radius"];if(br_!=null && br_!=""){style_+="border-radius:"+br_+"px;"}
+  var c_=pp_["color"];if(c_!=null && c_!=""){style_+="color:"+c_+";"}
+  var bgc_=pp_["background_color"];if(bgc_!=null && bgc_!=""){style_+="background-color:"+bgc_+";"}
+
+//alert(style_)
+
   this.main_div.setAttribute("style", style_);
   this.main_div.setAttribute("class", "row");
   this.main_div.setAttribute("container_id", dic["container_id"]);
@@ -4313,70 +4289,71 @@ acGroupCreator.prototype.obj_was_clicked = function(e)
   //alert("90100-10\nacGroupCreator.prototype.obj_was_clicked\n "+e.outerHTML);
 }
 
-var a=function (event){
- try{
-
- var f=function(dic)
- {var ll=[];
-  for(var k in dic){ll.push(k)};return ll}
-
- var e=event.target;
- var sid="s"+e.getAttribute("id")
- var s=getEBI(sid)
- var l=s.getAttribute("link")
-
-if(l==null){
- var my_c_m=
-  e.getAttribute("my_class_members")
- var c =
-  document.getElementsByClassName(my_c_m)[0]
- var etype_=e.getAttribute("type")
- if(etype_=="checkbox"){
-    var cc=c.getElementsByTagName("input");
-    var n_=0;var ll_=[]
-    for(k in cc){
-         cc[k].checked=e.checked;
-         var n_=0;
-         try{var sid=
-             "s"+cc[k].getAttribute("id");
-           var s=getEBI(sid);
-           var l=s.getAttribute("link");
-           l=l.replace("this",
-            "atm.general");
-           var l=eval(l);
-           var ll=f(l);ll_=ll_.concat(ll)
-         } catch(er){}
-    }
-    var group_dic_={"checked": e.checked,
-     "entities":ll_, "entity_name":"soldier"}
-    var gt=get_creator(16);
-    gt.creator.set_obj_structure(
-     tests_dic=null,
-     group_dic=group_dic_,
-     tests_config=atm.general.test_dic,
-     entity_config=atm.general.soldiers_dic)
-   }
- } else
- {
-   //alert(l);alert(e.checked)
-   l=l.replace("this", "atm.general");
-   var l=eval(l)
-   var ll=f(l)
-   //alert(JSON.stringify(ll));
-
-   var gt=get_creator(16);
-   var group_dic_={"checked": e.checked,
-    "entities":ll, "entity_name":"soldier"}
-   gt.creator.set_obj_structure(
-     tests_dic=null,
-     group_dic=group_dic_,
-     tests_config=atm.general.test_dic,
-     entity_config=atm.general.soldiers_dic
-   )
- }
-
-} catch(er){alert('err 9016-1: '+er)}
-}
+// to delete --
+//var a=function (event){
+// try{
+//
+// var f=function(dic)
+// {var ll=[];
+//  for(var k in dic){ll.push(k)};return ll}
+//
+// var e=event.target;
+// var sid="s"+e.getAttribute("id")
+// var s=getEBI(sid)
+// var l=s.getAttribute("link")
+//
+//if(l==null){
+// var my_c_m=
+//  e.getAttribute("my_class_members")
+// var c =
+//  document.getElementsByClassName(my_c_m)[0]
+// var etype_=e.getAttribute("type")
+// if(etype_=="checkbox"){
+//    var cc=c.getElementsByTagName("input");
+//    var n_=0;var ll_=[]
+//    for(k in cc){
+//         cc[k].checked=e.checked;
+//         var n_=0;
+//         try{var sid=
+//             "s"+cc[k].getAttribute("id");
+//           var s=getEBI(sid);
+//           var l=s.getAttribute("link");
+//           l=l.replace("this",
+//            "atm.general");
+//           var l=eval(l);
+//           var ll=f(l);ll_=ll_.concat(ll)
+//         } catch(er){}
+//    }
+//    var group_dic_={"checked": e.checked,
+//     "entities":ll_, "entity_name":"soldier"}
+//    var gt=get_creator(16);
+//    gt.creator.set_obj_structure(
+//     tests_dic=null,
+//     group_dic=group_dic_,
+//     tests_config=atm.general.test_dic,
+//     entity_config=atm.general.soldiers_dic)
+//   }
+// } else
+// {
+//   //alert(l);alert(e.checked)
+//   l=l.replace("this", "atm.general");
+//   var l=eval(l)
+//   var ll=f(l)
+//   //alert(JSON.stringify(ll));
+//
+//   var gt=get_creator(16);
+//   var group_dic_={"checked": e.checked,
+//    "entities":ll, "entity_name":"soldier"}
+//   gt.creator.set_obj_structure(
+//     tests_dic=null,
+//     group_dic=group_dic_,
+//     tests_config=atm.general.test_dic,
+//     entity_config=atm.general.soldiers_dic
+//   )
+// }
+//
+//} catch(er){alert('err 9016-1: '+er)}
+//}
 
 
 
@@ -4410,7 +4387,7 @@ acGroupCreator.prototype.set_obj_structure = function(display_="none", nlimit=-1
         {s+='my_members_status="empty" link="'+s_link_+'"'}
         s+='my_class_members'+pp_["obj_number"]+'="'+class_+'">+</span>'
         s+='<input type="checkbox" id="'+id_+'" '
-        s+='my_class_members'+pp_["obj_number"]+'="'+class_+'" my_class_members="'+class_+'" ><label>'+title+'</label><br/>'
+        s+='my_class_members'+pp_["obj_number"]+'="'+class_+'" my_class_members="'+class_+'" style="cursor:pointer;"><label>'+title+'</label><br/>'
         //alert(s)
         d_div.innerHTML+=s;
         var d_div_=document.createElement("div");
@@ -4451,8 +4428,11 @@ acGroupCreator.prototype.set_data = function(record_id=null, ll=null)
   // --
    try{this.open_close_lists(0)} catch(er){}
   // --
-  var dic=this.parent.data;
+  var dic=this.parent.data;var pp_=dic["properties"];
     //alert("90333-103\n"+JSON.stringify(dic));
+
+  this.recording_tests_number=pp_["recording_tests_number"];
+
   var model_=dic["properties"]["table"]
   var container = document.getElementById("content_"+dic["container_id"]);
   var parent_model_=container.my_creator_obj.link_dic["properties"]["table"];
@@ -4492,16 +4472,15 @@ acGroupCreator.prototype.set_data = function(record_id=null, ll=null)
 
     //alert("90333-103\n"+JSON.stringify(this_obj.members_list));
 
-try{
-     var g = get_creator(this_obj.recording_tests_number)
-     g.set_obj_structure(group_list=this_obj.members_list, test_list=null)
-     } catch(er){alert("Error 200-200-1 "+er)}
+    try{
+      var g = get_creator(this_obj.recording_tests_number)
+      g.set_obj_structure(group_list=this_obj.members_list, test_list=null)
+    } catch(er){alert("Error 200-200-1 "+er)}
 
-try{
-     get_creator(this_obj.recording_tests_number).set_data(record_id)
-     } catch(er){alert("Error 200-200-2 "+er)}
-
-  }
+    try{
+      get_creator(this_obj.recording_tests_number).set_data(record_id)
+      } catch(er){alert("Error 200-200-2 "+er)}
+    }
 
   //alert("90555-55\n"+JSON.stringify(dic_));
   this.parent.atm.get_data(call_back_fun=fun, dic_, this)
@@ -4595,12 +4574,15 @@ acRecordingTestsCreator.prototype.set_obj_structure = function(group_list=null, 
   //alert("acRecordingTests 90000-033\n\n"+JSON.stringify(group_list));
   //--
   this.test_dic = eval("this.parent.atm.general.test_dic")
+
+  //alert("this.test_dic 90000-035\n\n"+JSON.stringify(this.test_dic));
   //--
   var dic=this.parent.data;
   var width_=80;var userid_width_=dic["properties"]["userid_width"];
   var name_width_=dic["properties"]["name_width"];
  if(test_list!=null){this.horizontal_field_list=test_list}
  if(group_list!=null){this.vertical_field_list=group_list}
+
  if(this.horizontal_field_list!=null && this.vertical_field_list!=null)
  {
   //alert("acRecordingTests 90000-033\n\n"+JSON.stringify(this.vertical_field_list)+"\n"+JSON.stringify(this.horizontal_field_list));
@@ -4683,7 +4665,9 @@ acRecordingTestsCreator.prototype.set_obj_structure = function(group_list=null, 
    }
    //alert("acRecordingTests entity_dic 90000-040\n\n"+JSON.stringify(this.matching_set["name"]));
    this.tbody_.innerHTML=this.create_sorted_structure(v_list, width_, field, container_id, table)
+
  }
+
  try{if(this.data != null){this.fill_up_data(this.data, this)}} catch(er){alert(er)}
 }
 
@@ -4738,7 +4722,7 @@ acRecordingTestsCreator.prototype.set_data = function(record_id, ll=null)
 
 acRecordingTestsCreator.prototype.fill_up_data = function(data, this_obj)
 {
-  //alert("943010: "+JSON.stringify(data));
+  //alert("943016: "+JSON.stringify(data));
   //alert("acRecordingTests this_obj.test_dic 93300-033\n\n"+JSON.stringify(this_obj.test_dic));
   //alert("acRecordingTests this_obj.test_dic 93300-035\n\n"+JSON.stringify(this_obj.horizontal_field_list));
     this_obj.data=data;
@@ -7296,7 +7280,7 @@ Tab.prototype.create_btn_container = function(data)
   this.btn=document.createElement("button");
 
   var s_style="color:"+pp["button_color"]+";background-color:"+pp["button_bg_color"]+";font-weight:"
-  s_style+=pp["font-weight"]+";border-radius:"+pp["border_radius"]+";width:"+pp["width"]+"px"
+  s_style+=pp["font-weight"]+";border-radius:"+pp["border_radius"]+";width:"+pp["width"]+"px;cursor:pointer"
 
   this.btn.setAttribute("style", s_style);
   this.btn.setAttribute("link_number", this.link_number);
@@ -7507,7 +7491,7 @@ Tab.prototype.get_pop_win_obj = function(dic)
 
   //s+=' alert(this.name+"--1-- "+b);'
   s+=' eval("var nbw=new MenuBtnWin"+b+"(parent=this)");'
-  s+=' nbw.btn.click();'
+  s+=' nbw.btn.is_run_first_sub_menu=false;nbw.btn.click();nbw.btn.is_run_first_sub_menu=true'
   s+='};'
   s+='try{this.__set_panel___'+link_number+'(this)} catch(er){alert("er9026: "+ er)};';
  }
@@ -7916,6 +7900,9 @@ try{
         eval('SubMenuBtn'+this.win.my_name+b+'=this.menu_btn_win.get_sub_button_obj_win(b,buttons[b]["title"],obj_type)');
         eval('this.menu_btn_win.my_sub_objs[b] = new SubMenuBtn'+this.win.my_name+b+'(parent=this.menu_btn_win)');
       }
+   if(this.is_run_first_sub_menu){
+    this.menu_btn_win.my_sub_objs[b].btn.click()
+   }
    } catch(er){alert("er202: "+er)}
    try{
       for(m in this.win.main_menus)
@@ -7956,7 +7943,6 @@ return eval(s);
 // -- MenuBtn --
 function MenuBtn(parent, my_name_, my_title, buttons, obj_type, width="width:10%;")
 {
-
  this.parent=parent;
  this.my_name=my_name_;
  this.my_title = my_title;
@@ -7987,7 +7973,8 @@ function MenuBtn(parent, my_name_, my_title, buttons, obj_type, width="width:10%
          {this.parent.parent.main_menus[m].btn.className=this.parent.parent.main_menus[m].btn.className.replace(" active", "")}
          try{this.className+=" active";  } catch(er){}
    } catch(er){alert("er2031: "+er)}
-   try{this.parent.create_main_content();
+   try{
+     this.parent.create_main_content();
    } catch(er){alert("er201: "+er)}
  }
  this.parent.main_menu.appendChild(this.btn);
@@ -8247,10 +8234,10 @@ TabNavLinkitem_click = function(obj, event)
 }
 
 
-// -- PopWin --
+// -- PopWin create_main_content--
 PopWin_create_main_content = function()
 {
-
+ //alert(11111)
 }
 
 PopWinNewPopWin_click = function(obj, event)

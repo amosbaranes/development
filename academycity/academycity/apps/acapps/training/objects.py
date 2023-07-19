@@ -4733,7 +4733,7 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
         # print("columns\n", columns)
 
         for index, row in df.iterrows():
-            print(index)
+            # print(index)
             # if index < 545:
             #     continue
             # print(row, "\n", row["company"])
@@ -4749,11 +4749,10 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
             first_name = full_name[:nnf]
             last_name = full_name[nnf+1:]
             rank = str(row["rank"])
-            clothes_size = str(row["clothes_size"])
-            shoes_size = str(row["shoes_size"])
+            clothes_size = str(row["clothes_size"]).strip()
+            shoes_size = str(row["shoes_size"]).strip()
             mz4psn = str(row["mz4psn"])
             ramonsn = str(row["ramonsn"])
-
             try:
                 u = User.objects.get(username=username_)
                 u.first_name = first_name
@@ -4763,7 +4762,7 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
                 print("9011-11 Error " + str(ex))
                 try:
                     u_sername_ = "U"+str(row["dshn"])
-                    print("creating", u_sername_)
+                    # print("creating", u_sername_)
                     my_group, is_created = Group.objects.get_or_create(name='t_simple_user')
                     u = User.objects.create_user(username=username_, email=username_ + '@gmail.com',
                                                  password=u_sername_ + '#')
@@ -4823,7 +4822,6 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
                 # print("saved: "+ str(n__))
             except Exception as ex:
                 print("error 200: ", full_name)
-
             # Update inventory
             for k in columns:
                 # print("\n", "-"*20, "\n", k, "\n", userid, "\n", "-"*20)
@@ -4832,17 +4830,22 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
                     v = 1
                     # if not v.isnumeric():
                     #     v = v[1:]
-                v_ = int(v)
+                try:
+                    v_ = int(v)
+                except Exception as ex:
+                    continue
                 # print("="+k+"=", v_)
                 try:
                     # print(k)
                     inventory_obj = model_inventorys.objects.get(item_name=k)
                     # print("inventory_obj", inventory_obj)
+
                     f_obj, is_created = model_inventoryfact.objects.get_or_create(inventory=inventory_obj, soldier=soldier_obj)
                     f_obj.value=v_
                     f_obj.save()
                     # print("f_obj", f_obj)
                 except Exception as ex:
+                    print(ex)
                     print("9011-55 Error \n", k, v_, userid, str(ex))
         # -----
         result = {"status": "ok"}
