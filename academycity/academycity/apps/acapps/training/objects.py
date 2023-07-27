@@ -4696,7 +4696,7 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
         return result
 
     def update_soldiers_info(self, dic):
-        print('90022-1 dic', dic)
+        print('90022-2 dic', dic)
         def get_unit_number(units_dic_, title):
             h = -1
             for k_ in units_dic_:
@@ -4716,9 +4716,10 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
         #
         # print(self.uploaded_filename)
         s = self.uploaded_filename.split("_")
+        # print(s)
         battalion_number_ = int(s[0])
         period_number_ = int(s[1])
-        # print(battalion_number_, period_number_)
+        print(battalion_number_, period_number_)
         #
         model_periods = apps.get_model(app_label=app_, model_name="periods")
         model_battalions = apps.get_model(app_label=app_, model_name="battalions")
@@ -4731,18 +4732,17 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
         # print(df, "\n", "-"*100)
         columns = df.columns[10:]
         # print("columns\n", columns)
-
         for index, row in df.iterrows():
-            # print(index)
             # if index < 545:
             #     continue
             # print(row, "\n", row["company"])
             company_name_ = str(row["company"]).upper()
-            company_number = int(row["company_number"])
-            platoon_number = int(row["platoon"])
-            platoon_name_ = company_name_ + " " +str(platoon_number)
-            username_ = "u"+str(row["dshn"])
             userid = str(row["dshn"])
+            username_ = "u"+userid
+            print(index, userid)
+            company_number = int(row["company_number"])
+            platoon_number = row["platoon"]
+            platoon_name_ = company_name_ + " " +str(platoon_number)
             uniqueid = str(row["dshn"])
             full_name = string.capwords(str(row["full_name"]))
             nnf = full_name.find(" ")
@@ -4845,8 +4845,7 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
                     f_obj.save()
                     # print("f_obj", f_obj)
                 except Exception as ex:
-                    print(ex)
-                    print("9011-55 Error \n", k, v_, userid, str(ex))
+                    print("9011-55-0 Error \nk=", k, "\nv_=", v_, "userid\n", userid, "\n", str(ex))
         # -----
         result = {"status": "ok"}
         print(result)
@@ -5092,7 +5091,7 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
                     inventory_obj = model_inventorys.objects.get(item_name=k)
                     # print("inventory_obj", inventory_obj)
                 except Exception as ex:
-                    print("9011-55 Error " + str(ex))
+                    print("9011-55-1 Error ", k, str(ex))
 
                 try:
                     f_obj, is_created = model_inventoryfact.objects.get_or_create(inventory=inventory_obj, soldier=soldier_obj)
@@ -5100,7 +5099,7 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
                     f_obj.save()
                     # print("f_obj", f_obj)
                 except Exception as ex:
-                    print("9011-55 Error \n", k, v, soldier_obj, str(ex))
+                    print("9011-55-2 Error \n", k, v, soldier_obj, str(ex))
 
         period_obj.structure = units_dic
         period_obj.period_name = "Battalion: " + str(battalion_id) + " Period: " + str(period_number)
@@ -5163,7 +5162,7 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
 
     # Upload tests
     def upload_tests(self, dic):
-        # print('90022-1 dic', dic)
+        # print('90022-3 dic', dic)
         cube_dic=dic["cube_dic"]
         user_id = dic["user_id"]
         app_ = dic["app"]
@@ -5353,7 +5352,7 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
 
     #  -- To be deleted --
     def set_soldiers(self, dic):
-        # print('90022-1 dic', dic)
+        # print('90022-4 dic', dic)
         app_ = dic["app"]
         file_path = self.upload_file(dic)["file_path"]
         # print("-"*100, "\n", file_path, "\n", "-"*100)

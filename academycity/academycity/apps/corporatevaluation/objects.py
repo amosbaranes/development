@@ -2026,6 +2026,9 @@ class StockPrices(object):
 
         dic = {'data': {"status": "ok"}}
 
+    # application auxiliary functions
+
+
 
 class TF(object):
     def __init__(self):

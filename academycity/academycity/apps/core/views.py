@@ -152,10 +152,10 @@ def activate_function(request):
     return JsonResponse(dic)
 
 def update_field_model_by_id(request, foreign=None):
-    # log_debug("update_field_model_by_id 0")
+    log_debug("update_field_model_by_id 0")
     dic_ = request.POST["dic"]
     # print('90155-100 core update_field_model_by_id: dic_\n', '-'*50,"\n", dic_, "\n", '-'*50)
-    log_debug(dic_) # size is 1024 chars
+    # log_debug(dic_) # size is 1024 chars
     dic_ = eval(dic_)
     # print('90155-100-1 core update_field_model_by_id: dic_\n', '-'*50,"\n", dic_, "\n", '-'*50)
     element_id_ = ""
@@ -163,19 +163,25 @@ def update_field_model_by_id(request, foreign=None):
         element_id_ = dic_["element_id"]
     except Exception as ex:
         pass
-    app_ = dic_['app']
-    # print(dic_['model'])
-    model_ = dic_['model']
-    pkey_ = dic_['pkey']
-    fields_ = dic_['fields']
-    type_ = dic_['type']
-    company_obj_id_ = dic_['company_obj_id']
-    parent_model_ = dic_['parent_model']
-    parent_model = apps.get_model(app_label=app_, model_name=app_+"web")
-    company_obj = parent_model.objects.get(id=company_obj_id_)
+
+    try:
+        app_ = dic_['app']
+        # print(dic_['model'])
+        model_ = dic_['model']
+        pkey_ = dic_['pkey']
+        fields_ = dic_['fields']
+        type_ = dic_['type']
+        company_obj_id_ = dic_['company_obj_id']
+        parent_model_ = dic_['parent_model']
+        parent_model = apps.get_model(app_label=app_, model_name=app_+"web")
+        company_obj = parent_model.objects.get(id=company_obj_id_)
+    except Exception as ex:
+        log_debug("Error 2000:" + str(ex))
+
     try:
         model = apps.get_model(app_label=app_, model_name=model_)
     except Exception as ex:
+        log_debug("Error 2001:" + str(ex))
         return JsonResponse({'status': 'ko'})
     p_key_field_name = ""
 
@@ -268,8 +274,10 @@ def update_field_model_by_id(request, foreign=None):
             obj = \
             model.objects.filter(translations__language_code=get_language()).filter(translations__slug=obj_slug).all()[0]
         except Exception as er:
+            log_debug("update_field_model_by_id 1311")
             p_key_field_name = model._meta.pk.name
             obj = eval('model.objects.get('+p_key_field_name+'=pkey_)')
+            log_debug("update_field_model_by_id 1322")
             # print("obj: ", obj)
             # obj = model.objects.get(id=pkey_)
 
@@ -355,8 +363,10 @@ def update_field_model_by_id(request, foreign=None):
                 obj_id = int(obj_id)
             except Exception as ex:
                 obj_id = eval('obj.' + p_key_field_name + '.id')
-        print({'status': 'ok', "record_id": obj_id, "element_id":element_id_})
-        return JsonResponse({'status': 'ok', "record_id": obj_id, "element_id":element_id_})
+        ret = {'status': 'ok', "record_id": obj_id, "element_id":element_id_}
+        # print(ret)
+
+        return JsonResponse(ret)
     except Exception as e:
         log_debug("erro600 " + str(e))
         return JsonResponse({'status': 'ko'})
@@ -364,12 +374,17 @@ def update_field_model_by_id(request, foreign=None):
 def get_data_link(request):
     errors = ""
     dic_ = request.POST["dic"]
-    log_debug("get_data_link 99999: "+dic_)
-    dic_ = eval(dic_)
     # try:
+    #     log_debug("get_data_link 99999: "+dic_)
     #     print('\n 9050-150-50 core views get_data_link dic_ ', "\n", dic_,"\n", "-"*100)
     # except Exception as ex:
     #     print(str(ex))
+
+    try:
+        log_debug("get_data_link 99999: "+dic_)
+        dic_ = eval(dic_)
+    except Exception as ex:
+        print("error 4562-22-1",str(ex))
 
     # errors += "1 "
     # log_debug("get_data_link 99999: "+errors)
@@ -378,6 +393,15 @@ def get_data_link(request):
         parent_model_fk_name=dic_["parent_model_fk_name"]
     except Exception as ex:
         pass
+
+    parent_model_fk_name=""
+    try:
+        parent_model_fk_name=dic_["parent_model_fk_name"]
+    except Exception as ex:
+        pass
+
+    # print("parent_model_fk_name\n", parent_model_fk_name, "\nparent_model_fk_name")
+
     multiple_select_fields = None
     if "multiple_select_fields" in dic_:
         if len(dic_["multiple_select_fields"]) > 0:
@@ -388,6 +412,7 @@ def get_data_link(request):
     if model_ == "":
         dic = {'status': 'ko', "dic": {}}
         return JsonResponse(dic)
+
     model = apps.get_model(app_label=app_, model_name=model_)
     # for testing only --
     # model__ = apps.get_model(app_label=app_, model_name="XBRLDimCompany")
@@ -435,6 +460,9 @@ def get_data_link(request):
         order_by = dic_['order_by']
     else:
         order_by = ""
+
+    # print(" company_obj_id_", company_obj_id_)
+
     if company_obj_id_ != "-1" and company_obj_id_ != -1:
         # log_debug("get_data_link company_obj_id_: "+str(company_obj_id_))
         s = 'model.objects'
@@ -450,27 +478,38 @@ def get_data_link(request):
                 parent_model_ = dic_['parent_model']
                 parent_pkey_ = parent_id_
                 parent_model__ = apps.get_model(app_label=app_, model_name=parent_model_)
+
+                ss_=parent_model_
+                if ss_[len(ss_)-1] == "s":
+                    ss_ = parent_model_[:-1]
                 if parent_model_fk_name == "":
-                    parent_model_fk_name = parent_model_[:-1]
-                parent_obj__ = parent_model__.objects.get(id=parent_pkey_)
+                    parent_model_fk_name = ss_
+                pk = parent_model__._meta.pk.name
+                parent_obj__ = eval('parent_model__.objects.get('+pk+'=parent_pkey_)')
                 if s_ != '':
                     s_ += ', '
                 s_ += parent_model_fk_name+'=parent_obj__'
+                # print("sss1", "\n", s, "\n", sss1")
         except Exception as ex:
-            pass
+            print(ex)
         if s_ != '':
             s += '.filter('+s_+')'
-        # print('s00111', s, 's00111')
+        # print('s00111\n', s, '\ns00111')
     else:
         if parent_id_ > -1:
             parent_model_ = dic_['parent_model']
             parent_pkey_ = parent_id_
             parent_model__ = apps.get_model(app_label=app_, model_name=parent_model_)
+
             if parent_model_fk_name == "":
                 parent_model_fk_name = parent_model_[:-1]
+
             # parent_obj__ = parent_model__.objects.get(id=parent_pkey_)
+
             parent_obj__ = eval('parent_model__.objects.get('+parent_model__._meta.pk.name+'=parent_pkey_)')
+
             # print("parent_obj__\n", parent_obj__)
+
             s = 'model.objects.filter(' + parent_model_fk_name+'=parent_obj__)'
         else:
             s = 'model.objects'

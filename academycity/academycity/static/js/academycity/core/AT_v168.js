@@ -54,6 +54,10 @@ function AdvancedTabsManager(dic=null)
                                         "Textarea":{"title":"textarea", "width":7,
                                                     "setting": {"overflow":[],"color":[],"background-color":[]},
                                                     "attributes":{"field":[], "rows":[], "cols":[]}, "functions":[]},
+                                        "RichText":{"title":"RichText", "width":7,
+                                                    "setting": {"height":[], "width":[]},
+                                                    "attributes":{"field":[]},
+                                                    "functions":["onchange"]},
                                         "Canvas":{"title":"canvas", "width":7,
                                                     "setting": {"overflow":[],"color":[],"background-color":[]},
                                                     "attributes":{"width":[], "height":[]}, "functions":[]},
@@ -163,7 +167,7 @@ function AdvancedTabsManager(dic=null)
                                                        "is_del_button":["","Yes","No"], "call_get_data":["", true, false]},
                                                        "attributes":{"number_of_rows":[], "table_class":["","basic",
                                                        "payment"], "height":[]},
-                                                       "functions":["onclick", "onchange", "onmouseover", "onmouseout", "on_new_record", "before_get_data"],
+                                                       "functions":["onclick", "onchange", "onmouseover", "onmouseout", "on_new_record", "before_get_data", "on_get_data"],
                                                        "field_setting":["field_title","field_name","field_width","field_align","foreign_table","filter"]},
                                         "MSearchTable":{"title":"MSearchTable", "width":10,
                                                        "setting": {"is_new_button":["","Yes","No"], "is_del_button":["","Yes","No"]},
@@ -216,7 +220,21 @@ function AdvancedTabsManager(dic=null)
                  "Dashboard":{"title":"Dash Board", "obj_type":"acDashboard",
                         "sub_buttons":{"Basic":{"title":"Basic", "width":10,
                                                 "setting": {"app":[], "table":[], "setup_dictionary":[], "entity":[],
-                                                            "height":[], "width":[],
+                                                            "height":[], "width":[], "qualifications":[], "skills":[],
+                                                            "border_style":["none","solid","Dotted","dashed",
+                                                                   "double","groove","ridge","inset","outset",
+                                                                   "hidden"],
+                                                             "border_width":[],"border_color":[], "border_radius":[],
+                                                             "board1_color":[],"board2_color":[],"board3_color":[],"board4_color":[],
+                                                             "company_logo":[], "battalion_logo":[]
+                                                },
+                                                "attributes":{"background-color":[], "color":[], "table_class":["","basic", "payment"]},
+                                                "functions":["on_amount_paint", "on_receive_data", "on_entity_click",
+                                                             "onclick", "onmouseover", "onmouseout"]
+                                               },
+                                       "UnitBoard":{"title":"Unit Dash Board", "width":20,
+                                                "setting": {"app":[], "table":[], "setup_dictionary":[], "entity":[],
+                                                            "height":[], "width":[], "qualifications":[], "skills":[],
                                                             "border_style":["none","solid","Dotted","dashed",
                                                                    "double","groove","ridge","inset","outset",
                                                                    "hidden"],
@@ -622,7 +640,7 @@ AdvancedTabsManager.prototype.truncate_model = function(model_name, app=null){
 AdvancedTabsManager.prototype.get_obj = function(tab, dic)
 {
 // if(dic["obj_name"]=="acGrades"){
-//   //alert("90111 "+tab.tab_name)
+   //alert("90111 "+tab.tab_name)
 //   alert(JSON.stringify(dic))
 // }
  var s='function '+dic["obj_name"]+dic["properties"]["obj_number"]+'(atm_, tab_, dic_)'
@@ -635,9 +653,9 @@ AdvancedTabsManager.prototype.get_obj = function(tab, dic)
  s+='this.attributes=ps["attributes"] ;'
  s+='try{this.creator=new '+dic["obj_name"]+'Creator(this)} catch(er){};'
  s+='};'
-    // if(dic["obj_name"]=="acGrades"){
-    //   alert(s)
-    // }
+//     if(dic["obj_name"]=="acRichText"){
+//       alert(s)
+//     }
  try{eval(s)} catch(er){alert("er9002: "+er)}
  s=dic["obj_name"]+dic["properties"]["obj_number"]+'.prototype = Object.create('+dic["obj_type"]+'.prototype);'
  //alert(s);
@@ -689,6 +707,146 @@ AdvancedTabsManager.prototype.get_obj = function(tab, dic)
  }catch(er){alert(er)}
  return obj_
 }
+
+AdvancedTabsManager.prototype.get_rich_text_editor=function(div_to_edit){
+       //var d_container=document.createElement("div");
+       //d_container.setAttribute("class", "container")
+
+       var d_options=document.createElement("div");d_options.setAttribute("class", "options")
+       var ss="position:absolute;border-radius:10px;border-style:solid;border-width:1px;border-color:blue;background-color:white;z-index:999999;"
+       ss+="padding: 5px;left:"+div_to_edit.getAttribute("rich_text_x")+"px;top:"+div_to_edit.getAttribute("rich_text_y")+"px;width:440px";
+       d_options.setAttribute("style", ss)
+
+       //d_container.appendChild(d_options);
+       //d_container.appendChild(div_to_edit);
+
+       var f_=function(id, s_class){
+         var b=document.createElement("button");b.setAttribute("id", id);b.setAttribute("class", s_class+" ebutton");
+         var i=document.createElement("i");i.setAttribute("class", t_class);
+         b.appendChild(i);return b;
+       }
+        //main logic
+        const modifyText = (command, defaultUi, value) => {
+          //execCommand executes command on selected text
+          document.execCommand(command, defaultUi, value);
+        };
+        //Highlight clicked button
+        const highlighter = (className, needsRemoval) => {
+          className.forEach((button) => {
+            button.addEventListener("click", () => {
+              //needsRemoval = true means only one button should be highlight and other would be normal
+              if (needsRemoval) {
+                let alreadyActive = false;
+                //If currently clicked button is already active
+                if (button.classList.contains("active")) {
+                  alreadyActive = true;
+                }
+                //Remove highlight from other buttons
+                highlighterRemover(className);
+                if (!alreadyActive) {
+                  //highlight clicked button
+                  button.classList.add("active");
+                }
+              } else {
+                //if other buttons can be highlighted
+                button.classList.toggle("active");
+              }
+            });
+          });
+        };
+
+        var b=f_(id="bold", s_class="option-button format", t_class="fa-solid fa-bold");d_options.appendChild(b);
+        b=f_(id="italic", s_class="option-button format", t_class="fa-solid fa-italic");d_options.appendChild(b);
+        b=f_(id="underline", s_class="option-button format", t_class="fa-solid fa-underline");d_options.appendChild(b);
+        b=f_(id="strikethrough", s_class="option-button format", t_class="fa-solid fa-strikethrough");d_options.appendChild(b);
+        b=f_(id="superscript", s_class="option-button script", t_class="fa-solid fa-superscript");d_options.appendChild(b);
+        b=f_(id="subscript", s_class="option-button script", t_class="fa-solid fa-subscript");d_options.appendChild(b);
+        b=f_(id="insertOrderedList", s_class="option-button", t_class="fa-solid fa-list-ol");d_options.appendChild(b);
+        b=f_(id="insertUnorderedList", s_class="option-button", t_class="fa-solid fa-list");d_options.appendChild(b);
+        b=f_(id="undo", s_class="option-button", t_class="fa-solid fa-rotate-left");d_options.appendChild(b);
+        b=f_(id="redo", s_class="option-button", t_class="fa-solid fa-rotate-right");d_options.appendChild(b);
+        b=f_(id="createLink", s_class="adv-option-button", t_class="fa fa-link");d_options.appendChild(b);
+        b.addEventListener("click", () => {
+          let userLink = prompt("Enter a URL");
+          //if link has http then pass directly else add https
+          if (/http/i.test(userLink)) {
+            modifyText(linkButton.id, false, userLink);
+          } else {
+            userLink = "http://" + userLink;
+            modifyText(linkButton.id, false, userLink);
+          }
+        });
+
+        b=f_(id="unlink", s_class="option-button", t_class="fa fa-unlink");d_options.appendChild(b);
+
+        b=f_(id="justifyLeft", s_class="option-button align", t_class="fa-solid fa-align-left");d_options.appendChild(b);
+        b=f_(id="justifyCenter", s_class="option-button align", t_class="fa-solid fa-align-center");d_options.appendChild(b);
+        b=f_(id="justifyRight", s_class="option-button align", t_class="fa-solid fa-align-right");d_options.appendChild(b);
+        b=f_(id="justifyFull", s_class="option-button align", t_class="fa-solid fa-align-justify");d_options.appendChild(b);
+
+        b=f_(id="indent", s_class="option-button spacing", t_class="fa-solid fa-indent");d_options.appendChild(b);
+        b=f_(id="outdent", s_class="option-button spacing", t_class="fa-solid fa-outdent");d_options.appendChild(b);
+        var s=document.createElement("select");s.setAttribute("id","formatBlock");s.setAttribute("class","adv-option-button");d_options.appendChild(s);
+        for(var j=1;j<7;j++){var o=document.createElement("option");
+        o.setAttribute("value", "H"+j);o.innerHTML="H"+j;s.appendChild(o);}
+        //--
+        var s=document.createElement("select");s.setAttribute("id","fontName");s.setAttribute("class","adv-option-button");d_options.appendChild(s);
+        let fontList = ["Arial","Verdana","Times New Roman","Garamond","Georgia","Courier New","cursive"];
+        fontList.map((value) => {let o=document.createElement("option");o.value = value;o.innerHTML = value;s.appendChild(o);});
+
+        var s=document.createElement("select");s.setAttribute("id","fontSize");s.setAttribute("class","adv-option-button");d_options.appendChild(s);
+        for (let i=1;i<=7;i++){let o=document.createElement("option");o.value=i;o.innerHTML=i;s.appendChild(o);};s.value = 3;
+        //--
+        var d=document.createElement("div");d.setAttribute("class","input-wrapper");d_options.appendChild(d);
+        var i=document.createElement("input");i.setAttribute("id","foreColor");i.setAttribute("type","color");
+        i.setAttribute("class","adv-option-button");d.appendChild(i);
+        var l=document.createElement("label");l.setAttribute("for","foreColor");l.innerHTML="fC";d.appendChild(l);
+
+        var d=document.createElement("div");d.setAttribute("class","input-wrapper");d_options.appendChild(d);
+        var i=document.createElement("input");i.setAttribute("id","backColor");i.setAttribute("type","color");
+        i.setAttribute("class","adv-option-button");d.appendChild(i);
+        var l=document.createElement("label");l.setAttribute("for","backColor");l.innerHTML="bgC";d.appendChild(l);
+
+        var b=f_(id="save_save_", s_class="option-button format", t_class="fa-solid fa-save");d_options.appendChild(b);
+        b.d_options=d_options;b.div_to_edit=div_to_edit;
+        b.addEventListener("click", (event) => {
+         var e=event.target;if(e.tagName=="I"){e=e.parentNode;}
+         e.div_to_edit.setAttribute("contenteditable", "");e.d_options.outerHTML="";
+        });
+
+        let optionsButtons = d_options.querySelectorAll(".option-button");
+        //For basic operations which don't need value parameter
+        optionsButtons.forEach((button) => {
+          button.addEventListener("click", () => {
+            modifyText(button.id, false, null);
+          });
+        });
+
+        let advancedOptionButton = d_options.querySelectorAll(".adv-option-button");
+        //options that require value parameter (e.g colors, fonts)
+        advancedOptionButton.forEach((button) => {
+          button.addEventListener("change", () => {
+            modifyText(button.id, false, button.value);
+          });
+        });
+
+        const highlighterRemover = (className) => {
+          className.forEach((button) => {
+            button.classList.remove("active");
+          });
+        };
+
+        let alignButtons = d_options.querySelectorAll(".align");
+        let spacingButtons = d_options.querySelectorAll(".spacing");
+        let formatButtons = d_options.querySelectorAll(".format");
+        let scriptButtons = d_options.querySelectorAll(".script");
+        highlighter(alignButtons, true);
+        highlighter(spacingButtons, true);
+        highlighter(formatButtons, false);
+        highlighter(scriptButtons, true);
+
+        return d_options;
+    }
 
 AdvancedTabsManager.prototype.get_obj_functions_settings_attributes = function(dic_)
 {
@@ -789,7 +947,7 @@ AdvancedTabsManager.prototype.activate_obj_function = function(call_back_fun, di
 }
 
 AdvancedTabsManager.prototype.save_data = function(html_obj, dic_, is_json_data=false)
-{ // alert("AdvancedTabsManager.prototype.save_data")
+{ //alert("AdvancedTabsManager.prototype.save_data")
   dic_["app"]=this.my_app;
   dic_["company_obj_id"]=this.company_obj_id;
   //alert("90112:\n"+JSON.stringify(dic_));
@@ -809,6 +967,11 @@ AdvancedTabsManager.prototype.save_data = function(html_obj, dic_, is_json_data=
               html_obj_.setAttribute(record_level, dic["record_id"])
               var creator_number=html_obj_.getAttribute("my_creator_number")
               try{if(!(creator_number==null)){get_creator(creator_number).on_record_created_deleted(html_obj_);}} catch(er){alert(er)}
+              try{
+                 var f=dic_["for_refresh_my_tables"]["f"]; var v=dic_["for_refresh_my_tables"]["v"];
+                 var container=getEBI("content_"+dic_["for_refresh_my_tables"]["container_id"])
+                 container.my_creator_obj.refresh_my_tables(f, v);
+              }catch(er){}
             }
           }.bind(html_obj_=html_obj));
 }
@@ -1308,7 +1471,8 @@ acObj.prototype.create_obj = function(){
   //alert("9015"+JSON.stringify(this.data));
   //alert("9016"+container.outerHTML)
   //alert(container) //alert(container.outerHTML)
-  this.new_obj=document.createElement(this.data["element_name"]);
+  var ee_=this.data["element_name"];if(ee_=="RichText"){ee_="div"}
+  this.new_obj=document.createElement(ee_);
   this.new_obj.my_creator_obj=this;
   this.new_obj.is_call_on_change=true;
   var call_on_change=dic["properties"]["call_on_change"];
@@ -1379,6 +1543,46 @@ acObj.prototype.create_obj = function(){
     ss+="width:"+width_+u+";"+"height:"+height_+u+";"+s_+";text-align:"+align+";";
     this.new_obj.setAttribute("style", ss);
    //"overflow: scroll;
+  } else if (this.data["element_name"]=="RichText") {
+
+    var img_=document.createElement("img");
+    var x_ = 1*this.data["properties"]["x"];var y_=this.data["properties"]["y"]-10; var radius=12;
+    var s_style="position:absolute;cursor:pointer;left:"+x_+"px;top:"+y_+"px;z-index:999;width:"+radius+"px;height:"+radius+"px";
+    img_.setAttribute("style", s_style);
+    img_.setAttribute("src", "/static/core/globs.jpg");
+    container.appendChild(img_);
+    img_.container=container;img_.new_obj=this.new_obj;
+    img_.addEventListener("click", (event) => {
+      var e=event.target;var new_obj=e.new_obj;
+      var ce="";try{ce=new_obj.getAttribute("contenteditable")}catch(er){}
+      if(ce==null || ce==""){new_obj.setAttribute("contenteditable", "true");
+      var rt=atm.get_rich_text_editor(new_obj);new_obj.container.appendChild(rt)}
+    });
+
+    this.new_obj.container=container;
+    this.new_obj.addEventListener("dblclick", (event) => {
+    var e=event.target;var ce="";try{ce=e.getAttribute("contenteditable")}catch(er){}
+      if(ce==null || ce==""){e.setAttribute("contenteditable", "true");var rt=atm.get_rich_text_editor(e);e.container.appendChild(rt)}
+    });
+
+    this.new_obj.addEventListener("blur", (event) => {
+      var e=event.target;
+      //alert("c9001-1 "+e.outerHTML);
+      var e_container_id_=e.getAttribute("container_id")
+      var container = getEBI("content_"+e_container_id_)
+      container.onchange(event);
+    });
+
+    var s_="overflow-y: auto;";
+    var ss="position:absolute;left:"+this.data["properties"]["x"]+"px;top:"+this.data["properties"]["y"]+"px;"
+    ss+="width:"+width_+u+";"+"height:"+height_+u+";"+s_+";text-align:"+align+";border-style:solid;border-width:1px;border-color:blue;";
+    this.new_obj.setAttribute("style", ss);
+    this.new_obj.setAttribute("rich_text_x", 1*this.data["properties"]["x"]);
+    this.new_obj.setAttribute("rich_text_y", 1*this.data["properties"]["y"]-65);
+
+    //alert(this.new_obj.outerHTML)
+    //alert(this.new_obj.outerHTML)
+
   } else {
     var s_="position:absolute;left:"+this.data["properties"]["x"]+"px;top:"+this.data["properties"]["y"]+"px;width:"+width_+u+";text-align:"+align+";";
     s_+="color:"+color+background_color_+font_weight+font_size+font_family;
@@ -1632,12 +1836,10 @@ acBasicCreator.prototype.get_grade = function(skill_id, unit_id)
  return ret;
 }
 
-
 // https://plotly.com/javascript/gauge-charts/
 // https://plotly.com/javascript/indicator/
 // https://plotly.com/javascript/pie-charts/
 // https://www.alt-codes.net/smiley_alt_codes.php
-
 
 acBasicCreator.prototype.set_board_data = function(ll=[])
 {
@@ -1647,7 +1849,480 @@ acBasicCreator.prototype.set_board_data = function(ll=[])
    //alert("acBasicCreator.prototype.set_board_data 90446-25 \n"+JSON.stringify(atm.data_dic));
    //alert(ll)
    //--
-   var dic_=this.parent.data;var pp_=dic_["properties"]
+   var dic_=this.parent.data;var pp_=dic_["properties"];
+   var skills_dic=JSON.parse(pp_["skills"])
+   //alert(JSON.stringify(skills_dic))
+
+   var skills_=skills_dic["l"];var skills_cols=skills_dic["cols"];
+   var width_=pp_["width"]; if(width_==null || width_==""){width_=900};
+   var height_=pp_["height"]; if(height_==null || height_==""){height_=300};
+    var dic=atm.data_dic;
+    var z=-1;
+    for(var j in ll){
+    z+=1;var dic=dic[ll[z]];var container_=this.board_objs[(1*z+1)].content;
+    try{var kpi=dic["kpi"];var board_title=dic["title"];dic=dic["data"]} catch(er){alert(er)}}
+    if(z<0){try{var container_=this.board_objs[1].content} catch(er){alert(er)}}
+    //alert("90441-550-1  "+JSON.stringify(kpi));
+    //alert("90441-550-2  "+JSON.stringify(dic));
+    try{this.hide_boards((1*z+1)); container_.style.display="block";} catch(er){alert(er)}
+    //alert("90441-550  "+JSON.stringify(dic));
+    var n_kpi_objs=Object.keys(kpi).length;
+    var w_kpi=125;var h_kpi=200; wl_kpi=50;var wr_kpi=50;
+    var n_objs=Object.keys(dic).length;
+    var wl=50;var wr=50;var w=200;var n__=(width_-wl-wr)/n_objs;if(n__<200){w=n__}
+    var wb_kpi=(1*width_-wl_kpi-wr_kpi-n_kpi_objs*w_kpi)/(n_kpi_objs-1);
+    var wb=(1*width_-wl-wr-n_objs*w)/(n_objs-1);
+
+    //alert(wb)
+    var w_=wl+this.nav_width;var th2_=1*height_/2
+    var w_kpi_=wl_kpi+this.nav_width;
+
+   container_.innerHTML="";
+   //--
+   var title__=document.createElement("h1");title__.innerHTML="<u><b>"+board_title+"</b></u>";
+   var top_=15;var style_ = "position:absolute;left:"+(width_/2-50)+"px;top:"+top_+"px;color:blue"
+   title__.setAttribute("style", style_);
+   container_.appendChild(title__);
+   //--
+   // add company logo
+   var company_logo_src="/media/training/images/"+pp_["company_logo"]
+   var battalion_logo_src="/media/training/images/"+pp_["battalion_logo"]
+   var company_logo_style="position:absolute;left:50px;top:10px;width:150px;height:60px;"
+   var company_image=document.createElement("img");
+   company_image.setAttribute("src", company_logo_src);
+   company_image.setAttribute("style", company_logo_style);
+   container_.appendChild(company_image);
+   // add battalion logo
+   var battalion_logo_src="/media/training/images/"+pp_["battalion_logo"]
+   var battalion_logo_style="position:absolute;left:770px;top:10px;width:150px;height:60px;"
+   var battalion_image=document.createElement("img");
+   battalion_image.setAttribute("src", battalion_logo_src);
+   battalion_image.setAttribute("style", battalion_logo_style);
+   container_.appendChild(battalion_image);
+   //--
+   for(j in kpi)
+   {
+     var div_=document.createElement("div");
+     var top_=80
+     var style_ = "position:absolute;left:"+w_kpi_+"px;top:"+top_+"px;width:"+w_kpi+"px;height:"+h_kpi+"px;"
+     style_+="border-style:solid;border-width:0px;border-color:blue;border-radius:10px;display: flex;align-items: center;justify-content: center;"
+     div_.setAttribute("style", style_);
+
+    if(j<3){
+      var data = [
+          {
+            type: "indicator",
+            mode: "gauge+number",  //+delta
+            value: kpi[j]["grade"],
+            delta: { reference: 60, increasing: { color: "RebeccaPurple" } },
+            gauge: {
+              axis: { range: [null, 100], tickwidth: 1, tickcolor: "darkblue" },
+              bar: { color: "white" },
+              bgcolor: "lightyellow",
+              borderwidth: 2,
+              bordercolor: "gray",
+              steps: [{ range: [0, 60], color: "red" },{ range: [60, 100], color: "green" }],
+              threshold: {line: { color: "red", width: 4 },thickness: 0.75,value: 90}
+            }
+          }
+        ];
+        var layout = {
+        autosize: false,
+          title: { text: kpi[j]["title"], font: { size: 15 } },
+          width: 150,height: 160,
+          margin: {l: 5, r: 5, b: 10, t: 20,  pad: 1 },
+          paper_bgcolor: container_.style.backgroundColor,
+          showlegend: false,
+          font: { color: "darkblue", family: "Arial" }
+        };
+    } else{
+        var data = [
+          {
+            type: "indicator",
+            mode: "number+delta+gauge",
+            value: kpi[j]["grade"],
+            gauge: {
+              shape: "bullet",
+              axis: {visible: false, range: [0, 100]},
+              bar: { color: "white" },
+              steps: [{ range: [0, 60], color: "red" },{ range: [60, 100], color: "green" }],
+            }
+          }
+        ];
+        var layout = {
+        autosize: false,
+          title: { text: kpi[j]["title"], font: { size: 15 } },
+          width: 150,height: 100,
+          margin: {l: 5, r: 5, b: 10, t: 20,  pad: 1 },
+          paper_bgcolor: container_.style.backgroundColor,
+          showlegend: false,
+          font: { color: "darkblue", family: "Arial" }
+        };
+     }
+     Plotly.newPlot(div_, data, layout, {displayModeBar: false});
+
+     //-- Grade --
+     w_kpi_=w_kpi_+1*(1*w_kpi+1*wb_kpi);
+     container_.appendChild(div_);
+   }
+   //--
+   var k = 0
+   //alert("90441-350-35  "+JSON.stringify(dic));
+   if(ll.length<(atm.nlimit+1))
+   {
+    var n=0;
+    for(z in dic){
+      n+=1
+        //alert("z "+JSON.stringify(dic[z]["kpi"]));
+        var labels_=[]
+        var data_=[]
+        var background_color_=[]
+        for(var k_ in dic[z]["kpi"]){
+         labels_.push(dic[z]["kpi"][k_]["title"].replaceAll("<br>", " ").replace(/\s+/g, ' '))
+         var nn__=1*dic[z]["kpi"][k_]["grade"]
+         if((dic[z]["kpi"][k_]["grade"]+"")=="NaN"){nn__=0}
+         data_.push(nn__)
+         if(nn__>=1*dic[z]["kpi"][k_]["pass"]){var g='rgb(0,128,0)'}else{var g='rgb(255, 0, 0)'}
+         background_color_.push(g)
+        }
+      var div_=document.createElement("div");
+      var div_c=document.createElement("div");
+      div_.appendChild(div_c);
+      var canvas_=document.createElement("canvas");
+      div_.appendChild(canvas_);
+      container_.appendChild(div_);
+
+      var style_ = "position:absolute;left:"+w_+"px;top:"+(th2_+20)+"px;width:"+w+"px"
+      div_.setAttribute("style", style_);
+      w_+=wb+w
+
+      var style_c="width:100%;height:40px;position:absolute;top:50%;left:0;margin-top:-15px;line-height:19px;"
+      style_c+="text-align:center;z-index:0"
+      div_c.setAttribute("style", style_c);
+      div_c.innerHTML=dic[z]["title"]
+
+      var ll_=clone_dic(ll);ll_.push(1*z);div_.ll=ll_;div_.obj=this;
+      div_.addEventListener("click", function(event){
+       var e=event.target;
+        this.obj.set_board_data(ll=this.ll, obj=this.obj);
+       if(this.ll.length>2){this.obj.set_detail_data(ll=this.ll)}
+      })
+      const data = {
+        labels: labels_,
+        datasets: [{data: data_,backgroundColor: background_color_,hoverOffset: 4}]
+      };
+      const options = {plugins: {legend: {display: false}}}
+      const config = {type: 'doughnut',data: data, options:options};
+      var c=new Chart(canvas_, config);
+   }
+
+  } else {
+      k +=1
+      var col_width=100;
+      var soldier_col_width=300
+      this.fields_skills=skills_; //["Fitness","Shooting","Professional","Equipment"]
+
+      var n_cols=this.fields_skills.length
+//      alert(n_cols)
+//      alert(n_cols*col_width+soldier_col_width+this.nav_width)
+//      alert(1*width_-n_cols*col_width-soldier_col_width-this.nav_width)
+//      alert(width_)
+      var n_left=(1*width_-n_cols*col_width-soldier_col_width-this.nav_width)/2+this.nav_width;
+
+      color__="lightblue"
+      var div_=document.createElement("div");
+      var style_ = "position:absolute;left:"+n_left+"px;top:"+(th2_+20)+"px;height:"+(height_/2.5)+"px;"
+      style_+="border-style:solid;border-width:0px;border-color:blue;display: flex;"
+      style_+="background-color:"+color__+";align-items: center;justify-content: center;"
+      div_.setAttribute("style", style_);
+
+      div_.ll=ll_;div_.obj=this;
+      div_.addEventListener("click", function(event){
+       var e=event.target;var dic=this.obj.parent.data;
+       try{var s="var zz="+dic["functions"]["on_entity_click"];eval(s);zz(event);} catch(er){}
+        //alert(e.outerHTML)
+        //alert("90441-750  "+JSON.stringify(this.ll));
+      })
+
+      var s='s_data=atm.units_structure';for(var w=0;w<ll.length;w++){s+='[ll['+w+']]["data"]'};eval(s);
+      //alert("90441-750  \n"+JSON.stringify(s_data));
+
+      var s="<table class='basic' style='display: block;height:"+(Math.round(height_/2.5))+"px;overflow-y: auto;'><tr>"
+      s+="<th style='width:"+soldier_col_width+"px'>Name</th>"
+      for(var i in this.fields_skills){s+="<th style='width:"+col_width+"px'>"+this.fields_skills[i]+"</th>";}
+      //s+="<th style='width:"+col_width+"px'>Fit for Duty</th>";
+      s+="</tr>"
+      s+="<tbody >"
+      for(var s_ in s_data){
+       s+="<tr><td soldier_id='"+s_+"' style='width:"+soldier_col_width+"px'>"+s_data[s_]["title"]+"</td>"
+
+       for(var i in this.fields_skills)
+       {
+
+        var nl_=skills_cols[i];//alert(nl_)
+
+        var grade=this.get_grade(skill_id=nl_, unit_id=s_);
+        var color="white";var background_color = "green"; var img_="&#128512;"
+        if(grade==0){color="black";background_color = "white"; var img_=""}
+        else if(grade<atm.general.pass_grade["individual"][i])
+        {background_color="red"; color="white";var img_="&#128514";
+        }
+        if(grade<100){grade="&nbsp;&nbsp;"+grade}
+        s+="<td style='text-align:center;width:100px;color:"+color+";background-color:"+background_color+"'>"+grade+"&nbsp;&nbsp;&nbsp;&nbsp;"+img_+"</td>"
+       }
+       s+="</tr>"
+      }
+      s+="</tbody></table>"
+      div_.innerHTML=s;
+      container_.appendChild(div_);
+   }
+}
+
+acBasicCreator.prototype.set_obj_structure = function(ll_)
+{
+  //alert("set obj1")
+  //alert(atm.is_run_set_obj_structure)
+  if(atm.is_run_set_obj_structure==true || atm.general.period==null){return}
+  var dic=this.parent.data;var pp_=dic["properties"];
+  var qualifications_=eval(pp_["qualifications"]);
+  var table_=pp_["table"];
+  var setup_dictionary=pp_["setup_dictionary"];var general_entity_name=pp_["entity"];
+  var fields_=["soldier", "skill", "value"];
+  atm.nlimit=atm.general.period[atm.general.current_period]["n_limit"];
+  atm.units_structure = eval("this.parent.atm.general."+setup_dictionary);
+  atm.entity_list = eval("this.parent.atm.general."+general_entity_name+"_list")
+  atm.entity_dic = eval("this.parent.atm.general."+general_entity_name+"_dic")
+
+  var ff_=function(dic_, ll, grades, sn_)
+  {
+     //alert("sn_="+sn_)
+      for(var k_ in dic_){
+       var title=dic_[k_]["title"];
+       //alert(k_+"-ff_-"+title+"  :: "+sn_)
+       if(!title.includes(":")){
+         ff_(dic_[k_]["data"],ll, grades, sn_)} else {
+            //alert("acRadioCreator 90446-16\n  "+k_+"\n"+JSON.stringify(grades));
+            //alert("acRadioCreator 90446-17\n  "+JSON.stringify(grades[""+k_]));
+            try{var nnn=grades[""+k_][sn_];ll.push(nnn)} catch(er){}
+        }
+      }
+  }
+
+  var f=function(dic, data_dic, grades, n=0, n_limit_=-1)
+  {
+     var n_=n+1;
+     for(var k in dic)
+     {
+        //alert(k+"\n11\n"+dic[k]["title"])
+        data_dic[k]={};data_dic[k]["kpi"]={};
+        var title=dic[k]["title"];data_dic[k]["title"]=title;if(n_==1){data_dic[k]["type"]="battalion"}
+        var fields_=qualifications_; //["Fitness","Shooting","Professional","Equipment","Exe. vs Plan"]
+        var nn_=0;
+        for(var j in fields_)
+        {
+         //alert("j="+j)
+         var ll=[];
+         ff_(dic[k]["data"],ll, grades, sn_=j);
+         //var grade=65;if(j>=3){grade=100} else if(j==0){grade=92} else if(j==1){grade=84} else if(j==2){grade=88}
+         //alert(ll)
+         var grade=list_average(ll);// Math.round(100*ll.reduce((a,b) => a+b, 0)/ll.length)/100;
+         nn_+=1;data_dic[k]["kpi"][nn_]={"title":"", "pass":atm.general.pass_grade, "grade": grade};data_dic[k]["kpi"][nn_]["title"]=fields_[j];
+        }
+        data_dic[k]["data"]={};
+        if(n_<=n_limit_){
+         f(dic[k]["data"], data_dic[k]["data"], grades, n_, n_limit_)}
+        else {
+                  //alert("acBasicCreator.prototype.set_obj_structure 90999-99\n"+JSON.stringify(dic));
+
+                //  for(var q in dic){
+                //   //alert(JSON.stringify(dic[q]));
+                //   for(var v in dic[q]["data"])
+                //   {if(!(v in grades)){grades[v]=[0,0,0,0]}}
+                //  }
+        }
+     }
+  }
+
+  var f_grades=function(grades)
+  {
+   for(var s in grades)
+   {
+     var skills_=[0,1,3];var fraction_=100/skills_.length
+     grades[s][4]=100;grades[s][5]=100;
+     for(var h=0;h<skills_.length;h++){var j=skills_[h];
+     //alert(j+"\n"+skills_+"\n"+grades[s][j]+"\n"+atm.general.pass_grade["individual"][j]+"\n"+grades[s])
+       if(grades[s][j]<atm.general.pass_grade["individual"][j]){grades[s][4]-=fraction_}
+       if(grades[s][j]<atm.general.pass_grade["unit"][j]){grades[s][5]-=fraction_}
+     }
+     grades[s][4]=Math.round(grades[s][4]);
+     grades[s][5]=Math.round(grades[s][5]);
+     //alert(grades[s])
+   }
+  }
+
+  //alert("acRadioCreator 90446-16  "+JSON.stringify(dic));
+  try{
+       var fun=function(data, ll){
+        var grades=ll[0];var f=ll[1]; var nlimit=ll[2]; var ll_=ll[3];
+        try{if(Object.keys(data).length==0 || data["id"].length==0){alert("There is no data for this battlion.");return;}} catch (er) {}
+        // alert("90446-77 data \n"+JSON.stringify(data))
+        var n_=data[fields_[0]].length;
+        //alert(n_)
+        // pivot soldier data into lists in atm.grades
+        // [0,0,0,0,0]
+        // i=0 fitness; i=1 shooting; i=2 prof.; i=3 equipment; i=4 Fit to duty;
+        for(var i=0;i<n_;i++)
+        {if(!(data["soldier"][i] in grades)){grades[data["soldier"][i]]=[0,0,0,0,0,0]}
+         grades[data["soldier"][i]][data["skill"][i]]=data["value"][i]
+         }
+         f_grades(grades)
+         //alert("90449-99-7: "+JSON.stringify(atm.units_structure))
+         //alert(JSON.stringify(atm.data_dic))
+         //alert(JSON.stringify(grades));
+
+         //alert("90449-99-79-0: "+JSON.stringify(atm.data_dic));
+         // fill atm.data_dic
+         f(atm.units_structure, atm.data_dic, grades, 0, n_limit_=atm.nlimit);
+
+         //alert("90449-99-79-1: "+JSON.stringify(atm.data_dic));
+         for(var k_ in ll_){
+            var obj_=get_creator(ll_[k_])
+            atm.is_run_set_obj_structure=true;
+            obj_.set_board_data()
+          }
+        //alert(data["pkf_name"])
+      }
+      var dic__={"model":table_,"number_of_rows":1000000,"filters":{},
+          "fields":fields_, "order_by":{"field":"soldier", "direction":"ascending"}
+      }
+      dic__["filters"]["id"]={"value":atm.general.current_battalion, "foreign_table":"soldier__battalion"}
+      //alert("90449-99-1: "+JSON.stringify(dic__));
+      this.parent.atm.get_data(call_back_fun=fun, dic__, [atm.grades,f, atm.nlimit, ll_])
+  } catch(er){alert("1155-515: "+er)}
+}
+
+
+// -- acUnitBoardCreator --
+function acUnitBoardCreator(parent){this.parent=parent;
+  this.nav_width=33;
+ //alert(JSON.stringify(this.parent.data));
+ if(atm.grades==null){
+  atm.grades={};atm.data_dic={};atm.is_run_set_obj_structure=false;atm.nlimit=-1;
+ }
+}
+
+acUnitBoardCreator.prototype.get_board = function(dic_,pp_, style_)
+{
+     var obj_name="BasicDashboard"+pp_["obj_number"]+dic_["board_name"];
+     var obj_number = pp_["obj_number"]
+     var s='function '+obj_name+'(dic, obj)'
+     s+='{'
+     s+=' this.content=document.createElement("div");';
+     s+=' obj.main_div.appendChild(this.content);';
+     s+=' this.content.my_creator_obj=this;';
+     style_+="float:left;background-color:"+dic_["background-color"]+";color:"+dic_["color"]+";display:"+dic_["display"]+";";
+     s+=' this.content.setAttribute("style", "'+style_+'");';
+     s+='};'; try{eval(s)} catch(er){alert("er9002-221: "+er)}
+     s = 'new '+ obj_name+'(dic=dic_, obj=this)'; try{obj_=eval(s)} catch(er){alert(er)}
+     return obj_;
+}
+
+acUnitBoardCreator.prototype.create_obj = function()
+{
+  var dic=this.parent.data;
+  var pp_=dic["properties"];
+  var ll_boards=["battalion","company","platoon","section"]
+  //--
+  var container = document.getElementById("content_"+dic["container_id"]);
+  //--
+  var dic_objs={}
+  for(var h in ll_boards){var n=1*h+1;
+   var s='var board'+n+'_color="white";if((pp_["board'+n+'_color"]!=null && pp_["board'+n+'_color"]!="")){board'+n+'_color=pp_["board'+n+'_color"]}';eval(s);
+   //--
+   dic_objs[1*n]={};
+   dic_objs[1*n]["board_name"]=ll_boards[h];dic_objs[1*n]["color"]="black";if(n==1){dic_objs[1*n]["display"]="block";}
+   var s='dic_objs['+n+']["background-color"]=board'+n+'_color';eval(s);
+  }
+  //alert("acRadioCreator 90446-16  "+JSON.stringify(dic_objs));
+  //--
+  var obj_number = pp_["obj_number"]
+  var width_=pp_["width"]; if(width_==null || width_==""){width_=80};
+  var height_=pp_["height"]; if(height_==null || height_==""){height_=300};
+  var color_="black";if((pp_["color"]!=null && pp_["color"]!="")){color_=pp_["color"]}
+  var background_color_="white";if(pp_["background-color"]!=null && pp_["background-color"]!=""){background_color_=pp_["background-color"]}
+  //--
+  this.main_div=document.createElement("div");
+  container.appendChild(this.main_div);
+  this.main_div.my_creator_obj=this;
+  this.main_div.my_creator_obj.dic=dic;
+  this.main_div.setAttribute("id", obj_number);
+  this.main_div.setAttribute("obj_type", dic["obj_type"]);
+  this.main_div.setAttribute("type", dic["element_name"]);
+  this.main_div.setAttribute("container_id", dic["container_id"]);
+  //this.main_div.setAttribute("class", "row");
+  var style_="position:absolute;left:"+pp_["x"]+"px;top:"+pp_["y"]+"px;width:"+(width_+this.nav_width)+"px;"
+  this.main_div.setAttribute("style", style_);
+  // --
+     var style_ = "float:left;width:"+width_+"px;height:"+height_+"px;"
+     if(pp_["border_style"]!=null && pp_["border_style"]!=""){style_+="border-style:"+pp_["border_style"]+";"}
+     if(pp_["border_width"]!=null && pp_["border_width"]!=""){style_+="border-width:"+pp_["border_width"]+"px;"}
+     if(pp_["border_color"]!=null && pp_["border_color"]!=""){style_+="border-color:"+pp_["border_color"]+";"}
+     if(pp_["border_radius"]!=null && pp_["border_radius"]!=""){style_+="border-radius:"+pp_["border_radius"]+"px;"}
+
+  this.nav=document.createElement("div");this.nav.my_creator_obj=this;
+  var style_nav="float:left;width:"+this.nav_width+"px;"
+  this.nav.setAttribute("style", style_nav)
+  this.main_div.appendChild(this.nav);
+  this.board_objs = {}
+  this.button_objs = {}
+  for (var j in dic_objs){this.board_objs[j]=this.get_board(dic_objs[j], pp_, style_)}
+  for (var j in dic_objs)
+  {
+    var s_='var br=document.createElement("br");this.nav.appendChild(br);'
+    s_+='this.b_'+j+'=document.createElement("button");this.b_'+j+'.innerHTML="'+dic_objs[j]["board_name"][0].toUpperCase()+'";';
+    s_+='this.b_'+j+'.my_creator_obj=this;';
+    s_+='this.b_'+j+'.setAttribute("style", "border-radius: 12px;background-color:#04AA6D;border: none;color: white;padding: 10px;text-align: center;text-decoration: none;display: inline-block;font-size: 16px;margin: 2px 2px;cursor: pointer;")'
+    eval(s_);
+    var ss='this.b_'+j+'.addEventListener("click", function(event){';
+    ss+='var e=event.target;e.my_creator_obj.hide_boards('+j+');e.my_creator_obj.board_objs['+j+'].content.style.display="block"';
+    ss+='});this.nav.appendChild(this.b_'+j+');';
+    eval(ss)
+    var s='this.button_objs[j]=this.b_'+j;eval(s)
+  }
+
+  for(f in dic["functions"]){if(f!="on_entity_click" && f!="on_receive_data"  && f!="on_amount_paint")
+  {var s="this.main_div."+f+"="+dic["functions"][f];eval(s);}}
+}
+
+acUnitBoardCreator.prototype.set_detail_data = function(ll){
+
+   // alert("set_detail_data=\n"+ll)
+
+  }
+
+acUnitBoardCreator.prototype.hide_boards = function(n_)
+{
+    for(var j in this.board_objs){this.board_objs[j].content.style.display="none";this.button_objs[j].style.display="none"}
+    for(var i=1; i<n_;i++){this.button_objs[i].style.display="block"}
+}
+
+acUnitBoardCreator.prototype.get_grade = function(skill_id, unit_id)
+{
+ ret = 0;
+ try{ret=atm.grades[unit_id][skill_id]} catch(er){}
+ return ret;
+}
+
+acUnitBoardCreator.prototype.set_board_data = function(ll=[])
+{
+  //alert("set data1\n"+ll.length)
+  if(atm.is_run_set_obj_structure==false){return}
+  if(ll.length==0){for(var k in atm.data_dic){ll.push(k)}}
+   //alert("acBasicCreator.prototype.set_board_data 90446-25 \n"+JSON.stringify(atm.data_dic));
+   //alert(ll)
+   //--
+   var dic_=this.parent.data;var pp_=dic_["properties"];
+   var skills_=eval(pp_["skills"]);
    var width_=pp_["width"]; if(width_==null || width_==""){width_=900};
    var height_=pp_["height"]; if(height_==null || height_==""){height_=300};
     var dic=atm.data_dic;
@@ -1814,7 +2489,7 @@ acBasicCreator.prototype.set_board_data = function(ll=[])
       k +=1
       var col_width=110;
       var soldier_col_width=350
-      this.fields_skills=["Fitness","Shooting","Professional","Equipment"]
+      this.fields_skills=skills_; //["Fitness","Shooting","Professional","Equipment"]
       var n_left=(1*width_-this.fields_skills.length*col_width-soldier_col_width-this.nav_width)/2+this.nav_width
       color__="lightblue"
       var div_=document.createElement("div");
@@ -1859,12 +2534,14 @@ acBasicCreator.prototype.set_board_data = function(ll=[])
    }
 }
 
-acBasicCreator.prototype.set_obj_structure = function(ll_)
+acUnitBoardCreator.prototype.set_obj_structure = function(ll_)
 {
   //alert("set obj1")
   //alert(atm.is_run_set_obj_structure)
   if(atm.is_run_set_obj_structure==true || atm.general.period==null){return}
-  var dic=this.parent.data;var pp_=dic["properties"];var table_=pp_["table"];
+  var dic=this.parent.data;var pp_=dic["properties"];
+  var qualifications_=eval(pp_["qualifications"]);
+  var table_=pp_["table"];
   var setup_dictionary=pp_["setup_dictionary"];var general_entity_name=pp_["entity"];
   var fields_=["soldier", "skill", "value"];
   atm.nlimit=atm.general.period[atm.general.current_period]["n_limit"];
@@ -1895,7 +2572,7 @@ acBasicCreator.prototype.set_obj_structure = function(ll_)
         //alert(k+"\n11\n"+dic[k]["title"])
         data_dic[k]={};data_dic[k]["kpi"]={};
         var title=dic[k]["title"];data_dic[k]["title"]=title;if(n_==1){data_dic[k]["type"]="battalion"}
-        var fields_=["Fitness","Shooting","Professional","Equipment","Exe. vs Plan"]
+        var fields_=qualifications_; //["Fitness","Shooting","Professional","Equipment","Exe. vs Plan"]
         var nn_=0;
         for(var j in fields_)
         {
@@ -1927,7 +2604,7 @@ acBasicCreator.prototype.set_obj_structure = function(ll_)
        var fun=function(data, ll){
         var grades=ll[0];var f=ll[1]; var nlimit=ll[2]; var ll_=ll[3];
         try{if(Object.keys(data).length==0 || data["id"].length==0){alert("There is no data for this battlion.");return;}} catch (er) {}
-         //alert("90446-77 data \n"+JSON.stringify(data))
+         //alert("90446-77 data \n"+JSON.stringify(data[fields_[0]]))
         var n_=data[fields_[0]].length;
         for(var i=0;i<n_;i++)
         {if(!(data["soldier"][i] in grades)){grades[data["soldier"][i]]=[0,0,0,0]}
@@ -1955,6 +2632,7 @@ acBasicCreator.prototype.set_obj_structure = function(ll_)
       this.parent.atm.get_data(call_back_fun=fun, dic__, [atm.grades,f, atm.nlimit, ll_])
   } catch(er){alert("1155-515: "+er)}
 }
+
 
 // -- acReport --
 function acReport(){}
@@ -2769,15 +3447,20 @@ var container_on_change=function (event){
   var field__u=field_; var v__u=e.value;
   var type__=e.getAttribute("type_");
   //alert("c9002-10 type__="+type__)
-  if(type__!=null && type__!="" && type__=="Select"){
-   var s__="";
-   for(j in e.selectedOptions)
-   {
-    try{if(e.selectedOptions[j]!=null && e.selectedOptions[j].tagName.toLowerCase()=="option")
-    {if(s__!=""){s__+=","};s__+=e.selectedOptions[j].getAttribute("value")}} catch(er){}
-   }
-   v__u=s__
-   //alert("9052 v__u = "+v__u)
+  if(type__!=null && type__!=""){
+      if(type__=="Select"){
+       var s__="";
+       for(j in e.selectedOptions)
+       {
+        try{if(e.selectedOptions[j]!=null && e.selectedOptions[j].tagName.toLowerCase()=="option")
+        {if(s__!=""){s__+=","};s__+=e.selectedOptions[j].getAttribute("value")}} catch(er){}
+       }
+       v__u=s__
+       //alert("9052 v__u = "+v__u)
+      } else if (type__=="RichText"){
+       v__u=e.innerHTML
+      //alert(v__u)
+      }
   }
   if(field__!=""){field__u=field__; v__u=v__}
 
@@ -2920,9 +3603,10 @@ var container_on_change=function (event){
            else {dic_data["fields"][field__u]=v__u;}
            //alert('9081-222 dic_data= '+ JSON.stringify(dic_data));
            //alert(html_obj_to_update.outerHTML)
+           dic_data["for_refresh_my_tables"]={"f":field__u, "v":v__u, "container_id":e_container_id_}
            container.tab.parent.save_data(html_obj_to_update, dic_data);
+
            //alert(c9002-130+e.value)
-           try{container.my_creator_obj.refresh_my_tables(f=field__u, v=v__u);}catch(er){}
        }
   }
   // event.stopPropagation();
@@ -5078,6 +5762,8 @@ acComplianceCreator.prototype.set_units = function()
 function acSearchTableCreator(parent){this.parent=parent;this.is_json_data=false;this.json_record_id=-1;
                                       this.json_last_record_number=0, this.primary_key_list_filter=[],
                                       this.data_table_name=null;
+                                      this.parent_model_=null; this.parent_id_=null;
+                                      this.parent_model_fk_name_=null;
                                       }
 
 acSearchTableCreator.prototype.create_obj = function()
@@ -5279,43 +5965,48 @@ acSearchTableCreator.prototype.get_data = function(data_table_name=null,parent_m
 {
   //alert("acSearchTableCreator.prototype.get_data = "+ 1)
   //alert("parent_model_fk_name\n"+parent_model_fk_name)
+  //alert("9090-12 data_table_name\n"+data_table_name)
   var dic=this.parent.data;
-  //alert("9044-441  "+JSON.stringify(dic));
-  //alert("9044-441  "+JSON.stringify(dic["functions"]));
   try{var f_=dic["functions"]["before_get_data"]; var s_="var zz="+f_;eval(s_); zz(dic);} catch(er){}
   // alert("0000  "+JSON.stringify(dic["fields"]));
   var container = document.getElementById("content_"+dic["container_id"]);
-  //alert(container.outerHTML);
-  if(data_table_name!==null){this.data_table_name=data_table_name}
+  if(this.data_table_name!=null && data_table_name!==null){this.data_table_name=data_table_name}
   else {this.data_table_name=container.getAttribute("table")}
-
   try{
     var parent_id_="";
     var model_=container.my_creator_obj.link_dic["properties"]["table"];
     try{
-        if(parent_model!=null){var parent_model_=parent_model} else {
-          var parent_model_=container.my_creator_obj.link_dic["properties"]["parent_table"]
-          }
-          if(parent_model_==null){var parent_model_="";}
-        } catch(er){alert(er)};
+        if(this.parent_model_==null){
+           if(parent_model!=null){this.parent_model_=parent_model}
+           else {this.parent_model_=container.my_creator_obj.link_dic["properties"]["parent_table"]}
+        }
+        if(this.parent_model_==null){this.parent_model_="";}
+
+    } catch(er){alert(er)};
     // var record_id_=container.getAttribute("record_id");
-    if(parent_id!=null){parent_id_=parent_id} else {parent_id_=container.getAttribute("parent_id")}
-    if(parent_id_=="" || parent_id_==null){return}
+
+    var c_parent_id=null;
+    try{var c_parent_id=container.getAttribute("parent_id")}catch(er){}
+    if(parent_id!=null){this.parent_id_=parent_id}
+    else if(c_parent_id!=null && c_parent_id!="new" && c_parent_id!="-1"){this.parent_id_=c_parent_id}
+    if(this.parent_id==null){this.parent_id_=""}
+//alert(153)
+    // if(this.parent_id_=="" || this.parent_id_==null){return}
+//alert(18)
+
     var dic_={"model":this.data_table_name, "number_of_rows":this.number_of_rows, "fields":this.fields}
   } catch(er){alert("er90132: "+er)}
 
-   //alert("90441-1  "+JSON.stringify(dic_));
   var fun=function(data, ttbody_){
+    try{var f_=dic["functions"]["on_get_data"]; var s_="var hh="+f_;eval(s_); hh(data, dic__);} catch(er){}
     console.log("get_data search table inside call back function")
-    // alert("9081 data: "+JSON.stringify(data));
+     //alert("9081 data: "+JSON.stringify(data));
     try{if(Object.keys(data).length==0){return;}} catch (er) {}
     //alert(dic_["fields"][0])
     //alert(JSON.stringify(data[dic_["fields"][0]]))
     var n_=data[dic_["fields"][0]].length;
-    //alert(n_)
     console.log("get_data search table inside call back function n=" + n_)
     var s='';
-    // alert(data["pkf_name"])
     for(i=0; i<n_; i++)
     {
      s+='<tr id_="'+data[data["pkf_name"]][i]+'" row="'+i+'"'+'>';
@@ -5337,9 +6028,7 @@ acSearchTableCreator.prototype.get_data = function(data_table_name=null,parent_m
     //alert(ttbody_.my_creator_obj.is_json_data)
     //ttbody_.my_creator_obj.is_json_data=false;
   }
-
   var dic__=[]; for(i in dic_["fields"]){dic__.push(dic_["fields"][i])}
-  //alert("90442-2 dic__ \n"+JSON.stringify(dic__))
 
   var container_id=this.parent.data["container_id"];
   var container_dic=this.parent.tab.tab_objects[container_id];
@@ -5351,7 +6040,7 @@ acSearchTableCreator.prototype.get_data = function(data_table_name=null,parent_m
       {
         var f=container_dic[o]["properties"]["field"];
         if(f!=null){
-            if(container_dic[o]["obj_name"]=="acInput" || container_dic[o]["obj_name"]=="acTextarea")
+            if(container_dic[o]["obj_name"]=="acInput" || container_dic[o]["obj_name"]=="acTextarea" || container_dic[o]["obj_name"]=="acRichText")
             {if(!dic__.includes(f)){dic__.push(f)}
             } else if (container_dic[o]["obj_name"]=="acSelect"){var ps_=container_dic[o]["properties"];
              if("multiple" in ps_){this.multiple_select_fields.push(f)}else{if(!dic__.includes(f)){dic__.push(f)}}
@@ -5364,12 +6053,11 @@ acSearchTableCreator.prototype.get_data = function(data_table_name=null,parent_m
         if(f!=null){if(!dic__.includes(f)){dic__.push(f)}}
       }
   }
-  //alert("90445-55 dic__ \n"+JSON.stringify(dic__))
-  var dic__={"model":this.data_table_name, "parent_model": parent_model_, "parent_id":parent_id_,
+  var dic__={"model":this.data_table_name, "parent_model": this.parent_model_, "parent_id":this.parent_id_,
              "number_of_rows":this.number_of_rows, "multiple_select_fields": this.multiple_select_fields,
              "filters":{}, "order_by":this.order_by, "fields":dic__
              }
-  //alert("90446-66 dic__ \n"+JSON.stringify(dic__["filters"]))
+  //alert("90449-99-1: "+JSON.stringify(dic__));
 
    dic__["filters"][this.filter_field]={"value":this.filter_value, "foreign_table":this.filter_field_foreign_table}
    // I do not have to put the next line it but good readability
@@ -5395,13 +6083,20 @@ acSearchTableCreator.prototype.get_data = function(data_table_name=null,parent_m
           }
        }
     }
-  if(company_obj_id!=null){dic__["company_obj_id"]=company_obj_id}
+
+  if(this.company_obj_id_==null){
+     if(company_obj_id!=null){this.company_obj_id_=company_obj_id}
+  }
+  dic__["company_obj_id"]=this.company_obj_id_;
+
   dic__["primary_key_list_filter"]=this.primary_key_list_filter
+        if(this.parent_model_fk_name_==null){
+            if(parent_model_fk_name!=null){this.parent_model_fk_name_=parent_model_fk_name}
+        }
+        if(this.parent_model_fk_name_==null){this.parent_model_fk_name_=""}
+  dic__["parent_model_fk_name"]=this.parent_model_fk_name_;
 
-  if(parent_model_fk_name==null){parent_model_fk_name=""}
-  dic__["parent_model_fk_name"]=parent_model_fk_name
-
-  //alert("90449-99: "+JSON.stringify(dic__));
+  //alert("90447-777 dic__ \n"+JSON.stringify(dic__))
 
   this.parent.atm.get_data(call_back_fun=fun, dic__, this.tbody)
 }
@@ -5482,7 +6177,6 @@ acSearchTableCreator.prototype.row_click = function(event)
  //alert(container_id)
  var result={}
  var dic=this.my_creator_obj.tbody.data;
-  //alert(JSON.stringify(dic))
  if(this.my_creator_obj.is_json_data==true){
    container.my_creator_obj.clear_objects_data()
    var id_=e.getAttribute("id_")
@@ -5720,7 +6414,7 @@ acMSearchTableCreator.prototype.get_data = function(data_table_name=null,parent_
     var model_=container.my_creator_obj.link_dic["properties"]["table"];
     //alert(model_)
     try{
-        if(parent_model!=null){var parent_model_=parent_model} else {
+        if(parent_model!=null){parent_model_=parent_model} else {
           var parent_model_=container.my_creator_obj.link_dic["properties"]["parent_table"]
           }
           if(parent_model_==null){var parent_model_="";}
@@ -6868,22 +7562,19 @@ TabContent.prototype.set_objects_data = function(dic, is_json_data=false)
  var container_dic=this.tab.tab_objects[this.link_number];
  for(o in container_dic)
  {
-   if(container_dic[o]["obj_type"]=="acObj" && ((container_dic[o]["obj_name"]=="acInput" || container_dic[o]["obj_name"]=="acTextarea" )
-      || container_dic[o]["obj_name"]=="acSelect")){
+  //alert("90766-66-1 "+JSON.stringify(container_dic[o]["obj_type"]+"\n"+container_dic[o]["obj_name"]))
+  var on_=container_dic[o]["obj_name"]
+   if(container_dic[o]["obj_type"]=="acObj" && ((on_=="acInput" || on_=="acTextarea" || on_=="acRichText") || on_=="acSelect")){
      var multiple_=false;if("multiple" in container_dic[o]["properties"]){multiple_ = true}
-     var eI=document.getElementById(o);
-     var v=dic[container_dic[o]["properties"]["field"]]
-
+     var eI=getEBI(o);var f_=container_dic[o]["properties"]["field"]
+     if(f_==null || f_==""){continue;}
+     var v=dic[f_];
      if(v==null){v=""}
       //alert("1 v\n"+v)
-
       //if(v=="" || v==null){try{eI.value=container_dic[o]["properties"]["default_value"]} catch(er){};continue;}
-
      //var m=dic[container_dic[o]["properties"]["field"]]
-     if(container_dic[o]["obj_name"]=="acTextarea"){
-     v = JSON.stringify(v)
-     //alert(v)
-     }
+     //if(on_=="acTextarea"){v=JSON.stringify(v);alert(v);}
+     //if(on_=="acRichText"){alert(v)}
      if(container_dic[o]["properties"]["field"]=="time_dim")
      {
       var v_=v+"";v_=v_.substr(0, 4)+"-"+v_.substring(4,6)+"-"+v_.substring(6,8)
@@ -6901,6 +7592,8 @@ TabContent.prototype.set_objects_data = function(dic, is_json_data=false)
         if (sv.indexOf(eI.options[i].value) >= 0) {eI.options[i].selected = true}
 
        }
+     } else if(on_=="acRichText"){
+       if(v!=""){eI.innerHTML=v}
      } else {if(v!=""){eI.value=v}}
 
      var foreign_table=container_dic[o]["properties"]["foreign_table"]
@@ -6928,6 +7621,7 @@ TabContent.prototype.set_objects_data = function(dic, is_json_data=false)
 
 TabContent.prototype.clear_objects_data = function()
 {
+
  try{
    var dic = this.current_record_data;
    this.link_content.setAttribute("record_id", "new");
@@ -6935,23 +7629,22 @@ TabContent.prototype.clear_objects_data = function()
    // alert('92 container_dic= ' + JSON.stringify(container_dic));
    this.link_content.foreign_keys={};this.link_content.dependents={};
    var table_=getEBI("content_"+this.link_number)
-
    //alert(table_.outerHTML)
-
    var table_=getEBI("content_"+this.link_number).getAttribute("table");
-
    //alert(table_)
-
    if(table_==null || table_==""){return}
-
    for(o in container_dic)
    {
     //alert('95 container_dic= ' + JSON.stringify(container_dic[o]));
+     var f_=container_dic[o]["properties"]["field"]
+     if(f_==null || f_==""){continue;}
+
     var obj_name=container_dic[o]["obj_name"];
-
-
-    if(container_dic[o]["obj_type"]=="acObj" && (obj_name=="acInput" || obj_name=="acTextarea" || obj_name=="acSelect"))
-    {if(obj_name=="acSelect"){document.getElementById(o).value=-1} else {document.getElementById(o).value="";}}
+    if(container_dic[o]["obj_type"]=="acObj" && (obj_name=="acInput" || obj_name=="acTextarea" || obj_name=="acRichText" || obj_name=="acSelect"))
+    {if(obj_name=="acSelect"){document.getElementById(o).value=-1}
+     else if(obj_name=="acRichText"){getEBI(o).innerHTML="";}
+     else {getEBI(o).value="";}
+    }
    }
   } catch(er){}
 }
@@ -6982,6 +7675,7 @@ TabContent.prototype.refresh_my_tables = function(f, v)
  //alert('90 container_dic= '+ JSON.stringify(container_dic));
  for(o in container_dic)
  {
+   //alert('90 container_dic= '+ JSON.stringify(container_dic[o]));
    if(container_dic[o]["obj_type"]=="acPlugin" && (container_dic[o]["obj_name"]=="acSearchTable" || container_dic[o]["obj_name"]=="acMSearchTable")){
      try{
           var eI=document.getElementById(o);
@@ -8428,3 +9122,6 @@ var num_to_day = function(n){return days_of_name[n]}
 var months_dic={"01":"Jan", "02":"Feb","03":"Mar", "04":"Apr","05":"May", "06":"Jun",
                 "07":"Jul", "08":"Aug","09":"Sep", "10":"Oct","11":"Nov", "12":"Dec"}
 var days_of_name=["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
+//-- Other Functions --
+
+var list_average=function(l){return Math.round(100*l.reduce((a,b) => a+b, 0)/l.length)/100;}
