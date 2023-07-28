@@ -4725,13 +4725,19 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
         model_battalions = apps.get_model(app_label=app_, model_name="battalions")
         model_unit_soldiers = apps.get_model(app_label=app_, model_name="unitsoldiers")
         model_soldiers = apps.get_model(app_label=app_, model_name="soldiers")
+        model_soldierqualificationfact = apps.get_model(app_label=app_, model_name="soldierqualificationfact")
         battalion_obj = model_battalions.objects.get(battalion_number=battalion_number_)
         period_obj = model_periods.objects.get(battalion=battalion_obj, period_number=period_number_)
         units_dic = period_obj.structure
         df = pd.read_excel(file_path, sheet_name="Data", header=0)
         # print(df, "\n", "-"*100)
-        columns = df.columns[10:]
+        columns = df.columns[11:]
+
         # print("columns\n", columns)
+
+        objs = model_soldierqualificationfact.objects.filter(soldier__battalion=battalion_obj, skill=2).all()
+        objs.delete()
+
         for index, row in df.iterrows():
             # if index < 545:
             #     continue
@@ -4753,6 +4759,7 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
             shoes_size = str(row["shoes_size"]).strip()
             mz4psn = str(row["mz4psn"])
             ramonsn = str(row["ramonsn"])
+            professional_qualified = int(row["professional_qualified"])
             try:
                 u = User.objects.get(username=username_)
                 u.first_name = first_name
@@ -4822,6 +4829,16 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
                 # print("saved: "+ str(n__))
             except Exception as ex:
                 print("error 200: ", full_name)
+
+            try:
+                o, is_created = model_soldierqualificationfact.objects.get_or_create(training_web=battalion_obj.training_web,
+                                                                                     soldier=soldier_obj, skill=2)
+                o.value=professional_qualified
+                o.save()
+
+            except Exception as ex:
+                print("error 200-1: ", full_name)
+
             # Update inventory
             for k in columns:
                 # print("\n", "-"*20, "\n", k, "\n", userid, "\n", "-"*20)
@@ -4846,6 +4863,7 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
                     # print("f_obj", f_obj)
                 except Exception as ex:
                     print("9011-55-0 Error \nk=", k, "\nv_=", v_, "userid\n", userid, "\n", str(ex))
+
         # -----
         result = {"status": "ok"}
         print(result)
@@ -4915,7 +4933,7 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
 
             # print("1 columns\n", df.columns)
             log_debug("Start 3")
-            columns = df.columns[11:]
+            columns = df.columns[12:]
             # print("2 columns\n", columns)
 
             try:
