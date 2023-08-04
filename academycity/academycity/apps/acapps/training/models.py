@@ -192,6 +192,7 @@ class Inventorys(TruncateTableMixin, models.Model):
     item_number = models.SmallIntegerField(default=0, blank=True, null=True)
     item_name = models.CharField(max_length=50, default='', blank=True, null=True)
     description = models.CharField(max_length=128, default='', blank=True, null=True)
+    critical = models.CharField(max_length=32, default='1', blank=True, null=True)
     qty_per_soldier = models.SmallIntegerField(default=0, blank=True, null=True)
 
     def __str__(self):
@@ -224,10 +225,14 @@ class Soldiers(TruncateTableMixin, models.Model):
     #
     shoes_size = models.DecimalField(max_digits=4, decimal_places=2, default=0)
     clothes_size = models.CharField(max_length=2, default='', blank=True, null=True)
-    #
     mz4psn = models.CharField(max_length=100, default='', blank=True, null=True)
     ramonsn = models.CharField(max_length=100, default='', blank=True, null=True)
     mz10 = models.CharField(max_length=100, default='', blank=True, null=True)
+    #
+    rank = models.CharField(max_length=20, default='', blank=True, null=True)
+    function = models.CharField(max_length=256, default='', blank=True, null=True)
+    profession = models.SmallIntegerField(default=0)
+    professional_qualified = models.SmallIntegerField(default=0)
     #
     address = models.CharField(max_length=100, default='', blank=True, null=True)
     city = models.CharField(max_length=50, default='', blank=True, null=True)
@@ -247,9 +252,6 @@ class Soldiers(TruncateTableMixin, models.Model):
     blood_type =  models.CharField(max_length=10, default='', blank=True, null=True)
     #
     position = models.SmallIntegerField(default=0)
-    rank = models.CharField(max_length=20, default='', blank=True, null=True)
-    profession = models.SmallIntegerField(default=0)
-    sub_profession = models.SmallIntegerField(default=0)
     #
     medical_condition = models.TextField(blank=True, null=True)
     #

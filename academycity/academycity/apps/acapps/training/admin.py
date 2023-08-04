@@ -100,6 +100,7 @@ class InventoryCategorysAdmin(admin.ModelAdmin):
 @admin.register(InventoryFact)
 class InventoryFactAdmin(admin.ModelAdmin):
     list_display = ('id', 'inventory', 'soldier', 'value')
+    list_filter = ['inventory', 'soldier']
 
 @admin.register(TestsVariables)
 class TestsVariablesAdmin(admin.ModelAdmin):
@@ -125,6 +126,7 @@ class DoubleShootAdmin(admin.ModelAdmin):
 @admin.register(UnitSoldiers)
 class UnitSoldiersAdmin(admin.ModelAdmin):
     list_display = ('id', 'period', 'soldier', 'unit_number')
+    list_filter = ['period', 'soldier']
 
 @admin.register(SoldierQualificationFact)
 class SoldierQualificationFactAdmin(admin.ModelAdmin):

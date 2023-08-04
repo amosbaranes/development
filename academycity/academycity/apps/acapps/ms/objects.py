@@ -483,13 +483,13 @@ class MSDataProcessing(BaseDataProcessing, MSAlgo):
             ll.sort(key=take_key)
             ll_ = [j[1] for j in ll]
             r = self.get_peaks({"cl_all":ll_, "t_pop": t_pop})["result"]
-            # print(ll_, "\n", o.gene_code, "\n", r)
+            print(ll_, "\n", o.gene_code, "\n", r)
 
         result = {"status": "ok", "result": {"a": "a"}}
         return result
 
     def get_peaks(self, dic):
-        # print("90955-50: get_peaks\n", dic, "\n", "=" * 50)
+        print("90955-50: get_peaks\n", dic, "\n", "=" * 50)
         l = dic["cl_all"]
         t_pop = int(dic["t_pop"])/100
         # print(l, "\n", t_pop, "\n", sum(l))
@@ -555,7 +555,7 @@ class MSDataProcessing(BaseDataProcessing, MSAlgo):
             num_peaks_ += 1
             # print(l_, num_peaks_, lb_, ub_)
             gh = get_global_high(l_, lb_, ub_)
-            # print("gh", gh)
+            print("gh", gh)
             ll = get_location_of_left_low(l_, lb_, gh)
             # print("ll", ll)
             rl = get_location_of_right_low(l_, gh, ub_)
@@ -615,6 +615,6 @@ class MSDataProcessing(BaseDataProcessing, MSAlgo):
         print("A Create Blocks for l=", l, "sum=", sum(l), "\n", peak_array)
         if peak_array["number_of_blocks"] > 1:
             two_rules_combination(l, peak_array, t_pop)
-        # print(peak_array)
+        print(peak_array)
         result = {"status": "ok", "result": peak_array}
         return result

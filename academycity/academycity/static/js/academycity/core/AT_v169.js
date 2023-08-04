@@ -1831,6 +1831,7 @@ acBasicCreator.prototype.get_grade = function(skill_id, unit_id)
 // https://plotly.com/javascript/pie-charts/
 // https://www.alt-codes.net/smiley_alt_codes.php
 
+
 acBasicCreator.prototype.set_board_data = function(ll=[])
 {
   //alert("set data1\n"+ll.length)
@@ -1850,13 +1851,24 @@ acBasicCreator.prototype.set_board_data = function(ll=[])
    var width_=pp_["width"]; if(width_==null || width_==""){width_=900};
    var height_=pp_["height"]; if(height_==null || height_==""){height_=300};
     var dic=atm.data_dic;
+    var unit_qualification = atm.general.unit_qualification
+   //alert("90441-550-4 \n"+JSON.stringify(unit_qualification));
+
+   //alert("90441-550-3 \n"+JSON.stringify(atm.general.unit_qualification));
     var z=-1;
+
+    var unit_qualification_dic = {'wet_day':0,'wet_night':0,'raid_day':0, 'raid_night':0}
+
     for(var j in ll){
-    z+=1;var dic=dic[ll[z]];var container_=this.board_objs[(1*z+1)].content;
-    try{var kpi=dic["kpi"];var board_title=dic["title"];dic=dic["data"]} catch(er){alert(er)}}
+    z+=1;var dic=dic[ll[z]];
+    var unit_qualification=unit_qualification[ll[z]];for(var x in unit_qualification_dic){unit_qualification_dic[x]=unit_qualification[x]}
+    var container_=this.board_objs[(1*z+1)].content;
+    try{var kpi=dic["kpi"];var board_title=dic["title"];dic=dic["data"];unit_qualification=unit_qualification["data"];
+    } catch(er){alert(er)}}
     if(z<0){try{var container_=this.board_objs[1].content} catch(er){alert(er)}}
     //alert("90441-550-1  "+JSON.stringify(kpi));
     //alert("90441-550-2  "+JSON.stringify(dic));
+    //alert("90441-550-3 \n"+JSON.stringify(unit_qualification));
     try{this.hide_boards((1*z+1)); container_.style.display="block";} catch(er){alert(er)}
     // alert("90441-550  "+JSON.stringify(dic));
     var n_kpi_objs=Object.keys(this.fields_kpis_).length;
@@ -1864,6 +1876,8 @@ acBasicCreator.prototype.set_board_data = function(ll=[])
     var n_objs=Object.keys(dic).length;
     var wl=50;var wr=50;var w=200;var n__=(width_-wl-wr)/n_objs;if(n__<200){w=n__}
     var wb_kpi=(1*width_-wl_kpi-wr_kpi-n_kpi_objs*w_kpi)/(n_kpi_objs-1);
+    if(type_=="unit"){wb_kpi=(1*width_-wl_kpi-wr_kpi-(1+n_kpi_objs)*w_kpi)/(n_kpi_objs)}
+
     var wb=(1*width_-wl-wr-n_objs*w)/(n_objs-1);
 
     //alert(wb)
@@ -1879,7 +1893,6 @@ acBasicCreator.prototype.set_board_data = function(ll=[])
    //--
    // add company logo
    var company_logo_src="/media/training/images/"+pp_["company_logo"]
-   var battalion_logo_src="/media/training/images/"+pp_["battalion_logo"]
    var company_logo_style="position:absolute;left:50px;top:10px;width:150px;height:60px;"
    var company_image=document.createElement("img");
    company_image.setAttribute("src", company_logo_src);
@@ -1887,16 +1900,19 @@ acBasicCreator.prototype.set_board_data = function(ll=[])
    container_.appendChild(company_image);
    // add battalion logo
    var battalion_logo_src="/media/training/images/"+pp_["battalion_logo"]
-   var battalion_logo_style="position:absolute;left:770px;top:10px;width:150px;height:60px;"
+   var left_=width_-130
+   var battalion_logo_style="position:absolute;left:"+left_+"px;top:10px;width:150px;height:60px;"
    var battalion_image=document.createElement("img");
+
    battalion_image.setAttribute("src", battalion_logo_src);
    battalion_image.setAttribute("style", battalion_logo_style);
    container_.appendChild(battalion_image);
    //-- chart KPI --
-   for(var j=1; j<=n_kpi_objs;j++)
+   var n__=n_kpi_objs;if(type_=="unit"){n__=n_kpi_objs+1}
+   //alert(n_kpi_objs+"\n"+type_+"\n"+n__)
+   for(var j=1; j<=n__;j++)
    {
-     var nl_=this.kpis_cols[j-1];// alert(j+"  :  "+nl_);
-
+     var nl_=this.kpis_cols[j-1];//
      var div_=document.createElement("div");
      var top_=80
      var style_ = "position:absolute;left:"+w_kpi_+"px;top:"+top_+"px;width:"+w_kpi+"px;height:"+h_kpi+"px;"
@@ -1908,7 +1924,7 @@ acBasicCreator.prototype.set_board_data = function(ll=[])
           {
             type: "indicator",
             mode: "gauge+number",  //+delta
-            value: kpi[nl_][type_+"_grade"],
+            value: kpi[nl_][type_+"_grade"], number: { suffix: "%" },
             delta: { reference: 60, increasing: { color: "RebeccaPurple" } },
             gauge: {
               axis: { range: [null, 100], tickwidth: 1, tickcolor: "darkblue" },
@@ -1922,40 +1938,72 @@ acBasicCreator.prototype.set_board_data = function(ll=[])
           }
         ];
         var layout = {
-        autosize: false,
+          autosize: false,
           title: { text: this.fields_kpis_[j-1], font: { size: 15 } },
-          width: 150,height: 160,
+          width: 180,height: 160,
           margin: {l: 5, r: 5, b: 10, t: 20,  pad: 1 },
           paper_bgcolor: container_.style.backgroundColor,
           showlegend: false,
           font: { color: "darkblue", family: "Arial" }
         };
-    } else{
-        var data = [
-          {
-            type: "indicator",
-            mode: "number+delta+gauge",
-            value: kpi[nl_][type_+"_grade"],
-            gauge: {
-              shape: "bullet",
-              axis: {visible: false, range: [0, 100]},
-              bar: { color: "white" },
-              steps: [{ range: [0, 60], color: "red" },{ range: [60, 100], color: "green" }],
-            }
-          }
-        ];
-        var layout = {
-        autosize: false,
-          title: { text: this.fields_kpis_[j-1], font: { size: 15 } },
-          width: 150,height: 100,
-          margin: {l: 5, r: 5, b: 10, t: 20,  pad: 1 },
-          paper_bgcolor: container_.style.backgroundColor,
-          showlegend: false,
-          font: { color: "darkblue", family: "Arial" }
-        };
-     }
-     Plotly.newPlot(div_, data, layout, {displayModeBar: false});
+    } else {
+        //alert("j="+j+"\ntype="+type_+"\nnobjs="+n_kpi_objs+"\nn__="+n__+"\nnl_="+nl_)
+       if(j==n__ && type_=="unit") {
+                var ll_ = [];
+                var is_all=1
+               for(var x in unit_qualification_dic)
+               {
+                if(unit_qualification_dic[x]==0){ll_.push(x);}else{ll_.push("")}
+                is_all*=unit_qualification_dic[x];
+               }
+               if(is_all==1){var c_='rgb(0, 128, 0)';}else{var c_='rgb(255, 0, 0)'}
+               var c=[c_,c_,c_,c_];
 
+                  var data = [{'labels': ll_, 'marker': {'colors': c},
+                  text: ll_,
+                  textinfo: 'text',
+                    'type': 'pie','hoverinfo': 'label','sort': false,
+                  }]
+                    var layout = {
+                      title: { text: "Unit Training", font: { size: 15 } },
+                      width: 150,height: 160,
+                      margin: {l: 5, r: 5, b: 10, t: 20,  pad: 1 },
+                      paper_bgcolor: container_.style.backgroundColor,
+                      showlegend: false,
+                      hovermode: false,
+                      font: { color: "darkblue", family: "Arial" }
+                    };
+
+       }
+       else {
+
+            var bgcolor = "red";
+            var v_ = kpi[nl_][type_+"_ref1"];var reference_=kpi[nl_][type_+"_grade"];
+
+            var data = [
+              {
+                type: "indicator",
+                mode: "number+delta",
+                value: v_,
+                number: { prefix: "" },
+                delta: { position: "top", reference: reference_ }
+              }
+            ];
+
+            var layout = {
+                  autosize: true,
+                  title: { text: this.fields_kpis_[j-1], font: { size: 20 } },
+                  width: 180,height: 130,
+                  margin: {l: 5, r: 5, b: 10, t: 50,  pad: 1 },
+                  paper_bgcolor: bgcolor,
+                  showlegend: false,
+                  font: { color: "darkblue", family: "Arial" }
+            };
+
+        }
+    }
+
+     Plotly.newPlot(div_, data, layout, {displayModeBar: false});
      //-- Grade --
      w_kpi_=w_kpi_+1*(1*w_kpi+1*wb_kpi);
      container_.appendChild(div_);
@@ -1980,6 +2028,16 @@ acBasicCreator.prototype.set_board_data = function(ll=[])
          if(nn__>=1*dic[z]["kpi"][k_][type_+"_pass"]){var g='rgb(0,128,0)'}else{var g='rgb(255, 0, 0)'}
          background_color_.push(g)
         }
+
+
+         var text_color="black"
+
+         var is_all=1;
+         var uq=unit_qualification[z];
+         //alert(z+"\n"+JSON.stringify(uq));
+         for(var x in unit_qualification_dic){is_all*=uq[x]}
+         var text_color="black";var text_bgcolor="red";if(is_all==1){text_color="green";var text_bgcolor="none"}
+
       var div_=document.createElement("div");
       var div_c=document.createElement("div");
       div_.appendChild(div_c);
@@ -1991,8 +2049,14 @@ acBasicCreator.prototype.set_board_data = function(ll=[])
       div_.setAttribute("style", style_);
       w_+=wb+w
 
-      var style_c="width:100%;height:40px;position:absolute;top:50%;left:0;margin-top:-15px;line-height:19px;"
-      style_c+="text-align:center;z-index:0"
+      if(type_=="unit"){
+      var style_c="background-color:"+text_bgcolor+";font-weight: bold;color:"+text_color+";width:40%;height:30%;position:absolute;top:45%;left:0;margin-top:-15px;line-height:19px;"
+      style_c+="border-radius:45%;margin-left:30%;padding:10px;;text-align:center;z-index:0"
+      } else{
+      var style_c=";font-weight: bold;width:100%;height:30%;position:absolute;top:45%;left:0;margin-top:-15px;line-height:19px;"
+      style_c+="padding:10px;;text-align:center;z-index:0"
+      }
+
       div_c.setAttribute("style", style_c);
       div_c.innerHTML=dic[z]["title"]
 
@@ -2058,11 +2122,14 @@ acBasicCreator.prototype.set_board_data = function(ll=[])
 
         var grade=this.get_grade(skill_id=nl_, unit_id=s_);
         var color="white";var background_color = "green"; var img_="&#128512;"
+
         if(grade==0){color="black";background_color = "white"; var img_=""}
-        else if(grade<atm.general.pass_grade[type_][i])
-        {background_color="red"; color="white";var img_="&#128514";
+        else if(grade<atm.general.pass_grade[type_][nl_])
+        {
+          background_color="red"; color="white";var img_="&#128514";
         }
         if(grade<100){grade="&nbsp;&nbsp;"+grade}
+        //alert(grade + "\n"  + nl_ + "\n" + atm.general.pass_grade[type_][nl_] + "\n" + background_color)
         s+="<td style='text-align:center;width:100px;color:"+color+";background-color:"+background_color+"'>"+grade+"&nbsp;&nbsp;&nbsp;&nbsp;"+img_+"</td>"
        }
        s+="</tr>"
@@ -2120,18 +2187,33 @@ acBasicCreator.prototype.set_obj_structure = function(ll_)
          var ll=[];
          ff_(dic[k]["data"],ll, grades, sn_=j);
          //alert(ll)
-         if([0,1,3].includes(1*j)==true)
+
+           var individual_ref1=0;
+           var unit_ref1=0;
+         if([0,1].includes(1*j)==true)
          {
            var individual_grade=list_average(ll);
-
            var kk = ll.filter(_=> _>=60)
-
            var unit_grade=100*kk.length/ll.length;
 
+         } else if([3].includes(1*j)){
+
+           var kk = ll.filter(_=> _>=1)
+
+           //alert("\nll="+ll.length+"\nkk="+kk.length)
+
+           var individual_grade=(ll.length-kk.length)
+           var individual_ref1=ll.length;
+
+           var unit_grade=ll.length;
+           var unit_ref1=(ll.length-kk.length)
+
          } else if([2].includes(1*j)){
+
             var kk = ll.filter(_=> _!=0);var kk1 = kk.filter(_=> _!=-1);var kk_1 = kk.filter(_=> _!=1)
             var individual_grade=100*kk1.length/kk.length;
             var unit_grade=100;if(kk_1.length>0){unit_grade=0}
+
          } else if([4,5].includes(1*j)){
             var kk = ll.filter(_=> _==100);
             var individual_grade=0; if(kk.length>=0.70*ll.length){individual_grade=100};
@@ -2143,7 +2225,10 @@ acBasicCreator.prototype.set_obj_structure = function(ll_)
                                   "individual_pass":atm.general.pass_grade["individual"][j],
                                   "unit_pass":atm.general.pass_grade["unit"][j],
                                   "individual_grade": individual_grade,
-                                  "unit_grade":unit_grade};
+                                  "unit_grade":unit_grade,
+                                  "individual_ref1":individual_ref1,
+                                  "unit_ref1":unit_ref1,
+                                  };
          data_dic[k]["kpi"][nn_]["title"]=kpi_fields_[j];
         }
         data_dic[k]["data"]={};
