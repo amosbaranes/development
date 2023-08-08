@@ -193,9 +193,12 @@ function AdvancedTabsManager(dic=null)
                                                                        ,"field_width":[],"field_align":[],
                                                                        "foreign_table":[],"filter":[]}},
                                         "Chart":{"title":"Chart", "width":5,
-                                                 "setting": {"remove_buttons":["", "true", "false"]},
-                                                 "attributes":{"height":[], "interval":[]},
-                                                 "functions":[]},
+                                                 "setting": {
+                                                   "remove_buttons":["", "true", "false"],
+                                                   "remove_markers":["", "true", "false"],
+                                                   "remove_hovermode":["", "true", "false"]},
+                                                   "attributes":{"height":[], "interval":[]},
+                                                   "functions":[]},
                                         "Candle":{"title":"Candle", "width":6,
                                                  "setting": {"border_width":[],"border_color":[],
                                                              "scale_type":["linear", "logarithmic"],"height":[],"width":[]},
@@ -1977,7 +1980,7 @@ acBasicCreator.prototype.set_board_data = function(ll=[])
        }
        else {
 
-            var bgcolor = "red";
+            var bgcolor = "#CCD1D1";
             var v_ = kpi[nl_][type_+"_ref1"];var reference_=kpi[nl_][type_+"_grade"];
 
             var data = [
@@ -1993,7 +1996,7 @@ acBasicCreator.prototype.set_board_data = function(ll=[])
             var layout = {
                   autosize: true,
                   title: { text: this.fields_kpis_[j-1], font: { size: 20 } },
-                  width: 180,height: 130,
+                  width: 190,height: 130,
                   margin: {l: 5, r: 5, b: 10, t: 50,  pad: 1 },
                   paper_bgcolor: bgcolor,
                   showlegend: false,
@@ -6647,7 +6650,7 @@ acDETableCreator.prototype.editor_properties_func = function(tab, tab_properties
  tab_properties_.appendChild(nav_detail);
 }
 
-// -- acChartCreator --
+// -- acChart Creator --
 function acChartCreator(parent){this.parent=parent;}
 
 acChartCreator.prototype.create_obj = function()
@@ -6774,13 +6777,14 @@ acChartCreator.prototype.set_chart_data = function(chart_type)
     trace["type"]="histogram";
     trace["xbins"]={end:chart_type["xbins"]["end"],size:chart_type["xbins"]["size"],start:chart_type["xbins"]["start"]}
     data_.push(trace);
-
     var layout = {title: data["title"],
                   xaxis: {title: chart_type["x-axis-title"]},
                   yaxis: {title: chart_type["y-axis-title"]}}
    //alert(JSON.stringify(data_));
    //modeBarButtonsToRemove: ['toImage'], displaylogo: false,
+
   var ss=pp_["remove_buttons"];if(ss==null || ss=="false"){ss=true}else{ss=false}
+
   Plotly.newPlot(this.chart, data_, layout, {displayModeBar: ss});
  }
  else if(chart_type["type"]=='bubbles'){
@@ -6817,25 +6821,32 @@ acChartCreator.prototype.set_chart_data = function(chart_type)
     }
  }
  else if(chart_type["type"]=='lines'){
-    // alert("90233-550-1\n"+JSON.stringify(chart_type));
+     //alert("90233-550-1\n"+JSON.stringify(chart_type));
     var data = [];
+
+    var ss=pp_["remove_markers"];if(ss==null || ss=="true"){ss=""}else{ss=false}
     for(var k in chart_type["series"])
     {
          var trace = {
           x: chart_type["x"],
           y: chart_type["series"][k]["data"],
           name: chart_type["series"][k]["name"],
-          mode: "lines+markers",
+          mode: "lines+"+ss,
           type: "scatter"
         };
         data.push(trace);
     }
+
+    var ss=pp_["remove_hovermode"];if(ss==null || ss=="true"){ss=false}else{ss=true}
     var layout = {
       title: chart_type["title"],
+      hovermode: ss,
       xaxis: {title: chart_type["x-axis-title"]},
       yaxis: {title: chart_type["y-axis-title"]}
     };
-    Plotly.newPlot(this.chart, data, layout);
+
+    var ss=pp_["remove_buttons"];if(ss==null || ss=="false"){ss=true}else{ss=false}
+    Plotly.newPlot(this.chart, data, layout, {displayModeBar: ss});
  }
  else if(chart_type["type"]=='bars'){
     //alert("90243-550-1\n"+JSON.stringify(chart_type));
@@ -8787,3 +8798,14 @@ var days_of_name=["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Frida
 //-- Other Functions --
 
 var list_average=function(l){return Math.round(100*l.reduce((a,b) => a+b, 0)/l.length)/100;}
+
+const list_variance = (arr = []) => {if(!arr.length){return 0};
+   const sum = arr.reduce((acc, val) => acc + val); const { length: num } = arr; const median = sum / num;
+   let variance = 0; arr.forEach(num => {variance += ((num - median) * (num - median));});variance /= num;
+   return Math.round(100*variance)/100;
+};
+
+const list_std = function(arr = []){return Math.round(100*Math.sqrt(list_variance(arr)))/100};
+
+
+

@@ -4455,7 +4455,7 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
         return result
 
     def set_instructors(self, dic):
-        # print('90088-1 dic', dic)
+        # print('90088-17 dic', dic)
         app_ = dic["app"]
         file_path = self.upload_file(dic)["file_path"]
         # print("-"*100, "\n", file_path, "\n", "-"*100)
@@ -4555,7 +4555,7 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
 
     # v2 --
     def set_soldiers_and_org_structure(self, dic):
-        print('90022-1 dic', dic)
+        print('90022-7 dic', dic)
         app_ = dic["app"]
         file_path = self.upload_file(dic)["file_path"]
         # print("-"*100, "\n", file_path, "\n", "-"*100)
@@ -4808,7 +4808,7 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
         return result
 
     def set_new_structure(self, dic):
-        print('90088-1 dic', dic)
+        print('90088-19 dic', dic)
         clear_log_debug()
         log_debug("Start 1")
         app_ = dic["app"]
@@ -5389,7 +5389,7 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
 
     # Update Qualification
     def update_qualification_fact(self, dic):
-        # print('90033-1 dic', dic)
+        print('90033-1 dic', dic)
         app_ = dic["app"]
         data = dic["data"]
         skill = data["skill"]
@@ -5822,7 +5822,7 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
         return result
 
     def set_guns(self, dic):
-        print('90088-1 dic', dic)
+        print('90088-11 dic', dic)
         app_ = dic["app"]
         file_path = self.upload_file(dic)["file_path"]
         # print("-"*100, "\n", file_path, "\n", "-"*100)
@@ -5850,7 +5850,7 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
 
     # need to delete
     def set_new_structure_old(self, dic):
-        print('90088-1 dic', dic)
+        print('90088-16 dic', dic)
         app_ = dic["app"]
         battalion_name = dic["cube_dic"]["fact"]["model"]
         battalion_id = int(dic["cube_dic"]["fact"]["field_name"])
