@@ -1773,7 +1773,7 @@ acBasicCreator.prototype.create_obj = function()
   this.main_div.setAttribute("type", dic["element_name"]);
   this.main_div.setAttribute("container_id", dic["container_id"]);
   //this.main_div.setAttribute("class", "row");
-  var style_="position:absolute;left:"+pp_["x"]+"px;top:"+pp_["y"]+"px;width:"+(width_+this.nav_width)+"px;"
+  var style_="position:absolute;left:"+pp_["x"]+"px;top:"+pp_["y"]+"px;width:"+(1*width_+1*this.nav_width)+"px;"
   this.main_div.setAttribute("style", style_);
   // --
      var style_ = "float:left;width:"+width_+"px;height:"+height_+"px;"
@@ -1834,7 +1834,6 @@ acBasicCreator.prototype.get_grade = function(skill_id, unit_id)
 // https://plotly.com/javascript/pie-charts/
 // https://www.alt-codes.net/smiley_alt_codes.php
 
-
 acBasicCreator.prototype.set_board_data = function(ll=[])
 {
   //alert("set data1\n"+ll.length)
@@ -1853,16 +1852,15 @@ acBasicCreator.prototype.set_board_data = function(ll=[])
 
    var width_=pp_["width"]; if(width_==null || width_==""){width_=900};
    var height_=pp_["height"]; if(height_==null || height_==""){height_=300};
-    var dic=atm.data_dic;
-    var unit_qualification = atm.general.unit_qualification
+   var dic=atm.data_dic;
+   var unit_qualification = atm.general.unit_qualification
    //alert("90441-550-4 \n"+JSON.stringify(unit_qualification));
 
    //alert("90441-550-3 \n"+JSON.stringify(atm.general.unit_qualification));
-    var z=-1;
+   var z=-1;
+   var unit_qualification_dic = {'wet_day':0,'wet_night':0,'raid_day':0, 'raid_night':0}
 
-    var unit_qualification_dic = {'wet_day':0,'wet_night':0,'raid_day':0, 'raid_night':0}
-
-    for(var j in ll){
+   for(var j in ll){
     z+=1;var dic=dic[ll[z]];
     var unit_qualification=unit_qualification[ll[z]];for(var x in unit_qualification_dic){unit_qualification_dic[x]=unit_qualification[x]}
     var container_=this.board_objs[(1*z+1)].content;
@@ -1996,7 +1994,7 @@ acBasicCreator.prototype.set_board_data = function(ll=[])
             var layout = {
                   autosize: true,
                   title: { text: this.fields_kpis_[j-1], font: { size: 20 } },
-                  width: 190,height: 130,
+                  width: 150,height: 130,
                   margin: {l: 5, r: 5, b: 10, t: 50,  pad: 1 },
                   paper_bgcolor: bgcolor,
                   showlegend: false,
@@ -2017,21 +2015,31 @@ acBasicCreator.prototype.set_board_data = function(ll=[])
    if(ll.length<(atm.nlimit+1))
    {
     var n=0;
-    for(z in dic){
+    for(var z in dic){
       n+=1
         //alert("z "+JSON.stringify(dic[z]["kpi"]));
         var labels_=[]
         var data_=[]
         var background_color_=[]
-        for(var k_ in dic[z]["kpi"]){
-         labels_.push(this.fields_kpis_[1*k_-1] ) //.replaceAll("<br>", " ").replace(/\s+/g, ' '))
+        for(var j in this.kpis_cols)
+        {
+         var k_=this.kpis_cols[j]
+         labels_.push(this.fields_kpis_[j])
          var nn__=1*dic[z]["kpi"][k_][type_+"_grade"]
          if((dic[z]["kpi"][k_][type_+"_grade"]+"")=="NaN"){nn__=0}
+
+
+         if([1,2].includes(1*k_)==false){
+            var ref1=1*dic[z]["kpi"][k_][type_+"_ref1"];
+            var grade=dic[z]["kpi"][k_][type_+"_grade"];
+            nn__=100*(ref1-grade)/ref1;
+            // alert(k_+"\n"+ref1+"\n"+grade+"\n"+nn__)
+         }
          data_.push(nn__)
+//alert(data_)
          if(nn__>=1*dic[z]["kpi"][k_][type_+"_pass"]){var g='rgb(0,128,0)'}else{var g='rgb(255, 0, 0)'}
          background_color_.push(g)
         }
-
 
          var text_color="black"
 
@@ -2174,53 +2182,43 @@ acBasicCreator.prototype.set_obj_structure = function(ll_)
       }
   }
 
-  // create KPIs
+  // create KPIs ---
   var f=function(dic, data_dic, grades, n=0, n_limit_=-1)
   {
      var n_=n+1;
+     var kpi_fields_=["kpi1","kpi2","kpi3","kpi4","kpi5","kpi6","kpi7"]
      for(var k in dic)
      {
         //alert(k+"\n11\n"+dic[k]["title"])
         data_dic[k]={};data_dic[k]["kpi"]={};
         var title=dic[k]["title"];data_dic[k]["title"]=title;if(n_==1){data_dic[k]["type"]="battalion"}
-        var kpi_fields_=["kpi1","kpi2","kpi3","kpi4","kpi5","kpi6"]
         var nn_=0;
         for(var j in kpi_fields_)
         {
-         var ll=[];
-         ff_(dic[k]["data"],ll, grades, sn_=j);
-         //alert(ll)
-
-           var individual_ref1=0;
-           var unit_ref1=0;
-         if([0,1].includes(1*j)==true)
-         {
-           var individual_grade=list_average(ll);
-           var kk = ll.filter(_=> _>=60)
-           var unit_grade=100*kk.length/ll.length;
-
-         } else if([3].includes(1*j)){
-
-           var kk = ll.filter(_=> _>=1)
-
-           //alert("\nll="+ll.length+"\nkk="+kk.length)
-
-           var individual_grade=(ll.length-kk.length)
-           var individual_ref1=ll.length;
-
-           var unit_grade=ll.length;
-           var unit_ref1=(ll.length-kk.length)
-
-         } else if([2].includes(1*j)){
-
+          var ll=[];ff_(dic[k]["data"],ll, grades, sn_=j);
+          //alert(ll)
+          var individual_ref1=0;var unit_ref1=0;
+          if([0,1].includes(1*j)==true)
+          { //fitness Shooting
+            var individual_grade=list_average(ll);
+            var kk = ll.filter(_=> _>=atm.general.pass_grade["unit"][1*j])
+            var unit_grade=100*kk.length/ll.length;
+          } else if([2].includes(1*j)){
+            // professional
             var kk = ll.filter(_=> _!=0);var kk1 = kk.filter(_=> _!=-1);var kk_1 = kk.filter(_=> _!=1)
-            var individual_grade=100*kk1.length/kk.length;
-            var unit_grade=100;if(kk_1.length>0){unit_grade=0}
+            var unit_grade=kk_1.length; var unit_ref1=kk.length
+          } else if([3, 4].includes(1*j)){
+            // Equip, Prof.Equip
+            var kk = ll.filter(_=> _!=0)
+            var kk1 = ll.filter(_=> _>=1)
+            var unit_grade=(kk.length-kk1.length); var unit_ref1=kk.length;
+            var individual_grade=(ll.length-kk1.length);var individual_ref1=ll.length;
 
-         } else if([4,5].includes(1*j)){
-            var kk = ll.filter(_=> _==100);
-            var individual_grade=0; if(kk.length>=0.70*ll.length){individual_grade=100};
-            var unit_grade=individual_grade;
+         } else if([5, 6].includes(1*j)){
+            // fit for duty
+            var kk = ll.filter(_=> _!=100);
+            var unit_ref1=kk.length; var unit_grade=kk.length;
+            var individual_ref1=ll.length; var individual_grade=kk.length;
             //alert(kk.length+"\n"+ll.length+"\n"+ll+"\n"+kk+"\n"+individual_grade)
          }
          nn_+=1;
@@ -2239,19 +2237,28 @@ acBasicCreator.prototype.set_obj_structure = function(ll_)
      }
   }
 
-  // calculate additional variables for soldier (4 for individual and 5 for unit)
+  // calculate additional variables for soldier (qualifications based on (0-fitness, 1-shooting, 3-equipment
+  // 5 for individual and 6 for unit)
   var f_grades=function(grades)
-  {var skills_idx=[0,1,3];var fraction_=100/skills_idx.length;
+  {var skills_idx=[0,1];var fraction_=100/(skills_idx.length+1);
    for(var s in grades)
    {
-     grades[s][4]=100;grades[s][5]=100;
-     for(var h=0;h<skills_idx.length;h++){var j=skills_idx[h];
-     //alert(j+"\n"+skills_idx+"\n"+grades[s][j]+"\n"+atm.general.pass_grade["individual"][j]+"\n"+grades[s])
-       if(grades[s][j]<atm.general.pass_grade["individual"][j]){grades[s][4]-=fraction_}
-       if(grades[s][j]<atm.general.pass_grade["unit"][j]){grades[s][5]-=fraction_}
+      // ZZ1
+     grades[s][5]=100;grades[s][6]=100;
+     for(var h=0;h<skills_idx.length;h++)
+     {var j=skills_idx[h];
+       //alert(j+"\n"+skills_idx+"\n"+grades[s][j]+"\n"+atm.general.pass_grade["individual"][j]+"\n"+grades[s])
+       if(grades[s][j]<atm.general.pass_grade["individual"][j]){grades[s][5]-=fraction_}
+       if(grades[s][j]<atm.general.pass_grade["unit"][j]){grades[s][6]-=fraction_}
      }
-     grades[s][4]=Math.round(grades[s][4]);
+     // equipment
+     // The conditions should be chenched based on the set of critical equipment for soldier or for unit.
+     // Need to  add a column in the Excel Equipment file for unit. (add another skil 5 then ....)
+     if(grades[s][3]<atm.general.pass_grade["individual"][3]){grades[s][5]-=fraction_}
+     if(grades[s][3]<atm.general.pass_grade["unit"][3]){grades[s][6]-=fraction_}
+     //-----
      grades[s][5]=Math.round(grades[s][5]);
+     grades[s][6]=Math.round(grades[s][6]);
    }
   }
 
@@ -2269,7 +2276,7 @@ acBasicCreator.prototype.set_obj_structure = function(ll_)
         // [0,0,0,0,0,0]
         // i=0 fitness; i=1 shooting; i=2 prof.; i=3 equipment; i=4 and i=5 Fit to duty;
          for(var i=0;i<n_;i++)
-         {if(!(data["soldier"][i] in grades)){grades[data["soldier"][i]]=[0,0,0,0,0,0]}
+         {if(!(data["soldier"][i] in grades)){grades[data["soldier"][i]]=[0,0,0,0,0,0,0]}
           grades[data["soldier"][i]][data["skill"][i]]=data["value"][i]
          }
          f_grades(grades)
