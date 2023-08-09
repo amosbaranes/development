@@ -4698,7 +4698,7 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
         df = pd.read_excel(file_path, sheet_name="Data", header=0)
         # print(df, "\n", "-"*100)
 
-        columns = df.columns[12:]
+        columns = df.columns[13:]
         print("columns\n", columns)
 
         try:
@@ -4727,6 +4727,7 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
             nnf = full_name.find(" ")
             first_name = full_name[:nnf]
             last_name = full_name[nnf+1:]
+            status = row["status"]
 
             # User
             try:
@@ -4760,6 +4761,25 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
                 soldier_obj.save()
             except Exception as ex:
                 print("9011-22-1 Error " + str(ex))
+
+            if status == -1:
+                try:
+                    print("the following soldier was deleted")
+                    print("-"*100, "\n", status, soldier_obj, "Delete Soldier", "\n", "-"*100)
+                    soldier_obj.delete()
+                except Exception as ex:
+                    pass
+                continue
+            if status == 1:
+                print("the following soldier was replaced by another soldier")
+                print("soldier_obj", soldier_obj, "\n", "-"*100)
+                try:
+                    # print("soldier_obj.user_id=", soldier_obj.user_id)
+                    objs = model_soldiers_for_events.objects.filter(soldier_number=soldier_obj.user_id).all()
+                    count = objs.delete()
+                    # print(count)
+                except Exception as ex:
+                    pass
 
             self.set_basic_soldier_data(row, soldier_obj, battalion_obj, model_soldierqualificationfact)
 
@@ -5066,7 +5086,7 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
                 if v == "" or v == "nan":
                     continue
                 # print("2","k=", k, " v=", "="+v+"=")
-                if k == "mz4psn" or k == "ramonsn" or k == "mz10":
+                if k == "mz4psn" or k == "ramonsn" or k == "mz10" or k == "mz15":
                     v = 1
                     # print("3","k=", k, " v=", "="+str(v)+"=")
                 else:
