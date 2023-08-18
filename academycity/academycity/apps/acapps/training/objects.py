@@ -4321,7 +4321,7 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
 
     # To be deleted
     def get_units_structure_battallion_1_Period_1(self, dic):
-        # print("\n", "-"*50, '\n90035-1 dic\n', dic, "\n", "-"*50)
+        # print("\n", "-"*50, '\n90035-11 dic\n', dic, "\n", "-"*50)
         app_ = dic["app"]
         battalion_ = dic["battalion"]
         period_ = dic["period"]
@@ -4376,7 +4376,7 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
         return weeks_dic
 
     def get_units_structure(self, dic):
-        # print("\n", "-"*50, '\n90035-1 dic\n', dic, "\n", "-"*50)
+        # print("\n", "-"*50, '\n90035-12 dic\n', dic, "\n", "-"*50)
         app_ = dic["app"]
         weeks_ = dic["weeks"]
         battalion_ = dic["battalion"]
@@ -4392,7 +4392,7 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
         return result
 
     def get_units_structure_new(self, dic):
-        # print("\n", "-"*50, '\n90035-1 dic\n', dic, "\n", "-"*50)
+        print("\n", "-"*50, '\n90035-1 dic\n', dic, "\n", "-"*50)
         app_ = dic["app"]
         battalion_ = int(dic["battalion"])
         # soldiers
@@ -4424,14 +4424,16 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
             unit_number_ = []
             for index, row in df_us.iterrows():
                 if int(row["period_id"]) not in period_id_:
+                    # print(int(row["period_id"]))
                     unitsoldiers[int(row["period_id"])] = {}
                     period_id_.append(int(row["period_id"]))
                 if int(row["unit_number"]) not in unit_number_:
                     unitsoldiers[int(row["period_id"])][int(row["unit_number"])] = []
                     unit_number_.append(int(row["unit_number"]))
                 unitsoldiers[int(row["period_id"])][int(row["unit_number"])].append(int(row["soldier_id"]))
+            # print(n, n1)
 
-            # print(period_id_, "\n", unit_number_)
+            # print(period_id_, "\n", len(unit_number_))
             # print(unitsoldiers)
         except Exception as ex:
             print("Error 2: "+str(ex))
@@ -4449,6 +4451,7 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
         except Exception as ex:
             print("Error 3: "+str(ex))
         # print("-"*100, "\n", structure, "\n", "-"*100)
+
         result = {"status": "ok", "soldiers": soldiers, "structure":structure, "unitsoldiers":unitsoldiers,
                   "period":period}
         # print(result)
@@ -4962,14 +4965,14 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
         period_obj.save()
         # -----
         result = {"status": "ok", "units_dic":units_dic}
-        print(result)
+        # print(result)
         return result
 
     # Assisting functions
     def get_unit_number(self, units_dic_, title):
             h = -1
             for k_ in units_dic_:
-                if title == units_dic_[k_]["title"]:
+                if title.upper() == units_dic_[k_]["title"].upper():
                     return int(k_)
                 else:
                     h = self.get_unit_number(units_dic_[k_]["data"], title)
@@ -5378,6 +5381,7 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
                                                                                                     soldier_number=s_obj.user_id)
                 soldiersforevents_obj.value = 1
                 soldiersforevents_obj.save()
+                # print(s_obj.id, "saved", soldiersforevents_obj)
             except Exception as ex:
                 print("Error 202020-20-11: soldier")
 
@@ -5409,17 +5413,24 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
 
     # Update Qualification
     def update_qualification_fact(self, dic):
-        print('90033-1 dic', dic)
+        # print('90033-1 dic', dic)
         app_ = dic["app"]
         data = dic["data"]
         skill = data["skill"]
         data = data["data"]
-        # print(skill)
-        # print(data)
+        first_soldier_id = list(data.keys())[0]
         company_obj_id_ = int(dic['company_obj_id'])
         # print(company_obj_id_, battalion_)
         model_soldier = apps.get_model(app_label=app_, model_name="soldiers")
         model_sqf = apps.get_model(app_label=app_, model_name="soldierqualificationfact")
+        try:
+            battalion_obj = model_soldier.objects.get(user_id = first_soldier_id).battalion
+            objs = model_sqf.objects.filter(soldier__battalion=battalion_obj, skill=skill).all()
+            print(objs.count())
+            objs.delete()
+        except Exception as ex:
+            print("Error 90-80-22:", ex)
+
         try:
             for k in data:
                 # print(k)
@@ -5429,11 +5440,11 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
                 sqf_obj.value = data[k]
                 sqf_obj.save()
         except Exception as ex:
-            print(ex)
+            print("Error 90-80-33:", ex)
 
         # -----
         result = {"status": "ok"}
-        print(result)
+        # print(result)
         return result
 
     # To Be Deleted

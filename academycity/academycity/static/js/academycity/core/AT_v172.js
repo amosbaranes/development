@@ -1911,33 +1911,47 @@ acBasicCreator.prototype.set_board_data = function(ll=[])
    //-- chart KPI --
    var n__=n_kpi_objs;if(type_=="unit"){n__=n_kpi_objs+1}
    //alert(n_kpi_objs+"\n"+type_+"\n"+n__)
+
+   //alert(this.kpis_cols)
+
    for(var j=1; j<=n__;j++)
    {
-     var nl_=this.kpis_cols[j-1];//
+     var nl_=this.kpis_cols[j-1];
      var div_=document.createElement("div");
      var top_=80
      var style_ = "position:absolute;left:"+w_kpi_+"px;top:"+top_+"px;width:"+w_kpi+"px;height:"+h_kpi+"px;"
      style_+="border-style:solid;border-width:0px;border-color:blue;border-radius:10px;display: flex;align-items: center;justify-content: center;"
      div_.setAttribute("style", style_);
 
-    if(j<3){
-      var data = [
+    if(j<3 || (nl_==7 && type_=="unit")){
+       if(type_=="individual"){
+           var s_kpi1=document.createElement("span");s_kpi1.innerHTML="average grade";
+           var style_ = "z-index:2000;position:absolute;left:"+(w_kpi_+10)+"px;top:"+(top_+150)+"px;color:blue"
+           s_kpi1.setAttribute("style", style_);
+           container_.appendChild(s_kpi1);
+       }
+       //--
+       var kpi_pass=atm.general.pass_grade["kpi_"+type_][nl_];
+       //alert(j+"\n"+kpi_pass+"\n"+JSON.stringify(kpi[nl_])+"\n"+type_+"_grade"+"\n"+kpi[nl_][type_+"_grade"])
+
+       var data = [
           {
             type: "indicator",
             mode: "gauge+number",  //+delta
             value: kpi[nl_][type_+"_grade"], number: { suffix: "%" },
-            delta: { reference: 60, increasing: { color: "RebeccaPurple" } },
+            delta: { reference: 0, increasing: { color: "RebeccaPurple" } },
             gauge: {
-              axis: { range: [null, 100], tickwidth: 1, tickcolor: "darkblue" },
-              bar: { color: "white" },
+              axis: { range: [null, 100], showticklabels:false, tickwidth: 1, tickcolor: "darkblue" },
+              bar: { color: "lightyellow" },
               bgcolor: "lightyellow",
               borderwidth: 2,
               bordercolor: "gray",
-              steps: [{ range: [0, 60], color: "red" },{ range: [60, 100], color: "green" }],
-              threshold: {line: { color: "red", width: 4 },thickness: 0.75,value: 90}
+              steps: [{ range: [0, kpi_pass], color: "red" },{ range: [kpi_pass, 100], color: "green" }],
+              threshold: {line: { color: "blue", width: 4 },thickness: 0.5, value: kpi_pass}
             }
           }
         ];
+        //alert(type_+"\n"+j+"\n"+kpi_pass+"\n"+JSON.stringify(data))
         var layout = {
           autosize: false,
           title: { text: this.fields_kpis_[j-1], font: { size: 15 } },
@@ -2029,7 +2043,7 @@ acBasicCreator.prototype.set_board_data = function(ll=[])
          if((dic[z]["kpi"][k_][type_+"_grade"]+"")=="NaN"){nn__=0}
 
 
-         if([1,2].includes(1*k_)==false){
+         if([1,2].includes(1*k_)==false && k_!=7){
             var ref1=1*dic[z]["kpi"][k_][type_+"_ref1"];
             var grade=dic[z]["kpi"][k_][type_+"_grade"];
             nn__=100*(ref1-grade)/ref1;
@@ -2093,7 +2107,7 @@ acBasicCreator.prototype.set_board_data = function(ll=[])
 
    } else {
       k +=1
-      var col_width=100;
+      var col_width=125;
       var soldier_col_width=300
 
       var n_cols=this.fields_skills.length
@@ -2137,7 +2151,7 @@ acBasicCreator.prototype.set_board_data = function(ll=[])
         if(grade==0){color="black";background_color = "white"; var img_=""}
         else if(grade<atm.general.pass_grade[type_][nl_])
         {
-          background_color="red"; color="white";var img_="&#128514";
+          background_color="red"; color="white";var img_="&#128557";
         }
         if(grade<100){grade="&nbsp;&nbsp;"+grade}
         //alert(grade + "\n"  + nl_ + "\n" + atm.general.pass_grade[type_][nl_] + "\n" + background_color)
@@ -2195,8 +2209,9 @@ acBasicCreator.prototype.set_obj_structure = function(ll_)
         var nn_=0;
         for(var j in kpi_fields_)
         {
-          var ll=[];ff_(dic[k]["data"],ll, grades, sn_=j);
-          //alert(ll)
+          var ll=[];
+          var nn=ff_(dic[k]["data"],ll, grades, sn_=j);
+          //alert(ll.length)
           var individual_ref1=0;var unit_ref1=0;
           if([0,1].includes(1*j)==true)
           { //fitness Shooting
@@ -2215,11 +2230,13 @@ acBasicCreator.prototype.set_obj_structure = function(ll_)
             var individual_grade=(ll.length-kk1.length);var individual_ref1=ll.length;
 
          } else if([5, 6].includes(1*j)){
+
             // fit for duty
-            var kk = ll.filter(_=> _!=100);
-            var unit_ref1=kk.length; var unit_grade=kk.length;
+            var kk = ll.filter(_=> _==100);
+            //var unit_ref1=ll.length; var unit_grade=kk.length;
             var individual_ref1=ll.length; var individual_grade=kk.length;
             //alert(kk.length+"\n"+ll.length+"\n"+ll+"\n"+kk+"\n"+individual_grade)
+            var unit_grade=100*kk.length/ll.length;
          }
          nn_+=1;
          data_dic[k]["kpi"][nn_]={"title":"",
@@ -2228,7 +2245,7 @@ acBasicCreator.prototype.set_obj_structure = function(ll_)
                                   "individual_grade": individual_grade,
                                   "unit_grade":unit_grade,
                                   "individual_ref1":individual_ref1,
-                                  "unit_ref1":unit_ref1,
+                                  "unit_ref1":unit_ref1
                                   };
          data_dic[k]["kpi"][nn_]["title"]=kpi_fields_[j];
         }
@@ -2268,18 +2285,26 @@ acBasicCreator.prototype.set_obj_structure = function(ll_)
         //alert("data\n"+JSON.stringify(data));
         var grades=ll[0];var f=ll[1]; var nlimit=ll[2]; var ll_=ll[3];
         try{if(Object.keys(data).length==0 || data["id"].length==0){alert("There is no data for this battlion.");return;}} catch (er) {}
-        // alert("90446-77 data \n"+JSON.stringify(data))
-
-        var n_=data[data_fields_[0]].length;
-        //alert(n_)
+        //alert("90446-77 data \n"+JSON.stringify(data["soldier"]))
+        var n_ = atm.entity_dic["id"].length
         // pivot soldier data into lists in atm.grades
         // [0,0,0,0,0,0]
         // i=0 fitness; i=1 shooting; i=2 prof.; i=3 equipment; i=4 and i=5 Fit to duty;
          for(var i=0;i<n_;i++)
-         {if(!(data["soldier"][i] in grades)){grades[data["soldier"][i]]=[0,0,0,0,0,0,0]}
-          grades[data["soldier"][i]][data["skill"][i]]=data["value"][i]
+         {
+          var sid_=1*atm.entity_dic["id"][i];      //alert(sid_)
+          if(!(sid_ in grades)){grades[sid_]=[0,0,0,0,0,0,0]}
+
+          var idx=-1;
+          try{var idx=data["soldier"].indexOf(sid_)}catch(er){continue}
+          while(idx>-1){grades[sid_][data["skill"][idx]]=data["value"][idx];
+            try{var idx=data["soldier"].indexOf(sid_, 1*idx+1)} catch(er){}
+          }
+          //if(!(data["soldier"][i] in grades)){grades[data["soldier"][i]]=[0,0,0,0,0,0,0]}
+          //grades[data["soldier"][i]][data["skill"][i]]=data["value"][i]
          }
          f_grades(grades)
+
          //alert("90449-99-7: "+JSON.stringify(atm.units_structure))
          //alert("2\n"+JSON.stringify(grades));
          //alert("90449-99-79-0: "+JSON.stringify(atm.data_dic));
@@ -4644,75 +4669,6 @@ acGroupCreator.prototype.obj_was_clicked = function(e)
 {
   //alert("90100-10\nacGroupCreator.prototype.obj_was_clicked\n "+e.outerHTML);
 }
-
-// to delete --
-//var a=function (event){
-// try{
-//
-// var f=function(dic)
-// {var ll=[];
-//  for(var k in dic){ll.push(k)};return ll}
-//
-// var e=event.target;
-// var sid="s"+e.getAttribute("id")
-// var s=getEBI(sid)
-// var l=s.getAttribute("link")
-//
-//if(l==null){
-// var my_c_m=
-//  e.getAttribute("my_class_members")
-// var c =
-//  document.getElementsByClassName(my_c_m)[0]
-// var etype_=e.getAttribute("type")
-// if(etype_=="checkbox"){
-//    var cc=c.getElementsByTagName("input");
-//    var n_=0;var ll_=[]
-//    for(k in cc){
-//         cc[k].checked=e.checked;
-//         var n_=0;
-//         try{var sid=
-//             "s"+cc[k].getAttribute("id");
-//           var s=getEBI(sid);
-//           var l=s.getAttribute("link");
-//           l=l.replace("this",
-//            "atm.general");
-//           var l=eval(l);
-//           var ll=f(l);ll_=ll_.concat(ll)
-//         } catch(er){}
-//    }
-//    var group_dic_={"checked": e.checked,
-//     "entities":ll_, "entity_name":"soldier"}
-//    var gt=get_creator(16);
-//    gt.creator.set_obj_structure(
-//     tests_dic=null,
-//     group_dic=group_dic_,
-//     tests_config=atm.general.test_dic,
-//     entity_config=atm.general.soldiers_dic)
-//   }
-// } else
-// {
-//   //alert(l);alert(e.checked)
-//   l=l.replace("this", "atm.general");
-//   var l=eval(l)
-//   var ll=f(l)
-//   //alert(JSON.stringify(ll));
-//
-//   var gt=get_creator(16);
-//   var group_dic_={"checked": e.checked,
-//    "entities":ll, "entity_name":"soldier"}
-//   gt.creator.set_obj_structure(
-//     tests_dic=null,
-//     group_dic=group_dic_,
-//     tests_config=atm.general.test_dic,
-//     entity_config=atm.general.soldiers_dic
-//   )
-// }
-//
-//} catch(er){alert('err 9016-1: '+er)}
-//}
-
-
-
 
 acGroupCreator.prototype.open_close_lists = function(n=0)
 {

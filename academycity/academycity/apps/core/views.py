@@ -374,14 +374,15 @@ def update_field_model_by_id(request, foreign=None):
 def get_data_link(request):
     errors = ""
     dic_ = request.POST["dic"]
-    # try:
-    #     log_debug("get_data_link 99999: "+dic_)
-    #     print('\n 9050-150-50 core views get_data_link dic_ ', "\n", dic_,"\n", "-"*100)
-    # except Exception as ex:
-    #     print(str(ex))
+    try:
+        log_debug("get_data_link 99999: "+dic_)
+        print('\n 9050-150-50 core views get_data_link dic_ ', "\n", dic_,"\n", "-"*100)
+    except Exception as ex:
+        print(str(ex))
 
     try:
         log_debug("get_data_link 99999: "+dic_)
+        print("get_data_link 99999: "+dic_)
         dic_ = eval(dic_)
     except Exception as ex:
         print("error 4562-22-1",str(ex))

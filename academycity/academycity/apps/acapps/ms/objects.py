@@ -349,7 +349,7 @@ class MSDataProcessing(BaseDataProcessing, MSAlgo):
 
     # NeedToDo to move to function calculate_clusters
     def get_gene_structure(self, dic):
-        # print("90950-10: \n", dic, "\n", "=" * 50)
+        print("90950-10: \n", dic, "\n", "=" * 50)
         gene_id_ = int(dic["gene_id"])
 
         app_ = dic["app"]
@@ -482,14 +482,14 @@ class MSDataProcessing(BaseDataProcessing, MSAlgo):
                 ll.append([c, n, cd])
             ll.sort(key=take_key)
             ll_ = [j[1] for j in ll]
+            print("="*100,"\n",o.gene_code)
             r = self.get_peaks({"cl_all":ll_, "t_pop": t_pop})["result"]
-            print(ll_, "\n", o.gene_code, "\n", r)
 
         result = {"status": "ok", "result": {"a": "a"}}
         return result
 
     def get_peaks(self, dic):
-        print("90955-50: get_peaks\n", dic, "\n", "=" * 50)
+        # print("90955-50-1: get_peaks\n", dic, "\n", "=" * 50)
         l = dic["cl_all"]
         t_pop = int(dic["t_pop"])/100
         # print(l, "\n", t_pop, "\n", sum(l))
@@ -498,7 +498,6 @@ class MSDataProcessing(BaseDataProcessing, MSAlgo):
         ub = len(l)
         peak_array = {}
         num_peaks = 0
-
         def get_location_of_left_low(l_, lb_, ub_):
             i = ub_
             x = 0
@@ -555,7 +554,7 @@ class MSDataProcessing(BaseDataProcessing, MSAlgo):
             num_peaks_ += 1
             # print(l_, num_peaks_, lb_, ub_)
             gh = get_global_high(l_, lb_, ub_)
-            print("gh", gh)
+            # print("gh", gh)
             ll = get_location_of_left_low(l_, lb_, gh)
             # print("ll", ll)
             rl = get_location_of_right_low(l_, gh, ub_)
@@ -607,14 +606,52 @@ class MSDataProcessing(BaseDataProcessing, MSAlgo):
                     peaks[h - 1]["pop"] += peaks[h]["pop"] - ll[peaks[h]["lb"]-1]
                 del peaks[h]
                 peaks["number_of_blocks"] -= 1
-            print("B Two rules: \nB1. Remove blocks lower then t_pop=", t, "\n", "-"*10, "\n", peaks, "\n", "-"*50)
+            # print("B Two rules: \nB1. Remove blocks lower then t_pop=", t, "\n", "-"*10, "\n", peaks, "\n", "-"*10)
+            if peaks["number_of_blocks"] > 1:
+                # print("+"*20, "\n", "+"*20, "\n", peaks, "\n", "+"*20, "\n", "+"*20)
+                z=2
+                # print(ll)
+                n=0
+                while z <= peaks["number_of_blocks"]:
+                    # print("A",ll[peaks[z-1]['peak']-1], ll[peaks[z-1]['lb']-1], ll[peaks[z-1]['ub']-1])
+                    # print("B",ll[peaks[z]['peak']-1], ll[peaks[z]['lb']-1], ll[peaks[z]['ub']-1])
+                    # print("C", ll[peaks[z-1]['ub']-2], ll[peaks[z]['peak']-1])
+                    # print("D", ll[peaks[z-1]['peak']-1], ll[peaks[z]['lb']])
+                    if ll[peaks[z-1]['ub']-2] > ll[peaks[z]['peak']-1]:
+                        # print("AAA")
+                        peaks[z - 1]["ub"] = peaks[z]["ub"]
+                        peaks[z - 1]["pop"] += peaks[z]["pop"] - ll[peaks[z]["lb"]-1]
+                        del peaks[z]
+                        n+=1
+                    elif ll[peaks[z-1]['peak']-1] < ll[peaks[z]['lb']]:
+                        # print("BBB")
+                        peaks[z]["lb"] = peaks[z-1]["lb"]
+                        peaks[z]["pop"] += peaks[z-1]["pop"] - ll[peaks[z-1]["ub"]-1]
+                        del peaks[z-1]
+                        n+=1
+                    z += 1
+                if n > 0:
+                    peaks["number_of_blocks"] -= n
+                    peaks_={}
+                    n_ = 0
+                    for z_ in peaks:
+                        if z_ != "number_of_blocks":
+                            n_ += 1
+                            peaks_[n] = peaks[z_].copy()
+                        else:
+                            peaks_[z_] = peaks[z_]
+                    peaks = peaks_.copy()
+                    # print("aaa\n", peaks, "\n", "aaa")
 
         get_peaks_(l, lb, ub, peak_array, num_peaks)
         peak_array["number_of_blocks"] = len(peak_array)
-        print("-"*100, "\nt_pop=", dic["t_pop"]+"%, ", t_pop)
-        print("A Create Blocks for l=", l, "sum=", sum(l), "\n", peak_array)
+        print("-"*10, "\nt_pop=", dic["t_pop"]+"%, ", t_pop)
+        print("A Create Blocks for l=", l, "sum=", sum(l), "\n", peak_array, "\n", "-"*10, "\n After two_rules_combination")
         if peak_array["number_of_blocks"] > 1:
             two_rules_combination(l, peak_array, t_pop)
-        print(peak_array)
+            # print("bbb\n", peak_array, "\n", "bbb")
+
+        print(peak_array, "\n", "="*100)
+        # print("A"*10)
         result = {"status": "ok", "result": peak_array}
         return result

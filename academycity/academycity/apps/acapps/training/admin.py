@@ -131,6 +131,7 @@ class UnitSoldiersAdmin(admin.ModelAdmin):
 @admin.register(SoldierQualificationFact)
 class SoldierQualificationFactAdmin(admin.ModelAdmin):
     list_display = ('id', 'soldier', 'skill', 'value')
+    list_filter = ['skill', 'soldier']
 
 #
 @admin.register(Adjectives)
