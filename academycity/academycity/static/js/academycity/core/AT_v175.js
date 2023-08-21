@@ -224,7 +224,7 @@ function AdvancedTabsManager(dic=null)
                         "sub_buttons":{"Basic":{"title":"Basic", "width":10,
                                                 "setting": {"app":[], "table":[], "setup_dictionary":[], "entity":[],
                                                             "type":["", "individual", "unit"], "synchronize_with":[],
-                                                            "height":[], "width":[], "kpis":[], "skills":[],
+                                                            "height":[], "width":[], "kpis":[], "kpis_sub_titles":[], "skills":[],
                                                             "border_style":["none","solid","Dotted","dashed",
                                                                    "double","groove","ridge","inset","outset",
                                                                    "hidden"],
@@ -1846,6 +1846,8 @@ acBasicCreator.prototype.set_board_data = function(ll=[])
    this.synchronize_with=pp_["synchronize_with"];
    var type_="individual"; try{type_=pp_["type"]} catch(er){}
    var skills_dic=JSON.parse(pp_["skills"]);var kpis_dic=JSON.parse(pp_["kpis"]);
+   this.kpis_sub_titles=JSON.parse(pp_["kpis_sub_titles"]);
+
    this.fields_skills=skills_dic["l"];this.skills_cols=skills_dic["cols"];
    //["Fitness","Shooting","Professional","Equipment"]
    this.fields_kpis_=kpis_dic["l"];this.kpis_cols=kpis_dic["cols"];
@@ -1911,9 +1913,7 @@ acBasicCreator.prototype.set_board_data = function(ll=[])
    //-- chart KPI --
    var n__=n_kpi_objs;if(type_=="unit"){n__=n_kpi_objs+1}
    //alert(n_kpi_objs+"\n"+type_+"\n"+n__)
-
    //alert(this.kpis_cols)
-
    for(var j=1; j<=n__;j++)
    {
      var nl_=this.kpis_cols[j-1];
@@ -1923,9 +1923,14 @@ acBasicCreator.prototype.set_board_data = function(ll=[])
      style_+="border-style:solid;border-width:0px;border-color:blue;border-radius:10px;display: flex;align-items: center;justify-content: center;"
      div_.setAttribute("style", style_);
 
-    if(j<3 || (nl_==7 && type_=="unit")){
-       if(type_=="individual"){
-           var s_kpi1=document.createElement("span");s_kpi1.innerHTML="average grade";
+    if(j<3 || (j==3 && type_=="individual") || (nl_==7 && type_=="unit")){
+       if(type_=="individual" && (j<3)){
+           var s_kpi1=document.createElement("span");s_kpi1.innerHTML=this.kpis_sub_titles[j-1];
+           var style_ = "z-index:2000;position:absolute;left:"+(w_kpi_+10)+"px;top:"+(top_+150)+"px;color:blue"
+           s_kpi1.setAttribute("style", style_);
+           container_.appendChild(s_kpi1);
+       } else if((type_=="individual" && (j==3)) || (type_=="unit" && (j<3 || nl_==7)) ){
+           var s_kpi1=document.createElement("span");s_kpi1.innerHTML=this.kpis_sub_titles[j-1];
            var style_ = "z-index:2000;position:absolute;left:"+(w_kpi_+10)+"px;top:"+(top_+150)+"px;color:blue"
            s_kpi1.setAttribute("style", style_);
            container_.appendChild(s_kpi1);
@@ -1934,11 +1939,13 @@ acBasicCreator.prototype.set_board_data = function(ll=[])
        var kpi_pass=atm.general.pass_grade["kpi_"+type_][nl_];
        //alert(j+"\n"+kpi_pass+"\n"+JSON.stringify(kpi[nl_])+"\n"+type_+"_grade"+"\n"+kpi[nl_][type_+"_grade"])
 
+       var suffix_="";if(type_=="unit" || (j==3 && type_=="individual")){suffix_="%"}
+
        var data = [
           {
             type: "indicator",
             mode: "gauge+number",  //+delta
-            value: kpi[nl_][type_+"_grade"], number: { suffix: "%" },
+            value: kpi[nl_][type_+"_grade"], number: { suffix: suffix_ },
             delta: { reference: 0, increasing: { color: "RebeccaPurple" } },
             gauge: {
               axis: { range: [null, 100], showticklabels:false, tickwidth: 1, tickcolor: "darkblue" },
@@ -2042,15 +2049,14 @@ acBasicCreator.prototype.set_board_data = function(ll=[])
          var nn__=1*dic[z]["kpi"][k_][type_+"_grade"]
          if((dic[z]["kpi"][k_][type_+"_grade"]+"")=="NaN"){nn__=0}
 
-
-         if([1,2].includes(1*k_)==false && k_!=7){
+         if([1,2].includes(1*k_)==false && k_!=7 && (k_!=4)){
             var ref1=1*dic[z]["kpi"][k_][type_+"_ref1"];
             var grade=dic[z]["kpi"][k_][type_+"_grade"];
             nn__=100*(ref1-grade)/ref1;
-            // alert(k_+"\n"+ref1+"\n"+grade+"\n"+nn__)
+             //alert("j="+j+"\nk_="+k_+"\nref1="+ref1+"\ngrade="+grade+"\nnn__"+nn__)
          }
          data_.push(nn__)
-//alert(data_)
+         // alert("j="+j+"\nk_="+k_+"\ndata_= "+data_)
          if(nn__>=1*dic[z]["kpi"][k_][type_+"_pass"]){var g='rgb(0,128,0)'}else{var g='rgb(255, 0, 0)'}
          background_color_.push(g)
         }
@@ -2109,6 +2115,8 @@ acBasicCreator.prototype.set_board_data = function(ll=[])
       k +=1
       var col_width=125;
       var soldier_col_width=300
+
+      //alert(this.fields_skills)
 
       var n_cols=this.fields_skills.length
       var n_left=(1*width_-n_cols*col_width-soldier_col_width-this.nav_width)/2+this.nav_width;
@@ -2226,15 +2234,16 @@ acBasicCreator.prototype.set_obj_structure = function(ll_)
             // Equip, Prof.Equip
             var kk = ll.filter(_=> _!=0)
             var kk1 = ll.filter(_=> _>=1)
+            //alert(j+"\nll=\n"+ll)
+            //alert(j+"\nkk1=\n"+kk1)
             var unit_grade=(kk.length-kk1.length); var unit_ref1=kk.length;
-            var individual_grade=(ll.length-kk1.length);var individual_ref1=ll.length;
-
+            var individual_grade=100*kk1.length/ll.length;//var individual_ref1=ll.length;
          } else if([5, 6].includes(1*j)){
 
             // fit for duty
             var kk = ll.filter(_=> _==100);
             //var unit_ref1=ll.length; var unit_grade=kk.length;
-            var individual_ref1=ll.length; var individual_grade=kk.length;
+            var individual_ref1=ll.length; var individual_grade=ll.length-kk.length;
             //alert(kk.length+"\n"+ll.length+"\n"+ll+"\n"+kk+"\n"+individual_grade)
             var unit_grade=100*kk.length/ll.length;
          }
@@ -2269,7 +2278,7 @@ acBasicCreator.prototype.set_obj_structure = function(ll_)
        if(grades[s][j]<atm.general.pass_grade["unit"][j]){grades[s][6]-=fraction_}
      }
      // equipment
-     // The conditions should be chenched based on the set of critical equipment for soldier or for unit.
+     // The conditions should be changed based on the set of critical equipment for soldier or for unit.
      // Need to  add a column in the Excel Equipment file for unit. (add another skil 5 then ....)
      if(grades[s][3]<atm.general.pass_grade["individual"][3]){grades[s][5]-=fraction_}
      if(grades[s][3]<atm.general.pass_grade["unit"][3]){grades[s][6]-=fraction_}

@@ -126,6 +126,7 @@ class MSDataProcessing(BaseDataProcessing, MSAlgo):
                         # print("p_", p_)
                         person_dim_obj, is_created = model_person_dim.objects.get_or_create(person_code=p_)
                     try:
+                        # print("="*20, "\n", str(row[columns[j]]))
                         v_ = float(str(row[columns[j]]))
                         if (v_ <= -0.000001) or (v_ > 0.000001):
                             fact_obj, is_created = model_fact.objects.get_or_create(gene_dim=gene_dim_obj,
@@ -133,7 +134,7 @@ class MSDataProcessing(BaseDataProcessing, MSAlgo):
                             fact_obj.amount = v_
                             fact_obj.save()
                     except Exception as ex:
-                        print("Error 9055-33: "+str(ex))
+                        print(columns[j], "\n", str(row[columns[j]]), "\nError 9055-33: \n", "="+str(row[columns[j]])+"=\n", str(ex))
 
             # print(f_, p_, v_)
             # print(n__, max_v, max_d)
@@ -381,7 +382,7 @@ class MSDataProcessing(BaseDataProcessing, MSAlgo):
             # print(100)
 
         result = {"status": "ok", "clusters": clusters}
-        # print(result)
+        print(result)
         return result
 
     # NeedToDo to move to function calculate_clusters

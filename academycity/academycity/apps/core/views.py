@@ -515,7 +515,7 @@ def get_data_link(request):
         else:
             s = 'model.objects'
         # print('90500 s '+s)
-    # print("9030-2")
+    # print("9030-2\n", s)
     try:
         for f in filters:
             filter_field_ = f  # filters[f]["filter_field"] #
@@ -586,7 +586,8 @@ def get_data_link(request):
 
         # print("9030-222")
         s += '.all()[:number_of_rows_].values('+fields_str+')'
-        # print("="*100, '\ns111-1 for d_data\n', "\ns=", number_of_rows_, s, "=\n", "="*100, "\n")
+
+        print("="*100, '\ns111-1 for d_data\n', "\ns=", number_of_rows_, s, "=\n", "="*100, "\n")
 
         log_debug("get_data_link 99999: s="+s)
         d_data = eval(s)
