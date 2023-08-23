@@ -558,6 +558,7 @@ class BasePotentialAlgo(object):
                 ss_n_mx += '"' + group_d + '-' + group + '-mx",'
                 ss_n_xm += '"' + group_d + '-' + group + '-xm",'
                 ss_n_xx += '"' + group_d + '-' + group + '-xx",'
+                # print(group, sign_n1)
             lll_groups.append(group)
         qs_mm = model_min_max.objects.filter(measure_dim__measure_group_dim__group_name=group,
                                              time_dim_id=dic["time_dim_value"]).all()
@@ -636,15 +637,15 @@ class BasePotentialAlgo(object):
                             exec('ll.append(1-df_n' + n + '_all["dc_' + group + '_' + z + '"].mean())')
 
                         ll_adj = eval("ll*similarity_n" + n + ".loc['SComb'].T").tolist()
-                        print("ll\n", ll, "\n", type(ll))
-                        print("ll_adj\n", ll_adj, "\n", type(ll_adj))
+                        # print("ll\n", ll, "\n", type(ll))
+                        # print("ll_adj\n", ll_adj, "\n", type(ll_adj))
                         #
                         llc = [(x - 0.7) if x > 0.7 else 0 for x in ll]
                         llg.append(llc)
-                        print("llg\n", llg)
+                        # print("llg\n", llg)
                         llc_adj = [(x - 0.7) if x > 0.7 else 0 for x in ll_adj]
                         llg_adj.append(llc_adj)
-                        print("llg_adj\n", llg_adj)
+                        # print("llg_adj\n", llg_adj)
 
                         exec("contribution_n" + n + ".loc[group] = ll")
                         exec("adj_contribution_n" + n + ".loc[group] = ll_adj")
@@ -654,7 +655,7 @@ class BasePotentialAlgo(object):
                 except Exception as ex:
                     print("Error 50008-8: " + str(ex))
 
-            print(n, "\nCC\n", llg, "\n\n", llg_adj)
+            # print(n, "\nCC\n", llg, "\n\n", llg_adj)
 
             self.add_to_save_all(title="all-n" + n, a=eval("df_n" + n + "_all"), cols=-1)
             exec("contribution_n" + n + ".columns = self.options")
@@ -673,14 +674,66 @@ class BasePotentialAlgo(object):
 
             df_relimp = pd.DataFrame(npg/npgs, index=contribution_n1.index)
             df_relimp_adj = pd.DataFrame(npg_adj/npgs_adj, index=contribution_n1.index)
+
             df_relimp.columns = self.options
+            if n == "1":
+                df_relimp_1 = df_relimp.copy(deep=True)
+
             df_relimp_adj.columns = self.options
-            # print(df_relimp)
+
             self.add_to_save_all(title='contribution-n' + n, a=eval("contribution_n" + n), cols=-1)
             self.add_to_save_all(title='adj_contribution-n' + n, a=eval("adj_contribution_n" + n), cols=-1)
             self.add_to_save_all(title='relimp-n' + n, a=df_relimp, cols=-1)
             self.add_to_save_all(title='adj_relimp-n' + n, a=df_relimp_adj, cols=-1)
             print("=2"*50)
+
+        # print("="*100, "\n", sign_n1, "\n", df_relimp_1)
+        np_sign_n1 = sign_n1.to_numpy()
+        # print("="*50, "\n", np_sign_n1)
+        np_relimp_1 = df_relimp_1.to_numpy()
+        # print("="*50, "\n", np_relimp_1)
+        np_signed_relimp_1 = np_relimp_1*np_sign_n1
+        # print("AAAAAAAAA")
+        # print("=1=2"*50, "\n", np_signed_relimp_1)
+        # print("AAAAAAAAA")
+
+        np_signed_relimp = {"m": np_signed_relimp_1[np.ix_([0, 1, 2, 3, 4, 5, 6], [0, 2])],
+                            "x": np_signed_relimp_1[np.ix_([0, 1, 2, 3, 4, 5, 6], [1, 3])]}
+        print("np_signed_relimp", "\n", np_signed_relimp)
+
+        df_n1_all_temp = df_n1_all.copy()
+        df_n1_all_temp = df_n1_all_temp.reset_index()
+        df_n1_all_temp = df_n1_all_temp.rename(columns={'index': 'country_dim'})
+        # print("-"*10, "\n", df_n1_all_temp, "-"*10, "\n")
+        try:
+            # df_n1_all_temp = self.add_entity_to_df(df_n1_all_temp, cols=-1)
+            # print("\n", df_n1_all_temp, "\n", "="*100)
+
+            for k_ in ["m", "x"]:
+                print("-="*10, "\n" ,k_)
+                df = pd.DataFrame()
+                for group in ll_dfs:
+                    if group != dependent_group:
+                        # print("="*50)
+                        # print(group)
+                        df[k_ + "-" + group] = df_n1_all_temp[k_ + "-" + group]
+                # print(df)
+                np_df = df.to_numpy()
+                if k_ == "m":
+                    potential_m = np.dot(np_df, np_signed_relimp[k_])
+                elif k_ == "x":
+                    potential_x = np.dot(np_df, np_signed_relimp[k_])
+                print("="*50, "\n", np_df, "\n", potential_m, "\n", potential_x)
+
+            potential = np.concatenate((potential_m, potential_x), axis=1)
+
+            # print("=" * 100)
+            # df_temp = df.reset_index()
+            # print(df_temp)
+            print("=" * 100)
+
+        except Exception as ex:
+            print(ex)
 
         # print("90050-28\n")
         self.save_to_excel_all_(dic["time_dim_value"])
@@ -1186,6 +1239,7 @@ class BasePotentialAlgo(object):
 
     def add_entity_to_df(self, df, cols=None):
         df_ = df.copy()
+        # print("add_entity_to_df 1")
         if cols is None:
             cols = [self.entity_name+'_name']
             df_c = df.columns
@@ -1196,8 +1250,12 @@ class BasePotentialAlgo(object):
         # print("add_entity_to_df", 1)
         df_ = df_.reset_index()
         # print("-"*10, "\nAA\n", "\n", df_)
-        df_ = df_.merge(self.entities_name, how='inner', left_on=self.entity_name+'_dim', right_on='id').drop(
-            [self.entity_name+'_dim', 'id'], axis=1)
+        try:
+            df_ = df_.merge(self.entities_name, how='inner', left_on=self.entity_name+'_dim', right_on='id')
+            df_ = df_.drop([self.entity_name+'_dim', 'id'], axis=1)
+        except Exception as ex:
+            print("Error 90-90-88-1 add_entity_to_df: ", str(ex))
+
         c_ = df_.pop(self.entity_name+'_name')
         df_.insert(0, self.entity_name+'_name', c_)
         # print("CC\n", "\n", df_)
