@@ -49,6 +49,14 @@ class AvicDataProcessing(BaseDataProcessing, BasePotentialAlgo, AvicAlgo):
     def check_country(self, cc):
         if cc == "Viet Nam":
             cc = "Vietnam"
+        elif cc == "Guinea-bissau":
+            print(cc)
+            cc = "Guinea Bissau"
+        elif cc == "Guinea-Bissau":
+            print(cc)
+            cc = "Guinea Bissau"
+        elif cc == "Congo, Dem. Rep.":
+            cc = "Democratic Republic of the Congo (DRC)"
         elif cc == "Zaire (Congo Kinshasa)":
             cc = "Democratic Republic of the Congo (DRC)"
         elif cc == "Congo":
@@ -64,6 +72,8 @@ class AvicDataProcessing(BaseDataProcessing, BasePotentialAlgo, AvicAlgo):
         elif cc == "Congo 'Brazzaville'":
             cc = "Republic of the Congo"
         elif cc == "Republic of the Congo":
+            cc = "Republic of the Congo"
+        elif cc == "Congo, Rep.":
             cc = "Republic of the Congo"
         elif cc == "Russian Federation":
             cc = "Russia"
@@ -83,6 +93,8 @@ class AvicDataProcessing(BaseDataProcessing, BasePotentialAlgo, AvicAlgo):
             cc = "South Korea"
         elif cc == "Republic Of Korea":
             cc = "South Korea"
+        elif cc == "Korea, Rep.":
+            cc = "South Korea"
         elif cc == "Korea, Dem. People's Rep":
             cc = "North Korea"
         elif cc == "United States Of America":
@@ -91,8 +103,6 @@ class AvicDataProcessing(BaseDataProcessing, BasePotentialAlgo, AvicAlgo):
             cc = "Cape Verde"
         elif cc == "United Republic Of Tanzania":
             cc = "Tanzania"
-        elif cc == "Guinea Bissau":
-            cc = "Guinea-bissau"
         elif cc == "Lao People's Democratic Republic":
             cc = "Laos"
         elif cc == "Republic Of Moldova":
@@ -133,8 +143,6 @@ class AvicDataProcessing(BaseDataProcessing, BasePotentialAlgo, AvicAlgo):
             cc = "Cape Verde"
         elif cc == "United Republic Of Tanzania":
             cc = "Tanzania"
-        elif cc == "Guinea Bissau":
-            cc = "Guinea-bissau"
         elif cc == "Republic Of Moldova":
             cc = "Moldova"
         elif cc == "Yemen, Rep":
@@ -143,8 +151,6 @@ class AvicDataProcessing(BaseDataProcessing, BasePotentialAlgo, AvicAlgo):
             cc = "North Korea"
         elif cc == "Gambia, The":
             cc = "Gambia"
-        elif cc == "Guinea-Bissau":
-            cc = "Guinea Bissau"
         elif cc == "Haïti":
             cc = "Haiti"
         elif cc == "Indonesia (including Timor until 1999)":
@@ -171,12 +177,18 @@ class AvicDataProcessing(BaseDataProcessing, BasePotentialAlgo, AvicAlgo):
             cc = "Venezuela"
         elif cc == "Yemen, Rep.":
             cc = "Yemen"
+        elif cc == "Comoro Islands":
+            cc = "Comoros"
+        elif cc == "Côte d'Ivoire":
+            cc = "Cote d'Ivoire"
+
+
         return cc
 
     def remove_country(self, cc):
         c = -1
-        if cc in ["Ethiopia  and  Eritrea", "Ethiopia and Eritrea",
-                  "Serbia/Montenegro/Kosovo"]:
+        if cc in ["Ethiopia  and  Eritrea", "Ethiopia and Eritrea","Central African Republic","Cape Verde","Luxembourg",
+                  "Serbia/Montenegro/Kosovo", "Bosnia and Herzegovina"]:
             c = 1
         return c
 

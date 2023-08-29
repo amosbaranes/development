@@ -874,6 +874,7 @@ class BasePotentialAlgo(object):
         app_ = dic["app"]
         fact_model_name_ = dic["fact_model"]
         year_ = str(dic["time_dim_value"])
+        print(111111111111)
 
         dic_ = {'app': app_, 'filter_dim': 'time_dim', 'filter_value': year_, 'value': 'amount',
                 'axes': [self.entity_name+'_dim', 'measure_dim'],
@@ -881,18 +882,21 @@ class BasePotentialAlgo(object):
                 'filter_amount': dic["population_filter_amount"], 'measure_id': None,
                 'measure_name': dic["measure_name"]}
 
+        print(1111111111112222)
         # print("90022-122-111 pre_process_data: \n", dic_, "\n", "="*50)
         df_entities = self.get_dim_data_frame(dic_)["result"]
         # print("\nAAAAAAAA\n df_entities\n", df_entities)
 
         measure_group_model_name_ = dic["measure_group_model"]
         dependent_group = dic["dependent_group"]
+
+        print(11111111111133333)
         model_fact = apps.get_model(app_label=app_, model_name=fact_model_name_)
         model_measure_group = apps.get_model(app_label=app_, model_name=measure_group_model_name_)
 
         groups = model_measure_group.objects.filter(~Q(group_name__in=self.do_not_include_groups)).all()
         ll_groups = [dependent_group]
-
+        print(1111111111114444)
         # print("90-111-222-0 for k in groups\n", ll_groups)
         for k in groups:
             group = k.group_name
