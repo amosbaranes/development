@@ -11,8 +11,16 @@ class TimeDim(TruncateTableMixin, models.Model):
         return str(self.id)
 
 
+class CountryGroupDim(TruncateTableMixin, models.Model):
+    group_name = models.CharField(max_length=100, default='', blank=True, null=True)
+
+    def __str__(self):
+        return str(self.group_name)
+
 class CountryDim(TruncateTableMixin, models.Model):
     country_name = models.CharField(max_length=100, default='', blank=True, null=True)
+    country_group_dim = models.ForeignKey(CountryGroupDim, on_delete=models.CASCADE, default=1,
+                                          related_name='country_dim_group_dim')
     country_code = models.CharField(max_length=100, default='', blank=True, null=True)
     country_cc = models.CharField(max_length=100, default='', blank=True, null=True)
 

@@ -123,233 +123,259 @@ class AvicDataProcessing(BaseDataProcessing, BasePotentialAlgo, AvicAlgo):
             cc = "Guinea-bissau"
         elif cc == "Republic Of Moldova":
             cc = "Moldova"
+        elif cc == "Yemen, Rep":
+            cc = "Yemen, Rep."
+        elif cc == "Korea, Dem. People's Rep.":
+            cc = "North Korea"
         return cc
 
-    # _1
+    # _1  I adjusted this function to work after uploading Eli data
     def load_wbfile_to_db(self, dic):
-        print("90121-5: \n", dic, "="*50)
-        app_ = dic["app"]
-        file_path = self.upload_file(dic)["file_path"]
-        # print('90022-1 dic')
-        dic = dic["cube_dic"]
-        # print('90022-1 dic', dic)
-        df = pd.read_excel(file_path, sheet_name="Data", header=0)
-        print(df)
-        model_name_ = dic["dimensions"]["time_dim"]["model"]
-        model_time_dim = apps.get_model(app_label=app_, model_name=model_name_)
-        model_name_ = dic["dimensions"]["country_dim"]["model"]
-        model_country_dim = apps.get_model(app_label=app_, model_name=model_name_)
-        model_name_ = "measuregroupdim"
-        model_group_measure_dim = apps.get_model(app_label=app_, model_name=model_name_)
-        model_name_ = dic["dimensions"]["measure_dim"]["model"]
-        model_measure_dim = apps.get_model(app_label=app_, model_name=model_name_)
-        model_name_ = dic["fact"]["model"]
-        model_fact = apps.get_model(app_label=app_, model_name=model_name_)
+        try:
+            print("90121-5: \n", dic, "="*50)
+            app_ = dic["app"]
+            file_path = self.upload_file(dic)["file_path"]
+            # print('90022-1 dic')
+            dic = dic["cube_dic"]
+            # print('90022-1 dic', dic)
+            df = pd.read_excel(file_path, sheet_name="Data", header=0)
+            # print(df)
+            # df = df.reset_index()  # make sure indexes pair with number of rows
+            # print(df)
 
+            model_min_max_cut = apps.get_model(app_label=app_, model_name="minmaxcut")
+            model_name_ = dic["dimensions"]["time_dim"]["model"]
+            model_time_dim = apps.get_model(app_label=app_, model_name=model_name_)
+            model_name_ = dic["dimensions"]["country_dim"]["model"]
+            model_country_dim = apps.get_model(app_label=app_, model_name=model_name_)
+            model_name_ = "measuregroupdim"
+            model_group_measure_dim = apps.get_model(app_label=app_, model_name=model_name_)
+            model_name_ = dic["dimensions"]["measure_dim"]["model"]
+            model_measure_dim = apps.get_model(app_label=app_, model_name=model_name_)
+            model_name_ = dic["fact"]["model"]
+            model_fact = apps.get_model(app_label=app_, model_name=model_name_)
+        except Exception as ex:
+            pass
+
+        min_cut = []
+        max_cut = []
         for index, row in df.iterrows():
-            print(row["Country Name"], row["Country Code"], row["Series Name"], row["Series Code"])
+            # print(row["Country Name"], row["Country Code"], row["Series Name"], row["Series Code"])
             # Country
+
+            # print(row["Country Name"], c, row["Series Name"])
             try:
-                c, is_created = model_country_dim.objects.get_or_create(country_code=row["Country Code"])
-                if is_created:
-                    cc = self.check_country(row["Country Name"])
-                    s = 'c.' + dic["dimensions"]["country_dim"]["field_name"] + ' = "' + cc + '"'
-                    exec(s)
-                    c.save()
+                if row["Series Name"] == "Population, total":
+                    measure_name = "TotalPop"
+                    group_measure_name = "General"
+                    description = "Population, total"
+                elif row["Series Name"] == "High-technology exports (current US$)":
+                    measure_name = "HighTech"
+                    group_measure_name = "Technology"
+                    description = "High-technology exports (current US$)"
+                elif row["Series Name"] == "ICT service exports (BoP, current US$)":
+                    measure_name = "ExportICT"
+                    group_measure_name = "ExportICT"
+                    description = "ICT service exports (BoP, current US$)"
+                    # print(measure_name)
+                elif row["Series Name"] == "Scientific and technical journal articles":
+                    measure_name = "SciTechJA"
+                    group_measure_name = "SciTechJA"
+                    description = "Scientific and technical journal articles"
+                elif row["Series Name"] == "GDP per capita (current US$)":
+                    measure_name = "GDPPCCUS$"
+                    group_measure_name = "GDP"
+                    description = "GDP per capita (current US$)"
+                elif row["Series Name"] == "GDP per capita (constant 2015 US$)":
+                    measure_name = "GDPPC2015$"
+                    group_measure_name = "GDP"
+                    description = "GDP per capita (constant 2015 US$)"
+                elif row["Series Name"] == "GDP per capita, PPP (current international $)":
+                    measure_name = "GDPPCINT$"
+                    group_measure_name = "GDP"
+                    description = "GDP per capita, PPP (current international $)"
+                elif row["Series Name"] == "GDP per capita, PPP (constant 2017 international $)":
+                    measure_name = "GDPPC2017INT$"
+                    group_measure_name = "GDP"
+                    description = "GDP per capita, PPP (constant 2017 international $)"
+                elif row["Series Name"] == "GNI per capita, Atlas method (current US$)":
+                    measure_name = "GNIPCAINT$"
+                    group_measure_name = "GDP"
+                    description = "GNI per capita, Atlas method (current US$)"
+                elif row["Series Name"] == "GNI per capita (constant 2015 US$)":
+                    measure_name = "GNIPC2015$"
+                    group_measure_name = "GDP"
+                    description = "GNI per capita (constant 2015 US$)"
+                elif row["Series Name"] == "GNI per capita, PPP (current international $)":
+                    measure_name = "GNIPCPPINT$"
+                    group_measure_name = "GDP"
+                    description = "GNI per capita, PPP (current international $)"
+                elif row["Series Name"] == "GNI per capita, PPP (constant 2017 international $)":
+                    measure_name = "GNIPC2017INT$"
+                    group_measure_name = "GDP"
+                    description = "GNI per capita, PPP (constant 2017 international $)"
+                elif row["Series Name"] == "Military expenditure (current USD)":
+                    measure_name = "MExpCUS$"
+                    group_measure_name = "Military"
+                    description = "Military expenditure (current USD)"
+                elif row["Series Name"] == "Armed forces personnel, total":
+                    measure_name = "ArmedFPT"
+                    group_measure_name = "Military"
+                    description = "Armed forces personnel, total"
+                elif row["Series Name"] == "Researchers in R&D (per million people)":
+                    measure_name = "ResearchersPMP"
+                    group_measure_name = "RandD"
+                    description = "Researchers in R&D (per million people)"
+                elif row["Series Name"] == "Technicians in R&D (per million people)":
+                    measure_name = "TechniciansPMP"
+                    group_measure_name = "RandD"
+                    description = "Technicians in R&D (per million people)"
+                elif row["Series Name"] == "Exports of goods and services (constant 2015 US$)":
+                    measure_name = "GSC2015US$"
+                    group_measure_name = "Exports"
+                    description = "Exports of goods and services (constant 2015 US$)"
+                elif row["Series Name"] == "Exports of goods and services (current US$)":
+                    measure_name = "GSCUS$"
+                    group_measure_name = "Exports"
+                    description = "Exports of goods and services (current US$)"
+                elif row["Series Name"] == "Exports of goods, services and primary income (BoP, current US$)":
+                    measure_name = "GSPIBOPCUS$"
+                    group_measure_name = "Exports"
+                    description = "Exports of goods, services and primary income (BoP, current US$)"
+                elif row["Series Name"] == "Merchandise exports (current US$)":
+                    measure_name = "MerCUS$"
+                    group_measure_name = "Exports"
+                    description = "Merchandise exports (current US$)"
+                elif row["Series Name"] == "Exports of goods and services (BoP, current US$)":
+                    measure_name = "GSBOPCUS$"
+                    group_measure_name = "Exports"
+                    description = "Exports of goods and services (BoP, current US$)"
+                elif row["Series Name"] == "Industry (including construction), value added (current US$)":
+                    measure_name = "IndCUS$"
+                    group_measure_name = "Industry"
+                    description = "Industry (including construction), value added (current US$)"
+                elif row["Series Name"] == "Industry (including construction), value added (constant 2015 US$)":
+                    measure_name = "IndC2015$"
+                    group_measure_name = "Industry"
+                    description = "Industry (including construction), value added (constant 2015 US$)"
+                elif row["Series Name"] == "Natural gas rents (% of GDP)":
+                    measure_name = "GasPerGDP"
+                    group_measure_name = "NaturalRes"
+                    description = "Natural gas rents (% of GDP)"
+                elif row["Series Name"] == "Total natural resources rents (% of GDP)":
+                    measure_name = "TNRPerGDP"
+                    group_measure_name = "NaturalRes"
+                    description = "Total natural resources rents (% of GDP)"
             except Exception as ex:
-                print("90987-1 Error measure:"+str(ex))
-            #
-            if row["Series Name"] == "Population, total":
-                measure_name = "TotalPop"
-                group_measure_name = "General"
-                description = "Population, total"
-            elif row["Series Name"] == "High-technology exports (current US$)":
-                measure_name = "HighTech"
-                group_measure_name = "Technology"
-                description = "High-technology exports (current US$)"
-            elif row["Series Name"] == "ICT service exports (BoP, current US$)":
-                measure_name = "ICT"
-                group_measure_name = "Technology"
-                description = "ICT service exports (BoP, current US$)"
-            elif row["Series Name"] == "GDP per capita (current US$)":
-                measure_name = "GDPPCCUS$"
-                group_measure_name = "GDP"
-                description = "GDP per capita (current US$)"
-            elif row["Series Name"] == "GDP per capita (constant 2015 US$)":
-                measure_name = "GDPPC2015$"
-                group_measure_name = "GDP"
-                description = "GDP per capita (constant 2015 US$)"
-            elif row["Series Name"] == "GDP per capita, PPP (current international $)":
-                measure_name = "GDPPCINT$"
-                group_measure_name = "GDP"
-                description = "GDP per capita, PPP (current international $)"
-            elif row["Series Name"] == "GDP per capita, PPP (constant 2017 international $)":
-                measure_name = "GDPPC2017INT$"
-                group_measure_name = "GDP"
-                description = "GDP per capita, PPP (constant 2017 international $)"
-            elif row["Series Name"] == "GNI per capita, Atlas method (current US$)":
-                measure_name = "GNIPCAINT$"
-                group_measure_name = "GDP"
-                description = "GNI per capita, Atlas method (current US$)"
-            elif row["Series Name"] == "GNI per capita (constant 2015 US$)":
-                measure_name = "GNIPC2015$"
-                group_measure_name = "GDP"
-                description = "GNI per capita (constant 2015 US$)"
-            elif row["Series Name"] == "GNI per capita, PPP (current international $)":
-                measure_name = "GNIPCPPINT$"
-                group_measure_name = "GDP"
-                description = "GNI per capita, PPP (current international $)"
-            elif row["Series Name"] == "GNI per capita, PPP (constant 2017 international $)":
-                measure_name = "GNIPC2017INT$"
-                group_measure_name = "GDP"
-                description = "GNI per capita, PPP (constant 2017 international $)"
-            elif row["Series Name"] == "Military expenditure (current USD)":
-                measure_name = "MExpCUS$"
-                group_measure_name = "Military"
-                description = "Military expenditure (current USD)"
-            elif row["Series Name"] == "Armed forces personnel, total":
-                measure_name = "ArmedFPT"
-                group_measure_name = "Military"
-                description = "Armed forces personnel, total"
-            elif row["Series Name"] == "Researchers in R&D (per million people)":
-                measure_name = "ResearchersPMP"
-                group_measure_name = "RandD"
-                description = "Researchers in R&D (per million people)"
-            elif row["Series Name"] == "Technicians in R&D (per million people)":
-                measure_name = "TechniciansPMP"
-                group_measure_name = "RandD"
-                description = "Technicians in R&D (per million people)"
-            elif row["Series Name"] == "Exports of goods and services (constant 2015 US$)":
-                measure_name = "GSC2015US$"
-                group_measure_name = "Exports"
-                description = "Exports of goods and services (constant 2015 US$)"
-            elif row["Series Name"] == "Exports of goods and services (current US$)":
-                measure_name = "GSCUS$"
-                group_measure_name = "Exports"
-                description = "Exports of goods and services (current US$)"
-            elif row["Series Name"] == "Exports of goods, services and primary income (BoP, current US$)":
-                measure_name = "GSPIBOPCUS$"
-                group_measure_name = "Exports"
-                description = "Exports of goods, services and primary income (BoP, current US$)"
-            elif row["Series Name"] == "Merchandise exports (current US$)":
-                measure_name = "MerCUS$"
-                group_measure_name = "Exports"
-                description = "Merchandise exports (current US$)"
-            elif row["Series Name"] == "Exports of goods and services (BoP, current US$)":
-                measure_name = "GSBOPCUS$"
-                group_measure_name = "Exports"
-                description = "Exports of goods and services (BoP, current US$)"
-            elif row["Series Name"] == "Industry (including construction), value added (current US$)":
-                measure_name = "IndCUS$"
-                group_measure_name = "Industry"
-                description = "Industry (including construction), value added (current US$)"
-            elif row["Series Name"] == "Industry (including construction), value added (constant 2015 US$)":
-                measure_name = "IndC2015$"
-                group_measure_name = "Industry"
-                description = "Industry (including construction), value added (constant 2015 US$)"
-            elif row["Series Name"] == "Scientific and technical journal articles":
-                measure_name = "SciTechJA"
-                group_measure_name = "Science"
-                description = "Scientific and technical journal articles"
-            elif row["Series Name"] == "Natural gas rents (% of GDP)":
-                measure_name = "GasPerGDP"
-                group_measure_name = "NaturalRes"
-                description = "Natural gas rents (% of GDP)"
-            elif row["Series Name"] == "Total natural resources rents (% of GDP)":
-                measure_name = "TNRPerGDP"
-                group_measure_name = "NaturalRes"
-                description = "Total natural resources rents (% of GDP)"
-            print(group_measure_name, measure_nam, description)
+                pass
             #
             try:
                 gm, is_created = model_group_measure_dim.objects.get_or_create(group_name=group_measure_name)
                 mm = row["Series Code"]
                 m, is_created = model_measure_dim.objects.get_or_create(measure_code=mm, measure_group_dim=gm)
-                if is_created:
-                    s = 'm.' + dic["dimensions"]["measure_dim"]["field_name"] + ' = "' + measure_name + '"'
-                    s = 'm.description = "' + description + '"'
-                    # print(s)
-                    exec(s)
-                    m.save()
+                m.measure_name = measure_name
+                m.description = description
+                m.save()
             except Exception as ex:
                 print("90986-1 Error measure:"+str(ex))
-
             for j in range(4, len(df.columns)):
+                jm = j-4
                 k = df.columns[j]
+                s = k.split(" ")
+                # print(s[0])
+                yy = int(s[0])
+                t, is_created = model_time_dim.objects.get_or_create(id=yy)
+                if is_created:
+                    # t.year = yy
+                    s = 't.' + dic["dimensions"]["time_dim"]["field_name"] + ' = yy'
+                    # print(s)
+                    exec(s)
+                    t.save()
                 try:
-                    if float("{:.2f}".format(row[k])) > 0 or float("{:.2f}".format(row[k])) < 0:
-                        s = k.split(" ")
-                        # print(s[0])
-                        yy = int(s[0])
-                        t, is_created = model_time_dim.objects.get_or_create(id=yy)
-                        if is_created:
-                            # t.year = yy
-                            s = 't.' + dic["dimensions"]["time_dim"]["field_name"] + ' = yy'
-                            # print(s)
-                            exec(s)
-                            t.save()
-
-                        a, is_created = model_fact.objects.get_or_create(time_dim=t, country_dim=c, measure_dim=m)
-                        if is_created:
-                            # a.amount = float(row[k])
-                            s = 'a.' + dic["fact"]["field_name"] + ' = ' + str(float("{:.2f}".format((row[k]))))
-                            # print(s)
-                            exec(s)
-                            a.save()
+                    s_ = str(row[0]).lower()
+                    # print("-"*20, "\n", jm, yy, s_)
+                    if s_ == "min_cut" or s_ == "max_cut":
+                        if s_ == "min_cut":
+                            try:
+                                min_cut.append(float("{:.2f}".format(row[k])))
+                            except Exception as ex:
+                                print("Error 2001", jm, ex)
+                        if s_ == "max_cut":
+                            try:
+                                max_cut.append(float("{:.2f}".format(row[k])))
+                            except Exception as ex:
+                                print("Error 2002", jm, ex)
+                        try:
+                            min_cut_ = min_cut[jm]
+                            max_cut_ = max_cut[jm]
+                            min_max_cut_obj, is_created = model_min_max_cut.objects.get_or_create(time_dim=t, measure_dim=m)
+                            min_max_cut_obj.min = min_cut_
+                            min_max_cut_obj.max = max_cut_
+                            min_max_cut_obj.save()
+                        except Exception as ex:
+                            pass
+                    else:
+                        try:
+                            c = model_country_dim.objects.get(country_name=row["Country Name"])
+                            # print(row["Country Name"])
+                        except Exception as ex:
+                            continue
+                        if float("{:.2f}".format(row[k])) > 0 or float("{:.2f}".format(row[k])) < 0:
+                            a, is_created = model_fact.objects.get_or_create(time_dim=t, country_dim=c, measure_dim=m)
+                            if is_created:
+                                # a.amount = float(row[k])
+                                s = 'a.' + dic["fact"]["field_name"] + ' = ' + str(float("{:.2f}".format((row[k]))))
+                                # print(s)
+                                exec(s)
+                                a.save()
                 except Exception as ex:
                     pass
-                    # print(k, row[k], "9065-55 Error: "+str(ex))
-
         result = {"status": "ok"}
         return result
 
     def load_eli_file_to_db(self, dic):
-        print("90121-1: \n", "="*50, "\n", dic, "\n", "="*50)
-        app_ = dic["app"]
-        file_path = self.upload_file(dic)["file_path"]
-        print(file_path)
-        # print('90121-2 dic')
-        dic = dic["cube_dic"]
-        print('90121-3 dic', dic)
-
-        model_name_ = dic["dimensions"]["time_dim"]["model"]
-        model_time_dim = apps.get_model(app_label=app_, model_name=model_name_)
-        model_name_ = dic["dimensions"]["country_dim"]["model"]
-        model_country_dim = apps.get_model(app_label=app_, model_name=model_name_)
-        model_name_ = dic["dimensions"]["measure_dim"]["model"]
-        model_measure_dim = apps.get_model(app_label=app_, model_name=model_name_)
-        model_measure_group_dim = apps.get_model(app_label=app_, model_name="measuregroupdim")
-        model_min_max_cut = apps.get_model(app_label=app_, model_name="minmaxcut")
-        model_name_ = dic["fact"]["model"]
-        model_fact = apps.get_model(app_label=app_, model_name=model_name_)
-        #
-        year = int(self.uploaded_filename.split(".")[0])
         try:
+            # print("90121-1: \n", "="*50, "\n", dic, "\n", "="*50)
+            app_ = dic["app"]
+            file_path = self.upload_file(dic)["file_path"]
+            # print(file_path)
+            # print('90121-2 dic')
+            dic = dic["cube_dic"]
+            # print('90121-3 dic', dic)
+
+            model_name_ = dic["dimensions"]["time_dim"]["model"]
+            model_time_dim = apps.get_model(app_label=app_, model_name=model_name_)
+            model_name_ = dic["dimensions"]["country_dim"]["model"]
+            model_country_dim = apps.get_model(app_label=app_, model_name=model_name_)
+            model_name_ = dic["dimensions"]["measure_dim"]["model"]
+            model_measure_dim = apps.get_model(app_label=app_, model_name=model_name_)
+            model_measure_group_dim = apps.get_model(app_label=app_, model_name="measuregroupdim")
+            model_min_max_cut = apps.get_model(app_label=app_, model_name="minmaxcut")
+            model_name_ = dic["fact"]["model"]
+            model_fact = apps.get_model(app_label=app_, model_name=model_name_)
+            #
+            year = int(self.uploaded_filename.split(".")[0])
             year_obj, is_created = model_time_dim.objects.get_or_create(id=year)
             if is_created:
                 s = 'year_obj.' + dic["dimensions"]["time_dim"]["field_name"]+' = year'
                 exec(s)
                 year_obj.save()
+            wb = load_workbook(filename=file_path, read_only=False)
+            sheet_names = wb.sheetnames
         except Exception as ex:
             pass
-
-        # files = []
-        wb = load_workbook(filename=file_path, read_only=False)
-        sheet_names = wb.sheetnames
         for f in sheet_names:
-            ws = wb[f]
-            f = self.clean_name(f)
             try:
+                ws = wb[f]
+                f = self.clean_name(f)
                 group_obj, is_created = model_measure_group_dim.objects.get_or_create(group_name=f)
                 if is_created:
                     group_obj.group_name = f
                     group_obj.save()
             except Exception as ex:
                 pass
-            # files.append(f)
             data = ws.values
-            # Get the first line in file as a header line
-            columns = next(data)[0:]
+            columns = next(data)[0:]   # Get the first line in file as a header line
             # print(columns)
             # Create a DataFrame based on the second and subsequent lines of data
             df = pd.DataFrame(data, columns=columns)
@@ -397,7 +423,6 @@ class AvicDataProcessing(BaseDataProcessing, BasePotentialAlgo, AvicAlgo):
                                                 min_max_cut_obj.save()
                                         except Exception as ex:
                                             pass
-
                                 except Exception as ex:
                                     print(ex)
                             else:
@@ -420,7 +445,8 @@ class AvicDataProcessing(BaseDataProcessing, BasePotentialAlgo, AvicAlgo):
                                         fact_obj.amount = v_
                                         fact_obj.save()
                                 except Exception as ex:
-                                    print("Error 9055-33: "+str(ex))
+                                    pass
+                                    # print("Error 9055-33: \ncountry_name", country_name, "\nv=", "="+v_+"=", "=\n", str(columns[j]), "\n", f_, str(ex))
         wb.close()
 
         result = {"status": "ok"}

@@ -582,11 +582,11 @@ def get_data_link(request):
         # print("9030-222")
         s += '.all()[:number_of_rows_].values('+fields_str+')'
 
-        # print("="*100, '\ns111-1 for d_data\n', "\ns=", number_of_rows_, s, "=\n", "="*100, "\n")
+        print("="*100, '\ns111-1 for d_data\n', "\ns=", number_of_rows_, s, "=\n", "="*100, "\n")
 
         log_debug("get_data_link 99999: s="+s)
         d_data = eval(s)
-        # print("d_data\n", d_data)
+        print("d_data\n", d_data)
     except Exception as ex:
         print("3030-1 core error 300 "+str(ex))
         # pass

@@ -4273,12 +4273,15 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
     def __init__(self, dic):
         super().__init__(dic)
 
+        print("="*100, "\n", dic, "\n", "="*100)
+
         self.df_positions = pd.DataFrame.from_dict({"id" :[1,2,3,4,5,0],
                                           "position_name": ["Captain","Officer","Soldier","Colonel","Sous Officer","Other"]})
 
         self.df_instructor_positions = pd.DataFrame.from_dict({"id" :[1,2,3,4,5,6,7,8],
                                           "position_name": ['מפקד גדוד', 'מפקד פלוגה', 'מספר 2 – צ', 'מוביל צוות', 'מספר 2',
                                                             'אימון גופני', 'מתגבר', 'קמ”ג']})
+        self.inventory_with_pn = ["mz4psn", "ramonsn", "mz10", "mz15"]
 
     # To be deleted
     def process_period_1(self, app_, n, nav_tables_, result, qid=None, battalion=None):
@@ -4678,7 +4681,7 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
         print('90022-2 dic', dic)
         app_ = dic["app"]
         file_path = self.upload_file(dic)["file_path"]
-        print("-"*100, "\n", file_path, "\n", "-"*100)
+        # print("-"*100, "\n", file_path, "\n", "-"*100)
         #
         model_inventorys = apps.get_model(app_label=app_, model_name="inventorys")
         model_inventoryfact = apps.get_model(app_label=app_, model_name="inventoryfact")
@@ -4688,7 +4691,7 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
         # print(s)
         battalion_number_ = int(s[0])
         period_number_ = int(s[1])
-        print(battalion_number_, period_number_)
+        # print(battalion_number_, period_number_)
         #
         model_periods = apps.get_model(app_label=app_, model_name="periods")
         model_battalions = apps.get_model(app_label=app_, model_name="battalions")
@@ -4702,7 +4705,7 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
         # print(df, "\n", "-"*100)
 
         columns = df.columns[13:]
-        print("columns\n", columns)
+        # print("columns\n", columns)
 
         try:
             objs = model_soldierqualificationfact.objects.filter(soldier__battalion=battalion_obj, skill=2).all()
@@ -4765,33 +4768,33 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
             except Exception as ex:
                 print("9011-22-1 Error " + str(ex))
 
-            if status == -1:
-                try:
-                    print("the following soldier was deleted")
-                    print("-"*100, "\n", status, soldier_obj, "Delete Soldier", "\n", "-"*100)
-                    soldier_obj.delete()
-                except Exception as ex:
-                    pass
-                continue
-            if status == 1:
-                print("the following soldier was replaced by another soldier")
-                print("soldier_obj", soldier_obj, "\n", "-"*100)
-                try:
-                    # print("soldier_obj.user_id=", soldier_obj.user_id)
-                    objs = model_soldiers_for_events.objects.filter(soldier_number=soldier_obj.user_id).all()
-                    count = objs.delete()
-                    # print(count)
-                except Exception as ex:
-                    pass
-
-            self.set_basic_soldier_data(row, soldier_obj, battalion_obj, model_soldierqualificationfact)
-
-            self.set_unit_soldier(soldier_obj, units_dic, platoon_name_, period_obj, model_unit_soldiers)
-
-            self.set_soldier_inventory(row, columns, soldier_obj, model_inventorys, model_inventoryfact,
-                                       battalion_obj, model_soldierqualificationfact)
-
-        # -----
+    #         if status == -1:
+    #             try:
+    #                 print("the following soldier was deleted")
+    #                 print("-"*100, "\n", status, soldier_obj, "Delete Soldier", "\n", "-"*100)
+    #                 soldier_obj.delete()
+    #             except Exception as ex:
+    #                 pass
+    #             continue
+    #         if status == 1:
+    #             print("the following soldier was replaced by another soldier")
+    #             print("soldier_obj", soldier_obj, "\n", "-"*100)
+    #             try:
+    #                 # print("soldier_obj.user_id=", soldier_obj.user_id)
+    #                 objs = model_soldiers_for_events.objects.filter(soldier_number=soldier_obj.user_id).all()
+    #                 count = objs.delete()
+    #                 # print(count)
+    #             except Exception as ex:
+    #                 pass
+    #
+    #         self.set_basic_soldier_data(row, soldier_obj, battalion_obj, model_soldierqualificationfact)
+    #
+    #         self.set_unit_soldier(soldier_obj, units_dic, platoon_name_, period_obj, model_unit_soldiers)
+    #
+    #         self.set_soldier_inventory(row, columns, soldier_obj, model_inventorys, model_inventoryfact,
+    #                                    battalion_obj, model_soldierqualificationfact)
+    #
+    #     -----
         result = {"status": "ok"}
         print(result)
         return result
@@ -4805,8 +4808,8 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
         model_inventorycategorys = apps.get_model(app_label=app_, model_name="inventorycategorys")
 
         df = pd.read_excel(file_path, sheet_name="Data", header=0)
-        print(df)
-        print("-"*100)
+        # print(df)
+        # print("-"*100)
         shoes_size = ["40", "41", "42", "43", "44", "45"]
         shoes_size_ll = ["running_shoes", "boots"]
         clothes_size = ["XL", "L", "M", "S"]
@@ -4815,10 +4818,10 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
         for index, row in df.iterrows():
             # print(index)
             category_obj, is_created = model_inventorycategorys.objects.get_or_create(category_name=str(row["category_name"]))
-            inventory_obj, is_created = model_inventorys.objects.get_or_create(pn=str(row["pn"]))
+            inventory_obj, is_created = model_inventorys.objects.get_or_create(item_name=str(row["item_name"]))
             inventory_obj.inventorycategory = category_obj
             inventory_obj.item_number = int(row["item_number"])
-            inventory_obj.item_name = str(row["item_name"])
+            inventory_obj.pn = str(row["pn"])
             inventory_obj.description = str(row["description"])
             inventory_obj.critical = str(row["critical"])
             inventory_obj.qty_per_soldier = int(row["qty_per_soldier"])
@@ -5089,7 +5092,8 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
                 if v == "" or v == "nan":
                     continue
                 # print("2","k=", k, " v=", "="+v+"=")
-                if k == "mz4psn" or k == "ramonsn" or k == "mz10" or k == "mz15":
+                kl = k.lower()
+                if kl in self.inventory_with_pn:
                     v = 1
                     # print("3","k=", k, " v=", "="+str(v)+"=")
                 else:
@@ -5099,7 +5103,7 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
             except Exception as ex:
                 print("9011-77-77-1 Error " + str(ex))
             try:
-                inventory_obj = model_inventorys.objects.get(item_name=k)
+                inventory_obj = model_inventorys.objects.get(item_name=kl)
             except Exception as ex:
                 print("9011-55-1 Error ", k, str(ex))
             try:
@@ -5122,7 +5126,7 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
                     if v == "" or v == "nan":
                         v=0
                     else:
-                        if k == "mz4psn" or k == "ramonsn" or k == "mz10":
+                        if k in self.inventory_with_pn:
                             v = 1
                         else:
                             v = int(float(v))
@@ -5337,7 +5341,7 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
 
             test_events_obj.units_description = adj_ + " - " + company_
             test_events_obj.save()
-            print(test_events_obj)
+            # print("\n", "="*50, "\n", test_events_obj,"\n", "="*50, "\n")
         except Exception as ex:
             print("20-20-20-20 test_events_obj\n", ex)
         df = pd.read_excel(file_path, sheet_name="Data", header=0)

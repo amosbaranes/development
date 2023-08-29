@@ -188,7 +188,9 @@ class MSDataProcessing(BaseDataProcessing, MSAlgo):
         # print(clusters)
         # print(range(len(row)-2))
         try:
+            # print(row)
             d0_ = (row["max"] - row["min"])/20
+            # print("1. d0_", d0_)
             cluster_n = 1
             # print("-"*30, "\n", d0_, "\n", "="*30)
             for j in row.index:
@@ -220,7 +222,10 @@ class MSDataProcessing(BaseDataProcessing, MSAlgo):
                         cluster_n += 1
         except Exception as ex:
             print("Error 90876-67: "+str(ex))
-        # print('clusters 1')
+        print('clusters 1', "\n", "="*100, "\n")
+        print(clusters)
+        print('clusters 1', "\n", "="*100, "\n")
+        #
         n_ = 0
         l_sum = []
         while n_ < 100:
@@ -240,6 +245,10 @@ class MSDataProcessing(BaseDataProcessing, MSAlgo):
         # print(n_, l_sum)
         for c in clusters:
             clusters[c]["centroid"] = round(clusters[c]["centroid"], 2)
+        print('clusters 2', "\n", "="*100, "\n")
+        print(clusters)
+        print('clusters 2', "\n", "="*100, "\n")
+
 
         return clusters
 

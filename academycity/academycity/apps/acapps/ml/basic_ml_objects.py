@@ -233,7 +233,8 @@ class BasePotentialAlgo(object):
             print("Error 90003-010 " + str(ex))
 
         # print("90003-020 PotentialAlgo", dic, '\n', '-'*50)
-
+        self.rule_2 = 0.3
+        self.rule_0 = 0.025
         self.entity_name = dic["entity_name"]
         self.second_time_save = ''
         self.to_save = []
@@ -283,6 +284,9 @@ class BasePotentialAlgo(object):
         dependent_group = dic["dependent_group"]
         # print('dependent_group', dependent_group)
         min_max_model_name_ = dic["min_max_model"]
+        self.rule_2 = int(dic["rule_2"])/100
+        self.rule_0 = float(dic["rule_0"])
+
         measure_group_model_name_ = dic["measure_group_model"]
         model_fact = apps.get_model(app_label=app_, model_name=fact_model_name_)
         # try:
@@ -292,10 +296,17 @@ class BasePotentialAlgo(object):
         #     print("Error 9016: \n"+str(ex))
         # if not self.is_calculate_min_max:
         model_min_max = apps.get_model(app_label=app_, model_name=min_max_model_name_)
+        try:
+            qs = model_min_max.objects.filter(measure_dim__measure_name="TotalPop",
+                                                 time_dim_id=dic["time_dim_value"]).all()[0]
+            tot_pop_min = qs.min
+            tot_pop_max = qs.max
+            print("population\nmin=", tot_pop_min, "max=", tot_pop_max)
+        except Exception as ex:
+            pass
         # else:
         #     self.calculate_min_max_cuts(dic)
         model_measure_group = apps.get_model(app_label=app_, model_name=measure_group_model_name_)
-        # print(2001)
         # print("90060-10 PotentialAlgo: \n", "="*50)
         wb2 = None
         groups = model_measure_group.objects.all()
@@ -307,24 +318,21 @@ class BasePotentialAlgo(object):
         similarity_n1 = pd.DataFrame([[0, 0, 0, 0]])
         similarity_n2 = pd.DataFrame([[0, 0, 0, 0]])
         contribution_n1 = pd.DataFrame([[0, 0, 0, 0]])
-        adj_contribution_n1 = pd.DataFrame([[0, 0, 0, 0]])
         contribution_n2 = pd.DataFrame([[0, 0, 0, 0]])
+        adj_contribution_n1 = pd.DataFrame([[0, 0, 0, 0]])
         adj_contribution_n2 = pd.DataFrame([[0, 0, 0, 0]])
         # relimp_n1 = pd.DataFrame([[0, 0, 0, 0]])
         # relimp_n2 = pd.DataFrame([[0, 0, 0, 0]])
         similarity_n1.columns = self.options
         similarity_n2.columns = self.options
         group_d = ""
-        # print(2002)
         ll_dfs = self.pre_process_data(dic)
         # print(ll_dfs)
 
         lll_groups = []
         for k in ll_dfs:
             group = k #.group_name
-            # print("="*50)
-            # print(group)
-            # print("="*50)
+            print("="*50,"\n", group, "\n", "="*50)
             try:
                 self.save_to_file = os.path.join(self.TO_EXCEL_OUTPUT, str(dic["time_dim_value"]) + "_" + group + "_o.xlsx")
                 self.to_save = []
@@ -359,52 +367,60 @@ class BasePotentialAlgo(object):
                 # print(self.df_index)
                 df_ = self.add_entity_to_df(df)
                 self.to_save.append((df_.copy(), 'Data'))
-
                 qs_mm = model_min_max.objects.filter(measure_dim__measure_group_dim__group_name=group,
                                                      time_dim_id=dic["time_dim_value"]).all()
                 df_mm = pd.DataFrame(list(qs_mm.values('measure_dim', 'min', 'max')))
+
                 first_row = pd.DataFrame(df_mm.T.loc["min"]).T.reset_index().drop(['index'], axis=1)
                 second_row = pd.DataFrame(df_mm.T.loc["max"]).T.reset_index().drop(['index'], axis=1)
-
-                first_row.columns = df_columns
-                second_row.columns = df_columns
+                first_row.columns = df_mm.T.loc["measure_dim"]
+                second_row.columns = df_mm.T.loc["measure_dim"]
+                # print("1111 first_row\n", first_row, "\nsecond_row", "\n", second_row)
+                for f in first_row:
+                    if f in self.total_variables:
+                        first_row[f] = first_row[f]/tot_pop_min
+                        second_row[f] = second_row[f]/tot_pop_max
                 diff_row = second_row.subtract(first_row, fill_value=None)
-                diff_row.columns = df_columns
-
-                # print("first_row,second_row,diff_row\n", first_row, "\n", second_row, "\n", diff_row)
-
+                diff_row.columns = first_row.columns
+                # print("diff_row\n", diff_row)
                 df = ll_dfs[group]
                 df_columns = df.columns
-                # print("df.columns, df_columns\n", df.columns, df_columns)
+                # print("df.columns\n", df.columns)
                 # print("df\n", df)
-
                 df_n1 = df.copy()
+                # print("AAAA df_n1\n", df_n1, "\n", "="*100)
+
                 try:
                     df_n1 = df_n1.astype(float)
                 except Exception as ex:
                     print("1000: " + str(ex))
+                # print("1 df_n1\n", df_n1, "\n", "="*100)
                 for i, r in df_n1.iterrows():
                     for j in df_columns:
                         try:
-                            z = (r[j] - first_row[j].astype(float)) / diff_row[j].astype(float)
-                            df_n1.loc[i][j] = z
+                            if str(r[j]) != "nan":
+                                z = (float(r[j]) - float(first_row[j].astype(float))) / float(diff_row[j].astype(float))
+                                df_n1.loc[i][j] = z
                         except Exception as ex:
                             print("Error i " + str(i) + " " + str(ex))
-                # print("1 df_n1\n", df_n1, "\n", "="*100)
+                # print("11 df_n1\n", df_n1, "\n", "="*100)
 
                 df_n1 = df_n1.apply(pd.to_numeric, errors='coerce').round(6)
                 self.add_to_save(title='Normalized-1', a=df_n1, cols=None)
                 #
-                # print("50001-2")
                 df_n2 = df_n1.copy()
                 df_n2[df_n2 < 0] = 0
                 df_n2[df_n2 > 1] = 1
+
                 self.add_to_save(title='Normalized-2', a=df_n2, cols=None)
+                # print("2 df_n2\n", df_n2, "\n", "="*100)
                 #
                 if len(df_n1.columns) < 2:
                     df_n1["max"] = df_n1[df_n1.columns[0]]  # df_n1["Birth Rate"]
                     df_n2["max"] = df_n2[df_n2.columns[0]]  # df_n2["Birth Rate"]
                     df_1_2 = pd.merge(left=df_n1, right=df_n2, left_index=True, right_index=True)
+                    # print("2-1 df_1_2\n", df_1_2, "\n", "="*100)
+
                     # df_1_2.columns = ['min-n1', 'max-n1', 'min-n2', 'max-n2']
                     # cols = df_1_2.columns
                     # cols = cols.insert(0, 'country_name')
@@ -424,6 +440,7 @@ class BasePotentialAlgo(object):
                     df_n1 = df_n1[["min", "max"]]
                     df_n2 = df_n2[["min", "max"]]
                     df_1_2 = pd.merge(left=df_n1, right=df_n2, left_index=True, right_index=True)
+                    # print("2-2 df_1_2\n", df_1_2, "\n", "="*100)
                     # df_1_2.columns = ['min-n1', 'max-n1', 'min-n2', 'max-n2']
                     # cols = df_1_2.columns
                     # cols = cols.insert(0, 'country_name')
@@ -449,7 +466,7 @@ class BasePotentialAlgo(object):
                             # print("A n0\n", n0)
                             # print("="*10)
                             zero_list[i] = n0
-                        elif len(n1) > 0:
+                        if len(n1) > 0:
                             n1.sort()
                             one_list[i] = n1
                     # # #
@@ -457,8 +474,10 @@ class BasePotentialAlgo(object):
                     a_1 = a.copy()
                     a_1.sort(axis=1)
                     self.add_to_save(title='Sort L', a=a_1, cols=-1)
+
                     a_1 = self.clean_rows(a=a_1, j=1, side="L")
                     #
+                    # print("1-1\n", a_1)
                     a_1m = pd.DataFrame(a_1)
                     a_1m = a_1m.apply(self.move_elements_to_right, axis=1)
                     a_1m = a_1m.apply(self.revers_elements_in_row, axis=1)
@@ -466,6 +485,7 @@ class BasePotentialAlgo(object):
                     #
                     a_1 = -1 * a_1.copy()
                     a_1.sort(axis=1)
+                    # print("1-11\n", a_1)
                     self.add_to_save(title='Sort R', a=a_1, cols=-1)
                     a_1 = self.clean_rows(a=a_1, j=1, side="R")
                     a_1 = -1 * a_1.copy()
@@ -487,6 +507,7 @@ class BasePotentialAlgo(object):
                     a_1.dropna(how='all', axis=1, inplace=True)
                     # print("600000000-100-1")
                     #
+                    # print("1-13\n", a_1)
                     a_1 = a_1.apply(self.twenty_rule, axis=1)
                     # print("600000000-100-12")
                     a_1 = a_1.apply(lambda x: np.sort(x), axis=1, raw=True)
@@ -496,22 +517,27 @@ class BasePotentialAlgo(object):
                     # print("600000000-100-2")
 
                     a_1 = a_1.apply(self.thirty_rule, axis=1)
-                    self.add_to_save(title='Final-30-rule', a=a_1, cols=-1)
+                    self.add_to_save(title="Final-"+str(self.rule_2)+"-rule", a=a_1, cols=-1)
                     a_2 = a_1.copy()
                     #
-                    # print("zero_list\n", zero_list)
+                    # print("zero_list\n", zero_list, "\n", "="*100)
+                    # print("one_list\n", one_list, "\n", "="*100)
+                    # print("1-14\n", a_1)
                     ff = []
                     for j in a_1.index:
                         nn = list(a_1.loc[j])
-                        # print("nn == \n", nn)
+                        # print("AAAA j=", j,"nn = ", nn)
                         if min(nn) == 0:
-                            # print("nn zero_list[j]\n", zero_list[j])
+                            # print("BBB j=", j,"nn zero_list[j] =", zero_list[j], "\n", "-"*10)
                             nn = [zero_list[j].pop(0) if i == 0 else i for i in nn]
-                            # print("nn 0\n", nn)
+                            # print("CCC j=", j,"nn= ", nn, "-"*10)
                         if max(nn) == 1:
+                            # print("DDD j=", j,"nn =", nn)
+                            # print("DDD j=", j,"one_list[j]=", one_list[j], "\n", nn)
                             nn = [one_list[j].pop() if i == 1 else i for i in nn]
-                            # print("nn 1\n", nn)
+                            # print("DDDEE j=", j,"nn=", nn)
                         # nn.insert(0, j)
+                        # print("EEEE j=", j,"nn=", nn)
                         nn.sort()
                         ff.append(nn)
                     self.add_to_save(title='Final-30-rule-n1', a=ff, cols=-1)
@@ -523,11 +549,12 @@ class BasePotentialAlgo(object):
                     df_n2 = a_2.apply(self.min_max_rule, axis=1)
                     df_n2.columns = ['min-n2', 'max-n2']
                     df_1_2 = pd.merge(left=df_n1, right=df_n2, left_index=True, right_index=True)
-                # print("50001-3")
+                    # print("2-3 df_1_2\n", df_1_2, "\n", "="*100)
+                # print("3 df_n1\n", df_n1, "\n", "="*100)
                 df_1_2.columns = ['min-n1', 'max-n1', 'min-n2', 'max-n2']
                 cols = df_1_2.columns
                 cols = cols.insert(0, self.entity_name+'_name')
-                # print("50001-3-6")
+                # print("4 df_n1\n", group, "\n", df_1_2, "\n", "="*100)
                 self.add_to_save(title='min-max', a=df_1_2, cols=cols)
                 # self.add_to_save(title='min-max', a=df_1_2, cols=-1)
                 # print("50001-3-9")
@@ -559,13 +586,11 @@ class BasePotentialAlgo(object):
                 ss_n_xm += '"' + group_d + '-' + group + '-xm",'
                 ss_n_xx += '"' + group_d + '-' + group + '-xx",'
                 # print(group, sign_n1)
+
             lll_groups.append(group)
-        qs_mm = model_min_max.objects.filter(measure_dim__measure_group_dim__group_name=group,
-                                             time_dim_id=dic["time_dim_value"]).all()
-        df_mm = pd.DataFrame(list(qs_mm.values('measure_dim', 'min', 'max')))
-        first_row = pd.DataFrame(df_mm.T.loc["min"]).T.reset_index().drop(['index'], axis=1)
-        # print(first_row)
-        second_row = pd.DataFrame(df_mm.T.loc["max"]).T.reset_index().drop(['index'], axis=1)
+
+
+        # print("df_n1_all\n", df_n1_all)
 
         ss_n_mm = ss_n_mm[:-1]
         ss_n_mx = ss_n_mx[:-1]
@@ -575,6 +600,7 @@ class BasePotentialAlgo(object):
         df_n2_all_corr = df_n2_all.copy()
         # print("1 - df_n2_all_corr\n", df_n2_all_corr, "\n", ll_dfs)
         # print(df_n2_all_corr.columns)
+        # Calculate corr
         for o in ["m", "x"]:
             s_corr = ""
             n__ = 0
@@ -602,19 +628,15 @@ class BasePotentialAlgo(object):
                 s_ = "ll.append(1-df_n" + n + "_all[[" + eval("ss_n_" + k) + "]].min(axis=1).mean())"
                 #print(s_)
                 exec(s_)
-
             s_ = "similarity_n" + n + ".loc['SComb'] = ll"
             # print(s_, "\n", ll)
-
             exec(s_)
             s_ = "sign_n" + n + ".drop([0], axis=0, inplace=True)"
             # print(s_)
             exec(s_)
-
             self.add_to_save_all(title='sign-n' + n, a=eval("sign_n" + n), cols=-1)
             exec("similarity_n" + n + ".drop([0], axis=0, inplace=True)")
             self.add_to_save_all(title='similarity-n' + n, a=eval("similarity_n" + n), cols=-1)
-
         # print("90050-27\n")
 
         for n in ["1", "2"]:
@@ -662,76 +684,80 @@ class BasePotentialAlgo(object):
             exec("adj_contribution_n" + n + ".columns = self.options")
             exec("contribution_n" + n + ".drop([0], axis=0, inplace=True)")
             exec("adj_contribution_n" + n + ".drop([0], axis=0, inplace=True)")
-
-            print("=1"*50)
-
+            # print("=1"*50)
             npg = np.array(llg)
             npg_adj = np.array(llg_adj)
-            # print("llg", "\n", llg)
-
             npgs = np.sum(llg, axis=0)
             npgs_adj = np.sum(llg_adj, axis=0)
-
             df_relimp = pd.DataFrame(npg/npgs, index=contribution_n1.index)
+
+            # print("llg=\n", llg, "\nnpg=\n", npg, "\nllg_adj=", "\n", llg_adj, "npgs=\n", npgs, "\ndf_relimp=", df_relimp)
+
             df_relimp_adj = pd.DataFrame(npg_adj/npgs_adj, index=contribution_n1.index)
 
             df_relimp.columns = self.options
             if n == "1":
                 df_relimp_1 = df_relimp.copy(deep=True)
-
             df_relimp_adj.columns = self.options
 
             self.add_to_save_all(title='contribution-n' + n, a=eval("contribution_n" + n), cols=-1)
             self.add_to_save_all(title='adj_contribution-n' + n, a=eval("adj_contribution_n" + n), cols=-1)
             self.add_to_save_all(title='relimp-n' + n, a=df_relimp, cols=-1)
             self.add_to_save_all(title='adj_relimp-n' + n, a=df_relimp_adj, cols=-1)
-            print("=2"*50)
+            # print("=2"*50)
 
-        # print("="*100, "\n", sign_n1, "\n", df_relimp_1)
+        # print("="*100, "\nsign_n1\n", sign_n1, "\ndf_relimp_1\n", df_relimp_1)
         np_sign_n1 = sign_n1.to_numpy()
         # print("="*50, "\n", np_sign_n1)
+        ll = [*range(np_sign_n1.shape[0])]
         np_relimp_1 = df_relimp_1.to_numpy()
         # print("="*50, "\n", np_relimp_1)
         np_signed_relimp_1 = np_relimp_1*np_sign_n1
-        # print("AAAAAAAAA")
-        # print("=1=2"*50, "\n", np_signed_relimp_1)
-        # print("AAAAAAAAA")
+        # print("AAAAAAAAA\n", "=1=2"*50, "\n", np_signed_relimp_1, "AAAAAAAAA")
 
-        np_signed_relimp = {"m": np_signed_relimp_1[np.ix_([0, 1, 2, 3, 4, 5, 6], [0, 2])],
-                            "x": np_signed_relimp_1[np.ix_([0, 1, 2, 3, 4, 5, 6], [1, 3])]}
-        print("np_signed_relimp", "\n", np_signed_relimp)
+        np_signed_relimp = {"m": np_signed_relimp_1[np.ix_(ll, [0, 2])],
+                            "x": np_signed_relimp_1[np.ix_(ll, [1, 3])]}
 
         df_n1_all_temp = df_n1_all.copy()
         df_n1_all_temp = df_n1_all_temp.reset_index()
         df_n1_all_temp = df_n1_all_temp.rename(columns={'index': 'country_dim'})
-        # print("-"*10, "\n", df_n1_all_temp, "-"*10, "\n")
+
+        # print("-"*10, "\n", "df_n1_all_temp", "\n", df_n1_all_temp, "-"*10, "\n")
+
         try:
             # df_n1_all_temp = self.add_entity_to_df(df_n1_all_temp, cols=-1)
             # print("\n", df_n1_all_temp, "\n", "="*100)
-
             for k_ in ["m", "x"]:
-                print("-="*10, "\n" ,k_)
+                # print("-="*10, "\n" ,k_)
                 df = pd.DataFrame()
+                # df["country_dim"] = df_n1_all_temp["country_dim"]
                 for group in ll_dfs:
                     if group != dependent_group:
                         # print("="*50)
                         # print(group)
                         df[k_ + "-" + group] = df_n1_all_temp[k_ + "-" + group]
-                # print(df)
+                df.index=df_n1_all.index
+                # print("-="*10, "\n" ,k_, "\n", df.head(100), "\n", df.tail(100))
                 np_df = df.to_numpy()
+                # print(np_df)
                 if k_ == "m":
                     potential_m = np.dot(np_df, np_signed_relimp[k_])
+                    # print("="*50, "\nAAAA\n", df, "\nnp_df\n", np_df, "\n", "\nAAAA11\n", np_signed_relimp[k_], "\nAAAA22\n", "\n", potential_m)
                 elif k_ == "x":
                     potential_x = np.dot(np_df, np_signed_relimp[k_])
-                print("="*50, "\n", np_df, "\n", potential_m, "\n", potential_x)
+                    # print("="*50, "\nBBBBBB\n", df, "\n", np_df, "\n", "\nBBBBBB111\n", np_signed_relimp[k_], "\nBBBBBB2222\n", "\n", potential_x)
 
             potential = np.concatenate((potential_m, potential_x), axis=1)
+            df_potential = pd.DataFrame(potential, columns=["mm", "xm", "mx", "xx"])
 
-            # print("=" * 100)
-            # df_temp = df.reset_index()
-            # print(df_temp)
-            print("=" * 100)
+            # print("df_potential100 df_potential100\n", df_potential, "\n", "="*100)
 
+            df_potential.insert(0, 'country_dim', value=df_n1_all_temp['country_dim'])
+            # print("df_potential200 df_potential200\n", df_potential, "\n", "="*100)
+            df_potential = self.add_entity_to_df(df_potential, cols=-1)
+            df_potential = df_potential.drop(['index'], axis=1)
+            # print("df_potential df_potential\n", df_potential, "\n", "="*100)
+            self.add_to_save_all(title='potential', a=df_potential, cols=-1)
         except Exception as ex:
             print(ex)
 
@@ -765,7 +791,6 @@ class BasePotentialAlgo(object):
         #
         # print(return_dim)
         model = apps.get_model(app_label=app_, model_name=model_name)
-
         if measure_id is None or measure_id == "":
             measure_name = dic["measure_name"]
             s = 'model.objects.filter(measure_dim__measure_name="'+measure_name+'", '
@@ -775,37 +800,38 @@ class BasePotentialAlgo(object):
         s += filter_dim+'__id='+str(filter_value)+', amount__gte='+str(filter_amount)+').all()'
         # print("1 \ns="+s)
         qs = eval(s)
-        # qs = model.objects.filter(measure_dim__measure_name="TotalPop", time_dim__id=2019, amount__gte=1).all()
-        # print(qs)
         df = pd.DataFrame(list(qs.values(return_dim+"_id", value_)))
         # print(df)
+        df = df.rename(columns={return_dim+"_id": return_dim})
+        # print(df)
+        df = df.set_index(return_dim)
+        # print(df)
+
         # print(df[return_dim+"_id"].tolist())
         # print(df.shape)
         if df.shape[0] > 0:
-            result = {"status": "ok", "result": [df, df[return_dim+"_id"].tolist()]}
+            result = {"status": "ok", "result": df}
         else:
             result = {"status": "ok", "result": -1}
-        # print(result)
+        # print("result\n", result)
         return result
 
     def convert_total_to_per_capita(self, f, df_var, df_entities):
-        # print("="*100)
-        df_ = df_var.reset_index()
-        # print(df_var, "\n" , df_)
-        df_ = df_.merge(df_entities, how='inner', left_on=self.entity_name+'_dim', right_on=self.entity_name+'_dim_id')
-        # .drop(['country_dim', 'id'], axis=1)
-        # print(df_)
+        df_entities = pd.DataFrame(df_entities)
+        df_var = pd.DataFrame(df_var)
+        # print("AAAAAAAAA\nf="+str(f)+"=", "\ndf_entities=\n", df_entities, "\n" , df_var)
+        try:
+            df_ = df_var.merge(df_entities, how='inner', left_index=True, right_index=True)
+        except Exception as ex:
+            print("Er 22-11", str(ex))
         df_["pc"] = df_[f]/df_["amount"].astype(float)
         # print(df_, "\n", "-"*10)
-        df_ = df_.drop([self.entity_name+'_dim_id', 'amount', f], axis=1)
-        df_ = df_.set_index(self.entity_name+'_dim')
-        #
-        # print(df_, "\n", "="*50)
-
+        df_ = df_.drop([f, 'amount'], axis=1)
         return df_
 
     def multiply_two_variables_f(self, f__, df_var1, f__2, df_var2):
-        # print("="*100)
+        print("="*100)
+        print("Need to check this fuction change using indexes.")
         df_var1 = df_var1.reset_index()
         df_var2 = df_var2.reset_index()
         # print("\n", df_var1, "\n", df_var2, "\n", "="*50)
@@ -833,11 +859,8 @@ class BasePotentialAlgo(object):
                 'measure_name': dic["measure_name"]}
 
         # print("90022-122-111 pre_process_data: \n", dic_, "\n", "="*50)
-        returned_ = self.get_dim_data_frame(dic_)
-        # print("90011-111-1 pre_process_data: \n", returned_, "\n", "="*50)
-        entity_list = returned_["result"][1]
-        df_entities = returned_["result"][0]
-        # print("entity_list\n", entity_list, "\n df_entities\n", df_entities)
+        df_entities = self.get_dim_data_frame(dic_)["result"]
+        # print("\nAAAAAAAA\n df_entities\n", df_entities)
 
         measure_group_model_name_ = dic["measure_group_model"]
         dependent_group = dic["dependent_group"]
@@ -847,14 +870,14 @@ class BasePotentialAlgo(object):
         groups = model_measure_group.objects.filter(~Q(group_name__in=self.do_not_include_groups)).all()
         ll_groups = [dependent_group]
 
-        # print("90-111-222-0 for k in groups")
+        # print("90-111-222-0 for k in groups\n", ll_groups)
         for k in groups:
             group = k.group_name
             if group not in ll_groups and group not in self.do_not_include_groups:
                 ll_groups.append(group)
         lll_groups = []  # this will have only the groups that do not have problems (have data)
         ll_dfs = {}  # includes all the df of all groups with data
-        # print("90-111-222-1")
+        # print("90-111-222-1 for k in groups\n", ll_groups)
         for k in ll_groups:
             # print("="*50, "\n", k, "\n", "="*50)
             try:
@@ -863,30 +886,31 @@ class BasePotentialAlgo(object):
                 for v in dic["axes"]:
                     s += "'" + v + "',"
                 s += "'" + dic["value"] + "'"
-                s_ = 'model_fact.objects.filter(measure_dim__measure_group_dim__group_name=k, time_dim_id=year_, '+self.entity_name+'_dim_id__in=entity_list).filter(~Q(measure_dim__in=self.do_not_include_measures_objs)).all()'
-                # print(s_)
+                # print(entity_list)
+                # s_ = 'model_fact.objects.filter(measure_dim__measure_group_dim__group_name=k, time_dim_id=year_, ' + self.entity_name + '_dim_id__in=entity_list).filter(~Q(measure_dim__in=self.do_not_include_measures_objs)).all()'
+                s_ = 'model_fact.objects.filter(measure_dim__measure_group_dim__group_name=k, time_dim_id=year_).filter(~Q(measure_dim__in=self.do_not_include_measures_objs)).all()'
+                # print("s_= ", s_,"\ns= ",s)
                 qs = eval(s_)
                 # print(qs)
+
                 s = "pd.DataFrame(list(qs.values(" + s + ")))"
                 df = eval(s)
-                # print(df)
-
+                # print("1.  df =", k ,"\n", df)
                 if df.shape[0] == 0:
                     continue
                 lll_groups.append(k)
-                df = df.pivot(index=self.entity_name+"_dim", columns='measure_dim', values='amount')
-                # print("90-111-2-100\n", df)
+                try:
+                    df = df.pivot(index=self.entity_name+"_dim", columns='measure_dim', values='amount')
+                except Exception as ex:
+                    print(ex)
+                # print("90-111-2-100\n", k ,"\n", df)
                 ll_dfs[k] = df.apply(pd.to_numeric, errors='coerce').round(6)
                 for f__ in ll_dfs[k]:
                     # print("90-111-3-"+k+" "+str(f__), self.total_variables, "\n", self.multiply_two_variables)
-                    # print(f__)
                     if f__ in self.total_variables:
-                        # print("one")
                         ll_dfs[k][f__] = self.convert_total_to_per_capita(f__, ll_dfs[k][f__], df_entities)
-                        # print("one : ", f__)
                     elif len(self.multiply_two_variables) > 0:
                         if f__ in self.multiply_two_variables["var1"]:
-                            # print("two")
                             # print("two1 : ", f__, self.multiply_two_variables["var1"].index(f__))
                             idx__ = self.multiply_two_variables["var1"].index(f__)
                             f__var2 = self.multiply_two_variables["var2"][idx__]
@@ -897,6 +921,8 @@ class BasePotentialAlgo(object):
                             ll_dfs[k][f__] = self.multiply_two_variables_f(f__, ll_dfs[k][f__], f__var2,
                                                                            ll_dfs[f__var2_group][f__var2])
                             # print("four4: ", k, f__, f__var2, "\n", ll_dfs[k][f__])
+
+                # print("90-333-3-200\n", k ,"\n", ll_dfs[k])
             except Exception as ex:
                 print("Error 50661-12 PotentialAlgo calculate_min_max_cuts: \n" + str(ex), "\n", "90-111-222-2-"+k+" "+f__)
         return ll_dfs
@@ -1365,7 +1391,9 @@ class BasePotentialAlgo(object):
         # self.add_to_save(title='Sort '+side+"-"+str(j), a=a, cols=-1)
         #
         a_ = pd.DataFrame(a.copy())
+        len_b = a_.shape[0]
         a_ = a_.loc[a_.apply(lambda x: x.count(), axis=1) > 4]
+        len_a = a_.shape[0]
         a_ = a_.to_numpy()
         # print(a.shape, "\n", a_.shape)
         if a_.shape[0] == 0:
@@ -1373,8 +1401,8 @@ class BasePotentialAlgo(object):
         d = a[:, j:1 + j] - a[:, 0:1]
         d_ = a_[:, j:1 + j] - a_[:, 0:1]
         d_m = np.nanmean(d_, axis=0)
-        # print(j, "\n", d_m, "\n", d_m[0])
-        if d_m[0] < 0.03:
+        # print("side=", side, " j=", j, " # of countries=", len_b, " # of countries in calculations=", len_a, d_m[0], " threshold=", self.rule_0)
+        if d_m[0] < self.rule_0:
             #
             df_d = pd.DataFrame(d)
             df_d.index = self.df_index
@@ -1465,7 +1493,8 @@ class BasePotentialAlgo(object):
     def thirty_rule(self, row):
         n_row = row.count()
         row_best = row
-        if (n_row > 4) and abs(row.max() - row.min()) >= 0.3:
+        # print(abs(row.max() - row.min()), self.rule_2)
+        if (n_row > 4) and abs(row.max() - row.min()) >= self.rule_2:
             n = 1
             min = n_row
             for j in range(n + 1):
@@ -1475,7 +1504,7 @@ class BasePotentialAlgo(object):
                 if (row_c.max() - row_c.min()) < min:
                     min = row_c.max() - row_c.min()
                     row_best = row_c.copy()
-        if abs(row_best.max() - row_best.min()) >= 0.3:
+        if abs(row_best.max() - row_best.min()) >= self.rule_2:
             row_best[:] = np.nan
         return row_best
 
