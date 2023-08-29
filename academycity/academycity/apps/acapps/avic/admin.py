@@ -1,7 +1,8 @@
 from __future__ import unicode_literals
 from django.contrib import admin
 from django.utils.translation import ugettext_lazy as _
-from .models import (TimeDim, CountryDim, MeasureGroupDim, CountryGroupDim, MeasureDim, Fact, MinMaxCut)
+from .models import (TimeDim, CountryDim, MeasureGroupDim, RangeDim, CountryGroupDim, MeasureDim,
+                     OutputFact, Fact, MinMaxCut)
 
 
 @admin.register(TimeDim)
@@ -25,6 +26,11 @@ class MeasureGroupDimAdmin(admin.ModelAdmin):
     list_display = ('id', 'group_name')
 
 
+@admin.register(RangeDim)
+class RangeDimAdmin(admin.ModelAdmin):
+    list_display = ('id', 'range_name')
+
+
 @admin.register(MeasureDim)
 class MeasureDimAdmin(admin.ModelAdmin):
     list_display = ('id', 'measure_group_dim', 'measure_name', 'measure_code', 'description')
@@ -34,6 +40,12 @@ class MeasureDimAdmin(admin.ModelAdmin):
 class FactAdmin(admin.ModelAdmin):
     list_display = ('id', 'time_dim', 'country_dim', 'measure_dim', 'amount')
     list_filter = ['measure_dim', 'time_dim', 'country_dim']
+
+
+@admin.register(OutputFact)
+class OutputFactAdmin(admin.ModelAdmin):
+    list_display = ('id', 'range_dim', 'time_dim', 'country_dim', 'measure_dim', 'amount')
+    list_filter = ['range_dim', 'measure_dim', 'time_dim', 'country_dim']
 
 
 @admin.register(MinMaxCut)

@@ -60,6 +60,28 @@ class Fact(TruncateTableMixin, models.Model):
         return str(self.country_dim) + " - " + str(self.time_dim) + ": " + str(self.amount)
 
 
+class RangeDim(TruncateTableMixin, models.Model):
+    range_name = models.CharField(max_length=100, default='', blank=True, null=True)
+
+    def __str__(self):
+        return str(self.range_name)
+
+
+class OutputFact(TruncateTableMixin, models.Model):
+    range_dim = models.ForeignKey(RangeDim, on_delete=models.CASCADE, default=1,
+                                 related_name='range_dim_output_fact')
+    time_dim = models.ForeignKey(TimeDim, on_delete=models.CASCADE, default=1,
+                                 related_name='time_dim_output_fact')
+    country_dim = models.ForeignKey(CountryDim, on_delete=models.CASCADE, default=1,
+                                    related_name='country_dim_output_fact')
+    measure_dim = models.ForeignKey(MeasureDim, on_delete=models.CASCADE, default=1,
+                                    related_name='measure_dim_output_fact')
+    amount = models.DecimalField(max_digits=16, decimal_places=2, default=0, blank=True, null=True)
+
+    def __str__(self):
+        return str(self.range_dim) + " - " + str(self.country_dim) + " - " + str(self.time_dim) + ": " + str(self.amount)
+
+
 class MinMaxCut(TruncateTableMixin, models.Model):
     time_dim = models.ForeignKey(TimeDim, on_delete=models.CASCADE, default=1,
                                  related_name='time_dim_min_max_cut')

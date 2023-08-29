@@ -281,6 +281,9 @@ class BasePotentialAlgo(object):
         # print("9015-1 BasePotentialAlgo process_algo\n", dic)
         app_ = dic["app"]
         fact_model_name_ = dic["fact_model"]
+        output_fact_model_name_ = dic["output_fact_model"]
+        range_model_model_name_ = dic["range_model"]
+        year_ = dic["time_dim_value"]
         dependent_group = dic["dependent_group"]
         # print('dependent_group', dependent_group)
         min_max_model_name_ = dic["min_max_model"]
@@ -288,7 +291,10 @@ class BasePotentialAlgo(object):
         self.rule_0 = float(dic["rule_0"])
 
         measure_group_model_name_ = dic["measure_group_model"]
+        measure_model_name_ = dic["measure_model"]
         model_fact = apps.get_model(app_label=app_, model_name=fact_model_name_)
+        model_range = apps.get_model(app_label=app_, model_name=range_model_model_name_)
+        model_output_fact = apps.get_model(app_label=app_, model_name=output_fact_model_name_)
         # try:
         #     self.is_calculate_min_max = eval(dic["is_calculate_min_max"])
         #     # print(self.is_calculate_min_max)
@@ -298,15 +304,16 @@ class BasePotentialAlgo(object):
         model_min_max = apps.get_model(app_label=app_, model_name=min_max_model_name_)
         try:
             qs = model_min_max.objects.filter(measure_dim__measure_name="TotalPop",
-                                                 time_dim_id=dic["time_dim_value"]).all()[0]
+                                                 time_dim_id=year_).all()[0]
             tot_pop_min = qs.min
             tot_pop_max = qs.max
-            print("population\nmin=", tot_pop_min, "max=", tot_pop_max)
+            # print("population\nmin=", tot_pop_min, "max=", tot_pop_max)
         except Exception as ex:
             pass
         # else:
         #     self.calculate_min_max_cuts(dic)
         model_measure_group = apps.get_model(app_label=app_, model_name=measure_group_model_name_)
+        model_measure = apps.get_model(app_label=app_, model_name=measure_model_name_)
         # print("90060-10 PotentialAlgo: \n", "="*50)
         wb2 = None
         groups = model_measure_group.objects.all()
@@ -332,7 +339,7 @@ class BasePotentialAlgo(object):
         lll_groups = []
         for k in ll_dfs:
             group = k #.group_name
-            print("="*50,"\n", group, "\n", "="*50)
+            # print("="*50,"\n", group, "\n", "="*50)
             try:
                 self.save_to_file = os.path.join(self.TO_EXCEL_OUTPUT, str(dic["time_dim_value"]) + "_" + group + "_o.xlsx")
                 self.to_save = []
@@ -589,7 +596,6 @@ class BasePotentialAlgo(object):
 
             lll_groups.append(group)
 
-
         # print("df_n1_all\n", df_n1_all)
 
         ss_n_mm = ss_n_mm[:-1]
@@ -623,19 +629,17 @@ class BasePotentialAlgo(object):
             ll = []
             for k in self.options:
                 s_ = "df_n" + n + "_all['d_" + k + "']=df_n" + n + "_all[[" + eval("ss_n_" + k) + "]].min(axis=1)"
-                #print(s_)
                 exec(s_)
+                # print(eval("df_n" + n + "_all['d_" + k + "']"))
                 s_ = "ll.append(1-df_n" + n + "_all[[" + eval("ss_n_" + k) + "]].min(axis=1).mean())"
-                #print(s_)
                 exec(s_)
             s_ = "similarity_n" + n + ".loc['SComb'] = ll"
-            # print(s_, "\n", ll)
             exec(s_)
             s_ = "sign_n" + n + ".drop([0], axis=0, inplace=True)"
-            # print(s_)
             exec(s_)
             self.add_to_save_all(title='sign-n' + n, a=eval("sign_n" + n), cols=-1)
-            exec("similarity_n" + n + ".drop([0], axis=0, inplace=True)")
+            s = "similarity_n" + n + ".drop([0], axis=0, inplace=True)"
+            exec(s)
             self.add_to_save_all(title='similarity-n' + n, a=eval("similarity_n" + n), cols=-1)
         # print("90050-27\n")
 
@@ -753,10 +757,15 @@ class BasePotentialAlgo(object):
             # print("df_potential100 df_potential100\n", df_potential, "\n", "="*100)
 
             df_potential.insert(0, 'country_dim', value=df_n1_all_temp['country_dim'])
+            df_potential_cube = df_potential.copy()
+
             # print("df_potential200 df_potential200\n", df_potential, "\n", "="*100)
+
             df_potential = self.add_entity_to_df(df_potential, cols=-1)
             df_potential = df_potential.drop(['index'], axis=1)
+
             # print("df_potential df_potential\n", df_potential, "\n", "="*100)
+
             self.add_to_save_all(title='potential', a=df_potential, cols=-1)
         except Exception as ex:
             print(ex)
@@ -765,6 +774,20 @@ class BasePotentialAlgo(object):
         self.save_to_excel_all_(dic["time_dim_value"])
         # print("90050-29\n")
 
+        mg_obj, is_created = model_measure_group.objects.get_or_create(group_name="Output")
+        mm_obj, is_created = model_measure.objects.get_or_create(measure_name="Potential", measure_group_dim=mg_obj,
+                                                                 measure_code="Potential", description="Potential")
+        for i, r in df_potential_cube.iterrows():
+            for c in df_potential_cube.columns[1:]:
+                # print(c, float(r[c]), "="+str(r[c])+"=")
+                if str(r[c]) != "nan":
+                    range_obj = model_range.objects.get(range_name=str(c))
+                    obj, is_created = model_output_fact.objects.get_or_create(range_dim=range_obj,
+                                                                              time_dim_id=year_,
+                                                                              country_dim_id=int(r["country_dim"]),
+                                                                              measure_dim=mm_obj)
+                    obj.amount=round(100*float(r[c]))/100
+                    obj.save()
         result = {"status": "ok"}
         return result
 
@@ -1219,13 +1242,13 @@ class BasePotentialAlgo(object):
 
         # print(df_n2_all.head(100))
         for n in ["1", "2"]:
-            # print(n)
+            print("normalization=", n)
             ll = []
             lls = []
             for k in self.options:
                 # print(k[0], k[1])
                 s_ = "abs(df_n" + n + "_all['" + k[0] + "-" + group_d + "'] - df_n" + n + "_all['" + k[1] + "-" + group + "'])"
-                # print(s_)
+                print("direct:", s_)
                 df_d = eval(s_)
                 df_d_na=df_d.dropna()
                 s_ = title='sim-n' + n + group + k
@@ -1233,14 +1256,16 @@ class BasePotentialAlgo(object):
                 self.add_to_save_all(title=s_, a=df_d_na_, cols=-1)
                 s_d = df_d.sum()
                 # print("s_d", s_d, df_d.mean())
-
                 s_ = "abs(df_n" + n + "_all['" + k[0] + "-" + group_d + "'] - 1 + df_n" + n + "_all['" + k[1] + "-" + group + "'])"
-                # print(s_)
+                print("revers:", s_)
                 df_r = eval(s_)
                 s_r = df_r.sum()
                 # print("s_r", s_r, df_r.mean())
+                dfdm = df_d.mean()
+                dfrm = df_r.mean()
+                print("n=", n, "k=", k, "direct mean:", dfdm, "revers mean", dfrm)
 
-                if s_d < s_r:
+                if dfdm < dfrm:
                     d_ = s_d
                     s_ = "df_n" + n + "_all['" + group_d + '-' + group + '-' + k + "'] = df_d"
                     # print(s_)
@@ -1254,7 +1279,7 @@ class BasePotentialAlgo(object):
                     exec(s_)
                     lls.append(1 - df_r.mean())
                     ll.append(-1)
-                # print("="*50)
+                print("="*50)
 
             # print("sign_n" + n + ".loc[group] = ll", ll)
             exec("sign_n" + n + ".loc[group] = ll")

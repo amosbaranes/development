@@ -49,16 +49,22 @@ class AvicDataProcessing(BaseDataProcessing, BasePotentialAlgo, AvicAlgo):
     def check_country(self, cc):
         if cc == "Viet Nam":
             cc = "Vietnam"
+        elif cc == "Zaire (Congo Kinshasa)":
+            cc = "Democratic Republic of the Congo (DRC)"
         elif cc == "Congo":
-            cc = "Democratic Republic of the Congo"
+            cc = "Democratic Republic of the Congo (DRC)"
         elif cc == "DR Congo":
-            cc = "Democratic Republic of the Congo"
+            cc = "Democratic Republic of the Congo (DRC)"
+        elif cc == "DRC":
+            cc = "Democratic Republic of the Congo (DRC)"
         elif cc == "Democratic Republic Of The Congo":
-            cc = "Democratic Republic of the Congo"
-        elif cc == "Congo":
+            cc = "Democratic Republic of the Congo (DRC)"
+        elif cc == "Congo, Dem.Rep.":
+            cc = "Democratic Republic of the Congo (DRC)"
+        elif cc == "Congo 'Brazzaville'":
             cc = "Republic of the Congo"
         elif cc == "Republic of the Congo":
-            cc = "Congo, Rep."
+            cc = "Republic of the Congo"
         elif cc == "Russian Federation":
             cc = "Russia"
         elif cc == "Côte d’Ivoire":
@@ -69,6 +75,10 @@ class AvicDataProcessing(BaseDataProcessing, BasePotentialAlgo, AvicAlgo):
             cc = "Eswatini"
         elif cc == "Slovak Republic":
             cc = "Slovakia"
+        elif cc == "Czechia":
+            cc = "Czechoslovakia"
+        elif cc == "Czech Republic":
+            cc = "Czechoslovakia"
         elif cc == "Korea":
             cc = "South Korea"
         elif cc == "Republic Of Korea":
@@ -101,8 +111,12 @@ class AvicDataProcessing(BaseDataProcessing, BasePotentialAlgo, AvicAlgo):
             cc = "turkey"
         elif cc == "Egypt, Arab Rep.":
             cc = "Egypt"
+        elif cc == "Egypt":
+            cc = "Egypt"
         elif cc == "China (Mainland)":
             cc = "China"
+        elif cc == "Hong Kong SAR, China":
+            cc = "China-Hong Kong"
         elif cc == "Hong Kong SAR":
             cc = "China-Hong Kong"
         elif cc == "Hong Kong (China)":
@@ -127,7 +141,44 @@ class AvicDataProcessing(BaseDataProcessing, BasePotentialAlgo, AvicAlgo):
             cc = "Yemen, Rep."
         elif cc == "Korea, Dem. People's Rep.":
             cc = "North Korea"
+        elif cc == "Gambia, The":
+            cc = "Gambia"
+        elif cc == "Guinea-Bissau":
+            cc = "Guinea Bissau"
+        elif cc == "Haïti":
+            cc = "Haiti"
+        elif cc == "Indonesia (including Timor until 1999)":
+            cc = "Indonesia"
+        elif cc == "Iran, Islamic Rep.":
+            cc = "Iran"
+        elif cc == "Iran,Islamic Rep.":
+            cc = "Iran"
+        elif cc == "Kyrgyz Republic":
+            cc = "Kyrgyzstan"
+        elif cc == "Lao PDR":
+            cc = "Laos"
+        elif cc == "Macedonia, FYR":
+            cc = "Macedonia"
+        elif cc == "North Macedonia":
+            cc = "Macedonia"
+        elif cc == "Slovak Republic":
+            cc = "Slovakia"
+        elif cc == "Syrian Arab Republic":
+            cc = "Syria"
+        elif cc == "Turkiye":
+            cc = "Turkey"
+        elif cc == "Venezuela, RB":
+            cc = "Venezuela"
+        elif cc == "Yemen, Rep.":
+            cc = "Yemen"
         return cc
+
+    def remove_country(self, cc):
+        c = -1
+        if cc in ["Ethiopia  and  Eritrea", "Ethiopia and Eritrea",
+                  "Serbia/Montenegro/Kosovo"]:
+            c = 1
+        return c
 
     # _1  I adjusted this function to work after uploading Eli data
     def load_wbfile_to_db(self, dic):
@@ -389,6 +440,11 @@ class AvicDataProcessing(BaseDataProcessing, BasePotentialAlgo, AvicAlgo):
             for index, row in df.iterrows():
                 if row[1] is not None and str(row[1]) != "None" and str(row[1]) != "":
                     n_ = 0
+                    country_name = str(row[1]).strip()
+                    is_remove = self.remove_country(country_name)
+                    if is_remove == 1:
+                        continue
+                    country_name = self.check_country(country_name)
                     for j in range(1, len(columns)):
                         if str(columns[j]) != "None":
                             n_ += 1
@@ -427,7 +483,6 @@ class AvicDataProcessing(BaseDataProcessing, BasePotentialAlgo, AvicAlgo):
                                     print(ex)
                             else:
                                 try:
-                                    country_name = str(row[1]).strip()
                                     # print(country_name)
                                     country_dim_obj, is_created = model_country_dim.objects.get_or_create(country_name=country_name)
                                     if is_created:
