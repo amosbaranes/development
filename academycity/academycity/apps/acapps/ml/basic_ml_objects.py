@@ -63,11 +63,18 @@ class BaseDataProcessing(object):
         # print('-'*50)
         os.makedirs(self.PROJECT_ROOT_DIR, exist_ok=True)
         self.TOPIC_ID = dic["topic_id"]  # "fundamentals"
+
         self.TO_DATA_PATH = os.path.join(self.PROJECT_ROOT_DIR, "datasets")
         os.makedirs(self.TO_DATA_PATH, exist_ok=True)
         self.TO_EXCEL = os.path.join(self.TO_DATA_PATH, "excel", self.TOPIC_ID)
         os.makedirs(self.TO_EXCEL, exist_ok=True)
-        self.TO_EXCEL_OUTPUT = os.path.join(self.TO_EXCEL, "output")
+
+        try:
+            dependent_group_ = dic["dependent_group"]
+            self.TO_EXCEL_OUTPUT = os.path.join(self.TO_EXCEL, "output", dependent_group_)
+        except Exception as ex:
+            self.TO_EXCEL_OUTPUT = os.path.join(self.TO_EXCEL, "output")
+
         os.makedirs(self.TO_EXCEL_OUTPUT, exist_ok=True)
         self.IMAGES_PATH = os.path.join(self.PROJECT_ROOT_DIR, "images")
         os.makedirs(self.IMAGES_PATH, exist_ok=True)
@@ -128,7 +135,7 @@ class BaseDataProcessing(object):
         return result
 
     def get_general_data(self, dic):
-        print("9012-9012 BaseDataProcessing get_general_data:\n", dic, "\n", "="*50, "\n")
+        # print("9012-9012-2 BaseDataProcessing get_general_data:\n", dic, "\n", "="*50, "\n")
         app_ = dic["app"]
         result = {}
         n__=0
@@ -775,8 +782,8 @@ class BasePotentialAlgo(object):
         # print("90050-29\n")
 
         mg_obj, is_created = model_measure_group.objects.get_or_create(group_name="Output")
-        mm_obj, is_created = model_measure.objects.get_or_create(measure_name="Potential", measure_group_dim=mg_obj,
-                                                                 measure_code="Potential", description="Potential")
+        mm_obj, is_created = model_measure.objects.get_or_create(measure_name="Pot-"+dependent_group, measure_group_dim=mg_obj,
+                                                                 measure_code=dependent_group, description="Potential for "+dependent_group)
         for i, r in df_potential_cube.iterrows():
             for c in df_potential_cube.columns[1:]:
                 # print(c, float(r[c]), "="+str(r[c])+"=")
@@ -874,7 +881,6 @@ class BasePotentialAlgo(object):
         app_ = dic["app"]
         fact_model_name_ = dic["fact_model"]
         year_ = str(dic["time_dim_value"])
-        print(111111111111)
 
         dic_ = {'app': app_, 'filter_dim': 'time_dim', 'filter_value': year_, 'value': 'amount',
                 'axes': [self.entity_name+'_dim', 'measure_dim'],
@@ -882,7 +888,6 @@ class BasePotentialAlgo(object):
                 'filter_amount': dic["population_filter_amount"], 'measure_id': None,
                 'measure_name': dic["measure_name"]}
 
-        print(1111111111112222)
         # print("90022-122-111 pre_process_data: \n", dic_, "\n", "="*50)
         df_entities = self.get_dim_data_frame(dic_)["result"]
         # print("\nAAAAAAAA\n df_entities\n", df_entities)
@@ -890,13 +895,11 @@ class BasePotentialAlgo(object):
         measure_group_model_name_ = dic["measure_group_model"]
         dependent_group = dic["dependent_group"]
 
-        print(11111111111133333)
         model_fact = apps.get_model(app_label=app_, model_name=fact_model_name_)
         model_measure_group = apps.get_model(app_label=app_, model_name=measure_group_model_name_)
 
         groups = model_measure_group.objects.filter(~Q(group_name__in=self.do_not_include_groups)).all()
         ll_groups = [dependent_group]
-        print(1111111111114444)
         # print("90-111-222-0 for k in groups\n", ll_groups)
         for k in groups:
             group = k.group_name
@@ -1246,13 +1249,13 @@ class BasePotentialAlgo(object):
 
         # print(df_n2_all.head(100))
         for n in ["1", "2"]:
-            print("normalization=", n)
+            # print("normalization=", n)
             ll = []
             lls = []
             for k in self.options:
                 # print(k[0], k[1])
                 s_ = "abs(df_n" + n + "_all['" + k[0] + "-" + group_d + "'] - df_n" + n + "_all['" + k[1] + "-" + group + "'])"
-                print("direct:", s_)
+                # print("direct:", s_)
                 df_d = eval(s_)
                 df_d_na=df_d.dropna()
                 s_ = title='sim-n' + n + group + k
@@ -1261,13 +1264,13 @@ class BasePotentialAlgo(object):
                 s_d = df_d.sum()
                 # print("s_d", s_d, df_d.mean())
                 s_ = "abs(df_n" + n + "_all['" + k[0] + "-" + group_d + "'] - 1 + df_n" + n + "_all['" + k[1] + "-" + group + "'])"
-                print("revers:", s_)
+                # print("revers:", s_)
                 df_r = eval(s_)
                 s_r = df_r.sum()
                 # print("s_r", s_r, df_r.mean())
                 dfdm = df_d.mean()
                 dfrm = df_r.mean()
-                print("n=", n, "k=", k, "direct mean:", dfdm, "revers mean", dfrm)
+                # print("n=", n, "k=", k, "direct mean:", dfdm, "revers mean", dfrm)
 
                 if dfdm < dfrm:
                     d_ = s_d
@@ -1283,7 +1286,7 @@ class BasePotentialAlgo(object):
                     exec(s_)
                     lls.append(1 - df_r.mean())
                     ll.append(-1)
-                print("="*50)
+                # print("="*50)
 
             # print("sign_n" + n + ".loc[group] = ll", ll)
             exec("sign_n" + n + ".loc[group] = ll")

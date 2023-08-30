@@ -13,7 +13,7 @@ class TimeDimAdmin(admin.ModelAdmin):
 @admin.register(CountryDim)
 class CountryDimAdmin(admin.ModelAdmin):
     list_display = ('id', 'country_name', 'country_code', )
-    list_filter = ['country_name', 'country_code', 'country_cc']
+    list_filter = ['country_group_dim', 'country_name', 'country_code', 'country_cc']
 
 
 @admin.register(CountryGroupDim)

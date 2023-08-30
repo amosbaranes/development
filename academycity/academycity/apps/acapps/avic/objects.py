@@ -50,10 +50,8 @@ class AvicDataProcessing(BaseDataProcessing, BasePotentialAlgo, AvicAlgo):
         if cc == "Viet Nam":
             cc = "Vietnam"
         elif cc == "Guinea-bissau":
-            print(cc)
             cc = "Guinea Bissau"
         elif cc == "Guinea-Bissau":
-            print(cc)
             cc = "Guinea Bissau"
         elif cc == "Congo, Dem. Rep.":
             cc = "Democratic Republic of the Congo (DRC)"
@@ -187,7 +185,7 @@ class AvicDataProcessing(BaseDataProcessing, BasePotentialAlgo, AvicAlgo):
 
     def remove_country(self, cc):
         c = -1
-        if cc in ["Ethiopia  and  Eritrea", "Ethiopia and Eritrea","Central African Republic","Cape Verde","Luxembourg",
+        if cc in ["Ethiopia  and  Eritrea", "Ethiopia and Eritrea", "Cape Verde","Luxembourg",
                   "Serbia/Montenegro/Kosovo", "Bosnia and Herzegovina"]:
             c = 1
         return c
@@ -341,6 +339,11 @@ class AvicDataProcessing(BaseDataProcessing, BasePotentialAlgo, AvicAlgo):
                 m.save()
             except Exception as ex:
                 print("90986-1 Error measure:"+str(ex))
+            country_name = str(row["Country Name"]).strip()
+            is_remove = self.remove_country(country_name)
+            if is_remove == 1:
+                continue
+            country_name = self.check_country(country_name)
             for j in range(4, len(df.columns)):
                 jm = j-4
                 k = df.columns[j]
@@ -379,7 +382,7 @@ class AvicDataProcessing(BaseDataProcessing, BasePotentialAlgo, AvicAlgo):
                             pass
                     else:
                         try:
-                            c = model_country_dim.objects.get(country_name=row["Country Name"])
+                            c = model_country_dim.objects.get(country_name=country_name)
                             # print(row["Country Name"])
                         except Exception as ex:
                             continue
