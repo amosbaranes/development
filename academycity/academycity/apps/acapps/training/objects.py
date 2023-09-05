@@ -4281,7 +4281,7 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
         self.df_instructor_positions = pd.DataFrame.from_dict({"id" :[1,2,3,4,5,6,7,8],
                                           "position_name": ['מפקד גדוד', 'מפקד פלוגה', 'מספר 2 – צ', 'מוביל צוות', 'מספר 2',
                                                             'אימון גופני', 'מתגבר', 'קמ”ג']})
-        self.inventory_with_pn = ["mz4psn", "ramonsn", "mz10", "mz15"]
+        self.inventory_with_pn = ["mz4psn", "ramonsn", "mz10", "mz15", "negev"]
 
     # To be deleted
     def process_period_1(self, app_, n, nav_tables_, result, qid=None, battalion=None):
@@ -4768,33 +4768,252 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
             except Exception as ex:
                 print("9011-22-1 Error " + str(ex))
 
-    #         if status == -1:
-    #             try:
-    #                 print("the following soldier was deleted")
-    #                 print("-"*100, "\n", status, soldier_obj, "Delete Soldier", "\n", "-"*100)
-    #                 soldier_obj.delete()
-    #             except Exception as ex:
-    #                 pass
-    #             continue
-    #         if status == 1:
-    #             print("the following soldier was replaced by another soldier")
-    #             print("soldier_obj", soldier_obj, "\n", "-"*100)
-    #             try:
-    #                 # print("soldier_obj.user_id=", soldier_obj.user_id)
-    #                 objs = model_soldiers_for_events.objects.filter(soldier_number=soldier_obj.user_id).all()
-    #                 count = objs.delete()
-    #                 # print(count)
-    #             except Exception as ex:
-    #                 pass
-    #
-    #         self.set_basic_soldier_data(row, soldier_obj, battalion_obj, model_soldierqualificationfact)
-    #
-    #         self.set_unit_soldier(soldier_obj, units_dic, platoon_name_, period_obj, model_unit_soldiers)
-    #
-    #         self.set_soldier_inventory(row, columns, soldier_obj, model_inventorys, model_inventoryfact,
-    #                                    battalion_obj, model_soldierqualificationfact)
-    #
-    #     -----
+            if status == -1:
+                try:
+                    print("the following soldier was deleted")
+                    print("-"*100, "\n", status, soldier_obj, "Delete Soldier", "\n", "-"*100)
+                    soldier_obj.delete()
+                except Exception as ex:
+                    pass
+                continue
+            if status == 1:
+                print("the following soldier was replaced by another soldier")
+                print("soldier_obj", soldier_obj, "\n", "-"*100)
+                try:
+                    # print("soldier_obj.user_id=", soldier_obj.user_id)
+                    objs = model_soldiers_for_events.objects.filter(soldier_number=soldier_obj.user_id).all()
+                    count = objs.delete()
+                    # print(count)
+                except Exception as ex:
+                    pass
+
+            self.set_basic_soldier_data(row, soldier_obj, battalion_obj, model_soldierqualificationfact)
+
+            self.set_unit_soldier(soldier_obj, units_dic, platoon_name_, period_obj, model_unit_soldiers)
+
+            self.set_soldier_inventory(row, columns, soldier_obj, model_inventorys, model_inventoryfact,
+                                       battalion_obj, model_soldierqualificationfact)
+
+        result = {"status": "ok"}
+        print(result)
+        return result
+
+    def set_units_equipment(self, dic):
+        print('90022-2 dic', dic)
+        app_ = dic["app"]
+        file_path = self.upload_file(dic)["file_path"]
+        # print("-"*100, "\n", file_path, "\n", "-"*100)
+        #
+        model_inventorys = apps.get_model(app_label=app_, model_name="inventorys")
+        model_inventoryunitfact = apps.get_model(app_label=app_, model_name="inventoryunitfact")
+        #
+        # print(self.uploaded_filename)
+        s = self.uploaded_filename.split("_")
+        # print(s)
+        battalion_number_ = int(s[0])
+        period_number_ = int(s[1])
+        print(battalion_number_, period_number_)
+        #
+        model_periods = apps.get_model(app_label=app_, model_name="periods")
+        model_battalions = apps.get_model(app_label=app_, model_name="battalions")
+
+        battalion_obj = model_battalions.objects.get(battalion_number=battalion_number_)
+        period_obj = model_periods.objects.get(battalion=battalion_obj, period_number=period_number_)
+        def get_list_of_units(ll_, dic_):
+            for k in dic_:
+                ll_.append(k)
+                get_list_of_units(ll_, dic_[k]["data"])
+            return ll
+
+        units_dic = period_obj.structure
+        print(units_dic)
+        ll = []
+        get_list_of_units(ll, units_dic)
+
+        print("="*50, "\n", ll, "\n", "="*50)
+
+        df = pd.read_excel(file_path, sheet_name="Data", header=0)
+        print(df, "\n", "-"*100)
+
+        columns = df.columns[3:]
+        print("columns\n", columns)
+
+        try:
+            objs = model_inventoryunitfact.objects.filter(unit__in=ll).all()
+            objs.delete()
+        except Exception as ex:
+            print(ex)
+
+        dic = {}
+        # for index, row in df.iterrows():
+        #     # ------
+        #     battalion_ = str(row["battalion"]).upper()
+        #     battalion_title = "Battalion " + battalion_
+        #     battalion_unit_ = self.get_unit_number(units_dic, battalion_title)
+        #     company_ = str(row["company"]).upper()
+        #     platoon_ = str(row["platoon"]).upper()
+        #
+        #     unit_type_ = 0
+        #     if platoon_ != "NAN":
+        #         company_title = company_
+        #         company_unit_ = self.get_unit_number(units_dic, company_title)
+        #         platoon_title = company_ + " " + platoon_
+        #         platoon_unit_ = self.get_unit_number(units_dic, platoon_title)
+        #         unit_type_ = 3
+        #         if platoon_unit_ not in dic[battalion_unit_][company_unit_]:
+        #             dic[battalion_unit_][company_unit_][platoon_unit_] = {}
+        #         platoon_unit__ = dic[battalion_unit_][company_unit_][platoon_unit_]
+        #         company_unit__ = dic[battalion_unit_][company_unit_]
+        #         unit__ = platoon_unit__
+        #     elif company_ != "NAN":
+        #         company_title = company_
+        #         company_unit_ = self.get_unit_number(units_dic, company_title)
+        #         unit_type_ = 2
+        #         if company_unit_ not in dic[battalion_unit_]:
+        #             dic[battalion_unit_][company_unit_] = {}
+        #         platoon_unit__ = None
+        #         company_unit__ = dic[battalion_unit_][company_unit_]
+        #         unit__ = company_unit__
+        #     else:
+        #         unit_type_ = 1
+        #         if battalion_unit_ not in dic:
+        #             dic[battalion_unit_] = {}
+        #         platoon_unit__ = None
+        #         company_unit__ = None
+        #         unit__ = dic[battalion_unit_]
+        #     batallion_unit__ = dic[battalion_unit_]
+        #
+        #     # print(battalion_, company_, platoon_, "title=", title, unit)
+        #
+        #     for k in columns:
+        #         # print("\n", "-"*20, "\n", k, str(row[k]), "\n", "-"*20)
+        #         try:
+        #             v = str(row[k])
+        #             # print("1","k=", k, " v=", "="+v+"=")
+        #             if v == "" or v == "nan":
+        #                 continue
+        #             # print("2","k=", k, " v=", "="+v+"=")
+        #             kl = k.lower()
+        #             if kl in self.inventory_with_pn:
+        #                 v = 1
+        #                 # print("3","k=", k, " v=", "="+str(v)+"=")
+        #             else:
+        #                 # print("1","k=", k, " v=", "="+str(v)+"=")
+        #                 v = int(float(v))
+        #             # print("4", soldier_obj.userid, "\n", "k=", k, " v=", "="+str(v)+"=","\n", "-"*100)
+        #         except Exception as ex:
+        #             print("9011-77-77-1 Error " + str(ex))
+        #         try:
+        #             inventory_obj = model_inventorys.objects.get(item_name=kl)
+        #         except Exception as ex:
+        #             print("9011-55-1 Error ", k, str(ex))
+        #         try:
+        #             f_obj, is_created = model_inventoryunitfact.objects.get_or_create(inventory=inventory_obj, unit=unit_)
+        #             f_obj.value = v
+        #             f_obj.save()
+        #             # print("f_obj", f_obj)
+        #         except Exception as ex:
+        #             print("9011-55-2 Error \n", k, v, soldier_obj, str(ex))
+        #
+        #     try:
+        #         is_equiped = 1
+        #         inventory_objs = model_inventorys.objects.all()
+        #         for q in inventory_objs:
+        #             k = q.item_name
+        #             try:
+        #                 v = str(row[k])
+        #                 if v == "" or v == "nan":
+        #                     v = 0
+        #                 else:
+        #                     if k in self.inventory_with_pn:
+        #                         v = 1
+        #                     else:
+        #                         v = int(float(v))
+        #             except Exception as ex:
+        #                 pass
+        #                 # print("9011-77-77-2 Error " + str(ex))
+        #             qty_per_unit = 1 #  maby we need to add a column for qty_per_unit in the table q.qty_per_soldier
+        #             unit_critical = q.unit_critical
+        #             if unit_critical == 0 or unit_critical != unit_type_:
+        #                 continue
+        #             if v < qty_per_unit:
+        #                 is_equiped = 0
+        #                 break
+        #
+        #         if is_equiped == 1:
+        #             unit__["is_equiped"] = is_equiped
+        #
+        #
+        #     except Exception as ex:
+        #         print("9011-55-2 Error \n", k, v, soldier_obj, str(ex))
+        #
+        #
+        #
+        #
+        #
+        #             k = self.get_unit_number(units_dic, company)
+        #             if k not in battalion_dic["data"]:
+        #                 battalion_dic["data"][k]={"title": company, "wet_day":0, "wet_night":0, "raid_day":0, "raid_night":0, "data":{}}
+        #                 company_dic = battalion_dic["data"][k]
+        #                 company_dic["wet_day"] = wet_day
+        #                 company_dic["wet_night"] = wet_night
+        #                 company_dic["raid_day"] = raid_day
+        #                 company_dic["raid_night"] = raid_night
+        #
+        #                 battalion_dic["wet_day"] *= wet_day
+        #                 battalion_dic["wet_night"] *= wet_night
+        #                 battalion_dic["raid_day"] *= raid_day
+        #                 battalion_dic["raid_night"] *= raid_night
+        #
+        #         else:
+        #             continue
+        #         company_dic = battalion_dic["data"][k]
+        #         if platoon != "nan":
+        #             platoon_name_ = company + " " + platoon
+        #             p = self.get_unit_number(units_dic, platoon_name_)
+        #             print(p, platoon_name_)
+        #             if p not in company_dic["data"]:
+        #                 company_dic["data"][p]={}
+        #                 platoon_dic = company_dic["data"][p]
+        #             platoon_dic["wet_day"] = wet_day
+        #             platoon_dic["wet_night"] = wet_night
+        #             platoon_dic["raid_day"] = raid_day
+        #             platoon_dic["raid_night"] = raid_night
+        #
+        #             company_dic["wet_day"] *= wet_day
+        #             company_dic["wet_night"] *= wet_night
+        #             company_dic["raid_day"] *= raid_day
+        #             company_dic["raid_night"] *= raid_night
+        #
+        #             dic[battalion_number]["wet_day"] *= wet_day
+        #             dic[battalion_number]["wet_night"] *= wet_night
+        #             dic[battalion_number]["raid_day"] *= raid_day
+        #             dic[battalion_number]["raid_night"] *= raid_night
+        #         else:
+        #             continue
+        #
+        #     general_data_model = apps.get_model(app_label="core", model_name="generaldata")
+        #     group_ = s[0]+"_"+str(s[1])
+        #     data_name_ = "unit_qualification"
+        #     print(group_, "\n", data_name_, "\n", dic)
+        #     obj, is_created = general_data_model.objects.get_or_create(app=app_, group=group_, data_name=data_name_)
+        #     obj.data_json = dic
+        #     obj.save()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         result = {"status": "ok"}
         print(result)
         return result
@@ -4824,6 +5043,7 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
             inventory_obj.pn = str(row["pn"])
             inventory_obj.description = str(row["description"])
             inventory_obj.critical = str(row["critical"])
+            inventory_obj.unit_critical = str(row["unit_critical"])
             inventory_obj.qty_per_soldier = int(row["qty_per_soldier"])
             inventory_obj.save()
         # -----
@@ -4933,7 +5153,7 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
                 except Exception as ex:
                     pass
 
-            if company not in ["ALPHA", "BRAVO", "CHARLIE", "DELTA"]:
+            if company not in ["ALPHA", "BRAVO", "CHARLIE", "DELTA", "WOLF", "SWORD", "VICTORY"]:
                 continue
             #
             if company not in companies_:
@@ -5101,11 +5321,11 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
                     v = int(float(v))
                 # print("4", soldier_obj.userid, "\n", "k=", k, " v=", "="+str(v)+"=","\n", "-"*100)
             except Exception as ex:
-                print("9011-77-77-1 Error " + str(ex))
+                print("9011-77-77-10 Error \n", k, v, soldier_obj, str(ex))
             try:
                 inventory_obj = model_inventorys.objects.get(item_name=kl)
             except Exception as ex:
-                print("9011-55-1 Error ", k, str(ex))
+                print("9011-55-1 Error \n", k, v, soldier_obj, str(ex))
             try:
                 f_obj, is_created = model_inventoryfact.objects.get_or_create(inventory=inventory_obj,
                                                                               soldier=soldier_obj)
@@ -5113,7 +5333,7 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
                 f_obj.save()
                 # print("f_obj", f_obj)
             except Exception as ex:
-                print("9011-55-2 Error \n", k, v, soldier_obj, str(ex))
+                print("9011-55-20 Error \n", k, v, soldier_obj, str(ex))
 
         try:
             is_equiped = 1
@@ -5147,7 +5367,8 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
                 o.value=1
                 o.save()
         except Exception as ex:
-            print("9011-55-2 Error \n", k, v, soldier_obj, str(ex))
+            print("9011-55-21 Error \n", k, v, soldier_obj, str(ex))
+
     # --------------------
 
     def set_units_qualification(self, dic):

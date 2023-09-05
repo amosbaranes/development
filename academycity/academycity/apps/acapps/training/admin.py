@@ -3,7 +3,7 @@ from django.contrib import admin
 from django.utils.translation import ugettext_lazy as _
 from .models import (TrainingWeb, Instructors, Brigades, Battalions, Companys, Platoons, Squads, TestsStructures,
                      ComplianceWeeks, ComplianceDays, Courses, Soldiers, Tests, TimeDim, SoldierFact,
-                     SoldierQualificationFact,
+                     SoldierQualificationFact, InventoryUnitFact,
                      TestEvents, TestsForEvents, SoldiersForEvents, GradesForEvents,
                      InventoryCategorys,Inventorys,TestsVariables, InventoryFact, TestsForVariables, Periods, UnitSoldiers,
                      DoubleShoot, DoubleShootMembers,
@@ -101,6 +101,11 @@ class InventoryCategorysAdmin(admin.ModelAdmin):
 class InventoryFactAdmin(admin.ModelAdmin):
     list_display = ('id', 'inventory', 'soldier', 'value')
     list_filter = ['inventory', 'soldier']
+
+@admin.register(InventoryUnitFact)
+class InventoryUnitFactAdmin(admin.ModelAdmin):
+    list_display = ('id', 'inventory', 'unit', 'value')
+    list_filter = ['inventory', 'unit']
 
 @admin.register(TestsVariables)
 class TestsVariablesAdmin(admin.ModelAdmin):

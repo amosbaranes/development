@@ -66,6 +66,19 @@ class RangeDim(TruncateTableMixin, models.Model):
     def __str__(self):
         return str(self.range_name)
 
+class RelImpFact(TruncateTableMixin, models.Model):
+    range_dim = models.ForeignKey(RangeDim, on_delete=models.CASCADE, default=1,
+                                 related_name='range_dim_relimp_fact')
+    time_dim = models.ForeignKey(TimeDim, on_delete=models.CASCADE, default=1,
+                                 related_name='time_dim_relimp_fact')
+    measure_dim = models.ForeignKey(MeasureDim, on_delete=models.CASCADE, default=1,
+                                    related_name='measure_dim_relimp_fact')
+    measure_group_dim = models.ForeignKey(MeasureGroupDim, on_delete=models.CASCADE, default=1,
+                                          related_name='measure_group_dim_relimp_fact')
+    amount = models.DecimalField(max_digits=16, decimal_places=2, default=0, blank=True, null=True)
+
+    def __str__(self):
+        return str(self.range_dim) + " - " + str(self.measure_dim) + " - " + str(self.time_dim) + ": " + str(self.amount)
 
 class OutputFact(TruncateTableMixin, models.Model):
     range_dim = models.ForeignKey(RangeDim, on_delete=models.CASCADE, default=1,

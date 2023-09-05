@@ -193,6 +193,7 @@ class Inventorys(TruncateTableMixin, models.Model):
     item_name = models.CharField(max_length=50, default='', blank=True, null=True)
     description = models.CharField(max_length=128, default='', blank=True, null=True)
     critical = models.CharField(max_length=32, default='1', blank=True, null=True)
+    unit_critical = models.CharField(max_length=32, default='1', blank=True, null=True)
     qty_per_soldier = models.SmallIntegerField(default=0, blank=True, null=True)
 
     def __str__(self):
@@ -271,6 +272,19 @@ class InventoryFact(TruncateTableMixin, models.Model):
                                   related_name='inventory_inventory_facts')
     soldier = models.ForeignKey(Soldiers, on_delete=models.CASCADE, default=1,
                                          related_name='soldier_inventory_facts')
+    value = models.SmallIntegerField(default=0)
+
+    def __str__(self):
+        return str(self.inventory) + " : " + str(self.soldier) + " : " + str(self.value)
+
+class InventoryUnitFact(TruncateTableMixin, models.Model):
+    class Meta:
+        verbose_name = 'inventory_unit_fact'
+        verbose_name_plural = 'inventory_unit_facts'
+
+    inventory = models.ForeignKey(Inventorys, on_delete=models.CASCADE, default=1,
+                                  related_name='inventory_inventory_unit_facts')
+    unit = models.SmallIntegerField(default=0)
     value = models.SmallIntegerField(default=0)
 
     def __str__(self):

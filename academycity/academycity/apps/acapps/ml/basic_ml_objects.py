@@ -289,6 +289,7 @@ class BasePotentialAlgo(object):
         app_ = dic["app"]
         fact_model_name_ = dic["fact_model"]
         output_fact_model_name_ = dic["output_fact_model"]
+        relimp_fact_model_name_ = dic["relimp_fact_model"]
         range_model_model_name_ = dic["range_model"]
         year_ = dic["time_dim_value"]
         dependent_group = dic["dependent_group"]
@@ -302,6 +303,8 @@ class BasePotentialAlgo(object):
         model_fact = apps.get_model(app_label=app_, model_name=fact_model_name_)
         model_range = apps.get_model(app_label=app_, model_name=range_model_model_name_)
         model_output_fact = apps.get_model(app_label=app_, model_name=output_fact_model_name_)
+        model_relimp_fact = apps.get_model(app_label=app_, model_name=relimp_fact_model_name_)
+
         # try:
         #     self.is_calculate_min_max = eval(dic["is_calculate_min_max"])
         #     # print(self.is_calculate_min_max)
@@ -721,6 +724,26 @@ class BasePotentialAlgo(object):
         np_sign_n1 = sign_n1.to_numpy()
         # print("="*50, "\n", np_sign_n1)
         ll = [*range(np_sign_n1.shape[0])]
+
+        mg_obj, is_created = model_measure_group.objects.get_or_create(group_name="Output")
+        mm_obj, is_created = model_measure.objects.get_or_create(measure_name="Pot-"+dependent_group, measure_group_dim=mg_obj,
+                                                                 measure_code=dependent_group, description="Potential for "+dependent_group)
+
+        print(df_relimp_1)
+        for i, r in df_relimp_1.iterrows():
+            for c in df_relimp_1.columns:
+                print(i, c, float(r[c]))
+                if str(r[c]) != "nan":
+                    range_obj = model_range.objects.get(range_name=str(c))
+
+                    group_obj = model_measure_group.objects.get(group_name=i)
+                    obj, is_created = model_relimp_fact.objects.get_or_create(range_dim=range_obj,
+                                                                              time_dim_id=year_,
+                                                                              measure_dim=mm_obj,
+                                                                              measure_group_dim=group_obj)
+                    obj.amount=round(100*float(r[c]))/100
+                    obj.save()
+
         np_relimp_1 = df_relimp_1.to_numpy()
         # print("="*50, "\n", np_relimp_1)
         np_signed_relimp_1 = np_relimp_1*np_sign_n1
@@ -781,9 +804,6 @@ class BasePotentialAlgo(object):
         self.save_to_excel_all_(dic["time_dim_value"])
         # print("90050-29\n")
 
-        mg_obj, is_created = model_measure_group.objects.get_or_create(group_name="Output")
-        mm_obj, is_created = model_measure.objects.get_or_create(measure_name="Pot-"+dependent_group, measure_group_dim=mg_obj,
-                                                                 measure_code=dependent_group, description="Potential for "+dependent_group)
         for i, r in df_potential_cube.iterrows():
             for c in df_potential_cube.columns[1:]:
                 # print(c, float(r[c]), "="+str(r[c])+"=")

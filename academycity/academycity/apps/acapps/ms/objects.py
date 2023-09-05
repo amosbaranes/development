@@ -166,9 +166,12 @@ class MSDataProcessing(BaseDataProcessing, MSAlgo):
         # print(df_s)
         df = df_s.pivot_table(values='amount', index='gene', columns=['person'], aggfunc='sum')
         # print(df)
+        df = df.apply(lambda x: x.sort_values().values, axis=1, result_type='broadcast')
+        # print(df)
         df["min"] = df.min(axis=1)
         df["max"] = df.max(axis=1)
         # print(df)
+
         for index, row in df.iterrows():
             # print("="*100)
             # print(row)
@@ -196,13 +199,13 @@ class MSDataProcessing(BaseDataProcessing, MSAlgo):
             for j in row.index:
                 if j in ["min", "max"]:
                     continue
-                # print(j, row[j+1])
+                # print(j, row[j])
                 if j == 1:
                     clusters[cluster_n]["entity"].append(j)
                     clusters[cluster_n]["entity_value"].append(float(row[j]))
                     clusters[cluster_n]["centroid"]=float(row[j])
                     cluster_n += 1
-                    # print("-"*30, "\n", clusters, "\n", "="*30)
+                    # print("-"*30, "j=", j, "\n", clusters, "\n", "="*30)
                 else:
                     d_min = 1000000000000
                     c_min = -1
@@ -211,6 +214,7 @@ class MSDataProcessing(BaseDataProcessing, MSAlgo):
                         if d_ < d_min:
                             d_min = d_
                             c_min = c
+                    # print("j=", j, c_min)
                     if d_min < d0_:
                         clusters[c_min]["entity"].append(j)
                         clusters[c_min]["entity_value"].append(float(row[j]))
@@ -222,9 +226,10 @@ class MSDataProcessing(BaseDataProcessing, MSAlgo):
                         cluster_n += 1
         except Exception as ex:
             print("Error 90876-67: "+str(ex))
-        print('clusters 1', "\n", "="*100, "\n")
-        print(clusters)
-        print('clusters 1', "\n", "="*100, "\n")
+
+        # print('clusters 1', "\n", "="*100, "\n")
+        # print(clusters)
+        # print('clusters 1', "\n", "="*100, "\n")
         #
         n_ = 0
         l_sum = []
@@ -245,10 +250,9 @@ class MSDataProcessing(BaseDataProcessing, MSAlgo):
         # print(n_, l_sum)
         for c in clusters:
             clusters[c]["centroid"] = round(clusters[c]["centroid"], 2)
-        print('clusters 2', "\n", "="*100, "\n")
-        print(clusters)
-        print('clusters 2', "\n", "="*100, "\n")
-
+        # print('clusters 2', "\n", "="*100, "\n")
+        # print(clusters)
+        # print('clusters 2', "\n", "="*100, "\n")
 
         return clusters
 
@@ -494,12 +498,14 @@ class MSDataProcessing(BaseDataProcessing, MSAlgo):
             ll_ = [j[1] for j in ll]
             print("="*100,"\n",o.gene_code)
             r = self.get_peaks({"cl_all":ll_, "t_pop": t_pop})["result"]
+            o.reduced_clusters = r
+            o.save()
 
         result = {"status": "ok", "result": {"a": "a"}}
         return result
 
     def get_peaks(self, dic):
-        # print("90955-50-1: get_peaks\n", dic, "\n", "=" * 50)
+        # print(" 90955-50-1: get_peaks\n", dic, "\n", "=" * 50)
         l = dic["cl_all"]
         t_pop = int(dic["t_pop"])/100
         # print(l, "\n", t_pop, "\n", sum(l))
@@ -592,15 +598,50 @@ class MSDataProcessing(BaseDataProcessing, MSAlgo):
                 # print("ub_ - rl", ub_ - rl)
                 get_peaks_(l_, rl, ub_, peak_array_, num_peaks_)
 
-        def two_rules_combination(ll, peaks, t):
+        def two_rules_combination_2(ll, peaks):
+            n_of_b = peaks["number_of_blocks"]
+            # print("+"*20, "\n", "+"*20, "\n", peaks, "\n", "+"*20, "\n", "+"*20)
+            z = 2
+            while z <= n_of_b:
+                if (ll[peaks[z-1]['ub']-2] > ll[peaks[z]['peak']-1]) or (ll[peaks[z-1]['peak']-1] < ll[peaks[z]['lb']+1]):
+                    peaks[z - 1]["ub"] = peaks[z]["ub"]
+                    peaks[z - 1]["pop"] += peaks[z]["pop"] - ll[peaks[z]["lb"]-1]
+                    # del peaks[z]
+                    peaks_ = {}
+                    n_ = 1
+                    for j in range(1, n_of_b+1):
+                        if j != z:
+                            peaks_[n_] = peaks[j].copy()
+                            # print(n_, peaks_)
+                            n_ += 1
+                    peaks_["number_of_blocks"] = peaks["number_of_blocks"] - 1
+                    peaks = peaks_.copy()
+                    n_of_b = peaks["number_of_blocks"]
+                else:
+                    z += 1
+                print(peaks)
+            return peaks
+            # elif n_of_b == 3:
+            #     z = 2
+            #     if ll[peaks[z-1]['ub']-2] > ll[peaks[z]['peak']-1]:
+            #         peaks[z - 1]["ub"] = peaks[z]["ub"]
+            #         peaks[z - 1]["pop"] += peaks[z]["pop"] - ll[peaks[z]["lb"]-1]
+            #         del peaks[z]
+            #         n+=1
+            #     elif ll[peaks[z-1]['peak']-1] < ll[peaks[z]['lb']]:
+            #         # print("BBB")
+            #         peaks[z]["lb"] = peaks[z-1]["lb"]
+            #         peaks[z]["pop"] += peaks[z-1]["pop"] - ll[peaks[z-1]["ub"]-1]
+            #         del peaks[z-1]
+            # else:
+
+        def two_rules_combination_1(ll, peaks, t):
             llb = []
             for b in peaks:
                 if str(b).isnumeric():
                     if peaks[b]["pop"] < t:
                         llb.append(b)
-            # print(llb)
             for h in llb:
-                # print(h)
                 if ((h+1) in peaks) and ((h-1) in peaks):
                     if peaks[h+1]["pop"] > peaks[h-1]["pop"]:
                         peaks[h + 1]["lb"] = peaks[h]["lb"]
@@ -617,51 +658,59 @@ class MSDataProcessing(BaseDataProcessing, MSAlgo):
                 del peaks[h]
                 peaks["number_of_blocks"] -= 1
             # print("B Two rules: \nB1. Remove blocks lower then t_pop=", t, "\n", "-"*10, "\n", peaks, "\n", "-"*10)
-            if peaks["number_of_blocks"] > 1:
-                # print("+"*20, "\n", "+"*20, "\n", peaks, "\n", "+"*20, "\n", "+"*20)
-                z=2
-                # print(ll)
-                n=0
-                while z <= peaks["number_of_blocks"]:
-                    # print("A",ll[peaks[z-1]['peak']-1], ll[peaks[z-1]['lb']-1], ll[peaks[z-1]['ub']-1])
-                    # print("B",ll[peaks[z]['peak']-1], ll[peaks[z]['lb']-1], ll[peaks[z]['ub']-1])
-                    # print("C", ll[peaks[z-1]['ub']-2], ll[peaks[z]['peak']-1])
-                    # print("D", ll[peaks[z-1]['peak']-1], ll[peaks[z]['lb']])
-                    if ll[peaks[z-1]['ub']-2] > ll[peaks[z]['peak']-1]:
-                        # print("AAA")
-                        peaks[z - 1]["ub"] = peaks[z]["ub"]
-                        peaks[z - 1]["pop"] += peaks[z]["pop"] - ll[peaks[z]["lb"]-1]
-                        del peaks[z]
-                        n+=1
-                    elif ll[peaks[z-1]['peak']-1] < ll[peaks[z]['lb']]:
-                        # print("BBB")
-                        peaks[z]["lb"] = peaks[z-1]["lb"]
-                        peaks[z]["pop"] += peaks[z-1]["pop"] - ll[peaks[z-1]["ub"]-1]
-                        del peaks[z-1]
-                        n+=1
-                    z += 1
-                if n > 0:
-                    peaks["number_of_blocks"] -= n
-                    peaks_={}
-                    n_ = 0
-                    for z_ in peaks:
-                        if z_ != "number_of_blocks":
-                            n_ += 1
-                            peaks_[n] = peaks[z_].copy()
-                        else:
-                            peaks_[z_] = peaks[z_]
-                    peaks = peaks_.copy()
-                    # print("aaa\n", peaks, "\n", "aaa")
+
+            # n_of_b = peaks["number_of_blocks"]
+            # if n_of_b > 1:
+            #     print("+"*20, "\n", "+"*20, "\n", peaks, "\n", "+"*20, "\n", "+"*20)
+            #     z=2
+            #     # print(ll)
+            #     n=0
+            #     # print(n_of_b)
+            #     peaks_ = {}
+            #     while z <= n_of_b:
+            #         if ll[peaks[z-1]['ub']-2] > ll[peaks[z]['peak']-1]:
+            #             peaks[z - 1]["ub"] = peaks[z]["ub"]
+            #             peaks[z - 1]["pop"] += peaks[z]["pop"] - ll[peaks[z]["lb"]-1]
+            #             del peaks[z]
+            #             n+=1
+            #         elif ll[peaks[z-1]['peak']-1] < ll[peaks[z]['lb']]:
+            #             # print("BBB")
+            #             peaks[z]["lb"] = peaks[z-1]["lb"]
+            #             peaks[z]["pop"] += peaks[z-1]["pop"] - ll[peaks[z-1]["ub"]-1]
+            #             del peaks[z-1]
+            #             n+=1
+            #         n_ = 1
+            #         for z in peaks:
+            #             peaks_[n_] = peaks[z]
+            #
+            #         n_of_b -= 1
+            #
+            #     if n > 0:
+            #         peaks["number_of_blocks"] -= n
+            #         peaks_={}
+            #         n_ = 0
+            #         for z_ in peaks:
+            #             if z_ != "number_of_blocks":
+            #                 n_ += 1
+            #                 peaks_[n] = peaks[z_].copy()
+            #             else:
+            #                 peaks_[z_] = peaks[z_]
+            #         peaks = peaks_.copy()
+            #         # print("aaa\n", peaks, "\n", "aaa")
 
         get_peaks_(l, lb, ub, peak_array, num_peaks)
         peak_array["number_of_blocks"] = len(peak_array)
         print("-"*10, "\nt_pop=", dic["t_pop"]+"%, ", t_pop)
-        print("A Create Blocks for l=", l, "sum=", sum(l), "\n", peak_array, "\n", "-"*10, "\n After two_rules_combination")
+        print("A Create Blocks for l=", l, "sum=", sum(l), "\n","-"*100,"\n", peak_array, "\n", "-"*50, "\n Two_rules_combination")
         if peak_array["number_of_blocks"] > 1:
-            two_rules_combination(l, peak_array, t_pop)
-            # print("bbb\n", peak_array, "\n", "bbb")
+            two_rules_combination_1(l, peak_array, t_pop)
+            print(" After rule 1\n", peak_array, "\n", "-"*50)
+        if peak_array["number_of_blocks"] > 1:
+            print("Rule 2")
+            peak_array = two_rules_combination_2(l, peak_array)
+            print("After rule 2\n", peak_array, "\n")
 
-        print(peak_array, "\n", "="*100)
+        print("Final\n", peak_array, "\n\n")
         # print("A"*10)
         result = {"status": "ok", "result": peak_array}
         return result

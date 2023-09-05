@@ -1926,12 +1926,12 @@ acBasicCreator.prototype.set_board_data = function(ll=[])
     if(j<3 || (j==3 && type_=="individual") || (nl_==7 && type_=="unit")){
        if(type_=="individual" && (j<3)){
            var s_kpi1=document.createElement("span");s_kpi1.innerHTML=this.kpis_sub_titles[j-1];
-           var style_ = "z-index:2000;position:absolute;left:"+(w_kpi_+10)+"px;top:"+(top_+150)+"px;color:blue"
+           var style_ = "z-index:1;position:absolute;left:"+(w_kpi_+10)+"px;top:"+(top_+150)+"px;color:blue"
            s_kpi1.setAttribute("style", style_);
            container_.appendChild(s_kpi1);
        } else if((type_=="individual" && (j==3)) || (type_=="unit" && (j<3 || nl_==7)) ){
            var s_kpi1=document.createElement("span");s_kpi1.innerHTML=this.kpis_sub_titles[j-1];
-           var style_ = "z-index:2000;position:absolute;left:"+(w_kpi_+10)+"px;top:"+(top_+150)+"px;color:blue"
+           var style_ = "z-index:1;position:absolute;left:"+(w_kpi_+10)+"px;top:"+(top_+150)+"px;color:blue"
            s_kpi1.setAttribute("style", style_);
            container_.appendChild(s_kpi1);
        }
