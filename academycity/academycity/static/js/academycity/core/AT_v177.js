@@ -2381,6 +2381,28 @@ acReport.prototype.create_obj = function(){
 
   this.table_.setAttribute("style", "position:absolute;left:"+pp_["x"]+"px;top:"+pp_["y"]+"px");
 
+  this.excel_button_=document.createElement("button");this.excel_button_.innerHTML="E"
+  this.excel_button_.exportTable=this.table_
+  container.appendChild(this.excel_button_);
+  this.excel_button_.setAttribute("style", "position:absolute;left:"+(1*pp_["x"]+3)+"px;top:"+(1*pp_["y"]+3)+"px");
+  this.excel_button_.addEventListener("click", function(event){
+    var a = document.createElement('a');
+    var dataType = 'data:application/vnd.ms-excel';
+    var readTable = this.exportTable.outerHTML.replace(/ /g, '%20');
+    a.href = dataType + ', ' + readTable;
+    table_name = 'ExcelPivotTable-'+this.exportTable.getAttribute('id')+'.xlsx';
+    a.download = table_name;
+    a.click();
+    event.preventDefault();
+    alert("Table: "+table_name+" was downloaded")
+  })
+
+
+
+
+
+
+
   this.thead=document.createElement("thead");
   this.thead.setAttribute("style", "display: block;overflow-x: hidden;");
   this.table_.appendChild(this.thead);
@@ -2586,7 +2608,8 @@ acPivotCreator.prototype.create_html = function(type=null)
   //alert("sv\n"+sv)
   if(vt_!=""){s+=sv}
 
-  s+="</tbody></table></br></br>";
+  s+="</tbody></table>";
+  //alert("sssss\n"+s)
   p.table_.innerHTML=s;
   p.tbody=document.innerHTML=document.getElementById('tbody_'+this.parent.data["properties"]["obj_number"])
   p.tr_h=document.innerHTML=document.getElementById('tr_h_'+this.parent.data["properties"]["obj_number"])
@@ -3445,8 +3468,6 @@ acUploadFileCreator.prototype.create_obj = function()
   this.input_file_.setAttribute("name", "driver_file");
   this.div_.appendChild(this.input_file_);
   // --
-  //var br=document.createElement("br");
-  //this.div_.appendChild(br);
   var span1=document.createElement("span");
   span1.setAttribute("id", "driver-uploader-success-alert");
   span1.setAttribute("class", "text-success");

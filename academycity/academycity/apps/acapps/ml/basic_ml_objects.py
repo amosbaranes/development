@@ -12,9 +12,7 @@ import shutil
 from statistics import mean
 import pickle
 from django.db.models import Q
-from ...core.utils import log_debug, clear_log_debug
-#
-from ...core.utils import Debug
+from ...core.utils import Debug, log_debug, clear_log_debug
 #
 import matplotlib.pyplot as plt
 from sklearn import linear_model, neighbors
@@ -278,7 +276,10 @@ class BasePotentialAlgo(object):
         self.is_calculate_min_max = None
 
     def process_algo(self, dic):
+        clear_log_debug()
         print("90011-111 process_algo: \n", dic, "\n", "="*50)
+        log_debug("BasePotentialAlgo: process_algo 1")
+
         def get_culomns_names(self, l):
             cs = []
             for c in l:
