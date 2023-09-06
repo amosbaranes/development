@@ -2380,12 +2380,14 @@ acReport.prototype.create_obj = function(){
   {var s="this.table_."+f+"="+dic["functions"][f];eval(s);}}
 
   this.table_.setAttribute("style", "position:absolute;left:"+pp_["x"]+"px;top:"+pp_["y"]+"px");
+  this.excel_img_=document.createElement("img");container.appendChild(this.excel_img_);
+  this.excel_img_.setAttribute("src", "/media/core/images/Logos-Excel-Copyrighted-icon.png");
+  this.excel_img_.setAttribute("alt", "buttonpng");
+  this.excel_img_.setAttribute("border", "0");
 
-  this.excel_button_=document.createElement("button");this.excel_button_.innerHTML="E"
-  this.excel_button_.exportTable=this.table_
-  container.appendChild(this.excel_button_);
-  this.excel_button_.setAttribute("style", "position:absolute;left:"+(1*pp_["x"]+3)+"px;top:"+(1*pp_["y"]+3)+"px");
-  this.excel_button_.addEventListener("click", function(event){
+  this.excel_img_.exportTable=this.table_
+  this.excel_img_.setAttribute("style", "position:absolute;cursor:pointer;left:"+(1*pp_["x"]+3)+"px;top:"+(1*pp_["y"]+3)+"px;width:25px;height:25px;");
+  this.excel_img_.addEventListener("click", function(event){
     var a = document.createElement('a');
     var dataType = 'data:application/vnd.ms-excel';
     var readTable = this.exportTable.outerHTML.replace(/ /g, '%20');
@@ -2396,12 +2398,6 @@ acReport.prototype.create_obj = function(){
     event.preventDefault();
     alert("Table: "+table_name+" was downloaded")
   })
-
-
-
-
-
-
 
   this.thead=document.createElement("thead");
   this.thead.setAttribute("style", "display: block;overflow-x: hidden;");
