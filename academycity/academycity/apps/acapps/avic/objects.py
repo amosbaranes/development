@@ -71,6 +71,8 @@ class AvicDataProcessing(BaseDataProcessing, BasePotentialAlgo, AvicAlgo):
             cc = "Democratic Republic of the Congo (DRC)"
         elif cc == "Congo, Dem. Rep.":
             cc = "Democratic Republic of the Congo (DRC)"
+        elif cc == "Zaire":
+            cc = "Democratic Republic of the Congo (DRC)"
         elif cc == "Zaire (Congo Kinshasa)":
             cc = "Democratic Republic of the Congo (DRC)"
         elif cc == "Congo":
@@ -101,10 +103,8 @@ class AvicDataProcessing(BaseDataProcessing, BasePotentialAlgo, AvicAlgo):
             cc = "Cote d'Ivoire"
         elif cc == "Eswatini (Swaziland)":
             cc = "Eswatini"
-
         elif cc == "Swaziland":
             cc = "Eswatini"
-
         elif cc == "Slovak Republic":
             cc = "Slovakia"
         elif cc.lower().find("burma")>-1:
@@ -249,6 +249,7 @@ class AvicDataProcessing(BaseDataProcessing, BasePotentialAlgo, AvicAlgo):
             # print(df)
 
             model_min_max_cut = apps.get_model(app_label=app_, model_name="minmaxcut")
+            model_country_group_dim = apps.get_model(app_label=app_, model_name="CountryGroupDim")
             model_name_ = dic["dimensions"]["time_dim"]["model"]
             model_time_dim = apps.get_model(app_label=app_, model_name=model_name_)
             model_name_ = dic["dimensions"]["country_dim"]["model"]
@@ -259,6 +260,9 @@ class AvicDataProcessing(BaseDataProcessing, BasePotentialAlgo, AvicAlgo):
             model_measure_dim = apps.get_model(app_label=app_, model_name=model_name_)
             model_name_ = dic["fact"]["model"]
             model_fact = apps.get_model(app_label=app_, model_name=model_name_)
+            #
+            country_group_obj, is_created = model_country_group_dim.objects.get_or_create(group_name="wb")
+            #
         except Exception as ex:
             pass
 
@@ -429,7 +433,7 @@ class AvicDataProcessing(BaseDataProcessing, BasePotentialAlgo, AvicAlgo):
                             pass
                     else:
                         try:
-                            c = model_country_dim.objects.get(country_name=country_name)
+                            c = model_country_dim.objects.get(country_name=country_name, country_group_dim=country_group_obj)
                             # print(row["Country Name"])
                         except Exception as ex:
                             continue
@@ -458,6 +462,7 @@ class AvicDataProcessing(BaseDataProcessing, BasePotentialAlgo, AvicAlgo):
 
             model_name_ = dic["dimensions"]["time_dim"]["model"]
             model_time_dim = apps.get_model(app_label=app_, model_name=model_name_)
+            model_country_group_dim = apps.get_model(app_label=app_, model_name="CountryGroupDim")
             model_name_ = dic["dimensions"]["country_dim"]["model"]
             model_country_dim = apps.get_model(app_label=app_, model_name=model_name_)
             model_name_ = dic["dimensions"]["measure_dim"]["model"]
@@ -466,6 +471,8 @@ class AvicDataProcessing(BaseDataProcessing, BasePotentialAlgo, AvicAlgo):
             model_min_max_cut = apps.get_model(app_label=app_, model_name="minmaxcut")
             model_name_ = dic["fact"]["model"]
             model_fact = apps.get_model(app_label=app_, model_name=model_name_)
+            #
+            country_group_obj, is_created = model_country_group_dim.objects.get_or_create(group_name="eli")
             #
             year = int(self.uploaded_filename.split(".")[0])
             year_obj, is_created = model_time_dim.objects.get_or_create(id=year)
@@ -551,7 +558,8 @@ class AvicDataProcessing(BaseDataProcessing, BasePotentialAlgo, AvicAlgo):
                             else:
                                 try:
                                     # print(country_name)
-                                    country_dim_obj, is_created = model_country_dim.objects.get_or_create(country_name=country_name)
+                                    country_dim_obj, is_created = model_country_dim.objects.get_or_create(country_name=country_name,
+                                                                                                          country_group_dim=country_group_obj)
                                     if is_created:
                                         country_dim_obj.country_code = country_name
                                         country_dim_obj.save()
