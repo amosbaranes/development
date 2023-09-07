@@ -52,6 +52,8 @@ class AvicDataProcessing(BaseDataProcessing, BasePotentialAlgo, AvicAlgo):
             cc = "Germany"
         if cc.lower().find("yemen")>-1:
             cc = "Yemen"
+        if cc.lower().find("papua")>-1:
+            cc = "Papua New Guinea"
 
         if cc == "Viet Nam":
             cc = "Vietnam"
@@ -99,10 +101,14 @@ class AvicDataProcessing(BaseDataProcessing, BasePotentialAlgo, AvicAlgo):
             cc = "Cote d'Ivoire"
         elif cc == "Eswatini (Swaziland)":
             cc = "Eswatini"
+
+        elif cc == "Swaziland":
+            cc = "Eswatini"
+
         elif cc == "Slovak Republic":
             cc = "Slovakia"
-        elif cc == "Czechoslovakia":
-            cc = "Czechia"
+        elif cc.lower().find("burma")>-1:
+            cc = "Myanmar"
         elif cc == "Czech Republic":
             cc = "Czechia"
         elif cc == "Korea":
@@ -124,9 +130,11 @@ class AvicDataProcessing(BaseDataProcessing, BasePotentialAlgo, AvicAlgo):
         elif cc == "Republic Of Moldova":
             cc = "Moldova"
         elif cc == "Republic Of North Macedonia":
-            cc = "North Macedonia"
-        elif cc == "Macedonia":
-            cc = "North Macedonia"
+            cc = "Macedonia"
+        elif cc == "North Macedonia":
+            cc = "Macedonia"
+        elif cc == "Macedonia, FYR":
+            cc = "Macedonia"
         elif cc == "EU (27)":
             cc = "EU27"
         elif cc == "Venezuela, RB":
@@ -175,10 +183,6 @@ class AvicDataProcessing(BaseDataProcessing, BasePotentialAlgo, AvicAlgo):
             cc = "Kyrgyzstan"
         elif cc == "Lao PDR":
             cc = "Laos"
-        elif cc == "Macedonia, FYR":
-            cc = "Macedonia"
-        elif cc == "North Macedonia":
-            cc = "Macedonia"
         elif cc == "Slovak Republic":
             cc = "Slovakia"
         elif cc == "Syrian Arab Republic":

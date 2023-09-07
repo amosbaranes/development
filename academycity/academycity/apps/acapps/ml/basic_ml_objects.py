@@ -711,6 +711,7 @@ class BasePotentialAlgo(object):
             df_relimp_adj = pd.DataFrame(npg_adj/npgs_adj, index=contribution_n1.index)
 
             df_relimp.columns = self.options
+            df_relimp_adj.columns = self.options
             if n == "1":
                 df_relimp_1 = df_relimp.copy(deep=True)
                 df_relimp_adj_1 = df_relimp_adj.copy(deep=True)
@@ -731,13 +732,14 @@ class BasePotentialAlgo(object):
         mm_obj, is_created = model_measure.objects.get_or_create(measure_name="Pot-"+dependent_group, measure_group_dim=mg_obj,
                                                                  measure_code=dependent_group, description="Potential for "+dependent_group)
 
-        print(df_relimp_1)
-        for i, r in df_relimp_1.iterrows():
-            for c in df_relimp_1.columns:
-                print(i, c, float(r[c]))
+        # print("df_relimp_1\n",df_relimp_1)
+        # print("df_relimp_adj_1\n",df_relimp_adj_1)
+
+        for i, r in df_relimp_adj_1.iterrows():
+            for c in df_relimp_adj_1.columns:
+                # print("i=", i, "c=", c, "float(r[c])", float(r[c]))
                 if str(r[c]) != "nan":
                     range_obj = model_range.objects.get(range_name=str(c))
-
                     group_obj = model_measure_group.objects.get(group_name=i)
                     obj, is_created = model_relimp_fact.objects.get_or_create(range_dim=range_obj,
                                                                               time_dim_id=year_,
@@ -747,9 +749,10 @@ class BasePotentialAlgo(object):
                     obj.save()
 
         np_relimp_1 = df_relimp_1.to_numpy()
-        # print("="*50, "\n", np_relimp_1)
-        np_signed_relimp_1 = np_relimp_1*np_sign_n1
-        # print("AAAAAAAAA\n", "=1=2"*50, "\n", np_signed_relimp_1, "AAAAAAAAA")
+        np_relimp_adj_1 = df_relimp_adj_1.to_numpy()
+        # print("="*50, "\nnp_relimp_adj_1\n", np_relimp_adj_1)
+        np_signed_relimp_1 = np_relimp_adj_1*np_sign_n1
+        # print("AAAAAAAAA\n", "=1=2"*10, "\n", np_signed_relimp_1, "\nAAAAAAAAA")
 
         np_signed_relimp = {"m": np_signed_relimp_1[np.ix_(ll, [0, 2])],
                             "x": np_signed_relimp_1[np.ix_(ll, [1, 3])]}
@@ -775,8 +778,32 @@ class BasePotentialAlgo(object):
                 df.index=df_n1_all.index
                 # print("-="*10, "\n" ,k_, "\n", df.head(100), "\n", df.tail(100))
                 np_df = df.to_numpy()
-                # print(np_df)
+                print(np_df)
                 if k_ == "m":
+                    print(k_, np_signed_relimp[k_], "\n", "="*10, "\n")
+                    print(np_signed_relimp[k_].shape)
+                    print(range(np_signed_relimp[k_].shape[1]))
+                    for z in range(np_signed_relimp[k_].shape[1]):
+                        print(z)
+                        print("\n", "-"*10, "\n")
+                        print(np_signed_relimp[k_][..., z])
+                        for r in range():
+                            print("")
+
+
+                    # zero_ = np.argwhere(np_signed_relimp[k_] == 0)
+                    # print(zero_)
+                    #
+                    # # a_del = np.delete(np_df, 1, 0)
+                    #
+                    #
+                    # for c_ in zero_.T:
+                    #     print(c_)
+                    #     for r_ in c_:
+                    #         print(r_)
+
+                    # print(np_signed_relimp_1[_k_][])
+
                     potential_m = np.dot(np_df, np_signed_relimp[k_])
                     # print("="*50, "\nAAAA\n", df, "\nnp_df\n", np_df, "\n", "\nAAAA11\n", np_signed_relimp[k_], "\nAAAA22\n", "\n", potential_m)
                 elif k_ == "x":
