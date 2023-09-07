@@ -713,6 +713,7 @@ class BasePotentialAlgo(object):
             df_relimp.columns = self.options
             if n == "1":
                 df_relimp_1 = df_relimp.copy(deep=True)
+                df_relimp_adj_1 = df_relimp_adj.copy(deep=True)
             df_relimp_adj.columns = self.options
 
             self.add_to_save_all(title='contribution-n' + n, a=eval("contribution_n" + n), cols=-1)
