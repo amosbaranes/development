@@ -236,9 +236,9 @@ class AvicDataProcessing(BaseDataProcessing, BasePotentialAlgo, AvicAlgo):
 
     # _1  I adjusted this function to work after uploading Eli data
     def load_wbfile_to_db(self, dic):
+        print("90121-5: \n", dic, "="*50)
+        app_ = dic["app"]
         try:
-            print("90121-5: \n", dic, "="*50)
-            app_ = dic["app"]
             file_path = self.upload_file(dic)["file_path"]
             # print('90022-1 dic')
             dic = dic["cube_dic"]
@@ -249,7 +249,6 @@ class AvicDataProcessing(BaseDataProcessing, BasePotentialAlgo, AvicAlgo):
             # print(df)
 
             model_min_max_cut = apps.get_model(app_label=app_, model_name="minmaxcut")
-            model_country_group_dim = apps.get_model(app_label=app_, model_name="CountryGroupDim")
             model_name_ = dic["dimensions"]["time_dim"]["model"]
             model_time_dim = apps.get_model(app_label=app_, model_name=model_name_)
             model_name_ = dic["dimensions"]["country_dim"]["model"]
@@ -260,17 +259,19 @@ class AvicDataProcessing(BaseDataProcessing, BasePotentialAlgo, AvicAlgo):
             model_measure_dim = apps.get_model(app_label=app_, model_name=model_name_)
             model_name_ = dic["fact"]["model"]
             model_fact = apps.get_model(app_label=app_, model_name=model_name_)
-            #
-            country_group_obj, is_created = model_country_group_dim.objects.get_or_create(group_name="wb")
-            #
         except Exception as ex:
-            pass
+            print("Error 201-201-201", ex)
 
         min_cut = []
         max_cut = []
+        #
+        model_country_group_dim = apps.get_model(app_label=app_, model_name="CountryGroupDim")
+        country_group_obj, is_created = model_country_group_dim.objects.get_or_create(group_name="wb")
+        #
         for index, row in df.iterrows():
             # print(row["Country Name"], row["Country Code"], row["Series Name"], row["Series Code"])
             # Country
+            # print(row)
 
             # print(row["Country Name"], c, row["Series Name"])
             try:
@@ -391,15 +392,17 @@ class AvicDataProcessing(BaseDataProcessing, BasePotentialAlgo, AvicAlgo):
             is_remove = self.remove_country(country_name)
             if is_remove == 1:
                 continue
-            print("="*50)
-            print(country_name)
+            # print("="*50)
+            # print(country_name)
             country_name = self.check_country(country_name)
-            print(country_name)
+            # print(country_name)
+
             for j in range(4, len(df.columns)):
                 jm = j-4
                 k = df.columns[j]
                 s = k.split(" ")
                 # print(s[0])
+
                 yy = int(s[0])
                 t, is_created = model_time_dim.objects.get_or_create(id=yy)
                 if is_created:
@@ -433,18 +436,24 @@ class AvicDataProcessing(BaseDataProcessing, BasePotentialAlgo, AvicAlgo):
                             pass
                     else:
                         try:
-                            c = model_country_dim.objects.get(country_name=country_name, country_group_dim=country_group_obj)
+                            c, is_created = model_country_dim.objects.get_or_create(country_name=country_name)
+                            if is_created:
+                                c.country_group_dim=country_group_obj
+                                c.save()
                             # print(row["Country Name"])
                         except Exception as ex:
                             continue
                         if float("{:.2f}".format(row[k])) > 0 or float("{:.2f}".format(row[k])) < 0:
-                            a, is_created = model_fact.objects.get_or_create(time_dim=t, country_dim=c, measure_dim=m)
-                            if is_created:
+                            try:
+                                a, is_created = model_fact.objects.get_or_create(time_dim=t, country_dim=c, measure_dim=m)
+                                # if is_created:
                                 # a.amount = float(row[k])
                                 s = 'a.' + dic["fact"]["field_name"] + ' = ' + str(float("{:.2f}".format((row[k]))))
                                 # print(s)
                                 exec(s)
                                 a.save()
+                            except Exception as ex:
+                                print("90986-201 Error measure:"+str(ex))
                 except Exception as ex:
                     pass
         result = {"status": "ok"}
@@ -514,10 +523,10 @@ class AvicDataProcessing(BaseDataProcessing, BasePotentialAlgo, AvicAlgo):
                     if is_remove == 1:
                         continue
 
-                    print("=" * 50)
-                    print(country_name)
+                    # print("=" * 50)
+                    # print(country_name)
                     country_name = self.check_country(country_name)
-                    print(country_name)
+                    # print(country_name)
 
                     for j in range(1, len(columns)):
                         if str(columns[j]) != "None":
