@@ -187,7 +187,7 @@ class AvicDataProcessing(BaseDataProcessing, BasePotentialAlgo, AvicAlgo):
         elif cc == "Kyrgyzstan":
             cc = "Kyrgyz Republic"
         elif cc == "Lao PDR":
-            cc = "Laos"
+            cc = "Lao People's Democratic Republic"
         elif cc == "Slovak Republic":
             cc = "Slovakia"
         elif cc == "Syrian Arab Republic":
@@ -223,11 +223,13 @@ class AvicDataProcessing(BaseDataProcessing, BasePotentialAlgo, AvicAlgo):
         elif cc == "Korea, Rep. of":
             cc = "Korea Rep."
         elif cc == "Korea":
-            cc = "Korea, Rep."
+            cc = "Korea Rep."
         elif cc == "Republic Of Korea":
             cc = "Korea, Rep."
         elif cc == "South Korea":
-            cc = "Korea, Rep."
+            cc = "Korea Rep."
+        elif cc == "Korea, Rep.":
+            cc = "Korea Rep."
         elif cc == "Yemen Arab Rep.":
             cc = "Yemen"
         elif cc == "Yemen, Arab Rep.":

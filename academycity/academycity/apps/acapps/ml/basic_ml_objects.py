@@ -764,8 +764,6 @@ class BasePotentialAlgo(object):
         # print("-"*10, "\n", "df_n1_all_temp", "\n", df_n1_all_temp, "-"*10, "\n")
 
         try:
-            # df_n1_all_temp = self.add_entity_to_df(df_n1_all_temp, cols=-1)
-            # print("\n", df_n1_all_temp, "\n", "="*100)
             for k_ in ["m", "x"]:
                 # print("-="*10, "\n" ,k_)
                 df = pd.DataFrame()
@@ -780,83 +778,68 @@ class BasePotentialAlgo(object):
                 np_df = df.to_numpy()
                 # print(np_df)
                 if k_ == "m":
-                    np_df_clone = np_df.copy()
-                    # print(k_, np_signed_relimp[k_], "\n", "="*10, "\n")
-                    # print(np_signed_relimp[k_].shape)
-                    # print(range(np_signed_relimp[k_].shape[1]))
+                    potential_m_z1 = None
+                    potential_m_z2 = None
                     potential_m = None
+                    np_df_clone = np_df.copy()
                     for z in range(np_signed_relimp[k_].shape[1]):
-                        # print(z, "\n","="*20)
-                        # print("\n", "-"*10, "\n")
-                        # print(np_signed_relimp[k_][..., z])
-
-                        print("1\n", np.array([np_signed_relimp[k_][..., z]]).T)
-
                         for r in range(np_signed_relimp[k_].shape[0]):
                             if abs(np_signed_relimp[k_][..., z][r]) < 0.00001:
                                 # print(r, np_signed_relimp[k_][..., z][r])
                                 np_df_clone[:, r] = 0
-
-                        print("2\n", np_df_clone)
-                        print(np_df_clone.shape)
-                        print("\n", "-"*10, "\n")
-                        # res = np.argwhere(np_df_clone == 0)
-                        # print(res)
                         res = np.argwhere(np.isnan(np_df_clone))
-                        # print(res)
-                        print("\n", "-1"*10, "\n")
                         n_dic = {}
                         for row in res:
                             if row[0] not in n_dic:
                                 n_dic[row[0]] = []
                             n_dic[row[0]].append(row[1])
-                        # print("=9"*20)
-                        # print(n_dic)
-                        # print("=9"*20, "\n")
                         for z_ in n_dic:
-                            # print(np_df_clone[z_, ...])
                             n_sum = 0
                             for h in n_dic[z_]:
-                                # print("h=", h)
-                                # print(np_signed_relimp[k_][..., z][h])
                                 n_sum += np_signed_relimp[k_][..., z][h]
-                            # print("z_=", z_, "n_sum=", n_sum)
-                            # print("\n", "-"*10, "\n")
                             if n_sum < 0.2:
                                 for h in n_dic[z_]:
-                                    # print("\n", "-8"*10, "\n")
-                                    # print(np_df_clone[z_, h])
-                                    # print(np_df_clone[z_])
-                                    # print(np_df_clone[z_-2:z_+1, 1:])
                                     np_df_clone[z_, h] = 0
-                                    # print(np_df_clone[z_, h])
-                                    # print(np_df_clone[z_])
-                                    # print(np_df_clone[z_-2:z_+1, 1:])
-                                    # print("\n", "-8"*10, "\n")
-
-                        # print("=2"*20)
-                        # print(np_df_clone)
-                        # # print(np_df_clone.shape)
-                        # print("=2"*20)
-
-                        potential_m_z = np.dot(np_df_clone, np.array([np_signed_relimp[k_][..., z]]).T)
-                        if not potential_m:
-                            potential_m = np.copy(potential_m_z)
-                        else:
-                            potential_m = np.copy(potential_m_z)
-
-                        print("="*50, "\nAAAA\n", np_df_clone, "\n", "\nAAAA11\n", np.array([np_signed_relimp[k_][..., z]]).T)
-                        print("\nAAAA22\n", "\n", potential_m_z, "\n", "="*50)
-
+                                np_df_clone[z_] = np_df_clone[z_]*(1/(1-n_sum))
+                        if z == 0:
+                            potential_m_z1 = np.dot(np_df_clone, np.array([np_signed_relimp[k_][..., z]]).T)
+                        elif z == 1:
+                            # print("=411"*20)
+                            potential_m_z2 = np.dot(np_df_clone, np.array([np_signed_relimp[k_][..., z]]).T)
+                            potential_m = np.column_stack((potential_m_z1, potential_m_z2))
                 elif k_ == "x":
-                    potential_x = np.dot(np_df, np_signed_relimp[k_])
-                    # print("="*50, "\nBBBBBB\n", df, "\n", np_df, "\n", "\nBBBBBB111\n", np_signed_relimp[k_], "\nBBBBBB2222\n", "\n", potential_x)
-
+                    potential_x_z1 = None
+                    potential_x_z2 = None
+                    potential_x = None
+                    np_df_clone = np_df.copy()
+                    for z in range(np_signed_relimp[k_].shape[1]):
+                        for r in range(np_signed_relimp[k_].shape[0]):
+                            if abs(np_signed_relimp[k_][..., z][r]) < 0.00001:
+                                np_df_clone[:, r] = 0
+                        res = np.argwhere(np.isnan(np_df_clone))
+                        n_dic = {}
+                        for row in res:
+                            if row[0] not in n_dic:
+                                n_dic[row[0]] = []
+                            n_dic[row[0]].append(row[1])
+                        for z_ in n_dic:
+                            n_sum = 0
+                            for h in n_dic[z_]:
+                                n_sum += np_signed_relimp[k_][..., z][h]
+                            if n_sum < 0.2:
+                                for h in n_dic[z_]:
+                                    np_df_clone[z_, h] = 0
+                                np_df_clone[z_] = np_df_clone[z_]*(1/(1-n_sum))
+                        if z == 0:
+                            potential_x_z1 = np.dot(np_df_clone, np.array([np_signed_relimp[k_][..., z]]).T)
+                        elif z == 1:
+                            potential_x_z2 = np.dot(np_df_clone, np.array([np_signed_relimp[k_][..., z]]).T)
+                            potential_x = np.column_stack((potential_x_z1, potential_x_z2))
 
             potential = np.concatenate((potential_m, potential_x), axis=1)
             df_potential = pd.DataFrame(potential, columns=["mm", "xm", "mx", "xx"])
 
-            # print("df_potential100 df_potential100\n", df_potential, "\n", "="*100)
+            print("df_potential100 df_potential100\n", df_potential, "\n", "="*100)
 
             df_potential.insert(0, 'country_dim', value=df_n1_all_temp['country_dim'])
             df_potential_cube = df_potential.copy()
