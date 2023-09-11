@@ -42,6 +42,8 @@ class AvicAlgo(object):
             print("Error 90004-010 AvibDataProcessing:\n"+str(ex), "\n", '-'*50)
         # print("90004-020 AvibAlgo", dic, '\n', '-'*50)
 
+
+
 class AvicDataProcessing(BaseDataProcessing, BasePotentialAlgo, AvicAlgo):
     def __init__(self, dic):
         super().__init__(dic)
