@@ -576,10 +576,10 @@ class AvicDataProcessing(BaseDataProcessing, BasePotentialAlgo, AvicAlgo):
                             else:
                                 try:
                                     # print(country_name)
-                                    country_dim_obj, is_created = model_country_dim.objects.get_or_create(country_name=country_name,
-                                                                                                          country_group_dim=country_group_obj)
+                                    country_dim_obj, is_created = model_country_dim.objects.get_or_create(country_name=country_name)
                                     if is_created:
                                         country_dim_obj.country_code = country_name
+                                        country_dim_obj.country_group_dim = country_group_obj
                                         country_dim_obj.save()
                                 except Exception as ex:
                                     pass
