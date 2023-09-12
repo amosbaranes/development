@@ -89,6 +89,7 @@ class OutputFact(TruncateTableMixin, models.Model):
                                     related_name='country_dim_output_fact')
     measure_dim = models.ForeignKey(MeasureDim, on_delete=models.CASCADE, default=1,
                                     related_name='measure_dim_output_fact')
+    range_name = models.CharField(max_length=10, default='min', blank=True, null=True)
     amount = models.DecimalField(max_digits=16, decimal_places=2, default=0, blank=True, null=True)
 
     def __str__(self):
