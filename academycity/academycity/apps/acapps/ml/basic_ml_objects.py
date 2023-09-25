@@ -606,7 +606,9 @@ class BasePotentialAlgo(object):
 
             lll_groups.append(group)
 
+        # print("QQQQQQQQQQQQQQQQQ")
         # print("df_n1_all\n", df_n1_all)
+        # print("RRRRRRRRRRRrRRR")
 
         ss_n_mm = ss_n_mm[:-1]
         ss_n_mx = ss_n_mx[:-1]
@@ -639,14 +641,21 @@ class BasePotentialAlgo(object):
             ll = []
             for k in self.options:
                 s_ = "df_n" + n + "_all['d_" + k + "']=df_n" + n + "_all[[" + eval("ss_n_" + k) + "]].min(axis=1)"
+                # print(s_)
                 exec(s_)
                 # print(eval("df_n" + n + "_all['d_" + k + "']"))
                 s_ = "ll.append(1-df_n" + n + "_all[[" + eval("ss_n_" + k) + "]].min(axis=1).mean())"
+                # print(s_)
                 exec(s_)
+            # print(ll)
             s_ = "similarity_n" + n + ".loc['SComb'] = ll"
+            # print(s_)
             exec(s_)
             s_ = "sign_n" + n + ".drop([0], axis=0, inplace=True)"
+            # print(s_)
             exec(s_)
+            # print(eval("sign_n" + n))
+
             self.add_to_save_all(title='sign-n' + n, a=eval("sign_n" + n), cols=-1)
             s = "similarity_n" + n + ".drop([0], axis=0, inplace=True)"
             exec(s)
@@ -1350,8 +1359,12 @@ class BasePotentialAlgo(object):
                           similarity_n1, similarity_n2):
 
         # print("1 create_similarity df_n2_all\n", group, "\n", df_n2_all, df_n2_all.shape)
+        # print("1 group", group, "\n", df_n1_)
+
         df_n1_all = pd.merge(left=df_n1_all, how='outer', right=df_n1_, left_index=True, right_index=True)
         df_n2_all = pd.merge(left=df_n2_all, how='outer', right=df_n2_, left_index=True, right_index=True)
+
+        # print("2 group", group, "\n", df_n1_all)
         # print("2 create_similarity df_n2_all\n", group, "\n", df_n2_all, df_n2_all.shape)
 
         # print(df_n2_all.head(100))
@@ -1366,9 +1379,7 @@ class BasePotentialAlgo(object):
                 df_d = eval(s_)
                 df_d_na=df_d.dropna()
                 s_ = title='sim-n' + n + group + k
-
                 df_d_na_ = self.add_entity_to_df1(df_d_na)
-
                 self.add_to_save_all(title=s_, a=df_d_na_, cols=-1)
                 s_d = df_d.sum()
                 # print("s_d", s_d, df_d.mean())
@@ -1384,24 +1395,20 @@ class BasePotentialAlgo(object):
                 if dfdm < dfrm:
                     d_ = s_d
                     s_ = "df_n" + n + "_all['" + group_d + '-' + group + '-' + k + "'] = df_d"
-                    # print(s_)
                     exec(s_)
                     lls.append(1 - df_d.mean())
                     ll.append(1)
                 else:
                     d_ = s_r
                     s_ = "df_n" + n + "_all['" + group_d + '-' + group + '-' + k + "'] = df_r"
-                    # print(s_)
                     exec(s_)
                     lls.append(1 - df_r.mean())
                     ll.append(-1)
                 # print("="*50)
-
             # print("sign_n" + n + ".loc[group] = ll", ll)
             exec("sign_n" + n + ".loc[group] = ll")
             # print("similarity_n" + n + ".loc[group] = lls", lls)
             exec("similarity_n" + n + ".loc[group] = lls")
-
         return group_d, group, df_n1_all, df_n2_all, df_n1_, df_n2_, sign_n1, sign_n2, similarity_n1, similarity_n2
 
     def add_entity_to_df(self, df, cols=None):

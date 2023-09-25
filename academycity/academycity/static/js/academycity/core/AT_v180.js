@@ -1834,6 +1834,8 @@ acBasicCreator.prototype.get_grade = function(skill_id, unit_id)
 // https://plotly.com/javascript/pie-charts/
 // https://www.alt-codes.net/smiley_alt_codes.php
 
+
+
 acBasicCreator.prototype.set_board_data = function(ll=[])
 {
   //alert("set data1\n"+ll.length)
@@ -1856,36 +1858,50 @@ acBasicCreator.prototype.set_board_data = function(ll=[])
    var height_=pp_["height"]; if(height_==null || height_==""){height_=300};
    var dic=atm.data_dic;
    var unit_qualification = atm.general.unit_qualification
+   var unit_equipment = atm.general.unit_equipment
+
    //alert("90441-550-4 \n"+JSON.stringify(unit_qualification));
+   //alert("90441-550-5 \n"+JSON.stringify(unit_equipment));
 
    //alert("90441-550-3 \n"+JSON.stringify(atm.general.unit_qualification));
    var z=-1;
    var unit_qualification_dic = {'wet_day':0,'wet_night':0,'raid_day':0, 'raid_night':0}
+   var unit_equipment_dic = {'is_equiped':0}
 
    for(var j in ll){
+    //alert(j + "\n"+ll[j])
     z+=1;var dic=dic[ll[z]];
+
     var unit_qualification=unit_qualification[ll[z]];for(var x in unit_qualification_dic){unit_qualification_dic[x]=unit_qualification[x]}
+    var unit_equipment=unit_equipment[ll[z]];for(var x in unit_equipment_dic){unit_equipment_dic[x]=unit_equipment[x]}
+    unit_qualification=unit_qualification["data"];
+    unit_equipment=unit_equipment["data"];
+
     var container_=this.board_objs[(1*z+1)].content;
-    try{var kpi=dic["kpi"];var board_title=dic["title"];dic=dic["data"];unit_qualification=unit_qualification["data"];
-    } catch(er){alert(er)}}
-    if(z<0){try{var container_=this.board_objs[1].content} catch(er){alert(er)}}
-    //alert("90441-550-1  "+JSON.stringify(kpi));
-    //alert("90441-550-2  "+JSON.stringify(dic));
-    //alert("90441-550-3 \n"+JSON.stringify(unit_qualification));
-    try{this.hide_boards((1*z+1)); container_.style.display="block";} catch(er){alert(er)}
-    // alert("90441-550  "+JSON.stringify(dic));
-    var n_kpi_objs=Object.keys(this.fields_kpis_).length;
-    var w_kpi=125;var h_kpi=200; wl_kpi=50;var wr_kpi=50;
-    var n_objs=Object.keys(dic).length;
-    var wl=50;var wr=50;var w=200;var n__=(width_-wl-wr)/n_objs;if(n__<200){w=n__}
-    var wb_kpi=(1*width_-wl_kpi-wr_kpi-n_kpi_objs*w_kpi)/(n_kpi_objs-1);
-    if(type_=="unit"){wb_kpi=(1*width_-wl_kpi-wr_kpi-(1+n_kpi_objs)*w_kpi)/(n_kpi_objs)}
+    try{var kpi=dic["kpi"];var board_title=dic["title"];dic=dic["data"];
+   } catch(er){alert(er)}}
 
-    var wb=(1*width_-wl-wr-n_objs*w)/(n_objs-1);
+   if(z<0){try{var container_=this.board_objs[1].content} catch(er){alert(er)}}
+   //alert("90441-550-1  "+JSON.stringify(kpi));
+   //alert("90441-550-2  "+JSON.stringify(dic));
 
-    //alert(wb)
-    var w_=wl+this.nav_width;var th2_=1*height_/2
-    var w_kpi_=wl_kpi+this.nav_width;
+   try{this.hide_boards((1*z+1)); container_.style.display="block";} catch(er){alert(er)}
+   // alert("90441-550  "+JSON.stringify(dic));
+   // alert("90441-550-88  "+JSON.stringify(this.fields_kpis_));
+
+   var n_kpi_objs=Object.keys(this.fields_kpis_).length;
+   var w_kpi=125;var h_kpi=200; wl_kpi=50;var wr_kpi=50;
+   var n_objs=Object.keys(dic).length;
+   var wl=50;var wr=50;var w=200;var n__=(width_-wl-wr)/n_objs;if(n__<200){w=n__}
+   var wb_kpi=(1*width_-wl_kpi-wr_kpi-n_kpi_objs*w_kpi)/(n_kpi_objs-1);
+
+   if(type_=="unit"){wb_kpi=(1*width_-wl_kpi-wr_kpi-(2+n_kpi_objs)*w_kpi)/(n_kpi_objs+1)}
+
+   var wb=(1*width_-wl-wr-n_objs*w)/(n_objs-1);
+
+   //alert(wb)
+   var w_=wl+this.nav_width;var th2_=1*height_/2
+   var w_kpi_=wl_kpi+this.nav_width;
 
    container_.innerHTML="";
    //--
@@ -1894,7 +1910,7 @@ acBasicCreator.prototype.set_board_data = function(ll=[])
    title__.setAttribute("style", style_);
    container_.appendChild(title__);
    //--
-   // add company logo
+   // add company logo --
    var company_logo_src="/media/training/images/"+pp_["company_logo"]
    var company_logo_style="position:absolute;left:50px;top:10px;width:150px;height:60px;"
    var company_image=document.createElement("img");
@@ -1910,8 +1926,9 @@ acBasicCreator.prototype.set_board_data = function(ll=[])
    battalion_image.setAttribute("src", battalion_logo_src);
    battalion_image.setAttribute("style", battalion_logo_style);
    container_.appendChild(battalion_image);
+   //--
    //-- chart KPI --
-   var n__=n_kpi_objs;if(type_=="unit"){n__=n_kpi_objs+1}
+   var n__=n_kpi_objs;if(type_=="unit"){n__=n_kpi_objs+2}
    //alert(n_kpi_objs+"\n"+type_+"\n"+n__)
    //alert(this.kpis_cols)
    for(var j=1; j<=n__;j++)
@@ -1923,18 +1940,11 @@ acBasicCreator.prototype.set_board_data = function(ll=[])
      style_+="border-style:solid;border-width:0px;border-color:blue;border-radius:10px;display: flex;align-items: center;justify-content: center;"
      div_.setAttribute("style", style_);
 
-    if(j<3 || (j==3 && type_=="individual") || (nl_==7 && type_=="unit")){
-       if(type_=="individual" && (j<3)){
+     if(j<3 || (j==3 && type_=="individual") || (nl_==7 && type_=="unit")){
            var s_kpi1=document.createElement("span");s_kpi1.innerHTML=this.kpis_sub_titles[j-1];
            var style_ = "z-index:1;position:absolute;left:"+(w_kpi_+10)+"px;top:"+(top_+150)+"px;color:blue"
            s_kpi1.setAttribute("style", style_);
            container_.appendChild(s_kpi1);
-       } else if((type_=="individual" && (j==3)) || (type_=="unit" && (j<3 || nl_==7)) ){
-           var s_kpi1=document.createElement("span");s_kpi1.innerHTML=this.kpis_sub_titles[j-1];
-           var style_ = "z-index:1;position:absolute;left:"+(w_kpi_+10)+"px;top:"+(top_+150)+"px;color:blue"
-           s_kpi1.setAttribute("style", style_);
-           container_.appendChild(s_kpi1);
-       }
        //--
        var kpi_pass=atm.general.pass_grade["kpi_"+type_][nl_];
        //alert(j+"\n"+kpi_pass+"\n"+JSON.stringify(kpi[nl_])+"\n"+type_+"_grade"+"\n"+kpi[nl_][type_+"_grade"])
@@ -1968,11 +1978,12 @@ acBasicCreator.prototype.set_board_data = function(ll=[])
           showlegend: false,
           font: { color: "darkblue", family: "Arial" }
         };
+        Plotly.newPlot(div_, data, layout, {displayModeBar: false});
     } else {
         //alert("j="+j+"\ntype="+type_+"\nnobjs="+n_kpi_objs+"\nn__="+n__+"\nnl_="+nl_)
-       if(j==n__ && type_=="unit") {
-                var ll_ = [];
-                var is_all=1
+       if(type_=="unit" && j >=n__-1) {
+           if(j==n__-1){
+               var ll_ = []; var is_all=1
                for(var x in unit_qualification_dic)
                {
                 if(unit_qualification_dic[x]==0){ll_.push(x);}else{ll_.push("")}
@@ -1986,7 +1997,7 @@ acBasicCreator.prototype.set_board_data = function(ll=[])
                   textinfo: 'text',
                     'type': 'pie','hoverinfo': 'label','sort': false,
                   }]
-                    var layout = {
+                  var layout = {
                       title: { text: "Unit Training", font: { size: 15 } },
                       width: 150,height: 160,
                       margin: {l: 5, r: 5, b: 10, t: 20,  pad: 1 },
@@ -1995,42 +2006,93 @@ acBasicCreator.prototype.set_board_data = function(ll=[])
                       hovermode: false,
                       font: { color: "darkblue", family: "Arial" }
                     };
+            }
+           else if(j==n__)
+           {
+             //alert("KKKKKKKKKKKK")
+               var ll_ = [];var is_all_e=1
+               for(var x in unit_equipment_dic)
+               {
+                if(unit_equipment_dic[x]==0){ll_.push(x);}else{ll_.push("")}
+                is_all_e*=unit_equipment_dic[x];
+               }
+               if(is_all_e==1){var c_='rgb(0, 128, 0)';}else{var c_='rgb(255, 0, 0)'}
+               var c=[c_];
+                  var data = [{'labels': ll_, 'marker': {'colors': c},
+                  text: ll_,
+                  textinfo: 'text',
+                    'type': 'pie','hoverinfo': 'label','sort': false,
+                  }]
+                  var layout = {
+                      title: { text: "Unit Equipment", font: { size: 15 } },
+                      width: 150,height: 160,
+                      margin: {l: 5, r: 5, b: 10, t: 20,  pad: 1 },
+                      paper_bgcolor: container_.style.backgroundColor,
+                      showlegend: false,
+                      hovermode: false,
+                      font: { color: "darkblue", family: "Arial" }
+                    };
+           }
+        Plotly.newPlot(div_, data, layout, {displayModeBar: false});
+       } else {
+//            var bgcolor = "#CCD1D1";
+//            var v_ = kpi[nl_][type_+"_ref1"];var reference_=kpi[nl_][type_+"_grade"];
+//            var data = [
+//              {
+//                type: "indicator",
+//                mode: "number+delta",
+//                value: v_,
+//                number: { prefix: "" },
+//                delta: { position: "top", reference: reference_ }
+//              }
+//            ];
+//            var layout = {
+//                  autosize: true,
+//                  title: { text: this.fields_kpis_[j-1], font: { size: 20 } },
+//                  width: 150,height: 130,
+//                  margin: {l: 5, r: 5, b: 10, t: 50,  pad: 1 },
+//                  paper_bgcolor: bgcolor,
+//                  showlegend: false,
+//                  font: { color: "darkblue", family: "Arial" }
+//            };
+//        Plotly.newPlot(div_, data, layout, {displayModeBar: false});
 
-       }
-       else {
+            var www_=1*div_.style.width.replace('px', '')+10
 
-            var bgcolor = "#CCD1D1";
-            var v_ = kpi[nl_][type_+"_ref1"];var reference_=kpi[nl_][type_+"_grade"];
+            div_.style.width=www_+"px"
+            //alert(div_.style.width)
+            var e_div = document.createElement("div");div_.appendChild(e_div);
+            style_="border-radius: 20px;text-align: center; z-index: 1;border: 2px outset red;background-color: lightblue; width:"+(w_kpi+10)+"px; height:"+(h_kpi-50)+"px"
+            e_div.setAttribute("style", style_)
 
-            var data = [
-              {
-                type: "indicator",
-                mode: "number+delta",
-                value: v_,
-                number: { prefix: "" },
-                delta: { position: "top", reference: reference_ }
-              }
-            ];
+     //var style_ = "position:absolute;left:"+w_kpi_+"px;top:"+top_+"px;width:"+w_kpi+"px;height:"+h_kpi+"px;"
+            var h4_ = document.createElement("h4");e_div.appendChild(h4_);
+            h4_.setAttribute("style", "color:blue; margin-top:5px;");
+            h4_.innerHTML= this.fields_kpis_[j-1];
 
-            var layout = {
-                  autosize: true,
-                  title: { text: this.fields_kpis_[j-1], font: { size: 20 } },
-                  width: 150,height: 130,
-                  margin: {l: 5, r: 5, b: 10, t: 50,  pad: 1 },
-                  paper_bgcolor: bgcolor,
-                  showlegend: false,
-                  font: { color: "darkblue", family: "Arial" }
-            };
+            var reference_=kpi[nl_][type_+"_grade"];
+            var p_ = document.createElement("p");e_div.appendChild(p_);
+            p_.setAttribute("style", "position:absolute;left:30px;top:50px;color:green; font-size:35px")
+            p_.innerHTML = reference_
+
+            var v_ = kpi[nl_][type_+"_ref1"];
+            var value = document.createElement("p");e_div.appendChild(value);
+            value.setAttribute("style", "position:absolute;left:30px;top:95px;color:blue; font-size:35px")
+            value.innerHTML = v_
+
+            //alert(nl_+"\n\nHH kpi[nl_]\n\n"+type_+"_ref1"+"\n\n"+v_+"\n\n"+JSON.stringify(kpi[nl_]));
+            //alert(v_+"\n"+reference_)
 
         }
     }
 
-     Plotly.newPlot(div_, data, layout, {displayModeBar: false});
      //-- Grade --
      w_kpi_=w_kpi_+1*(1*w_kpi+1*wb_kpi);
      container_.appendChild(div_);
    }
    //--
+//         alert("AA unit_qualification\n"+JSON.stringify(unit_qualification));
+//         alert("AA unit_equipment\n"+JSON.stringify(unit_equipment));
    var k = 0
    //alert("90441-350-35  "+JSON.stringify(dic));
    if(ll.length<(atm.nlimit+1))
@@ -2063,11 +2125,18 @@ acBasicCreator.prototype.set_board_data = function(ll=[])
 
          var text_color="black"
 
-         var is_all=1;
+         var is_all=1;var is_all_e=1;
          var uq=unit_qualification[z];
-         //alert(z+"\n"+JSON.stringify(uq));
+         var ue=unit_equipment[z];
+
+         //alert(z+"\nuq\n"+JSON.stringify(uq));
+         //alert(z+"\nue\n"+JSON.stringify(ue));
+
          for(var x in unit_qualification_dic){is_all*=uq[x]}
-         var text_color="black";var text_bgcolor="red";if(is_all==1){text_color="green";var text_bgcolor="none"}
+         for(var x in unit_equipment_dic){is_all_e*=ue[x]}
+
+         var text_color="black";var text_bgcolor="red";if(is_all==1 && is_all_e==1){text_color="green";var text_bgcolor="none"}
+         //var text_color_e="black";var text_bgcolor_e="red";if(is_all_e==1){text_color_e="green";var text_bgcolor_e="none"}
 
       var div_=document.createElement("div");
       var div_c=document.createElement("div");
@@ -2087,10 +2156,9 @@ acBasicCreator.prototype.set_board_data = function(ll=[])
       var style_c=";font-weight: bold;width:100%;height:30%;position:absolute;top:45%;left:0;margin-top:-15px;line-height:19px;"
       style_c+="padding:10px;;text-align:center;z-index:0"
       }
-
       div_c.setAttribute("style", style_c);
-      div_c.innerHTML=dic[z]["title"]
-
+      div_c.innerHTML=dic[z]["title"];
+      //alert(type_+"\n"+div_c.outerHTML)
       var ll_=clone_dic(ll);ll_.push(1*z);div_.ll=ll_;div_.obj=this;
       div_.addEventListener("click", function(event){
 
@@ -2110,7 +2178,6 @@ acBasicCreator.prototype.set_board_data = function(ll=[])
       const config = {type: 'doughnut',data: data, options:options};
       var c=new Chart(canvas_, config);
    }
-
    } else {
       k +=1
       var col_width=125;

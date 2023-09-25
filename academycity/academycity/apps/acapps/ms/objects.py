@@ -20,6 +20,9 @@ import copy
 from openpyxl import Workbook, load_workbook
 from ...core.utils import log_debug, clear_log_debug
 
+from collections import OrderedDict
+from operator import getitem
+
 mpl.use('Agg')
 
 
@@ -250,10 +253,9 @@ class MSDataProcessing(BaseDataProcessing, MSAlgo):
         # print(n_, l_sum)
         for c in clusters:
             clusters[c]["centroid"] = round(clusters[c]["centroid"], 2)
-        # print('clusters 2', "\n", "="*100, "\n")
-        # print(clusters)
-        # print('clusters 2', "\n", "="*100, "\n")
-
+        print('clusters 2', "\n", "="*100, "\n")
+        print(clusters)
+        print('clusters 2', "\n", "="*100, "\n")
         return clusters
 
     def converge_clusters_centroid(self, row, clusters_o, n):
@@ -486,6 +488,7 @@ class MSDataProcessing(BaseDataProcessing, MSAlgo):
         def take_key(elem):
             return elem[2]
 
+        n__ = 0
         for o in objs:
             # print("-"*50, "\n", o.clusters, "\n", "-"*50)
             ll = []
@@ -496,10 +499,13 @@ class MSDataProcessing(BaseDataProcessing, MSAlgo):
                 ll.append([c, n, cd])
             ll.sort(key=take_key)
             ll_ = [j[1] for j in ll]
-            print("="*100,"\n",o.gene_code)
-            r = self.get_peaks({"cl_all":ll_, "t_pop": t_pop})["result"]
-            o.reduced_clusters = r
-            o.save()
+            n__ += 1
+            #"201247_at","206484_s_at", "204786_s_at",
+            if o.gene_code in ["211444_at"]:
+                print("\n",o.gene_code)
+                r = self.get_peaks({"cl_all":ll_, "t_pop": t_pop})["result"]
+                o.reduced_clusters = r
+                o.save()
 
         result = {"status": "ok", "result": {"a": "a"}}
         return result
@@ -513,7 +519,6 @@ class MSDataProcessing(BaseDataProcessing, MSAlgo):
         lb = 0
         ub = len(l)
         peak_array = {}
-        num_peaks = 0
         def get_location_of_left_low(l_, lb_, ub_):
             i = ub_
             x = 0
@@ -566,15 +571,13 @@ class MSDataProcessing(BaseDataProcessing, MSAlgo):
             # print(ret, temp_)
             return ret
 
-        def get_peaks_(l_, lb_, ub_, peak_array_, num_peaks_):
-            num_peaks_ += 1
-            # print(l_, num_peaks_, lb_, ub_)
+        def get_peaks_(l_, lb_, ub_, peak_array_):
+            num_peaks_ = len(peak_array_)+1
+            # print("G1", l_, "\nnum_peaks_=", num_peaks_, ", lb_=", lb_, ", ub_=", ub_)
             gh = get_global_high(l_, lb_, ub_)
-            # print("gh", gh)
             ll = get_location_of_left_low(l_, lb_, gh)
-            # print("ll", ll)
             rl = get_location_of_right_low(l_, gh, ub_)
-            # print("rl", rl)
+            # print(" AAA Base 0: gh=", gh, ", Base 0: ll=", ll, ", Base 0: rl=", rl)
             peak_array[num_peaks_] = {}
             peak_array[num_peaks_]["peak"] = gh + 1
             peak_array[num_peaks_]["lb"] = ll + 1
@@ -584,26 +587,36 @@ class MSDataProcessing(BaseDataProcessing, MSAlgo):
             peak_array[num_peaks_]["ub"] = rl_
             peak_array[num_peaks_]["valid"] = True
             p = 0
-            # print(l_, "\n", ll, rl, "\n", "-"*100)
+            # print("AAA ", l_, "\n", "ll=", ll, "rl=", rl, "\n", "-"*100)
             z = rl + 1
             if z > ub_:
                 z = ub_
             for k in range(ll, z):
                 p += l_[k]
             peak_array[num_peaks_]["pop"] = p
+            # print(" peak_array\n", peak_array)
             if (ll - lb_) > 0:
-                # print("ll - lb_", ll - lb_)
-                get_peaks_(l_, lb_, ll, peak_array_, num_peaks_)
+                # print("A ll - lb_", ll - lb_)
+                get_peaks_(l_, lb_, ll+1, peak_array_)
             if (ub_ - rl - 1) > 0:
-                # print("ub_ - rl", ub_ - rl)
-                get_peaks_(l_, rl, ub_, peak_array_, num_peaks_)
+                # print("B ub_ - rl", ub_ - rl)
+                get_peaks_(l_, rl, ub_, peak_array_)
 
         def two_rules_combination_2(ll, peaks):
             n_of_b = peaks["number_of_blocks"]
-            # print("+"*20, "\n", "+"*20, "\n", peaks, "\n", "+"*20, "\n", "+"*20)
+            # print("ll=", ll)
+            # print("+"*20, "\n", peaks, "\n", "+"*20)
             z = 2
             while z <= n_of_b:
-                if (ll[peaks[z-1]['ub']-2] > ll[peaks[z]['peak']-1]) or (ll[peaks[z-1]['peak']-1] < ll[peaks[z]['lb']+1]):
+                # print("AAA\nA1=", peaks[z - 1]['ub'], "ub-3=: ", ll[peaks[z - 1]['ub'] - 3], "\npeaks[z]['peak']=",
+                #       peaks[z]['peak'],
+                #       "\nll[peaks[z]['peak']-1]=", ll[peaks[z]['peak'] - 1])
+                # print("AAA\nA1 ll[peaks[z-1]['ub']-3]=", ll[peaks[z-1]['ub']-3], " > ", "\nA2 ll[peaks[z]['peak']-1]=",
+                #       ll[peaks[z]['peak']-1])
+                # print("BBB\n B1 ", ll[peaks[z-1]['peak']-1],"\n < B2 ",ll[peaks[z]['lb']+1])
+
+                # if (ll[peaks[z-1]['ub']-3] > ll[peaks[z]['peak']-1]) or (ll[peaks[z-1]['peak']-1] < ll[peaks[z]['lb']+1]):
+                if (ll[peaks[z-1]['ub']-2] > ll[peaks[z]['peak']-1]) or (ll[peaks[z-1]['peak']-1] < ll[peaks[z]['lb']]):
                     peaks[z - 1]["ub"] = peaks[z]["ub"]
                     peaks[z - 1]["pop"] += peaks[z]["pop"] - ll[peaks[z]["lb"]-1]
                     # del peaks[z]
@@ -698,19 +711,25 @@ class MSDataProcessing(BaseDataProcessing, MSAlgo):
             #         peaks = peaks_.copy()
             #         # print("aaa\n", peaks, "\n", "aaa")
 
-        get_peaks_(l, lb, ub, peak_array, num_peaks)
+        get_peaks_(l, lb, ub, peak_array)
+        peak_ = sorted(peak_array.items(), key=lambda x: (x[1]["peak"], x[0]))
+        n=0
+        peak__ = {}
+        for a in peak_:
+            n+=1
+            peak__[n] = a[1]
+        peak_array = peak__.copy()
         peak_array["number_of_blocks"] = len(peak_array)
-        print("-"*10, "\nt_pop=", dic["t_pop"]+"%, ", t_pop)
-        print("A Create Blocks for l=", l, "sum=", sum(l), "\n","-"*100,"\n", peak_array, "\n", "-"*50, "\n Two_rules_combination")
+        print(" t_pop=", dic["t_pop"]+"%, t_pop=", t_pop)
+        print(" A Create Blocks for l=", l, "sum=", sum(l), "\n","-"*100,"\n", peak_array, "\n", "-"*50, "\n Two_rules_combination")
         if peak_array["number_of_blocks"] > 1:
             two_rules_combination_1(l, peak_array, t_pop)
-            print(" After rule 1\n", peak_array, "\n", "-"*50)
+            print(" After rule 1\n", "-"*10, "\n", peak_array, "\n", "-"*50)
         if peak_array["number_of_blocks"] > 1:
-            print("Rule 2")
+            print(" Rule 2\n", "-"*10)
             peak_array = two_rules_combination_2(l, peak_array)
-            print("After rule 2\n", peak_array, "\n")
-
-        print("Final\n", peak_array, "\n\n")
+        print(" Final\n", "-"*10, "\n", peak_array, "\n", "-"*50)
         # print("A"*10)
         result = {"status": "ok", "result": peak_array}
         return result
+

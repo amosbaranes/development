@@ -4269,6 +4269,71 @@ class BaseTrainingAlgo(object):
                 self.second_time_save = self.save_to_file
 
 
+# a = {"112": {"data": {
+#                 "5516": {"data": {"5517": {"wet_day": 1, "raid_day": 1, "wet_night": 1, "raid_night": 1},
+#                                   "5518": {"wet_day": 1, "raid_day": 1, "wet_night": 1, "raid_night": 1},
+#                                   "5519": {"wet_day": 1, "raid_day": 1, "wet_night": 1, "raid_night": 1},
+#                                   "5520": {"wet_day": 1, "raid_day": 1, "wet_night": 1, "raid_night": 1},
+#                                   "5521": {"wet_day": 1, "raid_day": 1, "wet_night": 1, "raid_night": 1}
+#                                   },
+#                          "title": "ALPHA", "wet_day": 0, "raid_day": 0, "wet_night": 0, "raid_night": 0},
+#                 "5522": {"data": {"5523": {"wet_day": 1, "raid_day": 1, "wet_night": 1, "raid_night": 1},
+#                                   "5524": {"wet_day": 1, "raid_day": 1, "wet_night": 1, "raid_night": 1},
+#                                   "5525": {"wet_day": 1, "raid_day": 1, "wet_night": 1, "raid_night": 1},
+#                                   "5532": {"wet_day": 1, "raid_day": 1, "wet_night": 1, "raid_night": 1},
+#                                   "5539": {"wet_day": 1, "raid_day": 1, "wet_night": 1, "raid_night": 1},
+#                                   "5540": {"wet_day": 1, "raid_day": 1, "wet_night": 1, "raid_night": 1},
+#                                   "5541": {"wet_day": 1, "raid_day": 1, "wet_night": 1, "raid_night": 1}
+#                                   },
+#                          "title": "DELTA", "wet_day": 0, "raid_day": 0, "wet_night": 0, "raid_night": 0},
+#                 "5526": {"data": {"5527": {"wet_day": 1, "raid_day": 1, "wet_night": 1, "raid_night": 1},
+#                                   "5528": {"wet_day": 1, "raid_day": 1, "wet_night": 1, "raid_night": 1},
+#                                   "5529": {"wet_day": 1, "raid_day": 1, "wet_night": 1, "raid_night": 1},
+#                                   "5530": {"wet_day": 1, "raid_day": 1, "wet_night": 1, "raid_night": 1},
+#                                   "5531": {"wet_day": 1, "raid_day": 1, "wet_night": 1, "raid_night": 1}
+#                                   },
+#                          "title": "BRAVO", "wet_day": 0, "raid_day": 0, "wet_night": 0, "raid_night": 0},
+#                 "5533": {"data": {"5534": {"wet_day": 1, "raid_day": 1, "wet_night": 1, "raid_night": 1},
+#                                   "5535": {"wet_day": 1, "raid_day": 1, "wet_night": 1, "raid_night": 1},
+#                                   "5536": {"wet_day": 1, "raid_day": 1, "wet_night": 1, "raid_night": 1},
+#                                   "5537": {"wet_day": 1, "raid_day": 1, "wet_night": 1, "raid_night": 1},
+#                                   "5538": {"wet_day": 1, "raid_day": 1, "wet_night": 1, "raid_night": 1}
+#                                   },
+#                          "title": "CHARLIE", "wet_day": 0, "raid_day": 0, "wet_night": 0, "raid_night": 0}
+#                 },
+#              "title": "battalion 112", "wet_day": 0, "raid_day": 0, "wet_night": 0, "raid_night": 0}
+#      }
+#
+# b = {"112": {"data": {
+#                 "5516": {"data": {"5517": {"is_equiped": 1},
+#                                   "5518": {"is_equiped": 1},
+#                                   "5519": {"is_equiped": 1},
+#                                   "5520": {"is_equiped": 1},
+#                                   "5521": {"is_equiped": 1}
+#                                   },
+#                          "is_equiped": 0},
+#                 "5522": {"data": {"5523": {"is_equiped": 1},
+#                                   "5524": {"is_equiped": 1},
+#                                   "5525": {"is_equiped": 1},
+#                                   "5532": {"is_equiped": 1},
+#                                   "5539": {"is_equiped": 1},
+#                                   "5540": {"is_equiped": 1},
+#                                   "5541": {"is_equiped": 1}},
+#                          "is_equiped": 0},
+#                 "5526": {"data": {"5527": {"is_equiped": 1},
+#                                   "5528": {"is_equiped": 1},
+#                                   "5529": {"is_equiped": 1},
+#                                   "5530": {"is_equiped": 1},
+#                                   "5531": {"is_equiped": 1}},
+#                          "is_equiped": 1},
+#                 "5533": {"data": {"5534": {"is_equiped": 1},
+#                                   "5535": {"is_equiped": 1},
+#                                   "5536": {"is_equiped": 1},
+#                                   "5537": {"is_equiped": 1},
+#                                   "5538": {"is_equiped": 1}},
+#                          "is_equiped": 1}}, "is_equiped": 0}
+#      }
+
 class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
     def __init__(self, dic):
         super().__init__(dic)
@@ -4799,7 +4864,7 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
         return result
 
     def set_units_equipment(self, dic):
-        print('90022-2 dic', dic)
+        print('90022-2 dic\n', dic)
         app_ = dic["app"]
         file_path = self.upload_file(dic)["file_path"]
         # print("-"*100, "\n", file_path, "\n", "-"*100)
@@ -4821,22 +4886,21 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
         period_obj = model_periods.objects.get(battalion=battalion_obj, period_number=period_number_)
         def get_list_of_units(ll_, dic_):
             for k in dic_:
+                # print(k, dic_[k]["title"])
                 ll_.append(k)
                 get_list_of_units(ll_, dic_[k]["data"])
             return ll
 
         units_dic = period_obj.structure
-        print(units_dic)
+        # print(units_dic)
+
         ll = []
         get_list_of_units(ll, units_dic)
-
-        print("="*50, "\n", ll, "\n", "="*50)
-
+        # print("="*50, "\n", ll, "\n", "="*50)
         df = pd.read_excel(file_path, sheet_name="Data", header=0)
         print(df, "\n", "-"*100)
-
         columns = df.columns[3:]
-        print("columns\n", columns)
+        # print("columns\n", columns)
 
         try:
             objs = model_inventoryunitfact.objects.filter(unit__in=ll).all()
@@ -4845,76 +4909,107 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
             print(ex)
 
         dic = {}
-        # for index, row in df.iterrows():
-        #     # ------
-        #     battalion_ = str(row["battalion"]).upper()
-        #     battalion_title = "Battalion " + battalion_
-        #     battalion_unit_ = self.get_unit_number(units_dic, battalion_title)
-        #     company_ = str(row["company"]).upper()
-        #     platoon_ = str(row["platoon"]).upper()
-        #
-        #     unit_type_ = 0
-        #     if platoon_ != "NAN":
-        #         company_title = company_
-        #         company_unit_ = self.get_unit_number(units_dic, company_title)
-        #         platoon_title = company_ + " " + platoon_
-        #         platoon_unit_ = self.get_unit_number(units_dic, platoon_title)
-        #         unit_type_ = 3
-        #         if platoon_unit_ not in dic[battalion_unit_][company_unit_]:
-        #             dic[battalion_unit_][company_unit_][platoon_unit_] = {}
-        #         platoon_unit__ = dic[battalion_unit_][company_unit_][platoon_unit_]
-        #         company_unit__ = dic[battalion_unit_][company_unit_]
-        #         unit__ = platoon_unit__
-        #     elif company_ != "NAN":
-        #         company_title = company_
-        #         company_unit_ = self.get_unit_number(units_dic, company_title)
-        #         unit_type_ = 2
-        #         if company_unit_ not in dic[battalion_unit_]:
-        #             dic[battalion_unit_][company_unit_] = {}
-        #         platoon_unit__ = None
-        #         company_unit__ = dic[battalion_unit_][company_unit_]
-        #         unit__ = company_unit__
-        #     else:
-        #         unit_type_ = 1
-        #         if battalion_unit_ not in dic:
-        #             dic[battalion_unit_] = {}
-        #         platoon_unit__ = None
-        #         company_unit__ = None
-        #         unit__ = dic[battalion_unit_]
-        #     batallion_unit__ = dic[battalion_unit_]
-        #
-        #     # print(battalion_, company_, platoon_, "title=", title, unit)
-        #
-        #     for k in columns:
-        #         # print("\n", "-"*20, "\n", k, str(row[k]), "\n", "-"*20)
-        #         try:
-        #             v = str(row[k])
-        #             # print("1","k=", k, " v=", "="+v+"=")
-        #             if v == "" or v == "nan":
-        #                 continue
-        #             # print("2","k=", k, " v=", "="+v+"=")
-        #             kl = k.lower()
-        #             if kl in self.inventory_with_pn:
-        #                 v = 1
-        #                 # print("3","k=", k, " v=", "="+str(v)+"=")
-        #             else:
-        #                 # print("1","k=", k, " v=", "="+str(v)+"=")
-        #                 v = int(float(v))
-        #             # print("4", soldier_obj.userid, "\n", "k=", k, " v=", "="+str(v)+"=","\n", "-"*100)
-        #         except Exception as ex:
-        #             print("9011-77-77-1 Error " + str(ex))
-        #         try:
-        #             inventory_obj = model_inventorys.objects.get(item_name=kl)
-        #         except Exception as ex:
-        #             print("9011-55-1 Error ", k, str(ex))
-        #         try:
-        #             f_obj, is_created = model_inventoryunitfact.objects.get_or_create(inventory=inventory_obj, unit=unit_)
-        #             f_obj.value = v
-        #             f_obj.save()
-        #             # print("f_obj", f_obj)
-        #         except Exception as ex:
-        #             print("9011-55-2 Error \n", k, v, soldier_obj, str(ex))
-        #
+        for index, row in df.iterrows():
+            # ------
+            battalion_ = str(row["battalion"]).upper()
+            battalion_title = "Battalion " + battalion_
+            battalion_unit_number = self.get_unit_number(units_dic, battalion_title)
+            company_ = str(row["company"]).upper()
+            platoon_ = str(row["platoon"]).upper()
+            # print("\nrecord A=\n", battalion_, company_, platoon_)
+            unit_type_ = 0
+            if platoon_ != "NAN":
+                company_title = company_
+                company_unit_number = self.get_unit_number(units_dic, company_title)
+                platoon_title = company_ + " " + platoon_
+                title = platoon_title
+                platoon_unit_number = self.get_unit_number(units_dic, platoon_title)
+                # print(battalion_unit_number, company_title, company_unit_number, platoon_title, platoon_unit_number, dic)
+                unit_type_ = 3
+                if platoon_unit_number not in dic[battalion_unit_number]["data"][company_unit_number]["data"]:
+                    dic[battalion_unit_number]["data"][company_unit_number]["data"][platoon_unit_number] = {}
+                platoon_unit__ = dic[battalion_unit_number]["data"][company_unit_number]["data"][platoon_unit_number]
+                company_unit__ = dic[battalion_unit_number]["data"][company_unit_number]
+                unit__ = platoon_unit__
+                unit_number = platoon_unit_number
+            elif company_ != "NAN":
+                company_title = company_
+                title = company_title
+                company_unit_number = self.get_unit_number(units_dic, company_title)
+                unit_type_ = 2
+                if company_unit_number not in dic[battalion_unit_number]["data"]:
+                    dic[battalion_unit_number]["data"][company_unit_number] = {"data":{}}
+                platoon_unit__ = None
+                company_unit__ = dic[battalion_unit_number]["data"][company_unit_number]
+                unit__ = company_unit__
+                unit_number = company_unit_number
+            else:
+                unit_type_ = 1
+                # print(battalion_unit_number)
+                if battalion_unit_number not in dic:
+                    dic[battalion_unit_number] = {"data":{}}
+                platoon_unit__ = None
+                company_unit__ = None
+                unit__ = dic[battalion_unit_number]
+                unit_number = battalion_unit_number
+                title = battalion_title
+            battalion_unit__ = dic[battalion_unit_number]
+
+            # print("\nrecord B=\nbattalion_unit__\n", battalion_unit__, "\ncompany_unit__\n", company_unit__, "\nplatoon_unit__\n", platoon_unit__, "\nunit__=\n", unit__)
+
+            is_equiped = 1
+            for k in columns:
+                # print("\n", "-"*20, "\n", k, str(row[k]), "\n", "-"*20)
+                try:
+                    v = str(row[k])
+                    # print("1","k=", k, " v=", "="+v+"=")
+                    if v == "" or v == "nan":
+                        continue
+                    # print("2","k=", k, " v=", "="+v+"=")
+                    kl = k.lower()
+                    if kl in self.inventory_with_pn:
+                        v = 1
+                        # print("3","k=", k, " v=", "="+str(v)+"=")
+                    else:
+                        # print("1","k=", k, " v=", "="+str(v)+"=")
+                        v = int(float(v))
+                    # print("4\n", "k=", k, " v=", "="+str(v)+"=","\n", "-"*100)
+                except Exception as ex:
+                    print("9011-77-77-1 Error " + str(ex))
+                try:
+                    inventory_obj = model_inventorys.objects.get(item_name=kl)
+                except Exception as ex:
+                    print("9011-55-1 Error ", k, str(ex))
+                try:
+                    f_obj, is_created = model_inventoryunitfact.objects.get_or_create(inventory=inventory_obj,
+                                                                                      unit=unit_number)
+                    f_obj.value = v
+                    f_obj.save()
+                    unit_critical = int(inventory_obj.unit_critical)
+                    q_ = inventory_obj.qty_per_soldier
+                    # print("AA == ", kl, "v=", v, "q_=", q_, "unit_critical=", unit_critical, "unit_type_=", unit_type_)
+                    if unit_critical == 0 or unit_critical != unit_type_:
+                        continue
+                    if kl == "drone_t1" and title.lower()=="delta":
+                        q_ -= 1
+                    if kl == "drone_t2" and unit_type_ == 2 and title.lower()=="delta":
+                        q_ = 0
+                    elif kl == "drone_t2" and unit_type_ == 1:
+                        q_ = 1
+                    if v < q_:
+                        is_equiped = 0
+                except Exception as ex:
+                    print("9011-55-2 Error \n", k, v, str(ex))
+            unit__["is_equiped"] = is_equiped
+            print(title, unit_type_, is_equiped)
+
+        general_data_model = apps.get_model(app_label="core", model_name="generaldata")
+        group_ = s[0] + "_" + str(s[1])
+        data_name_ = "unit_equipment"
+        obj, is_created = general_data_model.objects.get_or_create(app=app_, group=group_, data_name=data_name_)
+        obj.data_json = dic
+        obj.save()
+
         #     try:
         #         is_equiped = 1
         #         inventory_objs = model_inventorys.objects.all()
@@ -4944,8 +5039,8 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
         #             unit__["is_equiped"] = is_equiped
         #
         #
-        #     except Exception as ex:
-        #         print("9011-55-2 Error \n", k, v, soldier_obj, str(ex))
+            # except Exception as ex:
+            #     print("9011-55-2 Error \n", k, v, soldier_obj, str(ex))
         #
         #
         #
@@ -5000,22 +5095,10 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
         #     obj.data_json = dic
         #     obj.save()
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+        print(group_, "\n", data_name_, "\n", dic)
 
         result = {"status": "ok"}
-        print(result)
+        # print(result)
         return result
 
     def upload_inventory_list(self, dic):
