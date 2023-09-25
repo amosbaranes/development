@@ -5406,7 +5406,7 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
             except Exception as ex:
                 print("9011-77-77-10 Error \n", k, v, soldier_obj, str(ex))
             try:
-                inventory_obj = model_inventorys.objects.get(item_name=kl)
+                inventory_obj = model_inventorys.objects.get(item_name=k)
             except Exception as ex:
                 print("9011-55-1 Error \n", k, v, soldier_obj, str(ex))
             try:
