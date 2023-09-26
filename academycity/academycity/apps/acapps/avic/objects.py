@@ -55,7 +55,12 @@ class AvicDataProcessing(BaseDataProcessing, BasePotentialAlgo, AvicAlgo):
             cc = "Yemen"
         if cc.lower().find("papua")>-1:
             cc = "Papua New Guinea"
-
+        if cc == "Ethiopia  and  Eritrea":
+            cc = "Ethiopia"
+        if cc == "Ethiopia and Eritrea":
+            cc = "Ethiopia"
+        if cc == "Eritrea and Ethiopia":
+            cc = "Ethiopia"
         if cc == "Viet Nam":
             cc = "Vietnam"
         elif cc == "Guinea-bissau":
@@ -242,7 +247,7 @@ class AvicDataProcessing(BaseDataProcessing, BasePotentialAlgo, AvicAlgo):
 
     def remove_country(self, cc):
         c = -1
-        if cc in ["Ethiopia  and  Eritrea", "Ethiopia and Eritrea", "Eritrea and Ethiopia", "Cape Verde","Luxembourg",
+        if cc in ["Cape Verde","Luxembourg",
                   "Serbia/Montenegro/Kosovo", "Bosnia and Herzegovina", "Serbia and Montenegro", "Central Arab Rep."]:
             c = 1
         return c

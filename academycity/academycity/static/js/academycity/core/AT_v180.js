@@ -2070,15 +2070,15 @@ acBasicCreator.prototype.set_board_data = function(ll=[])
             h4_.setAttribute("style", "color:blue; margin-top:5px;");
             h4_.innerHTML= this.fields_kpis_[j-1];
 
-            var reference_=kpi[nl_][type_+"_grade"];
-            var p_ = document.createElement("p");e_div.appendChild(p_);
-            p_.setAttribute("style", "position:absolute;left:30px;top:50px;color:green; font-size:35px")
-            p_.innerHTML = reference_
-
             var v_ = kpi[nl_][type_+"_ref1"];
             var value = document.createElement("p");e_div.appendChild(value);
             value.setAttribute("style", "position:absolute;left:30px;top:95px;color:blue; font-size:35px")
             value.innerHTML = v_
+
+            var reference_=kpi[nl_][type_+"_grade"];
+            var p_ = document.createElement("p");e_div.appendChild(p_);
+            p_.setAttribute("style", "position:absolute;left:30px;top:50px;color:green; font-size:35px")
+            p_.innerHTML = 1*v_ - 1*reference_
 
             //alert(nl_+"\n\nHH kpi[nl_]\n\n"+type_+"_ref1"+"\n\n"+v_+"\n\n"+JSON.stringify(kpi[nl_]));
             //alert(v_+"\n"+reference_)
@@ -2107,7 +2107,10 @@ acBasicCreator.prototype.set_board_data = function(ll=[])
         for(var j in this.kpis_cols)
         {
          var k_=this.kpis_cols[j]
-         labels_.push(this.fields_kpis_[j])
+
+         var bb_ = this.fields_kpis_[j].replace('<br>', ' ')
+
+         labels_.push(bb_)
          var nn__=1*dic[z]["kpi"][k_][type_+"_grade"]
          if((dic[z]["kpi"][k_][type_+"_grade"]+"")=="NaN"){nn__=0}
 

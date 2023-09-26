@@ -5275,7 +5275,7 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
                                        battalion_obj, model_soldierqualificationfact)
 
         period_obj.structure = units_dic
-        period_obj.period_name = "Battalion: " + str(battalion_id) + " Period: " + str(period_number)
+        period_obj.period_name = "Battalion: " + str(battalion_number_) + " Period: " + str(period_number)
         period_obj.n_limit = n_limit
         period_obj.save()
         # -----
