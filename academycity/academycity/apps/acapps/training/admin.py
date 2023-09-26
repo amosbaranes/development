@@ -87,6 +87,7 @@ class SoldiersForEventsAdmin(admin.ModelAdmin):
 @admin.register(GradesForEvents)
 class SoldiersForEventsAdmin(admin.ModelAdmin):
     list_display = ('id', 'testevent', 'soldiersforevent', 'testsforevent', 'value')
+    list_filter = ['testevent', 'soldiersforevent', 'testsforevent']
 
 #
 @admin.register(Inventorys)

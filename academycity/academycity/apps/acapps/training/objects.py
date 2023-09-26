@@ -4758,6 +4758,7 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
         period_number_ = int(s[1])
         # print(battalion_number_, period_number_)
         #
+        model_soldiers_for_events = apps.get_model(app_label=app_, model_name="soldiersforevents")
         model_periods = apps.get_model(app_label=app_, model_name="periods")
         model_battalions = apps.get_model(app_label=app_, model_name="battalions")
         model_unit_soldiers = apps.get_model(app_label=app_, model_name="unitsoldiers")
@@ -4836,19 +4837,25 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
             if status == -1:
                 try:
                     print("the following soldier was deleted")
-                    print("-"*100, "\n", status, soldier_obj, "Delete Soldier", "\n", "-"*100)
+                    print("-"*100, "\n", status, "\n", soldier_obj.user_id, "\n", soldier_obj, "Delete Soldier", "\n", "-"*100)
+
+                    objs = model_soldiers_for_events.objects.filter(soldier_number=soldier_obj.user_id).all()
+                    count = objs.delete()
+                    print("count", count)
                     soldier_obj.delete()
+                    print("count", "\n", "+1"*100)
                 except Exception as ex:
                     pass
                 continue
             if status == 1:
                 print("the following soldier was replaced by another soldier")
-                print("soldier_obj", soldier_obj, "\n", "-"*100)
+                print("\n", status, "\n", soldier_obj.user_id, "\nsoldier_obj", soldier_obj, "\n", "-"*100)
                 try:
                     # print("soldier_obj.user_id=", soldier_obj.user_id)
                     objs = model_soldiers_for_events.objects.filter(soldier_number=soldier_obj.user_id).all()
                     count = objs.delete()
-                    # print(count)
+                    print("count", count)
+                    print("count", "\n", "+2"*100)
                 except Exception as ex:
                     pass
 
@@ -5221,6 +5228,8 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
                 print("the following soldier was deleted")
                 print("-"*100, "\n", status, dshn, "Delete Soldier", "\n", "-"*100)
                 try:
+                    objs = model_soldiers_for_events.objects.filter(soldier_number=soldier_obj.user_id).all()
+                    count = objs.delete()
                     soldier_obj.delete()
                 except Exception as ex:
                     pass

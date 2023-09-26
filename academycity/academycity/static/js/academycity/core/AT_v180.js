@@ -4864,9 +4864,9 @@ acGroupCreator.prototype.set_data = function(record_id=null, ll=null)
       var n=1*data["value"][j];
       var s_id=getEBI(s_id_);
       //alert(s_id_)
-      if(s_id==null){
-         alert("Error "+s_id_);
-         continue}
+
+      if(s_id==null){alert("Error_22-22: "+s_id_);continue}
+
       //alert(s_id.outerHTML)
          if(n==1){s_id.checked=true}else{s_id.checked=false};
 
