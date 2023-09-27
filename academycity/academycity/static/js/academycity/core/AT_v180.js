@@ -2221,7 +2221,8 @@ acBasicCreator.prototype.set_board_data = function(ll=[])
 
        for(var i in this.fields_skills)
        {
-        var nl_=this.skills_cols[i];//alert(nl_);
+        var nl_=this.skills_cols[i];
+        //alert(nl_);
 
         var grade=this.get_grade(skill_id=nl_, unit_id=s_);
         var color="white";var background_color = "green"; var img_="&#128512;"
@@ -2362,6 +2363,11 @@ acBasicCreator.prototype.set_obj_structure = function(ll_)
   try{
        var fun=function(data, ll){
         //alert("data\n"+JSON.stringify(data));
+
+        //for(j in data){
+        // alert(j+"\n"+JSON.stringify(data[j]));
+        //}
+
         var grades=ll[0];var f=ll[1]; var nlimit=ll[2]; var ll_=ll[3];
         try{if(Object.keys(data).length==0 || data["id"].length==0){alert("There is no data for this battlion.");return;}} catch (er) {}
         //alert("90446-77 data \n"+JSON.stringify(data["soldier"]))
@@ -2373,7 +2379,6 @@ acBasicCreator.prototype.set_obj_structure = function(ll_)
          {
           var sid_=1*atm.entity_dic["id"][i];      //alert(sid_)
           if(!(sid_ in grades)){grades[sid_]=[0,0,0,0,0,0,0]}
-
           var idx=-1;
           try{var idx=data["soldier"].indexOf(sid_)}catch(er){continue}
           while(idx>-1){grades[sid_][data["skill"][idx]]=data["value"][idx];
@@ -2400,11 +2405,11 @@ acBasicCreator.prototype.set_obj_structure = function(ll_)
           }
         //alert(data["pkf_name"])
       }
-      var dic__={"model":table_,"number_of_rows":1000000,"filters":{},
-          "fields":data_fields_, "order_by":{"field":"soldier", "direction":"ascending"}
+       var dic__={"model":table_,"number_of_rows":1000000,"filters":{},
+           "fields":data_fields_, "order_by":{"field":"soldier", "direction":"ascending"}
       }
       dic__["filters"]["id"]={"value":atm.general.current_battalion, "foreign_table":"soldier__battalion"}
-      //alert("90449-99-1: "+JSON.stringify(dic__));
+      //alert("90449-99-13: "+JSON.stringify(dic__));
       this.parent.atm.get_data(call_back_fun=fun, dic__, [atm.grades,f, atm.nlimit, ll_])
   } catch(er){alert("1155-515: "+er)}
 }
@@ -5781,7 +5786,7 @@ acSearchTableCreator.prototype.get_data = function(data_table_name=null,parent_m
              "number_of_rows":this.number_of_rows, "multiple_select_fields": this.multiple_select_fields,
              "filters":{}, "order_by":this.order_by, "fields":dic__
              }
-  //alert("90449-99-1: "+JSON.stringify(dic__));
+  //alert("90449-99-11: "+JSON.stringify(dic__));
 
    dic__["filters"][this.filter_field]={"value":this.filter_value, "foreign_table":this.filter_field_foreign_table}
    // I do not have to put the next line it but good readability

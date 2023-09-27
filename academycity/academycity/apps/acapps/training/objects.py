@@ -5730,7 +5730,7 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
 
     # Update Qualification
     def update_qualification_fact(self, dic):
-        # print('90033-1 dic', dic)
+        print('90033-1 dic', dic)
         app_ = dic["app"]
         data = dic["data"]
         skill = data["skill"]
