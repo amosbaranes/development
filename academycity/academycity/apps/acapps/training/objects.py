@@ -5268,9 +5268,7 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
             data_p = data_c[number_p]["data"]
             #
             self.set_basic_soldier_data(row, soldier_obj, battalion_obj, model_soldierqualificationfact)
-
             self.set_unit_soldier(soldier_obj, units_dic, platoon_name_, period_obj, model_unit_soldiers)
-
             self.set_soldier_inventory(row, columns, soldier_obj, model_inventorys, model_inventoryfact,
                                        battalion_obj, model_soldierqualificationfact)
 
@@ -5314,15 +5312,21 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
         #
         rank = str(row["rank"]).strip()
         function = str(row["function"]).strip()
-        profession = int(row["profession"])
-        professional_qualified = int(row["professional_qualified"])
+        v = str(row["profession"])
+        if v == "nan":
+            v = 1
+        profession = int(float(v))
+        v = str(row["professional_qualified"])
+        if v == "nan":
+            v = 0
+        professional_qualified = int(float(v))
+
         try:
             soldier_obj.first_name = first_name
             soldier_obj.last_name = last_name
             soldier_obj.save()
         except Exception as ex:
             print("Error 200-200-12 basic Soldier: ", ex)
-
         try:
             soldier_obj.rank = rank
             soldier_obj.save()

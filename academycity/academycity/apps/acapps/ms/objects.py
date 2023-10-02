@@ -14,7 +14,7 @@ from openpyxl.utils.dataframe import dataframe_to_rows
 import csv
 import pickle
 from concurrent.futures import ThreadPoolExecutor as T
-from statistics import mean
+from statistics import mean, median
 import copy
 
 from openpyxl import Workbook, load_workbook
@@ -323,7 +323,7 @@ class MSDataProcessing(BaseDataProcessing, MSAlgo):
 
     #
     def upload_personal_info_to_db(self, dic):
-        # print("90121-1: \n", dic, "\n", "="*50)
+        print("90121-1: \n", dic, "\n", "="*50)
         app_ = dic["app"]
         sheet_name_ = dic["sheet_name"]
         file_path = self.upload_file(dic)["file_path"]
@@ -354,12 +354,14 @@ class MSDataProcessing(BaseDataProcessing, MSAlgo):
                     row["gender"] = 1
                 # print(row["gender"])
                 model_person_dim_ = model_person_dim.objects.get(person_code=row["ID"])
+                print("="*100,"\n",row["ID"])
                 model_person_dim_.gender = row["gender"]
                 model_person_dim_.age_at_cdna = row["age_at_cDNA"]
                 model_person_dim_.set_num = row["set_num"]
                 model_person_dim_.save()
             except Exception as ex:
-                print(ex)
+                pass
+                # print(row["ID"], ex)
         result = {"status": "ok"}
         return result
 
@@ -482,8 +484,16 @@ class MSDataProcessing(BaseDataProcessing, MSAlgo):
         # print("90966-66: get_peaks\n", dic, "\n", "=" * 50)
         app_ = dic["app"]
         t_pop = dic["t_pop"]
+        model_person_dim = apps.get_model(app_label=app_, model_name="persondim")
+        qsp = model_person_dim.objects.all()
         model_gene_dim = apps.get_model(app_label=app_, model_name="genedim")
         objs = model_gene_dim.objects.all()
+
+
+        #
+        # result = {"status": "ok", "result": {"a": "a"}}
+        # return result
+
 
         def take_key(elem):
             return elem[2]
@@ -500,10 +510,16 @@ class MSDataProcessing(BaseDataProcessing, MSAlgo):
             ll.sort(key=take_key)
             ll_ = [j[1] for j in ll]
             n__ += 1
-            #"201247_at","206484_s_at", "204786_s_at",
-            if o.gene_code in ["211444_at"]:
+            # "201247_at","206484_s_at", "204786_s_at",
+            # "211444_at", "200020_at","200646_s_at","200733_s_at","200737_at","200898_s_at"
+            #                 ,"200959_at","200968_s_at","200986_at","201031_s_at","201034_at","201036_s_at","201222_s_at"
+            #                 ,"201386_s_at","201525_at","203614_at"
+            if o.gene_code in ["201247_at","206484_s_at", "204786_s_at",
+                               "211444_at", "200020_at","200646_s_at","200733_s_at","200737_at","200898_s_at",
+                               "200959_at","200968_s_at","200986_at","201031_s_at","201034_at","201036_s_at",
+                               "201222_s_at","201386_s_at","201525_at","203614_at"]:
                 print("\n",o.gene_code)
-                r = self.get_peaks({"cl_all":ll_, "t_pop": t_pop})["result"]
+                r = self.get_peaks({"cl_all":ll_, "t_pop": t_pop, "clusters": o.clusters})["result"]
                 o.reduced_clusters = r
                 o.save()
 
@@ -513,6 +529,7 @@ class MSDataProcessing(BaseDataProcessing, MSAlgo):
     def get_peaks(self, dic):
         # print(" 90955-50-1: get_peaks\n", dic, "\n", "=" * 50)
         l = dic["cl_all"]
+        clusters_ = dic["clusters"]
         t_pop = int(dic["t_pop"])/100
         # print(l, "\n", t_pop, "\n", sum(l))
         t_pop = int(t_pop * sum(l))
@@ -711,6 +728,29 @@ class MSDataProcessing(BaseDataProcessing, MSAlgo):
             #         peaks = peaks_.copy()
             #         # print("aaa\n", peaks, "\n", "aaa")
 
+        def get_block_median(total_sub_pop,  pop_05, hgr, hgl):
+            # print("in:", total_sub_pop)
+            if hgr + 1 <= ub_ and hgl - 1 >= lb_:
+                if l[hgr + 1] > l[hgl - 1]:
+                    total_sub_pop += l[hgr + 1]
+                    hgr += 1
+                else:
+                    total_sub_pop += l[hgl - 1]
+                    hgl -= 1
+            elif hgr + 1 <= ub_:
+                total_sub_pop += l[hgr + 1]
+                hgr += 1
+            elif hgl - 1 >= lb_:
+                total_sub_pop += l[hgl - 1]
+                hgl -= 1
+
+            if total_sub_pop < pop_05:
+                p, hgl, hgr = get_block_median(total_sub_pop, pop_05, hgr, hgl)
+                return p, hgl, hgr
+
+            # print("return: ", total_sub_pop)
+            return total_sub_pop, hgl, hgr
+
         get_peaks_(l, lb, ub, peak_array)
         peak_ = sorted(peak_array.items(), key=lambda x: (x[1]["peak"], x[0]))
         n=0
@@ -728,8 +768,37 @@ class MSDataProcessing(BaseDataProcessing, MSAlgo):
         if peak_array["number_of_blocks"] > 1:
             print(" Rule 2\n", "-"*10)
             peak_array = two_rules_combination_2(l, peak_array)
-        print(" Final\n", "-"*10, "\n", peak_array, "\n", "-"*50)
+        print(" Final Blocks\n", "-"*10, "\n", peak_array, "\n")
         # print("A"*10)
+        for b in peak_array:
+            if b == "number_of_blocks":
+                continue
+            lb_ = peak_array[b]["lb"] - 1
+            ub_ = peak_array[b]["ub"] - 1
+            print("'", "="*100, "\n", l, "\n", b, peak_array[b], lb_, ub_, peak_array[b]["pop"], "\n", "="*50)
+
+            hg = get_global_high(l, peak_array[b]["lb"]-1, peak_array[b]["ub"]-1)
+            print("="*50, "\nb=", b, "\n", peak_array[b], "\nhg=", hg)
+            pop_05_ = 0.5*peak_array[b]["pop"]
+            total_sub_pop_ = l[hg]
+            # print(total_sub_pop_)
+
+            hgl_ = hg
+            hgr_ = hg
+            if total_sub_pop_ < pop_05_:
+                p, hgl_, hgr_ = get_block_median(total_sub_pop_, pop_05_, hgl_, hgr_)
+            print(p, hgl_, hgr_)
+            all_entities_values = []
+
+            hgl_ += 1
+            hgr_ += 1
+            for c_ in clusters_:
+                if hgl_ <= int(c_) <= hgr_:
+                    all_entities_values += clusters_[c_]["entity_value"]
+                    # print(c_, clusters_[c_]["entity_value"],"\n")
+            print(all_entities_values, median(all_entities_values))
+            print(" Compact Blocks:\n block:", b, " pop=", p, " left=", hgl_, " right=", hgr_, "Median=", median(all_entities_values))
+
         result = {"status": "ok", "result": peak_array}
         return result
 

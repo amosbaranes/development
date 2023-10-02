@@ -307,6 +307,8 @@ class BasePotentialAlgo(object):
         model_output_fact = apps.get_model(app_label=app_, model_name=output_fact_model_name_)
         model_relimp_fact = apps.get_model(app_label=app_, model_name=relimp_fact_model_name_)
 
+        # Add min_max algo
+        # ----------------
         # try:
         #     self.is_calculate_min_max = eval(dic["is_calculate_min_max"])
         #     # print(self.is_calculate_min_max)
@@ -322,6 +324,7 @@ class BasePotentialAlgo(object):
             # print("population\nmin=", tot_pop_min, "max=", tot_pop_max)
         except Exception as ex:
             pass
+
         # else:
         #     self.calculate_min_max_cuts(dic)
         model_measure_group = apps.get_model(app_label=app_, model_name=measure_group_model_name_)

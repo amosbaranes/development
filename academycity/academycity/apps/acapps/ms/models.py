@@ -4,6 +4,11 @@ from academycity.apps.core.sql import TruncateTableMixin
 
 
 class GeneDim(TruncateTableMixin, models.Model):
+    class Meta:
+        verbose_name = 'gendim'
+        verbose_name_plural = 'gendims'
+        ordering = ['gene_code']
+
     gene_code = models.CharField(max_length=40, default='', blank=True, null=True)
     clusters = models.JSONField(null=True)
     reduced_clusters = models.JSONField(null=True)

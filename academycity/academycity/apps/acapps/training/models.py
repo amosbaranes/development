@@ -5,6 +5,14 @@ from django.utils import timezone
 from academycity.apps.core.sql import TruncateTableMixin
 
 
+# class Admin(TruncateTableMixin, models.Model):
+#     class Meta:
+#         verbose_name = _('Admin')
+#         verbose_name_plural = _('Admins')
+#     #
+#     AAAAAAAAA = models.TextField(blank=True, null=True)
+#     #
+
 class TrainingWeb(TruncateTableMixin, models.Model):
     program_name = models.CharField(max_length=100, default='', blank=True, null=True)
     start_date = models.DateField(blank=True, null=True)
