@@ -5126,16 +5126,21 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
 
         for index, row in df.iterrows():
             # print(index)
+            # try:
             category_obj, is_created = model_inventorycategorys.objects.get_or_create(category_name=str(row["category_name"]))
-            inventory_obj, is_created = model_inventorys.objects.get_or_create(item_name=str(row["item_name"]))
+            inventory_obj, is_created = model_inventorys.objects.get_or_create(pn=str(row["pn"]))
+            # inventory_obj, is_created = model_inventorys.objects.get_or_create(item_name=str(row["item_name"]))
             inventory_obj.inventorycategory = category_obj
             inventory_obj.item_number = int(row["item_number"])
-            inventory_obj.pn = str(row["pn"])
+            inventory_obj.item_name = str(row["item_name"])
+            # inventory_obj.pn = str(row["pn"])
             inventory_obj.description = str(row["description"])
             inventory_obj.critical = str(row["critical"])
             inventory_obj.unit_critical = str(row["unit_critical"])
             inventory_obj.qty_per_soldier = int(row["qty_per_soldier"])
             inventory_obj.save()
+            # except Exception as ex:
+            #     print("Error 20-20-98", str(row["pn"]), str(ex))
         # -----
         # print("\n", "Done")
         # -----

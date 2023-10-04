@@ -198,7 +198,7 @@ class Inventorys(TruncateTableMixin, models.Model):
                                           related_name='inventory_category_inventorys')
     pn = models.CharField(max_length=50, default='', blank=True, null=True)
     item_number = models.SmallIntegerField(default=0, blank=True, null=True)
-    item_name = models.CharField(max_length=50, default='', blank=True, null=True)
+    item_name = models.CharField(max_length=100, default='', blank=True, null=True)
     description = models.CharField(max_length=128, default='', blank=True, null=True)
     critical = models.CharField(max_length=32, default='1', blank=True, null=True)
     unit_critical = models.CharField(max_length=32, default='1', blank=True, null=True)

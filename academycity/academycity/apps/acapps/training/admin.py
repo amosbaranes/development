@@ -93,6 +93,7 @@ class SoldiersForEventsAdmin(admin.ModelAdmin):
 @admin.register(Inventorys)
 class InventorysAdmin(admin.ModelAdmin):
     list_display = ('id', 'inventorycategory', 'pn', 'item_name', 'description')
+    list_filter = ['pn', 'item_name']
 
 @admin.register(InventoryCategorys)
 class InventoryCategorysAdmin(admin.ModelAdmin):
