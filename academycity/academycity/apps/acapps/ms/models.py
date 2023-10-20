@@ -37,3 +37,13 @@ class Fact(TruncateTableMixin, models.Model):
     def __str__(self):
         return str(self.gene_dim) + " - " + str(self.person_dim) + ": " + str(self.amount)
 
+
+class FactNormalized(TruncateTableMixin, models.Model):
+    gene_dim = models.ForeignKey(GeneDim, on_delete=models.CASCADE, default=1,
+                                 related_name='gene_dim_fact_normalized')
+    person_dim = models.ForeignKey(PersonDim, on_delete=models.CASCADE, default=1,
+                                   related_name='person_dim_fact_normalized')
+    amount = models.DecimalField(max_digits=10, decimal_places=4, default=0, blank=True, null=True)
+
+    def __str__(self):
+        return str(self.gene_dim) + " - " + str(self.person_dim) + ": " + str(self.amount)

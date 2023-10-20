@@ -1,7 +1,7 @@
 from __future__ import unicode_literals
 from django.contrib import admin
 from django.utils.translation import ugettext_lazy as _
-from .models import (PersonDim, GeneDim, Fact)
+from .models import (PersonDim, GeneDim, Fact, FactNormalized)
 
 
 @admin.register(PersonDim)
@@ -17,5 +17,9 @@ class GeneDimAdmin(admin.ModelAdmin):
 
 @admin.register(Fact)
 class FactAdmin(admin.ModelAdmin):
+    list_display = ('id', 'gene_dim', 'person_dim', 'amount')
+
+@admin.register(FactNormalized)
+class FactNormalizedAdmin(admin.ModelAdmin):
     list_display = ('id', 'gene_dim', 'person_dim', 'amount')
 
