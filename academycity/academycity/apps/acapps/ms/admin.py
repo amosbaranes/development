@@ -18,8 +18,11 @@ class GeneDimAdmin(admin.ModelAdmin):
 @admin.register(Fact)
 class FactAdmin(admin.ModelAdmin):
     list_display = ('id', 'gene_dim', 'person_dim', 'amount')
+    list_filter = ['gene_dim', 'person_dim']
+
 
 @admin.register(FactNormalized)
 class FactNormalizedAdmin(admin.ModelAdmin):
     list_display = ('id', 'gene_dim', 'person_dim', 'amount')
+    list_filter = ['gene_dim', 'person_dim']
 

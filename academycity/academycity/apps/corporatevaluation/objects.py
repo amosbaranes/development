@@ -2033,9 +2033,31 @@ class TF(object):
     def __init__(self):
         pass
 
-    def mnist(self):
+    def mnist(self, dic):
+        print(dic)
         from keras.datasets import mnist
-        (train_images, train_labels), (test_images, test_labels) = mnist.load_data()
+
+        # load dataset
+        (x_train, y_train), (x_test, y_test) = mnist.load_data()
+
+        unique, counts = np.unique(y_train, return_counts=True)
+        print("Train labels: ", dict(zip(unique, counts)))
+
+        # a = np.arange(15).reshape(3, 5)
+        # print("A\n", a, "\n")
+        # a = np.arange(15).reshape(1, 3, 5)
+        # print("B\n", a, "\n")
+        # a = np.arange(15).reshape(1, 3, 5, 1)
+        # print("C\n", a, "\n")
+        # a = np.arange(30).reshape(1, 3, 5, 2)
+        # print("D\n", a, "\n")
+        # a = np.arange(30).reshape(2, 3, 5, 1)
+        # print("E\n", a, "\n")
+        # a = np.arange(60).reshape(2, 3, 5, 2)
+        # print("F\n", a, "\n")
+
+        result = {"status": "ok"}
+        return result
 
 
 class AcademyCityXBRL(object):

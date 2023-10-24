@@ -567,11 +567,14 @@ def get_data_link(request):
             ("Error 90855-23 "+str(ex))
 
         # print("9030-221")
+        # print(order_by)
+        # print("9030-221-1")
 
         if order_by != "":
             s += '.order_by("'+order_by["field"]+'")'
             if order_by["direction"] == "descending":
                 s += '.reverse()'
+        # print("9030-222")
         if multiple_select_fields:
             ss__ = s+'.all()[:number_of_rows_]'
             # print('ss__ for data__')
@@ -579,16 +582,16 @@ def get_data_link(request):
             # print('ss__')
             data__ = eval(ss__)
 
-        # print("9030-222")
+        # print("9030-223")
         s += '.all()[:number_of_rows_].values('+fields_str+')'
 
-        print("="*100, '\ns111-1 for d_data\n', "\ns=", number_of_rows_, s, "=\n", "="*100, "\n")
+        # print("="*100, '\ns111-1 for d_data\n', "\ns=", number_of_rows_, s, "=\n", "="*100, "\n")
 
         log_debug("get_data_link 99999: s="+s)
         d_data = eval(s)
         # print("d_data\n", d_data)
     except Exception as ex:
-        print("3030-1 core error 300 "+str(ex))
+        print("3030-1 core views error 300 "+str(ex))
         # pass
     dic = {}
     if multiple_select_fields:

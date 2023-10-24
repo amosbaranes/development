@@ -420,9 +420,9 @@ class MSDataProcessing(BaseDataProcessing, MSAlgo):
         qsg = model_gene_dim.objects.all()
         qsf = model_fact.objects.all()
         #
-        df_g = pd.DataFrame(list(qsg.values('id', 'gene_code')))
-        df_g.columns=['id', 'gene_code']
-        df_g = df_g.set_index("id")
+        # df_g = pd.DataFrame(list(qsg.values('id', 'gene_code')))
+        # df_g.columns=['id', 'gene_code']
+        # df_g = df_g.set_index("id")
         # print(df_g)
         #
         df_f = pd.DataFrame(list(qsf.values('gene_dim', 'person_dim', 'amount')))
@@ -431,36 +431,39 @@ class MSDataProcessing(BaseDataProcessing, MSAlgo):
         df = df_f.pivot_table(values='amount', index='gene', columns=['person'], aggfunc='sum')
         # print(df)
 
-        df_s = pd.DataFrame(list(qsp.values('person_code', 'set_num')))
-        df_s.columns=['person_code', 'set_num']
-        df_s = df_s.dropna(axis=0).reset_index()
-        # print(df_s)
+        df_s = pd.DataFrame(list(qsp.values('id', 'person_code', 'set_num')))
+        df_s.columns=['index', 'person_code', 'set_num']
+        df_s = df_s.dropna(axis=0) # .reset_index()
+        # print("df_s\n", df_s)
+
         llb = df_s['set_num'].unique().tolist()
         # print("llb", llb)
 
         dic_sets = {}
         for k in llb:
-            # print("k=", k)
             df_sk = df_s[df_s['set_num']==k]
-            # print(df_sk)
             llk = df_sk['index'].tolist()
-            # print("llk", llk)
-            dfllk = df.iloc[:, llk] # df[llk]
-            # print(dfllk)
-            dfllk = dfllk.apply(lambda x: x.sort_values().values, axis=1, result_type='broadcast')
+            dfllk = df.loc[:, llk] #
+            # print("A dfllk=\n", dfllk)# df[llk]
+
+            dic_sets[k] = dfllk
+            # dfllk = dfllk.apply(lambda x: x.sort_values().values, axis=1, result_type='broadcast')
             # print("dfllk", dfllk)
             # print(dfllk.shape)
             dfllk["min"] = dfllk.min(axis=1)
             dfllk["max"] = dfllk.max(axis=1)
-            # print(dfllk)
+            # if k == 32:
+            #     print("set k=", k, "\ndf_sk=\n", df_sk)
+            #     print("llk=\n", llk)
+            #     print(dfllk)
             dic_sets[k] = dfllk
         #
         def take_key(elem):
             return elem[2]
 
         n__ = 0
+
         for o in qsg:
-            # print("="*50, "\n", o.clusters, "\n", "-"*50)
             n__ += 1
             # "201247_at","206484_s_at", "204786_s_at",
             # "211444_at", "200020_at","200646_s_at","200733_s_at","200737_at","200898_s_at"
@@ -468,10 +471,12 @@ class MSDataProcessing(BaseDataProcessing, MSAlgo):
             #                 ,
             #                 "201386_s_at","201525_at","203614_at"
 
-            # if n__ not in [2]:
+            # if n__ not in [1]:
             #     continue
 
             print("-"*50, "\n gene_code=",o.gene_code, " database id=", o.id, "\n", "-"*50)
+            # print("="*50, "\n", o.clusters, "\n", "-"*50)
+
             ll = []
             for c in o.clusters:
                 ce = o.clusters[c]["entity"]
@@ -487,13 +492,19 @@ class MSDataProcessing(BaseDataProcessing, MSAlgo):
                 # t = dic_sets[k].copy()
                 # t_ = t.merge(df_g, how='inner', left_index=True, right_index=True)
                 # print(t_.loc[o.id])
+
+                # if k == 32:
+                #     print("dic_sets k=", k, "\n", dic_sets[k])
                 dic_sets_o[k] = pd.DataFrame(dic_sets[k].loc[o.id])
-                # print(dic_sets_o[k])
+                # if k == 32:
+                #     print("dic_sets_ok=", k, "\n", dic_sets_o[k])
 
             # print("dic_sets_o\n", dic_sets_o, "\n")
             # print("="*50, "\n")
             r_ = self.get_peaks({"cl_all":ll_, "t_pop": t_pop, "clusters": o.clusters, "dic_sets_o": dic_sets_o,
-                                 "model_fact_normalized": model_fact_normalized, "gene_code":o.gene_code})
+                                 "model_fact_normalized": model_fact_normalized,
+                                 "model_person_dim": model_person_dim,
+                                 "gene_obj":o})
             r = r_["peak_array"]
             print("\nSummary:\n", "="*50, "\n", r, "\n", "="*150)
             o.reduced_clusters = r
@@ -507,8 +518,9 @@ class MSDataProcessing(BaseDataProcessing, MSAlgo):
         l = dic["cl_all"]
         clusters_ = dic["clusters"]
         dic_sets_o = dic["dic_sets_o"]
-        gene_code = dic["gene_code"]
+        gene_obj = dic["gene_obj"]
         model_fact_normalized = dic["model_fact_normalized"]
+        model_person_dim = dic["model_person_dim"]
         # print(dic_sets_o)
         t_pop = int(dic["t_pop"])/100
         # print(l, "\n", t_pop, "\n", sum(l))
@@ -737,14 +749,17 @@ class MSDataProcessing(BaseDataProcessing, MSAlgo):
         sets = {}
         for k in dic_sets_o:
             df = dic_sets_o[k]
-            # print(df.columns[0])
-            # print(df[int(df.columns[0])])
-
-            print(" set=", k, "\n", "-"*10,"\n", df[int(df.columns[0])].astype(float).values.tolist())
+            # if k == 32:
+            #     print("Set number= ", k)
+            #     print(df.columns[0])
+            #     print(df[int(df.columns[0])])
+            # print(df[int(df.columns[0])].index)
+            # print(" set=", k, "\n", "-"*10,"\n", df[int(df.columns[0])].astype(float).values.tolist())
             min_ = float(df.loc["min"])
             max_ = float(df.loc["max"])
             # print("\nset-min=", min_, "\set-max=", max_, "\n")
             # print("-"*100)
+
             for c_ in clusters_:
                 c_min = min(clusters_[c_]['entity_value'])
                 c_max = max(clusters_[c_]['entity_value'])
@@ -755,18 +770,20 @@ class MSDataProcessing(BaseDataProcessing, MSAlgo):
                 if c_min <= max_ <= c_max:
                     max_c_ = c_
                     # print("max cluster= ", c_)
-            print(" min and max clusters=", min_c_, max_c_)
+            # print(" min and max clusters=", min_c_, max_c_, "\n", "-"*25)
             rll = []
             for c_ in clusters_:
                 if int(max_c_) >= int(c_) >= int(min_c_) :
                     rll += clusters_[c_]['entity_value']
-            # print("values in the clusters between the min and the max=\n", rll, len(rll))
+            # print(" values in the clusters between the min and the max=\n", rll, "\n number of values=", len(rll))
             if len(rll) > 0:
-                print(" Median=", median(rll))
+                # print(" Median=", median(rll))
                 sets[k] = (median(rll), df)
-            print("-"*100)
+            # print("-"*100)
+
         # print(sets)
         # --
+
         get_peaks_(l, lb, ub, peak_array)
         peak_ = sorted(peak_array.items(), key=lambda x: (x[1]["peak"], x[0]))
         n=0
@@ -791,10 +808,10 @@ class MSDataProcessing(BaseDataProcessing, MSAlgo):
                 continue
             lb_ = peak_array[b]["lb"] - 1
             ub_ = peak_array[b]["ub"] - 1
-            print("'", "="*100, "\n", l, "\n", b, peak_array[b], lb_, ub_, peak_array[b]["pop"], "\n", "'",  "="*50)
+            # print("'", "="*100, "\n", l, "\n", b, peak_array[b], lb_, ub_, peak_array[b]["pop"], "\n", "'",  "="*50)
 
             hg = get_global_high(l, peak_array[b]["lb"]-1, peak_array[b]["ub"]-1)
-            print("'", "="*50, "\nb=", b, "\n", peak_array[b], "\nhg=", hg)
+            # print("'", "="*50, "\nb=", b, "\n", peak_array[b], "\nhg=", hg)
             pop_05_ = 0.5*peak_array[b]["pop"]
             total_sub_pop_ = l[hg]
             # print(total_sub_pop_)
@@ -803,7 +820,7 @@ class MSDataProcessing(BaseDataProcessing, MSAlgo):
             hgr_ = hg
             if total_sub_pop_ < pop_05_:
                 p, hgl_, hgr_ = get_block_median(total_sub_pop_, pop_05_, hgl_, hgr_)
-            print("p=", p, "hgl_=", hgl_, "hgr_=", hgr_)
+            # print("p=", p, "hgl_=", hgl_, "hgr_=", hgr_)
             all_entities_values = []
 
             hgl_ += 1
@@ -813,7 +830,7 @@ class MSDataProcessing(BaseDataProcessing, MSAlgo):
                     all_entities_values += clusters_[c_]["entity_value"]
                     # print(c_, clusters_[c_]["entity_value"],"\n")
             # print("genes values=", all_entities_values, "\nmedian= ", median(all_entities_values))
-            print(" Compact Blocks:\n block:", b, " pop=", p, " left=", hgl_, " right=", hgr_, "Median=", median(all_entities_values))
+            # print(" Compact Blocks:\n block:", b, " pop=", p, " left=", hgl_, " right=", hgr_, "Median=", median(all_entities_values))
             peak_array[b]["compact_block"] = [hgl_, hgr_, median(all_entities_values)]
 
         bs = 1000000000
@@ -825,68 +842,43 @@ class MSDataProcessing(BaseDataProcessing, MSAlgo):
                 if b == "number_of_blocks":
                     continue
                 mcb__ = peak_array[b]["compact_block"][2]-m
-                print(mcb__)
+                # print(mcb__)
                 if mcb__ <= bs:
                     mcb_ = peak_array[b]["compact_block"][2]
             if mcb_ > -1:
                 dfs = sets[s][1]
-                print("  peoples in this set:\n", dfs)
+                # print("  peoples in this set:\n", dfs)
                 for index, row in dfs.iterrows():
+                    # print("ROW", index, row)
                     if index in ["min", "max"]:
                         continue
                     # print(int(dfs.columns[0]))
-                    print("Median of set=", m, "Median of CompactBlock=", mcb_,
-                          "Ratio=", mcb_/m, "gene_code=", gene_code, "person_number=", index, "Amount=",
-                          float(row[int(dfs.columns[0])]), "NormalizedAmount=", mcb_ * float(row[int(dfs.columns[0])])/m)
 
-                    obj, is_created = model_fact_normalized.objects.get_or_create(gene_dim__gene_code=gene_code,
-                                                                                  person_dim__person_code=index)
-                    obj.amount = mcb_ * float(row[int(dfs.columns[0])])/m
-                    obj.save()
+
+                    try:
+                        obj_p = model_person_dim.objects.get(id=index)
+                        # if s == 32:
+                        print("Median of set=", m, "Median of CompactBlock=", mcb_,
+                              "Ratio=", mcb_/m, "gene_code=", gene_obj.gene_code, "person_number=", index,
+                              "obj_p.id=", obj_p.id, "Amount=",
+                              float(row[int(dfs.columns[0])]), "Normalized Amount=", mcb_ * float(row[int(dfs.columns[0])])/m)
+                        if s == 32:
+                            print(obj_p)
+                        obj, is_created = model_fact_normalized.objects.get_or_create(gene_dim=gene_obj,
+                                                                                      person_dim=obj_p)
+                    except Exception as ex:
+                        print("Error 1", ex)
+
+                    try:
+                        obj.amount = mcb_ * float(row[int(dfs.columns[0])])/m
+                    except Exception as ex:
+                        print("Error 2", ex)
+                    try:
+                        obj.save()
+                    except Exception as ex:
+                        print("Error 3", ex)
 
         result = {"status": "ok", "peak_array": peak_array, "sets": sets}
-        return result
-
-    # Should be deleted
-    def fix_dim_names(self, dic):
-        print("90121-1: \n", dic, "="*50)
-        print(dic)
-        print('dic')
-        app_ = dic["app"]
-        # d = dic["dimensions"]["gene_dim"]
-        # m = d["model"]
-        # f = d["field_name"]
-        # model_ = apps.get_model(app_label=app_, model_name=m)
-        # max_len = 0
-        # for k in model_.objects.all():
-        #     s = k.gene_code
-        #     if "_at" not in s:
-        #         print(s)
-        #     else:
-        #         s = s.replace("_at", "")
-        #         k.gene_code = s
-        #         k.save()
-        #     if len(s) > max_len:
-        #         max_len = len(s)
-        # print("Done gene", max_len)
-        #
-        # d = dic["dimensions"]["person_dim"]
-        # m = d["model"]
-        # f = d["field_name"]
-        # model_ = apps.get_model(app_label=app_, model_name=m)
-        # max_len = 0
-        # for k in model_.objects.all():
-        #     s = k.person_code
-        #     if ".CEL" not in s:
-        #         print(s)
-        #     else:
-        #         s = s.replace(".CEL", "")
-        #         k.person_code = s
-        #         k.save()
-        #     if len(s) > max_len:
-        #         max_len = len(s)
-        # print("Done person", max_len)
-        result = {"status": "ok"}
         return result
 
     # NeedToDo to move to function calculate_clusters
@@ -922,8 +914,13 @@ class MSDataProcessing(BaseDataProcessing, MSAlgo):
             # print(100)
 
         reduced_clusters = gene_obj.reduced_clusters
+        for b in reduced_clusters:
+            if b == "number_of_blocks":
+                continue
+            reduced_clusters[b]["centroid"] = reduced_clusters[b]["compact_block"][2]
 
+        print(reduced_clusters)
         result = {"status": "ok", "clusters": clusters, "reduced_clusters": reduced_clusters}
-        print(result)
+        # print(result)
         return result
 

@@ -57,7 +57,7 @@ def activate_obj_function(request, add_dic=None):
         # print('9084 dic_ activate_obj_function s_=', '\n', s_, '\n', '-'*10)
 
         try:
-            print(s_)
+            # print(s_)
             dic = eval(s_)
             # print(dic)
         except Exception as ex:
