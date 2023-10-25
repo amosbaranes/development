@@ -2034,14 +2034,14 @@ class TF(object):
         pass
 
     def mnist(self, dic):
-        print(dic)
+        print("90555-5531-12\n", dic)
         from keras.datasets import mnist
 
         # load dataset
         (x_train, y_train), (x_test, y_test) = mnist.load_data()
 
         unique, counts = np.unique(y_train, return_counts=True)
-        print("Train labels: ", dict(zip(unique, counts)))
+        print("\nTrain labels: \n", dict(zip(unique, counts)))
 
         # a = np.arange(15).reshape(3, 5)
         # print("A\n", a, "\n")

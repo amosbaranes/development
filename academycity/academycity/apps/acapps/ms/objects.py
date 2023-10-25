@@ -198,6 +198,7 @@ class MSDataProcessing(BaseDataProcessing, MSAlgo):
                 print("Error: ", row["ID"], ex)
         result = {"status": "ok"}
         return result
+    #
 
     # add the functions below to this function
     def calculate_clusters(self, dic):
@@ -329,6 +330,7 @@ class MSDataProcessing(BaseDataProcessing, MSAlgo):
             clusters[c_min]["entity"].append(j)
             clusters[c_min]["entity_value"].append(float(row[j]))
         return clusters
+    #
 
     # NeedToDo to move to function calculate_clusters
     def create_homogeneous_genes_list(self, dic):
