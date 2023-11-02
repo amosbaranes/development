@@ -141,6 +141,7 @@ class MSDataProcessing(BaseDataProcessing, MSAlgo):
                             fact_obj.amount = v_
                             fact_obj.save()
                     except Exception as ex:
+                        # print("Error: ", ex, "\n")
                         if p_ not in list_:
                             list_.append(p_)
                             print(list_)
@@ -443,10 +444,13 @@ class MSDataProcessing(BaseDataProcessing, MSAlgo):
 
         dic_sets = {}
         for k in llb:
+            # print("Start k=", k, "\n", "-"*20)
             df_sk = df_s[df_s['set_num']==k]
             llk = df_sk['index'].tolist()
+            # print(llk, "\n")
+
             dfllk = df.loc[:, llk] #
-            # print("A dfllk=\n", dfllk)# df[llk]
+            # print("A k=", k, "\ndfllk=\n", dfllk)# df[llk]
 
             dic_sets[k] = dfllk
             # dfllk = dfllk.apply(lambda x: x.sort_values().values, axis=1, result_type='broadcast')
@@ -455,9 +459,9 @@ class MSDataProcessing(BaseDataProcessing, MSAlgo):
             dfllk["min"] = dfllk.min(axis=1)
             dfllk["max"] = dfllk.max(axis=1)
             # if k == 32:
-            #     print("set k=", k, "\ndf_sk=\n", df_sk)
-            #     print("llk=\n", llk)
-            #     print(dfllk)
+            # print("set k=", k, "\ndf_sk=\n", df_sk)
+            # print("llk=\n", llk)
+            # print("dfllk=\n", dfllk)
             dic_sets[k] = dfllk
         #
         def take_key(elem):
@@ -860,12 +864,14 @@ class MSDataProcessing(BaseDataProcessing, MSAlgo):
                     try:
                         obj_p = model_person_dim.objects.get(id=index)
                         # if s == 32:
-                        print("Median of set=", m, "Median of CompactBlock=", mcb_,
-                              "Ratio=", mcb_/m, "gene_code=", gene_obj.gene_code, "person_number=", index,
-                              "obj_p.id=", obj_p.id, "Amount=",
-                              float(row[int(dfs.columns[0])]), "Normalized Amount=", mcb_ * float(row[int(dfs.columns[0])])/m)
-                        if s == 32:
-                            print(obj_p)
+                        # print("gene:", gene_obj.gene_code,
+                        #       "set:", s,
+                        #       "SetMedian=", round(100000*m)/100000,
+                        #       "CompactBlockM=", round(100000*mcb_)/100000,
+                        #       "Ratio=", round(100000*mcb_/m)/100000,
+                        #       "person("+str(index)+")=", obj_p.person_code, "Amount=",
+                        #       float(row[int(dfs.columns[0])]), ">> NAmount=",
+                        #       round(100000*mcb_ * float(row[int(dfs.columns[0])])/m)/100000)
                         obj, is_created = model_fact_normalized.objects.get_or_create(gene_dim=gene_obj,
                                                                                       person_dim=obj_p)
                     except Exception as ex:

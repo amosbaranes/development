@@ -36,9 +36,9 @@ class BaseDataProcessing(object):
         try:
             super(BaseDataProcessing, self).__init__(dic)  # (dic)
         except Exception as ex:
-            print("Error 90002-010 \n" + str(ex),"\n", "-"*50)
+            print("Error 90002-010-1 \n" + str(ex),"\n", "-"*50)
 
-        # print("90002-010 BaseDataProcessing\n", dic, '\n', '-'*50)
+        # print("90002-001 BaseDataProcessing\n", dic, '\n', '-'*50)
 
         self.name = 'DataProcessing'
         self.uploaded_filename = None
@@ -998,7 +998,7 @@ class BasePotentialAlgo(object):
         return df_
 
     def pre_process_data(self, dic):
-        # print("90033-133 pre_process_data: \n", dic, "\n", "="*50)
+        print("90033-133 pre_process_data: \n", dic, "\n", "="*50)
         app_ = dic["app"]
         fact_model_name_ = dic["fact_model"]
         year_ = str(dic["time_dim_value"])

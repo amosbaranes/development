@@ -1015,6 +1015,13 @@ class AviDataProcessing(BaseDataProcessing, BasePotentialAlgo):
         result = {"status": "ok"}
         return result
 
+    def min_max_rule(self, row):
+        row_ = row[0:2].copy()
+        row_[:] = np.nan
+        row_[0] = row.min()
+        row_[1] = row.max()
+        return row_
+
     def load_ai_oxford22_file_to_db(self, dic):
         print("90123-6: \n", dic, "\n", "="*50)
         file_path = self.upload_file(dic)["file_path"]

@@ -5469,45 +5469,45 @@ class Option(object):
         u = math.exp(sigma * math.sqrt(dt))
         d = 1 / u
         p = (math.exp(r * dt) - d) / (u - d)
-        print("dt=", round(100*dt)/100, "u=", round(100*u)/100, "d=", round(100*d)/100, "p=", round(100*p)/100)
+        print("dt=", round(10000*dt)/10000, "u=", round(10000*u)/10000, "d=", round(10000*d)/10000, "p=", round(10000*p)/10000)
 
         # Initialize the option price at expiration (payoff)
-        option_price = [max(0, S * (u ** (n - i)) * (d ** i) - K) for i in range(n + 1)]
+        option_price_c = [max(0, S * (u ** (n - i)) * (d ** i) - K) for i in range(n + 1)]
         option_price_p = [max(0, K - S * (u ** (n - i)) * (d ** i)) for i in range(n + 1)]
-        # print("\noption_price=", option_price, "\noption_price_p=", option_price_p, "\n")
+        # print("\noption_price_c=", option_price_c, "\noption_price_p=", option_price_p, "\n")
 
         # Calculate option price at each step backward through the tree
         for j in range(n - 1, -1, -1):
             for i in range(j + 1):
                 # print("j", j, "i", i, "CV=", round(100*(S * (u ** (j-i)) * (d ** i) - K))/100,
-                #       "OV=", round(100*(math.exp(-r * dt) * (p * option_price[i] + (1 - p) * option_price[i + 1])))/100,
+                #       "OV=", round(100*(math.exp(-r * dt) * (p * option_price_c[i] + (1 - p) * option_price_c[i + 1])))/100,
                 #       "max", round(100*(max(S * (u ** (j-i)) * (d ** i) - K,
-                #                       math.exp(-r * dt) * (p * option_price[i] + (1 - p) * option_price[i + 1]))))/100)
+                #                       math.exp(-r * dt) * (p * option_price_c[i] + (1 - p) * option_price_[i + 1]))))/100)
                 #
                 # print("j", j, "i", i, "PV=", round(100*(K - S * (u ** (j-i)) * (d ** i)))/100,
                 #       "OV=", round(100*(math.exp(-r * dt) * (p * option_price_p[i] + (1 - p) * option_price_p[i + 1])))/100,
                 #       "max", round(100*(max(K - S * (u ** (j-i)) * (d ** i),
                 #                       math.exp(-r * dt) * (p * option_price_p[i] + (1 - p) * option_price_p[i + 1]))))/100)
 
-                option_price[i] = max(S * (u ** (j-i)) * (d ** i) - K,
-                                      math.exp(-r * dt) * (p * option_price[i] + (1 - p) * option_price[i + 1]))
+                option_price_c[i] = max(S * (u ** (j-i)) * (d ** i) - K,
+                                      math.exp(-r * dt) * (p * option_price_c[i] + (1 - p) * option_price_c[i + 1]))
 
                 option_price_p[i] = max(K - S * (u ** (j-i)) * (d ** i),
                                       math.exp(-r * dt) * (p * option_price_p[i] + (1 - p) * option_price_p[i + 1]))
 
-                # print("j", j, "i", i, "\noption_price=", option_price, "\noption_price_p=", option_price_p, "\n")
+                # print("j", j, "i", i, "\noption_price_c=", option_price_c, "\noption_price_p=", option_price_p, "\n")
 
-        return round(100*option_price[0])/100, round(100*option_price_p[0])/100
+        return round(100*option_price_c[0])/100, round(100*option_price_p[0])/100
 
-    def test(self, dic):
-        print('data_transfer_to_process_fact 90055-300 dic\n', '-'*100, '\n', dic, '\n', '-'*100)
+    def put_call(self, dic):
+        print('90-90-90-11 data_transfer_to_process_fact 90055-300 dic\n', '-'*100, '\n', dic, '\n', '-'*100)
         app_ = dic["app"]
 
         # Example usage:
-        S = 100  # Current stock price
-        K = 100  # Strike price
+        S = float(dic["S"])  # Current stock price
+        K = float(dic["K"])  # Strike price
         T = 1  # Time to expiration (in years)
-        r = 0.05  # Risk-free interest rate
+        r = float(dic["r"])  # Risk-free interest rate
         sigma = float(dic["sigma"])  # Volatility
         n = int(dic["n"])  # Number of time steps
 
@@ -5516,4 +5516,65 @@ class Option(object):
         print(f"The price of the American put option is: {put_option_price:.2f}")
 
         result = {"status": "ok", "data": {"call_option_price":call_option_price, "put_option_price":put_option_price}}
+        return result
+
+    def put_call_spread(self, dic):
+        print('90-90-90-11 data_transfer_to_process_fact 90055-300 dic\n', '-'*100, '\n', dic, '\n', '-'*100)
+        app_ = dic["app"]
+
+        # Example usage:
+        spread = float(dic["spread"])  # Current stock price
+        S = float(dic["S"])  # Current stock price
+        # cK = S-spread  # Strike price
+        T = 1  # Time to expiration (in years)
+        r = float(dic["r"])  # Risk-free interest rate
+        sigma = float(dic["sigma"])  # Volatility
+        n = int(dic["n"])  # Number of time steps
+
+        # call
+        call_option_price_itm, put_option_price = self.binomial_american_call_option(S, S-spread, T, r, sigma, n)
+        call_option_price_atm, put_option_price = self.binomial_american_call_option(S, S, T, r, sigma, n)
+        spread_price_c_0 = call_option_price_itm-call_option_price_atm
+        # up
+        call_option_price_itm, put_option_price = self.binomial_american_call_option(S+spread, S-spread, T, r, sigma, n)
+        call_option_price_atm, put_option_price = self.binomial_american_call_option(S+spread, S, T, r, sigma, n)
+        spread_price_c_u = call_option_price_itm-call_option_price_atm
+        # down
+        call_option_price_itm, put_option_price = self.binomial_american_call_option(S-spread, S-spread, T, r, sigma, n)
+        call_option_price_atm, put_option_price = self.binomial_american_call_option(S-spread, S, T, r, sigma, n)
+        spread_price_c_d = call_option_price_itm-call_option_price_atm
+
+        print("Call", "0=", round(100*spread_price_c_0)/100, "u=", round(100*spread_price_c_u)/100, "d=", round(100*spread_price_c_d)/100)
+
+        # put
+        call_option_price, put_option_price_itm = self.binomial_american_call_option(S, S + spread, T, r, sigma, n)
+        call_option_price, put_option_price_atm = self.binomial_american_call_option(S, S, T, r, sigma, n)
+        spread_price_p_0 = put_option_price_itm - put_option_price_atm
+        # up
+        call_option_price, put_option_price_itm = self.binomial_american_call_option(S + spread, S + spread, T, r, sigma, n)
+        call_option_price, put_option_price_atm = self.binomial_american_call_option(S + spread, S, T, r, sigma, n)
+        spread_price_p_u = put_option_price_itm - put_option_price_atm
+        # down
+        call_option_price, put_option_price_itm = self.binomial_american_call_option(S - spread, S + spread, T, r, sigma, n)
+        call_option_price, put_option_price_atm = self.binomial_american_call_option(S - spread, S, T, r, sigma, n)
+        spread_price_p_d = put_option_price_itm - put_option_price_atm
+
+        print("Put ", "0=", round(100*spread_price_p_0)/100, "u=", round(100*spread_price_p_u)/100, "d=", round(100*spread_price_p_d)/100)
+
+        #
+        two_spread_price_0 = spread_price_c_0 + spread_price_p_0
+        two_spread_price_u = spread_price_c_u + spread_price_p_u
+        two_spread_price_d = spread_price_c_d + spread_price_p_d
+        print(" call_put_0", round(100*two_spread_price_0)/100, "\n",
+              "call_put_u", round(100*two_spread_price_u)/100, "\n",
+              "call_put_d", round(100*two_spread_price_d)/100, "\n",
+              "call_put_u_profit", round(100 * (two_spread_price_0 - two_spread_price_u)) / 100, "\n",
+              "call_put_d_profit", round(100 * (two_spread_price_0 - two_spread_price_d)) / 100
+              )
+
+        result = {"status": "ok", "data": {"two_spread_price_0":round(100 * two_spread_price_0)/100,
+                                           "two_spread_price_u":round(100 * two_spread_price_u)/100,
+                                           "two_spread_price_d":round(100 * two_spread_price_d)/100,
+                                           "two_spread_price_pu":round(100 * (two_spread_price_0-two_spread_price_u)) / 100,
+                                           "two_spread_price_pd":round(100 * (two_spread_price_0-two_spread_price_d)) / 100}}
         return result
