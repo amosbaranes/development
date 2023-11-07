@@ -40,7 +40,7 @@ class MMAlgo(object):
         return row_
 
     def calculate_min_max_cuts(self, dic):
-        print("90099-99-1000 MMAlgo calculate_min_max_cuts: \n", dic, "\n", "="*50)
+        print("90099-99-1000 MMAlgo calculate_min_max_cuts: \n", dic, "\n'", "="*50)
 
         app_ = dic["app"]
         method = dic["method"]
@@ -68,12 +68,12 @@ class MMAlgo(object):
         except Exception as ex:
             print(ex)
 
-        print("="*50)
+        print("'", "="*50)
         print("90-111-2-100\n","\n", df,"\n", df.head(56),"\n", df.tail(56),"\n", df.shape)
-        print("="*50)
+        print("'", "="*50)
         step_num = int(df.shape[0]*step)
         print("step_num=", step_num)
-        print("="*30)
+        print("'", "="*30)
 
         # print(range(int(first_high_group*100), 0, -int(step*100)))
 
@@ -89,19 +89,25 @@ class MMAlgo(object):
                 print("df_q\n", df_q[["person_dim"]])
                 # print("-"*20)
                 # print(df_q[["person_dim"]].iloc[0], "\n\n", df_q[["person_dim"]].iloc[1])
-                print(df.shape)
+                h_cut = (float(df_q[["person_dim"]].iloc[0])-1)*(df.shape[0]/(df.shape[0]+1))
+                h_cut = int(round(h_cut))
+                print(df.shape, "\nH cut index=", h_cut)
                 print("-"*20)
-                cond_h = df.index <= int(df_q[["person_dim"]].iloc[0])
+                cond_h = df.index <= h_cut
                 df_h_e = df[cond_h]
-                print("Top records sorted by Y:\n", df_h_e.tail(50))
+                print("Top records sorted by Y:\n", df_h_e.tail(56))
                 # print(df_h_e.index)
-                print(len(df_h_e.index)-step_num-1)
+                # print(len(df_h_e.index)-step_num-1)
                 print("-"*30, "\nH", "person_index=", df_h_e.iloc[len(df_h_e.index)-step_num-1]["person_dim"],
                       "Y=", df_h_e.iloc[len(df_h_e.index)-step_num-1][1], "\n", "-"*30, "\n")
 
-                cond_l = df.index >= int(df_q[["person_dim"]].iloc[1])
+                l_cut = (float(df_q[["person_dim"]].iloc[1])-1)*(df.shape[0]/(df.shape[0]+1))
+                l_cut = int(round(l_cut))
+                cond_l = df.index > l_cut
                 df_l_e = df[cond_l]
-                print("Low records sorted by Y:\n", df_l_e.head(50))
+
+                print(df.shape, "\nL cut index=", l_cut)
+                print("Low records sorted by Y:\n", df_l_e.head(56))
                 # print(df_l_e.index)
 
                 print("-"*30, "\nL", "person_index=", df_l_e.iloc[step_num]["person_dim"],
@@ -121,9 +127,9 @@ class MMAlgo(object):
                         i = pd.DataFrame(df_x.iloc[len(df_x.index) - n_*step_num - 1])
                         print(" Internal Loop: variable(gene)=", gene_num, "hi=", hi, "person index=", i.columns[0], "value=", x, "\n", "-"*40, "\n")
 
-                print("="*50)
-                print("="*50)
-                print("="*50)
+                print("'", "="*50)
+                print("'", "="*50)
+                print("'", "="*50)
         # df = pd.DataFrame(np.array([[1, 10],
         #                             [2, 100],
         #                             [3, 100],

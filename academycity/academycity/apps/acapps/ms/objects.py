@@ -814,10 +814,10 @@ class MSDataProcessing(BaseDataProcessing, MSAlgo):
                 continue
             lb_ = peak_array[b]["lb"] - 1
             ub_ = peak_array[b]["ub"] - 1
-            # print("'", "="*100, "\n", l, "\n", b, peak_array[b], lb_, ub_, peak_array[b]["pop"], "\n", "'",  "="*50)
+            print("'", "="*100, "\n", l, "\n", b, peak_array[b], lb_, ub_, peak_array[b]["pop"], "\n", "'",  "="*50)
 
             hg = get_global_high(l, peak_array[b]["lb"]-1, peak_array[b]["ub"]-1)
-            # print("'", "="*50, "\nb=", b, "\n", peak_array[b], "\nhg=", hg)
+            print("'", "="*50, "\nb=", b, "\n", peak_array[b], "\nhg=", hg)
             pop_05_ = 0.5*peak_array[b]["pop"]
             total_sub_pop_ = l[hg]
             # print(total_sub_pop_)
@@ -826,7 +826,7 @@ class MSDataProcessing(BaseDataProcessing, MSAlgo):
             hgr_ = hg
             if total_sub_pop_ < pop_05_:
                 p, hgl_, hgr_ = get_block_median(total_sub_pop_, pop_05_, hgl_, hgr_)
-            # print("p=", p, "hgl_=", hgl_, "hgr_=", hgr_)
+            print("p=", p, "hgl_=", hgl_, "hgr_=", hgr_)
             all_entities_values = []
 
             hgl_ += 1
@@ -836,7 +836,7 @@ class MSDataProcessing(BaseDataProcessing, MSAlgo):
                     all_entities_values += clusters_[c_]["entity_value"]
                     # print(c_, clusters_[c_]["entity_value"],"\n")
             # print("genes values=", all_entities_values, "\nmedian= ", median(all_entities_values))
-            # print(" Compact Blocks:\n block:", b, " pop=", p, " left=", hgl_, " right=", hgr_, "Median=", median(all_entities_values))
+            print(" Compact Blocks:\n block:", b, " pop=", p, " left=", hgl_, " right=", hgr_, "Median=", median(all_entities_values))
             peak_array[b]["compact_block"] = [hgl_, hgr_, median(all_entities_values)]
 
         bs = 1000000000
@@ -864,14 +864,14 @@ class MSDataProcessing(BaseDataProcessing, MSAlgo):
                     try:
                         obj_p = model_person_dim.objects.get(id=index)
                         # if s == 32:
-                        # print("gene:", gene_obj.gene_code,
-                        #       "set:", s,
-                        #       "SetMedian=", round(100000*m)/100000,
-                        #       "CompactBlockM=", round(100000*mcb_)/100000,
-                        #       "Ratio=", round(100000*mcb_/m)/100000,
-                        #       "person("+str(index)+")=", obj_p.person_code, "Amount=",
-                        #       float(row[int(dfs.columns[0])]), ">> NAmount=",
-                        #       round(100000*mcb_ * float(row[int(dfs.columns[0])])/m)/100000)
+                        print("gene:", gene_obj.gene_code,
+                              "set:", s,
+                              "SetMedian=", round(100000*m)/100000,
+                              "CompactBlockM=", round(100000*mcb_)/100000,
+                              "Ratio=", round(100000*mcb_/m)/100000,
+                              "person("+str(index)+")=", obj_p.person_code, "Amount=",
+                              float(row[int(dfs.columns[0])]), ">> NAmount=",
+                              round(100000*mcb_ * float(row[int(dfs.columns[0])])/m)/100000)
                         obj, is_created = model_fact_normalized.objects.get_or_create(gene_dim=gene_obj,
                                                                                       person_dim=obj_p)
                     except Exception as ex:
