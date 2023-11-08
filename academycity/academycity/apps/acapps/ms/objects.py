@@ -814,10 +814,9 @@ class MSDataProcessing(BaseDataProcessing, MSAlgo):
                 continue
             lb_ = peak_array[b]["lb"] - 1
             ub_ = peak_array[b]["ub"] - 1
-            print("'", "="*100, "\n", l, "\n", b, peak_array[b], lb_, ub_, peak_array[b]["pop"], "\n", "'",  "="*50)
+            print("\nsupper cluster (block)=", b, "\n", peak_array[b], lb_, ub_, peak_array[b]["pop"], "\n", "'",  "="*50)
 
             hg = get_global_high(l, peak_array[b]["lb"]-1, peak_array[b]["ub"]-1)
-            print("'", "="*50, "\nb=", b, "\n", peak_array[b], "\nhg=", hg)
             pop_05_ = 0.5*peak_array[b]["pop"]
             total_sub_pop_ = l[hg]
             # print(total_sub_pop_)

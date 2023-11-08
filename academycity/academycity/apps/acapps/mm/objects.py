@@ -60,10 +60,12 @@ class MMAlgo(object):
         model_fact = apps.get_model(app_label=app_, model_name="factnormalized")
         qs = model_fact.objects.all()
         df = pd.DataFrame(list(qs.values("gene_dim", "person_dim", "amount")))
-        # print(df)
+
         try:
             df = df.pivot(index="person_dim", columns='gene_dim', values='amount')
+            print("df1\n ", df)
             df = df.sort_values(df.columns[0], ascending=False)
+            print("df2\n ", df)
             df = df.reset_index()
         except Exception as ex:
             print(ex)
