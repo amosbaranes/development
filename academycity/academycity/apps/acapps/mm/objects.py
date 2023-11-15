@@ -40,7 +40,7 @@ class MMAlgo(object):
         return row_
 
     def calculate_min_max_cuts(self, dic):
-        print("90099-99-1000 MMAlgo calculate_min_max_cuts: \n", dic, "\n'", "="*50)
+        print("90099-99-1000 MMAlgo calculate_min_max_cuts: \n", dic, "\n'", "="*100)
 
         app_ = dic["app"]
         method = dic["method"]
@@ -50,7 +50,6 @@ class MMAlgo(object):
         step = 0.05
         n_step = int(first_high_group/step)
         #
-
         u_method = "median"
         l_method = "median"
         if method == "min":
@@ -63,21 +62,16 @@ class MMAlgo(object):
 
         try:
             df = df.pivot(index="person_dim", columns='gene_dim', values='amount')
-            # print("df1\n ", df)
             df = df.sort_values(df.columns[0], ascending=False)
-            # print("df2\n ", df)
             df = df.reset_index()
         except Exception as ex:
             print(ex)
 
-        print("'", "="*50)
-        # print("90-111-2-100\n","\n", df,"\n")
-        print(df.head(56),"\n", df.tail(56),"\n", df.shape)
+        print(df.head(56),"\n", df.tail(56))
         print("'", "="*50)
         step_num = int(df.shape[0]*step)
         print("step_num=", step_num)
         print("'", "="*30)
-
         # print(range(int(first_high_group*100), 0, -int(step*100)))
 
         def score(dic_hp):
@@ -86,91 +80,126 @@ class MMAlgo(object):
         dic_hp = {}
         # int((first_low_group-step) * 100)
         for l in range(int(first_low_group * 100), int(step*100), -int(step * 100)):
-            l_ = round(l - step*100)/100
+            l_ = l/100
             for h in range(int(first_high_group*100), int(step*100), -int(step*100)):
-                h_ = (100 - round(h - step*100))/100
-                print("\n", "-"*30, "\n  h=", h, "(h_=", h_, ") l=", l, " (l_=", l_,")\n","-"*30)
-                ll = [h/100, (100-l)/100]
-                # print("A ll=", ll)
+                h_ = (100 - h)/100
+                print("-"*30, "\n  h_=", h_, "l_=", l_,"\n","-"*30)
+
+                ll = [h / 100, (100 - l) / 100]
                 df_q = df.quantile(ll)
-                print("-"*20)
+                print("-" * 20)
                 print("df_q\n", df_q[["person_dim"]])
-                print("-"*20)
+                print("-" * 20)
                 # print(df_q[["person_dim"]].iloc[0], "\n\n", df_q[["person_dim"]].iloc[1])
-                h_cut = (float(df_q[["person_dim"]].iloc[0])-1)*(df.shape[0]/(df.shape[0]+1))
+                h_cut = (float(df_q[["person_dim"]].iloc[0]) - 1) * (df.shape[0] / (df.shape[0] + 1))
                 h_cut = int(round(h_cut))
                 print(df.shape, "\nH cut index=", h_cut)
-                print("-"*20)
+                print("-" * 20)
                 cond_h = df.index <= h_cut
                 df_h_e = df[cond_h]
                 print("Top records sorted by Y:\n", df_h_e.tail(56))
                 # print(df_h_e.index)
                 # print(len(df_h_e.index)-step_num-1)
-                y_max_cut =df_h_e.iloc[len(df_h_e.index)-step_num-1][1]
-                print("-"*30, "\nH", "person_index=", df_h_e.iloc[len(df_h_e.index)-step_num-1]["person_dim"],
-                      "Y=", y_max_cut, "\n", "-"*30, "\n")
 
-                l_cut = (float(df_q[["person_dim"]].iloc[1])-1)*(df.shape[0]/(df.shape[0]+1))
+                    # n_y = len(df_h_e.index) - step_num - 1
+                    # print(n_y)
+                    # y_max_cut = df_h_e.iloc[n_y][1]
+                    # print("-" * 10, "     H", "     person_index=", df_h_e.iloc[n_y]["person_dim"], "     Y=",
+                    #       y_max_cut)
+
+                l_cut = (float(df_q[["person_dim"]].iloc[1]) - 1) * (df.shape[0] / (df.shape[0] + 1))
                 l_cut = int(round(l_cut))
                 cond_l = df.index > l_cut
                 df_l_e = df[cond_l]
 
                 print(df.shape, "\nL cut index=", l_cut)
                 print("Low records sorted by Y:\n", df_l_e.head(56))
-                # print(df_l_e.index)
+                    # print(df_l_e.index)
 
-                y_min_cut = df_l_e.iloc[step_num][1]
-                print("-"*30, "\nL", "person_index=", df_l_e.iloc[step_num]["person_dim"],
-                      "Y=", y_min_cut, "\n", "-"*30, "\n")
+                    # y_min_cut = df_l_e.iloc[step_num][1]
+                    # print("-" * 10, "     L", "     person_index=", df_l_e.iloc[step_num]["person_dim"], "     Y=",
+                    #       y_min_cut)
+                    # print(df_h_e.columns, len(df_h_e.columns))
 
-                # print(df_h_e.columns, len(df_h_e.columns))
+                nn__ = 0
                 nhi_ = 0
-                nli_ = 0
-
                 for hi in range(h, int(step*100), -int(step*100)):
                     nhi_ += 1
                     hi_ = (100 - round(hi - step * 100)) / 100
+                    n_y_h = int(len(df_h_e.index) - step_num*((hi_-h_)/step))
+                    print("h", h_, "h", hi_, "n_y_h=", n_y_h)
+                    y_max_cut = df_h_e.iloc[n_y_h][1]
+                    nli_ = 0
                     for li in range(l, int(step*100), -int(step*100)):
+                        nn__ += 1
                         nli_ += 1
                         li_ = round(li - step*100)/100
+                        n_y_l = int(step_num*((l_-li_)/step))
+                        # print("l", l_, "li",  li_, "n_y_l", n_y_l)
                         index_ = "h-"+str(h_) + "_" + "l-" + str(l_) + "_" + "hi-" + str(hi_) + "_" + "li-" + str(li_)
+                        print("-"*75, "\nindex", index_, "\n", "-"*40)
+                        y_min_cut = df_l_e.iloc[n_y_l][1]
+
+                        print("  H", "  person_index=", df_h_e.iloc[n_y_h]["person_dim"], "  Y=",
+                              y_max_cut, "           L", "  person_index=", df_l_e.iloc[n_y_l]["person_dim"], "  Y=",
+                              y_min_cut)
+
                         dic_hp[index_] = {}
                         dic_hp[index_]["y"] = {"max_cut": float(y_max_cut), "min_cut": float(y_min_cut)}
                         # print(dic_hp)
-                        print(index_)
+                        for gene_num in range(len(df_h_e.columns)-1, 1, -1):
+                            # l
+                            df_lx = df_l_e[[gene_num]].sort_values(gene_num, ascending=False)
+                            # print(df_l_e[[gene_num]], "\n\n")
+                            if nn__ < 10:
+                                print("Internal Loop: Low range, variable(gene)=", gene_num, "\nsorted values:\n", df_lx)
+                            # n_x = len(df_lx.index) - nli_ * step_num - 1
+                            n_x = nli_ * step_num
+                            # print("n_x=", n_x)
+                            # print(df_lx.index)
+                            lx = df_lx.iloc[n_x][gene_num]
+                            # print(lx)
+                            li = pd.DataFrame(df_lx.iloc[n_x])
+                            print("Low person index=", li.columns[0], "value=", lx, "\n", "-"*30)
 
-                        # for gene_num in range(len(df_h_e.columns)-1, 1, -1):
-                        #     # l
-                        #     print("li_", li_)
-                        #     df_lx = df_l_e[[gene_num]].sort_values(gene_num, ascending=False)
-                        #     # print(df_l_e[[gene_num]], "\n\n")
-                        #     if nli_ == 1:
-                        #         print("\nInternal Loop: variable(gene)=", gene_num, "li_=", li_, "sorted values:\n", df_lx, "\n")
-                        #     lx = df_lx.iloc[len(df_lx.index) - nli_ * step_num - 1][gene_num]
-                        #     li = pd.DataFrame(df_lx.iloc[len(df_lx.index) - nli_ * step_num - 1])
-                        #     print(" Internal Loop: variable(gene)=", gene_num, "li_=", li_, "person index=",
-                        #           li.columns[0], "value=", lx, "\n")
-                        #     # h
-                        #     print("hi_", hi_)
-                        #     df_hx = df_h_e[[gene_num]].sort_values(gene_num, ascending=False)
-                        #     # print(df_h_e[[gene_num]], "\n\n")
-                        #     if nhi_ == 1:
-                        #         print("\nInternal Loop: variable(gene)=", gene_num, "hi_=", hi_, "sorted values:\n", df_hx, "\n")
-                        #     hx = df_hx.iloc[len(df_hx.index) - nhi_ * step_num - 1][gene_num]
-                        #     hi = pd.DataFrame(df_hx.iloc[len(df_hx.index) - nhi_ * step_num - 1])
-                        #     print(" Internal Loop: variable(gene)=", gene_num, "hi_=", hi_, "person index=",
-                        #           hi.columns[0], "value=", hx, "\n")
-                        #
-                        #     dic_hp[index_][gene_num] = {"max_cut": float(hx), "min_cut": float(lx)}
-                        #
-                        #     print("="*30)
-                        #     print(dic_hp)
-                        #     print("="*30)
+                            # h
+                            df_hx = df_h_e[[gene_num]].sort_values(gene_num, ascending=False)
+                            # print(df_h_e[[gene_num]], "\n\n")
+                            if nn__ < 8:
+                                print("Internal Loop: High range, variable(gene)=", gene_num, "\nsorted values:\n", df_hx)
+
+                            n_x = len(df_hx.index) - nhi_ * step_num - 1
+                            hx = df_hx.iloc[n_x][gene_num]
+                            hi = pd.DataFrame(df_hx.iloc[n_x])
+                            print("High person index=", hi.columns[0], "value=", hx, "\n", "-"*30)
+                            median_hx = float(df_hx.median())
+                            median_lx = float(df_lx.median())
+                            print("Low median_lx", median_lx, " High median_hx", median_hx)
+                            if median_lx > median_hx:
+                                print("Convert Groups:\n AA max_cut", lx, "min_cut", hx)
+                                n_x_l = len(df_lx.index) - nli_ * step_num - 1
+                                lx_ = df_lx.iloc[n_x_l][gene_num]
+                                n_x_h = nhi_ * step_num
+                                hx_ = df_hx.iloc[n_x_h][gene_num]
+
+                                lx = hx_
+                                hx = lx_
+
+                            if lx > hx:
+                                print("BB ", "Max Cut=", hx, "Min Cut=", lx)
+                                print("  >> MaxCut lower then MinCut. MinCut=MaxCut=-1 for this index:", index_)
+                                dic_hp[index_][gene_num] = {"max_cut": -1, "min_cut": -1}
+                                print(" CC max_cut", -1, "min_cut", -1)
+                                # else:
+                                #     dic_hp[index_][gene_num] = {"max_cut": float(lx), "min_cut": float(hx)}
+                            else:
+                                print("max_cut", hx, "min_cut", lx)
+                                dic_hp[index_][gene_num] = {"max_cut": float(hx), "min_cut": float(lx)}
+                print(dic_hp)
+                err
 
                 print("'", "="*50)
                 print("'", "="*50)
-                print("'", "="*50)
-
 
         result = {"status": "ok"}
         return result
