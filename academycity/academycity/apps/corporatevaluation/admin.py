@@ -319,7 +319,7 @@ class CompaniesPriceDataAdmin(admin.ModelAdmin):
 
 @admin.register(StockPricesMinutes)
 class StockPricesMinutesAdmin(admin.ModelAdmin):
-    list_display = ['company', 'idx', 'open', 'high', 'low', 'close', 'volume']
+    list_display = ['company', 'idx', 'open', 'high', 'low', 'close', 'volume','stock_splits']
     list_filter = ('company', 'idx', )
 
 

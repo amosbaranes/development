@@ -838,18 +838,26 @@ class MSDataProcessing(BaseDataProcessing, MSAlgo):
             print(" Compact Blocks:\n block:", b, " pop=", p, " left=", hgl_, " right=", hgr_, "Median=", median(all_entities_values))
             peak_array[b]["compact_block"] = [hgl_, hgr_, median(all_entities_values)]
 
-        bs = 1000000000
-        mcb_ = -1
+        # print("peak_array\n", peak_array, "\nsets\n", sets)
         for s in sets:
+            # if s == 174:
+            #     print("set", s, sets[s])
             m = sets[s][0]
             # (median(rll), df)
+            bs = 1000000000
+            mcb_ = -1
             for b in peak_array:
                 if b == "number_of_blocks":
                     continue
-                mcb__ = peak_array[b]["compact_block"][2]-m
-                # print(mcb__)
+                mcb__ = abs(peak_array[b]["compact_block"][2]-m)
                 if mcb__ <= bs:
                     mcb_ = peak_array[b]["compact_block"][2]
+                    bs = mcb__
+                # if s == 174:
+                #     # print("set", s, sets[s])
+                #     print("b", b, "m", m, "bv", peak_array[b]["compact_block"][2],
+                #           "mcb__", mcb__, "bs", bs, "mcb_", mcb_)
+
             if mcb_ > -1:
                 dfs = sets[s][1]
                 # print("  peoples in this set:\n", dfs)
@@ -858,7 +866,6 @@ class MSDataProcessing(BaseDataProcessing, MSAlgo):
                     if index in ["min", "max"]:
                         continue
                     # print(int(dfs.columns[0]))
-
 
                     try:
                         obj_p = model_person_dim.objects.get(id=index)

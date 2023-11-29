@@ -4462,7 +4462,10 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
     def get_units_structure_new(self, dic):
         print("\n", "-"*50, '\n90035-1 dic\n', dic, "\n", "-"*50)
         app_ = dic["app"]
-        battalion_ = int(dic["battalion"])
+        try:
+            battalion_ = int(dic["battalion"])
+        except Exception as ex:
+            print("Error 10-100: "+str(ex))
         # soldiers
         try:
             soldiers = {"id":[], "userid":[], "first_name":[], "last_name":[], "name":[]}

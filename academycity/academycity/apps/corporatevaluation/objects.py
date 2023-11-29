@@ -1497,12 +1497,86 @@ class StockPrices(object):
     def __init__(self):
         pass
 
+    def analyze_prices_minutes(self, dic):
+        # print("9010 input dic: \n", dic, "\n"+"-"*30)
+        # ^GSPC
+        # ticker = dic["ticker"]
+        ticker = "$SPX.X"
+        num_of_bars = 9999999
+        # num_of_bars = int(dic["num_of_bars"])
+        print(ticker)
+        result = {"idx": [], "open": [], "high": [], "low": [], "close": [], "volume": [], "dividends": [], "stock_splits": []}
+
+        sp = StockPricesMinutes.objects.filter(company__ticker=ticker)[:num_of_bars]
+        # df = pd.DataFrame(list(sp.values()))
+        df = pd.DataFrame(list(sp.values("idx", "open", "close", "high", "low", "volume")))
+        print(df)
+
+        df['idx'] = pd.to_datetime(df['idx'], format='%Y%m%d%H%M')
+        df.set_index('idx', inplace=True)
+        print(df.head())
+        print(df.tail())
+
+        # logic = {'open': 'first',
+        #          'high': 'max',
+        #          'low': 'min',
+        #          'close': 'last',
+        #          'volume': 'sum'}
+        #
+        # # df.resample('D', loffset=offset).apply(logic)
+        #
+        # df = df.resample('D').apply(logic)
+        #
+        # df["ch_up"] = df["high"] - df["open"]
+        # df["ch_dn"] = df["open"] - df["low"]
+        #
+        # print(df.head())
+        # print(df.tail())
+        # # print("c", [df["ch_up"]>10 | df["ch_dn"]>10])
+
+        # Creating DataFrames
+        df_temp = pd.DataFrame({'Time': pd.date_range(start='01-01-2022', end='11-22-2023', freq='1MIN')})
+        df_temp["a"] = df_temp["Time"]
+        # Display the DataFrames
+        # print("Original DataFrame 1:\n", df_temp, "\n\n")
+        df_temp = df_temp.set_index('Time')
+        # print("DataFrame 1:\n", df_temp, "\n\n")
+
+        df_ = pd.concat([df_temp, df], axis=1)
+        df_ = df_.drop(['a'], axis=1)
+        df_na = df_.dropna()
+        df_nas = df_na.shift(periods=1)
+
+        print(df_na.head(50))
+        print(df_nas.head(50))
+        print(df_na.tail(50))
+        print(df_nas.tail(50))
+
+
+
+        # for dr in range(15, 5, -1):
+        #     df = df.dropna()
+        #     df["is_winner"] = (df["ch_up"]>=dr) | (df["ch_dn"]>=dr)
+        #     print("dr", dr, "shape", df.shape)
+        #     df_ = df[df["is_winner"] == True]
+        #     print("dr", dr, "shape", df_.shape)
+        #     print(df)
+
+        # returns = df['close'].resample('M').ffill().pct_change()
+        # print(returns)
+        # returns = df['close'].resample('B').ffill().pct_change()
+        # print(returns)
+
+        dic = {'data': "ok"}
+        # print("9099 output dic: \n", dic, "\n"+"="*30)
+        return dic
+
     def get_prices_minutes(self, dic):
         # print("9010 input dic: \n", dic, "\n"+"-"*30)
         # ^GSPC
         ticker = dic["ticker"]
         num_of_bars = int(dic["num_of_bars"])
-        # print(ticker)
+        print(ticker)
         result = {"idx": [], "open": [], "high": [], "low": [], "close": [], "volume": [], "dividends": [], "stock_splits": []}
 
         sp = StockPricesMinutes.objects.filter(company__ticker=ticker)[:num_of_bars]

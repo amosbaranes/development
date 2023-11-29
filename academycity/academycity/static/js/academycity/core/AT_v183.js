@@ -70,7 +70,7 @@ function AdvancedTabsManager(dic=null)
                                                "functions":[]},
                                         "A":{"title":"a", "width":3,
                                              "setting": {"color":[], "background-color":[]},
-                                             "attributes":{"href":[], "target":["", "blank_"]},
+                                             "attributes":{"href":[], "target":["", "blank_"], "download":["", "download"]},
                                              "functions":[]},
                                         "H":{"title":"h", "width":3,
                                              "setting": {"font-size":[], "font-family":["", "Arial, sans-serif",
@@ -285,7 +285,7 @@ function AdvancedTabsManager(dic=null)
  this.tab = {"functions":[],
              "settings_list":{"button_color":[],"button_bg_color":[],
                               "font-weight":["normal","lighter","bold","900"],
-                              "width":[],
+                              "width":[],"height":[],
                               "border_radius":[],
                               "tab_name":[],
                               "tab_type":["simple", "navmulti", "navone"],
@@ -295,8 +295,9 @@ function AdvancedTabsManager(dic=null)
 
  this.tab_nav_links = {"functions":["onclick", "onmouseover", "onmouseout"],
                        "settings_list":{"width":[], "add_title":[], "remove_title":[], "is_show_btns":["", "true", "false"],
-                       "obj_number":[], "background_color":[]},
-                       "attributes_list":{}
+                                        "left":[], "top":[], "border_radius":[],"button_color":[],"button_bg_color":[],
+                                        "font-weight":[], "height":[],
+                                        "obj_number":[], "background_color":[]}, "attributes_list":{}
                        }
 
  this.nav_link = {"functions":["onclick", "onmouseover", "onmouseout"],
@@ -356,9 +357,24 @@ AdvancedTabsManager.prototype.init_create_containers = function()
    this.add_delete_editor = document.createElement("div");
    this.titles = document.createElement("div");
    this.titles.setAttribute("class", "maintab");
+//   var titles_height=50
+//   this.titles_padding = 10
+//   this.titles_width=170;
+//   var titles_background_color = "green"
+//   this.titles_height=titles_height-2*this.titles_padding;
+//   var style_="text-align:center;background-color:"+titles_background_color+";height:"+titles_height+"px;padding:5px;";
+//   this.titles.setAttribute("style", style_)
+
+   this.titles_height=0;
    this.container = document.createElement("div");
    this.container.setAttribute("style", "width: 100%;height: 100%;")
-   this.elm_body.appendChild(this.add_delete_editor);this.elm_body.appendChild(this.titles);this.elm_body.appendChild(this.container);
+
+   this.panel = document.createElement("div");
+   this.panel.setAttribute("style", "width: 100%;")
+   this.elm_body.appendChild(this.add_delete_editor);
+   this.elm_body.appendChild(this.panel);
+   this.elm_body.appendChild(this.titles);
+   this.elm_body.appendChild(this.container);
 }
 
 AdvancedTabsManager.prototype.init_timer = function()
@@ -562,7 +578,7 @@ set_clone_PopWinObjects = function(PopWinObjects)
 AdvancedTabsManager.prototype.set_active_tab = function(btn)
 {
   var tabcontent=document.getElementsByClassName("tabcontent");
-  for(i=0;i<tabcontent.length;i++){tabcontent[i].style.display='none';}
+  for(i=0;i<tabcontent.length;i++){if(tabcontent[i].tab.tab_name!="main_panel"){tabcontent[i].style.display='none';}}
   var tablinks=document.getElementsByClassName("tablinks");
   try{eval(btn.parent.tab_name+"__myclick__(called_tab=btn.parent, calling_tab=btn.parent)");} catch(er){alert("er9001: "+er)}
   for (i=0;i<tablinks.length;i++){
@@ -891,6 +907,7 @@ AdvancedTabsManager.prototype.save = function()
                        "tab_id": this.active_tab.tab_id}}
       //alert("atm.save:active_tab.tab_pop_win_buttons\n-------\n"+JSON.stringify(this.active_tab.tab_pop_win_buttons))
       //alert(JSON.stringify(dic_))
+      //alert(this.activate_function_link_)
      $.post(this.activate_function_link_,
           {dic : JSON.stringify(dic_)},
           function(dic){
@@ -925,14 +942,14 @@ AdvancedTabsManager.prototype.activate_obj_function = function(call_back_fun, di
      $.post(atm.activate_obj_function_link_,
           {dic : JSON.stringify(dic_)},
           function(dic){
-//          alert(JSON.stringify(dic))
+          //alert(JSON.stringify(dic))
             if(dic["status"]=="ok"){
-                //alert(JSON.stringify(dic))
+                //alert("ok\n"+JSON.stringify(dic))
                 try{
                   call_back_fun(dic["result"], html_obj);
                   html_obj.data=dic["result"];
                   } catch(er){}
-            } else {alert("Error getting data for select.")}
+            } else {alert("Error2020 getting data for select.")}
           });
 }
 
@@ -7245,7 +7262,7 @@ acHeatmapCreator.prototype.get_data = function()
 
 // -- TabContent --
 function TabContent(tab, container, link_dic, is_on_click=true, is_link=null){
- //alert("9090-20\n"+JSON.stringify(link_dic));
+ //alert("9090-22\n"+JSON.stringify(link_dic));
  //alert("9090-21\n"+container.outerHTML)
  var pp_=link_dic["properties"]
  this.is_link=is_link;
@@ -7267,12 +7284,13 @@ function TabContent(tab, container, link_dic, is_on_click=true, is_link=null){
  this.link_content.tab=tab;
  this.link_content.tab_content_id=this.link_number;
  if(is_link){var width=100} else {var width=pp_["width"];}
+ if("height" in pp_){var height_=pp_["height"]} else {var height_="1000"}
  //alert("JSON.stringify(pp_)\n\n"+ JSON.stringify(pp_));
  var background_color_="white";
  var color_="black";
  if(pp_["background-color"]!=null && pp_["background-color"]!=""){background_color_=pp_["background-color"]}
  if((pp_["color"]!=null && pp_["color"]!="")){color_=pp_["color"]}
- var ss_="position: relative;background-color:"+background_color_+";color:"+color_+";width: "+width+"%;height:1000px;display:block;"
+ var ss_="position: relative;background-color:"+background_color_+";color:"+color_+";width: "+width+"%;height:"+height_+"px;display:block;"
  this.link_content.setAttribute("style", ss_);
  // border: 1px solid #ccc;
  if(is_on_click){
@@ -7447,6 +7465,8 @@ TabContent.prototype.refresh_my_tables = function(f, v)
 // -- TabNavLink --
 function TabNavLink(tab_nav, link_dic){
  //alert(JSON.stringify(link_dic))
+ //alert(JSON.stringify(tab_nav.properties))
+ var pp=tab_nav.properties
  this.tab_nav=tab_nav;
  this.tab=tab_nav.tab;
  this.nav=tab_nav.nav;
@@ -7456,7 +7476,13 @@ function TabNavLink(tab_nav, link_dic){
  this.title=link_dic["nav_link"]["properties"]["title"];
  this.link_btn=document.createElement("button");
  this.link_btn.innerHTML=this.title;
- this.link_btn.setAttribute("class","nav_button nav_button"+this.tab.tab_name);
+
+  var s_style="color:"+pp["button_color"]+";background-color:"+pp["button_bg_color"]+";font-weight:"
+  s_style+=pp["font-weight"]+";border-radius:"+pp["border_radius"]+";width:100%;height:"+pp["height"]+"px;cursor:pointer"
+
+ this.link_btn.setAttribute("style", s_style);
+
+// this.link_btn.setAttribute("class","nav_button nav_button"+this.tab.tab_name);
  this.link_btn.setAttribute("id","link_btn_"+this.link_number);
  this.link_btn.setAttribute("obj_type","tab_nav_link");
  this.link_btn.setAttribute("link_number",this.link_number);
@@ -7528,6 +7554,7 @@ function TabNav(tab_=null){
   this.active_link=null;
   this.nav_one_tab_content=null;
   this.properties=this.tab.tab_nav_links["properties"];
+      //alert("AAA"+JSON.stringify(this.properties));
   this.is_show_btns=this.properties["is_show_btns"];
   this.nav_width=this.properties["width"];
   this.add_title=this.properties["add_title"];
@@ -7542,10 +7569,12 @@ TabNav.prototype.create_main_tab_nav_content = function()
    this.nav_container.editor=this.tab.parent.editor;
    this.nav_container.setAttribute("my_name", "TabNav.nav_container_"+this.properties["obj_number"]);
    this.nav_container.setAttribute("id", this.properties["obj_number"]);
-   this.nav_container.setAttribute("style", "float:left;border:1px solid #ccc;background-color: "+this.properties["background_color"]+";width:"+this.nav_width+"%;");
+   if("left" in this.properties){var left_=this.properties["left"];} else {var left_="0"}
+   if("top" in this.properties){var top_=this.properties["top"];} else {var top_="0"}
+   var style_ = "position: relative;z-index:10000;left:"+left_+"px;top:"+top_+"px;border:1px solid #ccc;background-color: "+this.properties["background_color"]+";width:"+this.nav_width+"%;"
+   this.nav_container.setAttribute("style", style_);
    // --
    this.nav = document.createElement("div");
-
    for(f in this.tab.tab_nav_links["functions"])
    {
      eval(f+"_zz"+this.properties["obj_number"]+"="+this.tab.tab_nav_links["functions"][f]);
@@ -7567,7 +7596,6 @@ TabNav.prototype.create_main_tab_nav_content = function()
      this.nav_container_buttons.appendChild(this.nav_btn_add)
      this.nav_btn_add.parent=this;
      this.nav_btn_add.innerHTML=this.add_title;
-
      this.nav_btn_add.onclick=function(event){
          //-
          var link_ = prompt("Enter name for new link:",'');if(link_==''){alert("Please enter a link name");return}
@@ -7594,6 +7622,7 @@ TabNav.prototype.create_main_tab_nav_content = function()
          //alert(JSON.stringify(this.parent.tab.tab_nav_links))
          this.parent.tab.parent.save();
      }
+
      this.nav_btn_remove=document.createElement("button");
      this.nav_container_buttons.appendChild(this.nav_btn_remove)
      this.nav_btn_remove.parent=this;
@@ -7624,8 +7653,7 @@ TabNav.prototype.create_main_tab_nav_content = function()
    this.nav_content.setAttribute("style","float:left;background-color:#f1f1f1;width:"+width_+"%;height:100%;");
    // border:1px solid #ccc;
    this.tab.content.appendChild(this.nav_content)
-   this.nav.setAttribute("style","float:left;background-color:#f1f1f1;width:100%;");
-   // border:1px solid #ccc;
+   this.nav.setAttribute("style","float:left;background-color:"+this.properties["background_color"]+";width:100%;");
 }
 
 TabNav.prototype.process_data = function()
@@ -7707,13 +7735,35 @@ Tab.prototype.int_objects_data = function()
 Tab.prototype.create_btn_container = function(data)
 {
  //alert(JSON.stringify(data["properties"]));
- var pp=data["properties"]
+  var pp=data["properties"]
   this.btn=document.createElement("button");
-
-  var s_style="color:"+pp["button_color"]+";background-color:"+pp["button_bg_color"]+";font-weight:"
-  s_style+=pp["font-weight"]+";border-radius:"+pp["border_radius"]+";width:"+pp["width"]+"px;cursor:pointer"
+  if(this.tab_name=="main_panel"){
+   var titles_height=50
+   atm.titles_padding = 10
+   atm.titles_width=170;
+   var titles_background_color = "green"
+   atm.titles_height=titles_height-2*this.titles_padding;
+   var style_="text-align:center;background-color:"+titles_background_color+";height:"+titles_height+"px;padding:5px;";
+   atm.titles.setAttribute("style", style_)
+  }
+  var s_style="cursor:pointer;";var bgc=""; var width_=""
+  if(atm.titles_height!=0){
+    s_style+="height:"+atm.titles_height+"px";
+    bgc=this.parent.titles.style.backgroundColor;
+    width_=atm.titles_width;
+    s_style+=";border-bottom:none;border-top:none;border-left:none;border-right:2px solid white;color:white;padding:"+atm.titles_padding+"px 32px "+atm.titles_padding+"px;text-align:center;text-decoration:none;" //display:inline-block;"
+    s_style+="font-size: 16px;margin: 4px 2px"
+  }
+   if(("button_bg_color" in pp) && (pp["button_bg_color"]!="#ffffff")){bgc=pp["button_bg_color"]};
+   if(bgc!=""){s_style+=";background-color:"+bgc;}
+   if(("button_color" in pp) && (pp["button_color"]!="")){s_style+=";color:"+pp["button_color"]}
+   if(("font-weight" in pp) && (pp["font-weight"]!="")){s_style+=";font-weight:"+pp["font-weight"]}
+   if(("border_radius" in pp) && (pp["border_radius"]!="")){s_style+=";border-radius:"+pp["border_radius"]}
+   if(("width" in pp) && (pp["width"]!="")){width_=pp["width"]};
+   if(width_!=""){s_style+=";width:"+width_+"px"}
 
   this.btn.setAttribute("style", s_style);
+
   this.btn.setAttribute("link_number", this.link_number);
   this.btn.parent=this;
   this.btn.setAttribute("class", "tablinks");
@@ -7725,10 +7775,20 @@ Tab.prototype.create_btn_container = function(data)
     this.parent.int_objects_data();
     } catch(er) {alert("Error 22: "+er)}
   }
-  this.parent.titles.appendChild(this.btn)
+
+
+  if((atm.dic["is_show_btns"] == false) && (this.tab_name=="main_panel")){} else{
+    this.parent.titles.appendChild(this.btn)
+  }
   //--
   //if(this.tab_properties["tab_type"].includes("nav")) {var is_on_click=false;} else {var is_on_click=true;}
-  this.tab_content=new TabContent(tab=this, container=this.parent.container, link_dic=this.tab_content_link_dic, is_on_click=this.is_on_click, is_link=false);
+  if(this.tab_name=="main_panel"){
+     this.tab_content_link_dic["properties"]["height"]=pp["height"]
+     this.tab_content=new TabContent(tab=this, container=this.parent.panel, link_dic=this.tab_content_link_dic, is_on_click=this.is_on_click, is_link=false);
+  } else{
+     this.tab_content=new TabContent(tab=this, container=this.parent.container, link_dic=this.tab_content_link_dic, is_on_click=this.is_on_click, is_link=false);
+  }
+
   this.content=this.tab_content.link_content;
   this.content.parent=this;
   if(this.tab_properties["tab_type"].includes("nav"))
