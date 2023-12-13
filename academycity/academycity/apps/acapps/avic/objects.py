@@ -43,7 +43,6 @@ class AvicAlgo(object):
         # print("90004-020 AvibAlgo", dic, '\n', '-'*50)
 
 
-
 class AvicDataProcessing(BaseDataProcessing, BasePotentialAlgo, AvicAlgo):
     def __init__(self, dic):
         super().__init__(dic)
@@ -606,3 +605,4 @@ class AvicDataProcessing(BaseDataProcessing, BasePotentialAlgo, AvicAlgo):
         print(result)
 
         return result
+

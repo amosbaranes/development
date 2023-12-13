@@ -296,7 +296,7 @@ function AdvancedTabsManager(dic=null)
  this.tab_nav_links = {"functions":["onclick", "onmouseover", "onmouseout"],
                        "settings_list":{"width":[], "add_title":[], "remove_title":[], "is_show_btns":["", "true", "false"],
                                         "left":[], "top":[], "border_radius":[],"button_color":[],"button_bg_color":[],
-                                        "font-weight":[], "height":[],
+                                        "font-weight":[], "height":[], "button_align":["", "horizontal", "vertical"],
                                         "obj_number":[], "background_color":[]}, "attributes_list":{}
                        }
 
@@ -2226,10 +2226,15 @@ acBasicCreator.prototype.set_board_data = function(ll=[])
       var s='s_data=atm.units_structure';for(var w=0;w<ll.length;w++){s+='[ll['+w+']]["data"]'};eval(s);
       //alert("90441-750  \n"+JSON.stringify(s_data));
 
+      var r_="10"
       var s="<table class='basic' style='display: block;height:"+(Math.round(height_/2.5))+"px;overflow-y: auto;'><tr>"
-      s+="<th style='width:"+soldier_col_width+"px'>Name</th>"
+      s+="<th style='width:"+soldier_col_width+"px;border-top-left-radius:"+r_+"px'>Name</th>"
+      for(var i in this.fields_skills){
+      var s_="width:"+col_width+"px";
+      if(i==(this.fields_skills.length-1)){s_+=";border-top-right-radius:"+r_+"px"}
+      s+="<th style="+s_+">"+this.fields_skills[i]+"</th>";
+      }
 
-      for(var i in this.fields_skills){s+="<th style='width:"+col_width+"px'>"+this.fields_skills[i]+"</th>";}
       //s+="<th style='width:"+col_width+"px'>Fit for Duty</th>";
       s+="</tr>"
       s+="<tbody >"
@@ -7465,8 +7470,8 @@ TabContent.prototype.refresh_my_tables = function(f, v)
 // -- TabNavLink --
 function TabNavLink(tab_nav, link_dic){
  //alert(JSON.stringify(link_dic))
- //alert(JSON.stringify(tab_nav.properties))
  var pp=tab_nav.properties
+ //alert(JSON.stringify(pp))
  this.tab_nav=tab_nav;
  this.tab=tab_nav.tab;
  this.nav=tab_nav.nav;
@@ -7474,15 +7479,24 @@ function TabNavLink(tab_nav, link_dic){
  this.nav.links[this.link_number]=this;
  this.link=link_dic["nav_link"]["properties"]["link"];
  this.title=link_dic["nav_link"]["properties"]["title"];
- this.link_btn=document.createElement("button");
+
+ var s_style="width:100%;cursor:pointer";
+ var c_ = pp["button_color"];if(c_!=null && c_!=""){var s_style=";color:"+c_}
+ var bgc_ = pp["button_bg_color"];if(bgc_!=null && bgc_!=""){var s_style=";background-color:"+bgc_}
+ var fw_ = pp["font-weight"];if(fw_!=null && fw_!=""){var s_style=";font-weight:"+fw_}
+ var br_ = pp["border_radius"];if(br_!=null && br_!=""){var s_style=";border-radius:"+br_}
+
+ var ba_=pp["button_align"];
+ if(ba_!=null && ba_=="vertical")
+ {
+  this.link_btn=document.createElement("span");
+  s_style+=";padding-right: 10px;;padding-top: 10px;padding-bottom: 10px;writing-mode:vertical-rl";
+ } else{this.link_btn=document.createElement("button");}
+
  this.link_btn.innerHTML=this.title;
+ //alert(this.link_btn.outerHTML)
 
-  var s_style="color:"+pp["button_color"]+";background-color:"+pp["button_bg_color"]+";font-weight:"
-  s_style+=pp["font-weight"]+";border-radius:"+pp["border_radius"]+";width:100%;height:"+pp["height"]+"px;cursor:pointer"
-
- this.link_btn.setAttribute("style", s_style);
-
-// this.link_btn.setAttribute("class","nav_button nav_button"+this.tab.tab_name);
+ this.link_btn.setAttribute("class","nav_button nav_button"+this.tab.tab_name);
  this.link_btn.setAttribute("id","link_btn_"+this.link_number);
  this.link_btn.setAttribute("obj_type","tab_nav_link");
  this.link_btn.setAttribute("link_number",this.link_number);
@@ -7527,7 +7541,10 @@ function TabNavLink(tab_nav, link_dic){
  }
  for(f in this.nav_link_functions)
  {if(f != "onclick"){var fun=this.nav_link_functions[f]; eval("this.link_btn."+f+"="+fun)}}
+
  this.nav.appendChild(this.link_btn);
+
+ this.link_btn.setAttribute("style", s_style);
  this.nav.links[this.link_number]=this;
  //this.tab_nav
  //.nav_one_tab_content=

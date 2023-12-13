@@ -287,6 +287,7 @@ class BasePotentialAlgo(object):
                 k_ = str(self.measures_name[self.measures_name["id"] == c]["measure_name"]).split("    ")[1].split("\n")[0]
                 cs.append(k_)
             return cs
+
         # print("9015-1 BasePotentialAlgo process_algo\n", dic)
         app_ = dic["app"]
         fact_model_name_ = dic["fact_model"]
@@ -348,17 +349,18 @@ class BasePotentialAlgo(object):
         similarity_n1.columns = self.options
         similarity_n2.columns = self.options
         group_d = ""
+        # Normalization Stage
         ll_dfs = self.pre_process_data(dic)
         # print(ll_dfs)
 
         lll_groups = []
         for k in ll_dfs:
             group = k #.group_name
-            # print("="*50,"\n", group, "\n", "="*50)
+            print("="*50,"\n", group, "\n", "="*50)
             try:
                 self.save_to_file = os.path.join(self.TO_EXCEL_OUTPUT, str(dic["time_dim_value"]) + "_" + group + "_o.xlsx")
                 self.to_save = []
-                # print("file_path\n", self.save_to_file, "\n", "="*50)
+                print("file_path\n", self.save_to_file, "\n", "="*50)
                 s = ""
                 # for v in dic["axes"]:
                 #     s += "'" + v + "',"
@@ -392,6 +394,21 @@ class BasePotentialAlgo(object):
                 qs_mm = model_min_max.objects.filter(measure_dim__measure_group_dim__group_name=group,
                                                      time_dim_id=dic["time_dim_value"]).all()
                 df_mm = pd.DataFrame(list(qs_mm.values('measure_dim', 'min', 'max')))
+
+                print("="*200)
+                print("="*200)
+                print("df_mm\n", df_mm)
+                print("df_mm.T\n", df_mm.T)
+                print('df_mm.T.loc["min"]\n', pd.DataFrame(df_mm.T.loc["min"]))
+                print('pd.DataFrame(df_mm.T.loc["min"]).T\n', pd.DataFrame(df_mm.T.loc["min"]).T)
+                print('pd.DataFrame(df_mm.T.loc["min"]).T.reset_index()\n', pd.DataFrame(df_mm.T.loc["min"]).T.reset_index())
+                print('pd.DataFrame(df_mm.T.loc["min"]).T.reset_index().drop(["index"]\n',
+                      pd.DataFrame(df_mm.T.loc["min"]).T.reset_index().drop(['index'], axis=1))
+
+
+                print("="*200)
+                print("="*200)
+
 
                 first_row = pd.DataFrame(df_mm.T.loc["min"]).T.reset_index().drop(['index'], axis=1)
                 second_row = pd.DataFrame(df_mm.T.loc["max"]).T.reset_index().drop(['index'], axis=1)
@@ -1018,8 +1035,8 @@ class BasePotentialAlgo(object):
 
         model_fact = apps.get_model(app_label=app_, model_name=fact_model_name_)
         model_measure_group = apps.get_model(app_label=app_, model_name=measure_group_model_name_)
-
         groups = model_measure_group.objects.filter(~Q(group_name__in=self.do_not_include_groups)).all()
+
         ll_groups = [dependent_group]
         # print("90-111-222-0 for k in groups\n", ll_groups)
         for k in groups:
@@ -1028,25 +1045,29 @@ class BasePotentialAlgo(object):
                 ll_groups.append(group)
         lll_groups = []  # this will have only the groups that do not have problems (have data)
         ll_dfs = {}  # includes all the df of all groups with data
-        # print("90-111-222-1 for k in groups\n", ll_groups)
+
+        print("90-111-222-1 for k in groups\n", ll_groups)
         for k in ll_groups:
-            # print("="*50, "\n", k, "\n", "="*50)
+            print("="*50, "\n", k, "\n", "="*50)
             try:
                 # print("\n90-111-2-"+k, "\n", "-"*30)
                 s = ""
                 for v in dic["axes"]:
                     s += "'" + v + "',"
                 s += "'" + dic["value"] + "'"
+                # print("s\n", s)
                 # print(entity_list)
                 # s_ = 'model_fact.objects.filter(measure_dim__measure_group_dim__group_name=k, time_dim_id=year_, ' + self.entity_name + '_dim_id__in=entity_list).filter(~Q(measure_dim__in=self.do_not_include_measures_objs)).all()'
                 s_ = 'model_fact.objects.filter(measure_dim__measure_group_dim__group_name=k, time_dim_id=year_).filter(~Q(measure_dim__in=self.do_not_include_measures_objs)).all()'
-                # print("s_= ", s_,"\ns= ",s)
+                print("s_= ", s_,"\ns= ",s)
                 qs = eval(s_)
                 # print(qs)
 
                 s = "pd.DataFrame(list(qs.values(" + s + ")))"
+                print("eval(s)", s)
                 df = eval(s)
-                # print("1.  df =", k ,"\n", df)
+                print("1.  df =", k ,"\n", df)
+
                 if df.shape[0] == 0:
                     continue
                 lll_groups.append(k)
@@ -1054,7 +1075,8 @@ class BasePotentialAlgo(object):
                     df = df.pivot(index=self.entity_name+"_dim", columns='measure_dim', values='amount')
                 except Exception as ex:
                     print(ex)
-                # print("90-111-2-100\n", k ,"\n", df)
+                print("90-111-2-100\n", k ,"\n", df)
+
                 ll_dfs[k] = df.apply(pd.to_numeric, errors='coerce').round(6)
                 for f__ in ll_dfs[k]:
                     # print("90-111-3-"+k+" "+str(f__), self.total_variables, "\n", self.multiply_two_variables)
@@ -1669,3 +1691,4 @@ class BasePotentialAlgo(object):
         row_[0] = row.min()
         row_[1] = row.max()
         return row_
+

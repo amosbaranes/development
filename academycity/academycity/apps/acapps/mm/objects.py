@@ -33,7 +33,7 @@ class MMAlgo(object):
         # print("90001-02 MSAlgo", dic, '\n', '-'*50)
 
         self.PROJECT_ROOT_DIR = os.path.join(settings.WEB_DIR, "data", dic["app"])
-        print(self.PROJECT_ROOT_DIR)
+        # print(self.PROJECT_ROOT_DIR)
         os.makedirs(self.PROJECT_ROOT_DIR, exist_ok=True)
         self.TOPIC_ID = dic["topic_id"]
 
@@ -45,6 +45,7 @@ class MMAlgo(object):
         os.makedirs(self.TO_EXCEL_OUTPUT, exist_ok=True)
         self.to_save_normalize = []
         self.to_save_similarity = []
+        self.to_save_similarity_by_index = []
 
     def save_to_excel_(self, save_to_file = None, to_save = None):
         wb2 = Workbook()
@@ -74,7 +75,131 @@ class MMAlgo(object):
         row_[1] = row.max()
         return row_
 
+
+class MMDataProcessing(BaseDataProcessing, MMAlgo):
+    def __init__(self, dic):
+        super().__init__(dic)
+        # print("90002-05 MMDataProcessing", dic, '\n', '-'*50)
+        self.file_similarity = os.path.join(self.PICKLE_PATH, "similarity"+".pkl")
+        self.file_similarity_dic = os.path.join(self.PICKLE_PATH, "similarity_dic"+".pkl")
+
+    def load_file_to_db(self, dic):
+        # print("90121-1: \n", dic, "="*50)
+        # print(dic)
+        # print('dic')
+        clear_log_debug()
+        log_debug("=== load_file_to_db 100 ===")
+        app_ = dic["app"]
+        file_path = self.upload_file(dic)["file_path"]
+        # file_path = "/home/amos/projects/development/academycity/data/ms/datasets/excel/raw_data/RAW DATA (607).xlsx"
+        # print('file_path')
+        # print(file_path)
+        # print('file_path')
+        # print('90121-2 dic')
+
+        dic = dic["cube_dic"]
+        # print('90121-3 dic', dic)
+
+
+        model_name_ = dic["dimensions"]["person_dim"]["model"]
+        model_person_dim = apps.get_model(app_label=app_, model_name=model_name_)
+        model_name_ = dic["dimensions"]["gene_dim"]["model"]
+        model_gene_dim = apps.get_model(app_label=app_, model_name=model_name_)
+        model_name_ = dic["fact"]["model"]
+        model_fact = apps.get_model(app_label=app_, model_name=model_name_)
+
+        model_fact.truncate()
+        model_gene_dim.truncate()
+        model_person_dim.truncate()
+        wb = load_workbook(filename=file_path, read_only=False)
+        sheet_names = wb.sheetnames
+        f = "Data"
+        ws = wb[f]
+        data = ws.values
+        # Get the first line in file as a header line
+        columns = next(data)[0:]
+        # print(columns)
+        # Create a DataFrame based on the second and subsequent lines of data
+        df = pd.DataFrame(data, columns=columns)
+        df = df.reset_index()  # make sure indexes pair with number of rows
+        # n__ = 0
+
+        list_ = []
+        for index, row in df.iterrows():
+            print("index", index)
+            for j in range(1, len(columns)):
+                # print("j", j)
+                if row[1] is not None and str(row[1]) != "None" and str(row[1]) != "":
+                    g_ = str(row[1])
+                    # print("g_", g_)
+                    gene_dim_obj, is_created = model_gene_dim.objects.get_or_create(gene_code=g_)
+                    p_ = str(columns[j])
+                    if p_ != "None" and p_ != "":
+                        person_dim_obj, is_created = model_person_dim.objects.get_or_create(person_code=p_)
+                    try:
+                        # print(str(row[columns[j]]), "\n", "="*20)
+                        v_ = float(str(row[columns[j]]))
+                        fact_obj, is_created = model_fact.objects.get_or_create(gene_dim=gene_dim_obj,
+                                                                                person_dim=person_dim_obj)
+                        fact_obj.amount = v_
+                        fact_obj.save()
+                    except Exception as ex:
+                        if p_ not in list_:
+                            list_.append(p_)
+                            print(list_)
+        print("\n", "="*100, list_, "\n", "="*100)
+
+            # print(f_, p_, v_)
+            # print(n__, max_v, max_d)
+        # print(max_v, max_d)
+        # print('90121-6 fact')
+        log_debug("=== load_file_to_db 101 ===")
+        wb.close()
+        result = {"status": "ok"}
+        return result
+
     def calculate_min_max_cuts(self, dic):
+        # # #
+        print("90099-99-99 MMDataProcessing calculate_min_max_cuts: \n", dic, "\n'", "="*100)
+        app_ = dic["app"]
+        method = dic["method"]
+        with open(self.file_similarity, 'rb') as handle:
+            df_similarity_ = pickle.load(handle)
+        with open(self.file_similarity_dic, 'rb') as handle:
+            df_similarity_dic = pickle.load(handle)
+
+        for n in range(4, len(df_similarity_.columns)):
+            print("gene=", df_similarity_.columns[n])
+            df_similarity_[df_similarity_.columns[n]] *= df_similarity_dic[df_similarity_.columns[n]]
+            df_ = df_similarity_.sort_values(df_similarity_.columns[n], ascending=False)
+
+            df = df_.copy()
+            df=df.reset_index(drop=True)
+            df.index = df.index.set_names(['idx'])
+            df=df.reset_index()
+            print("AAAA", df.columns[n+1], "\n", df)
+            try:
+                for k in ['h', 'l', 'hi', 'li']:
+                    print("gene=", df.columns[n+1], "k=", k)
+                    print(df)
+                    dfg = df.groupby('h')['idx'].sum()
+                    print(dfg)
+                    dfg = df.groupby('l')['idx'].sum()
+                    print(dfg)
+                    dfg = df.groupby('hi')['idx'].sum()
+                    print(dfg)
+                    dfg = df.groupby('li')['idx'].sum()
+                    print(dfg)
+                    print("-"*10)
+            except Exception as ex:
+                print(ex)
+
+            print("="*20)
+
+        result = {"status": "ok"}
+        return result
+
+    def normalize_similarity(self, dic):
 
         def normalize(n_dic):
             n_df = n_dic["df"]
@@ -129,7 +254,7 @@ class MMAlgo(object):
             return df_n1.copy(), df_n2.copy()
 
         def similarity(index, n_df):
-            print("="*50, "\nSIM_SIM for index = ", index, "\n", n_df)
+            # print("="*50, "\nSIM_SIM for index = ", index, "\n", n_df)
             self.to_save_similarity.append((n_df.copy(), "n_" + index))
             df_d = pd.DataFrame()
             df_r = pd.DataFrame()
@@ -144,7 +269,7 @@ class MMAlgo(object):
             sr = df_r.sum()
             dfdm = df_d.mean()
             dfrm = df_r.mean()
-            print("df_d\n", df_d, "\n", "df_r\n", df_r)
+            # print("df_d\n", df_d, "\n", "df_r\n", df_r)
             self.to_save_similarity.append((df_d.copy(), "df_d_" + index))
             self.to_save_similarity.append((df_r.copy(), "df_r_" + index))
 
@@ -153,7 +278,7 @@ class MMAlgo(object):
             dfdm_ = []
             dfrm_ = []
             lls = []
-            ll_ = []
+            ll_dic = []
             # print(dfdm.index)
             for k in dfdm.index:
                 # print(k)
@@ -165,24 +290,33 @@ class MMAlgo(object):
                 if dfdm[k] < dfrm[k]:
                     df_[k] = df_d[k]
                     lls.append(1 - dfdm[k])
-                    ll_.append(1)
+                    ll_dic.append(1)
                 else:
                     df_[k] = df_r[k]
-                    lls.append(1 - dfrm[k])
-                    ll_.append(-1)
-            print(df_)
+                    lls.append(-1*(1 - dfrm[k]))
+                    ll_dic.append(-1)
+            # print(df_)
             self.to_save_similarity.append((df_.copy(), "df_" + index))
-            # print(lls, "\n", ll_)
+            # print(lls, "\n", ll_dic)
             # print(dfdm_, "\n", dfrm_)
-            df_results = pd.DataFrame([dfdm_, dfrm_, lls, ll_], columns=df_.columns,
-                                      index=["d", "1-d", "similarity", "direction"])
-            print(df_results)
-            self.to_save_similarity.append((df_results.copy(), "df_results_" + index))
-            score = 1
-            return score
+            # df_results = pd.DataFrame([dfdm_, dfrm_, lls, ll_dic], columns=df_.columns,
+            #                           index=["d", "1-d", "similarity", "direction"])
+            # print(index)
+            is_=index.split("_")
+            index__=""
+            for k in is_:
+                k_=str(int(float(k.split("-")[1])*100))
+                if len(k_)==1:
+                    k_="0"+k_
+                index__ +=k_
+            index = int(index__)
+            df_results = pd.DataFrame([lls], columns=df_.columns, index=[index])
+            df_results_dic = pd.DataFrame([ll_dic], columns=df_.columns, index=[index])
+            self.to_save_similarity.append((df_results.copy(), "df_results_" + str(index)))
+            return df_results, df_results_dic
 
         # # #
-        print("90099-99-1000 MMAlgo calculate_min_max_cuts: \n", dic, "\n'", "="*100)
+        print("90099-99-1000 MMDataProcessing normalize_similarity: \n", dic, "\n'", "="*100)
         app_ = dic["app"]
         method = dic["method"]
         #
@@ -211,13 +345,20 @@ class MMAlgo(object):
 
         print(df.head(56),"\n", df.tail(56))
         print("'", "="*50)
+        print(df.columns[2:], len(df.columns[2:]))
+
+        df_similarity = pd.DataFrame([range(len(df.columns[2:]))], index=[0], columns=df.columns[2:])
+        df_similarity_dic = pd.DataFrame([range(len(df.columns[2:]))], index=[0], columns=df.columns[2:])
+
+        print("'", "="*50)
         step_num = int(df.shape[0]*step)
-        print("step_num=", step_num)
-        print("'", "="*30)
+        # print("step_num=", step_num)
+        # print("'", "="*30)
         # print(range(int(first_high_group*100), 0, -int(step*100)))
 
         dic_hp = {}
         # int((first_low_group-step) * 100)
+
         for l in range(int(first_low_group * 100), int(step*100), -int(step * 100)):
             l_ = l/100
             for h in range(int(first_high_group*100), int(step*100), -int(step*100)):
@@ -337,104 +478,67 @@ class MMAlgo(object):
 
                         ndic = {"df": df, "index": index_, "mm": dic_hp[index_]}
                         ndf_n1, ndf_n2 = normalize(ndic)
-                        sim = similarity(index = index_, n_df = ndf_n2)
-
+                        sim, ll_dic_ = similarity(index = index_, n_df = ndf_n2)
+                        df_similarity_dic = pd.concat([df_similarity_dic, ll_dic_])
+                        # print("sim", sim)
+                        df_similarity = pd.concat([df_similarity, sim])
+                        # print("sim\n", sim)
+                        # print("ll_dic_\n", ll_dic_)
                 # print(dic_hp)
                 # For normalization
-                self.save_to_excel_(save_to_file = os.path.join(self.TO_EXCEL_OUTPUT, str(h) + "_" + str(l) + "_normalization.xlsx"),
-                                    to_save = self.to_save_normalize)
+                # self.save_to_excel_(save_to_file = os.path.join(self.TO_EXCEL_OUTPUT, str(h) + "_" + str(l) + "_normalization.xlsx"),
+                #                     to_save = self.to_save_normalize)
                 #
                 # For similarity
-                self.save_to_excel_(save_to_file = os.path.join(self.TO_EXCEL_OUTPUT, str(h) + "_" + str(l) + "_similarity.xlsx"),
-                                    to_save = self.to_save_similarity)
+                # self.save_to_excel_(save_to_file = os.path.join(self.TO_EXCEL_OUTPUT, str(h) + "_" + str(l) + "_similarity.xlsx"),
+                #                     to_save = self.to_save_similarity)
                 #
 
-                err
+        df_similarity = df_similarity.drop(0)
+        df_similarity.index = df_similarity.index.set_names(['idx'])
+        df_similarity_ = df_similarity.reset_index()
+        #
+        df_similarity_['idx'] =df_similarity_['idx'].map(str)
+        df_similarity_['h'] = df_similarity_['idx'].str[0:2]
+        df_similarity_['l'] = df_similarity_['idx'].str[2:4]
+        df_similarity_['hi'] = df_similarity_['idx'].str[4:6]
+        df_similarity_['li'] = df_similarity_['idx'].str[6:8]
+        #
+        df_similarity_ = df_similarity_.drop(['idx'], axis = 1)
 
-                print("'", "="*50)
-                print("'", "="*50)
+        #
+        df_similarity_dic = df_similarity_dic.drop(0)
+        df_similarity_dic.index = df_similarity_dic.index.set_names(['idx'])
+        df_similarity_dic = df_similarity_dic.reset_index()
+        #
+        df_similarity_dic['idx'] =df_similarity_dic['idx'].map(str)
+        df_similarity_dic['h'] = df_similarity_dic['idx'].str[0:2]
+        df_similarity_dic['l'] = df_similarity_dic['idx'].str[2:4]
+        df_similarity_dic['hi'] = df_similarity_dic['idx'].str[4:6]
+        df_similarity_dic['li'] = df_similarity_dic['idx'].str[6:8]
+        #
+        df_similarity_dic = df_similarity_dic.drop(['idx'], axis = 1)
+        #
+        for s in ['li', 'hi', 'l', 'h']:
+            c = df_similarity_.pop(s)
+            df_similarity_.insert(0, s, c)
+            c = df_similarity_dic.pop(s)
+            df_similarity_dic.insert(0, s, c)
+        #
+        print(df_similarity_)
+        print(df_similarity_dic)
+        #
+        self.to_save_similarity_by_index.append((df_similarity_.copy(), "similarity_by_index"))
+        self.save_to_excel_(save_to_file = os.path.join(self.TO_EXCEL_OUTPUT, "similarity_by_index.xlsx"),
+                            to_save = self.to_save_similarity_by_index)
+        print("'", "="*50)
+        print("'", "="*50)
+
+        with open(self.file_similarity, 'wb') as handle:
+            pickle.dump(df_similarity_, handle, protocol=pickle.HIGHEST_PROTOCOL)
+        with open(self.file_similarity_dic, 'wb') as handle:
+            pickle.dump(df_similarity_dic, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
         result = {"status": "ok"}
         return result
 
-
-
-class MMDataProcessing(BaseDataProcessing, MMAlgo):
-    def __init__(self, dic):
-        super().__init__(dic)
-        # print("90002-05 MMDataProcessing", dic, '\n', '-'*50)
-
-    def load_file_to_db(self, dic):
-        # print("90121-1: \n", dic, "="*50)
-        # print(dic)
-        # print('dic')
-        clear_log_debug()
-        log_debug("=== load_file_to_db 100 ===")
-        app_ = dic["app"]
-        file_path = self.upload_file(dic)["file_path"]
-        # file_path = "/home/amos/projects/development/academycity/data/ms/datasets/excel/raw_data/RAW DATA (607).xlsx"
-        # print('file_path')
-        # print(file_path)
-        # print('file_path')
-        # print('90121-2 dic')
-
-        dic = dic["cube_dic"]
-        # print('90121-3 dic', dic)
-
-
-        model_name_ = dic["dimensions"]["person_dim"]["model"]
-        model_person_dim = apps.get_model(app_label=app_, model_name=model_name_)
-        model_name_ = dic["dimensions"]["gene_dim"]["model"]
-        model_gene_dim = apps.get_model(app_label=app_, model_name=model_name_)
-        model_name_ = dic["fact"]["model"]
-        model_fact = apps.get_model(app_label=app_, model_name=model_name_)
-
-        model_fact.truncate()
-        model_gene_dim.truncate()
-        model_person_dim.truncate()
-        wb = load_workbook(filename=file_path, read_only=False)
-        sheet_names = wb.sheetnames
-        f = "Data"
-        ws = wb[f]
-        data = ws.values
-        # Get the first line in file as a header line
-        columns = next(data)[0:]
-        # print(columns)
-        # Create a DataFrame based on the second and subsequent lines of data
-        df = pd.DataFrame(data, columns=columns)
-        df = df.reset_index()  # make sure indexes pair with number of rows
-        # n__ = 0
-
-        list_ = []
-        for index, row in df.iterrows():
-            print("index", index)
-            for j in range(1, len(columns)):
-                # print("j", j)
-                if row[1] is not None and str(row[1]) != "None" and str(row[1]) != "":
-                    g_ = str(row[1])
-                    # print("g_", g_)
-                    gene_dim_obj, is_created = model_gene_dim.objects.get_or_create(gene_code=g_)
-                    p_ = str(columns[j])
-                    if p_ != "None" and p_ != "":
-                        person_dim_obj, is_created = model_person_dim.objects.get_or_create(person_code=p_)
-                    try:
-                        # print(str(row[columns[j]]), "\n", "="*20)
-                        v_ = float(str(row[columns[j]]))
-                        fact_obj, is_created = model_fact.objects.get_or_create(gene_dim=gene_dim_obj,
-                                                                                person_dim=person_dim_obj)
-                        fact_obj.amount = v_
-                        fact_obj.save()
-                    except Exception as ex:
-                        if p_ not in list_:
-                            list_.append(p_)
-                            print(list_)
-        print("\n", "="*100, list_, "\n", "="*100)
-
-            # print(f_, p_, v_)
-            # print(n__, max_v, max_d)
-        # print(max_v, max_d)
-        # print('90121-6 fact')
-        log_debug("=== load_file_to_db 101 ===")
-        wb.close()
-        result = {"status": "ok"}
-        return result
