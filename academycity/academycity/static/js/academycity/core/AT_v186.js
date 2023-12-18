@@ -224,7 +224,8 @@ function AdvancedTabsManager(dic=null)
                         "sub_buttons":{"Basic":{"title":"Basic", "width":10,
                                                 "setting": {"app":[], "table":[], "setup_dictionary":[], "entity":[],
                                                             "type":["", "individual", "unit"], "synchronize_with":[],
-                                                            "height":[], "width":[], "kpis":[], "kpis_sub_titles":[], "skills":[],
+                                                            "height":[], "width":[], "kpis":[], "kpis_sub_titles":[],
+                                                            "kpis_images":[], "kpis_progress_co":[], "skills":[],
                                                             "border_style":["none","solid","Dotted","dashed",
                                                                    "double","groove","ridge","inset","outset",
                                                                    "hidden"],
@@ -542,13 +543,12 @@ AdvancedTabsManager.prototype.get_app_obj=function(obj_name, obj=null, is_new=fa
   if(!(h in this.app_objs) || is_new==true){
     var n_=this.temp_number;this.temp_number+=1;
 
-var z=obj_dic["functions"]["constructor"]
-var z1=z.substring(0, z.indexOf('(')+1)
-var z2=z.substring(z.indexOf('(')+1)
-var z21=z2.substring(0, z2.indexOf('{')+1)
-var z22=z2.substring(z2.indexOf('{')+1)
-var temp_constractor=z1+"manager, "+z21+"this.atm=manager;"+z22
-
+    var z=obj_dic["functions"]["constructor"]
+    var z1=z.substring(0, z.indexOf('(')+1)
+    var z2=z.substring(z.indexOf('(')+1)
+    var z21=z2.substring(0, z2.indexOf('{')+1)
+    var z22=z2.substring(z2.indexOf('{')+1)
+    var temp_constractor=z1+"manager, "+z21+"this.my_name='"+obj_dic["properties"]["obj_name"]+"';this.atm=manager;"+z22
     var s=obj_dic["properties"]["obj_name"]+n_+'='+temp_constractor;eval(s);
     for(f in obj_dic["functions"])
     {if(f!="constructor"){s=obj_dic["properties"]["obj_name"]+n_+'.prototype.'+f+' = '+obj_dic["functions"][f];
@@ -1851,9 +1851,7 @@ acBasicCreator.prototype.get_grade = function(skill_id, unit_id)
 // https://plotly.com/javascript/pie-charts/
 // https://www.alt-codes.net/smiley_alt_codes.php
 
-
-
-acBasicCreator.prototype.set_board_data = function(ll=[])
+acBasicCreator.prototype.set_board_data_old_toBeDeleted_12_15_2023 = function(ll=[])
 {
   //alert("set data1\n"+ll.length)
   if(atm.is_run_set_obj_structure==false){return}
@@ -2266,11 +2264,623 @@ acBasicCreator.prototype.set_board_data = function(ll=[])
    }
 }
 
+acBasicCreator.prototype.set_board_data = function(ll=[])
+{
+  //alert("set data1\n"+ll.length)
+  if(atm.is_run_set_obj_structure==false){return}
+  if(ll.length==0){for(var k in atm.data_dic){ll.push(k)}}
+   //alert("acBasicCreator.prototype.set_board_data 90446-25 \n"+JSON.stringify(atm.data_dic));
+   //alert(ll)
+   //--
+   var dic_=this.parent.data;var pp_=dic_["properties"];
+   this.synchronize_with=pp_["synchronize_with"];
+   var type_="individual"; try{type_=pp_["type"]} catch(er){}
+   var skills_dic=JSON.parse(pp_["skills"]);var kpis_dic=JSON.parse(pp_["kpis"]);
+   this.kpis_sub_titles=JSON.parse(pp_["kpis_sub_titles"]);
+   this.kpis_images=JSON.parse(pp_["kpis_images"]);
+   this.kpis_progress_co=JSON.parse(pp_["kpis_progress_co"]);
+
+   this.fields_skills=skills_dic["l"];this.skills_cols=skills_dic["cols"];
+   //["Fitness","Shooting","Professional","Equipment"]
+   this.fields_kpis_=kpis_dic["l"];this.kpis_cols=kpis_dic["cols"];
+
+   var width_=pp_["width"]; if(width_==null || width_==""){width_=900};
+   var height_=pp_["height"]; if(height_==null || height_==""){height_=300};
+   var dic=atm.data_dic;
+   var unit_qualification = atm.general.unit_qualification
+   var unit_equipment = atm.general.unit_equipment
+
+   //alert("90441-550-4 \n"+JSON.stringify(unit_qualification));
+   //alert("90441-550-5 \n"+JSON.stringify(unit_equipment));
+
+   //alert("90441-550-3 \n"+JSON.stringify(atm.general.unit_qualification));
+   var z=-1;
+   var unit_qualification_dic = {'wet_day':0,'wet_night':0,'raid_day':0, 'raid_night':0}
+   var unit_equipment_dic = {'is_equiped':0}
+   for(var j in ll){
+    //alert(j + "\n"+ll[j])
+    z+=1;var dic=dic[ll[z]];
+
+    var unit_qualification=unit_qualification[ll[z]];for(var x in unit_qualification_dic){unit_qualification_dic[x]=unit_qualification[x]}
+    var unit_equipment=unit_equipment[ll[z]];for(var x in unit_equipment_dic){unit_equipment_dic[x]=unit_equipment[x]}
+    unit_qualification=unit_qualification["data"];
+    unit_equipment=unit_equipment["data"];
+
+    var container_=this.board_objs[(1*z+1)].content;
+//   alert(container_.outerHTML)
+    try{var kpi=dic["kpi"];var board_title=dic["title"];dic=dic["data"];
+   } catch(er){alert(er)}}
+
+   if(z<0){try{var container_=this.board_objs[1].content} catch(er){alert(er)}}
+   //alert("90441-550-1  "+JSON.stringify(kpi));
+   //alert("90441-550-2  "+JSON.stringify(dic));
+   try{this.hide_boards((1*z+1)); container_.style.display="block";} catch(er){alert(er)}
+   // alert("90441-550  "+JSON.stringify(dic));
+   // alert("90441-550-88  "+JSON.stringify(this.fields_kpis_));
+
+   var n_kpi_objs=Object.keys(this.fields_kpis_).length;
+   var w_kpi=125;var h_kpi=200; wl_kpi=50;var wr_kpi=50;
+   var n_objs=Object.keys(dic).length;
+   var wl=50;var wr=50;var w=200;var n_=(width-wl-wr)/n_objs;if(n_<200){w=n_}
+   var wb_kpi=(1*width_-wl_kpi-wr_kpi-n_kpi_objs*w_kpi)/(n_kpi_objs-1);
+
+   if(type_=="unit"){wb_kpi=(1*width_-wl_kpi-wr_kpi-(2+n_kpi_objs)*w_kpi)/(n_kpi_objs+1)}
+
+   var wb=(1*width_-wl-wr-n_objs*w)/(n_objs-1);
+
+   //alert(wb)
+   var w_=wl+this.nav_width;var th2_=1*height_/2
+   var w_kpi_=wl_kpi+this.nav_width;
+   container_.innerHTML="";
+   var div_block = document.createElement("div")
+   div_block.setAttribute("style", "position:absolute;left:"+left_+"px;")
+   container_.appendChild(div_block)
+
+   var left_  = width_/5
+   var div_cycle_u = document.createElement("div")
+   div_cycle_u.setAttribute("style", "position:absolute;left:"+left_+"px;")
+   div_block.appendChild(div_cycle_u)
+
+  // alert(pp_["height"])
+
+   var hh_ = pp_["height"]/2.7
+//alert("hh_ "+hh_)
+   var div_canvas_square_u = document.createElement("div")
+   div_canvas_square_u.setAttribute("style", "position:absolute;left:"+(-left_-300)+"px;bottom:"+hh_+"px;top:"+hh_+"px")
+   div_block.appendChild(div_canvas_square_u)
+   //alert(div_block.outerHTML)
+   //--
+    var board_title_= board_title.split(" ")
+    var board_title_1="";if(board_title_[1]!=null && board_title_[1]!=""){board_title_1=board_title_[1]}
+
+   var title__=document.createElement("h1");
+   title__.innerHTML="<span style='color:black' ><b>"+board_title_[0]+"</b></span>"+"<span style='color:#AFE1AF'><b>"+board_title_1+"</b></span>";
+   var top_=5;
+   var style_ = "position:absolute;font-size:35px;text-transform:uppercase;left:"+(width_/2-50)+"px;top:"+top_+"px;color:blue"
+   title__.setAttribute("style", style_);
+   container_.appendChild(title__);
+   //--
+   //-- chart KPI --
+   var n__=n_kpi_objs;if(type_=="unit"){n__=n_kpi_objs+2}
+   //alert(n_kpi_objs+"\n"+type_+"\n"+n__)
+   //alert(this.kpis_cols)
+
+//   var progress_color = ["", "#326FB9", "#7ED0B5", "#26A269"]
+
+   var bg_color = ["#C0BFBC"]
+   var inner_circle_color = ["#FFFFFF"]
+   for(var j=1; j<=n__;j++)
+   {
+     var nl_=this.kpis_cols[j-1];
+//     kpi[j]["data-progress-color"] = this.kpis_progress_co[j-1]
+     kpi[j]['data-bg-color'] = bg_color[0]
+     kpi[j]['data-inner-circle-color'] = inner_circle_color[0]
+     var div_=document.createElement("div");
+     var top_=80
+    // alert(w_kpi_)
+     var style_ = "position:absolute;left:"+w_kpi_+"px;top:"+top_+"px;width:"+w_kpi+"px;height:"+h_kpi+"px;"
+     style_+="border-style:solid;border-width:0px;border-color:blue;border-radius:10px;display:flex;align-items: center;justify-content: center;"
+     div_.setAttribute("style", style_);
+     if(j<3 || (j==3 && type_=="individual") || (nl_==7 && type_=="unit")){
+//           var s_kpi1=document.createElement("span");s_kpi1.innerHTML=this.kpis_sub_titles[j-1];
+//           var style_ = "z-index:1;position:absolute;left:"+(w_kpi_+10)+"px;top:"+(top_+150)+"px;color:blue"
+//           s_kpi1.setAttribute("style", style_);
+//           container_.appendChild(s_kpi1);
+       //--
+       var kpi_pass=atm.general.pass_grade["kpi_"+type_][nl_];
+       //alert(j+"\n"+kpi_pass+"\n"+JSON.stringify(kpi[nl_])+"\n"+type_+"grade"+"\n"+kpi[nl][type_+"_grade"])
+
+       var suffix_="";if(type_=="unit" || (j==3 && type_=="individual")){suffix_="%"}
+
+      var grade_value = kpi[nl_][type_+"_grade"]
+      var data_bg_color = kpi[j]["data-bg-color"]
+      var data_inner_circle_color = kpi[j]["data-inner-circle-color"]
+
+      var img_ = this.kpis_images[j-1]
+      var outer_div = document.createElement('div'); div_.appendChild(outer_div)
+      var title =  document.createElement('h4'); outer_div.appendChild(title)
+      title_style = "position: absolute;top:-30px;font-family: serif;font-size:14px;"
+      title.setAttribute('style', title_style)
+      title.innerHTML = this.fields_kpis_[j-1]
+      outer_div_style = "position: absolute;border-radius: 50%;display:flex;flex-direction: column;justify-content:center;align-items: center;"
+      outer_div_style +="box-shadow: 5px 5px 5px grey;width:180px;height:180px;"
+      outer_div.setAttribute('style', outer_div_style)
+      outer_div.setAttribute('class', 'circular-progress')
+      outer_div.setAttribute('data-inner-circle-color', data_inner_circle_color)
+      outer_div.setAttribute('data-percentage', grade_value)
+      outer_div.setAttribute('data-progress-color', this.kpis_progress_co[j-1])
+      outer_div.setAttribute('data-bg-color', data_bg_color)
+      var inner_div = document.createElement('div'); outer_div.appendChild(inner_div)
+      inner_div_style = "position: absolute;width:150px;height:150px;border-radius: 50%;background-color: lightgrey;"
+      inner_div.setAttribute('style', inner_div_style)
+      inner_div.setAttribute('class', 'inner-circle')
+
+      var img = document.createElement('img');outer_div.appendChild(img)
+      img.setAttribute("src", "/media/training/images/"+img_)
+      img_style="position:absolute;top:10px;width:100px;height:100px;color:"+this.kpis_progress_co[j-1]
+      img.setAttribute("style", img_style)
+
+      var p = document.createElement('p');outer_div.appendChild(p)
+      p_style = "position:relative;top:20px;font-size: 1.2rem;font-weight:bold;color: rgb(0, 0, 0, 0.8);"
+      p.setAttribute('style', p_style)
+      p.setAttribute('class', 'percentage')
+      p.setAttribute('value-color', 'black')
+      p.innerHTML = '0%'
+      var h6 = document.createElement('h6');outer_div.appendChild(h6)
+      header_style = "position:relative;top:25px"
+      h6.setAttribute('style', header_style)
+      h6.setAttribute('class', 'header')
+      h6.innerHTML = this.kpis_sub_titles[j-1];
+
+    } else {
+        //alert("j="+j+"\ntype="+type_+"\nnobjs="+n_kpi_objs+"\nn_="+n+"\nnl="+nl_)
+       if(type_=="unit" && j >=n__-1) {
+           if(j==n__-1){
+
+               var ll_ = []; var is_all=1
+               for(var x in unit_qualification_dic)
+               {
+                if(unit_qualification_dic[x]==0){ll_.push(x);}else{ll_.push("")}
+                is_all*=unit_qualification_dic[x];
+               }
+
+               if(is_all==1){var c_='rgb(0, 128, 0)';}else{var c_='rgb(255, 0, 0)'}
+               var c=[c_,c_,c_,c_];
+
+                var div_shape_container = document.createElement('div');div_.appendChild(div_shape_container)
+                var style_ = 'position:absolute;width:180px;height:180px;background-color:#63C0A1;'
+                style_+='display:flex;justify-content: center;align-items: center;'
+                div_shape_container.setAttribute('style',style_)
+                div_shape_container.setAttribute('class', 'shape-container')
+                var div_circle = document.createElement('div')
+                div_circle.setAttribute('class','top-circle');div_shape_container.appendChild(div_circle)
+                var style_ = 'position:absolute;width: 80px;height:80px;background-color:#A7151F;border-radius:50%;top:-25%;left: 50%;border-left: 6px solid white;'
+                style_+='border-right: 6px solid white;border-bottom: 6px solid white; transform: translateX(-50%);'
+                div_circle.setAttribute('style',style_)
+                var div_sharp_edge = document.createElement('div')
+                var style_ = 'position:absolute;width: 0;height: 0;border-left: 20px solid transparent;'
+                style_+='border-right: 20px solid transparent;border-top: 30px solid #63C0A1;top: 100%;left: 50%;transform: translateX(-50%);'
+                div_sharp_edge.setAttribute('style', style_)
+                div_sharp_edge.setAttribute('class','sharp-edge');div_shape_container.appendChild(div_sharp_edge)
+                 var div_center_text = document.createElement('div')
+                div_center_text.setAttribute('class','center-text');div_shape_container.appendChild(div_center_text)
+                div_center_text.setAttribute('style','color: #fff;font-size: 16px; ')
+                var h5 = document.createElement('h5')
+                h5.setAttribute('style', 'text-decoration:underline');div_center_text.appendChild(h5)
+                h5.innerHTML = "UNIT TRAINING"
+
+            }
+           else if(j==n__)
+           {
+               var ll_ = [];var is_all_e=1
+               for(var x in unit_equipment_dic)
+               {
+                if(unit_equipment_dic[x]==0){ll_.push(x);}else{ll_.push("")}
+                is_all_e*=unit_equipment_dic[x];
+               }
+               if(is_all_e==1){var c_='rgb(0, 128, 0)';}else{var c_='rgb(255, 0, 0)'}
+               var c=[c_];
+
+               var div_shape_container = document.createElement('div');div_.appendChild(div_shape_container)
+                var style_ = 'position:absolute;width:180px; height: 180px;background-color:#43695C;margin-left:30px;'
+                style_+='display: flex;justify-content: center;align-items: center;'
+                div_shape_container.setAttribute('style',style_)
+                div_shape_container.setAttribute('class', 'shape-container')
+                var div_circle = document.createElement('div')
+                div_circle.setAttribute('class','top-circle');div_shape_container.appendChild(div_circle)
+                var style_ = 'position:absolute;width: 80px;height:80px;background-color:#7ED0B5;border-radius:50%;top:-25%;left: 50%;border-left: 6px solid white;'
+                style_+='border-right: 6px solid white;border-bottom: 6px solid white; transform: translateX(-50%);'
+                div_circle.setAttribute('style',style_)
+                var div_sharp_edge = document.createElement('div')
+                var style_ = 'position:absolute;width: 0;height: 0;border-left: 20px solid transparent;'
+                style_+='border-right: 20px solid transparent;border-top:30px solid #43695C;top:100%;left:50%;transform: translateX(-50%);'
+                div_sharp_edge.setAttribute('style', style_)
+                div_sharp_edge.setAttribute('class','sharp-edge');div_shape_container.appendChild(div_sharp_edge)
+                 var div_center_text = document.createElement('div')
+                div_center_text.setAttribute('class','center-text');div_shape_container.appendChild(div_center_text)
+                div_center_text.setAttribute('style','color: #fff;font-size: 16px; ')
+                var h5 = document.createElement('h5')
+                h5.setAttribute('style', 'text-decoration:underline');div_center_text.appendChild(h5)
+                h5.innerHTML = "UNIT EQUIPMENT"
+           }
+
+       } else {
+
+
+        var value_ = kpi[nl_][type_+"_ref1"];var reference_=kpi[nl_][type_+"_grade"]
+        var kk = 1*value_ - 1*reference_
+
+    var outer_div = document.createElement('div'); div_.appendChild(outer_div)
+    outer_div_style = "position:absolute;display:flex;flex-direction:column;justify-content:center;align-items:center;"
+    outer_div.setAttribute('style', outer_div_style)
+    var canvas_= document.createElement("canvas");outer_div.appendChild(canvas_)
+    canvas_.setAttribute("id", "shapesCanvas");
+    canvas_.setAttribute("width", "300");
+    canvas_.setAttribute("height", "300");
+    container_.appendChild(div_);
+    var title =  document.createElement('h4'); outer_div.appendChild(title)
+    title_style = "position: absolute;top:20px;font-family: serif;font-size:14px;"
+    title.setAttribute('style', title_style)
+    title.innerHTML = this.fields_kpis_[j-1]
+
+
+
+        var canvas = document.getElementById("shapesCanvas");
+        var context = canvas_.getContext("2d");
+        // Set the center and radius of the hexagon
+        var hexagonCenterX = canvas.width / 2;
+        var hexagonCenterY = canvas.height / 2;
+        var hexagonRadius = 100;
+        var hexagonRotation = Math.PI / 6; // Rotation angle in radians
+        var hexagonTextOffsetY = 70; // Offset for text positioning
+        // Draw the rotated hexagon
+        drawHexagon(context, hexagonCenterX, hexagonCenterY, hexagonRadius, hexagonRotation, value_, hexagonTextOffsetY);
+        // Set the center and radius of the pentagon
+        var pentagonCenterX = hexagonCenterX;
+        var pentagonCenterY = hexagonCenterY-15;
+        var pentagonRadius = hexagonRadius ; // Adjust size as needed
+        var pentagonSideLength = 75;
+        var pentagonTextOffsetY = 5; // Offset for text positioning
+        // Draw the nested pentagon
+        drawPentagon(context, pentagonSideLength, pentagonCenterX, pentagonCenterY, pentagonRadius, kk, pentagonTextOffsetY);
+
+        function drawHexagon(context, x, y, radius, rotation, text, textOffsetY) {
+            context.beginPath();
+            for (var i = 0; i < 6; i++) {
+                var angle = (i * 2 * Math.PI) / 6 + rotation;
+                var xPos = x + radius * Math.cos(angle);
+                var yPos = y + radius * Math.sin(angle);
+
+                if (i === 0) {
+                    context.moveTo(xPos, yPos);
+                } else {
+                    context.lineTo(xPos, yPos);
+                }
+            }
+            context.closePath();
+            context.strokeStyle = "#B5B5B3"; // Stroke color
+            context.lineWidth = 2; // Stroke width
+            context.fillStyle = "#B5B5B3"; // Fill color
+            context.fill();
+            context.stroke();
+
+            // Add text inside the hexagon
+            context.fillStyle = "#fff"; // Text color
+            context.font = "bold 25px Arial"; // Font size and family
+            context.textAlign = "center"; // Center the text horizontally
+            context.textBaseline = "middle"; // Center the text vertically
+            context.fillText(text, x, y + textOffsetY);
+        }
+        function drawPentagon(context,sideLength, x, y, radius, text, textOffsetY) {
+            context.beginPath();
+            context.moveTo(x, y - sideLength);
+            context.lineTo(x - sideLength, 50 + sideLength * Math.sqrt(2) / 2);
+            context.lineTo(x - sideLength / 1, y + sideLength * Math.sqrt(3) / 2);
+            context.lineTo(x + sideLength / 1, y + sideLength * Math.sqrt(3) / 2);
+            context.lineTo(x + sideLength, 50 + sideLength * Math.sqrt(2) /2);
+
+            context.closePath();
+            context.strokeStyle = "#59A963"; // Stroke color
+            //context.lineWidth = 2; // Stroke width
+            context.fillStyle = "#59A963"; // Fill color
+            context.fill();
+            context.stroke();
+
+            // Add text inside the pentagon
+            context.fillStyle = "white"; // Text color
+            context.font = "bold 25px Arial"; // Font size and family
+            context.textAlign = "center"; // Center the text horizontally
+            context.textBaseline = "middle"; // Center the text vertically
+            context.fillText(text, x, y + textOffsetY);
+        }
+
+        }
+    }
+     //-- Grade --
+     if(type_=="unit"){w_kpi_=w_kpi_+1*(1*w_kpi+1*(wb_kpi+70));if(j<=3){div_cycle_u.appendChild(div_);}else{div_canvas_square_u.appendChild(div_);}}else{w_kpi_=w_kpi_+1*(1*w_kpi+1*(wb_kpi));container_.appendChild(div_);}
+ }
+  // alert(div_cycle_u.outerHTML)
+  // alert(div_canvas_square_u.outerHTML)
+   //--
+  const circularProgress = document.querySelectorAll(".circular-progress");
+  Array.from(circularProgress).forEach((progressBar) => {
+      const progressValue = progressBar.querySelector(".percentage");
+      const innerCircle = progressBar.querySelector(".inner-circle");
+        let startValue = 0,
+        endValue = Number(progressBar.getAttribute("data-percentage")),
+        speed =0.1,
+        progressColor = progressBar.getAttribute("data-progress-color");
+        progressValueColor = progressBar.getAttribute("value-color");
+        const progress = setInterval(() => {
+        startValue += 0.1; // Increment by a smaller fractional value for hundredths
+        const roundedValue = Math.round(startValue * 10) / 10;
+
+        progressValue.textContent = `${roundedValue.toFixed(1)}%`;
+        progressValue.style.color = `${progressValueColor}`;
+        innerCircle.style.backgroundColor = `${progressBar.getAttribute(
+          "data-inner-circle-color"
+        )}`;
+        progressBar.style.background = `conic-gradient(${progressColor} ${
+          roundedValue * 3.6
+        }deg,${progressBar.getAttribute("data-bg-color")} 0deg)`;
+        // Adjusted comparison with a tolerance of 0.01
+        if (roundedValue >= endValue - 0.01) {
+          clearInterval(progress);
+        }
+      }, speed);
+  });
+//         alert("AA unit_qualification\n"+JSON.stringify(unit_qualification));
+//         alert("AA unit_equipment\n"+JSON.stringify(unit_equipment));
+   var k = 0
+   //alert("90441-350-35  "+JSON.stringify(dic));
+   if(ll.length<(atm.nlimit+1))
+   {
+    var n=0;
+    var nn_=Object.keys(dic).length
+    var unit_width_=Math.round((width_-100)/nn_);
+    if (unit_width_>330){unit_width_=330}
+    for(var z in dic){
+        n+=1
+        //alert("z\n"+z+"\n"+JSON.stringify(dic[z]["kpi"]));
+        var labels_=[]
+        var data_=[]
+        var background_color_=[]
+        for(var j in this.kpis_cols)
+        {
+         var k_=this.kpis_cols[j]
+         var bb_ = this.fields_kpis_[j].replace('<br>', ' ')
+         labels_.push(bb_)
+         var nn__=1*dic[z]["kpi"][k_][type_+"_grade"]
+         if((dic[z]["kpi"][k_][type_+"grade"]+"")=="NaN"){nn__=0}
+         if([1,2].includes(1*k_)==false && k_!=7 && (k_!=4)){
+            var ref1=1*dic[z]["kpi"][k_][type_+"_ref1"];
+            var grade=dic[z]["kpi"][k_][type_+"_grade"];
+            nn__=100*(ref1-grade)/ref1;
+             //alert("j="+j+"\nk_="+k_+"\nref1="+ref1+"\ngrade="+grade+"\nnn_"+nn_)
+         }
+         data_.push(nn__)
+         // alert("j="+j+"\nk_="+k_+"\ndata_= "+data_)
+         if(nn_>=1*dic[z]["kpi"][k_][type_+"_pass"]){var g='rgba(38, 162, 105, 1)'}else{var g='rgba(190, 49, 65, 1)'}
+         background_color_.push(g)
+        }
+      var text_color="black"
+      var is_all=1;var is_all_e=1;
+      var uq=unit_qualification[z];
+      var ue=unit_equipment[z];
+     //alert(z+"\nuq\n"+JSON.stringify(uq));
+     //alert(z+"\nue\n"+JSON.stringify(ue));
+     for(var x in unit_qualification_dic){is_all*=uq[x]}
+     for(var x in unit_equipment_dic){is_all_e*=ue[x]}
+     var text_color="black";var text_bgcolor="red";if(is_all==1 && is_all_e==1){text_color="green";var text_bgcolor="none"}
+     //var text_color_e="black";var text_bgcolor_e="red";if(is_all_e==1){text_color_e="green";var text_bgcolor_e="none"}
+
+      var div_=document.createElement("div")
+      var canvas_=document.createElement("canvas");
+      canvas_.setAttribute("id", "myChart");
+      canvas_.setAttribute("width", unit_width_);
+      canvas_.setAttribute("height", "200");
+      div_.appendChild(canvas_);
+      //var div_c=document.createElement("div");
+      //div_.appendChild(div_c);
+      container_.appendChild(div_);
+
+      if(type_=="unit"){                                                                        //w = unit_width_
+          var style_ = "position:absolute;left:"+(w_+50)+"px;top:"+(pp_["height"]-200)+"px;width:"+unit_width_+"px"
+          div_.setAttribute("style", style_);
+          w_+=wb+w
+      }else{
+           var style_ = "position:absolute;left:"+w_+"px;top:"+(th2_+20)+"px;width:"+unit_width_+"px"
+           div_.setAttribute("style", style_);
+           w_+=wb+w
+      }
+      if(type_=="unit"){
+      var style_c="background-color:"+text_bgcolor+";font-weight: bold;color:"+text_color+";width:40%;height:30%;position:absolute;top:45%;left:0;margin-top:-15px;line-height:19px;"
+      style_c+="border-radius:45%;margin-left:30%;padding:10px;;text-align:center;z-index:0"
+      } else{
+      var style_c=";font-weight: bold;width:100%;height:30%;position:absolute;top:45%;left:0;margin-top:-15px;line-height:19px;"
+      style_c+="padding:10px;;text-align:center;z-index:0"
+      }
+      //div_c.setAttribute("style", style_c);
+      //div_c.innerHTML=dic[z]["title"];
+      //alert(type_+"\n"+div_c.outerHTML)
+      var ll_=clone_dic(ll);ll_.push(1*z);div_.ll=ll_;div_.obj=this;
+      div_.addEventListener("click", function(event){
+       var e=event.target;
+        this.obj.set_board_data(ll=this.ll, obj=this.obj);
+        //--
+        try{var s_obj=get_creator(this.obj.synchronize_with);s_obj.set_board_data(ll=this.ll, obj=s_obj);}catch(er){}
+        //--
+       if(this.ll.length>2){this.obj.set_detail_data(ll=this.ll)}
+
+      })
+
+      var theThinGreenLinePlugin = {
+        afterDatasetsDraw: function(chartInstance, easing) {
+       // The context, needed for drawing.
+        var ctx = chartInstance.chart.ctx;
+        var centerConfig = chartInstance.chart.config.options.elements.center;
+      	var fontStyle = centerConfig.fontStyle || 'Arial';
+		var txt = centerConfig.text;
+        var color = centerConfig.color || '#000';
+        var sidePadding = centerConfig.sidePadding || 20;
+        var sidePaddingCalculated = (sidePadding/100) * (chartInstance.chart.innerRadius * 2)
+        //Start with a base font of 30px
+        ctx.font = "30px " + fontStyle;
+        //Get the width of the string and also the width of the element minus 10 to give it 5px side padding
+        var stringWidth = ctx.measureText(txt).width;
+        var elementWidth = (chartInstance.chart.innerRadius * 2) - sidePaddingCalculated;
+        // Find out how much the font can grow in width.
+        var widthRatio = elementWidth / stringWidth;
+        var newFontSize = Math.floor(30 * widthRatio);
+        var elementHeight = (chartInstance.chart.innerRadius * 2);
+        // Pick a new font size so it will not be larger than the height of label.
+        var fontSizeToUse = 16;
+		//Set font settings to draw it correctly.
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        var centerX = ((chartInstance.chartArea.left + chartInstance.chartArea.right) / 2);
+        var centerY = ((chartInstance.chartArea.top + chartInstance.chartArea.bottom) - 70); // positioning the text
+        ctx.font = fontSizeToUse+"px " + fontStyle;
+        ctx.fillStyle = color;
+        //Draw text in center
+        ctx.fillText(txt, centerX, centerY);
+
+       //ctx.shadowColor = "rgba(0, 0, 0, 0.7)";
+       // ctx.shadowBlur = 3;
+       // ctx.shadowOffsetX = 5;
+       // ctx.shadowOffsetY = 2;
+
+        // The first (and, assuming, only) dataset.
+        var dataset = chartInstance.data.datasets[0];
+        // The dataset's data length.
+        var datasetDataLength = dataset.data.length;
+        // The model of the first slice.
+        var firstDatumModel = dataset._meta[Object.keys(dataset._meta)[0]].data[0]._model;
+        // The model of the last slice.
+        var lastDatumModel = dataset._meta[Object.keys(dataset._meta)[0]].data[datasetDataLength - 1]._model;
+        // The Thin Green Line's radius (measured from the center of the doughnut).
+        // Add a few pixels to make the line extend a bit from the slice's outer radius.
+        var lineRadius = firstDatumModel.outerRadius - 1; // increases the length of the line at the bottom of the piechart
+        // The first point of The Thin Green Line (for the first slice).
+        var firstSliceStartX = firstDatumModel.x + lineRadius * Math.cos(firstDatumModel.startAngle);
+        var firstSliceStartY = firstDatumModel.y + lineRadius * Math.sin(firstDatumModel.startAngle);
+        // The last point of The Thin Green Line (for the last slice).
+        var lastSliceEndX = lastDatumModel.x + lineRadius * Math.cos(lastDatumModel.endAngle);
+        var lastSliceEndY = lastDatumModel.y + lineRadius * Math.sin(lastDatumModel.endAngle);
+        // Save the context, in order to mess with it. We will restore it later.
+        ctx.save();
+        // Green
+        ctx.strokeStyle = 'grey';
+        // Thin
+        ctx.lineWidth = 0.5;
+        ctx.beginPath();
+        ctx.moveTo(firstSliceStartX, firstSliceStartY);
+        // Go through the center, so that other doughnuts (e.g. 3/4 doughnuts) will make sense.
+        ctx.lineTo(firstDatumModel.x, firstDatumModel.y);
+        ctx.lineTo(lastSliceEndX, lastSliceEndY);
+        ctx.stroke();
+        // Restore the context.
+        ctx.restore();
+    }
+   };
+
+     Chart.pluginService.register(theThinGreenLinePlugin);
+
+     var ctx = document.getElementById("myChart");
+      const data = {
+        labels: labels_,
+        datasets: [{data: data_,backgroundColor: background_color_,hoverOffset: 4}]
+      };
+     const options = {legend: {display: false},layout: {padding: 1}, rotation: 1 * Math.PI,circumference: 1 * Math.PI,cutoutPercentage: 50,elements:{center: {text: dic[z]["title"],color: 'black',fontStyle: 'Arial',sidePadding: 40,}}}
+     const config = {type: 'doughnut',data: data, options:options};
+    var myChart = new Chart(canvas_, config);
+
+   }
+   } else {
+      k +=1
+      var col_width=125;
+      var soldier_col_width=300
+
+      var n_cols=this.fields_skills.length
+      var n_left=(1*width_-n_cols*col_width-soldier_col_width-this.nav_width)/2+this.nav_width;
+
+      color__="lightblue"
+      var div_=document.createElement("div");
+
+      var style_ = "position:absolute;left:"+(n_left+50)+"px;top:"+(pp_["height"]-150)+"px;height:"+(height_/2.5)+"px;"
+      style_+="border-style:solid;border-width:0px;border-color:blue;display: flex;"
+      style_+=";align-items: center;justify-content: center;"
+      div_.setAttribute("style", style_);
+
+      div_.ll=ll_;div_.obj=this;
+      div_.addEventListener("click", function(event){
+       var e=event.target;var dic=this.obj.parent.data;
+       try{var s="var zz="+dic["functions"]["on_entity_click"];eval(s);zz(event);} catch(er){}
+        //alert(e.outerHTML)
+        //alert("90441-750  "+JSON.stringify(this.ll));
+      })
+
+      var s='s_data=atm.units_structure';for(var w=0;w<ll.length;w++){s+='[ll['+w+']]["data"]'};eval(s);
+      //alert("90441-750  \n"+JSON.stringify(s_data));
+
+      var r_="10"
+      var s="<table class='soldier' style='display: block;height:"+(Math.round(height_/2.5))+"px;overflow-y: auto;'>"
+      s+="<tr style='font-size: 1.25em;font-weight: bold;font-family: Bernard MT Condensed'>"
+      s+="<th style='width:"+soldier_col_width+"px;border-top-left-radius:"+r_+"px'>Name</th>"
+      for(var i in this.fields_skills){
+      var s_="width:"+col_width+"px";
+      if(i==(this.fields_skills.length-1)){s_+=";border-top-right-radius:"+r_+"px"}
+      s+="<th style="+s_+">"+this.fields_skills[i]+"</th>";
+      }
+
+      //s+="<th style='width:"+col_width+"px'>Fit for Duty</th>";
+      s+="</tr>"
+      s+="<tbody >"
+      for(var s_ in s_data){var u=s_data[s_]["title"].split(":");
+       s+="<tr><td soldier_id='"+s_+"' style='width:"+soldier_col_width+"px'>"
+       s+="<span style='font-size: 1.25em;display:inline-block;font-weight: bold;font-family: Bernard MT Condensed'>"
+       s+=u[0]+": </span><span style='font-size: 1.25em;display:inline-block;font-family: URW DIN Cond, Regular'>"+u[1]+"</span></td>"
+
+       for(var i in this.fields_skills)
+       {
+        var nl_=this.skills_cols[i];
+        //alert(nl_);
+
+        var grade=this.get_grade(skill_id=nl_, unit_id=s_);
+        var color="white";
+        var background_color = "#4dffc3";
+        var img_="<img src='/media/training/images/v.png'"
+
+        if(grade==0){color="black";background_color = "white"; var img_=""}
+        else if(grade<atm.general.pass_grade[type_][nl_])
+        {
+          background_color="#d55d5d"; color="white";
+          img_="<img src='/media/training/images/x.png'"
+        }
+        if(img_!=""){img_+=" width='25' height='25' />"}
+        if(grade<100){grade="&nbsp;&nbsp;"+grade}
+
+        var s__="<td height=25 style='width:100px;color:black;background-color:"+background_color+"'>"
+        s__+="<span style='font-size: 1.25em;display:inline-block;font-weight: bold;font-family: Bernard MT Condensed;'>"+grade
+        s__+="&nbsp;&nbsp;&nbsp;&nbsp;</span><span style='display:inline-block;'>"+img_+"</span></td>"
+        //alert(s__)
+        s+=s__
+       }
+       s+="</tr>"
+       //alert(s)
+      }
+      s+="</tbody></table>"
+      div_.innerHTML=s;
+      container_.appendChild(div_);
+   }
+}
+
 acBasicCreator.prototype.set_obj_structure = function(ll_)
 {
   //alert("set obj1")
   //alert(atm.is_run_set_obj_structure)
   if(atm.is_run_set_obj_structure==true || atm.general.period==null){return}
+
   var dic=this.parent.data;var pp_=dic["properties"];
   var qualifications_=eval(pp_["qualifications"]);
   var table_=pp_["table"];
@@ -2380,7 +2990,6 @@ acBasicCreator.prototype.set_obj_structure = function(ll_)
      grades[s][6]=Math.round(grades[s][6]);
    }
   }
-
   //alert("acRadioCreator 90446-16  "+JSON.stringify(dic));
   try{
        var fun=function(data, ll){
@@ -7588,7 +8197,8 @@ TabNav.prototype.create_main_tab_nav_content = function()
    this.nav_container.setAttribute("id", this.properties["obj_number"]);
    if("left" in this.properties){var left_=this.properties["left"];} else {var left_="0"}
    if("top" in this.properties){var top_=this.properties["top"];} else {var top_="0"}
-   var style_ = "position: relative;z-index:10000;left:"+left_+"px;top:"+top_+"px;border:1px solid #ccc;background-color: "+this.properties["background_color"]+";width:"+this.nav_width+"%;"
+   //border:1px solid #ccc;background-color: "+this.properties["background_color"]+";
+   var style_ = "position: relative;z-index:10000;left:"+left_+"px;top:"+top_+"px;width:"+this.nav_width+"%;"
    this.nav_container.setAttribute("style", style_);
    // --
    this.nav = document.createElement("div");
@@ -8911,6 +9521,17 @@ AppObjsCreateObject_click = function(obj, event)
 var getEBI=function(s){s=s.toString();return document.getElementById(s)}
 var get_creator=function(n){return getEBI(n).my_creator_obj;}
 var clone_dic=function(dic){return JSON.parse(JSON.stringify(dic))}
+//
+var activate_function_of_obj=function(obj_name,fun_name,params="")
+{var o=eval("atm."+obj_name);return eval("o."+fun_name+"("+params+")")}
+
+var get_value_from_dic=function(dic,from_list,value,to_list)
+{for (var k in dic[from_list]){if(dic[from_list][k]==value){return dic[to_list][k]}}}
+
+var get_date_idx=function(){var date = new Date;
+ return date.getFullYear()+complete_zeros((date.getMonth()+1)+"",2)+complete_zeros(date.getDate()+"",2)+
+ complete_zeros(date.getHours()+"",2)+complete_zeros(date.getMinutes()+"",2);
+}
 
 var nice_number = function(z){
  var kk="";if(z*1<0){kk="-";z=-1*z};

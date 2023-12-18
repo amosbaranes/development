@@ -1,3 +1,9 @@
+* { margin: 0;  padding: 0;  box-sizing: border-box;}
+@media screen and (max-width: 800px)
+{:root { --progress-bar-width: 150px; --progress-bar-height: 150px; --font-size: 1.3rem; }}
+@media screen and (max-width: 500px)
+{:root {--progress-bar-width: 120px; --progress-bar-height: 120px; --font-size: 1rem; }}
+
 .maintab button:hover {
  background-color: #F0F8FF;
  transition: 0.3s;
@@ -6,7 +12,6 @@
  background-color: #00FFFF;
  }
 
-* {box-sizing: border-box}
 body {font-family: "Lato", sans-serif;}
 
 /* Style the tab */
@@ -153,15 +158,15 @@ div.scrollmenu a:hover {
 }
 .basic tr:hover {background-color: #ddd;}
 .basic tr:nth-child(even){background-color: #f2f2f2;}
-
+ #
 .data_entry {font-family: Arial, Helvetica, sans-serif;}
 .data_entry td, th {padding: 2px;}
 .data_entry th {padding-top: 3px;padding-bottom: 3px;text-align: center;
   background-color:#39ac73; color: black;
-}
+ }
 .data_entry tr:hover {background-color: #8cd9b3}
 .data_entry tr:nth-child(even){background-color: #ecf9f2}
-
+ #
 .payment {font-family: Arial, Helvetica, sans-serif;}
 .payment td, th {padding: 2px;}
 .payment th {padding-top: 3px;padding-bottom: 3px;text-align: center;
@@ -169,6 +174,14 @@ div.scrollmenu a:hover {
 }
 .payment tr:hover {background-color: #ddd;}
 .payment tr:nth-child(even){background-color: #f2f2f2;}
+ #
+.soldier {font-family: Arial, Helvetica, sans-serif;}
+.soldier td, th {padding: 2px;}
+.soldier th {padding-top: 3px;padding-bottom: 3px;text-align: center;
+  background-color:#A9A9A9; color: white;
+}
+.soldier tr:hover {background-color: #ddd;}
+.soldier tr:nth-child(even){background-color: #f2f2f2;}
 
 # ----
 .switch {
@@ -232,7 +245,6 @@ input:checked + .slider:before {
 }
 
 # ----
-
 /* Clear floats after the columns */
 .row:after {
   content: "";

@@ -14,7 +14,8 @@ from .models import (Project, RBOIC, CountryRegion, CountryRating, Industry,
                      XBRLRealEquityPrices, XBRLRealEquityPricesArchive, Adjectives, AdjectivesValues,
                      CorporateValuationWeb, ETFS, ETFWatchLists, CompaniesPriceData,
                      StockPricesMinutes, StockPricesDays,
-                     XBRLProcessedFactCompany, XBRLRatioDim, XBRLAccountsGroupsFactCompany, XBRLFactRatiosCompany)
+                     XBRLProcessedFactCompany, XBRLRatioDim, XBRLAccountsGroupsFactCompany, XBRLFactRatiosCompany,
+                     TwoSpreadStrategy, TwoSpreadStrategyDetails)
 
 
 # -*- coding: utf-8 -*-
@@ -327,4 +328,16 @@ class StockPricesMinutesAdmin(admin.ModelAdmin):
 class StockPricesDaysAdmin(admin.ModelAdmin):
     list_display = ['company', 'idx', 'open', 'high', 'low', 'close', 'volume']
     list_filter = ('company', 'idx', )
+
+
+@admin.register(TwoSpreadStrategy)
+class TwoSpreadStrategyAdmin(admin.ModelAdmin):
+    list_display = ['strategy_idx', 'strike']
+    list_filter = ('strategy_idx', 'strike', )
+
+
+@admin.register(TwoSpreadStrategyDetails)
+class TwoSpreadStrategyDetailsAdmin(admin.ModelAdmin):
+    list_display = ['idx', 'stock_price', 'strategy_price']
+    list_filter = ('idx', 'stock_price', 'strategy_price', )
 

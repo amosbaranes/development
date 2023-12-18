@@ -574,6 +574,32 @@ class TDAmeriTrade(BaseTDAmeriTrade):
             log_debug("Error 2345 in get_option_chain api options pull for : " + ticker + " = " + str(ex))
             return dic
         # print("get_option_statistics_for_ticker\n", options_.json())
+        ll = ["bid", "ask", "last", "mark", "bidSize", "askSize", "totalVolume", "volatility", "delta", "theta", "vega",
+              "rho", "openInterest",
+              "theoreticalVolatility", "strikePrice"]
+        o_ = options_.json()
+        for k in o_:
+            if k not in ["putExpDateMap", "callExpDateMap"]:
+                print("k", k, o_[k])
+            else:
+                pass
+                # for k1 in o_[k]:
+                #     print("="*30, "\nExpiration date:", k1, "\n", "="*30)
+                #     for w in o_[k][k1]:
+                #         if float(w) < 66.0:
+                #             print("Strike:", w)
+                #             print("---")
+                #             # print("AAA\n", o_[k][k1][w])
+                #             ll_ = []
+                #             for z in o_[k][k1][w]:
+                #                 print("Option:\n", "-"*30, "\n", z, "\n", "-"*30)
+                #                 for v in ll:
+                #                     ll_.append(z[v])
+                #                 print(ll,"\n",ll_)
+                #                 for x in z:
+                #                     print("XXX", x, z[x])
+
+
         return {'status': 'ok', 'option_data_ticker': options_.json()}
 
     # new functions for Django-CMF --
@@ -1537,6 +1563,64 @@ class TDAmeriTrade(BaseTDAmeriTrade):
 class StockPrices(object):
     def __init__(self):
         pass
+
+    def record_option_strategy(self, dic):
+        print("9044-40 input dic: \n", dic, "\n"+"-"*30)
+        app_ = dic["app"]
+        ticker = dic["ticker"]
+        idx = int(dic["idx"])
+        strike = dic["strike"]
+        model_c = apps.get_model(app_label=app_, model_name="XBRLCompanyInfo")
+        model_s = apps.get_model(app_label=app_, model_name="TwoSpreadStrategy")
+        c = model_c.objects.get(ticker=ticker)
+        print("c", c)
+        s, is_created = model_s.objects.get_or_create(company=c, strategy_idx=idx, strike=strike)
+        s.save()
+        print(s)
+
+        dic = {'data': "ok"}
+        # dic = {}
+        # print("9099 output dic: \n", dic, "\n"+"="*30)
+        return dic
+
+    def record_option_strategy_detail(self, dic):
+        print("9077-70 input dic: \n", dic, "\n"+"-"*30)
+        app_ = dic["app"]
+        id_ = int(dic["id"])
+        idx = int(dic["idx"])
+        stock_price = dic["stock_price"]
+        strategy_price = dic["strategy_price"]
+
+        model_t = apps.get_model(app_label=app_, model_name="TwoSpreadStrategy")
+        tw = model_t.objects.get(id=id_)
+        print(tw)
+        model_td = apps.get_model(app_label=app_, model_name="TwoSpreadStrategyDetails")
+        c, is_created = model_td.objects.get_or_create(two_spread_strategy=tw, idx = idx)
+        c.stock_price = stock_price
+        c.strategy_price = strategy_price
+        c.save()
+        print("c", c)
+
+        dic = {'data': "ok"}
+        # dic = {}
+        # print("9099 output dic: \n", dic, "\n"+"="*30)
+        return dic
+
+
+    def get_option_strategies(self, dic):
+        print("9055-50 input dic: \n", dic, "\n"+"-"*30)
+        app_ = dic["app"]
+        model_s = apps.get_model(app_label=app_, model_name="TwoSpreadStrategy")
+        objs = model_s.objects.all()
+        strategies = {}
+        for o in objs:
+            print(o.company.ticker, o.strategy_idx, o.strike, o.id)
+            strategies[o.company.ticker] = {"strike": o.strike, "strategy_idx": o.strategy_idx, "id": o.id}
+
+        dic = {'data': "ok", "strategies": strategies}
+        # dic = {}
+        # print("9099 output dic: \n", dic, "\n"+"="*30)
+        return dic
 
     def analyze_prices_minutes(self, dic):
         # print("9010 input dic: \n", dic, "\n"+"-"*30)
@@ -5417,6 +5501,7 @@ class BaseCorporateValuationAlgo(object):
         del wb['Sheet']
         wb.save(self.save_to_file)
         wb.close()
+
 
 class CorporateValuationDataProcessing(BaseDataProcessing, BaseCorporateValuationAlgo):
     def __init__(self, dic):
