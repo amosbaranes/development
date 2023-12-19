@@ -1573,11 +1573,12 @@ class TwoSpreadStrategyDetails(TruncateTableMixin, models.Model):
     class Meta:
         verbose_name = _('TwoSpreadStrategyDetail')
         verbose_name_plural = _('TwoSpreadStrategyDetails')
-        ordering = ['-idx']
+        ordering = ['stock_price']
 
     two_spread_strategy = models.ForeignKey(TwoSpreadStrategy, on_delete=models.CASCADE, default=None, blank=True,
                                             null=True, related_name='two_spread_strategy_details')
     idx = models.PositiveBigIntegerField(default=0)
+    seconds = models.PositiveBigIntegerField(default=0)
     stock_price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     strategy_price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
 

@@ -2606,28 +2606,28 @@ acBasicCreator.prototype.set_board_data = function(ll=[])
   Array.from(circularProgress).forEach((progressBar) => {
       const progressValue = progressBar.querySelector(".percentage");
       const innerCircle = progressBar.querySelector(".inner-circle");
-        let startValue = 0,
+        let startValue = 30,
         endValue = Number(progressBar.getAttribute("data-percentage")),
         speed =0.1,
         progressColor = progressBar.getAttribute("data-progress-color");
         progressValueColor = progressBar.getAttribute("value-color");
-        const progress = setInterval(() => {
-        startValue += 0.1; // Increment by a smaller fractional value for hundredths
-        const roundedValue = Math.round(startValue * 10) / 10;
 
-        progressValue.textContent = `${roundedValue.toFixed(1)}%`;
-        progressValue.style.color = `${progressValueColor}`;
-        innerCircle.style.backgroundColor = `${progressBar.getAttribute(
-          "data-inner-circle-color"
-        )}`;
-        progressBar.style.background = `conic-gradient(${progressColor} ${
-          roundedValue * 3.6
-        }deg,${progressBar.getAttribute("data-bg-color")} 0deg)`;
-        // Adjusted comparison with a tolerance of 0.01
-        if (roundedValue >= endValue - 0.01) {
-          clearInterval(progress);
-        }
-      }, speed);
+        const progress = setInterval(() => {
+            startValue++;
+            progressValue.textContent = `${endValue.toFixed(1)}%`;
+            progressValue.style.color = `${progressValueColor}`;
+
+            innerCircle.style.backgroundColor = `${progressBar.getAttribute(
+              "data-inner-circle-color"
+            )}`;
+
+            progressBar.style.background = `conic-gradient(${progressColor} ${
+              startValue * 3.6
+            }deg,${progressBar.getAttribute("data-bg-color")} 0deg)`;
+            if (startValue >= endValue) {
+              clearInterval(progress);
+            }
+          }, speed);
   });
 //         alert("AA unit_qualification\n"+JSON.stringify(unit_qualification));
 //         alert("AA unit_equipment\n"+JSON.stringify(unit_equipment));
@@ -2799,7 +2799,7 @@ acBasicCreator.prototype.set_board_data = function(ll=[])
    } else {
       k +=1
       var col_width=125;
-      var soldier_col_width=300
+      var soldier_col_width=400
 
       var n_cols=this.fields_skills.length
       var n_left=(1*width_-n_cols*col_width-soldier_col_width-this.nav_width)/2+this.nav_width;
@@ -2825,32 +2825,28 @@ acBasicCreator.prototype.set_board_data = function(ll=[])
 
       var r_="10"
       var s="<table class='soldier' style='display: block;height:"+(Math.round(height_/2.5))+"px;overflow-y: auto;'>"
-      s+="<tr style='font-size: 1.25em;font-weight: bold;font-family: Bernard MT Condensed'>"
-      s+="<th style='width:"+soldier_col_width+"px;border-top-left-radius:"+r_+"px'>Name</th>"
+      s+="<thead><tr style='font-size: 1.25em;font-weight: bold;font-family: Bernard MT Condensed'>"
+      s+="<th style='width:"+soldier_col_width+"px;padding: 15px;border-top-left-radius:"+r_+"px'>Name</th>"
       for(var i in this.fields_skills){
       var s_="width:"+col_width+"px";
       if(i==(this.fields_skills.length-1)){s_+=";border-top-right-radius:"+r_+"px"}
       s+="<th style="+s_+">"+this.fields_skills[i]+"</th>";
       }
-
-      //s+="<th style='width:"+col_width+"px'>Fit for Duty</th>";
-      s+="</tr>"
+      s+="</tr></thead>"
       s+="<tbody >"
       for(var s_ in s_data){var u=s_data[s_]["title"].split(":");
-       s+="<tr><td soldier_id='"+s_+"' style='width:"+soldier_col_width+"px'>"
-       s+="<span style='font-size: 1.25em;display:inline-block;font-weight: bold;font-family: Bernard MT Condensed'>"
-       s+=u[0]+": </span><span style='font-size: 1.25em;display:inline-block;font-family: URW DIN Cond, Regular'>"+u[1]+"</span></td>"
+       s+="<tr><td soldier_id='"+s_+"' style='padding:10px;width:"+soldier_col_width+"px'>"
+       s+="<span style='font-size:25px;display:inline-block;font-weight:bold;font-family: Bernard MT Condensed'>"
+       s+=u[0]+"</span><br><span style='font-size:23px;display:inline-block;font-family: URW DIN Cond, Regular '>"+u[1]+"</span></td>"
 
        for(var i in this.fields_skills)
        {
         var nl_=this.skills_cols[i];
         //alert(nl_);
-
         var grade=this.get_grade(skill_id=nl_, unit_id=s_);
         var color="white";
         var background_color = "#4dffc3";
         var img_="<img src='/media/training/images/v.png'"
-
         if(grade==0){color="black";background_color = "white"; var img_=""}
         else if(grade<atm.general.pass_grade[type_][nl_])
         {
@@ -2859,10 +2855,9 @@ acBasicCreator.prototype.set_board_data = function(ll=[])
         }
         if(img_!=""){img_+=" width='25' height='25' />"}
         if(grade<100){grade="&nbsp;&nbsp;"+grade}
-
-        var s__="<td height=25 style='width:100px;color:black;background-color:"+background_color+"'>"
-        s__+="<span style='font-size: 1.25em;display:inline-block;font-weight: bold;font-family: Bernard MT Condensed;'>"+grade
-        s__+="&nbsp;&nbsp;&nbsp;&nbsp;</span><span style='display:inline-block;'>"+img_+"</span></td>"
+        var s__="<td style='width:100px;color:black;justify-content: center;align-items: center;text-align:center;padding: 10px;background-color:"+background_color+"'>"
+        s__+="<div style='font-size:23px;font-weight:bold;font-family:Bernard MT Condensed;display:flex;align-items:center;'>"+grade
+        s__+="&nbsp;"+img_+"</div></td>"
         //alert(s__)
         s+=s__
        }
@@ -7458,12 +7453,11 @@ acChartCreator.prototype.set_chart_data = function(chart_type)
     trace["type"]="scatter";
     trace["marker"] = { size: 3 }
     data_.push(trace);
-
-   //alert(JSON.stringify(data_));
-
    var layout = {title: data["title"],
                  xaxis: {title: chart_type["x-axis-title"], range: chart_type["x-axis-range"]},
                  yaxis: {title: chart_type["y-axis-title"], range: chart_type["y-axis-range"]}}
+
+   //alert(JSON.stringify(layout));
    Plotly.newPlot(this.chart, data_, layout );
  }
  else if(chart_type["type"]=='histogram') {
@@ -9528,9 +9522,11 @@ var activate_function_of_obj=function(obj_name,fun_name,params="")
 var get_value_from_dic=function(dic,from_list,value,to_list)
 {for (var k in dic[from_list]){if(dic[from_list][k]==value){return dic[to_list][k]}}}
 
-var get_date_idx=function(){var date = new Date;
- return date.getFullYear()+complete_zeros((date.getMonth()+1)+"",2)+complete_zeros(date.getDate()+"",2)+
+var get_date_idx=function(type="basic"){var date = new Date;
+ var r = date.getFullYear()+complete_zeros((date.getMonth()+1)+"",2)+complete_zeros(date.getDate()+"",2)+
  complete_zeros(date.getHours()+"",2)+complete_zeros(date.getMinutes()+"",2);
+ if(type=="s"){r={"ymdht":r, "s":date.getSeconds(), "h":date.getHours(), "t":date.getMinutes()}}
+ return r
 }
 
 var nice_number = function(z){

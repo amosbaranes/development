@@ -1584,18 +1584,19 @@ class StockPrices(object):
         return dic
 
     def record_option_strategy_detail(self, dic):
-        print("9077-70 input dic: \n", dic, "\n"+"-"*30)
+        # print("9077-70 input dic: \n", dic, "\n"+"-"*30)
         app_ = dic["app"]
         id_ = int(dic["id"])
         idx = int(dic["idx"])
+        seconds = int(dic["seconds"])
         stock_price = dic["stock_price"]
         strategy_price = dic["strategy_price"]
 
         model_t = apps.get_model(app_label=app_, model_name="TwoSpreadStrategy")
         tw = model_t.objects.get(id=id_)
-        print(tw)
+        # print(tw)
         model_td = apps.get_model(app_label=app_, model_name="TwoSpreadStrategyDetails")
-        c, is_created = model_td.objects.get_or_create(two_spread_strategy=tw, idx = idx)
+        c, is_created = model_td.objects.get_or_create(two_spread_strategy=tw, idx = idx, seconds=seconds)
         c.stock_price = stock_price
         c.strategy_price = strategy_price
         c.save()
@@ -1605,7 +1606,6 @@ class StockPrices(object):
         # dic = {}
         # print("9099 output dic: \n", dic, "\n"+"="*30)
         return dic
-
 
     def get_option_strategies(self, dic):
         print("9055-50 input dic: \n", dic, "\n"+"-"*30)
@@ -1620,6 +1620,22 @@ class StockPrices(object):
         dic = {'data': "ok", "strategies": strategies}
         # dic = {}
         # print("9099 output dic: \n", dic, "\n"+"="*30)
+        return dic
+
+    def get_option_strategies_detail(self, dic):
+        print("9066-60 input dic: \n", dic, "\n"+"-"*30)
+        app_ = dic["app"]
+        ticker = dic["ticker"]
+        strategy_id = dic["strategy_id"]
+        model_ = apps.get_model(app_label=app_, model_name="TwoSpreadStrategyDetails")
+        objs = model_.objects.filter(two_spread_strategy__company__ticker=ticker,
+                                     two_spread_strategy__strategy_idx=strategy_id)
+        dic = {"stock_price":[], "strategy_price":[]}
+        for o in objs:
+            dic["stock_price"].append(float(o.stock_price))
+            dic["strategy_price"].append(float(o.strategy_price))
+        dic = {'data': "ok", "dic": dic}
+        print("9099 output dic: \n", dic, "\n"+"="*30)
         return dic
 
     def analyze_prices_minutes(self, dic):
