@@ -6325,7 +6325,7 @@ acSearchTableCreator.prototype.get_data = function(data_table_name=null,parent_m
   try{var f_=dic["functions"]["before_get_data"]; var s_="var zz="+f_;eval(s_); zz(dic);} catch(er){}
   // alert("0000  "+JSON.stringify(dic["fields"]));
   var container = document.getElementById("content_"+dic["container_id"]);
-  if(this.data_table_name!=null && data_table_name!==null){this.data_table_name=data_table_name}
+  if(this.data_table_name!=null && data_table_name!==""){this.data_table_name=data_table_name}
   else {this.data_table_name=container.getAttribute("table")}
   try{
     var parent_id_="";
@@ -6355,11 +6355,14 @@ acSearchTableCreator.prototype.get_data = function(data_table_name=null,parent_m
   var fun=function(data, ttbody_){
     try{var f_=dic["functions"]["on_get_data"]; var s_="var hh="+f_;eval(s_); hh(data, dic__);} catch(er){}
     console.log("get_data search table inside call back function")
-     //alert("9081 data: "+JSON.stringify(data));
-    try{if(Object.keys(data).length==0){return;}} catch (er) {}
+    // alert("9081 data: "+JSON.stringify(data));
+
+    try{if(Object.keys(data).length==0){return;}
+    var n_=data[dic_["fields"][0]].length;
+    } catch (er) {}
     //alert(dic_["fields"][0])
     //alert(JSON.stringify(data[dic_["fields"][0]]))
-    var n_=data[dic_["fields"][0]].length;
+
     console.log("get_data search table inside call back function n=" + n_)
     var s='';
     for(i=0; i<n_; i++)

@@ -1570,10 +1570,11 @@ class StockPrices(object):
         ticker = dic["ticker"]
         idx = int(dic["idx"])
         strike = dic["strike"]
+
         model_c = apps.get_model(app_label=app_, model_name="XBRLCompanyInfo")
         model_s = apps.get_model(app_label=app_, model_name="TwoSpreadStrategy")
         c = model_c.objects.get(ticker=ticker)
-        print("c", c)
+        print("c=", c)
         s, is_created = model_s.objects.get_or_create(company=c, strategy_idx=idx, strike=strike)
         s.save()
         print(s)
@@ -1584,7 +1585,7 @@ class StockPrices(object):
         return dic
 
     def record_option_strategy_detail(self, dic):
-        # print("9077-70 input dic: \n", dic, "\n"+"-"*30)
+        print("9077-70 input dic: \n", dic, "\n"+"-"*30)
         app_ = dic["app"]
         id_ = int(dic["id"])
         idx = int(dic["idx"])
@@ -1614,8 +1615,12 @@ class StockPrices(object):
         objs = model_s.objects.all()
         strategies = {}
         for o in objs:
-            print(o.company.ticker, o.strategy_idx, o.strike, o.id)
-            strategies[o.company.ticker] = {"strike": o.strike, "strategy_idx": o.strategy_idx, "id": o.id}
+            # print(o.company.ticker, o.strategy_idx, o.strike, o.id)
+            if o.company.ticker not in strategies:
+                strategies[o.company.ticker] = {}
+            # print(o.strike)
+            strategies[o.company.ticker][int(o.strike)] = {"strategy_idx": o.strategy_idx, "id": o.id}
+        print(strategies)
 
         dic = {'data': "ok", "strategies": strategies}
         # dic = {}

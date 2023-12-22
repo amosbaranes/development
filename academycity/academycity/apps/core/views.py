@@ -397,9 +397,11 @@ def get_data_link(request):
         pass
 
     # print("parent_model_fk_name\n", parent_model_fk_name, "\nparent_model_fk_name")
+    print("AAAAAAAA777", type(dic_), dic_)
 
     multiple_select_fields = None
     if "multiple_select_fields" in dic_:
+        print("AAA", dic_, )
         if len(dic_["multiple_select_fields"]) > 0:
             multiple_select_fields = dic_["multiple_select_fields"]
     app_ = dic_['app']

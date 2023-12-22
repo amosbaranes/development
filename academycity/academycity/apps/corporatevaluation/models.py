@@ -1567,7 +1567,7 @@ class TwoSpreadStrategy(TruncateTableMixin, models.Model):
     strike = models.DecimalField(max_digits=10, decimal_places=2, default=0)
 
     def __str__(self):
-        return str(self.strike)
+        return str(self.strategy_idx) + ": " + str(self.strike)
 
 class TwoSpreadStrategyDetails(TruncateTableMixin, models.Model):
     class Meta:

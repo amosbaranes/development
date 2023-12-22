@@ -484,15 +484,19 @@ class AvicDataProcessing(BaseDataProcessing, BasePotentialAlgo, AvicAlgo):
 
             model_name_ = dic["dimensions"]["time_dim"]["model"]
             model_time_dim = apps.get_model(app_label=app_, model_name=model_name_)
+            #
             model_country_group_dim = apps.get_model(app_label=app_, model_name="CountryGroupDim")
             model_name_ = dic["dimensions"]["country_dim"]["model"]
             model_country_dim = apps.get_model(app_label=app_, model_name=model_name_)
+            #
             model_name_ = dic["dimensions"]["measure_dim"]["model"]
             model_measure_dim = apps.get_model(app_label=app_, model_name=model_name_)
             model_measure_group_dim = apps.get_model(app_label=app_, model_name="measuregroupdim")
-            model_min_max_cut = apps.get_model(app_label=app_, model_name="minmaxcut")
+            #
             model_name_ = dic["fact"]["model"]
             model_fact = apps.get_model(app_label=app_, model_name=model_name_)
+            #
+            model_min_max_cut = apps.get_model(app_label=app_, model_name="minmaxcut")
             #
             country_group_obj, is_created = model_country_group_dim.objects.get_or_create(group_name="eli")
             #
