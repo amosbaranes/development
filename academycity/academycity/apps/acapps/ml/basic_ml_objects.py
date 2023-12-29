@@ -39,6 +39,7 @@ class BaseDataProcessing(object):
             print("Error 90002-010-1 \n" + str(ex),"\n", "-"*50)
 
         # print("90002-001 BaseDataProcessing\n", dic, '\n', '-'*50)
+        # print("\n90002 BaseDataProcessing", self.app)
 
         self.name = 'DataProcessing'
         self.uploaded_filename = None
@@ -68,8 +69,8 @@ class BaseDataProcessing(object):
         os.makedirs(self.TO_EXCEL, exist_ok=True)
 
         try:
-            dependent_group_ = dic["dependent_group"]
-            self.TO_EXCEL_OUTPUT = os.path.join(self.TO_EXCEL, "output", dependent_group_)
+            self.dependent_group = dic["dependent_group"]
+            self.TO_EXCEL_OUTPUT = os.path.join(self.TO_EXCEL, "output", self.dependent_group)
         except Exception as ex:
             self.TO_EXCEL_OUTPUT = os.path.join(self.TO_EXCEL, "output")
 
@@ -134,7 +135,6 @@ class BaseDataProcessing(object):
 
     def get_general_data(self, dic):
         # print("9012-9012-2 BaseDataProcessing get_general_data:\n", dic, "\n", "="*50, "\n")
-        app_ = dic["app"]
         result = {}
         n__=0
         for k in dic["dimensions"]:
@@ -144,7 +144,7 @@ class BaseDataProcessing(object):
             try:
                 exec(s)
                 model_name_ = dic_["model"]
-                model_ = apps.get_model(app_label=app_, model_name=model_name_)
+                model_ = apps.get_model(app_label=self.app, model_name=model_name_)
                 p_key_field_name = model_._meta.pk.name
                 # print("p_key_field_name", p_key_field_name)
                 if p_key_field_name == "user":
@@ -195,32 +195,30 @@ class BaseDataProcessing(object):
 
     def general_data(self, dic):
         action_ = dic['action']
-        app_ = dic['app']
         group_ = dic['group']
         data_name_ = dic['data_name']
         general_data_model = apps.get_model(app_label="core", model_name="generaldata")
         if action_ == "set":
             data_json_ = dic['data_json']
-            obj, is_created = general_data_model.objects.get_or_create(app=app_, group=group_, data_name=data_name_)
+            obj, is_created = general_data_model.objects.get_or_create(app=self.app, group=group_, data_name=data_name_)
             obj.data_json = data_json_
             obj.save()
         else:
-            obj = general_data_model.objects.get(app=app_, group=group_, data_name=data_name_)
+            obj = general_data_model.objects.get(app=self.app, group=group_, data_name=data_name_)
             return obj.data_json
 
     def get_next_number(self, dic):
-        app_ = dic['app']
         group_ = "general"
         data_name_ = "number"
         general_data_model = apps.get_model(app_label="core", model_name="generaldata")
         data_json_ = {"number": 1}
         return_number = 1
-        obj, is_created = general_data_model.objects.get_or_create(app=app_, group=group_, data_name=data_name_)
+        obj, is_created = general_data_model.objects.get_or_create(app=self.app, group=group_, data_name=data_name_)
         if is_created:
             obj.data_json = data_json_
             obj.save()
         else:
-            # obj = general_data_model.objects.get(app=app_, group=group_, data_name=data_name_)
+            # obj = general_data_model.objects.get(app=self.app, group=group_, data_name=data_name_)
             data_json_ = obj.data_json
             return_number = data_json_["number"] + 1
             data_json_["number"] = return_number
@@ -231,33 +229,36 @@ class BaseDataProcessing(object):
 
 class BasePotentialAlgo(object):
     def __init__(self, dic):  # to_data_path, target_field
-        # print('-'*50, '\n', "90003-000 BasePotentialAlgo", dic, '\n', '-'*50)
+        # print('-'*50, '\n', "90003-000 BasePotentialAlgo\n", dic, '\n', '-'*50)
         try:
             super(BasePotentialAlgo, self).__init__(dic)
         except Exception as ex:
-            print("Error 90003-010 " + str(ex))
+            print("Error 90003-010-100 " + str(ex))
 
+        # print("9003 BasePotentialAlgo", self.app)
         # print("90003-020 PotentialAlgo", dic, '\n', '-'*50)
+
         self.rule_2 = 0.3
         self.rule_0 = 0.025
         self.missing_data_range = 0.3
-        self.entity_name = dic["entity_name"]
         self.second_time_save = ''
         self.to_save = []
         self.to_save_all = []
         self.save_to_file = None
         self.df_index = None
-        app_ = dic["app"]
+
+        self.value_column = dic["value"]
+        fact_model_name = dic["fact_model"]
+        self.model_fact = apps.get_model(app_label=self.app, model_name=fact_model_name)
+
         measure_model_name_ = dic["measure_model"]
-        model_measure_dim = apps.get_model(app_label=app_, model_name=measure_model_name_)
+        model_measure_dim = apps.get_model(app_label=self.app, model_name=measure_model_name_)
         self.measures_name = pd.DataFrame(model_measure_dim.objects.all().values('id', 'measure_name'))
         # print('self.measures_name\n', self.measures_name)
         try:
             self.entity_name = dic["entity_name"]
-            # print(self.entity_name)
             entity_model_name_ = dic["entity_model"]
-            model_entity_dim = apps.get_model(app_label=app_, model_name=entity_model_name_)
-            # print(model_measure_dim)
+            model_entity_dim = apps.get_model(app_label=self.app, model_name=entity_model_name_)
             self.entities_name = pd.DataFrame(model_entity_dim.objects.all().values('id', self.entity_name+'_name'))
             # print("self.entities_name\n",self.entities_name)
 
@@ -277,36 +278,32 @@ class BasePotentialAlgo(object):
         self.is_calculate_min_max = None
 
     def process_algo(self, dic):
-        clear_log_debug()
-        print("90011-111 process_algo: \n", dic, "\n", "="*50)
-        log_debug("BasePotentialAlgo: process_algo 1")
-
+        # ---- Assiting function -----------------------
         def get_culomns_names(self, l):
             cs = []
             for c in l:
                 k_ = str(self.measures_name[self.measures_name["id"] == c]["measure_name"]).split("    ")[1].split("\n")[0]
                 cs.append(k_)
             return cs
+        # -------- Variables definition ----------------
+        clear_log_debug()
+        print("90011-111 process_algo: \n", dic, "\n", "="*50)
+        log_debug("BasePotentialAlgo: process_algo 1")
 
         # print("9015-1 BasePotentialAlgo process_algo\n", dic)
-        app_ = dic["app"]
-        fact_model_name_ = dic["fact_model"]
+
         output_fact_model_name_ = dic["output_fact_model"]
         relimp_fact_model_name_ = dic["relimp_fact_model"]
         range_model_model_name_ = dic["range_model"]
         year_ = dic["time_dim_value"]
-        dependent_group = dic["dependent_group"]
-        # print('dependent_group', dependent_group)
         min_max_model_name_ = dic["min_max_model"]
         self.rule_2 = int(dic["rule_2"])/100
         self.rule_0 = float(dic["rule_0"])
         self.missing_data_range = int(dic["missing_data_range"])/100
-        measure_group_model_name_ = dic["measure_group_model"]
         measure_model_name_ = dic["measure_model"]
-        model_fact = apps.get_model(app_label=app_, model_name=fact_model_name_)
-        model_range = apps.get_model(app_label=app_, model_name=range_model_model_name_)
-        model_output_fact = apps.get_model(app_label=app_, model_name=output_fact_model_name_)
-        model_relimp_fact = apps.get_model(app_label=app_, model_name=relimp_fact_model_name_)
+        model_range = apps.get_model(app_label=self.app, model_name=range_model_model_name_)
+        model_output_fact = apps.get_model(app_label=self.app, model_name=output_fact_model_name_)
+        model_relimp_fact = apps.get_model(app_label=self.app, model_name=relimp_fact_model_name_)
 
         # Add min_max algo
         # ----------------
@@ -316,7 +313,8 @@ class BasePotentialAlgo(object):
         # except Exception as ex:
         #     print("Error 9016: \n"+str(ex))
         # if not self.is_calculate_min_max:
-        model_min_max = apps.get_model(app_label=app_, model_name=min_max_model_name_)
+        model_min_max = apps.get_model(app_label=self.app, model_name=min_max_model_name_)
+        # -------------------------------------------------------------------------------
         try:
             qs = model_min_max.objects.filter(measure_dim__measure_name="TotalPop",
                                                  time_dim_id=year_).all()[0]
@@ -328,11 +326,10 @@ class BasePotentialAlgo(object):
 
         # else:
         #     self.calculate_min_max_cuts(dic)
-        model_measure_group = apps.get_model(app_label=app_, model_name=measure_group_model_name_)
-        model_measure = apps.get_model(app_label=app_, model_name=measure_model_name_)
+        model_measure = apps.get_model(app_label=self.app, model_name=measure_model_name_)
         # print("90060-10 PotentialAlgo: \n", "="*50)
         wb2 = None
-        groups = model_measure_group.objects.all()
+        groups = self.model_measure_group.objects.all()
         nn__ = 0
         sign_n1 = pd.DataFrame([[0, 0, 0, 0]])
         sign_n2 = pd.DataFrame([[0, 0, 0, 0]])
@@ -349,10 +346,12 @@ class BasePotentialAlgo(object):
         similarity_n1.columns = self.options
         similarity_n2.columns = self.options
         group_d = ""
-        # Normalization Stage
+
+        # ---- PreProcessing - Normalization Stage ----
         ll_dfs = self.pre_process_data(dic)
         # print(ll_dfs)
-
+        # ----------------------------------------------
+        # ---------------------------------------------
         lll_groups = []
         for k in ll_dfs:
             group = k #.group_name
@@ -362,34 +361,14 @@ class BasePotentialAlgo(object):
                 self.to_save = []
                 print("file_path\n", self.save_to_file, "\n", "="*50)
                 s = ""
-                # for v in dic["axes"]:
-                #     s += "'" + v + "',"
-                # s += "'" + dic["value"] + "'"
-                # # print(dic["time_dim_value"])
-                # qs = model_fact.objects.filter(measure_dim__measure_group_dim__group_name=group,
-                #                                time_dim_id=dic["time_dim_value"]).all()
-                # s = "pd.DataFrame(list(qs.values(" + s + ")))"
-                # df = eval(s)
-                # if df.shape[0] == 0:
-                #     continue
-                # # print("50001-21")
-                # df = df.pivot(index="country_dim", columns='measure_dim', values='amount')
-                # # print(df)
-                # # print("50001-22")
-                # self.df_index = df.index
-                # df_columns = df.columns
-                # # print(df)
-                # # print("50001-22-1")
-                # df_ = self.add_entity_to_df(df)
-                # self.to_save.append((df_.copy(), 'Data'))
-                # #
-                # if not self.is_calculate_min_max:
 
                 df = ll_dfs[group]
                 df_columns = df.columns
                 self.df_index = df.index
                 # print(self.df_index)
+                print("Before", df, "\n", "="*100)
                 df_ = self.add_entity_to_df(df).sort_values(self.entity_name+'_name', ascending=True)
+                print("After", df_, "\n", "="*100)
                 self.to_save.append((df_.copy(), 'Data'))
                 qs_mm = model_min_max.objects.filter(measure_dim__measure_group_dim__group_name=group,
                                                      time_dim_id=dic["time_dim_value"]).all()
@@ -604,7 +583,7 @@ class BasePotentialAlgo(object):
             df_n2_ = df_n2.copy()
             df_n2_.columns = ['m-' + group, 'x-' + group]
 
-            if group == dependent_group:
+            if group == self.dependent_group:
                 ss_n_mm = ""
                 ss_n_xm = ""
                 ss_n_mx = ""
@@ -761,16 +740,16 @@ class BasePotentialAlgo(object):
         np_sign_n2 = sign_n2.to_numpy()
         ll = [*range(np_sign_n2.shape[0])]
 
-        mg_obj, is_created = model_measure_group.objects.get_or_create(group_name="Output")
-        mm_obj, is_created = model_measure.objects.get_or_create(measure_name="Pot-"+dependent_group, measure_group_dim=mg_obj,
-                                                                 measure_code=dependent_group, description="Potential for "+dependent_group)
+        mg_obj, is_created = self.model_measure_group.objects.get_or_create(group_name="Output")
+        mm_obj, is_created = model_measure.objects.get_or_create(measure_name="Pot-"+self.dependent_group, measure_group_dim=mg_obj,
+                                                                 measure_code=self.dependent_group, description="Potential for "+self.dependent_group)
 
         for i, r in df_relimp_adj_2.iterrows():
             for c in df_relimp_adj_2.columns:
                 # print("i=", i, "c=", c, "float(r[c])", float(r[c]))
                 if str(r[c]) != "nan":
                     range_obj = model_range.objects.get(range_name=str(c))
-                    group_obj = model_measure_group.objects.get(group_name=i)
+                    group_obj = self.model_measure_group.objects.get(group_name=i)
                     obj, is_created = model_relimp_fact.objects.get_or_create(range_dim=range_obj,
                                                                               time_dim_id=year_,
                                                                               measure_dim=mm_obj,
@@ -793,7 +772,7 @@ class BasePotentialAlgo(object):
                 df = pd.DataFrame()
                 # df["country_dim"] = df_n1_all_temp["country_dim"]
                 for group in ll_dfs:
-                    if group != dependent_group:
+                    if group != self.dependent_group:
                         # print("="*50)
                         # print(group)
                         df[k_ + "-" + group] = df_n1_all_temp[k_ + "-" + group]
@@ -937,18 +916,15 @@ class BasePotentialAlgo(object):
         return result
 
     def get_dim_data_frame(self, dic):
-        # print("90066-106-11 PotentialAlgo calculate_min_max_cuts: \n", dic, "\n", "="*50)
+        # print("90066-106-11 PotentialAlgo get_dim_data_frame: \n", dic, "\n", "="*50)
 
-        # dic =  {'app': 'avi', 'filter_dim': 'time_dim', 'filter_value': 2019, 'value': 'amount',
+        # dic =  {'app': 'avi', 'filter_dim': 'time_dim', 'filter_value': 2019,
         #         'axes': ['country_dim', 'measure_dim'],
         #         'model_name': 'worldbankfact', 'filter_amount': 1000000, 'measure_id': '19',
         #         'measure_name': 'TotalPop'}
-        app_ = dic["app"]
         filter_dim = dic["filter_dim"]
         filter_value = dic["filter_value"]
-        value_ = dic["value"]
         axes_ = dic["axes"]
-        model_name = dic["model_name"]
         filter_amount = dic["filter_amount"]  # 1000000
         measure_id = dic["measure_id"]
         #
@@ -958,20 +934,20 @@ class BasePotentialAlgo(object):
                 return_dim = k
         #
         # print(return_dim)
-        model = apps.get_model(app_label=app_, model_name=model_name)
         if measure_id is None or measure_id == "":
             measure_name = dic["measure_name"]
-            s = 'model.objects.filter(measure_dim__measure_name="'+measure_name+'", '
+            s = 'self.model_fact.objects.filter(measure_dim__measure_name="'+measure_name+'", '
         else:
             # print(measure_id)
-            s = 'model.objects.filter(measure_dim__id='+measure_id+', '
-        s += filter_dim+'__id='+str(filter_value)+', amount__gte='+str(filter_amount)+').all()'
+            s = 'self.model_fact.objects.filter(measure_dim__id='+measure_id+', '
+        s += filter_dim+'__id='+str(filter_value)+', '+self.value_column+'__gte='+str(filter_amount)+').all()'
         # print("1 \ns="+s)
         qs = eval(s)
-        df = pd.DataFrame(list(qs.values(return_dim+"_id", value_)))
+        df = pd.DataFrame(list(qs.values(return_dim+"_id", self.value_column)))
         # print(df)
         df = df.rename(columns={return_dim+"_id": return_dim})
-        # print(df)
+        # print("df df df\n", df)
+
         df = df.set_index(return_dim)
         # print(df)
 
@@ -1015,29 +991,21 @@ class BasePotentialAlgo(object):
         return df_
 
     def pre_process_data(self, dic):
-        print("90033-133 pre_process_data: \n", dic, "\n", "="*50)
-        app_ = dic["app"]
-        fact_model_name_ = dic["fact_model"]
+        # print("90033-133 pre_process_data: \n", dic, "\n", "="*50)
         year_ = str(dic["time_dim_value"])
 
-        dic_ = {'app': app_, 'filter_dim': 'time_dim', 'filter_value': year_, 'value': 'amount',
+        dic_ = {'filter_dim': 'time_dim', 'filter_value': year_,
+                'filter_amount': dic["population_filter_amount"],
                 'axes': [self.entity_name+'_dim', 'measure_dim'],
-                'model_name': fact_model_name_,
-                'filter_amount': dic["population_filter_amount"], 'measure_id': None,
-                'measure_name': dic["measure_name"]}
+                'measure_id': None, 'measure_name': dic["measure_name"]}
 
         # print("90022-122-111 pre_process_data: \n", dic_, "\n", "="*50)
         df_entities = self.get_dim_data_frame(dic_)["result"]
         # print("\nAAAAAAAA\n df_entities\n", df_entities)
 
-        measure_group_model_name_ = dic["measure_group_model"]
-        dependent_group = dic["dependent_group"]
+        groups = self.model_measure_group.objects.filter(~Q(group_name__in=self.do_not_include_groups)).all()
 
-        model_fact = apps.get_model(app_label=app_, model_name=fact_model_name_)
-        model_measure_group = apps.get_model(app_label=app_, model_name=measure_group_model_name_)
-        groups = model_measure_group.objects.filter(~Q(group_name__in=self.do_not_include_groups)).all()
-
-        ll_groups = [dependent_group]
+        ll_groups = [self.dependent_group]
         # print("90-111-222-0 for k in groups\n", ll_groups)
         for k in groups:
             group = k.group_name
@@ -1046,36 +1014,36 @@ class BasePotentialAlgo(object):
         lll_groups = []  # this will have only the groups that do not have problems (have data)
         ll_dfs = {}  # includes all the df of all groups with data
 
-        print("90-111-222-1 for k in groups\n", ll_groups)
+        # print("90-111-222-1 for k in groups\n", ll_groups)
         for k in ll_groups:
-            print("="*50, "\n", k, "\n", "="*50)
+            # print("="*50, "\n", k, "\n", "="*50)
             try:
                 # print("\n90-111-2-"+k, "\n", "-"*30)
                 s = ""
                 for v in dic["axes"]:
                     s += "'" + v + "',"
-                s += "'" + dic["value"] + "'"
+                s += "'" + self.value_column + "'"
                 # print("s\n", s)
                 # print(entity_list)
-                # s_ = 'model_fact.objects.filter(measure_dim__measure_group_dim__group_name=k, time_dim_id=year_, ' + self.entity_name + '_dim_id__in=entity_list).filter(~Q(measure_dim__in=self.do_not_include_measures_objs)).all()'
-                s_ = 'model_fact.objects.filter(measure_dim__measure_group_dim__group_name=k, time_dim_id=year_).filter(~Q(measure_dim__in=self.do_not_include_measures_objs)).all()'
-                print("s_= ", s_,"\ns= ",s)
+                # s_ = 'self.model_fact.objects.filter(measure_dim__measure_group_dim__group_name=k, time_dim_id=year_, ' + self.entity_name + '_dim_id__in=entity_list).filter(~Q(measure_dim__in=self.do_not_include_measures_objs)).all()'
+                s_ = 'self.model_fact.objects.filter(measure_dim__measure_group_dim__group_name=k, time_dim_id=year_).filter(~Q(measure_dim__in=self.do_not_include_measures_objs)).all()'
+                # print("s_= ", s_,"\ns= ",s)
                 qs = eval(s_)
                 # print(qs)
 
                 s = "pd.DataFrame(list(qs.values(" + s + ")))"
-                print("eval(s)", s)
+                # print("eval(s)", s)
                 df = eval(s)
-                print("1.  df =", k ,"\n", df)
+                # print("1.  df =", k ,"\n", df)
 
                 if df.shape[0] == 0:
                     continue
                 lll_groups.append(k)
                 try:
-                    df = df.pivot(index=self.entity_name+"_dim", columns='measure_dim', values='amount')
+                    df = df.pivot(index=self.entity_name+"_dim", columns='measure_dim', values=self.value_column)
                 except Exception as ex:
                     print(ex)
-                print("90-111-2-100\n", k ,"\n", df)
+                # print("90-111-2-100\n", k ,"\n", df)
 
                 ll_dfs[k] = df.apply(pd.to_numeric, errors='coerce').round(6)
                 for f__ in ll_dfs[k]:
@@ -1102,7 +1070,6 @@ class BasePotentialAlgo(object):
 
     def calculate_min_max_cuts(self, dic):
         # print("90066-100 PotentialAlgo calculate_min_max_cuts: \n", dic, "\n", "="*50)
-        app_ = dic["app"]
         f = int(dic["dim_field"])
         method = dic["method"]
         u_method = "median"
@@ -1112,8 +1079,7 @@ class BasePotentialAlgo(object):
             l_method = "max"
 
         # print("90066-100-1 PotentialAlgo calculate_min_max_cuts: \n", "="*50)
-        dependent_group = dic["dependent_group"]
-        # print(dependent_group)
+        # print(self.dependent_group)
         year_ = str(dic["time_dim_value"])
         # print(year_)
         min_max_model_name_ = dic["min_max_model"]
@@ -1133,7 +1099,7 @@ class BasePotentialAlgo(object):
         high_group_cut = [0.4, 0.35, 0.30, 0.25, 0.2, 0.15, 0.1]
         low_group_cut = [0.4, 0.35, 0.30, 0.25, 0.2, 0.15, 0.1]
         step_ = 10
-        df_d = ll_dfs[dependent_group]
+        df_d = ll_dfs[self.dependent_group]
         # print(df_d)
         results = {}
         best_cut = {"bv": -1}
@@ -1184,7 +1150,7 @@ class BasePotentialAlgo(object):
                 for steph in steps_h:
                     for stepl in steps_l:
                         for g in ll_dfs:
-                            # if g != dependent_group:
+                            # if g != self.dependent_group:
                             df = ll_dfs[g]
                             # print("\n",g, "\n",df.columns)
                             iih = []
@@ -1220,12 +1186,12 @@ class BasePotentialAlgo(object):
                                     continue
                                 results[hh][ll][f][steph][stepl]["groups"][g][k] = eval('{"min_cut": dfl_ik.'+l_method+'(), "max_cut": dfh_ik.'+u_method+'()}')
                         # print(results)
-                        dic = {"dependent_group": dependent_group, "f":f, "steph":steph, "stepl":stepl,
+                        dic = {"f":f, "steph":steph, "stepl":stepl,
                                "df_d": df_d, "ll_dfs": ll_dfs, "groups": results[hh][ll][f]}
                         bv = self.get_similarity(dic)
                         if bv > best_cut["bv"]:
                             best_cut = {"bv": bv, "hh": hh, "ll": ll, "steph":steph, "stepl":stepl, "f":f,
-                                        "dependent_group": dependent_group, "year": year_,
+                                        "dependent_group": self.dependent_group, "year": year_,
                                         "f_groups":results[hh][ll][f][steph][stepl]["groups"]}
 
                             # print('best_cut\n', 'hh', hh, 'll', ll, 'results 1 steph', steph, 'stepl', stepl, "dv", bv, "\n",
@@ -1255,25 +1221,24 @@ class BasePotentialAlgo(object):
 
     def create_total_pop(self, dic):
         print("900443-155 PotentialAlgo create_total_pop: \n", dic, "\n", "="*50)
-        app_ = dic["app"]
         year= dic["year"]
         group = dic["group"]
         variable = dic["variable"]
         # print(self.entity_name)
         model_name_ = dic["dimensions"]["time_dim"]["model"]
-        model_time_dim = apps.get_model(app_label=app_, model_name=model_name_)
+        model_time_dim = apps.get_model(app_label=self.app, model_name=model_name_)
 
         model_name_ = dic["dimensions"][self.entity_name+"_dim"]["model"]
-        model_entity_dim = apps.get_model(app_label=app_, model_name=model_name_)
+        model_entity_dim = apps.get_model(app_label=self.app, model_name=model_name_)
 
         model_name_ = "measuregroupdim"
-        model_group_measure_dim = apps.get_model(app_label=app_, model_name=model_name_)
+        model_group_measure_dim = apps.get_model(app_label=self.self.app, model_name=model_name_)
 
         model_name_ = dic["dimensions"]["measure_dim"]["model"]
-        model_measure_dim = apps.get_model(app_label=app_, model_name=model_name_)
+        model_measure_dim = apps.get_model(app_label=self.app, model_name=model_name_)
 
         model_name_ = dic["fact_model"]
-        model_fact = apps.get_model(app_label=app_, model_name=model_name_)
+        model_fact = apps.get_model(app_label=self.app, model_name=model_name_)
 
         t = model_time_dim.objects.get(id=year)
         g, is_created = model_group_measure_dim.objects.get_or_create(group_name=group)
@@ -1294,7 +1259,6 @@ class BasePotentialAlgo(object):
     def get_similarity(self, dic):
         # print("s="*50)
         f = dic["f"]
-        dependent_group = dic["dependent_group"]
         df_d = dic["df_d"]
         steph = dic["steph"]
         stepl = dic["stepl"]
@@ -1304,8 +1268,8 @@ class BasePotentialAlgo(object):
         dff = pd.DataFrame(df_d.loc[:, f].astype(float))
         df_f = dff.copy()
 
-        max_cut = groups[dependent_group][f]["max_cut"]
-        min_cut = groups[dependent_group][f]["min_cut"]
+        max_cut = groups[self.dependent_group][f]["max_cut"]
+        min_cut = groups[self.dependent_group][f]["min_cut"]
 
         # max_cut = f_groups["max_cut"]
         # min_cut = f_groups["min_cut"]
@@ -1344,13 +1308,11 @@ class BasePotentialAlgo(object):
 
     def update_min_max_cuts(self, dic):
         print("90055-156 PotentialAlgo update_min_max_cuts: \n", dic, "\n", "="*50)
-        app_ = dic["app"]
         year_ = str(dic["time_dim_value"])
         f = str(dic["var_obj"])
-        # dependent_group = str(dic["dependent_group"])
         min_max_model_name_ = dic["min_max_model"]
-        model_min_max = apps.get_model(app_label=app_, model_name=min_max_model_name_)
-        # model_measure_dim = apps.get_model(app_label=app_, model_name="measuredim")
+        model_min_max = apps.get_model(app_label=self.app, model_name=min_max_model_name_)
+        # model_measure_dim = apps.get_model(app_label=self.app, model_name="measuredim")
         file_path = os.path.join(self.PICKLE_PATH, "best_cut_"+f+"_"+year_+".pkl")
         print(file_path)
         with open(file_path, 'rb') as handle:
@@ -1438,7 +1400,7 @@ class BasePotentialAlgo(object):
 
     def add_entity_to_df(self, df, cols=None):
         df_ = df.copy()
-        # print("add_entity_to_df 1")
+        # print("add_entity_to_df 1\n", df_)
         if cols is None:
             cols = [self.entity_name+'_name']
             df_c = df.columns
@@ -1449,7 +1411,10 @@ class BasePotentialAlgo(object):
         df_ = df_.reset_index()
         try:
             df_ = df_.merge(self.entities_name, how='inner', left_on=self.entity_name+'_dim', right_on='id')
+            # print("add_entity_to_df 11\n", df_)
+
             df_ = df_.drop([self.entity_name+'_dim', 'id'], axis=1)
+            # print("add_entity_to_df 12\n", df_)
         except Exception as ex:
             print("Error 90-90-88-1 add_entity_to_df: ", str(ex))
         try:
@@ -1459,8 +1424,11 @@ class BasePotentialAlgo(object):
             # print("CC1\n", df_.columns, "\n", cols)
         except Exception as ex:
             print("Error 90-90-88-2 add_entity_to_df: ", str(ex))
+
         if isinstance(cols, pd.core.indexes.base.Index) or cols != -1:
             df_.columns = cols
+
+        # print("add_entity_to_df 2\n", df_)
         return df_
 
     def add_entity_to_df1(self, df, cols=None):

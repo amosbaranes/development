@@ -59,8 +59,20 @@ class Fact(TruncateTableMixin, models.Model):
 
     def __str__(self):
         return str(self.country_dim) + " - " + str(self.time_dim) + ": " + str(self.amount)
+# --------------
 
-# ---------------------------------------------------
+class MinMaxCut(TruncateTableMixin, models.Model):
+    time_dim = models.ForeignKey(TimeDim, on_delete=models.CASCADE, default=1,
+                                 related_name='time_dim_min_max_cut')
+    measure_dim = models.ForeignKey(MeasureDim, on_delete=models.CASCADE, default=1,
+                                    related_name='country_dim_min_max_cut')
+    min = models.DecimalField(max_digits=24, decimal_places=10, default=0, blank=True, null=True)
+    max = models.DecimalField(max_digits=24, decimal_places=10, default=0, blank=True, null=True)
+
+    def __str__(self):
+        return str(self.time_dim)+" "+str(self.measure_dim)+" min:"+str(self.min)+" max:"+str(self.max)
+
+# ------------ For Analysis --------------------------
 class RangeDim(TruncateTableMixin, models.Model):
     range_name = models.CharField(max_length=100, default='', blank=True, null=True)
 
@@ -96,14 +108,3 @@ class OutputFact(TruncateTableMixin, models.Model):
     def __str__(self):
         return str(self.range_dim) + " - " + str(self.country_dim) + " - " + str(self.time_dim) + ": " + str(self.amount)
 
-
-class MinMaxCut(TruncateTableMixin, models.Model):
-    time_dim = models.ForeignKey(TimeDim, on_delete=models.CASCADE, default=1,
-                                 related_name='time_dim_min_max_cut')
-    measure_dim = models.ForeignKey(MeasureDim, on_delete=models.CASCADE, default=1,
-                                    related_name='country_dim_min_max_cut')
-    min = models.DecimalField(max_digits=24, decimal_places=10, default=0, blank=True, null=True)
-    max = models.DecimalField(max_digits=24, decimal_places=10, default=0, blank=True, null=True)
-
-    def __str__(self):
-        return str(self.time_dim)+" "+str(self.measure_dim)+" min:"+str(self.min)+" max:"+str(self.max)

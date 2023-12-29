@@ -332,12 +332,13 @@ class StockPricesDaysAdmin(admin.ModelAdmin):
 
 @admin.register(TwoSpreadStrategy)
 class TwoSpreadStrategyAdmin(admin.ModelAdmin):
-    list_display = ['company', 'strategy_idx', 'strike']
-    list_filter = ('company', 'strategy_idx', 'strike', )
+    list_display = ['company', 'strategy_idx', 'strike', 'strategy_price', 'call_strategy_price', 'put_strategy_price',
+                    'stock_price', 'is_open_position']
+    list_filter = ('company', 'strategy_idx', 'strike', 'is_open_position')
 
 
 @admin.register(TwoSpreadStrategyDetails)
 class TwoSpreadStrategyDetailsAdmin(admin.ModelAdmin):
-    list_display = ['two_spread_strategy', 'idx', 'seconds', 'stock_price', 'strategy_price']
+    list_display = ['two_spread_strategy', 'idx', 'seconds', 'stock_price', 'call_strategy_price', 'put_strategy_price', 'strategy_price']
     list_filter = ('two_spread_strategy', 'idx', 'stock_price', 'strategy_price', )
 

@@ -396,8 +396,9 @@ def get_data_link(request):
     except Exception as ex:
         pass
 
+    # print("AAAAA5", type(dic_), dic_)
     # print("parent_model_fk_name\n", parent_model_fk_name, "\nparent_model_fk_name")
-    print("AAAAAAAA777", type(dic_), dic_)
+    # print("AAAAAAAA777", type(dic_), dic_)
 
     multiple_select_fields = None
     if "multiple_select_fields" in dic_:
@@ -937,5 +938,4 @@ def general_data(request):
         obj = general_data_model.objects.get(app=app_, group=group_, data_name = data_name_)
         result["json"] = obj.data_json
     return JsonResponse(result)
-
 

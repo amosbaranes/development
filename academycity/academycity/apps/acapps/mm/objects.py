@@ -167,34 +167,62 @@ class MMDataProcessing(BaseDataProcessing, MMAlgo):
             df_similarity_ = pickle.load(handle)
         with open(self.file_similarity_dic, 'rb') as handle:
             df_similarity_dic = pickle.load(handle)
+        # print(df_similarity_, "\n", df_similarity_dic)
 
+        schema = {'gene': 'int64', 'threshold': 'float64', 'score': 'float64'}
+        df_results = pd.DataFrame(columns=schema).astype(schema)
         for n in range(4, len(df_similarity_.columns)):
-            print("gene=", df_similarity_.columns[n])
+            # print("gene=", df_similarity_.columns[n])
             df_similarity_[df_similarity_.columns[n]] *= df_similarity_dic[df_similarity_.columns[n]]
+            df_similarity_[df_similarity_.columns[n]] -= 0.7
             df_ = df_similarity_.sort_values(df_similarity_.columns[n], ascending=False)
-
+            # print("df_\n", df_)
             df = df_.copy()
             df=df.reset_index(drop=True)
             df.index = df.index.set_names(['idx'])
             df=df.reset_index()
-            print("AAAA", df.columns[n+1], "\n", df)
-            try:
-                for k in ['h', 'l', 'hi', 'li']:
-                    print("gene=", df.columns[n+1], "k=", k)
-                    print(df)
-                    dfg = df.groupby('h')['idx'].sum()
-                    print(dfg)
-                    dfg = df.groupby('l')['idx'].sum()
-                    print(dfg)
-                    dfg = df.groupby('hi')['idx'].sum()
-                    print(dfg)
-                    dfg = df.groupby('li')['idx'].sum()
-                    print(dfg)
-                    print("-"*10)
-            except Exception as ex:
-                print(ex)
+            # print("AAAA", df.columns[n+1], "\n", df)
+            lg = [0, 0.05, 0.1, 0.15, 0.2]
+            lp = [1, 2, 3, 4, 5]
+            sum_t = 0
+            for i in range(len(lg)):
+                z = lg[i]
+                try:
+                    sum_ = round(100*lp[i]*df_similarity_[df_similarity_[df_similarity_.columns[n]] >= z][df_similarity_.columns[n]].sum())/100
+                    print("gene=", df_similarity_.columns[n], "threshold=", z, "       score=", sum_)
+
+                    df_n = {'gene': int(df_similarity_.columns[n]), 'threshold': z, 'score': sum_}
+                    df_results = df_results.append(df_n, ignore_index=True)
+
+                    sum_t += sum_
+                except Exception as ex:
+                    print(ex)
+            sum_t = round(100*sum_t)/100
+            print("Total=", sum_t)
 
             print("="*20)
+        print("\nGene Score by threshold:\n", df_results)
+        df_score = df_results.groupby("gene")["score"].sum()
+        df_score = df_score.sort_values(ascending=False)[:3]
+
+        print("\nGene Total Score:\n", df_score)
+
+            # try:
+            #     for k in ['h', 'l', 'hi', 'li']:
+            #         print("gene=", df.columns[n+1], "k=", k)
+            #         print(df)
+            #         dfg = df.groupby('h')['idx'].sum()
+            #         print(dfg)
+            #         dfg = df.groupby('l')['idx'].sum()
+            #         print(dfg)
+            #         dfg = df.groupby('hi')['idx'].sum()
+            #         print(dfg)
+            #         dfg = df.groupby('li')['idx'].sum()
+            #         print(dfg)
+            #         print("-"*10)
+            # except Exception as ex:
+            #     print(ex)
+
 
         result = {"status": "ok"}
         return result
@@ -531,7 +559,9 @@ class MMDataProcessing(BaseDataProcessing, MMAlgo):
         self.to_save_similarity_by_index.append((df_similarity_.copy(), "similarity_by_index"))
         self.save_to_excel_(save_to_file = os.path.join(self.TO_EXCEL_OUTPUT, "similarity_by_index.xlsx"),
                             to_save = self.to_save_similarity_by_index)
+
         print("'", "="*50)
+        print(self.file_similarity)
         print("'", "="*50)
 
         with open(self.file_similarity, 'wb') as handle:

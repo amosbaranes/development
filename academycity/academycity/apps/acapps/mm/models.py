@@ -37,7 +37,7 @@ class Fact(TruncateTableMixin, models.Model):
     def __str__(self):
         return str(self.gene_dim) + " - " + str(self.person_dim) + ": " + str(self.amount)
 
-
+# --------- For Analysis ------------------------------
 class FactNormalized(TruncateTableMixin, models.Model):
     gene_dim = models.ForeignKey(GeneDim, on_delete=models.CASCADE, default=1,
                                  related_name='gene_dim_fact_normalized')

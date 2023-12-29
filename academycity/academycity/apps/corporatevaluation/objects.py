@@ -1570,14 +1570,26 @@ class StockPrices(object):
         ticker = dic["ticker"]
         idx = int(dic["idx"])
         strike = dic["strike"]
+        stock_price = dic["stock_price"]
+        strategy_price = dic["strategy_price"]
+        call_strategy_price = dic["call_strategy_price"]
+        put_strategy_price = dic["put_strategy_price"]
 
         model_c = apps.get_model(app_label=app_, model_name="XBRLCompanyInfo")
         model_s = apps.get_model(app_label=app_, model_name="TwoSpreadStrategy")
         c = model_c.objects.get(ticker=ticker)
-        print("c=", c)
-        s, is_created = model_s.objects.get_or_create(company=c, strategy_idx=idx, strike=strike)
-        s.save()
-        print(s)
+        # print("c=", c)
+        count = model_s.objects.filter(company=c, strike=strike, is_open_position=True).all().count()
+        # print("count=", count)
+        if count == 0:
+            # print("record strike for", c, strike)
+            s, is_created = model_s.objects.get_or_create(company=c, strategy_idx=idx, strike=strike)
+            s.stock_price = stock_price
+            s.strategy_price = strategy_price
+            s.call_strategy_price = call_strategy_price
+            s.put_strategy_price = put_strategy_price
+            s.save()
+            # print(s)
 
         dic = {'data': "ok"}
         # dic = {}
@@ -1585,13 +1597,15 @@ class StockPrices(object):
         return dic
 
     def record_option_strategy_detail(self, dic):
-        print("9077-70 input dic: \n", dic, "\n"+"-"*30)
+        print("9077-70-7 input dic: \n", dic, "\n"+"-"*100)
         app_ = dic["app"]
         id_ = int(dic["id"])
         idx = int(dic["idx"])
         seconds = int(dic["seconds"])
         stock_price = dic["stock_price"]
         strategy_price = dic["strategy_price"]
+        put_strategy_price = dic["put_strategy_price"]
+        call_strategy_price = dic["call_strategy_price"]
 
         model_t = apps.get_model(app_label=app_, model_name="TwoSpreadStrategy")
         tw = model_t.objects.get(id=id_)
@@ -1600,6 +1614,8 @@ class StockPrices(object):
         c, is_created = model_td.objects.get_or_create(two_spread_strategy=tw, idx = idx, seconds=seconds)
         c.stock_price = stock_price
         c.strategy_price = strategy_price
+        c.call_strategy_price = call_strategy_price
+        c.put_strategy_price = put_strategy_price
         c.save()
         print("c", c)
 
@@ -1611,8 +1627,33 @@ class StockPrices(object):
     def get_option_strategies(self, dic):
         print("9055-50 input dic: \n", dic, "\n"+"-"*30)
         app_ = dic["app"]
+        ticker_ = ""
+        try:
+            ticker_ = dic["ticker"]
+        except Exception as ex:
+            pass
+
+        s = ""
+        is_all_ = "True"
+        try:
+            is_all_ = dic["is_all"]
+            if is_all_ != "all":
+                if is_all_ == "false":
+                    is_all_ = "False"
+                else:
+                    is_all_ = "True"
+                s += ".filter(is_open_position=" + is_all_ + ")"
+        except Exception as ex:
+            s += ".filter(is_open_position=" + is_all_ + ")"
+
+        if ticker_ !="":
+            s += ".filter(company__ticker='"+ticker_+"')"
+        if s == "":
+            s = ".all"
+        s = "model_s.objects" + s
         model_s = apps.get_model(app_label=app_, model_name="TwoSpreadStrategy")
-        objs = model_s.objects.all()
+        # print(s)
+        objs = eval(s)
         strategies = {}
         for o in objs:
             # print(o.company.ticker, o.strategy_idx, o.strike, o.id)
@@ -1620,8 +1661,7 @@ class StockPrices(object):
                 strategies[o.company.ticker] = {}
             # print(o.strike)
             strategies[o.company.ticker][int(o.strike)] = {"strategy_idx": o.strategy_idx, "id": o.id}
-        print(strategies)
-
+        # print(strategies)
         dic = {'data': "ok", "strategies": strategies}
         # dic = {}
         # print("9099 output dic: \n", dic, "\n"+"="*30)
@@ -1635,12 +1675,16 @@ class StockPrices(object):
         model_ = apps.get_model(app_label=app_, model_name="TwoSpreadStrategyDetails")
         objs = model_.objects.filter(two_spread_strategy__company__ticker=ticker,
                                      two_spread_strategy__strategy_idx=strategy_id)
-        dic = {"stock_price":[], "strategy_price":[]}
+        dic = {}
         for o in objs:
-            dic["stock_price"].append(float(o.stock_price))
-            dic["strategy_price"].append(float(o.strategy_price))
+            m = round(o.idx/10000)
+            if m not in dic:
+                dic[m] = {"x":[], "y":[]}
+            dic[m]["x"].append(float(o.stock_price))
+            dic[m]["y"].append(float(o.strategy_price))
+
         dic = {'data': "ok", "dic": dic}
-        print("9099 output dic: \n", dic, "\n"+"="*30)
+        # print("9099 output dic: \n", dic, "\n"+"="*30)
         return dic
 
     def analyze_prices_minutes(self, dic):

@@ -35,17 +35,24 @@ from django.apps import apps
 
 class AvicAlgo(object):
     def __init__(self, dic):  # to_data_path, target_field
-        # print("90004-000 AvibAlgo", dic, '\n', '-'*50)
+        # print("90004-000 AvibAlgo\n", dic, '\n', '-'*50)
         try:
             super(AvicAlgo, self).__init__()
         except Exception as ex:
             print("Error 90004-010 AvibDataProcessing:\n"+str(ex), "\n", '-'*50)
-        # print("90004-020 AvibAlgo", dic, '\n', '-'*50)
+        # print("AvicAlgo\n", self.app)
+        # print("90004-020 AvibAlgo\n", dic, '\n', '-'*50)
+        self.app = dic["app"]
+        # print("AvicAlgo 9004", self.app)
+        measure_group_model_name_ = dic["measure_group_model"]
+        self.model_measure_group = apps.get_model(app_label=self.app, model_name=measure_group_model_name_)
 
 
 class AvicDataProcessing(BaseDataProcessing, BasePotentialAlgo, AvicAlgo):
     def __init__(self, dic):
+        # print("90005-000 AvicDataProcessing\n", dic, '\n', '-' * 50)
         super().__init__(dic)
+        # print("9005 AvicDataProcessing ", self.app)
 
     def check_country(self, cc):
         if cc.lower().find("west")>-1:
@@ -254,7 +261,6 @@ class AvicDataProcessing(BaseDataProcessing, BasePotentialAlgo, AvicAlgo):
     # _1  I adjusted this function to work after uploading Eli data
     def load_wbfile_to_db(self, dic):
         print("90121-5: \n", dic, "="*50)
-        app_ = dic["app"]
         try:
             file_path = self.upload_file(dic)["file_path"]
             # print('90022-1 dic')
@@ -265,24 +271,24 @@ class AvicDataProcessing(BaseDataProcessing, BasePotentialAlgo, AvicAlgo):
             # df = df.reset_index()  # make sure indexes pair with number of rows
             # print(df)
 
-            model_min_max_cut = apps.get_model(app_label=app_, model_name="minmaxcut")
+            model_min_max_cut = apps.get_model(app_label=self.app, model_name="minmaxcut")
             model_name_ = dic["dimensions"]["time_dim"]["model"]
-            model_time_dim = apps.get_model(app_label=app_, model_name=model_name_)
+            model_time_dim = apps.get_model(app_label=self.app, model_name=model_name_)
             model_name_ = dic["dimensions"]["country_dim"]["model"]
-            model_country_dim = apps.get_model(app_label=app_, model_name=model_name_)
+            model_country_dim = apps.get_model(app_label=self.app, model_name=model_name_)
             model_name_ = "measuregroupdim"
-            model_group_measure_dim = apps.get_model(app_label=app_, model_name=model_name_)
+            model_group_measure_dim = apps.get_model(app_label=self.app, model_name=model_name_)
             model_name_ = dic["dimensions"]["measure_dim"]["model"]
-            model_measure_dim = apps.get_model(app_label=app_, model_name=model_name_)
+            model_measure_dim = apps.get_model(app_label=self.app, model_name=model_name_)
             model_name_ = dic["fact"]["model"]
-            model_fact = apps.get_model(app_label=app_, model_name=model_name_)
+            model_fact = apps.get_model(app_label=self.app, model_name=model_name_)
         except Exception as ex:
             print("Error 201-201-201", ex)
 
         min_cut = []
         max_cut = []
         #
-        model_country_group_dim = apps.get_model(app_label=app_, model_name="CountryGroupDim")
+        model_country_group_dim = apps.get_model(app_label=self.app, model_name="CountryGroupDim")
         country_group_obj, is_created = model_country_group_dim.objects.get_or_create(group_name="wb")
         #
         for index, row in df.iterrows():
@@ -475,7 +481,6 @@ class AvicDataProcessing(BaseDataProcessing, BasePotentialAlgo, AvicAlgo):
     def load_eli_file_to_db(self, dic):
         try:
             # print("90121-1: \n", "="*50, "\n", dic, "\n", "="*50)
-            app_ = dic["app"]
             file_path = self.upload_file(dic)["file_path"]
             # print(file_path)
             # print('90121-2 dic')
@@ -483,23 +488,23 @@ class AvicDataProcessing(BaseDataProcessing, BasePotentialAlgo, AvicAlgo):
             # print('90121-3 dic', dic)
 
             model_name_ = dic["dimensions"]["time_dim"]["model"]
-            model_time_dim = apps.get_model(app_label=app_, model_name=model_name_)
+            model_time_dim = apps.get_model(app_label=self.app, model_name=model_name_)
             #
-            model_country_group_dim = apps.get_model(app_label=app_, model_name="CountryGroupDim")
+            model_country_group_dim = apps.get_model(app_label=self.app, model_name="CountryGroupDim")
             model_name_ = dic["dimensions"]["country_dim"]["model"]
-            model_country_dim = apps.get_model(app_label=app_, model_name=model_name_)
+            model_country_dim = apps.get_model(app_label=self.app, model_name=model_name_)
             #
             model_name_ = dic["dimensions"]["measure_dim"]["model"]
-            model_measure_dim = apps.get_model(app_label=app_, model_name=model_name_)
-            model_measure_group_dim = apps.get_model(app_label=app_, model_name="measuregroupdim")
+            model_measure_dim = apps.get_model(app_label=self.app, model_name=model_name_)
+            model_measure_group_dim = apps.get_model(app_label=self.app, model_name="measuregroupdim")
             #
             model_name_ = dic["fact"]["model"]
-            model_fact = apps.get_model(app_label=app_, model_name=model_name_)
+            model_fact = apps.get_model(app_label=self.app, model_name=model_name_)
             #
-            model_min_max_cut = apps.get_model(app_label=app_, model_name="minmaxcut")
+            model_min_max_cut = apps.get_model(app_label=self.app, model_name="minmaxcut")
             #
             country_group_obj, is_created = model_country_group_dim.objects.get_or_create(group_name="eli")
-            #
+            # Establishing the time dimension
             year = int(self.uploaded_filename.split(".")[0])
             year_obj, is_created = model_time_dim.objects.get_or_create(id=year)
             if is_created:
@@ -514,6 +519,7 @@ class AvicDataProcessing(BaseDataProcessing, BasePotentialAlgo, AvicAlgo):
             try:
                 ws = wb[f]
                 f = self.clean_name(f)
+                # establish group obj
                 group_obj, is_created = model_measure_group_dim.objects.get_or_create(group_name=f)
                 if is_created:
                     group_obj.group_name = f

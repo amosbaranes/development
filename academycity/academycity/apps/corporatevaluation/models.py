@@ -1517,7 +1517,7 @@ class StockPricesMinutes(TruncateTableMixin, models.Model):
     class Meta:
         verbose_name = _('StockPricesMinute')
         verbose_name_plural = _('StockPricesMinutes')
-        ordering = ['company__id', '-idx']
+        ordering = ['company__id', 'idx']
 
     company = models.ForeignKey(XBRLCompanyInfo, on_delete=models.CASCADE, default=None, blank=True, null=True,
                                 related_name='company_info_stock_prices')
@@ -1565,9 +1565,15 @@ class TwoSpreadStrategy(TruncateTableMixin, models.Model):
                                 related_name='two_spread_strategys')
     strategy_idx = models.PositiveBigIntegerField(default=0)
     strike = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    stock_price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    strategy_price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    call_strategy_price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    put_strategy_price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    is_open_position = models.BooleanField(default=True)
 
     def __str__(self):
         return str(self.strategy_idx) + ": " + str(self.strike)
+
 
 class TwoSpreadStrategyDetails(TruncateTableMixin, models.Model):
     class Meta:
@@ -1581,6 +1587,8 @@ class TwoSpreadStrategyDetails(TruncateTableMixin, models.Model):
     seconds = models.PositiveBigIntegerField(default=0)
     stock_price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     strategy_price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    call_strategy_price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    put_strategy_price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
 
     def __str__(self):
         return str(self.idx)
