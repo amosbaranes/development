@@ -1,7 +1,7 @@
 import warnings
 import os
 from django.conf import settings
-from ..ml.basic_ml_objects import BaseDataProcessing
+from ..ml.basic_ml_objects import BaseDataProcessing, BasePotentialAlgo
 import matplotlib as mpl
 from django.apps import apps
 
@@ -28,12 +28,17 @@ mpl.use('Agg')
 
 class MSAlgo(object):
     def __init__(self, dic):  # to_data_path, target_field
-        # print("90001-01 MSAlgo", dic, '\n', '-'*50)
+        # print("90004-000-1 MSAlgo", dic, '\n', '-'*50)
         super(MSAlgo, self).__init__()
-        # print("90002-01 MSAlgo", dic, '\n', '-'*50)
+        # print("90004-000-2 MSAlgo", dic, '\n', '-'*50)
+        # -----
+        self.to_save_normalize = []
+        self.to_save_similarity = []
+        self.to_save_similarity_by_index = []
+        self.to_save_score = []
 
 
-class MSDataProcessing(BaseDataProcessing, MSAlgo):
+class MSDataProcessing(BaseDataProcessing, BasePotentialAlgo, MSAlgo):
     def __init__(self, dic):
         super().__init__(dic)
 
@@ -84,8 +89,6 @@ class MSDataProcessing(BaseDataProcessing, MSAlgo):
 
     def load_file_to_db(self, dic):
         # print("90121-1: \n", dic, "="*50)
-        # print(dic)
-        # print('dic')
         clear_log_debug()
         log_debug("=== load_file_to_db 100 ===")
         app_ = dic["app"]
@@ -96,55 +99,64 @@ class MSDataProcessing(BaseDataProcessing, MSAlgo):
         # print('file_path')
         # print('90121-2 dic')
         dic = dic["cube_dic"]
-        # print('90121-3 dic', dic)
+        print('90121-3 dic', dic)
         model_name_ = dic["dimensions"]["person_dim"]["model"]
         model_person_dim = apps.get_model(app_label=app_, model_name=model_name_)
+
+        model_name_ = dic["dimensions"]["person_group_dim"]["model"]
+        model_person_group_dim = apps.get_model(app_label=app_, model_name=model_name_)
+
+        model_name_ = dic["dimensions"]["gene_group_dim"]["model"]
+        model_gene_group_dim = apps.get_model(app_label=app_, model_name=model_name_)
+
         model_name_ = dic["dimensions"]["gene_dim"]["model"]
         model_gene_dim = apps.get_model(app_label=app_, model_name=model_name_)
+
         model_name_ = dic["fact"]["model"]
         model_fact = apps.get_model(app_label=app_, model_name=model_name_)
 
-        model_fact.truncate()
-        model_gene_dim.truncate()
-        model_person_dim.truncate()
         wb = load_workbook(filename=file_path, read_only=False)
         sheet_names = wb.sheetnames
-        f = "RAW DATA (607)"
-        ws = wb[f]
-        data = ws.values
-        # Get the first line in file as a header line
-        columns = next(data)[0:]
-        # print(columns)
-        # Create a DataFrame based on the second and subsequent lines of data
-        df = pd.DataFrame(data, columns=columns)
-        df = df.reset_index()  # make sure indexes pair with number of rows
-        # n__ = 0
+        for f in sheet_names:
+            gene_group_dim_obj, is_created = model_gene_group_dim.objects.get_or_create(group_name=f)
+            gene_group_dim_obj.save()
+            ws = wb[f]
+            data = ws.values
+            # Get the first line in file as a header line
+            columns = next(data)[0:]
+            # print(columns)
+            # Create a DataFrame based on the second and subsequent lines of data
+            df = pd.DataFrame(data, columns=columns)
+            df = df.reset_index()  # make sure indexes pair with number of rows
+            # n__ = 0
 
-        list_ = []
-        for index, row in df.iterrows():
-            print("index", index)
-            for j in range(1, len(columns)):
-                # print("j", j)
-                if row[1] is not None and str(row[1]) != "None" and str(row[1]) != "":
-                    g_ = str(row[1])
-                    # print("g_", g_)
-                    gene_dim_obj, is_created = model_gene_dim.objects.get_or_create(gene_code=g_)
-                    p_ = str(columns[j])
-                    if p_ != "None" and p_ != "":
-                        person_dim_obj, is_created = model_person_dim.objects.get_or_create(person_code=p_)
-                    try:
-                        # print(str(row[columns[j]]), "\n", "="*20)
-                        v_ = float(str(row[columns[j]]))
-                        if (v_ <= -0.000001) or (v_ > 0.000001):
-                            fact_obj, is_created = model_fact.objects.get_or_create(gene_dim=gene_dim_obj,
-                                                                                    person_dim=person_dim_obj)
-                            fact_obj.amount = v_
-                            fact_obj.save()
-                    except Exception as ex:
-                        # print("Error: ", ex, "\n")
-                        if p_ not in list_:
-                            list_.append(p_)
-                            print(list_)
+            list_ = []
+            for index, row in df.iterrows():
+                print("index", index)
+                for j in range(1, len(columns)):
+                    # print("j", j)
+                    if row[1] is not None and str(row[1]) != "None" and str(row[1]) != "":
+                        g_ = str(row[1])
+                        # print("g_", g_)
+                        gene_dim_obj, is_created = model_gene_dim.objects.get_or_create(gene_group_dim=gene_group_dim_obj,
+                                                                                        gene_code=g_)
+                        p_ = str(columns[j])
+                        if p_ != "None" and p_ != "":
+
+                            person_dim_obj, is_created = model_person_dim.objects.get_or_create(person_code=p_)
+                        try:
+                            # print(str(row[columns[j]]), "\n", "="*20)
+                            v_ = float(str(row[columns[j]]))
+                            if (v_ <= -0.000001) or (v_ > 0.000001):
+                                fact_obj, is_created = model_fact.objects.get_or_create(gene_dim=gene_dim_obj,
+                                                                                        person_dim=person_dim_obj)
+                                fact_obj.amount = v_
+                                fact_obj.save()
+                        except Exception as ex:
+                            # print("Error: ", ex, "\n")
+                            if p_ not in list_:
+                                list_.append(p_)
+                                print(list_)
         print("\n", "="*100, list_, "\n", "="*100)
 
             # print(f_, p_, v_)
@@ -157,9 +169,8 @@ class MSDataProcessing(BaseDataProcessing, MSAlgo):
         return result
 
     def upload_personal_info_to_db(self, dic):
-        print("90121-1-3: \n", dic, "\n", "="*50)
+        # print("90121-1-3: \n", dic, "\n", "="*50)
         app_ = dic["app"]
-        sheet_name_ = dic["sheet_name"]
         file_path = self.upload_file(dic)["file_path"]
         # file_path = "/home/amos/projects/development/academycity/data/ms/datasets/excel/raw_data/RAW DATA (607).xlsx"
         # print('file_path')
@@ -168,35 +179,76 @@ class MSDataProcessing(BaseDataProcessing, MSAlgo):
         # print('90121-2 dic')
         dic = dic["cube_dic"]
         # print('90121-3 dic', dic)
-        model_name_ = dic["dimensions"]["person_dim"]["model"]
 
+        model_fact_normalized = apps.get_model(app_label=self.app, model_name="factnormalized")
+
+        model_group_name_ = dic["dimensions"]["person_group_dim"]["model"]
+        model_person_group_dim = apps.get_model(app_label=app_, model_name=model_group_name_)
+
+        model_name_ = dic["dimensions"]["person_dim"]["model"]
         model_person_dim = apps.get_model(app_label=app_, model_name=model_name_)
+
+        model_name_ = dic["dimensions"]["gene_group_dim"]["model"]
+        model_gene_group_dim = apps.get_model(app_label=app_, model_name=model_name_)
+
+        model_name_ = dic["dimensions"]["gene_dim"]["model"]
+        model_gene_dim = apps.get_model(app_label=app_, model_name=model_name_)
+
+        gene_group_obj, is_created = model_gene_group_dim.objects.get_or_create(group_name="dep")
+        gene_group_obj.save()
+        #
+        # qs = model_fact.objects.filter(gene_dim__gene_group_dim_group_name="dep",
+        #                                person_dim__person_group_dim__group_name="Normaliaz")
+        # df = pd.DataFrame(list(qs.values("gene_dim", "person_dim", "amount")))
+
+
+        model_name_ = dic["fact"]["model"]
+        model_fact = apps.get_model(app_label=app_, model_name=model_name_)
+
         wb = load_workbook(filename=file_path, read_only=False)
         sheet_names = wb.sheetnames
-        f = sheet_name_
-        ws = wb[f]
-        data = ws.values
-        columns = next(data)[0:]
-        # print(columns)
-        df = pd.DataFrame(data, columns=columns)
-        print(df)
-        for index, row in df.iterrows():
-            print(index, row["ID"])
-            try:
-                if row["gender"] == "M":
-                    row["gender"] = 0
-                else:
-                    row["gender"] = 1
-                # print(row["gender"])
-                model_person_dim_ = model_person_dim.objects.get(person_code=row["ID"])
-                # print("'", "="*100,"\n",row["ID"])
-                model_person_dim_.gender = row["gender"]
-                model_person_dim_.age_at_cdna = row["age_at_cDNA"]
-                model_person_dim_.set_num = row["set_num"]
-                model_person_dim_.save()
-            except Exception as ex:
-                # pass
-                print("Error: ", row["ID"], ex)
+        for f in sheet_names:
+            # print(f)
+            ws = wb[f]
+            data = ws.values
+            columns = next(data)[0:]
+            if f == "Model":
+                gene_obj, is_created = model_gene_dim.objects.get_or_create(gene_group_dim=gene_group_obj,
+                                                                            gene_code=columns[len(columns) - 1])
+                # print(gene_obj)
+
+            pg_obj, is_created = model_person_group_dim.objects.get_or_create(group_name=f)
+            pg_obj.save()
+
+            df = pd.DataFrame(data, columns=columns)
+            # print(df)
+
+            for index, row in df.iterrows():
+                # print(index, row["ID"])
+                try:
+                    if row["gender"] == "M":
+                        row["gender"] = 0
+                    else:
+                        row["gender"] = 1
+                    # print(row["gender"])
+                    person_obj, is_create = model_person_dim.objects.get_or_create(person_code=row["ID"])
+                    # print("'", "="*100,"\n",row["ID"])
+                    person_obj.person_group_dim=pg_obj
+                    person_obj.gender = row["gender"]
+                    person_obj.age_at_cdna = row["age_at_cDNA"]
+                    person_obj.set_num = row["set_num"]
+                    person_obj.save()
+                    if f == "Model":
+                        fact_obj, is_created = model_fact.objects.get_or_create(gene_dim=gene_obj, person_dim=person_obj)
+                        fact_obj_normalized, is_created = model_fact_normalized.objects.get_or_create(gene_dim=gene_obj,
+                                                                                                     person_dim=person_obj)
+                        fact_obj.amount = row[columns[len(columns) - 1]]
+                        fact_obj.save()
+                        fact_obj_normalized.amount = row[columns[len(columns) - 1]]
+                        fact_obj_normalized.save()
+                except Exception as ex:
+                    # pass
+                    print("Error: ", row["ID"], ex)
         result = {"status": "ok"}
         return result
     #
@@ -204,7 +256,7 @@ class MSDataProcessing(BaseDataProcessing, MSAlgo):
     # add the functions below to this function
     def calculate_clusters(self, dic):
         # print("90921-0: \n", dic, "\n", "="*50)
-        # print(dic)
+        print(dic)
         # print('dic')
         app_ = dic["app"]
         model_name_ = dic["dimensions"]["person_dim"]["model"]
@@ -216,7 +268,7 @@ class MSDataProcessing(BaseDataProcessing, MSAlgo):
         model_name_ = dic["fact"]["model"]
         # print(model_name_)
         model_fact = apps.get_model(app_label=app_, model_name=model_name_)
-        qs = model_fact.objects.all()
+        qs = model_fact.objects.filter(gene_dim__gene_group_dim__group_name="indep")
         df_s = pd.DataFrame(list(qs.values('gene_dim', 'person_dim', 'amount')))
         df_s.columns=['gene', 'person', 'amount']
         # print(df_s)
@@ -230,12 +282,13 @@ class MSDataProcessing(BaseDataProcessing, MSAlgo):
 
         for index, row in df.iterrows():
             # print("="*100)
+            print(index)
             # print(row)
             clusters = self.get_gene_clusters(row)
             # print("number of clusters\n\n", len(clusters))
             obj = model_gene_dim.objects.get(id=index)
             obj.clusters = clusters
-            # print("="*100)
+            print("="*100)
             obj.save()
         result = {"status": "ok"}
         return result
@@ -261,7 +314,7 @@ class MSDataProcessing(BaseDataProcessing, MSAlgo):
                     clusters[cluster_n]["entity_value"].append(float(row[j]))
                     clusters[cluster_n]["centroid"]=float(row[j])
                     cluster_n += 1
-                    # print("-"*30, "j=", j, "\n", clusters, "\n", "="*30)
+                    # print("-"*30, "\nj=", j, "\n", clusters, "\n", "="*30)
                 else:
                     d_min = 1000000000000
                     c_min = -1
@@ -290,7 +343,7 @@ class MSDataProcessing(BaseDataProcessing, MSAlgo):
         n_ = 0
         l_sum = []
         while n_ < 100:
-            print("n_=", n_)
+            # print("n_=", n_)
             sum_ = 0
             clusters_o = copy.deepcopy(clusters)
             # for c in clusters_o:
@@ -315,6 +368,7 @@ class MSDataProcessing(BaseDataProcessing, MSAlgo):
         clusters = copy.deepcopy(clusters_o)
         # print("="*10, "\n", n, "\n", "="*10)
         for c in clusters:
+            # print("c=", c, "\n", clusters[c]["entity_value"])
             clusters[c]["centroid"] = mean(clusters[c]["entity_value"])
             clusters[c]["entity"]=[]
             clusters[c]["entity_value"]=[]
@@ -330,6 +384,10 @@ class MSDataProcessing(BaseDataProcessing, MSAlgo):
                     c_min = c
             clusters[c_min]["entity"].append(j)
             clusters[c_min]["entity_value"].append(float(row[j]))
+        clusters_o = copy.deepcopy(clusters)
+        for c in clusters_o:
+            if len(clusters_o[c]["entity_value"]) == 0:
+                del clusters[c]
         return clusters
     #
 
@@ -412,7 +470,7 @@ class MSDataProcessing(BaseDataProcessing, MSAlgo):
     # (1) if 7/total people < 5% (make parameters T) then combine to the biggest (by nuber of peoples) block
     # (2) a get the lowest block it is 12 compare it to the pick of the other block if it is biger combine
     def add_peaks_to_clusters(self, dic):
-        print("90966-66: get_peaks\n", dic, "\n", "=" * 50)
+        # print("90966-66: get_peaks\n", dic, "\n", "=" * 50)
         app_ = dic["app"]
         t_pop = dic["t_pop"]
         model_person_dim = apps.get_model(app_label=app_, model_name="persondim")
@@ -420,8 +478,8 @@ class MSDataProcessing(BaseDataProcessing, MSAlgo):
         model_fact = apps.get_model(app_label=app_, model_name='fact')
         model_fact_normalized = apps.get_model(app_label=app_, model_name='factnormalized')
         qsp = model_person_dim.objects.all()
-        qsg = model_gene_dim.objects.all()
-        qsf = model_fact.objects.all()
+        qsg = model_gene_dim.objects.filter(gene_group_dim__group_name="indep")
+        qsf = model_fact.objects.filter(gene_dim__gene_group_dim__group_name="indep")
         #
         # df_g = pd.DataFrame(list(qsg.values('id', 'gene_code')))
         # df_g.columns=['id', 'gene_code']
@@ -480,7 +538,7 @@ class MSDataProcessing(BaseDataProcessing, MSAlgo):
             # if n__ not in [1]:
             #     continue
 
-            print("-"*50, "\n gene_code=",o.gene_code, " database id=", o.id, "\n", "-"*50)
+            # print("-"*50, "\n gene_code=",o.gene_code, " database id=", o.id, "\n", "-"*50)
             # print("="*50, "\n", o.clusters, "\n", "-"*50)
 
             ll = []
@@ -512,7 +570,7 @@ class MSDataProcessing(BaseDataProcessing, MSAlgo):
                                  "model_person_dim": model_person_dim,
                                  "gene_obj":o})
             r = r_["peak_array"]
-            print("\nSummary:\n", "="*50, "\n", r, "\n", "="*150)
+            # print("\nSummary:\n", "="*50, "\n", r, "\n", "="*150)
             o.reduced_clusters = r
             o.save()
 
@@ -746,12 +804,12 @@ class MSDataProcessing(BaseDataProcessing, MSAlgo):
                 p, hgl, hgr = get_block_median(total_sub_pop, pop_05, hgr, hgl)
                 return p, hgl, hgr
 
-            # print("return: ", total_sub_pop)
+            # print("return: ", total_sub_pop, hgl, hgr)
             return total_sub_pop, hgl, hgr
 
-        print("'", "="*100)
-        print(" Find median of sets")
-        print("'", "="*100)
+        ##print("'", "="*100)
+        ##print(" Find median of sets")
+        ##print("'", "="*100)
         sets = {}
         for k in dic_sets_o:
             df = dic_sets_o[k]
@@ -799,33 +857,35 @@ class MSDataProcessing(BaseDataProcessing, MSAlgo):
             peak__[n] = a[1]
         peak_array = peak__.copy()
         peak_array["number_of_blocks"] = len(peak_array)
-        print(" t_pop=", dic["t_pop"]+"%, t_pop=", t_pop)
-        print(" A Create Blocks for l=", l, "sum=", sum(l), "\n","-"*100,"\n", peak_array, "\n", "-"*50, "\n Two_rules_combination")
+        ##print(" t_pop=", dic["t_pop"]+"%, t_pop=", t_pop)
+        ##print(" A Create Blocks for l=", l, "sum=", sum(l), "\n","-"*100,"\n", peak_array, "\n", "-"*50, "\n Two_rules_combination")
         if peak_array["number_of_blocks"] > 1:
             two_rules_combination_1(l, peak_array, t_pop)
             print(" After rule 1\n", "-"*10, "\n", peak_array, "\n", "-"*50)
         if peak_array["number_of_blocks"] > 1:
             print(" Rule 2\n", "-"*10)
             peak_array = two_rules_combination_2(l, peak_array)
-        print(" Final Blocks\n", "-"*10, "\n", peak_array, "\n")
+        ## print(" Final Blocks\n", "-"*10, "\n", peak_array, "\n")
         # print("AAAAAAAAAA")
         for b in peak_array:
             if b == "number_of_blocks":
                 continue
             lb_ = peak_array[b]["lb"] - 1
             ub_ = peak_array[b]["ub"] - 1
-            print("\nsupper cluster (block)=", b, "\n", peak_array[b], lb_, ub_, peak_array[b]["pop"], "\n", "'",  "="*50)
+            ##print("\nsupper cluster (block)=", b, "\n", peak_array[b], lb_, ub_, peak_array[b]["pop"], "\n", "'",  "="*50)
 
             hg = get_global_high(l, peak_array[b]["lb"]-1, peak_array[b]["ub"]-1)
             pop_05_ = 0.5*peak_array[b]["pop"]
             total_sub_pop_ = l[hg]
-            # print(total_sub_pop_)
+            # print("total_sub_pop_=", total_sub_pop_, "pop_05_=", pop_05_)
 
             hgl_ = hg
             hgr_ = hg
+            p = ""
             if total_sub_pop_ < pop_05_:
                 p, hgl_, hgr_ = get_block_median(total_sub_pop_, pop_05_, hgl_, hgr_)
-            print("p=", p, "hgl_=", hgl_, "hgr_=", hgr_)
+
+            ##print("p=", p, "hgl_=", hgl_, "hgr_=", hgr_)
             all_entities_values = []
 
             hgl_ += 1
@@ -835,7 +895,7 @@ class MSDataProcessing(BaseDataProcessing, MSAlgo):
                     all_entities_values += clusters_[c_]["entity_value"]
                     # print(c_, clusters_[c_]["entity_value"],"\n")
             # print("genes values=", all_entities_values, "\nmedian= ", median(all_entities_values))
-            print(" Compact Blocks:\n block:", b, " pop=", p, " left=", hgl_, " right=", hgr_, "Median=", median(all_entities_values))
+            ##print(" Compact Blocks:\n block:", b, " pop=", p, " left=", hgl_, " right=", hgr_, "Median=", median(all_entities_values))
             peak_array[b]["compact_block"] = [hgl_, hgr_, median(all_entities_values)]
 
         # print("peak_array\n", peak_array, "\nsets\n", sets)
@@ -870,14 +930,14 @@ class MSDataProcessing(BaseDataProcessing, MSAlgo):
                     try:
                         obj_p = model_person_dim.objects.get(id=index)
                         # if s == 32:
-                        print("gene:", gene_obj.gene_code,
-                              "set:", s,
-                              "SetMedian=", round(100000*m)/100000,
-                              "CompactBlockM=", round(100000*mcb_)/100000,
-                              "Ratio=", round(100000*mcb_/m)/100000,
-                              "person("+str(index)+")=", obj_p.person_code, "Amount=",
-                              float(row[int(dfs.columns[0])]), ">> NAmount=",
-                              round(100000*mcb_ * float(row[int(dfs.columns[0])])/m)/100000)
+                        # print("gene:", gene_obj.gene_code,
+                        #       "set:", s,
+                        #       "SetMedian=", round(100000*m)/100000,
+                        #       "CompactBlockM=", round(100000*mcb_)/100000,
+                        #       "Ratio=", round(100000*mcb_/m)/100000,
+                        #       "person("+str(index)+")=", obj_p.person_code, "Amount=",
+                        #       float(row[int(dfs.columns[0])]), ">> NAmount=",
+                        #       round(100000*mcb_ * float(row[int(dfs.columns[0])])/m)/100000)
                         obj, is_created = model_fact_normalized.objects.get_or_create(gene_dim=gene_obj,
                                                                                       person_dim=obj_p)
                     except Exception as ex:
@@ -897,7 +957,7 @@ class MSDataProcessing(BaseDataProcessing, MSAlgo):
 
     # NeedToDo to move to function calculate_clusters
     def get_gene_structure(self, dic):
-        print("90950-10: \n", dic, "\n", "=" * 50)
+        # print("90950-10: \n", dic, "\n", "=" * 50)
         gene_id_ = int(dic["gene_id"])
 
         app_ = dic["app"]
@@ -931,9 +991,10 @@ class MSDataProcessing(BaseDataProcessing, MSAlgo):
         for b in reduced_clusters:
             if b == "number_of_blocks":
                 continue
+            reduced_clusters[b]["compact_block"][2] = round(100 * reduced_clusters[b]["compact_block"][2]) / 100
             reduced_clusters[b]["centroid"] = reduced_clusters[b]["compact_block"][2]
 
-        print(reduced_clusters)
+        # print(reduced_clusters)
         result = {"status": "ok", "clusters": clusters, "reduced_clusters": reduced_clusters}
         # print(result)
         return result

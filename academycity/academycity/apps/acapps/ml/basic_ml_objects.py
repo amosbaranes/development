@@ -32,11 +32,12 @@ import joblib
 
 class BaseDataProcessing(object):
     def __init__(self, dic):  # to_data_path, target_field
-        # print("90002-000 BaseDataProcessing\n", dic, '\n', '-'*50)
         try:
+            # print("90002-000-1 BaseDataProcessing\n", dic, '\n', '-' * 50)
             super(BaseDataProcessing, self).__init__(dic)  # (dic)
+            # print("90002-000-2 BaseDataProcessing\n", dic, '\n', '-' * 50)
         except Exception as ex:
-            print("Error 90002-010-1 \n" + str(ex),"\n", "-"*50)
+            print("Error 90002-000-3 \n" + str(ex),"\n", "-"*50)
 
         # print("90002-001 BaseDataProcessing\n", dic, '\n', '-'*50)
         # print("\n90002 BaseDataProcessing", self.app)
@@ -81,6 +82,11 @@ class BaseDataProcessing(object):
         os.makedirs(self.MODELS_PATH, exist_ok=True)
         self.PICKLE_PATH = os.path.join(self.PROJECT_ROOT_DIR, "pickle")
         os.makedirs(self.PICKLE_PATH, exist_ok=True)
+
+        self.file_similarity = os.path.join(self.PICKLE_PATH, "similarity"+".pkl")
+        self.file_similarity_dic = os.path.join(self.PICKLE_PATH, "similarity_dic"+".pkl")
+        self.dic_hp = os.path.join(self.PICKLE_PATH, "dic_hp"+".pkl")
+
         self.target_folder = None
 
         # self.TARGET_FIELD = target_field
@@ -229,14 +235,18 @@ class BaseDataProcessing(object):
 
 class BasePotentialAlgo(object):
     def __init__(self, dic):  # to_data_path, target_field
-        # print('-'*50, '\n', "90003-000 BasePotentialAlgo\n", dic, '\n', '-'*50)
         try:
+            # print('-'*50, '\n', "90003-000-1 BasePotentialAlgo\n", dic, '\n', '-'*50)
             super(BasePotentialAlgo, self).__init__(dic)
+            # print('-'*50, '\n', "90003-000-2 BasePotentialAlgo\n", dic, '\n', '-'*50)
         except Exception as ex:
-            print("Error 90003-010-100 " + str(ex))
+            print("Error 90003-000-3 " + str(ex))
 
-        # print("9003 BasePotentialAlgo", self.app)
-        # print("90003-020 PotentialAlgo", dic, '\n', '-'*50)
+
+        # print('-'*50, '\n', "90003-000-3 BasePotentialAlgo\n", dic, '\n', '-'*50)
+        # ---------------------
+        self.app = dic["app"]
+        # ---------------------
 
         self.rule_2 = 0.3
         self.rule_0 = 0.025
@@ -246,26 +256,48 @@ class BasePotentialAlgo(object):
         self.to_save_all = []
         self.save_to_file = None
         self.df_index = None
+        try:
+            self.value_column = dic["value"]
+        except Exception as ex:
+            pass
+        try:
+            fact_model_name = dic["fact_model"]
+            self.model_fact = apps.get_model(app_label=self.app, model_name=fact_model_name)
+        except Exception as ex:
+            pass
 
-        self.value_column = dic["value"]
-        fact_model_name = dic["fact_model"]
-        self.model_fact = apps.get_model(app_label=self.app, model_name=fact_model_name)
+        measure_name = "measure_name"
+        try:
+            measure_name = dic["measure_name"]
+        except Exception as ex:
+            pass
+        # print("measure_name=", measure_name)
+        try:
+            measure_model_name_ = dic["measure_model"]
+            # print('-' * 50, '\n', "90003-000-41 BasePotentialAlgo\nmeasure_model_name_=", measure_model_name_, "\n", '-' * 50)
+            model_measure_dim = apps.get_model(app_label=self.app, model_name=measure_model_name_)
+            self.measures_name = pd.DataFrame(model_measure_dim.objects.all().values('id', measure_name))
+        except Exception as ex:
+            pass
 
-        measure_model_name_ = dic["measure_model"]
-        model_measure_dim = apps.get_model(app_label=self.app, model_name=measure_model_name_)
-        self.measures_name = pd.DataFrame(model_measure_dim.objects.all().values('id', 'measure_name'))
-        # print('self.measures_name\n', self.measures_name)
         try:
             self.entity_name = dic["entity_name"]
             entity_model_name_ = dic["entity_model"]
             model_entity_dim = apps.get_model(app_label=self.app, model_name=entity_model_name_)
-            self.entities_name = pd.DataFrame(model_entity_dim.objects.all().values('id', self.entity_name+'_name'))
+            entity_name_suffix = "name"
+            try:
+                entity_name_suffix = dic["entity_name_suffix"]
+            except Exception as ex:
+                pass
+            self.entities_name = pd.DataFrame(model_entity_dim.objects.all().values('id', self.entity_name+'_'+entity_name_suffix))
             # print("self.entities_name\n",self.entities_name)
 
             # need to delete the next line
             # self.countries_name = pd.DataFrame(model_entity_dim.objects.all().values('id', self.entity_name+'_name'))
         except Exception as ex:
-            print("Error 9001-222-22: "+str(ex))
+            pass
+            # print("Error 9001-222-22: "+str(ex))
+
         try:
             self.total_variables = dic["total_variables"]
             self.multiply_two_variables = dic["multiply_two_variables"]
@@ -276,6 +308,7 @@ class BasePotentialAlgo(object):
         # print(self.measures_name)
         self.options = ["mm", "mx", "xm", "xx"]
         self.is_calculate_min_max = None
+        # print('-'*50, '\n', "90003-000-10 BasePotentialAlgo\n", dic, '\n', '-'*50)
 
     def process_algo(self, dic):
         # ---- Assiting function -----------------------
@@ -1068,156 +1101,687 @@ class BasePotentialAlgo(object):
                 print("Error 50661-12 PotentialAlgo calculate_min_max_cuts: \n" + str(ex), "\n", "90-111-222-2-"+k+" "+f__)
         return ll_dfs
 
-    def calculate_min_max_cuts(self, dic):
-        # print("90066-100 PotentialAlgo calculate_min_max_cuts: \n", dic, "\n", "="*50)
-        f = int(dic["dim_field"])
+    # -------
+    def normalize_similarity(self, dic):
+
+        def normalize(n_dic):
+            n_df = n_dic["df"]
+            # print("A n_df\n", n_df)
+            n_df = n_df.set_index('person_dim')
+            # print("="*50, "\n", "="*50, "\n", "n_df\n", n_df)
+
+            mm = n_dic["mm"]
+            index = n_dic["index"]
+            #
+            df_mm_index = pd.DataFrame(data=[mm])
+
+            self.to_save_normalize.append((df_mm_index.copy(), "min_max_" + index_))
+            #
+            # print("\nindex", index)
+            ii_ = index.split("_")
+            oh = ii_[0]
+            # oh_ = oh.split("-")
+            ol = ii_[1]
+            # ol_ = ol.split("-")
+            ohi = ii_[2]
+            ohi_ = ohi.split("-")
+            hi__ = ohi_[1]
+            oli = ii_[3]
+            oli_ = oli.split("-")
+            li__ = oli_[1]
+            # print(oh_[0], oh_[1], ol_[0], ol_[1])
+                # print( "="*20, "normalize:", ohi_[0], hi__, oli_[0], li__, "="*20, "\nmm", mm)
+            # print("n_df", "\n", n_df, "\n")
+            df_n1 = pd.DataFrame(index=n_df.index.copy())
+            df_n2 = pd.DataFrame(index=n_df.index.copy())
+            for xi in mm:
+                if xi == "y":
+                    mi = 1
+                else:
+                    mi = xi
+                min_cut = mm[xi]["min_cut"]
+                max_cut = mm[xi]["max_cut"]
+                if min_cut == -1:
+                    continue
+                dff = pd.DataFrame(n_df.loc[:,mi].astype(float), index=n_df.index.copy())
+                df_f = dff.copy()
+                df_f = df_f.apply(lambda x: (x - min_cut) / (max_cut - min_cut))
+                df_n1[mi] = df_f.copy()
+                df_f[df_f < 0] = 0
+                df_f[df_f > 1] = 1
+                df_n2[mi] = df_f.copy()
+
+            # print("df_n1\n", df_n1)
+            # print("df_n2\n", df_n2)
+
+            self.to_save_normalize.append((df_n1.copy(), "n1_" + index))
+            self.to_save_normalize.append((df_n2.copy(), "n2_" + index))
+
+            return df_n1.copy(), df_n2.copy()
+
+        def similarity(index, n_df, dn):
+            # print("="*50, "\nSIM_SIM for index = ", index, "\n", n_df)
+            self.to_save_similarity.append((n_df.copy(), "n_" + index))
+            df_d = pd.DataFrame()
+            df_r = pd.DataFrame()
+            df_ = pd.DataFrame()
+
+            # print("n_df.columns\n", n_df.columns)
+
+            for k in n_df.columns:
+                if k == dn:
+                    continue
+                df_d[k] = abs(n_df[k] - n_df[dn])
+                df_r[k] = abs(n_df[k] - (1 - n_df[dn]))
+            # print("df_d\n", df_d, "\ndf_r\n", df_r)
+            sd = df_d.sum()
+            sr = df_r.sum()
+            dfdm = df_d.mean()
+            dfrm = df_r.mean()
+            # print("df_d\n", df_d, "\n", "df_r\n", df_r)
+
+            self.to_save_similarity.append((df_d.copy(), "df_d_" + index))
+            self.to_save_similarity.append((df_r.copy(), "df_r_" + index))
+
+            # print("sd=\n", sd, "\nsr=\n", sr, "\ndfdm=\n", dfdm, "\ndfrm=\n", dfrm)
+
+            dfdm_ = []
+            dfrm_ = []
+            lls = []
+            ll_dic = []
+            # print(dfdm.index)
+
+            for k in dfdm.index:
+                # print("k\n", k)
+                # print(dfdm[k])
+                # print(dfrm[k])
+                # print("---")
+
+                dfdm_.append(dfdm[k])
+                dfrm_.append(dfrm[k])
+
+                if dfdm[k] < dfrm[k]:
+                    # print("A")
+                    df_[k] = df_d[k]
+                    # print("AAA\n", 1 - dfdm[k])
+                    lls.append(1 - dfdm[k])
+                    ll_dic.append(1)
+                else:
+                    # print("B")
+                    df_[k] = df_r[k]
+                    # print("BBB\n", 1 - dfdm[k])
+                    lls.append((1 - dfrm[k]))
+                    ll_dic.append(-1)
+
+            # print("df_\n", df_)
+
+            self.to_save_similarity.append((df_.copy(), "df_" + index))
+            # print("lls\n", lls, "\nll_dic\n", ll_dic)
+
+            # print(dfdm_, "\n", dfrm_)
+            # df_results = pd.DataFrame([dfdm_, dfrm_, lls, ll_dic], columns=df_.columns,
+            #                           index=["d", "1-d", "similarity", "direction"])
+            # print(index)
+            is_=index.split("_")
+            index__=""
+            for k in is_:
+                k_=str(int(float(k.split("-")[1])*100))
+                if len(k_)==1:
+                    k_="0"+k_
+                index__ +=k_
+            index = int(index__)
+            df_results = pd.DataFrame([lls], columns=df_.columns, index=[index])
+
+            # print("df_results\n", df_results)
+
+            df_results_dic = pd.DataFrame([ll_dic], columns=df_.columns, index=[index])
+            self.to_save_similarity.append((df_results.copy(), "df_results_" + str(index)))
+            return df_results, df_results_dic, index
+
+        # # #
+        print("90099-99-1000 BasePotentialAlgo normalize_similarity: \n", dic, "\n'", "="*100)
+
         method = dic["method"]
+        dn_ = int(dic["dn"])
+        cn = int(dic["cn"])  # 60406530
+        #
+        first_high_group = 0.4
+        first_low_group = 0.4
+        step = 0.05
+        n_step = int(first_high_group/step)
+        #
         u_method = "median"
         l_method = "median"
         if method == "min":
             u_method = "min"
             l_method = "max"
 
-        # print("90066-100-1 PotentialAlgo calculate_min_max_cuts: \n", "="*50)
-        # print(self.dependent_group)
-        year_ = str(dic["time_dim_value"])
-        # print(year_)
-        min_max_model_name_ = dic["min_max_model"]
-        #
-        # print("90066-100-2 PotentialAlgo calculate_min_max_cuts: \n", "="*50)
-        ll_dfs = self.pre_process_data(dic)
-        # print(ll_dfs)
+        model_fact = apps.get_model(app_label=self.app, model_name="factnormalized")
+        qs = model_fact.objects.filter(person_dim__person_group_dim__group_name="Model")
+        df = pd.DataFrame(list(qs.values("gene_dim", "person_dim", "amount")))
 
-        # result = {"status": "ok"}
-        # return result
-        #
-        # sign_ = pd.DataFrame([[0, 0, 0, 0]])
-        # sign_.columns = self.options
-        # similarity_ = pd.DataFrame([[0, 0, 0, 0]])
-        # similarity_.columns = self.options
+        try:
+            df = df.pivot(index="person_dim", columns='gene_dim', values='amount')
+            df = df.sort_values(dn_, ascending=False)
+            df = df.reset_index()
+            self.to_save_normalize.append((df.copy(), 'Data'))
+        except Exception as ex:
+            print(ex)
 
-        high_group_cut = [0.4, 0.35, 0.30, 0.25, 0.2, 0.15, 0.1]
-        low_group_cut = [0.4, 0.35, 0.30, 0.25, 0.2, 0.15, 0.1]
-        step_ = 10
-        df_d = ll_dfs[self.dependent_group]
-        # print(df_d)
-        results = {}
-        best_cut = {"bv": -1}
+        # print(df)
+        # print(df.columns)
+        print("A1000")
 
-        # print("90066-100-5 PotentialAlgo calculate_min_max_cuts: \n", "="*50)
+        # print(df.head(56),"\n", df.tail(56))
+        # print("'", "="*50)
+        # print(df.columns[2:], len(df.columns[2:]))
 
-        for h in high_group_cut:
-            hh = 1- h
-            results[hh] = {}
-            #
-            # z = 5
-            # steps_h = list(range(z, 100, z))
-            # if h == high_group_cut[0]:
-            #     steps_h.append(95)
-            # print(h)
-            steps_h = list(range(5, round(h * 100), 5))
-            steps_h = [a/100 for a in steps_h]
-            print("hhhhhhh", h, steps_h)
-            #
-            for ll in low_group_cut:
-                results[hh][ll] = {}
-                # z_ = 5
-                # steps_l = list(range(z_, 100, z_))
-                # if ll == low_group_cut[0]:
-                #     steps_l.append(95)
-                steps_l = list(range(5, round(ll * 100), 5))
-                steps_l = [a/100 for a in steps_l]
-                print("llllll", ll, steps_l)
+        df_similarity = pd.DataFrame([range(len(df.columns[2:]))], index=[0], columns=df.columns[2:])
+        df_similarity_dic = pd.DataFrame([range(len(df.columns[2:]))], index=[0], columns=df.columns[2:])
+
+        # print("'", "="*50)
+        step_num = int(round(df.shape[0]*step))
+        # print("step_num=", step_num)
+        # print("'", "="*30)
+        # print(range(int(first_high_group*100), 0, -int(step*100)))
+
+        dic_hp = {}
+        # int((first_low_group-step) * 100)
+
+        c0_continue = 1
+        c1_continue = 1
+        c2_continue = 1
+        c3_continue = 1
+        c0=int(cn/1000000)
+        c1=int(cn/10000)-c0*100
+        c2=int(cn/100)-c0*10000-c1*100
+        c3=cn-c0*1000000-c1*10000-c2*100
+        # print(c0, c1, c2, c3)
+        for l in range(int(first_low_group * 100), int(step*100), -int(step * 100)):
+            if l != c1 and c1_continue == 1 and cn != 0:
+                continue
+            else:
+                c1_continue = 0
+            print("l", l)
+            l_ = l/100
+            for h in range(int(first_high_group*100), int(step*100), -int(step*100)):
+                if (100-h) != c0 and c0_continue == 1 and cn != 0:
+                    continue
+                else:
+                    c0_continue = 0
+                print("h", 100-h)
+                h_ = (100 - h)/100
+                ## print("-"*30, "\n  h_=", h_, "l_=", l_,"\n","-"*30)
+
+                ll = [h / 100, (100 - l) / 100]
+                n = df.shape[0]
+                h_cut = n*h/100
+                l_cut = n*(100-l)/100
+
+                # df_q = df.quantile(ll)
+                # print("-" * 20)
+                # print("df_q\n", df_q, "\n", df_q[["person_dim"]])
+                # print("-" * 20)
                 #
-                # print(df_d)
-                df_q = df_d.quantile([hh, ll])
-                # print("df_d.shape", df_d.shape)
-                # print("df_q", df_q)
+                # # print(df_q[["person_dim"]].iloc[0], "\n\n", df_q[["person_dim"]].iloc[1])
+                # h_cut = (float(df_q[["person_dim"]].iloc[0]) - 1) * (df.shape[0] / (df.shape[0] - 1))
+                # h_cut = int(round(h_cut))
+                #
+                # print(df.shape, "\nH cut index=", h_cut)
+                # print("-" * 20)
 
-                results[hh][ll][f] = {}
-                # results[hh][ll][f]["max_cut"] = df_q[f].iloc[0]
-                # results[hh][ll][f]["min_cut"] = df_q[f].iloc[1]
-                df_hi = df_d[df_d[f] >= df_q[f].iloc[0]].index
-                df_li = df_d[df_d[f] <= df_q[f].iloc[1]].index
-                # print("df", "\n", df_d[df_d[f] >= df_q[f].iloc[0]], "\n\n")
-                # print("df", "\n", df_d[df_d[f] >= df_q[f].iloc[0]].index, "\n\n")
+                cond_h = df.index <= h_cut
+                df_h_e = df[cond_h]
+                    # print("Top records sorted by Y:\n", df_h_e.tail(56))
+                    # # print(df_h_e.index)
+                    # # print(len(df_h_e.index)-step_num-1)
+                    #
+                    #     # n_y = len(df_h_e.index) - step_num - 1
+                    #     # print(n_y)
+                    #     # y_max_cut = df_h_e.iloc[n_y][1]
+                    #     # print("-" * 10, "     H", "     person_index=", df_h_e.iloc[n_y]["person_dim"], "     Y=",
+                    #     #       y_max_cut)
 
-                # print("df", "\n", float(df_d[df_d[f] >= df_q[f].iloc[0]][f].median()), "\n")
+                # l_cut = (float(df_q[["person_dim"]].iloc[1]) - 1) * (df.shape[0] / (df.shape[0] - 1))
+                # l_cut = int(round(l_cut))
 
-                # results[hh][ll][f]["max_cut"] = float(df_d[df_d[f] >= df_q[f].iloc[0]][f].median())
-                # results[hh][ll][f]["min_cut"] = float(df_d[df_d[f] <= df_q[f].iloc[1]][f].median())
+                cond_l = df.index > l_cut
+                df_l_e = df[cond_l]
+                    # print(df.shape, "\nL cut index=", l_cut)
+                    # print("Low records sorted by Y:\n", df_l_e.head(56))
+                    #     # print(df_l_e.index)
+                    #
+                    #     # y_min_cut = df_l_e.iloc[step_num][1]
+                    #     # print("-" * 10, "     L", "     person_index=", df_l_e.iloc[step_num]["person_dim"], "     Y=",
+                    #     #       y_min_cut)
+                    #     # print(df_h_e.columns, len(df_h_e.columns))
+                nn__ = 0
+                nhi_ = 0
+                for hi in range(h, int(step*100), -int(step*100)):
+                    nhi_ += 1
+                    hi_ = (100 - round(hi - step * 100)) / 100
+                    if (100 - round(hi - step * 100)) != c2 and c2_continue == 1 and cn != 0:
+                        continue
+                    else:
+                        c2_continue = 0
 
-                for steph in steps_h:
-                    for stepl in steps_l:
-                        for g in ll_dfs:
-                            # if g != self.dependent_group:
-                            df = ll_dfs[g]
-                            # print("\n",g, "\n",df.columns)
-                            iih = []
-                            iil = []
-                            for j in df.index:
-                                if j in df_hi:
-                                    iih.append(j)
-                                if j in df_li:
-                                    iil.append(j)
-                            dfh = df.loc[iih]
-                            dfl = df.loc[iil]
+                    # print("hi", (100 - round(hi - step * 100)))
+                    # print(len(df_h_e.index), step_num , (hi_ - h_)  ,step, step_num * ((hi_ - h_) / step))
 
-                            dfh_q = dfh.quantile(steph/h)
-                            dfl_q = dfl.quantile((ll-stepl)/ll)
-                            # print('dfh, dfh', 'steph ', steph, 'dfh_q ', dfh_q)
-                            # , '\n', 'dfl', dfl, 'stepl', stepl, 'dfl_q', dfl_q)
+                    n_y_h = int(len(df_h_e.index) - step_num*((hi_-h_)/step))
 
-                            if steph not in results[hh][ll][f]:
-                                results[hh][ll][f][steph] = {}
-                            if stepl not in results[hh][ll][f][steph]:
-                                results[hh][ll][f][steph][stepl] = {}
-                                results[hh][ll][f][steph][stepl]["groups"] = {}
-                            if g not in results[hh][ll][f][steph][stepl]["groups"]:
-                                results[hh][ll][f][steph][stepl]["groups"][g] = {}
+                    # print("h", h_, "hi", hi_, "n_y_h=", n_y_h)
+                    # print(df_h_e)
+                    # print(df_h_e.iloc[n_y_h])
 
-                            for k in df.columns:
-                                # print(steph, stepl, k, dfh_q[k], dfl_q[k])
-                                dfh_ik = dfh[dfh[k] >= dfh_q[k]][k]
-                                dfl_ik = dfl[dfl[k] <= dfl_q[k]][k]
-                                # print('dfh[dfh[k] >= dfh_q[k]]', dfh[dfh[k] >= dfh_q[k]].index, 'dfh_ik.median()', dfh_ik.median(), 'dfl_ik.median()', dfl_ik.median())
-                                # print('g, k, dfh_ik.shape', g, k, dfh_ik.shape)
-                                if dfh_ik.shape == 0 or dfl_ik.shape == 0:
+                    y_max_cut = df_h_e.iloc[n_y_h][dn_]
+
+                    # print("ZZZ\n", y_max_cut)
+
+                    nli_ = 0
+                    if cn == 0:
+                        is_first_continue = 0
+                    else:
+                        is_first_continue = 1
+                    for li in range(l, int(step*100), -int(step*100)):
+                        if cn != 0:
+                            if round(li - step*100) != c3 and c3_continue == 1:
+                                continue
+                            else:
+                                c3_continue = 0
+                                if is_first_continue == 1:
+                                    is_first_continue = 0
                                     continue
-                                results[hh][ll][f][steph][stepl]["groups"][g][k] = eval('{"min_cut": dfl_ik.'+l_method+'(), "max_cut": dfh_ik.'+u_method+'()}')
-                        # print(results)
-                        dic = {"f":f, "steph":steph, "stepl":stepl,
-                               "df_d": df_d, "ll_dfs": ll_dfs, "groups": results[hh][ll][f]}
-                        bv = self.get_similarity(dic)
-                        if bv > best_cut["bv"]:
-                            best_cut = {"bv": bv, "hh": hh, "ll": ll, "steph":steph, "stepl":stepl, "f":f,
-                                        "dependent_group": self.dependent_group, "year": year_,
-                                        "f_groups":results[hh][ll][f][steph][stepl]["groups"]}
+                            n = self.file_similarity.find(".pkl")
+                            s = self.file_similarity[0:n] + "_" + str(cn) + ".pkl"
+                            with open(s, 'rb') as handle:
+                                df_similarity = pickle.load(handle)
 
-                            # print('best_cut\n', 'hh', hh, 'll', ll, 'results 1 steph', steph, 'stepl', stepl, "dv", bv, "\n",
-                            #       best_cut)
-                        print('hh', hh, 'll', ll, 'steph', round(100*(steph+hh))/100, 'stepl', round(100*(ll-stepl))/100, 'dv', bv, 'best', best_cut['bv'])
+                            n = self.file_similarity_dic.find(".pkl")
+                            s = self.file_similarity_dic[0:n] + "_" + str(cn) + ".pkl"
+                            with open(s, 'rb') as handle:
+                                df_similarity_dic = pickle.load(handle)
 
-        # print("="*100)
-        best_cut["df_d"] = df_d
-        # print("final", best_cut, "="*100)
+                            n = self.dic_hp.find(".pkl")
+                            s = self.dic_hp[0:n] + "_" + str(cn) + ".pkl"
+                            with open(s, 'rb') as handle:
+                                dic_hp = pickle.load(handle)
+
+                        # print("li", round(li - step*100))
+
+                        nn__ += 1
+                        nli_ += 1
+                        li_ = round(li - step*100)/100
+                        n_y_l = int(step_num*((l_-li_)/step))
+                        # print("l", l_, "li",  li_, "n_y_l", n_y_l)
+                        index_ = "h-"+str(h_) + "_" + "l-" + str(l_) + "_" + "hi-" + str(hi_) + "_" + "li-" + str(li_)
+                        # print("-"*75, "\nindex", index_, "\n", "-"*40)
+                        y_min_cut = df_l_e.iloc[n_y_l][dn_]
+                            # print("  H", "  person_index=", df_h_e.iloc[n_y_h]["person_dim"], "  Y=",
+                            #       y_max_cut, "           L", "  person_index=", df_l_e.iloc[n_y_l]["person_dim"], "  Y=",
+                            #       y_min_cut)
+                        dic_hp[index_] = {}
+                        dic_hp[index_]["y"] = {"max_cut": float(y_max_cut), "min_cut": float(y_min_cut)}
+                        # print(dic_hp)
+                        for gene_num in range(len(df_h_e.columns)-1, 1, -1):
+                            # l
+                            df_lx = df_l_e[[gene_num]].sort_values(gene_num, ascending=False)
+                            df_lx = df_lx.reset_index()
+                            # print(df_l_e[[gene_num]], "\n\n")
+                            # print("df_lx\n", df_lx)
+                            # print(df_lx)
+                                # if nn__ < 10:
+                                #     print("Internal Loop: Low range, variable(gene)=", gene_num, "\nsorted values:\n", df_lx)
+                            # n_x = len(df_lx.index) - nli_ * step_num - 1
+                            n_x = nli_ * step_num
+                            # print("n_x=", n_x)
+                            # print(df_lx.index)
+                            lx = df_lx.iloc[n_x][gene_num]
+                            li = pd.DataFrame(df_lx.iloc[n_x])
+                            # print("Low person index=", li.columns[0], "value=", lx, "\n", "-"*30)
+                            df_lx = df_lx.set_index('index')
+                            # print(df_lx)
+                            # h
+                            df_hx = df_h_e[[gene_num]].sort_values(gene_num, ascending=False)
+                            df_hx = df_hx.reset_index()
+                            # print(df_h_e[[gene_num]], "\n\n")
+                            # print(df_hx)
+                                # if nn__ < 8:
+                                #     print("Internal Loop: High range, variable(gene)=", gene_num, "\nsorted values:\n", df_hx)
+                            n_x = len(df_hx.index) - nhi_ * step_num - 1
+                            hx = df_hx.iloc[n_x][gene_num]
+                            hi = pd.DataFrame(df_hx.iloc[n_x])
+                            # print("High person index=", hi.columns[0], "value=", hx, "\n", "-"*30)
+                            df_hx = df_hx.set_index('index')
+
+                            median_hx = float(df_hx.median())
+                            median_lx = float(df_lx.median())
+                            # print("Low median_lx", median_lx, " High median_hx", median_hx)
+
+                            if median_lx > median_hx:
+                                    # print("Convert Groups:\n AA max_cut", lx, "min_cut", hx)
+                                n_x_l = len(df_lx.index) - nli_ * step_num - 1
+                                lx_ = df_lx.iloc[n_x_l][gene_num]
+                                n_x_h = nhi_ * step_num
+                                hx_ = df_hx.iloc[n_x_h][gene_num]
+
+                                lx = hx_
+                                hx = lx_
+
+                            if lx > hx:
+                                    # print("BB ", "Max Cut=", hx, "Min Cut=", lx)
+                                    # print("  >> MaxCut lower then MinCut. MinCut=MaxCut=-1 for this index:", index_)
+                                dic_hp[index_][gene_num] = {"max_cut": -1, "min_cut": -1}
+                                    # print(" CC max_cut", -1, "min_cut", -1)
+                                # else:
+                                #     dic_hp[index_][gene_num] = {"max_cut": float(lx), "min_cut": float(hx)}
+                            else:
+                                    # print("max_cut", hx, "min_cut", lx)
+                                dic_hp[index_][gene_num] = {"max_cut": float(hx), "min_cut": float(lx)}
+
+                        ndic = {"df": df, "index": index_, "mm": dic_hp[index_]}
+                        # print(ndic)
+
+                        ndf_n1, ndf_n2 = normalize(ndic)
+                        # print("ndf_n1\n", ndf_n1, "\nndf_n2\n", ndf_n2)
+
+                        sim, ll_dic_, idx = similarity(index = index_, n_df = ndf_n2, dn=dn_)
+                        # print("AA sim\n", sim)
+                        # print("AA ll_dic_\n", ll_dic_)
+
+                        df_similarity_dic = pd.concat([df_similarity_dic, ll_dic_])
+                        df_similarity = pd.concat([df_similarity, sim])
+
+                        # print("AAA df_similarity_dic\n", df_similarity_dic)
+                        # print("AAA df_similarity\n", df_similarity)
+
+                        n = self.file_similarity.find(".pkl")
+                        s = self.file_similarity[0:n] + "_"+str(idx)+".pkl"
+                        with open(s, 'wb') as handle:
+                            pickle.dump(df_similarity, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+                        n = self.file_similarity_dic.find(".pkl")
+                        s = self.file_similarity_dic[0:n] + "_"+str(idx)+".pkl"
+                        with open(s, 'wb') as handle:
+                            pickle.dump(df_similarity_dic, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+                        n = self.dic_hp.find(".pkl")
+                        s = self.dic_hp[0:n] + "_"+str(idx)+".pkl"
+                        with open(s, 'wb') as handle:
+                            pickle.dump(dic_hp, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+                        # print("BBB df_similarity_dic\n", df_similarity_dic)
+                        # print("BBB df_similarity\n", df_similarity)
+
+                # print(dic_hp)
+                # For normalization
+
+                # self.save_to_excel_(save_to_file = os.path.join(self.TO_EXCEL_OUTPUT, str(h) + "_" + str(l) + "_normalization.xlsx"),
+                #                     to_save = self.to_save_normalize)
+                #
+                # For similarity
+                # self.save_to_excel_(save_to_file = os.path.join(self.TO_EXCEL_OUTPUT, str(h) + "_" + str(l) + "_similarity.xlsx"),
+                #                     to_save = self.to_save_similarity)
+                #
+
+        print("A2000")
+
+        df_similarity = df_similarity.drop(0).fillna(0)
+        df_similarity.index = df_similarity.index.set_names(['idx'])
+        df_similarity_ = df_similarity.reset_index()
         #
-        file_path = os.path.join(self.PICKLE_PATH, "result_"+str(f)+"_"+year_+".pkl")
-        print(file_path)
-        with open(file_path, 'wb') as handle:
-            pickle.dump(results, handle, protocol=pickle.HIGHEST_PROTOCOL)
-
-        file_path = os.path.join(self.PICKLE_PATH, "best_cut_"+str(f)+"_"+year_+".pkl")
-        print(file_path)
-        with open(file_path, 'wb') as handle:
-            pickle.dump(best_cut, handle, protocol=pickle.HIGHEST_PROTOCOL)
-
-        # # #
-        print("=" * 100)
+        df_similarity_['idx'] =df_similarity_['idx'].map(str)
+        df_similarity_['h'] = df_similarity_['idx'].str[0:2]
+        df_similarity_['l'] = df_similarity_['idx'].str[2:4]
+        df_similarity_['hi'] = df_similarity_['idx'].str[4:6]
+        df_similarity_['li'] = df_similarity_['idx'].str[6:8]
         #
+        df_similarity_ = df_similarity_.drop(['idx'], axis = 1)
+
+        #
+        df_similarity_dic = df_similarity_dic.drop(0).fillna(0)
+        df_similarity_dic.index = df_similarity_dic.index.set_names(['idx'])
+        df_similarity_dic = df_similarity_dic.reset_index()
+        #
+        df_similarity_dic['idx'] =df_similarity_dic['idx'].map(str)
+        df_similarity_dic['h'] = df_similarity_dic['idx'].str[0:2]
+        df_similarity_dic['l'] = df_similarity_dic['idx'].str[2:4]
+        df_similarity_dic['hi'] = df_similarity_dic['idx'].str[4:6]
+        df_similarity_dic['li'] = df_similarity_dic['idx'].str[6:8]
+        #
+        df_similarity_dic = df_similarity_dic.drop(['idx'], axis = 1)
+        #
+        for s in ['li', 'hi', 'l', 'h']:
+            c = df_similarity_.pop(s)
+            df_similarity_.insert(0, s, c)
+            c = df_similarity_dic.pop(s)
+            df_similarity_dic.insert(0, s, c)
+        #
+        # print("df_similarity_\n", df_similarity_)
+        # print("df_similarity_dic\n", df_similarity_dic)
+        #
+        self.to_save_similarity_by_index.append((df_similarity_.copy(), "similarity_by_index"))
+        # print(self.to_save_similarity_by_index)
+
+        self.save_to_excel_(save_to_file = os.path.join(self.TO_EXCEL_OUTPUT, "similarity_by_index.xlsx"),
+                            to_save = self.to_save_similarity_by_index)
+
+        with open(self.file_similarity, 'wb') as handle:
+            pickle.dump(df_similarity_, handle, protocol=pickle.HIGHEST_PROTOCOL)
+        with open(self.file_similarity_dic, 'wb') as handle:
+            pickle.dump(df_similarity_dic, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
         result = {"status": "ok"}
         return result
+
+    def calculate_min_max_cuts(self, dic):
+        # # #
+        # print("90099-99-99 MMDataProcessing calculate_min_max_cuts: \n", dic, "\n'", "="*100)
+        method = dic["method"]
+        ntop_scores = int(dic["ntop_scores"])
+        with open(self.file_similarity, 'rb') as handle:
+            df_similarity_ = pickle.load(handle)
+        with open(self.file_similarity_dic, 'rb') as handle:
+            df_similarity_dic = pickle.load(handle)
+        # print(df_similarity_, "\n", df_similarity_dic)
+
+        schema = {'gene': 'int64', 'threshold': 'float64', 'score': 'float64'}
+        df_scores_by_genes = pd.DataFrame(columns=schema).astype(schema)
+        for n in range(4, len(df_similarity_.columns)):
+            # print("gene=", df_similarity_.columns[n])
+            df_similarity_[df_similarity_.columns[n]] *= df_similarity_dic[df_similarity_.columns[n]]
+            df_similarity_[df_similarity_.columns[n]] -= 0.7
+            df_ = df_similarity_.sort_values(df_similarity_.columns[n], ascending=False)
+            # print("df_\n", df_)
+            df = df_.copy()
+            df=df.reset_index(drop=True)
+            df.index = df.index.set_names(['idx'])
+            df=df.reset_index()
+            # print("AAAA", df.columns[n+1], "\n", df)
+            lg = [0, 0.05, 0.1, 0.15, 0.2]
+            lp = [1, 2, 3, 4, 5]
+            sum_t = 0
+            for i in range(len(lg)):
+                z = lg[i]
+                try:
+                    sum_ = round(100*lp[i]*df_similarity_[df_similarity_[df_similarity_.columns[n]] >= z][df_similarity_.columns[n]].sum())/100
+                    # print("gene=", df_similarity_.columns[n], "threshold=", z, "       score=", sum_)
+
+                    df_n = {'gene': int(df_similarity_.columns[n]), 'threshold': z, 'score': sum_}
+                    df_scores_by_genes = df_scores_by_genes.append(df_n, ignore_index=True)
+
+                    sum_t += sum_
+                except Exception as ex:
+                    print(ex)
+            sum_t = round(100*sum_t)/100
+            # print("Total=", sum_t)
+
+            # print("="*20)
+        # print("\nGene Score by threshold:\n", df_scores_by_genes)
+        df_total_scores = df_scores_by_genes.groupby("gene")["score"].sum()
+
+        df_total_scores = df_total_scores.sort_values(ascending=False).iloc[:ntop_scores]
+
+        self.to_save_score.append((df_scores_by_genes.copy(), "scores_by_genes"))
+        self.to_save_score.append((df_total_scores.copy(), "total_scores"))
+
+        self.save_to_excel_(save_to_file = os.path.join(self.TO_EXCEL_OUTPUT, "scores.xlsx"),
+                            to_save = self.to_save_score)
+
+        result = {"status": "ok"}
+        return result
+    # -------
+
+    # def calculate_min_max_cuts(self, dic):
+    #     # print("90066-100 PotentialAlgo calculate_min_max_cuts: \n", dic, "\n", "="*50)
+    #     f = int(dic["dim_field"])
+    #     method = dic["method"]
+    #     u_method = "median"
+    #     l_method = "median"
+    #     if method == "min":
+    #         u_method = "min"
+    #         l_method = "max"
+    #
+    #     # print("90066-100-1 PotentialAlgo calculate_min_max_cuts: \n", "="*50)
+    #     # print(self.dependent_group)
+    #     year_ = str(dic["time_dim_value"])
+    #     # print(year_)
+    #     min_max_model_name_ = dic["min_max_model"]
+    #     #
+    #     # print("90066-100-2 PotentialAlgo calculate_min_max_cuts: \n", "="*50)
+    #     ll_dfs = self.pre_process_data(dic)
+    #     # print(ll_dfs)
+    #
+    #     # result = {"status": "ok"}
+    #     # return result
+    #     #
+    #     # sign_ = pd.DataFrame([[0, 0, 0, 0]])
+    #     # sign_.columns = self.options
+    #     # similarity_ = pd.DataFrame([[0, 0, 0, 0]])
+    #     # similarity_.columns = self.options
+    #
+    #     high_group_cut = [0.4, 0.35, 0.30, 0.25, 0.2, 0.15, 0.1]
+    #     low_group_cut = [0.4, 0.35, 0.30, 0.25, 0.2, 0.15, 0.1]
+    #     step_ = 10
+    #     df_d = ll_dfs[self.dependent_group]
+    #     # print(df_d)
+    #     results = {}
+    #     best_cut = {"bv": -1}
+    #
+    #     # print("90066-100-5 PotentialAlgo calculate_min_max_cuts: \n", "="*50)
+    #
+    #     for h in high_group_cut:
+    #         hh = 1- h
+    #         results[hh] = {}
+    #         #
+    #         # z = 5
+    #         # steps_h = list(range(z, 100, z))
+    #         # if h == high_group_cut[0]:
+    #         #     steps_h.append(95)
+    #         # print(h)
+    #         steps_h = list(range(5, round(h * 100), 5))
+    #         steps_h = [a/100 for a in steps_h]
+    #         print("hhhhhhh", h, steps_h)
+    #         #
+    #         for ll in low_group_cut:
+    #             results[hh][ll] = {}
+    #             # z_ = 5
+    #             # steps_l = list(range(z_, 100, z_))
+    #             # if ll == low_group_cut[0]:
+    #             #     steps_l.append(95)
+    #             steps_l = list(range(5, round(ll * 100), 5))
+    #             steps_l = [a/100 for a in steps_l]
+    #             print("llllll", ll, steps_l)
+    #             #
+    #             # print(df_d)
+    #             df_q = df_d.quantile([hh, ll])
+    #             # print("df_d.shape", df_d.shape)
+    #             # print("df_q", df_q)
+    #
+    #             results[hh][ll][f] = {}
+    #             # results[hh][ll][f]["max_cut"] = df_q[f].iloc[0]
+    #             # results[hh][ll][f]["min_cut"] = df_q[f].iloc[1]
+    #             df_hi = df_d[df_d[f] >= df_q[f].iloc[0]].index
+    #             df_li = df_d[df_d[f] <= df_q[f].iloc[1]].index
+    #             # print("df", "\n", df_d[df_d[f] >= df_q[f].iloc[0]], "\n\n")
+    #             # print("df", "\n", df_d[df_d[f] >= df_q[f].iloc[0]].index, "\n\n")
+    #
+    #             # print("df", "\n", float(df_d[df_d[f] >= df_q[f].iloc[0]][f].median()), "\n")
+    #
+    #             # results[hh][ll][f]["max_cut"] = float(df_d[df_d[f] >= df_q[f].iloc[0]][f].median())
+    #             # results[hh][ll][f]["min_cut"] = float(df_d[df_d[f] <= df_q[f].iloc[1]][f].median())
+    #
+    #             for steph in steps_h:
+    #                 for stepl in steps_l:
+    #                     for g in ll_dfs:
+    #                         # if g != self.dependent_group:
+    #                         df = ll_dfs[g]
+    #                         # print("\n",g, "\n",df.columns)
+    #                         iih = []
+    #                         iil = []
+    #                         for j in df.index:
+    #                             if j in df_hi:
+    #                                 iih.append(j)
+    #                             if j in df_li:
+    #                                 iil.append(j)
+    #                         dfh = df.loc[iih]
+    #                         dfl = df.loc[iil]
+    #
+    #                         dfh_q = dfh.quantile(steph/h)
+    #                         dfl_q = dfl.quantile((ll-stepl)/ll)
+    #                         # print('dfh, dfh', 'steph ', steph, 'dfh_q ', dfh_q)
+    #                         # , '\n', 'dfl', dfl, 'stepl', stepl, 'dfl_q', dfl_q)
+    #
+    #                         if steph not in results[hh][ll][f]:
+    #                             results[hh][ll][f][steph] = {}
+    #                         if stepl not in results[hh][ll][f][steph]:
+    #                             results[hh][ll][f][steph][stepl] = {}
+    #                             results[hh][ll][f][steph][stepl]["groups"] = {}
+    #                         if g not in results[hh][ll][f][steph][stepl]["groups"]:
+    #                             results[hh][ll][f][steph][stepl]["groups"][g] = {}
+    #
+    #                         for k in df.columns:
+    #                             # print(steph, stepl, k, dfh_q[k], dfl_q[k])
+    #                             dfh_ik = dfh[dfh[k] >= dfh_q[k]][k]
+    #                             dfl_ik = dfl[dfl[k] <= dfl_q[k]][k]
+    #                             # print('dfh[dfh[k] >= dfh_q[k]]', dfh[dfh[k] >= dfh_q[k]].index, 'dfh_ik.median()', dfh_ik.median(), 'dfl_ik.median()', dfl_ik.median())
+    #                             # print('g, k, dfh_ik.shape', g, k, dfh_ik.shape)
+    #                             if dfh_ik.shape == 0 or dfl_ik.shape == 0:
+    #                                 continue
+    #                             results[hh][ll][f][steph][stepl]["groups"][g][k] = eval('{"min_cut": dfl_ik.'+l_method+'(), "max_cut": dfh_ik.'+u_method+'()}')
+    #                     # print(results)
+    #                     dic = {"f":f, "steph":steph, "stepl":stepl,
+    #                            "df_d": df_d, "ll_dfs": ll_dfs, "groups": results[hh][ll][f]}
+    #                     bv = self.get_similarity(dic)
+    #                     if bv > best_cut["bv"]:
+    #                         best_cut = {"bv": bv, "hh": hh, "ll": ll, "steph":steph, "stepl":stepl, "f":f,
+    #                                     "dependent_group": self.dependent_group, "year": year_,
+    #                                     "f_groups":results[hh][ll][f][steph][stepl]["groups"]}
+    #
+    #                         # print('best_cut\n', 'hh', hh, 'll', ll, 'results 1 steph', steph, 'stepl', stepl, "dv", bv, "\n",
+    #                         #       best_cut)
+    #                     print('hh', hh, 'll', ll, 'steph', round(100*(steph+hh))/100, 'stepl', round(100*(ll-stepl))/100, 'dv', bv, 'best', best_cut['bv'])
+    #
+    #     # print("="*100)
+    #     best_cut["df_d"] = df_d
+    #     # print("final", best_cut, "="*100)
+    #     #
+    #     file_path = os.path.join(self.PICKLE_PATH, "result_"+str(f)+"_"+year_+".pkl")
+    #     print(file_path)
+    #     with open(file_path, 'wb') as handle:
+    #         pickle.dump(results, handle, protocol=pickle.HIGHEST_PROTOCOL)
+    #
+    #     file_path = os.path.join(self.PICKLE_PATH, "best_cut_"+str(f)+"_"+year_+".pkl")
+    #     print(file_path)
+    #     with open(file_path, 'wb') as handle:
+    #         pickle.dump(best_cut, handle, protocol=pickle.HIGHEST_PROTOCOL)
+    #
+    #     # # #
+    #     print("=" * 100)
+    #     #
+    #
+    #     result = {"status": "ok"}
+    #     return result
 
     def create_total_pop(self, dic):
         print("900443-155 PotentialAlgo create_total_pop: \n", dic, "\n", "="*50)
@@ -1473,15 +2037,18 @@ class BasePotentialAlgo(object):
                 self.save_to_excel(df2, folder)
                 self.second_time_save = self.save_to_file
 
-    def save_to_excel_(self):
+    def save_to_excel_(self, save_to_file = None, to_save = None):
         wb2 = Workbook()
-        wb2.save(self.save_to_file)
+        if save_to_file is None:
+            save_to_file = self.save_to_file
+        if to_save is None:
+            to_save = self.to_save
+        wb2.save(save_to_file)
         wb2.close()
         wb2 = None
-        # print("save_to_excel_", self.save_to_file)
-
-        with pd.ExcelWriter(self.save_to_file, engine='openpyxl', mode="a") as writer_o:
-            for d in self.to_save:
+        # print("save_to_excel_\n", save_to_file)
+        with pd.ExcelWriter(save_to_file, engine='openpyxl', mode="a") as writer_o:
+            for d in to_save:
                 try:
                     # print("d[0]\n", d[0])
                     # print("d[1]\n", d[1])
@@ -1489,9 +2056,9 @@ class BasePotentialAlgo(object):
                 except Exception as ex:
                     print("9006-3 " + str(ex))
             writer_o.save()
-        wb = load_workbook(filename=self.save_to_file, read_only=False)
+        wb = load_workbook(filename=save_to_file, read_only=False)
         del wb['Sheet']
-        wb.save(self.save_to_file)
+        wb.save(save_to_file)
         wb.close()
 
     def save_to_excel_all_(self, year):

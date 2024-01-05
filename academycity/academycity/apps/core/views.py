@@ -377,7 +377,7 @@ def get_data_link(request):
 
     try:
         # log_debug("get_data_link 99999: "+dic_)
-        print("get_data_link 99999: "+dic_)
+        # print("get_data_link 99999: "+dic_, "\n")
         dic_ = eval(dic_)
     except Exception as ex:
         print("error 4562-22-1",str(ex))
@@ -402,7 +402,7 @@ def get_data_link(request):
 
     multiple_select_fields = None
     if "multiple_select_fields" in dic_:
-        print("AAA", dic_, )
+        # print("AAA", dic_, )
         if len(dic_["multiple_select_fields"]) > 0:
             multiple_select_fields = dic_["multiple_select_fields"]
     app_ = dic_['app']
@@ -515,6 +515,7 @@ def get_data_link(request):
         # print('90500 s '+s)
     # print("9030-2\n", s)
     try:
+        # print("filters\n", filters, "\n")
         for f in filters:
             filter_field_ = f  # filters[f]["filter_field"] #
             filter_value_ = str(filters[f]["value"])
@@ -548,9 +549,11 @@ def get_data_link(request):
                     index = filter_field_.find("id")
                     if index != -1:
                         s += '.filter(' + foreign_table_ + '__' + filter_field_ + '=' + filter_value_ + ')'
+                        # s += '.filter(' + foreign_table_ + '__' + filter_field_ + '=' + filter_value_ + ')'
                     else:
                         # print(44444555)
                         s += '.filter(' + foreign_table_ + '__' + filter_field_ + '__icontains="'+filter_value_+'")'
+                        # s += '.filter(' + foreign_table_ + '__' + filter_field_ + '__icontains="'+filter_value_+'")'
                 else:
                     # print(22222222222)
                     if filter_field_ == "id":
@@ -558,8 +561,9 @@ def get_data_link(request):
                         s += '.filter('+filter_field_+'='+filter_value_+')'
                     else:
                         s += '.filter('+filter_field_+'__icontains="'+filter_value_+'")'
+        # print("9030-22-1")
         # print(s)
-        # print("9030-22")
+        # print("9030-22-2")
         n_ = -1
         try:
             primary_key_list_filter_ = dic_["primary_key_list_filter"]

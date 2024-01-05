@@ -28,45 +28,13 @@ mpl.use('Agg')
 
 class MMAlgo(object):
     def __init__(self, dic):  # to_data_path, target_field
-        # print("90001-01 MSAlgo", dic, '\n', '-'*50)
+        # print("90004-000-1 MMAlgo", dic, '\n', '-'*50)
         super(MMAlgo, self).__init__()
-        # print("90001-02 MSAlgo", dic, '\n', '-'*50)
-
-        self.PROJECT_ROOT_DIR = os.path.join(settings.WEB_DIR, "data", dic["app"])
-        # print(self.PROJECT_ROOT_DIR)
-        os.makedirs(self.PROJECT_ROOT_DIR, exist_ok=True)
-        self.TOPIC_ID = dic["topic_id"]
-
-        self.TO_DATA_PATH = os.path.join(self.PROJECT_ROOT_DIR, "datasets")
-        os.makedirs(self.TO_DATA_PATH, exist_ok=True)
-        self.TO_EXCEL = os.path.join(self.TO_DATA_PATH, "excel", self.TOPIC_ID)
-        os.makedirs(self.TO_EXCEL, exist_ok=True)
-        self.TO_EXCEL_OUTPUT = os.path.join(self.TO_EXCEL, "output")
-        os.makedirs(self.TO_EXCEL_OUTPUT, exist_ok=True)
+        # print("90004-000-2 MMAlgo", dic, '\n', '-'*50)
+        # -----
         self.to_save_normalize = []
         self.to_save_similarity = []
         self.to_save_similarity_by_index = []
-
-    def save_to_excel_(self, save_to_file = None, to_save = None):
-        wb2 = Workbook()
-        wb2.save(save_to_file)
-        wb2.close()
-        wb2 = None
-        # print("save_to_excel", save_to_file)
-
-        with pd.ExcelWriter(save_to_file, engine='openpyxl', mode="a") as writer_o:
-            for d in to_save:
-                try:
-                    # print("d[0]\n", d[0])
-                    # print("d[1]\n", d[1])
-                    d[0].to_excel(writer_o, sheet_name=d[1])
-                except Exception as ex:
-                    print("9006-3 " + str(ex))
-            writer_o.save()
-        wb = load_workbook(filename=save_to_file, read_only=False)
-        del wb['Sheet']
-        wb.save(save_to_file)
-        wb.close()
 
     def min_max_rule(self, row):
         row_ = row[0:2].copy()
@@ -76,10 +44,12 @@ class MMAlgo(object):
         return row_
 
 
-class MMDataProcessing(BaseDataProcessing, MMAlgo):
+class MMDataProcessing(BaseDataProcessing, BasePotentialAlgo, MMAlgo):
     def __init__(self, dic):
+        # print("90001-000-1 MMDataProcessing", dic, '\n', '-'*50)
         super().__init__(dic)
-        # print("90002-05 MMDataProcessing", dic, '\n', '-'*50)
+        # print("90001-000-2 MMDataProcessing", dic, '\n', '-'*50)
+
         self.file_similarity = os.path.join(self.PICKLE_PATH, "similarity"+".pkl")
         self.file_similarity_dic = os.path.join(self.PICKLE_PATH, "similarity_dic"+".pkl")
 
@@ -93,7 +63,7 @@ class MMDataProcessing(BaseDataProcessing, MMAlgo):
         file_path = self.upload_file(dic)["file_path"]
         # file_path = "/home/amos/projects/development/academycity/data/ms/datasets/excel/raw_data/RAW DATA (607).xlsx"
         # print('file_path')
-        # print(file_path)
+        print(file_path)
         # print('file_path')
         # print('90121-2 dic')
 
@@ -103,51 +73,59 @@ class MMDataProcessing(BaseDataProcessing, MMAlgo):
 
         model_name_ = dic["dimensions"]["person_dim"]["model"]
         model_person_dim = apps.get_model(app_label=app_, model_name=model_name_)
+
+        model_name_ = dic["dimensions"]["gene_group_dim"]["model"]
+        model_gene_group_dim = apps.get_model(app_label=app_, model_name=model_name_)
+
         model_name_ = dic["dimensions"]["gene_dim"]["model"]
         model_gene_dim = apps.get_model(app_label=app_, model_name=model_name_)
+
         model_name_ = dic["fact"]["model"]
         model_fact = apps.get_model(app_label=app_, model_name=model_name_)
 
-        model_fact.truncate()
-        model_gene_dim.truncate()
-        model_person_dim.truncate()
+        # model_fact.truncate()
+        # model_gene_dim.truncate()
+        # model_person_dim.truncate()
         wb = load_workbook(filename=file_path, read_only=False)
         sheet_names = wb.sheetnames
-        f = "Data"
-        ws = wb[f]
-        data = ws.values
-        # Get the first line in file as a header line
-        columns = next(data)[0:]
-        # print(columns)
-        # Create a DataFrame based on the second and subsequent lines of data
-        df = pd.DataFrame(data, columns=columns)
-        df = df.reset_index()  # make sure indexes pair with number of rows
-        # n__ = 0
+        for f in sheet_names:
+            gene_group_dim_obj, is_created = model_gene_group_dim.objects.get_or_create(group_name=f)
+            gene_group_dim_obj.save()
+            ws = wb[f]
+            data = ws.values
+            # Get the first line in file as a header line
+            columns = next(data)[0:]
+            # print(columns)
+            # Create a DataFrame based on the second and subsequent lines of data
+            df = pd.DataFrame(data, columns=columns)
+            df = df.reset_index()  # make sure indexes pair with number of rows
+            # n__ = 0
 
-        list_ = []
-        for index, row in df.iterrows():
-            print("index", index)
-            for j in range(1, len(columns)):
-                # print("j", j)
-                if row[1] is not None and str(row[1]) != "None" and str(row[1]) != "":
-                    g_ = str(row[1])
-                    # print("g_", g_)
-                    gene_dim_obj, is_created = model_gene_dim.objects.get_or_create(gene_code=g_)
-                    p_ = str(columns[j])
-                    if p_ != "None" and p_ != "":
-                        person_dim_obj, is_created = model_person_dim.objects.get_or_create(person_code=p_)
-                    try:
-                        # print(str(row[columns[j]]), "\n", "="*20)
-                        v_ = float(str(row[columns[j]]))
-                        fact_obj, is_created = model_fact.objects.get_or_create(gene_dim=gene_dim_obj,
-                                                                                person_dim=person_dim_obj)
-                        fact_obj.amount = v_
-                        fact_obj.save()
-                    except Exception as ex:
-                        if p_ not in list_:
-                            list_.append(p_)
-                            print(list_)
-        print("\n", "="*100, list_, "\n", "="*100)
+            list_ = []
+            for index, row in df.iterrows():
+                # print("index", index)
+                for j in range(1, len(columns)):
+                    # print("j", j)
+                    if row[1] is not None and str(row[1]) != "None" and str(row[1]) != "":
+                        g_ = str(row[1])
+                        # print("g_", g_)
+                        gene_dim_obj, is_created = model_gene_dim.objects.get_or_create(gene_group_dim=gene_group_dim_obj,
+                                                                                        gene_code=g_)
+                        p_ = str(columns[j])
+                        if p_ != "None" and p_ != "":
+                            person_dim_obj, is_created = model_person_dim.objects.get_or_create(person_code=p_)
+                        try:
+                            # print(str(row[columns[j]]), "\n", "="*20)
+                            v_ = float(str(row[columns[j]]))
+                            fact_obj, is_created = model_fact.objects.get_or_create(gene_dim=gene_dim_obj,
+                                                                                    person_dim=person_dim_obj)
+                            fact_obj.amount = v_
+                            fact_obj.save()
+                        except Exception as ex:
+                            if p_ not in list_:
+                                list_.append(p_)
+                                print(list_)
+            print("\n", "="*100, list_, "\n", "="*100)
 
             # print(f_, p_, v_)
             # print(n__, max_v, max_d)
@@ -155,420 +133,6 @@ class MMDataProcessing(BaseDataProcessing, MMAlgo):
         # print('90121-6 fact')
         log_debug("=== load_file_to_db 101 ===")
         wb.close()
-        result = {"status": "ok"}
-        return result
-
-    def calculate_min_max_cuts(self, dic):
-        # # #
-        print("90099-99-99 MMDataProcessing calculate_min_max_cuts: \n", dic, "\n'", "="*100)
-        app_ = dic["app"]
-        method = dic["method"]
-        with open(self.file_similarity, 'rb') as handle:
-            df_similarity_ = pickle.load(handle)
-        with open(self.file_similarity_dic, 'rb') as handle:
-            df_similarity_dic = pickle.load(handle)
-        # print(df_similarity_, "\n", df_similarity_dic)
-
-        schema = {'gene': 'int64', 'threshold': 'float64', 'score': 'float64'}
-        df_results = pd.DataFrame(columns=schema).astype(schema)
-        for n in range(4, len(df_similarity_.columns)):
-            # print("gene=", df_similarity_.columns[n])
-            df_similarity_[df_similarity_.columns[n]] *= df_similarity_dic[df_similarity_.columns[n]]
-            df_similarity_[df_similarity_.columns[n]] -= 0.7
-            df_ = df_similarity_.sort_values(df_similarity_.columns[n], ascending=False)
-            # print("df_\n", df_)
-            df = df_.copy()
-            df=df.reset_index(drop=True)
-            df.index = df.index.set_names(['idx'])
-            df=df.reset_index()
-            # print("AAAA", df.columns[n+1], "\n", df)
-            lg = [0, 0.05, 0.1, 0.15, 0.2]
-            lp = [1, 2, 3, 4, 5]
-            sum_t = 0
-            for i in range(len(lg)):
-                z = lg[i]
-                try:
-                    sum_ = round(100*lp[i]*df_similarity_[df_similarity_[df_similarity_.columns[n]] >= z][df_similarity_.columns[n]].sum())/100
-                    print("gene=", df_similarity_.columns[n], "threshold=", z, "       score=", sum_)
-
-                    df_n = {'gene': int(df_similarity_.columns[n]), 'threshold': z, 'score': sum_}
-                    df_results = df_results.append(df_n, ignore_index=True)
-
-                    sum_t += sum_
-                except Exception as ex:
-                    print(ex)
-            sum_t = round(100*sum_t)/100
-            print("Total=", sum_t)
-
-            print("="*20)
-        print("\nGene Score by threshold:\n", df_results)
-        df_score = df_results.groupby("gene")["score"].sum()
-        df_score = df_score.sort_values(ascending=False)[:3]
-
-        print("\nGene Total Score:\n", df_score)
-
-            # try:
-            #     for k in ['h', 'l', 'hi', 'li']:
-            #         print("gene=", df.columns[n+1], "k=", k)
-            #         print(df)
-            #         dfg = df.groupby('h')['idx'].sum()
-            #         print(dfg)
-            #         dfg = df.groupby('l')['idx'].sum()
-            #         print(dfg)
-            #         dfg = df.groupby('hi')['idx'].sum()
-            #         print(dfg)
-            #         dfg = df.groupby('li')['idx'].sum()
-            #         print(dfg)
-            #         print("-"*10)
-            # except Exception as ex:
-            #     print(ex)
-
-
-        result = {"status": "ok"}
-        return result
-
-    def normalize_similarity(self, dic):
-
-        def normalize(n_dic):
-            n_df = n_dic["df"]
-            n_df = n_df.set_index('person_dim')
-            # print("="*50, "\n", "="*50, "\n", "n_df\n", n_df)
-            mm = n_dic["mm"]
-            index = n_dic["index"]
-            #
-            df_mm_index = pd.DataFrame(data=[mm])
-            self.to_save_normalize.append((df_mm_index.copy(), "min_max_" + index_))
-            #
-            # print("\nindex", index)
-            ii_ = index.split("_")
-            oh = ii_[0]
-            # oh_ = oh.split("-")
-            ol = ii_[1]
-            # ol_ = ol.split("-")
-            ohi = ii_[2]
-            ohi_ = ohi.split("-")
-            hi__ = ohi_[1]
-            oli = ii_[3]
-            oli_ = oli.split("-")
-            li__ = oli_[1]
-            # print(oh_[0], oh_[1], ol_[0], ol_[1])
-                # print( "="*20, "normalize:", ohi_[0], hi__, oli_[0], li__, "="*20, "\nmm", mm)
-            # print("n_df", "\n", n_df, "\n")
-            df_n1 = pd.DataFrame(index=n_df.index.copy())
-            df_n2 = pd.DataFrame(index=n_df.index.copy())
-            for xi in mm:
-                if xi == "y":
-                    mi = 1
-                else:
-                    mi = xi
-                min_cut = mm[xi]["min_cut"]
-                max_cut = mm[xi]["max_cut"]
-                if min_cut == -1:
-                    continue
-                dff = pd.DataFrame(n_df.loc[:,mi].astype(float), index=n_df.index.copy())
-                df_f = dff.copy()
-                df_f = df_f.apply(lambda x: (x - min_cut) / (max_cut - min_cut))
-                df_n1[mi] = df_f.copy()
-                df_f[df_f < 0] = 0
-                df_f[df_f > 1] = 1
-                df_n2[mi] = df_f.copy()
-
-            # print("df_n1\n", df_n1)
-            # print("df_n2\n", df_n2)
-
-            self.to_save_normalize.append((df_n1.copy(), "n1_" + index))
-            self.to_save_normalize.append((df_n2.copy(), "n2_" + index))
-
-            return df_n1.copy(), df_n2.copy()
-
-        def similarity(index, n_df):
-            # print("="*50, "\nSIM_SIM for index = ", index, "\n", n_df)
-            self.to_save_similarity.append((n_df.copy(), "n_" + index))
-            df_d = pd.DataFrame()
-            df_r = pd.DataFrame()
-            df_ = pd.DataFrame()
-            for k in n_df.columns:
-                if k == 1:
-                    continue
-                df_d[k] = abs(n_df[k] - n_df[1])
-                df_r[k] = abs(n_df[k] - (1 - n_df[1]))
-
-            sd = df_d.sum()
-            sr = df_r.sum()
-            dfdm = df_d.mean()
-            dfrm = df_r.mean()
-            # print("df_d\n", df_d, "\n", "df_r\n", df_r)
-            self.to_save_similarity.append((df_d.copy(), "df_d_" + index))
-            self.to_save_similarity.append((df_r.copy(), "df_r_" + index))
-
-            # print("sd=\n", sd, "\nsr=\n", sr, "\ndfdm=\n", dfdm, "\ndfrm=\n", dfrm)
-
-            dfdm_ = []
-            dfrm_ = []
-            lls = []
-            ll_dic = []
-            # print(dfdm.index)
-            for k in dfdm.index:
-                # print(k)
-                # print(dfdm[k])
-                # print(dfrm[k])
-                # print("---")
-                dfdm_.append(dfdm[k])
-                dfrm_.append(dfrm[k])
-                if dfdm[k] < dfrm[k]:
-                    df_[k] = df_d[k]
-                    lls.append(1 - dfdm[k])
-                    ll_dic.append(1)
-                else:
-                    df_[k] = df_r[k]
-                    lls.append(-1*(1 - dfrm[k]))
-                    ll_dic.append(-1)
-            # print(df_)
-            self.to_save_similarity.append((df_.copy(), "df_" + index))
-            # print(lls, "\n", ll_dic)
-            # print(dfdm_, "\n", dfrm_)
-            # df_results = pd.DataFrame([dfdm_, dfrm_, lls, ll_dic], columns=df_.columns,
-            #                           index=["d", "1-d", "similarity", "direction"])
-            # print(index)
-            is_=index.split("_")
-            index__=""
-            for k in is_:
-                k_=str(int(float(k.split("-")[1])*100))
-                if len(k_)==1:
-                    k_="0"+k_
-                index__ +=k_
-            index = int(index__)
-            df_results = pd.DataFrame([lls], columns=df_.columns, index=[index])
-            df_results_dic = pd.DataFrame([ll_dic], columns=df_.columns, index=[index])
-            self.to_save_similarity.append((df_results.copy(), "df_results_" + str(index)))
-            return df_results, df_results_dic
-
-        # # #
-        print("90099-99-1000 MMDataProcessing normalize_similarity: \n", dic, "\n'", "="*100)
-        app_ = dic["app"]
-        method = dic["method"]
-        #
-        first_high_group = 0.4
-        first_low_group = 0.4
-        step = 0.05
-        n_step = int(first_high_group/step)
-        #
-        u_method = "median"
-        l_method = "median"
-        if method == "min":
-            u_method = "min"
-            l_method = "max"
-
-        model_fact = apps.get_model(app_label=app_, model_name="factnormalized")
-        qs = model_fact.objects.all()
-        df = pd.DataFrame(list(qs.values("gene_dim", "person_dim", "amount")))
-
-        try:
-            df = df.pivot(index="person_dim", columns='gene_dim', values='amount')
-            df = df.sort_values(df.columns[0], ascending=False)
-            df = df.reset_index()
-            self.to_save_normalize.append((df.copy(), 'Data'))
-        except Exception as ex:
-            print(ex)
-
-        print(df.head(56),"\n", df.tail(56))
-        print("'", "="*50)
-        print(df.columns[2:], len(df.columns[2:]))
-
-        df_similarity = pd.DataFrame([range(len(df.columns[2:]))], index=[0], columns=df.columns[2:])
-        df_similarity_dic = pd.DataFrame([range(len(df.columns[2:]))], index=[0], columns=df.columns[2:])
-
-        print("'", "="*50)
-        step_num = int(df.shape[0]*step)
-        # print("step_num=", step_num)
-        # print("'", "="*30)
-        # print(range(int(first_high_group*100), 0, -int(step*100)))
-
-        dic_hp = {}
-        # int((first_low_group-step) * 100)
-
-        for l in range(int(first_low_group * 100), int(step*100), -int(step * 100)):
-            l_ = l/100
-            for h in range(int(first_high_group*100), int(step*100), -int(step*100)):
-                h_ = (100 - h)/100
-                print("-"*30, "\n  h_=", h_, "l_=", l_,"\n","-"*30)
-
-                ll = [h / 100, (100 - l) / 100]
-                df_q = df.quantile(ll)
-                    # print("-" * 20)
-                    # print("df_q\n", df_q[["person_dim"]])
-                    # print("-" * 20)
-                # print(df_q[["person_dim"]].iloc[0], "\n\n", df_q[["person_dim"]].iloc[1])
-                h_cut = (float(df_q[["person_dim"]].iloc[0]) - 1) * (df.shape[0] / (df.shape[0] - 1))
-                h_cut = int(round(h_cut))
-                    # print(df.shape, "\nH cut index=", h_cut)
-                    # print("-" * 20)
-                cond_h = df.index <= h_cut
-                df_h_e = df[cond_h]
-                    # print("Top records sorted by Y:\n", df_h_e.tail(56))
-                    # # print(df_h_e.index)
-                    # # print(len(df_h_e.index)-step_num-1)
-                    #
-                    #     # n_y = len(df_h_e.index) - step_num - 1
-                    #     # print(n_y)
-                    #     # y_max_cut = df_h_e.iloc[n_y][1]
-                    #     # print("-" * 10, "     H", "     person_index=", df_h_e.iloc[n_y]["person_dim"], "     Y=",
-                    #     #       y_max_cut)
-
-                l_cut = (float(df_q[["person_dim"]].iloc[1]) - 1) * (df.shape[0] / (df.shape[0] - 1))
-                l_cut = int(round(l_cut))
-                cond_l = df.index > l_cut
-                df_l_e = df[cond_l]
-
-                    # print(df.shape, "\nL cut index=", l_cut)
-                    # print("Low records sorted by Y:\n", df_l_e.head(56))
-                    #     # print(df_l_e.index)
-                    #
-                    #     # y_min_cut = df_l_e.iloc[step_num][1]
-                    #     # print("-" * 10, "     L", "     person_index=", df_l_e.iloc[step_num]["person_dim"], "     Y=",
-                    #     #       y_min_cut)
-                    #     # print(df_h_e.columns, len(df_h_e.columns))
-
-                nn__ = 0
-                nhi_ = 0
-                for hi in range(h, int(step*100), -int(step*100)):
-                    nhi_ += 1
-                    hi_ = (100 - round(hi - step * 100)) / 100
-                    n_y_h = int(len(df_h_e.index) - step_num*((hi_-h_)/step))
-                        # print("h", h_, "hi", hi_, "n_y_h=", n_y_h)
-                    y_max_cut = df_h_e.iloc[n_y_h][1]
-                    nli_ = 0
-                    for li in range(l, int(step*100), -int(step*100)):
-                        nn__ += 1
-                        nli_ += 1
-                        li_ = round(li - step*100)/100
-                        n_y_l = int(step_num*((l_-li_)/step))
-                        # print("l", l_, "li",  li_, "n_y_l", n_y_l)
-                        index_ = "h-"+str(h_) + "_" + "l-" + str(l_) + "_" + "hi-" + str(hi_) + "_" + "li-" + str(li_)
-                            # print("-"*75, "\nindex", index_, "\n", "-"*40)
-                        y_min_cut = df_l_e.iloc[n_y_l][1]
-
-                            # print("  H", "  person_index=", df_h_e.iloc[n_y_h]["person_dim"], "  Y=",
-                            #       y_max_cut, "           L", "  person_index=", df_l_e.iloc[n_y_l]["person_dim"], "  Y=",
-                            #       y_min_cut)
-
-                        dic_hp[index_] = {}
-                        dic_hp[index_]["y"] = {"max_cut": float(y_max_cut), "min_cut": float(y_min_cut)}
-                        # print(dic_hp)
-                        for gene_num in range(len(df_h_e.columns)-1, 1, -1):
-                            # l
-                            df_lx = df_l_e[[gene_num]].sort_values(gene_num, ascending=False)
-                            # print(df_l_e[[gene_num]], "\n\n")
-                                # if nn__ < 10:
-                                #     print("Internal Loop: Low range, variable(gene)=", gene_num, "\nsorted values:\n", df_lx)
-                            # n_x = len(df_lx.index) - nli_ * step_num - 1
-                            n_x = nli_ * step_num
-                            # print("n_x=", n_x)
-                            # print(df_lx.index)
-                            lx = df_lx.iloc[n_x][gene_num]
-                            # print(lx)
-                            li = pd.DataFrame(df_lx.iloc[n_x])
-                                # print("Low person index=", li.columns[0], "value=", lx, "\n", "-"*30)
-
-                            # h
-                            df_hx = df_h_e[[gene_num]].sort_values(gene_num, ascending=False)
-                            # print(df_h_e[[gene_num]], "\n\n")
-                                # if nn__ < 8:
-                                #     print("Internal Loop: High range, variable(gene)=", gene_num, "\nsorted values:\n", df_hx)
-
-                            n_x = len(df_hx.index) - nhi_ * step_num - 1
-                            hx = df_hx.iloc[n_x][gene_num]
-                            hi = pd.DataFrame(df_hx.iloc[n_x])
-                                # print("High person index=", hi.columns[0], "value=", hx, "\n", "-"*30)
-                            median_hx = float(df_hx.median())
-                            median_lx = float(df_lx.median())
-                                # print("Low median_lx", median_lx, " High median_hx", median_hx)
-                            if median_lx > median_hx:
-                                    # print("Convert Groups:\n AA max_cut", lx, "min_cut", hx)
-                                n_x_l = len(df_lx.index) - nli_ * step_num - 1
-                                lx_ = df_lx.iloc[n_x_l][gene_num]
-                                n_x_h = nhi_ * step_num
-                                hx_ = df_hx.iloc[n_x_h][gene_num]
-
-                                lx = hx_
-                                hx = lx_
-
-                            if lx > hx:
-                                    # print("BB ", "Max Cut=", hx, "Min Cut=", lx)
-                                    # print("  >> MaxCut lower then MinCut. MinCut=MaxCut=-1 for this index:", index_)
-                                dic_hp[index_][gene_num] = {"max_cut": -1, "min_cut": -1}
-                                    # print(" CC max_cut", -1, "min_cut", -1)
-                                # else:
-                                #     dic_hp[index_][gene_num] = {"max_cut": float(lx), "min_cut": float(hx)}
-                            else:
-                                    # print("max_cut", hx, "min_cut", lx)
-                                dic_hp[index_][gene_num] = {"max_cut": float(hx), "min_cut": float(lx)}
-
-                        ndic = {"df": df, "index": index_, "mm": dic_hp[index_]}
-                        ndf_n1, ndf_n2 = normalize(ndic)
-                        sim, ll_dic_ = similarity(index = index_, n_df = ndf_n2)
-                        df_similarity_dic = pd.concat([df_similarity_dic, ll_dic_])
-                        # print("sim", sim)
-                        df_similarity = pd.concat([df_similarity, sim])
-                        # print("sim\n", sim)
-                        # print("ll_dic_\n", ll_dic_)
-                # print(dic_hp)
-                # For normalization
-                # self.save_to_excel_(save_to_file = os.path.join(self.TO_EXCEL_OUTPUT, str(h) + "_" + str(l) + "_normalization.xlsx"),
-                #                     to_save = self.to_save_normalize)
-                #
-                # For similarity
-                # self.save_to_excel_(save_to_file = os.path.join(self.TO_EXCEL_OUTPUT, str(h) + "_" + str(l) + "_similarity.xlsx"),
-                #                     to_save = self.to_save_similarity)
-                #
-
-        df_similarity = df_similarity.drop(0)
-        df_similarity.index = df_similarity.index.set_names(['idx'])
-        df_similarity_ = df_similarity.reset_index()
-        #
-        df_similarity_['idx'] =df_similarity_['idx'].map(str)
-        df_similarity_['h'] = df_similarity_['idx'].str[0:2]
-        df_similarity_['l'] = df_similarity_['idx'].str[2:4]
-        df_similarity_['hi'] = df_similarity_['idx'].str[4:6]
-        df_similarity_['li'] = df_similarity_['idx'].str[6:8]
-        #
-        df_similarity_ = df_similarity_.drop(['idx'], axis = 1)
-
-        #
-        df_similarity_dic = df_similarity_dic.drop(0)
-        df_similarity_dic.index = df_similarity_dic.index.set_names(['idx'])
-        df_similarity_dic = df_similarity_dic.reset_index()
-        #
-        df_similarity_dic['idx'] =df_similarity_dic['idx'].map(str)
-        df_similarity_dic['h'] = df_similarity_dic['idx'].str[0:2]
-        df_similarity_dic['l'] = df_similarity_dic['idx'].str[2:4]
-        df_similarity_dic['hi'] = df_similarity_dic['idx'].str[4:6]
-        df_similarity_dic['li'] = df_similarity_dic['idx'].str[6:8]
-        #
-        df_similarity_dic = df_similarity_dic.drop(['idx'], axis = 1)
-        #
-        for s in ['li', 'hi', 'l', 'h']:
-            c = df_similarity_.pop(s)
-            df_similarity_.insert(0, s, c)
-            c = df_similarity_dic.pop(s)
-            df_similarity_dic.insert(0, s, c)
-        #
-        print(df_similarity_)
-        print(df_similarity_dic)
-        #
-        self.to_save_similarity_by_index.append((df_similarity_.copy(), "similarity_by_index"))
-        self.save_to_excel_(save_to_file = os.path.join(self.TO_EXCEL_OUTPUT, "similarity_by_index.xlsx"),
-                            to_save = self.to_save_similarity_by_index)
-
-        print("'", "="*50)
-        print(self.file_similarity)
-        print("'", "="*50)
-
-        with open(self.file_similarity, 'wb') as handle:
-            pickle.dump(df_similarity_, handle, protocol=pickle.HIGHEST_PROTOCOL)
-        with open(self.file_similarity_dic, 'wb') as handle:
-            pickle.dump(df_similarity_dic, handle, protocol=pickle.HIGHEST_PROTOCOL)
-
         result = {"status": "ok"}
         return result
 

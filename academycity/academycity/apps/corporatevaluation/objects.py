@@ -1843,7 +1843,7 @@ class StockPrices(object):
         return dic
 
     def update_prices_minutes(self, dic):
-        # print("9010 input dic: \n", dic, "\n"+"-"*30)
+        print("9010 input dic: \n", dic, "\n"+"-"*30)
         # print(dic)
         # print(dic["ticker"])
         l_f = str(dic["letter_from"])
@@ -1924,7 +1924,7 @@ class StockPrices(object):
                                         sp.save()
                                         # print("-9"*50)
                                 except Exception as ex:
-                                    print(ex)
+                                    print("Error 9088-77-66", ex)
 
         dic = {'data': {"status": "ok"}}
         # print("9099 output dic: \n", dic, "\n"+"="*30)

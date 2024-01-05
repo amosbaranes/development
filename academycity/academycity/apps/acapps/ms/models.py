@@ -2,6 +2,12 @@ from __future__ import unicode_literals
 from django.db import models
 from academycity.apps.core.sql import TruncateTableMixin
 
+class GeneGroupDim(TruncateTableMixin, models.Model):
+    group_name = models.CharField(max_length=100, default='', blank=True, null=True)
+
+    def __str__(self):
+        return str(self.group_name)
+
 
 class GeneDim(TruncateTableMixin, models.Model):
     class Meta:
@@ -10,6 +16,8 @@ class GeneDim(TruncateTableMixin, models.Model):
         ordering = ['gene_code']
 
     gene_code = models.CharField(max_length=40, default='', blank=True, null=True)
+    gene_group_dim = models.ForeignKey(GeneGroupDim, on_delete=models.CASCADE, default=1,
+                                          related_name='gene_dim_group_dim')
     clusters = models.JSONField(null=True)
     reduced_clusters = models.JSONField(null=True)
 
@@ -17,7 +25,16 @@ class GeneDim(TruncateTableMixin, models.Model):
         return str(self.gene_code)
 
 
+class PersonGroupDim(TruncateTableMixin, models.Model):
+    group_name = models.CharField(max_length=100, default='', blank=True, null=True)
+
+    def __str__(self):
+        return str(self.group_name)
+
+
 class PersonDim(TruncateTableMixin, models.Model):
+    person_group_dim = models.ForeignKey(PersonGroupDim, on_delete=models.CASCADE, default=1,
+                                         related_name='person_dim_group_dim')
     gender = models.SmallIntegerField(default=0, blank=True, null=True)
     person_code = models.CharField(max_length=40, default='', blank=True, null=True)
     age_at_cdna = models.SmallIntegerField(blank=True, null=True)
