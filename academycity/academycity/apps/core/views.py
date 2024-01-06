@@ -599,6 +599,7 @@ def get_data_link(request):
         # print("d_data\n", d_data)
     except Exception as ex:
         print("3030-1 core views error 300 "+str(ex))
+        log_debug("3030-1 core views error 300 "+str(ex))
         # pass
     dic = {}
     if multiple_select_fields:
@@ -618,6 +619,8 @@ def get_data_link(request):
                         s += ","
                     s += str(eval('q_.'+p_key_field_z_name))
                 dic[z].append(s)
+    # print("3030-150 core views get_data_link ")
+    log_debug("3032-152 core views get_data_link ")
     try:
         for q in d_data:
             for f in dic_["fields"]:
@@ -634,11 +637,13 @@ def get_data_link(request):
             if ff != "":
                 dic[ff] = eval(ff)
     except Exception as ex:
-        pass
+        print("3031-160 core views error 330 "+str(ex))
+        log_debug("3032-165 core views error 333 "+str(ex))
     dic["pkf_name"] = p_key_field_name
     # print(dic, "=2"*50)
     dic = {'status': 'ok', "dic": dic}
     # print('core view 9055 get_data_link dic_= ', dic)
+    log_debug("3033-167 core views error 335")
     return JsonResponse(dic)
 
 def get_data_json_link(request):
