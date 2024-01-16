@@ -59,16 +59,22 @@ class BaseDataProcessing(object):
         # Where to save the figures
         # --- Change to this when you start to use Django ---
         self.PROJECT_ROOT_DIR = os.path.join(settings.WEB_DIR, "data", dic["app"])
+        self.MEDIA_ROOT_DIR = os.path.join(settings.MEDIA_ROOT, dic["app"])
+
         # print(self.PROJECT_ROOT_DIR)
         # print('-'*50)
         os.makedirs(self.PROJECT_ROOT_DIR, exist_ok=True)
+        os.makedirs(self.MEDIA_ROOT_DIR, exist_ok=True)
         self.TOPIC_ID = dic["topic_id"]  # "fundamentals"
 
         self.TO_DATA_PATH = os.path.join(self.PROJECT_ROOT_DIR, "datasets")
         os.makedirs(self.TO_DATA_PATH, exist_ok=True)
+
         self.TO_EXCEL = os.path.join(self.TO_DATA_PATH, "excel", self.TOPIC_ID)
         os.makedirs(self.TO_EXCEL, exist_ok=True)
 
+        self.TO_MEDIA_EXCEL = os.path.join(self.MEDIA_ROOT_DIR, "excel")
+        os.makedirs(self.TO_MEDIA_EXCEL, exist_ok=True)
         try:
             self.dependent_group = dic["dependent_group"]
             self.TO_EXCEL_OUTPUT = os.path.join(self.TO_EXCEL, "output", self.dependent_group)
@@ -241,13 +247,10 @@ class BasePotentialAlgo(object):
             # print('-'*50, '\n', "90003-000-2 BasePotentialAlgo\n", dic, '\n', '-'*50)
         except Exception as ex:
             print("Error 90003-000-3 " + str(ex))
-
-
         # print('-'*50, '\n', "90003-000-3 BasePotentialAlgo\n", dic, '\n', '-'*50)
         # ---------------------
         self.app = dic["app"]
         # ---------------------
-
         self.rule_2 = 0.3
         self.rule_0 = 0.025
         self.missing_data_range = 0.3
@@ -272,6 +275,7 @@ class BasePotentialAlgo(object):
         except Exception as ex:
             pass
         # print("measure_name=", measure_name)
+
         try:
             measure_model_name_ = dic["measure_model"]
             # print('-' * 50, '\n', "90003-000-41 BasePotentialAlgo\nmeasure_model_name_=", measure_model_name_, "\n", '-' * 50)
@@ -289,11 +293,26 @@ class BasePotentialAlgo(object):
                 entity_name_suffix = dic["entity_name_suffix"]
             except Exception as ex:
                 pass
-            self.entities_name = pd.DataFrame(model_entity_dim.objects.all().values('id', self.entity_name+'_'+entity_name_suffix))
+            try:
+                self.entities_name = pd.DataFrame(model_entity_dim.objects.all().values('id', self.entity_name+'_'+entity_name_suffix))
+            except Exception as ex:
+                pass
             # print("self.entities_name\n",self.entities_name)
-
             # need to delete the next line
             # self.countries_name = pd.DataFrame(model_entity_dim.objects.all().values('id', self.entity_name+'_name'))
+            try:
+                # ---------------------
+                year_ = str(dic["time_dim_value"])
+                dic_ = {'filter_dim': 'time_dim', 'filter_value': year_,
+                        'filter_amount': dic["population_filter_amount"],
+                        'axes': [self.entity_name + '_dim', 'measure_dim'],
+                        'measure_id': None, 'measure_name': dic["measure_name_convert"]}
+                # print("90022-122-111 pre_process_data: \n", dic_, "\n", "="*50)
+                self.df_entities_conversion_factor = self.get_dim_data_frame(dic_)["result"]
+                # print(self.df_entities_conversion_factor)
+                # ---------------------
+            except Exception as ex:
+                pass
         except Exception as ex:
             pass
             # print("Error 9001-222-22: "+str(ex))
@@ -321,10 +340,10 @@ class BasePotentialAlgo(object):
         # -------- Variables definition ----------------
         clear_log_debug()
         print("90011-111 process_algo: \n", dic, "\n", "="*50)
-        log_debug("BasePotentialAlgo: process_algo 1")
+        log_debug("BasePotentialAlgo: process_algo 1: " + str(dic))
 
         # print("9015-1 BasePotentialAlgo process_algo\n", dic)
-
+        # --- parames --------------------------
         output_fact_model_name_ = dic["output_fact_model"]
         relimp_fact_model_name_ = dic["relimp_fact_model"]
         range_model_model_name_ = dic["range_model"]
@@ -334,6 +353,7 @@ class BasePotentialAlgo(object):
         self.rule_0 = float(dic["rule_0"])
         self.missing_data_range = int(dic["missing_data_range"])/100
         measure_model_name_ = dic["measure_model"]
+        # ----------------------------------------
         model_range = apps.get_model(app_label=self.app, model_name=range_model_model_name_)
         model_output_fact = apps.get_model(app_label=self.app, model_name=output_fact_model_name_)
         model_relimp_fact = apps.get_model(app_label=self.app, model_name=relimp_fact_model_name_)
@@ -348,6 +368,7 @@ class BasePotentialAlgo(object):
         # if not self.is_calculate_min_max:
         model_min_max = apps.get_model(app_label=self.app, model_name=min_max_model_name_)
         # -------------------------------------------------------------------------------
+        # -- total population ---
         try:
             qs = model_min_max.objects.filter(measure_dim__measure_name="TotalPop",
                                                  time_dim_id=year_).all()[0]
@@ -370,14 +391,14 @@ class BasePotentialAlgo(object):
         sign_n2.columns = self.options
         similarity_n1 = pd.DataFrame([[0, 0, 0, 0]])
         similarity_n2 = pd.DataFrame([[0, 0, 0, 0]])
+        similarity_n1.columns = self.options
+        similarity_n2.columns = self.options
         contribution_n1 = pd.DataFrame([[0, 0, 0, 0]])
         contribution_n2 = pd.DataFrame([[0, 0, 0, 0]])
         adj_contribution_n1 = pd.DataFrame([[0, 0, 0, 0]])
         adj_contribution_n2 = pd.DataFrame([[0, 0, 0, 0]])
         # relimp_n1 = pd.DataFrame([[0, 0, 0, 0]])
         # relimp_n2 = pd.DataFrame([[0, 0, 0, 0]])
-        similarity_n1.columns = self.options
-        similarity_n2.columns = self.options
         group_d = ""
 
         # ---- PreProcessing - Normalization Stage ----
@@ -401,6 +422,7 @@ class BasePotentialAlgo(object):
                 # print(self.df_index)
                 print("Before", df, "\n", "="*100)
                 df_ = self.add_entity_to_df(df).sort_values(self.entity_name+'_name', ascending=True)
+
                 print("After", df_, "\n", "="*100)
                 self.to_save.append((df_.copy(), 'Data'))
                 qs_mm = model_min_max.objects.filter(measure_dim__measure_group_dim__group_name=group,
@@ -975,6 +997,7 @@ class BasePotentialAlgo(object):
             s = 'self.model_fact.objects.filter(measure_dim__id='+measure_id+', '
         s += filter_dim+'__id='+str(filter_value)+', '+self.value_column+'__gte='+str(filter_amount)+').all()'
         # print("1 \ns="+s)
+
         qs = eval(s)
         df = pd.DataFrame(list(qs.values(return_dim+"_id", self.value_column)))
         # print(df)
@@ -993,12 +1016,11 @@ class BasePotentialAlgo(object):
         # print("result\n", result)
         return result
 
-    def convert_total_to_per_capita(self, f, df_var, df_entities):
-        df_entities = pd.DataFrame(df_entities)
+    def convert_total_to_per_capita(self, f, df_var):
         df_var = pd.DataFrame(df_var)
-        # print("AAAAAAAAA\nf="+str(f)+"=", "\ndf_entities=\n", df_entities, "\n" , df_var)
+        # print("AAAAAAAAA\nf="+str(f)+"=", "\nself.df_entities_conversion_factor=\n", self.df_entities_conversion_factor, "\n" , df_var)
         try:
-            df_ = df_var.merge(df_entities, how='inner', left_index=True, right_index=True)
+            df_ = df_var.merge(self.df_entities_conversion_factor, how='inner', left_index=True, right_index=True)
         except Exception as ex:
             print("Er 22-11", str(ex))
         df_["pc"] = df_[f]/df_["amount"].astype(float)
@@ -1024,22 +1046,12 @@ class BasePotentialAlgo(object):
         return df_
 
     def pre_process_data(self, dic):
-        # print("90033-133 pre_process_data: \n", dic, "\n", "="*50)
+        print("90033-133 pre_process_data: \n", dic, "\n", "="*50)
         year_ = str(dic["time_dim_value"])
-
-        dic_ = {'filter_dim': 'time_dim', 'filter_value': year_,
-                'filter_amount': dic["population_filter_amount"],
-                'axes': [self.entity_name+'_dim', 'measure_dim'],
-                'measure_id': None, 'measure_name': dic["measure_name"]}
-
-        # print("90022-122-111 pre_process_data: \n", dic_, "\n", "="*50)
-        df_entities = self.get_dim_data_frame(dic_)["result"]
-        # print("\nAAAAAAAA\n df_entities\n", df_entities)
 
         groups = self.model_measure_group.objects.filter(~Q(group_name__in=self.do_not_include_groups)).all()
 
         ll_groups = [self.dependent_group]
-        # print("90-111-222-0 for k in groups\n", ll_groups)
         for k in groups:
             group = k.group_name
             if group not in ll_groups and group not in self.do_not_include_groups:
@@ -1047,7 +1059,8 @@ class BasePotentialAlgo(object):
         lll_groups = []  # this will have only the groups that do not have problems (have data)
         ll_dfs = {}  # includes all the df of all groups with data
 
-        # print("90-111-222-1 for k in groups\n", ll_groups)
+        print("90-111-222-1 for k in groups\n", ll_groups)
+
         for k in ll_groups:
             # print("="*50, "\n", k, "\n", "="*50)
             try:
@@ -1082,7 +1095,7 @@ class BasePotentialAlgo(object):
                 for f__ in ll_dfs[k]:
                     # print("90-111-3-"+k+" "+str(f__), self.total_variables, "\n", self.multiply_two_variables)
                     if f__ in self.total_variables:
-                        ll_dfs[k][f__] = self.convert_total_to_per_capita(f__, ll_dfs[k][f__], df_entities)
+                        ll_dfs[k][f__] = self.convert_total_to_per_capita(f__, ll_dfs[k][f__])
                     elif len(self.multiply_two_variables) > 0:
                         if f__ in self.multiply_two_variables["var1"]:
                             # print("two1 : ", f__, self.multiply_two_variables["var1"].index(f__))
@@ -1239,7 +1252,9 @@ class BasePotentialAlgo(object):
             return df_results, df_results_dic, index
 
         # # #
-        print("90099-99-1000 BasePotentialAlgo normalize_similarity: \n", dic, "\n'", "="*100)
+        # print("90099-99-1000 BasePotentialAlgo normalize_similarity: \n", dic, "\n'", "="*100)
+        clear_log_debug()
+        log_debug("90099-99-1000 BasePotentialAlgo normalize_similarity:" + str(dic))
 
         method = dic["method"]
         dn_ = int(dic["dn"])
@@ -1270,7 +1285,6 @@ class BasePotentialAlgo(object):
 
         # print(df)
         # print(df.columns)
-        print("A1000")
 
         # print(df.head(56),"\n", df.tail(56))
         # print("'", "="*50)
@@ -1302,14 +1316,14 @@ class BasePotentialAlgo(object):
                 continue
             else:
                 c1_continue = 0
-            print("l", l)
+            # print("l", l)
             l_ = l/100
             for h in range(int(first_high_group*100), int(step*100), -int(step*100)):
                 if (100-h) != c0 and c0_continue == 1 and cn != 0:
                     continue
                 else:
                     c0_continue = 0
-                print("h", 100-h)
+                # print("h", 100-h)
                 h_ = (100 - h)/100
                 ## print("-"*30, "\n  h_=", h_, "l_=", l_,"\n","-"*30)
 
@@ -1409,6 +1423,8 @@ class BasePotentialAlgo(object):
 
                         # print("li", round(li - step*100))
 
+                        log_debug("In upload_file h=" + str(100 - h) + " l="+ str(l)
+                                  +" hi="+str(100 - round(hi - step * 100))+" li="+str(round(li - step*100)))
                         nn__ += 1
                         nli_ += 1
                         li_ = round(li - step*100)/100
@@ -1450,8 +1466,8 @@ class BasePotentialAlgo(object):
                                 #     print("Internal Loop: High range, variable(gene)=", gene_num, "\nsorted values:\n", df_hx)
                             n_x = len(df_hx.index) - nhi_ * step_num - 1
                             hx = df_hx.iloc[n_x][gene_num]
-                            hi = pd.DataFrame(df_hx.iloc[n_x])
-                            # print("High person index=", hi.columns[0], "value=", hx, "\n", "-"*30)
+                            hi__ = pd.DataFrame(df_hx.iloc[n_x])
+                            # print("High person index=", hi__.columns[0], "value=", hx, "\n", "-"*30)
                             df_hx = df_hx.set_index('index')
 
                             median_hx = float(df_hx.median())
@@ -1509,6 +1525,7 @@ class BasePotentialAlgo(object):
                         s = self.dic_hp[0:n] + "_"+str(idx)+".pkl"
                         with open(s, 'wb') as handle:
                             pickle.dump(dic_hp, handle, protocol=pickle.HIGHEST_PROTOCOL)
+                        log_debug("Dumped= " + str(idx) )
 
                         # print("BBB df_similarity_dic\n", df_similarity_dic)
                         # print("BBB df_similarity\n", df_similarity)
@@ -1524,7 +1541,8 @@ class BasePotentialAlgo(object):
                 #                     to_save = self.to_save_similarity)
                 #
 
-        print("A2000")
+        # print("A2000")
+        log_debug("A2000")
 
         df_similarity = df_similarity.drop(0).fillna(0)
         df_similarity.index = df_similarity.index.set_names(['idx'])
@@ -1537,6 +1555,7 @@ class BasePotentialAlgo(object):
         df_similarity_['li'] = df_similarity_['idx'].str[6:8]
         #
         df_similarity_ = df_similarity_.drop(['idx'], axis = 1)
+        log_debug("A2000-1")
 
         #
         df_similarity_dic = df_similarity_dic.drop(0).fillna(0)
@@ -1551,6 +1570,7 @@ class BasePotentialAlgo(object):
         #
         df_similarity_dic = df_similarity_dic.drop(['idx'], axis = 1)
         #
+        log_debug("A2000-2")
         for s in ['li', 'hi', 'l', 'h']:
             c = df_similarity_.pop(s)
             df_similarity_.insert(0, s, c)
@@ -1560,18 +1580,29 @@ class BasePotentialAlgo(object):
         # print("df_similarity_\n", df_similarity_)
         # print("df_similarity_dic\n", df_similarity_dic)
         #
+        log_debug("A2000-3")
         self.to_save_similarity_by_index.append((df_similarity_.copy(), "similarity_by_index"))
         # print(self.to_save_similarity_by_index)
 
-        self.save_to_excel_(save_to_file = os.path.join(self.TO_EXCEL_OUTPUT, "similarity_by_index.xlsx"),
+        log_debug(self.TO_MEDIA_EXCEL)
+        log_debug("A2000-3.1")
+
+        self.save_to_excel_(save_to_file = os.path.join(self.TO_MEDIA_EXCEL, "similarity_by_index.xlsx"),
                             to_save = self.to_save_similarity_by_index)
 
+        log_debug("A2000-4")
         with open(self.file_similarity, 'wb') as handle:
             pickle.dump(df_similarity_, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+        log_debug("A2000-5")
         with open(self.file_similarity_dic, 'wb') as handle:
             pickle.dump(df_similarity_dic, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
+        log_debug("A2000-6")
+
         result = {"status": "ok"}
+        log_debug("Done normalize_similarity")
+        log_debug("A2000-7")
         return result
 
     def calculate_min_max_cuts(self, dic):
@@ -1625,10 +1656,11 @@ class BasePotentialAlgo(object):
         self.to_save_score.append((df_scores_by_genes.copy(), "scores_by_genes"))
         self.to_save_score.append((df_total_scores.copy(), "total_scores"))
 
-        self.save_to_excel_(save_to_file = os.path.join(self.TO_EXCEL_OUTPUT, "scores.xlsx"),
+        self.save_to_excel_(save_to_file = os.path.join(self.TO_MEDIA_EXCEL, "scores.xlsx"),
                             to_save = self.to_save_score)
 
         result = {"status": "ok"}
+        log_debug("Done calculate_min_max_cuts")
         return result
     # -------
 

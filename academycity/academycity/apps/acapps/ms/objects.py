@@ -258,7 +258,10 @@ class MSDataProcessing(BaseDataProcessing, BasePotentialAlgo, MSAlgo):
         # print("90921-0: \n", dic, "\n", "="*50)
         print(dic)
         # print('dic')
+        clear_log_debug()
+        log_debug("=== calculate_clusters 100 ===")
         app_ = dic["app"]
+        log_debug("=== calculate_clusters 101 " + app_)
         model_name_ = dic["dimensions"]["person_dim"]["model"]
         # print(model_name_)
         model_person_dim = apps.get_model(app_label=app_, model_name=model_name_)
