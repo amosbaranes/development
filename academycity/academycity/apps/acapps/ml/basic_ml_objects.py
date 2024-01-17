@@ -58,23 +58,20 @@ class BaseDataProcessing(object):
         mpl.rc('ytick', labelsize=12)
         # Where to save the figures
         # --- Change to this when you start to use Django ---
+
+        clear_log_debug()
+
         self.PROJECT_ROOT_DIR = os.path.join(settings.WEB_DIR, "data", dic["app"])
-        self.MEDIA_ROOT_DIR = os.path.join(settings.MEDIA_ROOT, dic["app"])
 
         # print(self.PROJECT_ROOT_DIR)
         # print('-'*50)
         os.makedirs(self.PROJECT_ROOT_DIR, exist_ok=True)
-        os.makedirs(self.MEDIA_ROOT_DIR, exist_ok=True)
         self.TOPIC_ID = dic["topic_id"]  # "fundamentals"
-
         self.TO_DATA_PATH = os.path.join(self.PROJECT_ROOT_DIR, "datasets")
         os.makedirs(self.TO_DATA_PATH, exist_ok=True)
-
         self.TO_EXCEL = os.path.join(self.TO_DATA_PATH, "excel", self.TOPIC_ID)
         os.makedirs(self.TO_EXCEL, exist_ok=True)
 
-        self.TO_MEDIA_EXCEL = os.path.join(self.MEDIA_ROOT_DIR, "excel")
-        os.makedirs(self.TO_MEDIA_EXCEL, exist_ok=True)
         try:
             self.dependent_group = dic["dependent_group"]
             self.TO_EXCEL_OUTPUT = os.path.join(self.TO_EXCEL, "output", self.dependent_group)
@@ -88,11 +85,6 @@ class BaseDataProcessing(object):
         os.makedirs(self.MODELS_PATH, exist_ok=True)
         self.PICKLE_PATH = os.path.join(self.PROJECT_ROOT_DIR, "pickle")
         os.makedirs(self.PICKLE_PATH, exist_ok=True)
-
-        self.file_similarity = os.path.join(self.PICKLE_PATH, "similarity"+".pkl")
-        self.file_similarity_dic = os.path.join(self.PICKLE_PATH, "similarity_dic"+".pkl")
-        self.dic_hp = os.path.join(self.PICKLE_PATH, "dic_hp"+".pkl")
-
         self.target_folder = None
 
         # self.TARGET_FIELD = target_field
@@ -1122,13 +1114,11 @@ class BasePotentialAlgo(object):
             # print("A n_df\n", n_df)
             n_df = n_df.set_index('person_dim')
             # print("="*50, "\n", "="*50, "\n", "n_df\n", n_df)
-
             mm = n_dic["mm"]
             index = n_dic["index"]
             #
             df_mm_index = pd.DataFrame(data=[mm])
-
-            self.to_save_normalize.append((df_mm_index.copy(), "min_max_" + index_))
+            # self.to_save_normalize.append((df_mm_index.copy(), "min_max_" + index_))
             #
             # print("\nindex", index)
             ii_ = index.split("_")
@@ -1156,6 +1146,7 @@ class BasePotentialAlgo(object):
                 max_cut = mm[xi]["max_cut"]
                 if min_cut == -1:
                     continue
+
                 dff = pd.DataFrame(n_df.loc[:,mi].astype(float), index=n_df.index.copy())
                 df_f = dff.copy()
                 df_f = df_f.apply(lambda x: (x - min_cut) / (max_cut - min_cut))
@@ -1164,11 +1155,8 @@ class BasePotentialAlgo(object):
                 df_f[df_f > 1] = 1
                 df_n2[mi] = df_f.copy()
 
-            # print("df_n1\n", df_n1)
-            # print("df_n2\n", df_n2)
-
-            self.to_save_normalize.append((df_n1.copy(), "n1_" + index))
-            self.to_save_normalize.append((df_n2.copy(), "n2_" + index))
+            # self.to_save_normalize.append((df_n1.copy(), "n1_" + index))
+            # self.to_save_normalize.append((df_n2.copy(), "n2_" + index))
 
             return df_n1.copy(), df_n2.copy()
 
@@ -1253,12 +1241,12 @@ class BasePotentialAlgo(object):
 
         # # #
         # print("90099-99-1000 BasePotentialAlgo normalize_similarity: \n", dic, "\n'", "="*100)
-        clear_log_debug()
         log_debug("90099-99-1000 BasePotentialAlgo normalize_similarity:" + str(dic))
 
         method = dic["method"]
         dn_ = int(dic["dn"])
         cn = int(dic["cn"])  # 60406530
+        log_debug("cn:" + str(cn))
         #
         first_high_group = 0.4
         first_low_group = 0.4
@@ -1271,6 +1259,10 @@ class BasePotentialAlgo(object):
             u_method = "min"
             l_method = "max"
 
+        # ----
+        model_temp = apps.get_model(app_label=self.app, model_name="temp")
+        model_temp_var = apps.get_model(app_label=self.app, model_name="tempvar")
+        # ----
         model_fact = apps.get_model(app_label=self.app, model_name="factnormalized")
         qs = model_fact.objects.filter(person_dim__person_group_dim__group_name="Model")
         df = pd.DataFrame(list(qs.values("gene_dim", "person_dim", "amount")))
@@ -1279,7 +1271,7 @@ class BasePotentialAlgo(object):
             df = df.pivot(index="person_dim", columns='gene_dim', values='amount')
             df = df.sort_values(dn_, ascending=False)
             df = df.reset_index()
-            self.to_save_normalize.append((df.copy(), 'Data'))
+            # self.to_save_normalize.append((df.copy(), 'Data'))
         except Exception as ex:
             print(ex)
 
@@ -1289,9 +1281,6 @@ class BasePotentialAlgo(object):
         # print(df.head(56),"\n", df.tail(56))
         # print("'", "="*50)
         # print(df.columns[2:], len(df.columns[2:]))
-
-        df_similarity = pd.DataFrame([range(len(df.columns[2:]))], index=[0], columns=df.columns[2:])
-        df_similarity_dic = pd.DataFrame([range(len(df.columns[2:]))], index=[0], columns=df.columns[2:])
 
         # print("'", "="*50)
         step_num = int(round(df.shape[0]*step))
@@ -1317,6 +1306,7 @@ class BasePotentialAlgo(object):
             else:
                 c1_continue = 0
             # print("l", l)
+            # log_debug("l:" + str(l))
             l_ = l/100
             for h in range(int(first_high_group*100), int(step*100), -int(step*100)):
                 if (100-h) != c0 and c0_continue == 1 and cn != 0:
@@ -1324,6 +1314,7 @@ class BasePotentialAlgo(object):
                 else:
                     c0_continue = 0
                 # print("h", 100-h)
+                # log_debug("h:" + str(100-h))
                 h_ = (100 - h)/100
                 ## print("-"*30, "\n  h_=", h_, "l_=", l_,"\n","-"*30)
 
@@ -1374,13 +1365,18 @@ class BasePotentialAlgo(object):
                 for hi in range(h, int(step*100), -int(step*100)):
                     nhi_ += 1
                     hi_ = (100 - round(hi - step * 100)) / 100
+                    # print(hi_, (100 - round(hi - step * 100)), c2, c2_continue, cn)
                     if (100 - round(hi - step * 100)) != c2 and c2_continue == 1 and cn != 0:
+                        # print("QQQ")
                         continue
                     else:
                         c2_continue = 0
+                        # print("PPPPP")
 
                     # print("hi", (100 - round(hi - step * 100)))
                     # print(len(df_h_e.index), step_num , (hi_ - h_)  ,step, step_num * ((hi_ - h_) / step))
+
+                    # log_debug("hi:" + str(100 - round(hi - step * 100)))
 
                     n_y_h = int(len(df_h_e.index) - step_num*((hi_-h_)/step))
 
@@ -1389,7 +1385,6 @@ class BasePotentialAlgo(object):
                     # print(df_h_e.iloc[n_y_h])
 
                     y_max_cut = df_h_e.iloc[n_y_h][dn_]
-
                     # print("ZZZ\n", y_max_cut)
 
                     nli_ = 0
@@ -1397,30 +1392,25 @@ class BasePotentialAlgo(object):
                         is_first_continue = 0
                     else:
                         is_first_continue = 1
+
+                    # print("KKKKKK", range(l, int(step*100)), l)
                     for li in range(l, int(step*100), -int(step*100)):
                         if cn != 0:
                             if round(li - step*100) != c3 and c3_continue == 1:
+                                # print("z")
                                 continue
                             else:
                                 c3_continue = 0
                                 if is_first_continue == 1:
                                     is_first_continue = 0
+                                    # print("W")
                                     continue
-                            n = self.file_similarity.find(".pkl")
-                            s = self.file_similarity[0:n] + "_" + str(cn) + ".pkl"
-                            with open(s, 'rb') as handle:
-                                df_similarity = pickle.load(handle)
 
-                            n = self.file_similarity_dic.find(".pkl")
-                            s = self.file_similarity_dic[0:n] + "_" + str(cn) + ".pkl"
-                            with open(s, 'rb') as handle:
-                                df_similarity_dic = pickle.load(handle)
+                            #  pull from database by cn
+                            dic_hp = model_temp.objects.get(idx = cn).dic_hp
+                            #
 
-                            n = self.dic_hp.find(".pkl")
-                            s = self.dic_hp[0:n] + "_" + str(cn) + ".pkl"
-                            with open(s, 'rb') as handle:
-                                dic_hp = pickle.load(handle)
-
+                        # print(2, hi, cn, li)
                         # print("li", round(li - step*100))
 
                         log_debug("In upload_file h=" + str(100 - h) + " l="+ str(l)
@@ -1439,6 +1429,9 @@ class BasePotentialAlgo(object):
                         dic_hp[index_] = {}
                         dic_hp[index_]["y"] = {"max_cut": float(y_max_cut), "min_cut": float(y_min_cut)}
                         # print(dic_hp)
+
+                        # log_debug("In upload_file  1")
+
                         for gene_num in range(len(df_h_e.columns)-1, 1, -1):
                             # l
                             df_lx = df_l_e[[gene_num]].sort_values(gene_num, ascending=False)
@@ -1495,40 +1488,25 @@ class BasePotentialAlgo(object):
                                     # print("max_cut", hx, "min_cut", lx)
                                 dic_hp[index_][gene_num] = {"max_cut": float(hx), "min_cut": float(lx)}
 
+                        # log_debug("In upload_file  2")
+
                         ndic = {"df": df, "index": index_, "mm": dic_hp[index_]}
                         # print(ndic)
-
                         ndf_n1, ndf_n2 = normalize(ndic)
                         # print("ndf_n1\n", ndf_n1, "\nndf_n2\n", ndf_n2)
-
+                        log_debug("In upload_file  3")
                         sim, ll_dic_, idx = similarity(index = index_, n_df = ndf_n2, dn=dn_)
-                        # print("AA sim\n", sim)
-                        # print("AA ll_dic_\n", ll_dic_)
 
-                        df_similarity_dic = pd.concat([df_similarity_dic, ll_dic_])
-                        df_similarity = pd.concat([df_similarity, sim])
-
-                        # print("AAA df_similarity_dic\n", df_similarity_dic)
-                        # print("AAA df_similarity\n", df_similarity)
-
-                        n = self.file_similarity.find(".pkl")
-                        s = self.file_similarity[0:n] + "_"+str(idx)+".pkl"
-                        with open(s, 'wb') as handle:
-                            pickle.dump(df_similarity, handle, protocol=pickle.HIGHEST_PROTOCOL)
-
-                        n = self.file_similarity_dic.find(".pkl")
-                        s = self.file_similarity_dic[0:n] + "_"+str(idx)+".pkl"
-                        with open(s, 'wb') as handle:
-                            pickle.dump(df_similarity_dic, handle, protocol=pickle.HIGHEST_PROTOCOL)
-
-                        n = self.dic_hp.find(".pkl")
-                        s = self.dic_hp[0:n] + "_"+str(idx)+".pkl"
-                        with open(s, 'wb') as handle:
-                            pickle.dump(dic_hp, handle, protocol=pickle.HIGHEST_PROTOCOL)
-                        log_debug("Dumped= " + str(idx) )
-
-                        # print("BBB df_similarity_dic\n", df_similarity_dic)
-                        # print("BBB df_similarity\n", df_similarity)
+                        dic_hp_obj, is_created = model_temp.objects.get_or_create(idx=idx)
+                        dic_hp_obj.idx = idx
+                        dic_hp_obj.dic_hp = dic_hp
+                        dic_hp_obj.save()
+                        log_debug("Saved = " + str(idx) )
+                        for j in sim.columns:
+                            temp_obj, is_created = model_temp_var.objects.get_or_create(temp=dic_hp_obj, var=j)
+                            temp_obj.amount=float(sim.iloc[0][j])
+                            temp_obj.sign=ll_dic_.iloc[0][j]
+                            temp_obj.save()
 
                 # print(dic_hp)
                 # For normalization
@@ -1540,90 +1518,35 @@ class BasePotentialAlgo(object):
                 # self.save_to_excel_(save_to_file = os.path.join(self.TO_EXCEL_OUTPUT, str(h) + "_" + str(l) + "_similarity.xlsx"),
                 #                     to_save = self.to_save_similarity)
                 #
-
-        # print("A2000")
-        log_debug("A2000")
-
-        df_similarity = df_similarity.drop(0).fillna(0)
-        df_similarity.index = df_similarity.index.set_names(['idx'])
-        df_similarity_ = df_similarity.reset_index()
-        #
-        df_similarity_['idx'] =df_similarity_['idx'].map(str)
-        df_similarity_['h'] = df_similarity_['idx'].str[0:2]
-        df_similarity_['l'] = df_similarity_['idx'].str[2:4]
-        df_similarity_['hi'] = df_similarity_['idx'].str[4:6]
-        df_similarity_['li'] = df_similarity_['idx'].str[6:8]
-        #
-        df_similarity_ = df_similarity_.drop(['idx'], axis = 1)
-        log_debug("A2000-1")
-
-        #
-        df_similarity_dic = df_similarity_dic.drop(0).fillna(0)
-        df_similarity_dic.index = df_similarity_dic.index.set_names(['idx'])
-        df_similarity_dic = df_similarity_dic.reset_index()
-        #
-        df_similarity_dic['idx'] =df_similarity_dic['idx'].map(str)
-        df_similarity_dic['h'] = df_similarity_dic['idx'].str[0:2]
-        df_similarity_dic['l'] = df_similarity_dic['idx'].str[2:4]
-        df_similarity_dic['hi'] = df_similarity_dic['idx'].str[4:6]
-        df_similarity_dic['li'] = df_similarity_dic['idx'].str[6:8]
-        #
-        df_similarity_dic = df_similarity_dic.drop(['idx'], axis = 1)
-        #
-        log_debug("A2000-2")
-        for s in ['li', 'hi', 'l', 'h']:
-            c = df_similarity_.pop(s)
-            df_similarity_.insert(0, s, c)
-            c = df_similarity_dic.pop(s)
-            df_similarity_dic.insert(0, s, c)
-        #
-        # print("df_similarity_\n", df_similarity_)
-        # print("df_similarity_dic\n", df_similarity_dic)
-        #
-        log_debug("A2000-3")
-        self.to_save_similarity_by_index.append((df_similarity_.copy(), "similarity_by_index"))
-        # print(self.to_save_similarity_by_index)
-
-        log_debug(self.TO_MEDIA_EXCEL)
-        log_debug("A2000-3.1")
-
-        self.save_to_excel_(save_to_file = os.path.join(self.TO_MEDIA_EXCEL, "similarity_by_index.xlsx"),
-                            to_save = self.to_save_similarity_by_index)
-
-        log_debug("A2000-4")
-        with open(self.file_similarity, 'wb') as handle:
-            pickle.dump(df_similarity_, handle, protocol=pickle.HIGHEST_PROTOCOL)
-
-        log_debug("A2000-5")
-        with open(self.file_similarity_dic, 'wb') as handle:
-            pickle.dump(df_similarity_dic, handle, protocol=pickle.HIGHEST_PROTOCOL)
-
-        log_debug("A2000-6")
-
+        print("A2000")
         result = {"status": "ok"}
         log_debug("Done normalize_similarity")
-        log_debug("A2000-7")
         return result
 
     def calculate_min_max_cuts(self, dic):
         # # #
         # print("90099-99-99 MMDataProcessing calculate_min_max_cuts: \n", dic, "\n'", "="*100)
         method = dic["method"]
-        ntop_scores = int(dic["ntop_scores"])
-        with open(self.file_similarity, 'rb') as handle:
-            df_similarity_ = pickle.load(handle)
-        with open(self.file_similarity_dic, 'rb') as handle:
-            df_similarity_dic = pickle.load(handle)
-        # print(df_similarity_, "\n", df_similarity_dic)
-
+        variables_model = dic["variables_model"]
+        variables_model = apps.get_model(app_label=self.app, model_name=variables_model)
+        model_temp_var = apps.get_model(app_label=self.app, model_name="tempvar")
+        qs = model_temp_var.objects.all()
+        #
+        df = pd.DataFrame(list(qs.values("temp_id", "var", "amount")))
+        df_similarity_ = df.pivot(index="temp_id", columns='var', values='amount').fillna(0)
+        #
+        df = pd.DataFrame(list(qs.values("temp_id", "var", "sign")))
+        df_similarity_dic = df.pivot(index="temp_id", columns='var', values='sign').fillna(0)
+        df_similarity_dic.columns = df_similarity_.columns
+        #
+        # print(df_similarity_, "\n\n", df_similarity_dic)
         schema = {'gene': 'int64', 'threshold': 'float64', 'score': 'float64'}
         df_scores_by_genes = pd.DataFrame(columns=schema).astype(schema)
-        for n in range(4, len(df_similarity_.columns)):
+        for n in range(0, len(df_similarity_.columns)):
             # print("gene=", df_similarity_.columns[n])
-            df_similarity_[df_similarity_.columns[n]] *= df_similarity_dic[df_similarity_.columns[n]]
+            df_similarity_[df_similarity_.columns[n]] = df_similarity_[df_similarity_.columns[n]].astype('float') * df_similarity_dic[df_similarity_.columns[n]].astype('float')
             df_similarity_[df_similarity_.columns[n]] -= 0.7
             df_ = df_similarity_.sort_values(df_similarity_.columns[n], ascending=False)
-            # print("df_\n", df_)
             df = df_.copy()
             df=df.reset_index(drop=True)
             df.index = df.index.set_names(['idx'])
@@ -1644,23 +1567,15 @@ class BasePotentialAlgo(object):
                     sum_t += sum_
                 except Exception as ex:
                     print(ex)
-            sum_t = round(100*sum_t)/100
-            # print("Total=", sum_t)
-
-            # print("="*20)
         # print("\nGene Score by threshold:\n", df_scores_by_genes)
-        df_total_scores = df_scores_by_genes.groupby("gene")["score"].sum()
-
-        df_total_scores = df_total_scores.sort_values(ascending=False).iloc[:ntop_scores]
-
-        self.to_save_score.append((df_scores_by_genes.copy(), "scores_by_genes"))
-        self.to_save_score.append((df_total_scores.copy(), "total_scores"))
-
-        self.save_to_excel_(save_to_file = os.path.join(self.TO_MEDIA_EXCEL, "scores.xlsx"),
-                            to_save = self.to_save_score)
-
-        result = {"status": "ok"}
+        df_total_scores = pd.DataFrame(df_scores_by_genes.groupby("gene")["score"].sum())
+        for index, row in df_total_scores.iterrows():
+            id_ = int(round(index))
+            obj = variables_model.objects.get(id=id_)
+            obj.score = row["score"]
+            obj.save()
         log_debug("Done calculate_min_max_cuts")
+        result = {"status": "ok"}
         return result
     # -------
 
@@ -2075,9 +1990,11 @@ class BasePotentialAlgo(object):
             save_to_file = self.save_to_file
         if to_save is None:
             to_save = self.to_save
+
         wb2.save(save_to_file)
         wb2.close()
         wb2 = None
+        log_debug("save_to_excel_ 11")
         # print("save_to_excel_\n", save_to_file)
         with pd.ExcelWriter(save_to_file, engine='openpyxl', mode="a") as writer_o:
             for d in to_save:
@@ -2087,11 +2004,18 @@ class BasePotentialAlgo(object):
                     d[0].to_excel(writer_o, sheet_name=d[1])
                 except Exception as ex:
                     print("9006-3 " + str(ex))
+                    log_debug("9006-3 " + str(ex))
             writer_o.save()
         wb = load_workbook(filename=save_to_file, read_only=False)
         del wb['Sheet']
-        wb.save(save_to_file)
+        log_debug("save_to_excel_ 16")
+        try:
+            wb.save(save_to_file)
+        except Exception as ex:
+            log_debug(str(ex))
+        log_debug("save_to_excel_ 17")
         wb.close()
+        log_debug("save_to_excel_ 18")
 
     def save_to_excel_all_(self, year):
         save_to_file_all = os.path.join(self.TO_EXCEL_OUTPUT, "all_" + str(year) + ".xlsx")

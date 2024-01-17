@@ -20,6 +20,7 @@ class GeneDim(TruncateTableMixin, models.Model):
                                           related_name='gene_dim_group_dim')
     clusters = models.JSONField(null=True)
     reduced_clusters = models.JSONField(null=True)
+    score = models.DecimalField(max_digits=4, decimal_places=2, default=0, blank=True, null=True)
 
     def __str__(self):
         return str(self.gene_code)
@@ -54,6 +55,23 @@ class Fact(TruncateTableMixin, models.Model):
     def __str__(self):
         return str(self.gene_dim) + " - " + str(self.person_dim) + ": " + str(self.amount)
 
+# --------- Temp Data ---------------------------------
+class Temp(TruncateTableMixin, models.Model):
+    idx = models.IntegerField(default=0, blank=True, null=True)
+    dic_hp = models.JSONField(null=True)
+
+    def __str__(self):
+        return str(self.idx)
+
+class TempVar(TruncateTableMixin, models.Model):
+    temp = models.ForeignKey(Temp, on_delete=models.CASCADE, default=1,
+                             related_name='temp_vars')
+    var = models.SmallIntegerField(default=0, blank=True, null=True)
+    sign = models.SmallIntegerField(default=1, blank=True, null=True)
+    amount = models.DecimalField(max_digits=4, decimal_places=2, default=0, blank=True, null=True)
+
+    def __str__(self):
+        return str(self.temp) + str(self.var)
 
 # --------- For Analysis ------------------------------
 class FactNormalized(TruncateTableMixin, models.Model):
