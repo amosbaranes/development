@@ -13,7 +13,7 @@ class GeneDim(TruncateTableMixin, models.Model):
     class Meta:
         verbose_name = 'gendim'
         verbose_name_plural = 'gendims'
-        ordering = ['gene_code']
+        ordering = ['-score']
 
     gene_code = models.CharField(max_length=40, default='', blank=True, null=True)
     gene_group_dim = models.ForeignKey(GeneGroupDim, on_delete=models.CASCADE, default=1,

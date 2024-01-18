@@ -1288,7 +1288,6 @@ class BasePotentialAlgo(object):
         # print("'", "="*30)
         # print(range(int(first_high_group*100), 0, -int(step*100)))
 
-        dic_hp = {}
         # int((first_low_group-step) * 100)
 
         c0_continue = 1
@@ -1392,8 +1391,6 @@ class BasePotentialAlgo(object):
                         is_first_continue = 0
                     else:
                         is_first_continue = 1
-
-                    # print("KKKKKK", range(l, int(step*100)), l)
                     for li in range(l, int(step*100), -int(step*100)):
                         if cn != 0:
                             if round(li - step*100) != c3 and c3_continue == 1:
@@ -1405,15 +1402,7 @@ class BasePotentialAlgo(object):
                                     is_first_continue = 0
                                     # print("W")
                                     continue
-
-                            #  pull from database by cn
-                            dic_hp = model_temp.objects.get(idx = cn).dic_hp
-                            #
-
-                        # print(2, hi, cn, li)
-                        # print("li", round(li - step*100))
-
-                        log_debug("In upload_file h=" + str(100 - h) + " l="+ str(l)
+                        log_debug("Run for index h=" + str(100 - h) + " l="+ str(l)
                                   +" hi="+str(100 - round(hi - step * 100))+" li="+str(round(li - step*100)))
                         nn__ += 1
                         nli_ += 1
@@ -1423,15 +1412,7 @@ class BasePotentialAlgo(object):
                         index_ = "h-"+str(h_) + "_" + "l-" + str(l_) + "_" + "hi-" + str(hi_) + "_" + "li-" + str(li_)
                         # print("-"*75, "\nindex", index_, "\n", "-"*40)
                         y_min_cut = df_l_e.iloc[n_y_l][dn_]
-                            # print("  H", "  person_index=", df_h_e.iloc[n_y_h]["person_dim"], "  Y=",
-                            #       y_max_cut, "           L", "  person_index=", df_l_e.iloc[n_y_l]["person_dim"], "  Y=",
-                            #       y_min_cut)
-                        dic_hp[index_] = {}
-                        dic_hp[index_]["y"] = {"max_cut": float(y_max_cut), "min_cut": float(y_min_cut)}
-                        # print(dic_hp)
-
-                        # log_debug("In upload_file  1")
-
+                        dic_hp = {"y": {"max_cut": float(y_max_cut), "min_cut": float(y_min_cut)}}
                         for gene_num in range(len(df_h_e.columns)-1, 1, -1):
                             # l
                             df_lx = df_l_e[[gene_num]].sort_values(gene_num, ascending=False)
@@ -1466,59 +1447,35 @@ class BasePotentialAlgo(object):
                             median_hx = float(df_hx.median())
                             median_lx = float(df_lx.median())
                             # print("Low median_lx", median_lx, " High median_hx", median_hx)
-
                             if median_lx > median_hx:
                                     # print("Convert Groups:\n AA max_cut", lx, "min_cut", hx)
                                 n_x_l = len(df_lx.index) - nli_ * step_num - 1
                                 lx_ = df_lx.iloc[n_x_l][gene_num]
                                 n_x_h = nhi_ * step_num
                                 hx_ = df_hx.iloc[n_x_h][gene_num]
-
                                 lx = hx_
                                 hx = lx_
-
                             if lx > hx:
-                                    # print("BB ", "Max Cut=", hx, "Min Cut=", lx)
-                                    # print("  >> MaxCut lower then MinCut. MinCut=MaxCut=-1 for this index:", index_)
-                                dic_hp[index_][gene_num] = {"max_cut": -1, "min_cut": -1}
-                                    # print(" CC max_cut", -1, "min_cut", -1)
-                                # else:
-                                #     dic_hp[index_][gene_num] = {"max_cut": float(lx), "min_cut": float(hx)}
+                                dic_hp[gene_num] = {"max_cut": -1, "min_cut": -1}
                             else:
-                                    # print("max_cut", hx, "min_cut", lx)
-                                dic_hp[index_][gene_num] = {"max_cut": float(hx), "min_cut": float(lx)}
-
-                        # log_debug("In upload_file  2")
-
-                        ndic = {"df": df, "index": index_, "mm": dic_hp[index_]}
-                        # print(ndic)
+                                dic_hp[gene_num] = {"max_cut": float(hx), "min_cut": float(lx)}
+                        ndic = {"df": df, "index": index_, "mm": dic_hp}
                         ndf_n1, ndf_n2 = normalize(ndic)
                         # print("ndf_n1\n", ndf_n1, "\nndf_n2\n", ndf_n2)
-                        log_debug("In upload_file  3")
                         sim, ll_dic_, idx = similarity(index = index_, n_df = ndf_n2, dn=dn_)
 
                         dic_hp_obj, is_created = model_temp.objects.get_or_create(idx=idx)
                         dic_hp_obj.idx = idx
                         dic_hp_obj.dic_hp = dic_hp
                         dic_hp_obj.save()
-                        log_debug("Saved = " + str(idx) )
+                        # print("Saved = " + str(idx) )
+                        log_debug("Saved = " + str(idx))
                         for j in sim.columns:
                             temp_obj, is_created = model_temp_var.objects.get_or_create(temp=dic_hp_obj, var=j)
                             temp_obj.amount=float(sim.iloc[0][j])
                             temp_obj.sign=ll_dic_.iloc[0][j]
                             temp_obj.save()
-
-                # print(dic_hp)
-                # For normalization
-
-                # self.save_to_excel_(save_to_file = os.path.join(self.TO_EXCEL_OUTPUT, str(h) + "_" + str(l) + "_normalization.xlsx"),
-                #                     to_save = self.to_save_normalize)
-                #
-                # For similarity
-                # self.save_to_excel_(save_to_file = os.path.join(self.TO_EXCEL_OUTPUT, str(h) + "_" + str(l) + "_similarity.xlsx"),
-                #                     to_save = self.to_save_similarity)
-                #
-        print("A2000")
+        print("Done normalize_similarity")
         result = {"status": "ok"}
         log_debug("Done normalize_similarity")
         return result
