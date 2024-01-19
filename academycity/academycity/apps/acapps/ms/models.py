@@ -66,12 +66,14 @@ class Temp(TruncateTableMixin, models.Model):
 class TempVar(TruncateTableMixin, models.Model):
     temp = models.ForeignKey(Temp, on_delete=models.CASCADE, default=1,
                              related_name='temp_vars')
-    var = models.SmallIntegerField(default=0, blank=True, null=True)
+    # var = models.SmallIntegerField(default=0, blank=True, null=True)
+    gene_dim = models.ForeignKey(GeneDim, on_delete=models.CASCADE, default=1,
+                                 related_name='gene_dim_temp_var')
     sign = models.SmallIntegerField(default=1, blank=True, null=True)
     amount = models.DecimalField(max_digits=4, decimal_places=2, default=0, blank=True, null=True)
 
     def __str__(self):
-        return str(self.temp) + str(self.var)
+        return str(self.temp)
 
 # --------- For Analysis ------------------------------
 class FactNormalized(TruncateTableMixin, models.Model):

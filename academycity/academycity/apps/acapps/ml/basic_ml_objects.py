@@ -277,6 +277,11 @@ class BasePotentialAlgo(object):
             pass
 
         try:
+            self.var_name = dic["var_name"]
+        except Exception as ex:
+            pass
+
+        try:
             self.entity_name = dic["entity_name"]
             entity_model_name_ = dic["entity_model"]
             model_entity_dim = apps.get_model(app_label=self.app, model_name=entity_model_name_)
@@ -1240,7 +1245,8 @@ class BasePotentialAlgo(object):
             return df_results, df_results_dic, index
 
         # # #
-        # print("90099-99-1000 BasePotentialAlgo normalize_similarity: \n", dic, "\n'", "="*100)
+        print("90099-99-1000 BasePotentialAlgo normalize_similarity: \n", dic, "\n'", "="*100)
+
         log_debug("90099-99-1000 BasePotentialAlgo normalize_similarity:" + str(dic))
 
         method = dic["method"]
@@ -1387,10 +1393,6 @@ class BasePotentialAlgo(object):
                     # print("ZZZ\n", y_max_cut)
 
                     nli_ = 0
-                    if cn == 0:
-                        is_first_continue = 0
-                    else:
-                        is_first_continue = 1
                     for li in range(l, int(step*100), -int(step*100)):
                         if cn != 0:
                             if round(li - step*100) != c3 and c3_continue == 1:
@@ -1398,10 +1400,6 @@ class BasePotentialAlgo(object):
                                 continue
                             else:
                                 c3_continue = 0
-                                if is_first_continue == 1:
-                                    is_first_continue = 0
-                                    # print("W")
-                                    continue
                         log_debug("Run for index h=" + str(100 - h) + " l="+ str(l)
                                   +" hi="+str(100 - round(hi - step * 100))+" li="+str(round(li - step*100)))
                         nn__ += 1
@@ -1471,7 +1469,9 @@ class BasePotentialAlgo(object):
                         # print("Saved = " + str(idx) )
                         log_debug("Saved = " + str(idx))
                         for j in sim.columns:
-                            temp_obj, is_created = model_temp_var.objects.get_or_create(temp=dic_hp_obj, var=j)
+                            s = 'model_temp_var.objects.get_or_create(temp=dic_hp_obj, '+self.var_name+'_dim__id=j)'
+                            # print(s)
+                            temp_obj, is_created = eval(s)
                             temp_obj.amount=float(sim.iloc[0][j])
                             temp_obj.sign=ll_dic_.iloc[0][j]
                             temp_obj.save()
