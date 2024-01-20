@@ -1245,7 +1245,7 @@ class BasePotentialAlgo(object):
             return df_results, df_results_dic, index
 
         # # #
-        print("90099-99-1000 BasePotentialAlgo normalize_similarity: \n", dic, "\n'", "="*100)
+        # print("90099-99-1000 BasePotentialAlgo normalize_similarity: \n", dic, "\n'", "="*100)
 
         log_debug("90099-99-1000 BasePotentialAlgo normalize_similarity:" + str(dic))
 
@@ -1265,6 +1265,8 @@ class BasePotentialAlgo(object):
             u_method = "min"
             l_method = "max"
 
+        # ----
+        model_var = apps.get_model(app_label=self.app, model_name=self.var_name + 'dim')
         # ----
         model_temp = apps.get_model(app_label=self.app, model_name="temp")
         model_temp_var = apps.get_model(app_label=self.app, model_name="tempvar")
@@ -1462,19 +1464,20 @@ class BasePotentialAlgo(object):
                         # print("ndf_n1\n", ndf_n1, "\nndf_n2\n", ndf_n2)
                         sim, ll_dic_, idx = similarity(index = index_, n_df = ndf_n2, dn=dn_)
 
-                        dic_hp_obj, is_created = model_temp.objects.get_or_create(idx=idx)
-                        dic_hp_obj.idx = idx
-                        dic_hp_obj.dic_hp = dic_hp
-                        dic_hp_obj.save()
+                        temp_obj, is_created = model_temp.objects.get_or_create(idx=idx)
+                        temp_obj.idx = idx
+                        temp_obj.dic_hp = dic_hp
+                        temp_obj.save()
                         # print("Saved = " + str(idx) )
                         log_debug("Saved = " + str(idx))
                         for j in sim.columns:
-                            s = 'model_temp_var.objects.get_or_create(temp=dic_hp_obj, '+self.var_name+'_dim__id=j)'
+                            var_obj = model_var.objects.get(id=j)
+                            s = 'model_temp_var.objects.get_or_create(temp=temp_obj, '+self.var_name+'_dim=var_obj)'
                             # print(s)
-                            temp_obj, is_created = eval(s)
-                            temp_obj.amount=float(sim.iloc[0][j])
-                            temp_obj.sign=ll_dic_.iloc[0][j]
-                            temp_obj.save()
+                            temp_var_obj, is_created = eval(s)
+                            temp_var_obj.amount=float(sim.iloc[0][j])
+                            temp_var_obj.sign=ll_dic_.iloc[0][j]
+                            temp_var_obj.save()
         print("Done normalize_similarity")
         result = {"status": "ok"}
         log_debug("Done normalize_similarity")
@@ -1483,20 +1486,28 @@ class BasePotentialAlgo(object):
     def calculate_min_max_cuts(self, dic):
         # # #
         # print("90099-99-99 MMDataProcessing calculate_min_max_cuts: \n", dic, "\n'", "="*100)
+        log_debug("calculate_min_max_cuts")
         method = dic["method"]
-        variables_model = dic["variables_model"]
-        variables_model = apps.get_model(app_label=self.app, model_name=variables_model)
+        # variables_model_ = dic["variables_model"]
+        variables_model = apps.get_model(app_label=self.app, model_name=self.var_name+'dim')
         model_temp_var = apps.get_model(app_label=self.app, model_name="tempvar")
         qs = model_temp_var.objects.all()
+        log_debug("calculate_min_max_cuts 1")
         #
-        df = pd.DataFrame(list(qs.values("temp_id", "var", "amount")))
-        df_similarity_ = df.pivot(index="temp_id", columns='var', values='amount').fillna(0)
+        df = pd.DataFrame(list(qs.values("temp_id", self.var_name+'_dim_id', "amount")))
+        # print(df)
+
+        df_similarity_ = df.pivot(index="temp_id", columns=self.var_name+'_dim_id', values='amount').fillna(0)
+        # print(df_similarity_)
         #
-        df = pd.DataFrame(list(qs.values("temp_id", "var", "sign")))
-        df_similarity_dic = df.pivot(index="temp_id", columns='var', values='sign').fillna(0)
+        log_debug("calculate_min_max_cuts 10")
+        df = pd.DataFrame(list(qs.values("temp_id", self.var_name+'_dim_id', "sign")))
+
+        df_similarity_dic = df.pivot("temp_id", self.var_name+'_dim_id', values='sign').fillna(0)
         df_similarity_dic.columns = df_similarity_.columns
         #
         # print(df_similarity_, "\n\n", df_similarity_dic)
+        log_debug("calculate_min_max_cuts 11")
         schema = {'gene': 'int64', 'threshold': 'float64', 'score': 'float64'}
         df_scores_by_genes = pd.DataFrame(columns=schema).astype(schema)
         for n in range(0, len(df_similarity_.columns)):
@@ -1525,6 +1536,7 @@ class BasePotentialAlgo(object):
                 except Exception as ex:
                     print(ex)
         # print("\nGene Score by threshold:\n", df_scores_by_genes)
+        log_debug("calculate_min_max_cuts 2")
         df_total_scores = pd.DataFrame(df_scores_by_genes.groupby("gene")["score"].sum())
         for index, row in df_total_scores.iterrows():
             id_ = int(round(index))
