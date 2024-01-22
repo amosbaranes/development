@@ -69,6 +69,11 @@ class Temp(TruncateTableMixin, models.Model):
         return str(self.idx)
 
 class TempVar(TruncateTableMixin, models.Model):
+    class Meta:
+        verbose_name = 'tempvar'
+        verbose_name_plural = 'tempvars'
+        ordering = ['-amount']
+
     temp = models.ForeignKey(Temp, on_delete=models.CASCADE, default=1,
                              related_name='temp_vars')
     # var = models.SmallIntegerField(default=0, blank=True, null=True)
