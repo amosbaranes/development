@@ -46,4 +46,4 @@ class TempAdmin(admin.ModelAdmin):
 @admin.register(TempVar)
 class TempVarAdmin(admin.ModelAdmin):
     list_display = ('id', 'temp', 'gene_dim', 'amount', 'sign')
-    list_filter = ['temp']
+    list_filter = ['temp', 'gene_dim']

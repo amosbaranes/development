@@ -21,6 +21,11 @@ class GeneDim(TruncateTableMixin, models.Model):
     clusters = models.JSONField(null=True)
     reduced_clusters = models.JSONField(null=True)
     score = models.DecimalField(max_digits=4, decimal_places=2, default=0, blank=True, null=True)
+    count0 = models.SmallIntegerField(default=0, blank=True, null=True)
+    count5 = models.SmallIntegerField(default=0, blank=True, null=True)
+    count10 = models.SmallIntegerField(default=0, blank=True, null=True)
+    count15 = models.SmallIntegerField(default=0, blank=True, null=True)
+    count20 = models.SmallIntegerField(default=0, blank=True, null=True)
 
     def __str__(self):
         return str(self.gene_code)
