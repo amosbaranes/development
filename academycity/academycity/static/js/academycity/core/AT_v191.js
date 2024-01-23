@@ -6332,7 +6332,7 @@ acSearchTableCreator.prototype.get_data = function(data_table_name=null,parent_m
   try{var f_=dic["functions"]["before_get_data"]; var s_="var zz="+f_;eval(s_); zz(dic);} catch(er){}
   // alert("0000  "+JSON.stringify(dic["fields"]));
   var container = document.getElementById("content_"+dic["container_id"]);
-  if(this.data_table_name!=null && data_table_name!==""){this.data_table_name=data_table_name}
+  if(this.data_table_name!=null && data_table_name!=null && data_table_name!=""){this.data_table_name=data_table_name}
   else {this.data_table_name=container.getAttribute("table")}
   try{
     var parent_id_="";
@@ -6424,7 +6424,7 @@ acSearchTableCreator.prototype.get_data = function(data_table_name=null,parent_m
              "filters":{}, "order_by":this.order_by, "fields":dic__
              }
 
-  //alert("90449-99-25: "+JSON.stringify(dic__)+"\n");
+//  alert("90449-99-25: "+JSON.stringify(dic__)+"\n");
 
    dic__["filters"][this.filter_field]={"value":this.filter_value, "foreign_table":this.filter_field_foreign_table}
 
@@ -6481,7 +6481,7 @@ acSearchTableCreator.prototype.get_data = function(data_table_name=null,parent_m
         if(this.parent_model_fk_name_==null){this.parent_model_fk_name_=""}
   dic__["parent_model_fk_name"]=this.parent_model_fk_name_;
 
-  //alert("90447-777 dic__ \n"+JSON.stringify(dic__))
+//  alert("90447-777 dic__ \n"+JSON.stringify(dic__))
 
   this.parent.atm.get_data(call_back_fun=fun, dic__, this.tbody)
 }

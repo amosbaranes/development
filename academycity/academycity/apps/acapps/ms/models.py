@@ -13,7 +13,7 @@ class GeneDim(TruncateTableMixin, models.Model):
     class Meta:
         verbose_name = 'gendim'
         verbose_name_plural = 'gendims'
-        ordering = ['-score']
+        # ordering = ['-score']
 
     gene_code = models.CharField(max_length=40, default='', blank=True, null=True)
     gene_group_dim = models.ForeignKey(GeneGroupDim, on_delete=models.CASCADE, default=1,
@@ -72,7 +72,7 @@ class TempVar(TruncateTableMixin, models.Model):
     class Meta:
         verbose_name = 'tempvar'
         verbose_name_plural = 'tempvars'
-        ordering = ['-amount']
+        # ordering = ['-amount']
 
     temp = models.ForeignKey(Temp, on_delete=models.CASCADE, default=1,
                              related_name='temp_vars')

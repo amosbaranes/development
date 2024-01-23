@@ -999,13 +999,13 @@ class MSDataProcessing(BaseDataProcessing, BasePotentialAlgo, MSAlgo):
 
         genes_temp = {}
         model_temp_var = apps.get_model(app_label=app_, model_name='tempvar')
-        qs = model_temp_var.objects.filter(gene_dim__id = gene_id_).all()
+        qs = model_temp_var.objects.filter(gene_dim__id = gene_id_, amount__gte=0.7).all().order_by("-amount")
         n = 0
         for g in qs:
             genes_temp[n] = {"idx": g.temp.idx, "amount": float(g.amount), "sign":g.sign}
             n += 1
 
-        print(gene_id_,"\n", genes_temp)
+        # print(gene_id_,"\n", genes_temp)
 
         # print(reduced_clusters)
         result = {"status": "ok", "clusters": clusters, "reduced_clusters": reduced_clusters, "genes_temp": genes_temp}

@@ -374,13 +374,15 @@ def update_field_model_by_id(request, foreign=None):
 def get_data_link(request):
     errors = ""
     dic_ = request.POST["dic"]
-
     try:
+
         # log_debug("get_data_link 99999: "+dic_)
-        # print("get_data_link 99999: "+dic_, "\n")
+        # print("get_data_link 99999: \n", dic_, "\n")
         dic_ = eval(dic_)
+        # print("\nget_data_link 99999-2: \n", dic_, "\n")
     except Exception as ex:
         print("error 4562-22-1",str(ex))
+
 
     # errors += "1 "
     # log_debug("get_data_link 99999: "+errors)
@@ -402,7 +404,6 @@ def get_data_link(request):
 
     multiple_select_fields = None
     if "multiple_select_fields" in dic_:
-        # print("AAA", dic_, )
         if len(dic_["multiple_select_fields"]) > 0:
             multiple_select_fields = dic_["multiple_select_fields"]
     app_ = dic_['app']
@@ -560,7 +561,27 @@ def get_data_link(request):
                         #s += '.filter('+filter_field_+'__icontains='+filter_value_+')'
                         s += '.filter('+filter_field_+'='+filter_value_+')'
                     else:
-                        s += '.filter('+filter_field_+'__icontains="'+filter_value_+'")'
+                        ss_=""
+                        if filter_value_[0] == ">":
+                            filter_value_ = filter_value_[1:]
+                            ss_="__gt"
+                            if filter_value_[0] == "=":
+                                filter_value_ = filter_value_[1:]
+                                ss_ += "e"
+                        if filter_value_[0] =="<":
+                            filter_value_ = filter_value_[1:]
+                            ss_="__lt"
+                            if filter_value_[0] == "=":
+                                filter_value_ = filter_value_[1:]
+                                ss_ += "e"
+                        # print(ss_)
+                        if filter_value_.isnumeric():
+                            s += '.filter('+filter_field_+ss_+'='+filter_value_+')'
+                        else:
+                            s += '.filter('+filter_field_+'__icontains="'+filter_value_+'")'
+                        # print("-"*10)
+                        # print(s)
+                        # print("-"*10)
         # print("9030-22-1")
         # print(s)
         # print("9030-22-2")

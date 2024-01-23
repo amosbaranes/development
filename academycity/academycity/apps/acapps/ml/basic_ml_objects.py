@@ -1507,6 +1507,8 @@ class BasePotentialAlgo(object):
         df_scores_by_genes = pd.DataFrame(columns=schema).astype(schema)
         for n in range(0, len(df_similarity_.columns)):
             # print("gene=", df_similarity_.columns[n])
+
+            log_debug("working on: "+str(df_similarity_.columns[n]))
             df_similarity_[df_similarity_.columns[n]] = df_similarity_[df_similarity_.columns[n]].astype('float') * df_similarity_dic[df_similarity_.columns[n]].astype('float')
             df_similarity_[df_similarity_.columns[n]] -= 0.7
             df_ = df_similarity_.sort_values(df_similarity_.columns[n], ascending=False)
@@ -1522,10 +1524,8 @@ class BasePotentialAlgo(object):
                 z = lg[i]
                 try:
                     count_ = df_similarity_[df_similarity_[df_similarity_.columns[n]] >= z][df_similarity_.columns[n]].count()
-
                     sum_ = round(100*lp[i]*df_similarity_[df_similarity_[df_similarity_.columns[n]] >= z][df_similarity_.columns[n]].sum())/100
                     # print("gene=", df_similarity_.columns[n], "threshold=", z, "       score=", sum_)
-
                     df_n = {'gene': int(df_similarity_.columns[n]), 'threshold': z, 'score': sum_, 'count': count_}
                     df_scores_by_genes = df_scores_by_genes.append(df_n, ignore_index=True)
                     sum_t += sum_
