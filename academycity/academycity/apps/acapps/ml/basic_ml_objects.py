@@ -1489,72 +1489,129 @@ class BasePotentialAlgo(object):
         log_debug("calculate_min_max_cuts")
         method = dic["method"]
         variables_model = apps.get_model(app_label=self.app, model_name=self.var_name+'dim')
+
         model_temp_var = apps.get_model(app_label=self.app, model_name="tempvar")
         qs = model_temp_var.objects.all()
         log_debug("calculate_min_max_cuts 1")
         #
         df = pd.DataFrame(list(qs.values("temp_id", self.var_name+'_dim_id', "amount")))
-        df_similarity_ = df.pivot(index="temp_id", columns=self.var_name+'_dim_id', values='amount').fillna(0)
+        df_similarity_ = df.pivot(index="temp_id", columns=self.var_name+'_dim_id', values='amount').fillna(0).astype('float')
         # print(df_similarity_)
-        df = pd.DataFrame(list(qs.values("temp_id", self.var_name+'_dim_id', "sign")))
-        df_similarity_dic = df.pivot("temp_id", self.var_name+'_dim_id', values='sign').fillna(0)
-        df_similarity_dic.columns = df_similarity_.columns
+
+        df_similarity_ -= 0.7
+        # print("df_similarity_ - 0.7\n", df_similarity_)
         #
-        # print(df_similarity_, "\n\n", df_similarity_dic)
-        log_debug("calculate_min_max_cuts 11")
-        schema = {self.var_name: 'int64', 'threshold': 'float64', 'score': 'float64', 'count': 'int64'}
+        # log_debug("calculate_min_max_cuts 11")
+        # schema = {self.var_name: 'int64', 'threshold': 'float64', 'score': 'float64', 'count': 'int64'}
+        # df_scores_by_genes = pd.DataFrame(columns=schema).astype(schema)
 
-        df_scores_by_genes = pd.DataFrame(columns=schema).astype(schema)
-        for n in range(0, len(df_similarity_.columns)):
-            # print("gene=", df_similarity_.columns[n])
+        lg = [0, 0.05, 0.1, 0.15, 0.2]
+        lp = [1, 2, 3, 4, 5]
+        n_ = 0
+        temp = {}
+        for i in range(len(lg)):
+            df_similarity_0 = df_similarity_.copy()
+            z = lg[i]
+            # print("="*10, "\n", z , "\n", "="*10)
+            df_similarity_0[df_similarity_0 <= z] = 0
+            # print(df_similarity_0)
 
-            log_debug("working on: "+str(df_similarity_.columns[n]))
-            df_similarity_[df_similarity_.columns[n]] = df_similarity_[df_similarity_.columns[n]].astype('float') * df_similarity_dic[df_similarity_.columns[n]].astype('float')
-            df_similarity_[df_similarity_.columns[n]] -= 0.7
-            df_ = df_similarity_.sort_values(df_similarity_.columns[n], ascending=False)
-            df = df_.copy()
-            df=df.reset_index(drop=True)
-            df.index = df.index.set_names(['idx'])
-            df=df.reset_index()
-            # print("AAAA", df.columns[n+1], "\n", df)
-            lg = [0, 0.05, 0.1, 0.15, 0.2]
-            lp = [1, 2, 3, 4, 5]
-            sum_t = 0
-            for i in range(len(lg)):
-                z = lg[i]
-                try:
-                    count_ = df_similarity_[df_similarity_[df_similarity_.columns[n]] >= z][df_similarity_.columns[n]].count()
-                    sum_ = round(100*lp[i]*df_similarity_[df_similarity_[df_similarity_.columns[n]] >= z][df_similarity_.columns[n]].sum())/100
-                    # print("gene=", df_similarity_.columns[n], "threshold=", z, "       score=", sum_)
-                    df_n = {'gene': int(df_similarity_.columns[n]), 'threshold': z, 'score': sum_, 'count': count_}
-                    df_scores_by_genes = df_scores_by_genes.append(df_n, ignore_index=True)
-                    sum_t += sum_
-                except Exception as ex:
-                    print(ex)
-        # print("\nGene Score by threshold:\n", df_scores_by_genes)
+            df_similarity_w = pd.DataFrame((lp[i] * df_similarity_0.copy()).sum())
+            # print("AAA df_similarity_w\n", df_similarity_w)
+            if n_ == 0:
+                df_similarity_w_ = df_similarity_w
+            else:
+                df_similarity_w_ += df_similarity_w
 
-        df_count = df_scores_by_genes.pivot(index=self.var_name, columns='threshold', values='count')
-        # print("\ndf_count:\n", df_count)
+            df_similarity_0[df_similarity_0 > z] = 1
+            # print("CCC\n", df_similarity_0)
 
-        log_debug("calculate_min_max_cuts 2")
-        df_total_scores = pd.DataFrame(df_scores_by_genes.groupby("gene")["score"].sum())
-        # print(df_total_scores)
+            df_similarity_s = pd.DataFrame(df_similarity_0.copy().sum())
+            # print("EEE\n", df_similarity_s)
+            temp[z] = df_similarity_s
+            n_ += 1
 
-        for index, row in df_total_scores.iterrows():
+        # print("AAAAAAA\n")
+        # print("df_similarity_w_\n", df_similarity_w_)
+        # print("temp", temp, "\n\n")
+        log_debug("calculate_min_max_cuts 100")
+
+        for index, row in df_similarity_w_.iterrows():
             id_ = int(round(index))
             obj = variables_model.objects.get(id=id_)
-            obj.score = row["score"]
-            r_count = df_count.loc[id_]
-            n = len(df_count.columns)
-            obj.count0 = round(r_count[df_count.columns[0]])
-            obj.count5 = round(r_count[df_count.columns[1]])
-            obj.count10 = round(r_count[df_count.columns[2]])
-            obj.count15 = round(r_count[df_count.columns[3]])
-            obj.count20 = round(r_count[df_count.columns[4]])
+            obj.score = round(100*row[df_similarity_w_.columns[0]])/100
+            # print("\nid_=", id_,"\nscore=", round(100*row[df_similarity_w_.columns[0]])/100)
+
+            obj.count0 = round(temp[0].loc[index][temp[0].columns[0]])
+            obj.count5 = round(temp[0.05].loc[index][temp[0.05].columns[0]])
+            obj.count10 = round(temp[0.1].loc[index][temp[0.1].columns[0]])
+            obj.count15 = round(temp[0.15].loc[index][temp[0.15].columns[0]])
+            obj.count2 = round(temp[0.2].loc[index][temp[0.2].columns[0]])
+
             obj.save()
+            log_debug("gene=" + str(id_))
+
+        #
+        #
+        #     # count_ = df_similarity_[df_similarity_[index] >= z][index].count()
+        #     # sum_ = round(100*lp[i]*df_similarity_[df_similarity_[df_similarity_.columns[n]] >= z][index].sum())/100
+        #     # # print("gene=", df_similarity_.columns[n], "threshold=", z, "       score=", sum_)
+        #     # df_n = {'gene': int(index), 'threshold': z, 'score': sum_, 'count': count_}
+        #     # df_scores_by_genes = df_scores_by_genes.append(df_n, ignore_index=True)
+        #
+        #
+        # for n in range(0, len(df_similarity_.columns)):
+        #     # print("gene=", df_similarity_.columns[n])
+        #     print("A1\n", "="*100, "\n", str(df_similarity_.columns[n]),"\n", "="*100)
+        #     log_debug("working on: "+str(df_similarity_.columns[n]))
+        #     df_ = df_similarity_.sort_values(df_similarity_.columns[n], ascending=False)
+        #     print("A4\n", df_)
+        #
+        #
+        #
+        #     lg = [0, 0.05, 0.1, 0.15, 0.2]
+        #     lp = [1, 2, 3, 4, 5]
+        #     sum_t = 0
+        #     for i in range(len(lg)):
+        #         z = lg[i]
+        #         count_ = df_similarity_[df_similarity_[df_similarity_.columns[n]] >= z][
+        #             df_similarity_.columns[n]].count()
+        #
+        #         # try:
+        #         #     count_ = df_similarity_[df_similarity_[df_similarity_.columns[n]] >= z][df_similarity_.columns[n]].count()
+        #         #     sum_ = round(100*lp[i]*df_similarity_[df_similarity_[df_similarity_.columns[n]] >= z][df_similarity_.columns[n]].sum())/100
+        #         #     # print("gene=", df_similarity_.columns[n], "threshold=", z, "       score=", sum_)
+        #         #     df_n = {'gene': int(df_similarity_.columns[n]), 'threshold': z, 'score': sum_, 'count': count_}
+        #         #     df_scores_by_genes = df_scores_by_genes.append(df_n, ignore_index=True)
+        #         #     sum_t += sum_
+        #         # except Exception as ex:
+        #         #     print(ex)
+        # # print("\nGene Score by threshold:\n", df_scores_by_genes)
+        #
+        # df_count = df_scores_by_genes.pivot(index=self.var_name, columns='threshold', values='count')
+        # # print("\ndf_count:\n", df_count)
+        #
+        # log_debug("calculate_min_max_cuts 2")
+        # df_total_scores = pd.DataFrame(df_scores_by_genes.groupby("gene")["score"].sum())
+        # # print(df_total_scores)
+        #
+        # for index, row in df_total_scores.iterrows():
+        #     id_ = int(round(index))
+        #     obj = variables_model.objects.get(id=id_)
+        #     obj.score = row["score"]
+        #     r_count = df_count.loc[id_]
+        #     n = len(df_count.columns)
+        #     obj.count0 = round(r_count[df_count.columns[0]])
+        #     obj.count5 = round(r_count[df_count.columns[1]])
+        #     obj.count10 = round(r_count[df_count.columns[2]])
+        #     obj.count15 = round(r_count[df_count.columns[3]])
+        #     obj.count20 = round(r_count[df_count.columns[4]])
+        #     obj.save()
+
         log_debug("Done calculate_min_max_cuts")
         result = {"status": "ok"}
         return result
+
     # -------
 
     # def calculate_min_max_cuts(self, dic):
