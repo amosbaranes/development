@@ -1538,18 +1538,20 @@ class BasePotentialAlgo(object):
 
         for index, row in df_similarity_w_.iterrows():
             id_ = int(round(index))
-            obj = variables_model.objects.get(id=id_)
-            obj.score = round(100*row[df_similarity_w_.columns[0]])/100
-            # print("\nid_=", id_,"\nscore=", round(100*row[df_similarity_w_.columns[0]])/100)
-
-            obj.count0 = round(temp[0].loc[index][temp[0].columns[0]])
-            obj.count5 = round(temp[0.05].loc[index][temp[0.05].columns[0]])
-            obj.count10 = round(temp[0.1].loc[index][temp[0.1].columns[0]])
-            obj.count15 = round(temp[0.15].loc[index][temp[0.15].columns[0]])
-            obj.count2 = round(temp[0.2].loc[index][temp[0.2].columns[0]])
-
-            obj.save()
-            log_debug("gene=" + str(id_))
+            # log_debug("start gene=" + str(id_))
+            try:
+                obj = variables_model.objects.get(id=id_)
+                obj.score = round(100*row[df_similarity_w_.columns[0]])/100
+                # print("\nid_=", id_,"\nscore=", round(100*row[df_similarity_w_.columns[0]])/100)
+                obj.count0 = round(temp[0].loc[index][temp[0].columns[0]])
+                obj.count5 = round(temp[0.05].loc[index][temp[0.05].columns[0]])
+                obj.count10 = round(temp[0.1].loc[index][temp[0.1].columns[0]])
+                obj.count15 = round(temp[0.15].loc[index][temp[0.15].columns[0]])
+                obj.count2 = round(temp[0.2].loc[index][temp[0.2].columns[0]])
+                obj.save()
+                log_debug("gene=" + str(id_))
+            except Exception as ex:
+                log_debug("Error for gene=" + str(id_) + " : "+ str(ex))
 
         #
         #
