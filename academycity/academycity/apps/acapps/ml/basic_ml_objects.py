@@ -1547,68 +1547,13 @@ class BasePotentialAlgo(object):
                 obj.count5 = round(temp[0.05].loc[index][temp[0.05].columns[0]])
                 obj.count10 = round(temp[0.1].loc[index][temp[0.1].columns[0]])
                 obj.count15 = round(temp[0.15].loc[index][temp[0.15].columns[0]])
-                obj.count2 = round(temp[0.2].loc[index][temp[0.2].columns[0]])
+                obj.count20 = round(temp[0.2].loc[index][temp[0.2].columns[0]])
                 obj.save()
-                log_debug("gene=" + str(id_))
             except Exception as ex:
-                log_debug("Error for gene=" + str(id_) + " : "+ str(ex))
-
-        #
-        #
-        #     # count_ = df_similarity_[df_similarity_[index] >= z][index].count()
-        #     # sum_ = round(100*lp[i]*df_similarity_[df_similarity_[df_similarity_.columns[n]] >= z][index].sum())/100
-        #     # # print("gene=", df_similarity_.columns[n], "threshold=", z, "       score=", sum_)
-        #     # df_n = {'gene': int(index), 'threshold': z, 'score': sum_, 'count': count_}
-        #     # df_scores_by_genes = df_scores_by_genes.append(df_n, ignore_index=True)
-        #
-        #
-        # for n in range(0, len(df_similarity_.columns)):
-        #     # print("gene=", df_similarity_.columns[n])
-        #     print("A1\n", "="*100, "\n", str(df_similarity_.columns[n]),"\n", "="*100)
-        #     log_debug("working on: "+str(df_similarity_.columns[n]))
-        #     df_ = df_similarity_.sort_values(df_similarity_.columns[n], ascending=False)
-        #     print("A4\n", df_)
-        #
-        #
-        #
-        #     lg = [0, 0.05, 0.1, 0.15, 0.2]
-        #     lp = [1, 2, 3, 4, 5]
-        #     sum_t = 0
-        #     for i in range(len(lg)):
-        #         z = lg[i]
-        #         count_ = df_similarity_[df_similarity_[df_similarity_.columns[n]] >= z][
-        #             df_similarity_.columns[n]].count()
-        #
-        #         # try:
-        #         #     count_ = df_similarity_[df_similarity_[df_similarity_.columns[n]] >= z][df_similarity_.columns[n]].count()
-        #         #     sum_ = round(100*lp[i]*df_similarity_[df_similarity_[df_similarity_.columns[n]] >= z][df_similarity_.columns[n]].sum())/100
-        #         #     # print("gene=", df_similarity_.columns[n], "threshold=", z, "       score=", sum_)
-        #         #     df_n = {'gene': int(df_similarity_.columns[n]), 'threshold': z, 'score': sum_, 'count': count_}
-        #         #     df_scores_by_genes = df_scores_by_genes.append(df_n, ignore_index=True)
-        #         #     sum_t += sum_
-        #         # except Exception as ex:
-        #         #     print(ex)
-        # # print("\nGene Score by threshold:\n", df_scores_by_genes)
-        #
-        # df_count = df_scores_by_genes.pivot(index=self.var_name, columns='threshold', values='count')
-        # # print("\ndf_count:\n", df_count)
-        #
-        # log_debug("calculate_min_max_cuts 2")
-        # df_total_scores = pd.DataFrame(df_scores_by_genes.groupby("gene")["score"].sum())
-        # # print(df_total_scores)
-        #
-        # for index, row in df_total_scores.iterrows():
-        #     id_ = int(round(index))
-        #     obj = variables_model.objects.get(id=id_)
-        #     obj.score = row["score"]
-        #     r_count = df_count.loc[id_]
-        #     n = len(df_count.columns)
-        #     obj.count0 = round(r_count[df_count.columns[0]])
-        #     obj.count5 = round(r_count[df_count.columns[1]])
-        #     obj.count10 = round(r_count[df_count.columns[2]])
-        #     obj.count15 = round(r_count[df_count.columns[3]])
-        #     obj.count20 = round(r_count[df_count.columns[4]])
-        #     obj.save()
+                log_debug("Error SCORE for gene=" + str(id_) + " : "+ str(ex))
+                log_debug(str(row))
+                log_debug(str(row[df_similarity_w_.columns[0]]))
+                log_debug(str(round(100*row[df_similarity_w_.columns[0]])/100))
 
         log_debug("Done calculate_min_max_cuts")
         result = {"status": "ok"}
