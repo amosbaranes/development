@@ -964,6 +964,8 @@ class MSDataProcessing(BaseDataProcessing, BasePotentialAlgo, MSAlgo):
         gene_id_ = int(dic["gene_id"])
 
         app_ = dic["app"]
+        threshold = 0.7 + float(dic["threshold"])/100
+        print(threshold)
         model_name_ = dic["dimensions"]["gene_dim"]["model"]
         model_gene_dim = apps.get_model(app_label=app_, model_name=model_name_)
         model_name_ = dic["dimensions"]["person_dim"]["model"]
@@ -999,7 +1001,7 @@ class MSDataProcessing(BaseDataProcessing, BasePotentialAlgo, MSAlgo):
 
         genes_temp = {}
         model_temp_var = apps.get_model(app_label=app_, model_name='tempvar')
-        qs = model_temp_var.objects.filter(gene_dim__id = gene_id_, amount__gt=0.7).all().order_by("-amount")
+        qs = model_temp_var.objects.filter(gene_dim__id = gene_id_, amount__gte=threshold).all().order_by("-amount")
         n = 0
         for g in qs:
             genes_temp[n] = {"idx": g.temp.idx, "amount": float(g.amount), "sign":g.sign}
