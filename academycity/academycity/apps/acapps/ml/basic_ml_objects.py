@@ -1604,6 +1604,7 @@ class BasePotentialAlgo(object):
         df1_similarity_ = df1.pivot(index="temp_id", columns=self.var_name+'_dim_id', values='amount').fillna(0).astype('float')
         df1_similarity_ = df1_similarity_.reset_index()
         # print("df1_similarity_\n", df1_similarity_)
+        log_debug("create_similarity_excel 1")
 
         model_temp = apps.get_model(app_label=self.app, model_name="temp")
         qs2 = model_temp.objects.all()
@@ -1617,23 +1618,31 @@ class BasePotentialAlgo(object):
         df__ = df2.merge(df1_similarity_, how='inner', left_on='id', right_on='temp_id')
         df__ = df__.drop(["id", "idx", "temp_id"], axis=1)
         # print(df__)
+        log_debug("create_similarity_excel 2")
 
         df__.dropna(how='all', axis=1, inplace=True)
         save_to_file = os.path.join(self.PROJECT_MEDIA_DIR, "Similarity.xlsx")
+        log_debug(save_to_file)
         wb2 = Workbook()
         wb2.save(save_to_file)
         wb2.close()
         wb2 = None
-        with pd.ExcelWriter(save_to_file, engine='openpyxl', mode="a") as writer:
-            df__.to_excel(writer, sheet_name="similarities")
-            writer.save()
-        wb = load_workbook(filename=save_to_file, read_only=False)
-        del wb['Sheet']
+        log_debug("create_similarity_excel 3")
         try:
-            wb.save(save_to_file)
+            with pd.ExcelWriter(save_to_file, engine='openpyxl', mode="a") as writer:
+                df__.to_excel(writer, sheet_name="similarities")
+                writer.save()
+                log_debug("create_similarity_excel 4")
         except Exception as ex:
             log_debug(str(ex))
-        wb.close()
+        try:
+            wb = load_workbook(filename=save_to_file, read_only=False)
+            del wb['Sheet']
+            wb.save(save_to_file)
+            wb.close()
+            log_debug("create_similarity_excel 5")
+        except Exception as ex:
+            log_debug(str(ex))
 
         log_debug("Done create_similarity_excel")
         result = {"status": "ok"}
