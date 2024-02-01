@@ -62,10 +62,10 @@ class BaseDataProcessing(object):
         clear_log_debug()
 
         self.PROJECT_ROOT_DIR = os.path.join(settings.WEB_DIR, "data", dic["app"])
-
-        # print(self.PROJECT_ROOT_DIR)
-        # print('-'*50)
         os.makedirs(self.PROJECT_ROOT_DIR, exist_ok=True)
+        self.PROJECT_MEDIA_DIR = os.path.join(settings.WEB_DIR, "academycity", "media", dic["app"])
+        os.makedirs(self.PROJECT_MEDIA_DIR, exist_ok=True)
+
         self.TOPIC_ID = dic["topic_id"]  # "fundamentals"
         self.TO_DATA_PATH = os.path.join(self.PROJECT_ROOT_DIR, "datasets")
         os.makedirs(self.TO_DATA_PATH, exist_ok=True)
@@ -1496,7 +1496,42 @@ class BasePotentialAlgo(object):
         #
         df = pd.DataFrame(list(qs.values("temp_id", self.var_name+'_dim_id', "amount")))
         df_similarity_ = df.pivot(index="temp_id", columns=self.var_name+'_dim_id', values='amount').fillna(0).astype('float')
-        # print(df_similarity_)
+
+        qs1 = model_temp_var.objects.filter(amount__gte=0.7).all()
+        df1 = pd.DataFrame(list(qs1.values("temp_id", self.var_name+'_dim_id', "amount")))
+        df1_similarity_ = df1.pivot(index="temp_id", columns=self.var_name+'_dim_id', values='amount').fillna(0).astype('float')
+        df1_similarity_ = df1_similarity_.reset_index()
+        # print("df1_similarity_\n", df1_similarity_)
+
+        model_temp = apps.get_model(app_label=self.app, model_name="temp")
+        qs2 = model_temp.objects.all()
+        df2 = pd.DataFrame(list(qs2.values("id", "idx")))
+        # df2 = df2.assign(h=lambda x: x['idx']/1000000)
+        df2["h"] = df2["idx"].apply(lambda x: int(x/1000000))
+        df2["l"] = df2["idx"].apply(lambda x: int(x/10000)) - 100*df2["h"]
+        df2["hi"] = df2["idx"].apply(lambda x: int(x/100)) - 10000*df2["h"] - 100*df2["l"]
+        df2["li"] = df2["idx"].apply(lambda x: int(x)) - 1000000*df2["h"] - 10000*df2["l"] - 100*df2["hi"]
+        # print(df2)
+        df__ = df2.merge(df1_similarity_, how='inner', left_on='id', right_on='temp_id')
+        df__ = df__.drop(["id", "idx", "temp_id"], axis=1)
+        print(df__)
+
+        df__.dropna(how='all', axis=1, inplace=True)
+        save_to_file = os.path.join(self.PROJECT_MEDIA_DIR, "Similarity.xlsx")
+        wb2 = Workbook()
+        wb2.save(save_to_file)
+        wb2.close()
+        wb2 = None
+        with pd.ExcelWriter(save_to_file, engine='openpyxl', mode="a") as writer:
+            df__.to_excel(writer, sheet_name="similarities")
+            writer.save()
+        wb = load_workbook(filename=save_to_file, read_only=False)
+        del wb['Sheet']
+        try:
+            wb.save(save_to_file)
+        except Exception as ex:
+            log_debug(str(ex))
+        wb.close()
 
         df_similarity_ -= 0.7
         # print("df_similarity_ - 0.7\n", df_similarity_)
@@ -1556,6 +1591,51 @@ class BasePotentialAlgo(object):
                 log_debug(str(round(100*row[df_similarity_w_.columns[0]])/100))
 
         log_debug("Done calculate_min_max_cuts")
+        result = {"status": "ok"}
+        return result
+
+    def create_similarity_excel(self, dic):
+        # # #
+        # print("90099-99-99 MMDataProcessing calculate_min_max_cuts: \n", dic, "\n'", "="*100)
+        log_debug("create_similarity_excel")
+        model_temp_var = apps.get_model(app_label=self.app, model_name="tempvar")
+        qs1 = model_temp_var.objects.filter(amount__gte=0.7).all()
+        df1 = pd.DataFrame(list(qs1.values("temp_id", self.var_name+'_dim_id', "amount")))
+        df1_similarity_ = df1.pivot(index="temp_id", columns=self.var_name+'_dim_id', values='amount').fillna(0).astype('float')
+        df1_similarity_ = df1_similarity_.reset_index()
+        # print("df1_similarity_\n", df1_similarity_)
+
+        model_temp = apps.get_model(app_label=self.app, model_name="temp")
+        qs2 = model_temp.objects.all()
+        df2 = pd.DataFrame(list(qs2.values("id", "idx")))
+        # df2 = df2.assign(h=lambda x: x['idx']/1000000)
+        df2["h"] = df2["idx"].apply(lambda x: int(x/1000000))
+        df2["l"] = df2["idx"].apply(lambda x: int(x/10000)) - 100*df2["h"]
+        df2["hi"] = df2["idx"].apply(lambda x: int(x/100)) - 10000*df2["h"] - 100*df2["l"]
+        df2["li"] = df2["idx"].apply(lambda x: int(x)) - 1000000*df2["h"] - 10000*df2["l"] - 100*df2["hi"]
+        # print(df2)
+        df__ = df2.merge(df1_similarity_, how='inner', left_on='id', right_on='temp_id')
+        df__ = df__.drop(["id", "idx", "temp_id"], axis=1)
+        # print(df__)
+
+        df__.dropna(how='all', axis=1, inplace=True)
+        save_to_file = os.path.join(self.PROJECT_MEDIA_DIR, "Similarity.xlsx")
+        wb2 = Workbook()
+        wb2.save(save_to_file)
+        wb2.close()
+        wb2 = None
+        with pd.ExcelWriter(save_to_file, engine='openpyxl', mode="a") as writer:
+            df__.to_excel(writer, sheet_name="similarities")
+            writer.save()
+        wb = load_workbook(filename=save_to_file, read_only=False)
+        del wb['Sheet']
+        try:
+            wb.save(save_to_file)
+        except Exception as ex:
+            log_debug(str(ex))
+        wb.close()
+
+        log_debug("Done create_similarity_excel")
         result = {"status": "ok"}
         return result
 
