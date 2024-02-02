@@ -961,13 +961,15 @@ class MSDataProcessing(BaseDataProcessing, BasePotentialAlgo, MSAlgo):
     # NeedToDo to move to function calculate_clusters
     def get_gene_structure(self, dic):
         # print("90950-10: \n", dic, "\n", "=" * 50)
+        log_debug(str(dic))
         gene_id_ = int(dic["gene_id"])
-
+        log_debug("gene_id=" + str(gene_id_))
         app_ = dic["app"]
         threshold = dic["threshold"]
         if threshold == "":
-            threshold = "0.70"
+            threshold = "0.00"
         threshold = 0.7 + float(threshold)/100
+        log_debug("threshold=" + str(threshold))
         model_name_ = dic["dimensions"]["gene_dim"]["model"]
         model_gene_dim = apps.get_model(app_label=app_, model_name=model_name_)
         model_name_ = dic["dimensions"]["person_dim"]["model"]
@@ -1001,9 +1003,12 @@ class MSDataProcessing(BaseDataProcessing, BasePotentialAlgo, MSAlgo):
             reduced_clusters[b]["compact_block"][2] = round(100 * reduced_clusters[b]["compact_block"][2]) / 100
             reduced_clusters[b]["centroid"] = reduced_clusters[b]["compact_block"][2]
 
+        log_debug("get_gene_structure 5")
+
         genes_temp = {}
         model_temp_var = apps.get_model(app_label=app_, model_name='tempvar')
         qs = model_temp_var.objects.filter(gene_dim__id = gene_id_, amount__gte=threshold).all().order_by("-amount")
+        log_debug("get_gene_structure 7")
         n = 0
         for g in qs:
             genes_temp[n] = {"idx": g.temp.idx, "amount": float(g.amount), "sign":g.sign}
@@ -1012,6 +1017,7 @@ class MSDataProcessing(BaseDataProcessing, BasePotentialAlgo, MSAlgo):
         # print(gene_id_,"\n", genes_temp)
 
         # print(reduced_clusters)
+        log_debug("get_gene_structure 9")
         result = {"status": "ok", "clusters": clusters, "reduced_clusters": reduced_clusters, "genes_temp": genes_temp}
         # print(result)
         return result
