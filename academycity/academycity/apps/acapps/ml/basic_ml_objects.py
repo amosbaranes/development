@@ -63,7 +63,10 @@ class BaseDataProcessing(object):
 
         self.PROJECT_ROOT_DIR = os.path.join(settings.WEB_DIR, "data", dic["app"])
         os.makedirs(self.PROJECT_ROOT_DIR, exist_ok=True)
-        self.PROJECT_MEDIA_DIR = os.path.join(settings.WEB_DIR, "academycity", "media", dic["app"])
+
+        log_debug(settings.MEDIA_ROOT)
+
+        self.PROJECT_MEDIA_DIR = os.path.join(settings.MEDIA_ROOT, dic["app"])
         os.makedirs(self.PROJECT_MEDIA_DIR, exist_ok=True)
 
         self.TOPIC_ID = dic["topic_id"]  # "fundamentals"
@@ -1497,41 +1500,41 @@ class BasePotentialAlgo(object):
         df = pd.DataFrame(list(qs.values("temp_id", self.var_name+'_dim_id', "amount")))
         df_similarity_ = df.pivot(index="temp_id", columns=self.var_name+'_dim_id', values='amount').fillna(0).astype('float')
 
-        qs1 = model_temp_var.objects.filter(amount__gte=0.7).all()
-        df1 = pd.DataFrame(list(qs1.values("temp_id", self.var_name+'_dim_id', "amount")))
-        df1_similarity_ = df1.pivot(index="temp_id", columns=self.var_name+'_dim_id', values='amount').fillna(0).astype('float')
-        df1_similarity_ = df1_similarity_.reset_index()
-        # print("df1_similarity_\n", df1_similarity_)
-
-        model_temp = apps.get_model(app_label=self.app, model_name="temp")
-        qs2 = model_temp.objects.all()
-        df2 = pd.DataFrame(list(qs2.values("id", "idx")))
-        # df2 = df2.assign(h=lambda x: x['idx']/1000000)
-        df2["h"] = df2["idx"].apply(lambda x: int(x/1000000))
-        df2["l"] = df2["idx"].apply(lambda x: int(x/10000)) - 100*df2["h"]
-        df2["hi"] = df2["idx"].apply(lambda x: int(x/100)) - 10000*df2["h"] - 100*df2["l"]
-        df2["li"] = df2["idx"].apply(lambda x: int(x)) - 1000000*df2["h"] - 10000*df2["l"] - 100*df2["hi"]
-        # print(df2)
-        df__ = df2.merge(df1_similarity_, how='inner', left_on='id', right_on='temp_id')
-        df__ = df__.drop(["id", "idx", "temp_id"], axis=1)
-        print(df__)
-
-        df__.dropna(how='all', axis=1, inplace=True)
-        save_to_file = os.path.join(self.PROJECT_MEDIA_DIR, "Similarity.xlsx")
-        wb2 = Workbook()
-        wb2.save(save_to_file)
-        wb2.close()
-        wb2 = None
-        with pd.ExcelWriter(save_to_file, engine='openpyxl', mode="a") as writer:
-            df__.to_excel(writer, sheet_name="similarities")
-            writer.save()
-        wb = load_workbook(filename=save_to_file, read_only=False)
-        del wb['Sheet']
-        try:
-            wb.save(save_to_file)
-        except Exception as ex:
-            log_debug(str(ex))
-        wb.close()
+        # qs1 = model_temp_var.objects.filter(amount__gte=0.7).all()
+        # df1 = pd.DataFrame(list(qs1.values("temp_id", self.var_name+'_dim_id', "amount")))
+        # df1_similarity_ = df1.pivot(index="temp_id", columns=self.var_name+'_dim_id', values='amount').fillna(0).astype('float')
+        # df1_similarity_ = df1_similarity_.reset_index()
+        # # print("df1_similarity_\n", df1_similarity_)
+        #
+        # model_temp = apps.get_model(app_label=self.app, model_name="temp")
+        # qs2 = model_temp.objects.all()
+        # df2 = pd.DataFrame(list(qs2.values("id", "idx")))
+        # # df2 = df2.assign(h=lambda x: x['idx']/1000000)
+        # df2["h"] = df2["idx"].apply(lambda x: int(x/1000000))
+        # df2["l"] = df2["idx"].apply(lambda x: int(x/10000)) - 100*df2["h"]
+        # df2["hi"] = df2["idx"].apply(lambda x: int(x/100)) - 10000*df2["h"] - 100*df2["l"]
+        # df2["li"] = df2["idx"].apply(lambda x: int(x)) - 1000000*df2["h"] - 10000*df2["l"] - 100*df2["hi"]
+        # # print(df2)
+        # df__ = df2.merge(df1_similarity_, how='inner', left_on='id', right_on='temp_id')
+        # df__ = df__.drop(["id", "idx", "temp_id"], axis=1)
+        # print(df__)
+        #
+        # df__.dropna(how='all', axis=1, inplace=True)
+        # save_to_file = os.path.join(self.PROJECT_MEDIA_DIR, "Similarity.xlsx")
+        # wb2 = Workbook()
+        # wb2.save(save_to_file)
+        # wb2.close()
+        # wb2 = None
+        # with pd.ExcelWriter(save_to_file, engine='openpyxl', mode="a") as writer:
+        #     df__.to_excel(writer, sheet_name="similarities")
+        #     writer.save()
+        # wb = load_workbook(filename=save_to_file, read_only=False)
+        # del wb['Sheet']
+        # try:
+        #     wb.save(save_to_file)
+        # except Exception as ex:
+        #     log_debug(str(ex))
+        # wb.close()
 
         df_similarity_ -= 0.7
         # print("df_similarity_ - 0.7\n", df_similarity_)
@@ -1596,15 +1599,22 @@ class BasePotentialAlgo(object):
 
     def create_similarity_excel(self, dic):
         # # #
-        # print("90099-99-99 MMDataProcessing calculate_min_max_cuts: \n", dic, "\n'", "="*100)
+        # print("90099-99-99 DataProcessing create_similarity_excel: \n", dic, "\n'", "="*100)
         log_debug("create_similarity_excel")
+        threshold = float(dic["threshold"])
         model_temp_var = apps.get_model(app_label=self.app, model_name="tempvar")
-        qs1 = model_temp_var.objects.filter(amount__gte=0.7).all()
+        qs1 = model_temp_var.objects.filter(amount__gte=threshold).all()
         df1 = pd.DataFrame(list(qs1.values("temp_id", self.var_name+'_dim_id', "amount")))
         df1_similarity_ = df1.pivot(index="temp_id", columns=self.var_name+'_dim_id', values='amount').fillna(0).astype('float')
+        # print("df1_similarity_\n", df1_similarity_)
+        # d = df1_similarity_.copy()
+        # d[d >= 0.7] = 1
+        # print(d)
+        # print(d.sum())
         df1_similarity_ = df1_similarity_.reset_index()
         # print("df1_similarity_\n", df1_similarity_)
         log_debug("create_similarity_excel 1")
+        log_debug("DataFrame size: " + str(df1_similarity_.shape))
 
         model_temp = apps.get_model(app_label=self.app, model_name="temp")
         qs2 = model_temp.objects.all()
@@ -1621,8 +1631,22 @@ class BasePotentialAlgo(object):
         log_debug("create_similarity_excel 2")
 
         df__.dropna(how='all', axis=1, inplace=True)
+        # df__ = df__.T
         save_to_file = os.path.join(self.PROJECT_MEDIA_DIR, "Similarity.xlsx")
         log_debug(save_to_file)
+
+        is_file = os.path.exists(save_to_file)
+        log_debug("1 is_file = " + str(is_file))
+
+        if is_file:
+            try:
+                os.remove(save_to_file)
+                log_debug("deleted file " + save_to_file)
+            except Exception as ex:
+                log_debug("90-90-90- 1 Error saving file " + save_to_file )
+        is_file = os.path.exists(save_to_file)
+        log_debug("2 is_file = " + str(is_file))
+
         wb2 = Workbook()
         wb2.save(save_to_file)
         wb2.close()
@@ -1643,6 +1667,9 @@ class BasePotentialAlgo(object):
             log_debug("create_similarity_excel 5")
         except Exception as ex:
             log_debug(str(ex))
+
+        is_file = os.path.exists(save_to_file)
+        log_debug("3 is_file = " + str(is_file))
 
         log_debug("Done create_similarity_excel")
         result = {"status": "ok"}

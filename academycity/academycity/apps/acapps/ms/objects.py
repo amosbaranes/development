@@ -964,8 +964,10 @@ class MSDataProcessing(BaseDataProcessing, BasePotentialAlgo, MSAlgo):
         gene_id_ = int(dic["gene_id"])
 
         app_ = dic["app"]
-        threshold = 0.7 + float(dic["threshold"])/100
-        print(threshold)
+        threshold = dic["threshold"]
+        if threshold == "":
+            threshold = "0.70"
+        threshold = 0.7 + float(threshold)/100
         model_name_ = dic["dimensions"]["gene_dim"]["model"]
         model_gene_dim = apps.get_model(app_label=app_, model_name=model_name_)
         model_name_ = dic["dimensions"]["person_dim"]["model"]
