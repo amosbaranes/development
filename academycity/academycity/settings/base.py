@@ -208,6 +208,7 @@ acApps = [
     'academycity.apps.acapps.accounting',
     'academycity.apps.acapps.businesssim',
     'academycity.apps.acapps.liongold',
+    'academycity.apps.acapps.kiu',
 ]
 
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps

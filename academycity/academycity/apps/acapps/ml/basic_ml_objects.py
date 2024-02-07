@@ -401,11 +401,10 @@ class BasePotentialAlgo(object):
         # relimp_n2 = pd.DataFrame([[0, 0, 0, 0]])
         group_d = ""
 
-        # ---- PreProcessing - Normalization Stage ----
+        # ---- PreProcessing - pull data Stage ----
         ll_dfs = self.pre_process_data(dic)
-        # print(ll_dfs)
-        # ----------------------------------------------
         # ---------------------------------------------
+        # ------ Normalization stage -----------------
         lll_groups = []
         for k in ll_dfs:
             group = k #.group_name
@@ -659,6 +658,7 @@ class BasePotentialAlgo(object):
                 # print(group, sign_n2)
 
             lll_groups.append(group)
+        #
 
         # print("QQQQQQQQQQQQQQQQQ")
         # print("df_n1_all\n", df_n1_all)
@@ -1046,20 +1046,23 @@ class BasePotentialAlgo(object):
         return df_
 
     def pre_process_data(self, dic):
-        print("90033-133 pre_process_data: \n", dic, "\n", "="*50)
+        # print("90033-133 pre_process_data: \n", dic, "\n", "="*50)
         year_ = str(dic["time_dim_value"])
 
         groups = self.model_measure_group.objects.filter(~Q(group_name__in=self.do_not_include_groups)).all()
-
         ll_groups = [self.dependent_group]
         for k in groups:
             group = k.group_name
+            # print(group)
             if group not in ll_groups and group not in self.do_not_include_groups:
                 ll_groups.append(group)
+
+        # print("90-111-222-1 for k in groups\n", ll_groups)
+
         lll_groups = []  # this will have only the groups that do not have problems (have data)
         ll_dfs = {}  # includes all the df of all groups with data
 
-        print("90-111-222-1 for k in groups\n", ll_groups)
+        # print(dic["axes"])
 
         for k in ll_groups:
             # print("="*50, "\n", k, "\n", "="*50)
