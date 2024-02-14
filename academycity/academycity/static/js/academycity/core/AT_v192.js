@@ -2797,6 +2797,8 @@ acBasicCreator.prototype.set_board_data = function(ll=[])
 
    }
    } else {
+
+
       k +=1
       var col_width=125;
       var soldier_col_width=400
@@ -2822,18 +2824,20 @@ acBasicCreator.prototype.set_board_data = function(ll=[])
 
       var s='s_data=atm.units_structure';for(var w=0;w<ll.length;w++){s+='[ll['+w+']]["data"]'};eval(s);
       //alert("90441-750  \n"+JSON.stringify(s_data));
-
       var r_="10"
-      var s="<table class='soldier' style='display: block;height:"+(Math.round(height_/2.5))+"px;overflow-y: auto;'>"
-      s+="<thead><tr style='font-size: 1.25em;font-weight: bold;font-family: Bernard MT Condensed'>"
+      var s="<table class='soldier' style='display: block;height:"+(Math.round(height_/2.5))+"px;'>"
+      s+="<thead style='display: block;overflow-x: hidden;'><tr style='font-size: 1.25em;font-weight: bold;font-family: Bernard MT Condensed'>"
       s+="<th style='width:"+soldier_col_width+"px;padding: 15px;border-top-left-radius:"+r_+"px'>Name</th>"
+      //alert(this.fields_skills)
       for(var i in this.fields_skills){
       var s_="width:"+col_width+"px";
+      //alert(this.fields_skills.length)
       if(i==(this.fields_skills.length-1)){s_+=";border-top-right-radius:"+r_+"px"}
       s+="<th style="+s_+">"+this.fields_skills[i]+"</th>";
       }
+      //s+="<th style='width:"+col_width+"px'>Fit for Duty</th>";
       s+="</tr></thead>"
-      s+="<tbody >"
+      s+="<tbody style='display: block;height:200px;overflow-y: auto;overflow-x: hidden;'>"
       for(var s_ in s_data){var u=s_data[s_]["title"].split(":");
        s+="<tr><td soldier_id='"+s_+"' style='padding:10px;width:"+soldier_col_width+"px'>"
        s+="<span style='font-size:25px;display:inline-block;font-weight:bold;font-family: Bernard MT Condensed'>"
@@ -2841,12 +2845,15 @@ acBasicCreator.prototype.set_board_data = function(ll=[])
 
        for(var i in this.fields_skills)
        {
+
         var nl_=this.skills_cols[i];
         //alert(nl_);
+
         var grade=this.get_grade(skill_id=nl_, unit_id=s_);
         var color="white";
         var background_color = "#4dffc3";
         var img_="<img src='/media/training/images/v.png'"
+
         if(grade==0){color="black";background_color = "white"; var img_=""}
         else if(grade<atm.general.pass_grade[type_][nl_])
         {
@@ -2855,7 +2862,8 @@ acBasicCreator.prototype.set_board_data = function(ll=[])
         }
         if(img_!=""){img_+=" width='25' height='25' />"}
         if(grade<100){grade="&nbsp;&nbsp;"+grade}
-        var s__="<td style='width:100px;color:black;justify-content: center;align-items: center;text-align:center;padding: 10px;background-color:"+background_color+"'>"
+        if(i==(this.fields_skills.length-1)){col_width=(col_width-16)}
+        var s__="<td style='width:"+col_width+"px;color:black;justify-content: center;align-items: center;text-align:center;padding: 10px;background-color:"+background_color+"'>"
         s__+="<div style='font-size:23px;font-weight:bold;font-family:Bernard MT Condensed;display:flex;align-items:center;'>"+grade
         s__+="&nbsp;"+img_+"</div></td>"
         //alert(s__)
@@ -2867,6 +2875,7 @@ acBasicCreator.prototype.set_board_data = function(ll=[])
       s+="</tbody></table>"
       div_.innerHTML=s;
       container_.appendChild(div_);
+
    }
 }
 

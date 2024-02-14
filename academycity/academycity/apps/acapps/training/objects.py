@@ -4214,8 +4214,8 @@ class BaseTrainingAlgo(object):
         # print("90050-01 BaseTrainingAlgo", dic, '\n', '-'*50)
         # super(BaseTrainingAlgo, self).__init__()
         # print("90050-02 BaseTrainingAlgo", dic, '\n', '-'*50)
-        app_ = dic["app"]
-        self.excel_dir = settings.MEDIA_ROOT + '/'+app_+'/excel'
+        self.app = dic["app"]
+        self.excel_dir = settings.MEDIA_ROOT + '/'+self.app+'/excel'
         os.makedirs(self.excel_dir, exist_ok=True)
         self.save_to_file = None
         self.second_time_save = ''
@@ -4267,7 +4267,6 @@ class BaseTrainingAlgo(object):
                 print(self.save_to_file + ' 551 finally -' + str(nnn) + ' - ' + folder)
                 self.save_to_excel(df2, folder)
                 self.second_time_save = self.save_to_file
-
 
 # a = {"112": {"data": {
 #                 "5516": {"data": {"5517": {"wet_day": 1, "raid_day": 1, "wet_night": 1, "raid_night": 1},
@@ -4334,11 +4333,12 @@ class BaseTrainingAlgo(object):
 #                          "is_equiped": 1}}, "is_equiped": 0}
 #      }
 
+
 class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
     def __init__(self, dic):
         super().__init__(dic)
 
-        print("="*100, "\n", dic, "\n", "="*100)
+        # print("="*100, "\n", dic, "\n", "="*100)
 
         self.df_positions = pd.DataFrame.from_dict({"id" :[1,2,3,4,5,0],
                                           "position_name": ["Captain","Officer","Soldier","Colonel","Sous Officer","Other"]})
@@ -4460,7 +4460,7 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
         return result
 
     def get_units_structure_new(self, dic):
-        print("\n", "-"*50, '\n90035-1 dic\n', dic, "\n", "-"*50)
+        # print("\n", "-"*50, '\n90035-15 dic\n', dic, "\n", "-"*50)
         app_ = dic["app"]
         try:
             battalion_ = int(dic["battalion"])

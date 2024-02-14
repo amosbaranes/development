@@ -18,7 +18,7 @@
 </head>
 <body id="body_">
 
-<script src="{% static 'js/academycity/core/AT_v191.js' %}"></script>
+<script src="{% static 'js/academycity/core/AT_v192.js' %}"></script>
 <script src="{% static 'vendor/jquery/jquery.min.js' %}"></script>
 <script src="{% static 'js/npm/cookie/js.cookie.min.js' %}"></script>
 <script src="//cdn.rawgit.com/rainabba/jquery-table2excel/1.1.0/dist/jquery.table2excel.min.js"></script>
@@ -29,8 +29,15 @@
 
 <script src="https://cdn.jsdelivr.net/npm/luxon@1.26.0"></script>
 
-<!--<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.4.0/Chart.min.js"></script>-->
+{% if app == "training" %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.4.0/Chart.min.js"></script>
+{% else %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js@3.0.1/dist/chart.js"></script>
+{% endif %}
+
+<!--<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.4.0/Chart.min.js"></script>-->
+<!--<script src="https://cdn.jsdelivr.net/npm/chart.js@3.0.1/dist/chart.js"></script>-->
+
 <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon@1.0.0"></script>
 
 <script src="{% static 'js/chartjs/chartjs-chart-financial.js'  %}" type="text/javascript"></script>
