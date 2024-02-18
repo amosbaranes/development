@@ -264,18 +264,18 @@ class BasePotentialAlgo(object):
         except Exception as ex:
             pass
 
-        measure_name = "measure_name"
+        self.measure_name_ = "measure_name"
         try:
-            measure_name = dic["measure_name"]
+            self.measure_name_ = dic["measure_name"]
         except Exception as ex:
             pass
-        # print("measure_name=", measure_name)
+        # print("measure_name=", self.measure_name_)
 
         try:
             measure_model_name_ = dic["measure_model"]
             # print('-' * 50, '\n', "90003-000-41 BasePotentialAlgo\nmeasure_model_name_=", measure_model_name_, "\n", '-' * 50)
             model_measure_dim = apps.get_model(app_label=self.app, model_name=measure_model_name_)
-            self.measures_name = pd.DataFrame(model_measure_dim.objects.all().values('id', measure_name))
+            self.measures_name = pd.DataFrame(model_measure_dim.objects.all().values('id', self.measure_name_))
         except Exception as ex:
             pass
 
@@ -1632,12 +1632,14 @@ class BasePotentialAlgo(object):
         df__ = df__.drop(["id", "idx", "temp_id"], axis=1)
         # print(df__)
         log_debug("create_similarity_excel 2")
-
         df__.dropna(how='all', axis=1, inplace=True)
-        # df__ = df__.T
+        cc = {}
+        for c in df__.columns:
+            if c not in ["h", "l", "hi", "li"]:
+                cc[c] = str(self.measures_name[self.measures_name['id']==c].iloc[0][self.measure_name_]).strip()
+        df__.rename(columns=cc, inplace=True)
         save_to_file = os.path.join(self.PROJECT_MEDIA_DIR, "Similarity.xlsx")
         log_debug(save_to_file)
-
         is_file = os.path.exists(save_to_file)
         log_debug("1 is_file = " + str(is_file))
 

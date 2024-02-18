@@ -86,7 +86,7 @@ def home(request):
 #
 
 def app_id(request, app_name, company_obj_id):
-    # print("66-01", app_name)
+    print("66-01", app_name)
     log_debug("training home : 60-03: "+app_name)
     try:
         if request.user.is_anonymous:
@@ -103,7 +103,8 @@ def app_id(request, app_name, company_obj_id):
             if request.user.groups.filter(name="t_reports_manager").exists():
                 app_name = "reports"
             elif request.user.groups.filter(name="t_admin").exists():
-                app_name = "tadmin"
+                if app_name == "admin":
+                    app_name = "tadmin"
             elif request.user.groups.filter(name="admins").exists():
                 # app_name = "admin"
                 log_debug("training home : 60-04: "+app_name)
