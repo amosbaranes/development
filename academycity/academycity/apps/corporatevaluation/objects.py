@@ -66,6 +66,7 @@ from .models import (XBRLMainIndustryInfo, XBRLIndustryInfo, XBRLCompanyInfoInPr
                      ETFS, ETFWatchLists, StockPricesMinutes, StockPricesDays)
 
 from ..acapps.ml.basic_ml_objects import BaseDataProcessing
+from django.db.models import Count
 
 # cik = '0000051143'
 # type = '10-K'
@@ -1842,7 +1843,72 @@ class StockPrices(object):
         # print("9099 output dic: \n", dic, "\n"+"="*30)
         return dic
 
+    def remove_prices_minutes_duplicates(self, dic):
+
+        def remove_duplicates(stockpricesminutes, c):
+            try:
+                duplicates = stockpricesminutes.objects.filter(company=c).values('idx').annotate(idx_count=Count('idx')).filter(idx_count__gt=1)
+                # print(duplicates)
+                for item in duplicates:
+                    stockpricesminutes.objects.filter(company=c, idx=item['idx']).all()[0].delete()
+            except Exception as ex:
+                print("Error 22-22-22-22-1", ex)
+
+        # print("9060-60 input dic: \n", dic, "\n"+"-"*30)
+        # print(dic)
+        # print(dic["ticker"])
+        l_f = str(dic["letter_from"])
+        l_t = str(dic["letter_to"])
+
+        # StockPricesMinutes.truncate();
+
+        watch_list = ETFWatchLists.objects.all()
+        for w in watch_list:
+            companies = XBRLCompanyInfo.objects.filter(etfwatchlist=w).all()
+            for c in companies:
+                if l_t >= c.company_letter >= l_f or (c.ticker == "$SPX.X" and w == "HighV"):
+                    ticker = c.ticker
+                    if ticker == "$SPX.X":
+                        ticker = "^GSPC"
+                    # if ticker == "CMS":
+                    print("90151 company info: ", w.symbol, ticker, c.company_letter, "\n"+"-"*30)
+                    log_debug(ticker)
+                    remove_duplicates(StockPricesMinutes, c)
+
+
+        dic = {'data': {"status": "ok"}}
+        # print("9099 output dic: \n", dic, "\n"+"="*30)
+        return dic
+
     def update_prices_minutes(self, dic):
+
+        def get_data(stockpricesminutes, c, idx_, n=0):
+            try:
+                # print("-5"*50)
+                sp, is_created = stockpricesminutes.objects.get_or_create(company=c, idx=idx_)
+                # print("-6"*50)
+                # print(is_created)
+                # print("-7"*50)
+                if is_created:
+                    sp.open = open_
+                    sp.high = high_
+                    sp.low = low_
+                    sp.close = close_
+                    sp.volume = volume_
+                    sp.dividends = dividends_
+                    sp.stock_splits = stock_splits_
+                    # print("-8"*50)
+                    sp.save()
+                    # print("-9"*50)
+            except Exception as ex:
+                # print("Error 9088-77-66 idx_=", idx_, ex)
+                spm = stockpricesminutes.objects.filter(company=c, idx=idx_).all()
+                spm[0].delete()
+                if n==0:
+                    get_data(stockpricesminutes, c, idx_, n=1)
+                else:
+                    print("Error 22-22-22-22-1", idx_, ex)
+
         print("9010 input dic: \n", dic, "\n"+"-"*30)
         # print(dic)
         # print(dic["ticker"])
@@ -1866,6 +1932,7 @@ class StockPrices(object):
                     ticker = c.ticker
                     if ticker == "$SPX.X":
                         ticker = "^GSPC"
+
                     print("90151 company info: \n", w.symbol, ticker, c.company_letter, "\n"+"-"*30)
                     obj = yf.Ticker(ticker)
                     i = w_  # 5 for 1m, 45 for 1d
@@ -1881,7 +1948,6 @@ class StockPrices(object):
                         i -= 1
                         date_b_ = date_b.date()
                         date_e_ = date_e.date()
-                        # print(date_b_, date_e_)
                         end_ = str(date_e_.year)+"-"+str(date_e_.month)+"-"+str(date_e_.day)
                         beg_ = str(date_b_.year)+"-"+str(date_b_.month)+"-"+str(date_b_.day)
                         hist = obj.history(interval="1m", start=beg_, end=end_)
@@ -1906,25 +1972,7 @@ class StockPrices(object):
                                 volume_ = round(row["Volume"])
                                 dividends_ = round(100*row["Dividends"])/100
                                 stock_splits_ = round(100*row["Stock Splits"])/100
-                                try:
-                                    # print("-5"*50)
-                                    sp, is_created = StockPricesMinutes.objects.get_or_create(company=c, idx=idx_)
-                                    # print("-6"*50)
-                                    # print(is_created)
-                                    # print("-7"*50)
-                                    if is_created:
-                                        sp.open = open_
-                                        sp.high = high_
-                                        sp.low = low_
-                                        sp.close = close_
-                                        sp.volume = volume_
-                                        sp.dividends = dividends_
-                                        sp.stock_splits = stock_splits_
-                                        # print("-8"*50)
-                                        sp.save()
-                                        # print("-9"*50)
-                                except Exception as ex:
-                                    print("Error 9088-77-66", ex)
+                                get_data(StockPricesMinutes, c, idx_, n=0)
 
         dic = {'data': {"status": "ok"}}
         # print("9099 output dic: \n", dic, "\n"+"="*30)
