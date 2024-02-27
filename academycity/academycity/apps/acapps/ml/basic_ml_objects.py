@@ -1680,6 +1680,129 @@ class BasePotentialAlgo(object):
         result = {"status": "ok"}
         return result
 
+    def get_model_normalization(self, dic):
+        # # #
+        # print("90099-99-85 DataProcessing get_model_normalization: \n", dic, "\n'", "="*100)
+        log_debug("get_model_normalization")
+        model = str(dic["model"])
+        dn_ = str(dic["dn"])
+        dn_text = str(dic["dn_text"])
+        _ = model.split("_")
+        idx_ = int(_[0]+_[1]+_[2]+_[3])
+        threshold = float(dic["threshold"])
+        #
+        model_temp = apps.get_model(app_label=self.app, model_name="temp")
+        temp_ = model_temp.objects.get(idx=idx_)
+        #
+        model_temp_var = apps.get_model(app_label=self.app, model_name="tempvar")
+        qs1 = model_temp_var.objects.filter(temp=temp_, amount__gte=threshold).all()
+        ll = [dn_text]
+        for q in qs1:
+            ll.append(q.gene_dim.gene_code)
+        # print(ll)
+        # ----
+        try:
+            model_fact = apps.get_model(app_label=self.app, model_name="factnormalized")
+            qs = model_fact.objects.filter(person_dim__person_group_dim__group_name="Model", gene_dim__gene_code__in=ll)
+            df = pd.DataFrame(list(qs.values("gene_dim", "person_dim", "amount")))
+            df = df.pivot(index="person_dim", columns='gene_dim', values='amount')
+        except Exception as ex:
+            print("Error 1:  ", ex)
+        # ----
+        # print("AA\n", df)
+        log_debug("get_model_normalization 1")
+        log_debug("DataFrame size: " + str(df.shape))
+        # ---
+        mm = temp_.dic_hp
+        #
+        df_n1 = pd.DataFrame(index=df.index.copy())
+        df_n2 = pd.DataFrame(index=df.index.copy())
+        for mi in df.columns:
+            mi_=str(mi)
+            if mi_ == dn_:
+                mi_="y"
+            min_cut = mm[mi_]["min_cut"]
+            max_cut = mm[mi_]["max_cut"]
+            if min_cut == -1:
+                continue
+
+            dff = pd.DataFrame(df.loc[:,mi].astype(float), index=df.index.copy())
+            df_f = dff.copy()
+            df_f = df_f.apply(lambda x: (x - min_cut) / (max_cut - min_cut))
+            df_n1[mi] = df_f.copy()
+            df_f[df_f < 0] = 0
+            df_f[df_f > 1] = 1
+            df_n2[mi] = df_f.copy()
+        # print(df_n1, "\n", df_n2)
+
+        self.entities_name=self.entities_name.set_index("id")
+        df_n1 = pd.merge(left=df_n1, how='inner', right=self.entities_name, left_index=True, right_index=True)
+        try:
+            c_ = df_n1.pop('person_code')
+            df_n1.insert(0, 'person_code', c_)
+        except Exception as ex:
+            print("Error 90-90-88-2-1: ", str(ex))
+        df_n1=df_n1.set_index('person_code')
+
+        df_n2 = pd.merge(left=df_n2, how='inner', right=self.entities_name, left_index=True, right_index=True)
+        try:
+            c_ = df_n2.pop('person_code')
+            df_n2.insert(0, 'person_code', c_)
+        except Exception as ex:
+            print("Error 90-90-88-2-1: ", str(ex))
+        df_n2=df_n2.set_index('person_code')
+
+        cc = {}
+        for c in df_n1.columns:
+            cc[c] = str(self.measures_name[self.measures_name['id']==c].iloc[0][self.measure_name_]).strip()
+        df_n1.rename(columns=cc, inplace=True)
+        df_n2.rename(columns=cc, inplace=True)
+
+        # print(df_n1, "\n", df_n2)
+
+        save_to_file = os.path.join(self.PROJECT_MEDIA_DIR, "normalization_"+model+".xlsx")
+        log_debug(save_to_file)
+        is_file = os.path.exists(save_to_file)
+        log_debug("1 is_file = " + str(is_file))
+
+        if is_file:
+            try:
+                os.remove(save_to_file)
+                log_debug("deleted file " + save_to_file)
+            except Exception as ex:
+                log_debug("90-90-90- 1 Error saving file " + save_to_file )
+        is_file = os.path.exists(save_to_file)
+        log_debug("2 is_file = " + str(is_file))
+
+        wb2 = Workbook()
+        wb2.save(save_to_file)
+        wb2.close()
+        wb2 = None
+        log_debug("create_similarity_excel 3")
+        try:
+            with pd.ExcelWriter(save_to_file, engine='openpyxl', mode="a") as writer:
+                df_n1.to_excel(writer, sheet_name="normalization_n1")
+                df_n2.to_excel(writer, sheet_name="normalization_n2")
+                writer.save()
+                log_debug("normalization_excel 4")
+        except Exception as ex:
+            log_debug(str(ex))
+        try:
+            wb = load_workbook(filename=save_to_file, read_only=False)
+            del wb['Sheet']
+            wb.save(save_to_file)
+            wb.close()
+            log_debug("create_similarity_excel 5")
+        except Exception as ex:
+            log_debug(str(ex))
+
+        is_file = os.path.exists(save_to_file)
+        log_debug("3 is_file = " + str(is_file))
+
+        log_debug("Done get_model_normalization")
+        result = {"status": "ok"}
+        return result
+
     # -------
 
     # def calculate_min_max_cuts(self, dic):

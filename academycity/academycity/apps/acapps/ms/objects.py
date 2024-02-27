@@ -200,8 +200,6 @@ class MSDataProcessing(BaseDataProcessing, BasePotentialAlgo, MSAlgo):
         # qs = model_fact.objects.filter(gene_dim__gene_group_dim_group_name="dep",
         #                                person_dim__person_group_dim__group_name="Normaliaz")
         # df = pd.DataFrame(list(qs.values("gene_dim", "person_dim", "amount")))
-
-
         model_name_ = dic["fact"]["model"]
         model_fact = apps.get_model(app_label=app_, model_name=model_name_)
 
@@ -209,46 +207,51 @@ class MSDataProcessing(BaseDataProcessing, BasePotentialAlgo, MSAlgo):
         sheet_names = wb.sheetnames
         for f in sheet_names:
             # print(f)
-            ws = wb[f]
-            data = ws.values
-            columns = next(data)[0:]
-            if f == "Model":
-                gene_obj, is_created = model_gene_dim.objects.get_or_create(gene_group_dim=gene_group_obj,
-                                                                            gene_code=columns[len(columns) - 1])
-                # print(gene_obj)
-
             pg_obj, is_created = model_person_group_dim.objects.get_or_create(group_name=f)
             pg_obj.save()
 
+            ws = wb[f]
+            data = ws.values
+            columns = next(data)[0:]
             df = pd.DataFrame(data, columns=columns)
             # print(df)
+            if f == "Normaliaz":
+                for index, row in df.iterrows():
+                    # print(index, row["ID"])
+                    try:
+                        if row["gender"] == "M":
+                            row["gender"] = 0
+                        else:
+                            row["gender"] = 1
+                        # print(row["gender"])
+                        person_obj, is_create = model_person_dim.objects.get_or_create(person_code=row["ID"])
+                        # print("'", "="*100,"\n",row["ID"])
+                        person_obj.person_group_dim = pg_obj
+                        person_obj.gender = row["gender"]
+                        person_obj.age_at_cdna = row["age_at_cDNA"]
+                        person_obj.set_num = row["set_num"]
+                        person_obj.save()
+                    except Exception as ex:
+                        # pass
+                        print("Error: ", row["ID"], ex)
 
-            for index, row in df.iterrows():
-                # print(index, row["ID"])
-                try:
-                    if row["gender"] == "M":
-                        row["gender"] = 0
-                    else:
-                        row["gender"] = 1
-                    # print(row["gender"])
-                    person_obj, is_create = model_person_dim.objects.get_or_create(person_code=row["ID"])
-                    # print("'", "="*100,"\n",row["ID"])
-                    person_obj.person_group_dim=pg_obj
-                    person_obj.gender = row["gender"]
-                    person_obj.age_at_cdna = row["age_at_cDNA"]
-                    person_obj.set_num = row["set_num"]
-                    person_obj.save()
-                    if f == "Model":
+            if f == "Model":
+                # print(columns[4:])
+                for p  in columns[4:]:
+                    gene_obj, is_created = model_gene_dim.objects.get_or_create(gene_group_dim=gene_group_obj,gene_code=p)
+                    # print('\ngene_obj\n', gene_obj,'\n')
+                    for index, row in df.iterrows():
+                        person_obj = model_person_dim.objects.get(person_code=row["ID"])
+                        person_obj.person_group_dim = pg_obj
+                        person_obj.save()
                         fact_obj, is_created = model_fact.objects.get_or_create(gene_dim=gene_obj, person_dim=person_obj)
                         fact_obj_normalized, is_created = model_fact_normalized.objects.get_or_create(gene_dim=gene_obj,
                                                                                                      person_dim=person_obj)
-                        fact_obj.amount = row[columns[len(columns) - 1]]
+                        fact_obj.amount = row[p]
                         fact_obj.save()
-                        fact_obj_normalized.amount = row[columns[len(columns) - 1]]
+                        fact_obj_normalized.amount = row[p]
                         fact_obj_normalized.save()
-                except Exception as ex:
-                    # pass
-                    print("Error: ", row["ID"], ex)
+
         result = {"status": "ok"}
         return result
     #
