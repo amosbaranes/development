@@ -1772,11 +1772,10 @@ class BasePotentialAlgo(object):
         cc = {}
         for c in df_n1.columns:
             cc[c] = str(self.measures_name[self.measures_name['id']==c].iloc[0][self.measure_name_]).strip()
+        df.rename(columns=cc, inplace=True)
         df_n1.rename(columns=cc, inplace=True)
         df_n2.rename(columns=cc, inplace=True)
-
         # print(df_n1, "\n", df_n2)
-
         save_to_file = os.path.join(self.PROJECT_MEDIA_DIR, "normalization_"+model+".xlsx")
         log_debug(save_to_file)
         is_file = os.path.exists(save_to_file)
