@@ -1715,6 +1715,7 @@ class BasePotentialAlgo(object):
         # ---
         mm = temp_.dic_hp
         #
+        df_mm = pd.DataFrame()
         df_n1 = pd.DataFrame(index=df.index.copy())
         df_n2 = pd.DataFrame(index=df.index.copy())
         for mi in df.columns:
@@ -1725,7 +1726,6 @@ class BasePotentialAlgo(object):
             max_cut = mm[mi_]["max_cut"]
             if min_cut == -1:
                 continue
-
             dff = pd.DataFrame(df.loc[:,mi].astype(float), index=df.index.copy())
             df_f = dff.copy()
             df_f = df_f.apply(lambda x: (x - min_cut) / (max_cut - min_cut))
@@ -1733,8 +1733,25 @@ class BasePotentialAlgo(object):
             df_f[df_f < 0] = 0
             df_f[df_f > 1] = 1
             df_n2[mi] = df_f.copy()
-        # print(df_n1, "\n", df_n2)
+            #
+            data = pd.DataFrame({mi: [min_cut, max_cut]})
+            df_mm[mi] = data
+            #
+        data = pd.DataFrame({"idx": ["min_cut", "max_cut"]})
+        df_mm["idx"] = data
+        df_mm.set_index('idx', inplace=True)
 
+        # print(df_n1, "\n", df_n2,"\n", df_mm, "\n", df)
+        df = pd.merge(left=df, how='inner', right=self.entities_name, left_index=True, right_index=True)
+        df = df.drop(["id"], axis=1)
+        try:
+            c_ = df.pop('person_code')
+            df.insert(0, 'person_code', c_)
+        except Exception as ex:
+            print("Error 90-90-88-2-1: ", str(ex))
+        df=df.set_index('person_code')
+        frames = [df_mm, df]
+        df = pd.concat(frames)
         self.entities_name=self.entities_name.set_index("id")
         df_n1 = pd.merge(left=df_n1, how='inner', right=self.entities_name, left_index=True, right_index=True)
         try:
@@ -1781,6 +1798,7 @@ class BasePotentialAlgo(object):
         log_debug("create_similarity_excel 3")
         try:
             with pd.ExcelWriter(save_to_file, engine='openpyxl', mode="a") as writer:
+                df.to_excel(writer, sheet_name="source_data")
                 df_n1.to_excel(writer, sheet_name="normalization_n1")
                 df_n2.to_excel(writer, sheet_name="normalization_n2")
                 writer.save()
