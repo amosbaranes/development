@@ -15,13 +15,13 @@ from .models import (Project, RBOIC, CountryRegion, CountryRating, Industry,
                      CorporateValuationWeb, ETFS, ETFWatchLists, CompaniesPriceData,
                      StockPricesMinutes, StockPricesDays,
                      XBRLProcessedFactCompany, XBRLRatioDim, XBRLAccountsGroupsFactCompany, XBRLFactRatiosCompany,
-                     TwoSpreadStrategy, TwoSpreadStrategyDetails)
+                     TwoSpreadStrategy, TwoSpreadStrategyDetails,
+                     FactSimulation)
 
 
 # -*- coding: utf-8 -*-
 from cms.admin.placeholderadmin import PlaceholderAdminMixin
 from parler.admin import TranslatableAdmin, TranslatableStackedInline, TranslatableTabularInline
-
 
 @admin.register(XBRLProcessedFactCompany)
 class XBRLProcessedFactCompanyAdmin(admin.ModelAdmin):
@@ -341,4 +341,10 @@ class TwoSpreadStrategyAdmin(admin.ModelAdmin):
 class TwoSpreadStrategyDetailsAdmin(admin.ModelAdmin):
     list_display = ['two_spread_strategy', 'idx', 'seconds', 'stock_price', 'call_strategy_price', 'put_strategy_price', 'strategy_price']
     list_filter = ('two_spread_strategy', 'idx', 'stock_price', 'strategy_price', )
+
+
+@admin.register(FactSimulation)
+class FactSimulationAdmin(admin.ModelAdmin):
+    list_display = ['company', 'time', 'spread', 'inner_range', 'stock_price', 'ch', 'c', 'ph', 'p']
+    list_filter = ('company', 'spread', 'inner_range', 'time', 'stock_price')
 

@@ -67,6 +67,7 @@ from .models import (XBRLMainIndustryInfo, XBRLIndustryInfo, XBRLCompanyInfoInPr
 
 from ..acapps.ml.basic_ml_objects import BaseDataProcessing
 from django.db.models import Count
+from scipy.stats import norm, binom
 
 # cik = '0000051143'
 # type = '10-K'
@@ -5831,6 +5832,47 @@ class Option(object):
     def __init__(self):
         pass
 
+    def bs_call(self, dic):
+        S = float(dic["S"])
+        T = int(dic["T"])
+        K = float(dic["K"])
+        r = float(dic["r"])  # Risk-free interest rate
+        sigma = float(dic["sigma"])  # Volatility
+        N = norm.cdf
+        #
+        d1 = (np.log(S / K) + (r + sigma ** 2 / 2) * T) / (sigma * np.sqrt(T))
+        d2 = d1 - sigma * np.sqrt(T)
+        return S * N(d1) - K * np.exp(-r * T) * N(d2)
+
+    def bs_put(self, dic):
+        S = float(dic["S"])
+        T = int(dic["T"])
+        K = float(dic["K"])
+        r = float(dic["r"])  # Risk-free interest rate
+        sigma = float(dic["sigma"])  # Volatility
+        N = norm.cdf
+        #
+        d1 = (np.log(S / K) + (r + sigma ** 2 / 2) * T) / (sigma * np.sqrt(T))
+        d2 = d1 - sigma * np.sqrt(T)
+        return K * np.exp(-r * T) * N(-d2) - S * N(-d1)
+
+    def bs_put_call(self, dic):
+        print(dic)
+        S = float(dic["S"])
+        T = int(dic["T"])
+        K = float(dic["K"])
+        r = float(dic["r"])  # Risk-free interest rate
+        sigma = float(dic["sigma"])  # Volatility
+        N = norm.cdf
+        #
+        d1 = (np.log(S / K) + (r + sigma ** 2 / 2) * T) / (sigma * np.sqrt(T))
+        d2 = d1 - sigma * np.sqrt(T)
+        call_option_price = S * N(d1) - K * np.exp(-r * T) * N(d2)
+        put_option_price = K * np.exp(-r * T) * N(-d2) - S * N(-d1)
+        result = {"status": "ok", "data": {"call_option_price":call_option_price, "put_option_price":put_option_price}}
+        print(result)
+        return result
+
     def binomial_american_call_option(self, S, K, T, r, sigma, n):
         dt = T / n
         u = math.exp(sigma * math.sqrt(dt))
@@ -5844,8 +5886,13 @@ class Option(object):
         # print("\noption_price_c=", option_price_c, "\noption_price_p=", option_price_p, "\n")
 
         # Calculate option price at each step backward through the tree
+
+        # for j in range(10 - 1, -1, -1):
+        #     print("j=", j)
+
         for j in range(n - 1, -1, -1):
             for i in range(j + 1):
+                # print(j, i, j-i)
                 # print("j", j, "i", i, "CV=", round(100*(S * (u ** (j-i)) * (d ** i) - K))/100,
                 #       "OV=", round(100*(math.exp(-r * dt) * (p * option_price_c[i] + (1 - p) * option_price_c[i + 1])))/100,
                 #       "max", round(100*(max(S * (u ** (j-i)) * (d ** i) - K,
@@ -5867,7 +5914,7 @@ class Option(object):
         return round(100*option_price_c[0])/100, round(100*option_price_p[0])/100
 
     def put_call(self, dic):
-        print('90-90-90-11 data_transfer_to_process_fact 90055-300 dic\n', '-'*100, '\n', dic, '\n', '-'*100)
+        # print('90-90-90-11 data_transfer_to_process_fact 90055-300 dic\n', '-'*100, '\n', dic, '\n', '-'*100)
         app_ = dic["app"]
 
         # Example usage:
@@ -5879,11 +5926,202 @@ class Option(object):
         n = int(dic["n"])  # Number of time steps
 
         call_option_price, put_option_price = self.binomial_american_call_option(S, K, T, r, sigma, n)
-        print("\n", f"The price of the American call option is: {call_option_price:.2f}")
-        print(f"The price of the American put option is: {put_option_price:.2f}")
+        # print("\n", f"The price of the American call option is: {call_option_price:.2f}")
+        # print(f"The price of the American put option is: {put_option_price:.2f}")
 
         result = {"status": "ok", "data": {"call_option_price":call_option_price, "put_option_price":put_option_price}}
         return result
+
+    def range_put_call(self, dic):
+        print('90-90-90-222 range_put_call 90055-300 dic\n', '-'*100, '\n', dic, '\n', '-'*100)
+
+        spread = float(dic["spread"])
+        # T = int(dic["T"])
+        app_ = dic['app']
+        K = float(dic["K"])
+        r_ = float(dic["r"])  # Risk-free interest rate
+        sigma_ = float(dic["sigma"])  # Volatility
+        n_ = int(dic["n"])
+        inner_range = int(dic["inner_range"])
+        range_ = int(dic["range"])
+        range_bin = float(dic["range_bin"])
+        S = int(dic["S"])  # Current stock price
+
+        def binomial_price_probability(S, T, r, sigma, n):
+            dt = T / n
+            u = math.exp(sigma * math.sqrt(dt))
+            d = 1 / u
+            p = (math.exp(r * dt) - d) / (u - d)
+
+            price = []
+            dist = []
+            for i in range(n+1):
+                price.appande(S * (u ** (n - i)) * (d ** i))
+                dist.appande(binom.pmf(i, n, p))
+
+            return {"price":price, "dist":dist}
+
+        def binomial_american_call_option(S, K, T, r, sigma, n):
+            dt = T / n
+            u = math.exp(sigma * math.sqrt(dt))
+            d = 1 / u
+            p = (math.exp(r * dt) - d) / (u - d)
+            option_price_c = [max(0, S * (u ** (n - i)) * (d ** i) - K) for i in range(n + 1)]
+
+            for j in range(n - 1, -1, -1):
+                for i in range(j + 1):
+                    option_price_c[i] = max(S * (u ** (j - i)) * (d ** i) - K,
+                                            math.exp(-r * dt) * (
+                                                        p * option_price_c[i] + (1 - p) * option_price_c[i + 1]))
+
+            return round(100 * option_price_c[0]) / 100
+
+        def binomial_american_put_option(S, K, T, r, sigma, n):
+            dt = T / n
+            u = math.exp(sigma * math.sqrt(dt))
+            d = 1 / u
+            p = (math.exp(r * dt) - d) / (u - d)
+
+            option_price_p = [max(0, K - S * (u ** (n - i)) * (d ** i)) for i in range(n + 1)]
+
+            for j in range(n - 1, -1, -1):
+                for i in range(j + 1):
+
+                    option_price_p[i] = max(K - S * (u ** (j - i)) * (d ** i),
+                                            math.exp(-r * dt) * (
+                                                        p * option_price_p[i] + (1 - p) * option_price_p[i + 1]))
+
+            return round(100 * option_price_p[0]) / 100
+
+        def sub_(l1, l2):
+            return [round(100*(l1[i] - l2[i]))/100 for i in range(len(l1))]
+        def add_(l1, l2):
+            return [round(100*(l1[i] + l2[i]))/100 for i in range(len(l1))]
+
+        def calc_(t, S, K, T, r, sigma, inner_range, spread, n):
+            # print("1 of 5")
+            # cy_ = [binomial_american_call_option(s, K-inner_range-spread, T, r, sigma, n) for s in ar]
+            # print("2 of 5")
+            # cy = [binomial_american_call_option(s, K-inner_range, T, r, sigma, n) for s in ar]
+            # print("3 of 5")
+            # py_ = [binomial_american_put_option(s, K+inner_range+spread, T, r, sigma, n) for s in ar]
+            # print("4 of 5")
+            # py = [binomial_american_put_option(s, K+inner_range, T, r, sigma, n) for s in ar]
+            # #
+            for s in ar:
+                cy_ = binomial_american_call_option(s, K-inner_range-spread, T, r, sigma, n)
+                cy = binomial_american_call_option(s, K - inner_range, T, r, sigma, n)
+                py_ = binomial_american_put_option(s, K + inner_range + spread, T, r, sigma, n)
+                py = binomial_american_put_option(s, K + inner_range, T, r, sigma, n)
+                print(t, inner_range, spread, s, cy_, cy, py_, py)
+
+
+            # csy = sub_(cy_, cy)
+            # psy = sub_(py_, py)
+            # print("5 of 5")
+            # two_strategy = add_(psy, csy)
+            #
+            # result={"x": list(ar), "py_": py_, "py": py, "psy": psy, "cy":cy, "cy_":cy_, "csy":csy,
+            #         "two_strategy": two_strategy}
+            # # print(result)
+            # df = pd.DataFrame.from_dict(result)
+            # # print(df,"\n")
+            #
+            # print("5.1 of 5")
+            #
+            # print(df[df["x"]==S]["two_strategy"])
+            # df["profit"] = round(100*(float(df[df["x"]==S]["two_strategy"])-df["two_strategy"]))/100
+            # print(df)
+            # return df
+
+        nr = int(range_/range_bin)
+        lr = list(range(nr, -nr, -1))
+        ar = [S+lr[i]*range_bin for i in lr]
+        ar.sort(key=float)
+        # ar = range(S+range_, S - range_, -5)
+        # print(list(ar))
+
+        model_company = apps.get_model(app_label=app_, model_name="XBRLCompanyInfo")
+        company_obj = model_company.objects.get(company_name='^GSPC')
+        print(company_obj)
+        model_ = apps.get_model(app_label=app_, model_name="FactSimulation")
+        n_ = 390
+        for t in range(1, n_+1, 1):
+            print(t)
+            T = t/n_
+            r = T*r_
+            sigma = sigma_ * math.sqrt(T)
+            # if t in [1,n_]:
+            print(t, T)
+            # calc_(t, S, K, T, r, sigma, inner_range, spread, n_)
+            for s in ar:
+                cy_ = binomial_american_call_option(s, K - inner_range - spread, T, r, sigma, n_)
+                cy = binomial_american_call_option(s, K - inner_range, T, r, sigma, n_)
+                py_ = binomial_american_put_option(s, K + inner_range + spread, T, r, sigma, n_)
+                py = binomial_american_put_option(s, K + inner_range, T, r, sigma, n_)
+                print(t, inner_range, spread, s, cy_, cy, py_, py)
+                obj, _ = model_.objects.get_or_create(company=company_obj, time=t, spread=spread,
+                                                      inner_range=inner_range, stock_price=s)
+                obj.ch = cy_
+                obj.c = cy
+                obj.ph = py_
+                obj.p = py
+                obj.save()
+
+        t1 = 240
+        t2 = 300
+        T = (t2-t1)/n_
+        sigma = sigma_ * math.sqrt(T)
+        r = T*r_
+        b = binomial_price_probability(S, T, r, sigma, n_)
+        print(b)
+
+        return {"status": "ok"}
+
+    def get_two_spread_data(self, dic):
+        print('80-80-80-333 get_two_spread_data 90055-300 dic\n', '-'*100, '\n', dic, '\n', '-'*100)
+        app_ = dic["app"]
+        model_ = apps.get_model(app_label=app_, model_name="FactSimulation")
+        spread_=float(dic["spread"])
+        inner_range_ = float(dic["inner_range"])
+        S_=float(dic["S"])
+        ticker_=str(dic["ticker"])
+
+        sq = model_.objects.filter(company__ticker=ticker_, spread=spread_,
+                                   inner_range=inner_range_).all().values('time', 'stock_price', 'c', 'ch', 'p', 'ph')
+        df = pd.DataFrame(list(sq))
+
+        df["cs"] = df["ch"] - df["c"]
+        df["ps"] = df["ph"] - df["p"]
+        df["cps"] = df["cs"] + df["ps"]
+        # print(df)
+        r = {}
+        n_ = 390
+        for i in range(n_, 0, -1):
+            df_ = df[df["time"]==i]
+            df_ = df_.drop('time', 1)
+            # print(df_)
+            cps_s = float(df_[df_["stock_price"]==S_]["cps"])
+            df_["profit"] = cps_s
+            df_ = df_.apply(pd.to_numeric)
+            df_["profit"] = round(100*(df_["profit"] - df_["cps"]))/100
+            # print(df_)
+            k = n_-i+1
+            # print(k)
+            stock_price = []
+            if i == 1:
+                for index, row in df_.iterrows():
+                    stock_price.append(row["stock_price"])
+            r[k] = {"c":[], "ch":[], "p":[], "ph":[], "cs":[], "ps":[], "cps":[], "profit":[]}
+            l_ = list(df_.columns.values)
+            l_.remove('stock_price')
+            for index, row in df_.iterrows():
+                for c in l_:
+                    # print(c, row[c])
+                    r[k][c].append(row[c])
+        # print(r)
+        return {"status": "ok", "data": r, "stock_price":stock_price}
+
 
     def put_call_spread(self, dic):
         print('90-90-90-11 data_transfer_to_process_fact 90055-300 dic\n', '-'*100, '\n', dic, '\n', '-'*100)
@@ -5896,6 +6134,7 @@ class Option(object):
         T = 1  # Time to expiration (in years)
         r = float(dic["r"])  # Risk-free interest rate
         sigma = float(dic["sigma"])  # Volatility
+        gS = float(dic["gS"])  # change in stock price
         n = int(dic["n"])  # Number of time steps
 
         # call
@@ -5903,12 +6142,12 @@ class Option(object):
         call_option_price_atm, put_option_price = self.binomial_american_call_option(S, S, T, r, sigma, n)
         spread_price_c_0 = call_option_price_itm-call_option_price_atm
         # up
-        call_option_price_itm, put_option_price = self.binomial_american_call_option(S+spread, S-spread, T, r, sigma, n)
-        call_option_price_atm, put_option_price = self.binomial_american_call_option(S+spread, S, T, r, sigma, n)
+        call_option_price_itm, put_option_price = self.binomial_american_call_option(S+gS, S-spread, T, r, sigma, n)
+        call_option_price_atm, put_option_price = self.binomial_american_call_option(S+gS, S, T, r, sigma, n)
         spread_price_c_u = call_option_price_itm-call_option_price_atm
         # down
-        call_option_price_itm, put_option_price = self.binomial_american_call_option(S-spread, S-spread, T, r, sigma, n)
-        call_option_price_atm, put_option_price = self.binomial_american_call_option(S-spread, S, T, r, sigma, n)
+        call_option_price_itm, put_option_price = self.binomial_american_call_option(S-gS, S-spread, T, r, sigma, n)
+        call_option_price_atm, put_option_price = self.binomial_american_call_option(S-gS, S, T, r, sigma, n)
         spread_price_c_d = call_option_price_itm-call_option_price_atm
 
         print("Call", "0=", round(100*spread_price_c_0)/100, "u=", round(100*spread_price_c_u)/100, "d=", round(100*spread_price_c_d)/100)
@@ -5918,12 +6157,12 @@ class Option(object):
         call_option_price, put_option_price_atm = self.binomial_american_call_option(S, S, T, r, sigma, n)
         spread_price_p_0 = put_option_price_itm - put_option_price_atm
         # up
-        call_option_price, put_option_price_itm = self.binomial_american_call_option(S + spread, S + spread, T, r, sigma, n)
-        call_option_price, put_option_price_atm = self.binomial_american_call_option(S + spread, S, T, r, sigma, n)
+        call_option_price, put_option_price_itm = self.binomial_american_call_option(S + gS, S + spread, T, r, sigma, n)
+        call_option_price, put_option_price_atm = self.binomial_american_call_option(S + gS, S, T, r, sigma, n)
         spread_price_p_u = put_option_price_itm - put_option_price_atm
         # down
-        call_option_price, put_option_price_itm = self.binomial_american_call_option(S - spread, S + spread, T, r, sigma, n)
-        call_option_price, put_option_price_atm = self.binomial_american_call_option(S - spread, S, T, r, sigma, n)
+        call_option_price, put_option_price_itm = self.binomial_american_call_option(S - gS, S + spread, T, r, sigma, n)
+        call_option_price, put_option_price_atm = self.binomial_american_call_option(S - gS, S, T, r, sigma, n)
         spread_price_p_d = put_option_price_itm - put_option_price_atm
 
         print("Put ", "0=", round(100*spread_price_p_0)/100, "u=", round(100*spread_price_p_u)/100, "d=", round(100*spread_price_p_d)/100)

@@ -1264,6 +1264,7 @@ class BasePotentialAlgo(object):
         first_low_group = 0.4
         step = 0.05
         n_step = int(first_high_group/step)
+
         #
         u_method = "median"
         l_method = "median"
@@ -1329,7 +1330,7 @@ class BasePotentialAlgo(object):
                 # print("h", 100-h)
                 # log_debug("h:" + str(100-h))
                 h_ = (100 - h)/100
-                ## print("-"*30, "\n  h_=", h_, "l_=", l_,"\n","-"*30)
+                # print("-"*30, "\n  h_=", h_, "l_=", l_,"\n","-"*30)
 
                 ll = [h / 100, (100 - l) / 100]
                 n = df.shape[0]
@@ -1417,8 +1418,14 @@ class BasePotentialAlgo(object):
                         # print("l", l_, "li",  li_, "n_y_l", n_y_l)
                         index_ = "h-"+str(h_) + "_" + "l-" + str(l_) + "_" + "hi-" + str(hi_) + "_" + "li-" + str(li_)
                         # print("-"*75, "\nindex", index_, "\n", "-"*40)
+                        # print(dn_)
+                        # print(df_l_e)
+                        # print(n_y_l,df_l_e.shape[1])
+                        if df_l_e.shape[0] <= n_y_l:
+                            n_y_l -= 1
                         y_min_cut = df_l_e.iloc[n_y_l][dn_]
                         dic_hp = {"y": {"max_cut": float(y_max_cut), "min_cut": float(y_min_cut)}}
+                        # print('T122')
                         for gene_num in range(len(df_h_e.columns)-1, 1, -1):
                             # l
                             df_lx = df_l_e[[gene_num]].sort_values(gene_num, ascending=False)
@@ -1429,9 +1436,15 @@ class BasePotentialAlgo(object):
                                 # if nn__ < 10:
                                 #     print("Internal Loop: Low range, variable(gene)=", gene_num, "\nsorted values:\n", df_lx)
                             # n_x = len(df_lx.index) - nli_ * step_num - 1
+                            # print(nli_, gene_num)
                             n_x = nli_ * step_num
                             # print("n_x=", n_x)
+                            # print(df_lx)
                             # print(df_lx.index)
+
+                            if df_lx.shape[0] <= n_x:
+                                n_x -= 1
+                            # print(df_lx.iloc[n_x])
                             lx = df_lx.iloc[n_x][gene_num]
                             li = pd.DataFrame(df_lx.iloc[n_x])
                             # print("Low person index=", li.columns[0], "value=", lx, "\n", "-"*30)
@@ -1448,6 +1461,7 @@ class BasePotentialAlgo(object):
                             hx = df_hx.iloc[n_x][gene_num]
                             hi__ = pd.DataFrame(df_hx.iloc[n_x])
                             # print("High person index=", hi__.columns[0], "value=", hx, "\n", "-"*30)
+
                             df_hx = df_hx.set_index('index')
 
                             median_hx = float(df_hx.median())
@@ -1484,7 +1498,11 @@ class BasePotentialAlgo(object):
                             temp_var_obj.amount=float(sim.iloc[0][j])
                             temp_var_obj.sign=ll_dic_.iloc[0][j]
                             temp_var_obj.save()
-        print("Done normalize_similarity")
+                            # print("Saved temp_var_obj.save()")
+                        # print('AAA')
+                    # print('AAA1')
+                # print('AAA2')
+        # print("Done normalize_similarity")
         result = {"status": "ok"}
         log_debug("Done normalize_similarity")
         return result
@@ -1613,7 +1631,7 @@ class BasePotentialAlgo(object):
         # d = df1_similarity_.copy()
         # d[d >= 0.7] = 1
         # print(d)
-        # print(d.sum())
+        # print(d.sum());
         df1_similarity_ = df1_similarity_.reset_index()
         # print("df1_similarity_\n", df1_similarity_)
         log_debug("create_similarity_excel 1")
@@ -1722,8 +1740,8 @@ class BasePotentialAlgo(object):
             mi_=str(mi)
             if mi_ == dn_:
                 mi_="y"
-            min_cut = mm[mi_]["min_cut"]
-            max_cut = mm[mi_]["max_cut"]
+            min_cut = float(mm[mi_]["min_cut"])
+            max_cut = float(mm[mi_]["max_cut"])
             if min_cut == -1:
                 continue
             dff = pd.DataFrame(df.loc[:,mi].astype(float), index=df.index.copy())
@@ -1773,6 +1791,7 @@ class BasePotentialAlgo(object):
         for c in df_n1.columns:
             cc[c] = str(self.measures_name[self.measures_name['id']==c].iloc[0][self.measure_name_]).strip()
         df.rename(columns=cc, inplace=True)
+        df = df.apply(pd.to_numeric, errors='coerce')
         df_n1.rename(columns=cc, inplace=True)
         df_n2.rename(columns=cc, inplace=True)
         # print(df_n1, "\n", df_n2)

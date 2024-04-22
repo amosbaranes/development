@@ -1592,3 +1592,26 @@ class TwoSpreadStrategyDetails(TruncateTableMixin, models.Model):
 
     def __str__(self):
         return str(self.idx)
+
+# ---------- Theoretical Simulation ----------------
+
+class FactSimulation(TruncateTableMixin, models.Model):
+    class Meta:
+        verbose_name = _('FactSimulation')
+        verbose_name_plural = _('FactSimulations')
+        ordering = ['time', 'stock_price']
+
+    company = models.ForeignKey(XBRLCompanyInfo, on_delete=models.CASCADE, default=None, blank=True, null=True,
+                                related_name='company_fact_simulation')
+
+    time = models.PositiveSmallIntegerField(default=1)
+    spread = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    inner_range = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    stock_price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    c = models.DecimalField(max_digits=8, decimal_places=2, default=0)
+    ch = models.DecimalField(max_digits=8, decimal_places=2, default=0)
+    p = models.DecimalField(max_digits=8, decimal_places=2, default=0)
+    ph = models.DecimalField(max_digits=8, decimal_places=2, default=0)
+
+    def __str__(self):
+        return str(self.stock_price)

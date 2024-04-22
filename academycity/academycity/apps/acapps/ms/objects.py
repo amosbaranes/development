@@ -235,15 +235,13 @@ class MSDataProcessing(BaseDataProcessing, BasePotentialAlgo, MSAlgo):
                         # pass
                         print("Error: ", row["ID"], ex)
 
-            if f == "Model":
+            if f == "Dependent":
                 # print(columns[4:])
                 for p  in columns[4:]:
                     gene_obj, is_created = model_gene_dim.objects.get_or_create(gene_group_dim=gene_group_obj,gene_code=p)
                     # print('\ngene_obj\n', gene_obj,'\n')
                     for index, row in df.iterrows():
                         person_obj = model_person_dim.objects.get(person_code=row["ID"])
-                        person_obj.person_group_dim = pg_obj
-                        person_obj.save()
                         fact_obj, is_created = model_fact.objects.get_or_create(gene_dim=gene_obj, person_dim=person_obj)
                         fact_obj_normalized, is_created = model_fact_normalized.objects.get_or_create(gene_dim=gene_obj,
                                                                                                      person_dim=person_obj)
@@ -251,6 +249,12 @@ class MSDataProcessing(BaseDataProcessing, BasePotentialAlgo, MSAlgo):
                         fact_obj.save()
                         fact_obj_normalized.amount = row[p]
                         fact_obj_normalized.save()
+
+            if f == "Model":
+                for index, row in df.iterrows():
+                    person_obj = model_person_dim.objects.get(person_code=row["ID"])
+                    person_obj.person_group_dim = pg_obj
+                    person_obj.save()
 
         result = {"status": "ok"}
         return result

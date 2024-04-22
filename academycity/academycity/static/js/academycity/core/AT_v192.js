@@ -37,8 +37,9 @@ function AdvancedTabsManager(dic=null)
                                                                        "month","number","password","radio","range","reset",
                                                                        "search","submit","tel","time","url","week"],
                                                                "foreign_table":[],
-                                                               "dependent":[]},
-                                                 "functions":["onchange", "onkeyup", "onkeydown"]},
+                                                               "dependent":[],
+                                                               "min":[],"max":[],"step":[]},
+                                                 "functions":["onchange","oninput", "onkeyup", "onkeydown"]},
                                         "Select":{"title":"Select", "width":5,
                                                   "setting": {"options":[], "global_adjective":[], "app_adjective":[],
                                                               "index":["", "id", "order"],
@@ -9621,6 +9622,35 @@ const list_variance = (arr = []) => {if(!arr.length){return 0};
 };
 
 const list_std = function(arr = []){return Math.round(100*Math.sqrt(list_variance(arr)))/100};
+
+// Binomial --
+const binomial=function(n,p,k){var c=Math.pow(p, k)*Math.pow(1-p, n-k);
+//alert("k="+k + "  n="+n +"   p="+p +"   c="+c)
+if(n>180 && ((k > 150) )){
+  var nn=10;var h=Math.round(k/nn)
+  for(var x=n-h+1;x<=n;x++){c=c*x;};
+    //alert("A cc1="+k+" "+c)
+  for(var z=1;z<h;z++){c=c/z;};
+    //alert("cc2="+c)
+  for(var g=1;g<nn-1;g++){for(var x=n-(g+1)*h+1;x<n-g*h+1;x++){c=c*x;}; for(var z=g*h;z<(g+1)*h;z++){c=c/z;};}
+    //alert("ccccc = "+c)
+  for(var x=n-k+1;x<n-(nn-1)*h+1;x++){c=c*x;};
+    //alert("cc12="+c)
+  for(var z=(nn-1)*h;z<=k;z++){c=c/z;};
+    //alert("c3="+c)
+} else{
+    for(var x=n-k+1;x<=n;x++){c=c*x;};for(var z=1;z<=k;z++){c=c/z;};
+}
+return c;}
+
+//var s=0;
+//var n=1000
+// var l=[]
+// for(var i=0;i<=1000;i++)
+// {var b=binomial(n,0.50068,i);s+=b;l.push(b)}
+//
+//alert(n+"\n\n"+s+"\n\n"+l)
+
 
 
 

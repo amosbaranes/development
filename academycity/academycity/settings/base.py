@@ -197,6 +197,8 @@ acApps = [
     'academycity.apps.acapps.fuzzyforcast',
     'academycity.apps.acapps.mm',
     'academycity.apps.acapps.ms',
+    'academycity.apps.acapps.nu',
+    'academycity.apps.acapps.op',
     'academycity.apps.acapps.avi',
     'academycity.apps.acapps.avia',
     'academycity.apps.acapps.avib',
