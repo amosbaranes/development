@@ -21,3 +21,25 @@ class FoodDim(TruncateTableMixin, models.Model):
     def __str__(self):
         return str(self.food_name)
 
+
+class VitaminDim(TruncateTableMixin, models.Model):
+    class Meta:
+        verbose_name = 'vitamindim'
+        verbose_name_plural = 'vitamindims'
+
+    vitamin_name = models.CharField(max_length=100, default='', blank=True, null=True)
+
+    def __str__(self):
+        return str(self.food_name)
+
+
+class VitaminFact(TruncateTableMixin, models.Model):
+    vitamin_dim = models.ForeignKey(VitaminDim, on_delete=models.CASCADE, default=1,
+                                    related_name='vitamin_dim_fact')
+    food_dim = models.ForeignKey(FoodDim, on_delete=models.CASCADE, default=1,
+                                 related_name='food_dim_fact')
+    amount = models.DecimalField(max_digits=16, decimal_places=2, default=0, blank=True, null=True)
+
+    def __str__(self):
+        return str(self.vitamin_dim) + " - " + str(self.food_dim) + ": " + str(self.amount)
+
