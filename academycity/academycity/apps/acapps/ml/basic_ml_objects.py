@@ -258,6 +258,8 @@ class BasePotentialAlgo(object):
             self.value_column = dic["value"]
         except Exception as ex:
             pass
+
+        fact_model_name = "factnormalized"
         try:
             fact_model_name = dic["fact_model"]
             self.model_fact = apps.get_model(app_label=self.app, model_name=fact_model_name)
@@ -1123,7 +1125,7 @@ class BasePotentialAlgo(object):
         def normalize(n_dic):
             n_df = n_dic["df"]
             # print("A n_df\n", n_df)
-            n_df = n_df.set_index('person_dim')
+            n_df = n_df.set_index(self.entity_name + '_dim')
             # print("="*50, "\n", "="*50, "\n", "n_df\n", n_df)
             mm = n_dic["mm"]
             index = n_dic["index"]
@@ -1165,15 +1167,13 @@ class BasePotentialAlgo(object):
                 df_f[df_f < 0] = 0
                 df_f[df_f > 1] = 1
                 df_n2[mi] = df_f.copy()
-
             # self.to_save_normalize.append((df_n1.copy(), "n1_" + index))
             # self.to_save_normalize.append((df_n2.copy(), "n2_" + index))
-
             return df_n1.copy(), df_n2.copy()
 
         def similarity(index, n_df, dn):
             # print("="*50, "\nSIM_SIM for index = ", index, "\n", n_df)
-            self.to_save_similarity.append((n_df.copy(), "n_" + index))
+            # self.to_save_similarity.append((n_df.copy(), "n_" + index))
             df_d = pd.DataFrame()
             df_r = pd.DataFrame()
             df_ = pd.DataFrame()
@@ -1192,8 +1192,8 @@ class BasePotentialAlgo(object):
             dfrm = df_r.mean()
             # print("df_d\n", df_d, "\n", "df_r\n", df_r)
 
-            self.to_save_similarity.append((df_d.copy(), "df_d_" + index))
-            self.to_save_similarity.append((df_r.copy(), "df_r_" + index))
+            # self.to_save_similarity.append((df_d.copy(), "df_d_" + index))
+            # self.to_save_similarity.append((df_r.copy(), "df_r_" + index))
 
             # print("sd=\n", sd, "\nsr=\n", sr, "\ndfdm=\n", dfdm, "\ndfrm=\n", dfrm)
 
@@ -1227,7 +1227,7 @@ class BasePotentialAlgo(object):
 
             # print("df_\n", df_)
 
-            self.to_save_similarity.append((df_.copy(), "df_" + index))
+            # self.to_save_similarity.append((df_.copy(), "df_" + index))
             # print("lls\n", lls, "\nll_dic\n", ll_dic)
 
             # print(dfdm_, "\n", dfrm_)
@@ -1247,57 +1247,60 @@ class BasePotentialAlgo(object):
             # print("df_results\n", df_results)
 
             df_results_dic = pd.DataFrame([ll_dic], columns=df_.columns, index=[index])
-            self.to_save_similarity.append((df_results.copy(), "df_results_" + str(index)))
+            # self.to_save_similarity.append((df_results.copy(), "df_results_" + str(index)))
             return df_results, df_results_dic, index
 
         # # #
-        # print("90099-99-1000 BasePotentialAlgo normalize_similarity: \n", dic, "\n'", "="*100)
+        print("90099-99-1000 BasePotentialAlgo normalize_similarity: \n", dic, "\n'", "="*100)
 
         log_debug("90099-99-1000 BasePotentialAlgo normalize_similarity:" + str(dic))
 
         method = dic["method"]
         dn_ = int(dic["dn"])
         cn = int(dic["cn"])  # 60406530
+
         log_debug("cn:" + str(cn))
         #
         first_high_group = 0.4
         first_low_group = 0.4
         step = 0.05
         n_step = int(first_high_group/step)
-
         #
         u_method = "median"
         l_method = "median"
         if method == "min":
             u_method = "min"
             l_method = "max"
-
         # ----
-        model_var = apps.get_model(app_label=self.app, model_name=self.var_name + 'dim')
+        model_name = self.var_name + 'dim'
+        model_var = apps.get_model(app_label=self.app, model_name=model_name)
         # ----
         model_temp = apps.get_model(app_label=self.app, model_name="temp")
         model_temp_var = apps.get_model(app_label=self.app, model_name="tempvar")
         # ----
-        model_fact = apps.get_model(app_label=self.app, model_name="factnormalized")
-        qs = model_fact.objects.filter(person_dim__person_group_dim__group_name="Model")
-        df = pd.DataFrame(list(qs.values("gene_dim", "person_dim", "amount")))
-
         try:
-            df = df.pivot(index="person_dim", columns='gene_dim', values='amount')
+            qs = self.model_fact.objects.filter(person_dim__person_group_dim__group_name="Model")
+        except Exception as ex:
+            qs = self.model_fact.objects.all()
+
+        df = pd.DataFrame(list(qs.values(self.var_name+"_dim", self.entity_name+"_dim", "amount")))
+        try:
+            df = df.pivot(index=self.entity_name + "_dim", columns=self.var_name+'_dim', values='amount')
             df = df.sort_values(dn_, ascending=False)
             df = df.reset_index()
             # self.to_save_normalize.append((df.copy(), 'Data'))
         except Exception as ex:
             print(ex)
 
-        # print(df)
+        print("BB\n", df)
+
         # print(df.columns)
+        print(df.head(56),"\n", df.tail(56))
+        print("'", "="*50)
+        print(df.columns[2:], len(df.columns[2:]))
+        print("'", "="*50)
+        return
 
-        # print(df.head(56),"\n", df.tail(56))
-        # print("'", "="*50)
-        # print(df.columns[2:], len(df.columns[2:]))
-
-        # print("'", "="*50)
         step_num = int(round(df.shape[0]*step))
         # print("step_num=", step_num)
         # print("'", "="*30)
@@ -1415,7 +1418,9 @@ class BasePotentialAlgo(object):
                         nli_ += 1
                         li_ = round(li - step*100)/100
                         n_y_l = int(step_num*((l_-li_)/step))
+
                         # print("l", l_, "li",  li_, "n_y_l", n_y_l)
+
                         index_ = "h-"+str(h_) + "_" + "l-" + str(l_) + "_" + "hi-" + str(hi_) + "_" + "li-" + str(li_)
                         # print("-"*75, "\nindex", index_, "\n", "-"*40)
                         # print(dn_)
@@ -1425,7 +1430,7 @@ class BasePotentialAlgo(object):
                             n_y_l -= 1
                         y_min_cut = df_l_e.iloc[n_y_l][dn_]
                         dic_hp = {"y": {"max_cut": float(y_max_cut), "min_cut": float(y_min_cut)}}
-                        # print('T122')
+                        print('T122')
                         for gene_num in range(len(df_h_e.columns)-1, 1, -1):
                             # l
                             df_lx = df_l_e[[gene_num]].sort_values(gene_num, ascending=False)
@@ -1438,13 +1443,16 @@ class BasePotentialAlgo(object):
                             # n_x = len(df_lx.index) - nli_ * step_num - 1
                             # print(nli_, gene_num)
                             n_x = nli_ * step_num
-                            # print("n_x=", n_x)
-                            # print(df_lx)
-                            # print(df_lx.index)
+
+                            print("="*10, "\ngene_num=", gene_num, "\n n_x=", n_x)
+                            print(df_lx)
+                            print(df_lx.index)
 
                             if df_lx.shape[0] <= n_x:
                                 n_x -= 1
-                            # print(df_lx.iloc[n_x])
+
+                            print(df_lx.iloc[n_x])
+
                             lx = df_lx.iloc[n_x][gene_num]
                             li = pd.DataFrame(df_lx.iloc[n_x])
                             # print("Low person index=", li.columns[0], "value=", lx, "\n", "-"*30)
@@ -1466,7 +1474,8 @@ class BasePotentialAlgo(object):
 
                             median_hx = float(df_hx.median())
                             median_lx = float(df_lx.median())
-                            # print("Low median_lx", median_lx, " High median_hx", median_hx)
+                            print("\nLow median_lx", median_lx, " High median_hx", median_hx, "\nlx=", lx, "\n hx=", hx)
+
                             if median_lx > median_hx:
                                     # print("Convert Groups:\n AA max_cut", lx, "min_cut", hx)
                                 n_x_l = len(df_lx.index) - nli_ * step_num - 1
@@ -1475,13 +1484,18 @@ class BasePotentialAlgo(object):
                                 hx_ = df_hx.iloc[n_x_h][gene_num]
                                 lx = hx_
                                 hx = lx_
+                            print("\n", lx, hx)
+                            print("l", l_, "li",  li_, "n_y_l", n_y_l)
                             if lx > hx:
                                 dic_hp[gene_num] = {"max_cut": -1, "min_cut": -1}
                             else:
                                 dic_hp[gene_num] = {"max_cut": float(hx), "min_cut": float(lx)}
+                            print("="*10, "\n")
+                        print('T133')
                         ndic = {"df": df, "index": index_, "mm": dic_hp}
                         ndf_n1, ndf_n2 = normalize(ndic)
                         # print("ndf_n1\n", ndf_n1, "\nndf_n2\n", ndf_n2)
+
                         sim, ll_dic_, idx = similarity(index = index_, n_df = ndf_n2, dn=dn_)
 
                         temp_obj, is_created = model_temp.objects.get_or_create(idx=idx)
@@ -1489,6 +1503,7 @@ class BasePotentialAlgo(object):
                         temp_obj.dic_hp = dic_hp
                         temp_obj.save()
                         # print("Saved = " + str(idx) )
+
                         log_debug("Saved = " + str(idx))
                         for j in sim.columns:
                             var_obj = model_var.objects.get(id=j)
@@ -1499,9 +1514,9 @@ class BasePotentialAlgo(object):
                             temp_var_obj.sign=ll_dic_.iloc[0][j]
                             temp_var_obj.save()
                             # print("Saved temp_var_obj.save()")
-                        # print('AAA')
-                    # print('AAA1')
-                # print('AAA2')
+                        print('AAA')
+                    print('AAA1')
+                print('AAA2')
         # print("Done normalize_similarity")
         result = {"status": "ok"}
         log_debug("Done normalize_similarity")
@@ -1720,8 +1735,7 @@ class BasePotentialAlgo(object):
         # print(ll)
         # ----
         try:
-            model_fact = apps.get_model(app_label=self.app, model_name="factnormalized")
-            qs = model_fact.objects.filter(person_dim__person_group_dim__group_name="Model", gene_dim__gene_code__in=ll)
+            qs = self.model_fact.objects.filter(person_dim__person_group_dim__group_name="Model", gene_dim__gene_code__in=ll)
             df = pd.DataFrame(list(qs.values("gene_dim", "person_dim", "amount")))
             df = df.pivot(index="person_dim", columns='gene_dim', values='amount')
         except Exception as ex:
@@ -2010,8 +2024,8 @@ class BasePotentialAlgo(object):
         model_name_ = dic["dimensions"]["measure_dim"]["model"]
         model_measure_dim = apps.get_model(app_label=self.app, model_name=model_name_)
 
-        model_name_ = dic["fact_model"]
-        model_fact = apps.get_model(app_label=self.app, model_name=model_name_)
+        # model_name_ = dic["fact_model"]
+        # model_fact = apps.get_model(app_label=self.app, model_name=model_name_)
 
         t = model_time_dim.objects.get(id=year)
         g, is_created = model_group_measure_dim.objects.get_or_create(group_name=group)
@@ -2020,7 +2034,7 @@ class BasePotentialAlgo(object):
         qs = model_entity_dim.objects.all()
         for e in qs:
             # print(e)
-            s = 'model_fact.objects.get_or_create(time_dim=t, ' + self.entity_name + '_dim=e, measure_dim=m)'
+            s = 'self.model_fact.objects.get_or_create(time_dim=t, ' + self.entity_name + '_dim=e, measure_dim=m)'
             # print(s)
             ef, is_created = eval(s)
             ef.amount=1
