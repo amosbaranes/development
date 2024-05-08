@@ -91,13 +91,13 @@ class CovidDataProcessing(BaseDataProcessing, BasePotentialAlgo, CovidAlgo):
                 else:
                     group_obj, is_created = model_var_group_dim.objects.get_or_create(group_name='dep')
                 try:
-                    print(f_)
+                    # print(f_)
                     var_obj, is_created = model_var_dim.objects.get_or_create(var_code=f_)
                     var_obj.var_group_dim=group_obj
                     var_obj.var_code = f_
                     var_obj.save()
-                    print(group_obj, f_)
-                    print(var_obj)
+                    # print(group_obj, f_)
+                    # print(var_obj)
                 except Exception as ex:
                     print("Error 90121-300", ex)
 

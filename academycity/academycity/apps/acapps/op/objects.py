@@ -49,15 +49,20 @@ class OptionDataProcessing(BaseDataProcessing, BasePotentialAlgo, OptionAlgo):
         super().__init__(dic)
 
     def data_upload(self, dic):
-        print("90121-1: \n", "="*50, "\n", dic, "\n", "="*50)
+        # print("90121-1: \n", "="*50, "\n", dic, "\n", "="*50)
 
         try:
             app_ = dic["app"]
             file_path = self.upload_file(dic)["file_path"]
+            # print(file_path)
+
             ticker_=file_path.split("/")[-1].split(".")[0]
+            # print(ticker_)
+
             sheet_name = dic["sheet_name"]
             dic = dic["cube_dic"]
             # print('90121-3 dic', dic)
+
             model_company_info = apps.get_model(app_label=app_, model_name="companyinfo")
             company_obj, is_created = model_company_info.objects.get_or_create(ticker=ticker_)
             company_obj.company_name=ticker_
@@ -71,48 +76,37 @@ class OptionDataProcessing(BaseDataProcessing, BasePotentialAlgo, OptionAlgo):
         wb = load_workbook(filename=file_path, read_only=False)
         ws = wb[sheet_name]
         data = ws.values
+
         columns_ = next(data)[0:]   # Get the first line in file as a header line
         # print(columns_)
         # Create a DataFrame based on the second and subsequent lines of data
         df = pd.DataFrame(data, columns=columns_)
-        print(df)
-        print(df.columns)
+        # print(df)
+        # print(df.columns)
 
-        # for f_ in df.columns:
-        #     try:
-        #         print(f_)
-        #         var_obj, is_created = model_var_dim.objects.get_or_create(var_code=f_)
-        #         var_obj.var_group_dim=group_obj
-        #         var_obj.var_code = f_
-        #         var_obj.save()
-        #         print(group_obj, f_)
-        #         print(var_obj)
-        #     except Exception as ex:
-        #         print("Error 90121-300", ex)
-        #
-        #     for index, row in df.iterrows():
-        #         # print(row)
-        #         n_ = 0
-        #         entity_code_ = str(row[1]).strip()
-        #         # print("=" * 50)
-        #         try:
-        #             # print(entity_code_)
-        #             entity_obj, is_created = model_entity_dim.objects.get_or_create(entity_code=entity_code_)
-        #             if is_created:
-        #                 entity_obj.entity_code = entity_code_
-        #                 entity_obj.save()
-        #         except Exception as ex:
-        #             print("Error 90121-400", ex)
-        #         try:
-        #             v_ = float(str(row[f_]))
-        #             if v_ is not None and str(v_) != "nan":
-        #                 # print(row[columns[j]], float(str(row[columns[j]])))
-        #                 fact_obj, is_created = model_fact.objects.get_or_create(entity_dim=entity_obj,
-        #                                                                         var_dim=var_obj)
-        #                 fact_obj.amount = v_
-        #                 fact_obj.save()
-        #         except Exception as ex:
-        #             print("Error 90121-500", ex)
+        for index, row in df.iterrows():
+            # print(row)
+            n_ = 0
+            idx_ = str(row[0]).split("/")
+            idx_ = int(idx_[2])*10000+int(idx_[1])*100+int(idx_[0])
+
+            close_ = float(str(row[1]).replace('$', ''))
+            volume_ = int(str(row[2]))
+            open_ = float(str(row[3]).replace('$', ''))
+            high_ = float(str(row[4]).replace('$', ''))
+            low_ = float(str(row[5]).replace('$', ''))
+
+            # print("=" * 50)
+            try:
+                price_obj, is_created = model_stockpricesdays.objects.get_or_create(company=company_obj, idx=idx_)
+                price_obj.close = close_
+                price_obj.volume = volume_
+                price_obj.open = open_
+                price_obj.high = high_
+                price_obj.low = low_
+                price_obj.save()
+            except Exception as ex:
+                print("Error 90121-400", ex)
 
         wb.close()
 
@@ -120,6 +114,22 @@ class OptionDataProcessing(BaseDataProcessing, BasePotentialAlgo, OptionAlgo):
         print(result)
 
         return result
+
+    def processing(self, dic):
+        print("90300-1: \n", "="*50, "\n", dic, "\n", "="*50)
+
+        try:
+            app_ = dic["app"]
+            sigma_ = 10
+
+
+        except Exception as ex:
+            print("Error 90300-100", ex)
+        result = {"status": "ok", "sigma": sigma_}
+        print(result)
+
+        return result
+
 
 
 class Option(object):
@@ -157,7 +167,6 @@ class Option(object):
                                                     p * option_price_p[i] + (1 - p) * option_price_p[i + 1]))
 
         return round(100 * option_price_p[0]) / 100
-
 
     def test1(self, dic):
         print('90-90-90-11 data_transfer_to_process_fact 90055-300 dic\n', '-'*100, '\n', dic, '\n', '-'*100)
