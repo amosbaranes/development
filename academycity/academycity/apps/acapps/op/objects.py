@@ -69,17 +69,25 @@ class OptionDataProcessing(BaseDataProcessing, BasePotentialAlgo, OptionAlgo):
             df = yf.download(ticker_, start_date, end_date)
             df = df.drop('Close', 1).rename(columns={"Adj Close": "Close"})
             df = df.reset_index()
+            # print(df)
             for index, row in df.iterrows():
                 d = str(row["Date"]).split(" ")
                 dd = d[0].split("-")
                 idx_ = int(dd[0])*10000+int(dd[1])*100+int(dd[2])
+                # print(idx_)
+                open_ = float(row["Open"])
+                high_ = float(row["High"])
+                low_ = float(row["Low"])
+                close_ = float(row["Close"])
+                volume_ = int(int(row["Volume"])/1000)
+                # print(idx_, open_,high_,low_,close_,volume_)
                 try:
                     price_obj, is_created = model_stockpricesdays.objects.get_or_create(company=company_obj, idx=idx_)
-                    price_obj.open = float(row["Open"])
-                    price_obj.high = float(row["High"])
-                    price_obj.low = float(row["Low"])
-                    price_obj.close = float(row["Close"])
-                    price_obj.volume = int(row["Volume"])
+                    price_obj.open = open_
+                    price_obj.high = high_
+                    price_obj.low = low_
+                    price_obj.close = close_
+                    price_obj.volume = volume_
                     price_obj.save()
                 except Exception as ex:
                     print("Error 90121-400", ex)
