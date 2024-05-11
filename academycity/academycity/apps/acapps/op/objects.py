@@ -24,6 +24,9 @@ from sklearn.model_selection import cross_val_score
 from scipy import stats
 import joblib
 
+import yfinance as yf
+from datetime import datetime, timedelta
+
 """
  to_data_path_ is the place datasets are kept
  topic_id name of the chapter to store images
@@ -48,8 +51,48 @@ class OptionDataProcessing(BaseDataProcessing, BasePotentialAlgo, OptionAlgo):
     def __init__(self, dic):
         super().__init__(dic)
 
+    def get_stock_prices_days(self, dic):
+        print("90300-1: \n", "="*50, "\n", dic, "\n", "="*50)
+        ticker_ = dic["ticker"]
+        app_ = dic["app"]
+        model_company_info = apps.get_model(app_label=app_, model_name="companyinfo")
+        company_obj, is_created = model_company_info.objects.get_or_create(ticker=ticker_)
+        company_obj.company_name=ticker_
+        company_obj.save()
+        #
+        model_stockpricesdays = apps.get_model(app_label=app_, model_name="stockpricesdays")
+        #
+
+        try:
+            end_date = datetime.now()
+            start_date = end_date - timedelta(days=5000)
+            df = yf.download(ticker_, start_date, end_date)
+            df = df.drop('Close', 1).rename(columns={"Adj Close": "Close"})
+            df = df.reset_index()
+            for index, row in df.iterrows():
+                d = str(row["Date"]).split(" ")
+                dd = d[0].split("-")
+                idx_ = int(dd[0])*10000+int(dd[1])*100+int(dd[2])
+                try:
+                    price_obj, is_created = model_stockpricesdays.objects.get_or_create(company=company_obj, idx=idx_)
+                    price_obj.open = float(row["Open"])
+                    price_obj.high = float(row["High"])
+                    price_obj.low = float(row["Low"])
+                    price_obj.close = float(row["Close"])
+                    price_obj.volume = int(row["Volume"])
+                    price_obj.save()
+                except Exception as ex:
+                    print("Error 90121-400", ex)
+
+        except Exception as ex:
+            print("Error 111:", ex)
+
+        result = {"status": "ok"}
+        print(result)
+        return result
+
     def data_upload(self, dic):
-        # print("90121-1: \n", "="*50, "\n", dic, "\n", "="*50)
+        print("90121-1: \n", "="*50, "\n", dic, "\n", "="*50)
 
         try:
             app_ = dic["app"]
@@ -88,7 +131,7 @@ class OptionDataProcessing(BaseDataProcessing, BasePotentialAlgo, OptionAlgo):
             # print(row)
             n_ = 0
             idx_ = str(row[0]).split("/")
-            idx_ = int(idx_[2])*10000+int(idx_[1])*100+int(idx_[0])
+            idx_ = int(idx_[2])*10000+int(idx_[0])*100+int(idx_[1])
 
             close_ = float(str(row[1]).replace('$', ''))
             volume_ = int(str(row[2]))
@@ -115,11 +158,67 @@ class OptionDataProcessing(BaseDataProcessing, BasePotentialAlgo, OptionAlgo):
 
         return result
 
-    def processing(self, dic):
+    def process_std(self, dic):
         print("90300-1: \n", "="*50, "\n", dic, "\n", "="*50)
 
         try:
             app_ = dic["app"]
+            model_stockpricesdays = apps.get_model(app_label=app_, model_name="stockpricesdays")
+            model_company_info = apps.get_model(app_label=app_, model_name="companyinfo")
+            ticker_ = dic["ticker"]
+            company_obj = model_company_info.objects.get(ticker=ticker_)
+            year_ = "all"
+            try:
+                year_ = int(dic["year"])
+            except Exception as ex:
+                pass
+
+            num_of_bars = 999999999
+
+            # num_of_bars = int(dic["num_of_bars"])
+            # print("ticker", ticker)
+
+            if year_ == "all":
+                sp = model_stockpricesdays.objects.filter(company__ticker=ticker_)[:num_of_bars]
+            else:
+                year_h = (year_+1)*10000
+                year_l = year_*10000
+                # print(year_l, year_h)
+                print(ticker)
+                sp = model_stockpricesdays.objects.filter(company__ticker=ticker_, idx__gte=year_l, idx__lte=year_h)[:num_of_bars]
+
+            # df = pd.DataFrame(list(sp.values()))
+            df = pd.DataFrame(list(sp.values("idx", "open", "close", "high", "low", "volume")))
+            df['idx'] = pd.to_datetime(df['idx'], format='%Y%m%d')
+            df.set_index('idx', inplace=True)
+            df.sort_index(inplace=True)
+            df['A'] = df.index
+            dfs = df.shift(periods=1)
+            # print("dfs\n", dfs)
+            df = pd.merge(left=df, right=dfs, left_index=True, right_index=True)
+            df.dropna(inplace=True)
+            df["return"] = (df["close_x"]-df["close_y"])/df["close_y"]
+            # print("df\n", df)
+            try:
+                rr = df.groupby([df["A_x"].dt.year, df["A_y"].dt.month])["return"].std()
+                rr = rr.reset_index()
+                rr.dropna(inplace=True)
+                rr["idx"] = rr["A_x"]*100+rr["A_y"]
+                rr = rr.drop('A_x', 1).drop('A_y', 1)
+                rr = rr.rename(columns={"return": "std"})
+                # print(rr)
+
+                model_stockreturnstd = apps.get_model(app_label=app_, model_name="stockreturnstd") #
+                for index, row in rr.iterrows():
+                    price_obj, is_created = model_stockreturnstd.objects.get_or_create(company=company_obj,
+                                                                                       idx=int(row["idx"]))
+                    price_obj.amount = float(row["std"])
+                    price_obj.save()
+
+            except Exception as ex:
+                print("Error 2020-20-1", ex)
+
+
             sigma_ = 10
 
 
@@ -130,7 +229,31 @@ class OptionDataProcessing(BaseDataProcessing, BasePotentialAlgo, OptionAlgo):
 
         return result
 
+    def get_return_std(self, dic):
+        print("90300-1: \n", "="*50, "\n", dic, "\n", "="*50)
+        ticker_ = dic["ticker"]
+        app_ = dic["app"]
+        model_company_info = apps.get_model(app_label=app_, model_name="companyinfo")
+        company_obj = model_company_info.objects.get(ticker=ticker_)
+        #
+        model_stockpricesdays = apps.get_model(app_label=app_, model_name="StockReturnStd")
+        #
+        qs = model_stockpricesdays.objects.filter(company=company_obj).all()
+        df = pd.DataFrame(list(qs.values("idx", "amount")))
+        # print(df)
+        re = {"idx": [], "std":[]}
+        n = 1
+        for index, row in df.iterrows():
+            s = str(row["idx"])
+            y=s[0:4]
+            m=s[4:7]
+            re["idx"].append(y+"-"+m)  # str(row["idx"])
+            re["std"].append(float(row["amount"]))
+            n +=1
 
+        result = {"status": "ok", "data": re}
+        print(result)
+        return result
 
 class Option(object):
     def __init__(self):

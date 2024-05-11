@@ -59,3 +59,19 @@ class StockPricesDays(TruncateTableMixin, models.Model):
 
     def __str__(self):
         return str(self.idx)
+
+
+class StockReturnStd(TruncateTableMixin, models.Model):
+    class Meta:
+        verbose_name = _('StockReturnStd')
+        verbose_name_plural = _('StockReturnStds')
+        ordering = ['company__id', 'idx']
+
+    company = models.ForeignKey(CompanyInfo, on_delete=models.CASCADE, default=None, blank=True, null=True,
+                                related_name='company_stock_return_std')
+    idx = models.PositiveBigIntegerField(default=0)
+    amount = models.DecimalField(max_digits=10, decimal_places=6, default=0)
+
+    def __str__(self):
+        return str(self.idx) + ": " +str(self.company)
+

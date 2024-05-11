@@ -1,7 +1,7 @@
 from __future__ import unicode_literals
 from django.contrib import admin
 from django.utils.translation import ugettext_lazy as _
-from .models import (StockPricesDays, CompanyInfo)
+from .models import (StockPricesDays, CompanyInfo, StockReturnStd)
 
 
 # -*- coding: utf-8 -*-
@@ -17,4 +17,9 @@ class XBRLCompanyInfoAdmin(admin.ModelAdmin):
 @admin.register(StockPricesDays)
 class StockPricesDaysAdmin(admin.ModelAdmin):
     list_display = ['company', 'idx', 'open', 'high', 'low', 'close', 'volume']
+    list_filter = ('company', 'idx', )
+
+@admin.register(StockReturnStd)
+class StockReturnStdAdmin(admin.ModelAdmin):
+    list_display = ['company', 'idx', 'amount']
     list_filter = ('company', 'idx', )
