@@ -1666,47 +1666,12 @@ class BasePotentialAlgo(object):
         # # #
         print("90099-99-99 DataProcessing create_similarity_excel: \n", dic, "\n'", "="*100)
         dn_text = dic["dn_text"]
-
-        log_debug("create_similarity_excel")
-        threshold = float(dic["threshold"])
         model_temp_var = apps.get_model(app_label=self.app, model_name="tempvar")
-        qs1 = model_temp_var.objects.filter(amount__gte=threshold).all()
-        df1 = pd.DataFrame(list(qs1.values("temp_id", self.var_name+'_dim_id', "amount")))
-        df1_similarity_ = df1.pivot(index="temp_id", columns=self.var_name+'_dim_id', values='amount').fillna(0).astype('float')
-        # print("df1_similarity_\n", df1_similarity_)
-        # d = df1_similarity_.copy()
-        # d[d >= 0.7] = 1
-        # print(d)
-        # print(d.sum());
-        df1_similarity_ = df1_similarity_.reset_index()
-        # print("df1_similarity_\n", df1_similarity_)
-        log_debug("create_similarity_excel 1")
-        log_debug("DataFrame size: " + str(df1_similarity_.shape))
 
-        model_temp = apps.get_model(app_label=self.app, model_name="temp")
-        qs2 = model_temp.objects.all()
-        df2 = pd.DataFrame(list(qs2.values("id", "idx")))
-        # df2 = df2.assign(h=lambda x: x['idx']/1000000)
-        df2["h"] = df2["idx"].apply(lambda x: int(x/1000000))
-        df2["l"] = df2["idx"].apply(lambda x: int(x/10000)) - 100*df2["h"]
-        df2["hi"] = df2["idx"].apply(lambda x: int(x/100)) - 10000*df2["h"] - 100*df2["l"]
-        df2["li"] = df2["idx"].apply(lambda x: int(x)) - 1000000*df2["h"] - 10000*df2["l"] - 100*df2["hi"]
-        # print(df2)
-        df__ = df2.merge(df1_similarity_, how='inner', left_on='id', right_on='temp_id')
-        df__ = df__.drop(["id", "idx", "temp_id"], axis=1)
-        # print(df__)
-        log_debug("create_similarity_excel 2")
-        df__.dropna(how='all', axis=1, inplace=True)
-        cc = {}
-        for c in df__.columns:
-            if c not in ["h", "l", "hi", "li"]:
-                cc[c] = str(self.measures_name[self.measures_name['id']==c].iloc[0][self.measure_name_]).strip()
-        df__.rename(columns=cc, inplace=True)
-        save_to_file = os.path.join(self.PROJECT_MEDIA_DIR, "Similarity"+"_"+str(threshold)+"_"+dn_text+".xlsx")
+        save_to_file = os.path.join(self.PROJECT_MEDIA_DIR, "Similarity"+"_"+dn_text+".xlsx")
         log_debug(save_to_file)
         is_file = os.path.exists(save_to_file)
         log_debug("1 is_file = " + str(is_file))
-
         if is_file:
             try:
                 os.remove(save_to_file)
@@ -1716,19 +1681,137 @@ class BasePotentialAlgo(object):
         is_file = os.path.exists(save_to_file)
         log_debug("2 is_file = " + str(is_file))
         # print("2 is_file = " + str(is_file))
+        log_debug("create_similarity_excel 3")
 
         wb2 = Workbook()
         wb2.save(save_to_file)
         wb2.close()
         wb2 = None
-        log_debug("create_similarity_excel 3")
+
+        log_debug("create_similarity_excel")
+
+        # for threshold in [0.85, 0.82, 0.81, 0.80, 0.77, 0.75]:
+        # # threshold = float(dic["threshold"])
+
+        threshold = 1
+        while threshold > 0.6:
+            threshold = round(100*(threshold-0.01))/100
+            qs1 = model_temp_var.objects.filter(amount__gte=threshold).all()
+            # print(threshold, qs1.count())
+            # print(qs1)
+            if qs1.count() == 0:
+                continue
+
+            df1 = pd.DataFrame(list(qs1.values("temp_id", self.var_name+'_dim_id', "amount")))
+            df1_similarity_ = df1.pivot(index="temp_id", columns=self.var_name+'_dim_id', values='amount').fillna(0).astype('float')
+            df1_similarity_ = df1_similarity_.reset_index()
+            # print("df1_similarity_\n", df1_similarity_)
+
+            if df1_similarity_.shape[0] == 0:
+                continue
+
+            log_debug("create_similarity_excel 1")
+            log_debug("DataFrame size: " + str(df1_similarity_.shape))
+            model_temp = apps.get_model(app_label=self.app, model_name="temp")
+            qs2 = model_temp.objects.all()
+            df2 = pd.DataFrame(list(qs2.values("id", "idx")))
+            # df2 = df2.assign(h=lambda x: x['idx']/1000000)
+            # print("df2\n", df2)
+
+            df2["h"] = df2["idx"].apply(lambda x: int(x/1000000))
+            df2["l"] = df2["idx"].apply(lambda x: int(x/10000)) - 100*df2["h"]
+            df2["hi"] = df2["idx"].apply(lambda x: int(x/100)) - 10000*df2["h"] - 100*df2["l"]
+            df2["li"] = df2["idx"].apply(lambda x: int(x)) - 1000000*df2["h"] - 10000*df2["l"] - 100*df2["hi"]
+            # print("XXX\n", df2)
+
+            df__ = df2.merge(df1_similarity_, how='inner', left_on='id', right_on='temp_id')
+            df__ = df__.drop(["id", "idx", "temp_id"], axis=1)
+            # print("WWW\n", df__)
+
+            log_debug("create_similarity_excel 2")
+            df__.dropna(how='all', axis=1, inplace=True)
+            cc = {}
+            l = []
+            for c in df__.columns:
+                if c not in ["h", "l", "hi", "li"]:
+                    cc[c] = str(self.measures_name[self.measures_name['id']==c].iloc[0][self.measure_name_]).strip()
+                    l.append(cc[c])
+            # print("QQQ\n", cc, l, "\n", df__)
+
+            df__.rename(columns=cc, inplace=True)
+            # print("PPP\n", df__)
+            df = df__.copy()
+            # print("df", "\n", df, "\n", df.shape)
+
+            # for c in l:
+            #     df = df[df[c]>=threshold]
+            #     # print(c, "\n", df)
+
+            df['sum'] = df.loc[:, l].sum(axis=1)
+            df = df.sort_values(by='sum', ascending=False)
+
+            # print("SSS df \n", df, "\n", df.shape)
+
+            r = {"h": {}, "hi":{}, "l":{}, "li":{}, "hhi": {}, "lli":{}}
+            for index, row in df.iterrows():
+
+                h_ = int(row["h"])
+                hi_ = int(row["hi"])
+                l_ = int(row["l"])
+                li_ = int(row["li"])
+                # print(h_, hi_, l_, li_)
+
+                if h_ not in r["h"]:
+                    r["h"][h_] = 0
+                if hi_ not in r["hi"]:
+                    r["hi"][hi_] = 0
+                if l_ not in r["l"]:
+                    r["l"][l_] = 0
+                if li_ not in r["li"]:
+                    r["li"][li_] = 0
+
+                if str(h_)+"-"+str(hi_) not in r["hhi"]:
+                    r["hhi"][str(h_)+"-"+str(hi_)] = 0
+                if str(l_)+"-"+str(li_) not in r["lli"]:
+                    r["lli"][str(l_)+"-"+str(li_)] = 0
+
+                r["h"][h_] += 1
+                r["hi"][hi_] += 1
+                r["l"][l_] += 1
+                r["li"][li_] += 1
+                r["hhi"][str(h_)+"-"+str(hi_)] += 1
+                r["lli"][str(l_)+"-"+str(li_)] += 1
+
+            # print("RRR df\n", df)
+            # print("RRR df\n")
+
+            for j in r:
+                try:
+                    r[j] = {k: v for k, v in sorted(r[j].items(), key=lambda x: x[1], reverse=True)}
+                except Exception as ex:
+                    pass
+            # print(r, "\n")
+            # print("r", "\n")
+
+            for j in r:
+                dr = {}
+                dr['h'] = j + ": " + str(r[j])
+                df = df.append(dr, ignore_index=True)
+
+            # print("ZZZ\n", df)
+            # print("ZZZ\n")
+
+            try:
+                with pd.ExcelWriter(save_to_file, engine='openpyxl', mode="a") as writer:
+                    df.to_excel(writer, sheet_name="similarities_"+str(threshold))
+                    log_debug("create_similarity_excel threshold: "+str(threshold))
+            except Exception as ex:
+                print(ex)
+                log_debug(str(ex))
         try:
-            with pd.ExcelWriter(save_to_file, engine='openpyxl', mode="a") as writer:
-                df__.to_excel(writer, sheet_name="similarities")
-                writer.save()
-                log_debug("create_similarity_excel 4")
+            writer.save()
         except Exception as ex:
-            log_debug(str(ex))
+            print(ex)
         try:
             wb = load_workbook(filename=save_to_file, read_only=False)
             del wb['Sheet']
@@ -1737,7 +1820,6 @@ class BasePotentialAlgo(object):
             log_debug("create_similarity_excel 5")
         except Exception as ex:
             log_debug(str(ex))
-
         is_file = os.path.exists(save_to_file)
         log_debug("3 is_file = " + str(is_file))
 
