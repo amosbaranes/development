@@ -112,6 +112,8 @@ class OptionAlgo(object):
         f = 0.4
         if K < 10:
             f = 2
+        elif K < 20:
+            f = 1.5
         elif K < 30:
             f = 1
         elif K < 200:
@@ -126,6 +128,7 @@ class OptionAlgo(object):
 
             c = self.call(si, K, T, r, sigma, n)
             cs = self.call(si, K-spread, T, r, sigma, n)
+
             #
             p = self.put(si, K, T, r, sigma, n)
             ps = self.put(si, K+spread, T, r, sigma, n)
@@ -463,6 +466,7 @@ class OptionDataProcessing(BaseDataProcessing, BasePotentialAlgo, OptionAlgo):
 
         dic["K"] = close_stock_price
         dic["sigma"] = re["std"][-1]
+
         re_ = self.calc_options(dic)
 
         result = {"status": "ok", "data": re, "datao": re_["data"]}
