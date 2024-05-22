@@ -91,6 +91,7 @@ class OptionAlgo(object):
         sigma = float(dic["sigma"])
         T = int(dic["T"])
         r = float(dic["r"])
+        r = 0.007
         n = int(dic["n"])
         t = int(dic["t"])
         T = T-t/n
@@ -466,7 +467,6 @@ class OptionDataProcessing(BaseDataProcessing, BasePotentialAlgo, OptionAlgo):
 
         dic["K"] = close_stock_price
         dic["sigma"] = re["std"][-1]
-
         re_ = self.calc_options(dic)
 
         result = {"status": "ok", "data": re, "datao": re_["data"]}

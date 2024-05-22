@@ -87,6 +87,104 @@ class MSDataProcessing(BaseDataProcessing, BasePotentialAlgo, MSAlgo):
     #             "entity_value": [90.8986, 83.492, 87.5978, 88.2278, 87.0293, 92.721, 85.7844, 89.8529, 89.6005, 84.0518, 71.4408, 77.0146, 82.1335, 93.5224, 94.0468, 90.0493, 74.8268, 90.8752, 85.921, 88.2654, 91.2218, 92.7555, 88.8332, 82.3627, 92.85]},
     #       "4": {"entity": [20, 30, 39, 43, 46, 54, 58, 74, 76, 81, 84, 90, 93, 95, 97, 98, 116, 151, 153, 162, 164, 165, 166, 174, 175, 177, 178, 183, 185, 187, 188, 191, 207, 228, 229, 230, 231, 232, 233, 245, 246, 248, 250, 252, 271, 279, 284, 297, 302, 303, 304, 312, 321, 325, 327, 331, 335, 337, 339, 343, 364, 378, 383, 387, 395, 399, 409, 410, 415, 416, 432, 438, 439, 442, 447, 452, 457, 458, 459, 464, 469, 482, 483, 484, 487, 492, 497, 501, 502, 508, 511, 512, 513, 515, 516, 517, 529, 531, 532, 534, 535, 536, 537, 539, 546, 549, 553, 554, 555, 556, 560, 561, 563, 564, 567], "centroid": 143.38422608695652, "entity_value": [136.98, 140.893, 138.841, 145.739, 136.307, 141.19, 144.75, 151.513, 142.754, 144.923, 142.552, 142.241, 142.183, 137.671, 138.355, 142.763, 143.402, 136.342, 141.022, 148.964, 148.658, 149.832, 151.32, 142.752, 146.149, 143.184, 150.441, 147.363, 146.884, 145.332, 140.236, 138.499, 150.595, 144.899, 144.824, 137.592, 139.557, 148.499, 144.697, 136.607, 146.588, 150.624, 141.601, 146.46, 146.61, 147.194, 142.632, 147.765, 140.674, 147.327, 140.269, 142.27, 140.513, 144.192, 138.5, 147.604, 139.245, 137.527, 137.619, 143.18, 148.0, 141.545, 139.72, 148.229, 149.32, 147.63, 150.243, 136.774, 144.067, 145.586, 147.94, 140.632, 145.042, 146.719, 138.954, 148.967, 140.81, 147.999, 139.802, 139.374, 146.974, 142.049, 137.235, 141.647, 146.466, 145.421, 140.778, 146.654, 146.402, 144.77, 141.783, 144.375, 142.848, 145.151, 136.654, 139.8, 149.388, 141.67, 139.933, 136.746, 142.543, 146.551, 138.95, 138.434, 137.725, 146.284, 148.85, 144.043, 138.217, 141.179, 138.713, 147.058, 142.25, 150.598, 137.995]}, "5": {"entity": [2, 3, 21, 24, 27, 28, 33, 37, 40, 48, 50, 82, 105, 106, 108, 114, 115, 117, 118, 119, 120, 123, 126, 128, 129, 131, 133, 135, 136, 149, 154, 156, 158, 159, 160, 217, 224, 227, 249, 268, 276, 278, 288, 290, 291, 292, 294, 295, 296, 311, 338, 340, 342, 390, 392, 397, 403, 406, 412, 419, 421, 423, 424, 431, 434, 435, 443, 444, 446, 462, 470, 518, 519, 522, 525, 528, 543, 545, 552, 557, 559], "centroid": 115.78974074074074, "entity_value": [116.279, 117.357, 112.661, 119.153, 117.267, 117.368, 121.486, 118.137, 115.37, 111.265, 116.879, 117.138, 120.149, 111.851, 120.351, 117.748, 116.91, 120.041, 113.952, 112.608, 117.365, 118.21, 109.982, 119.746, 117.912, 111.578, 120.762, 117.945, 115.609, 118.186, 119.752, 112.918, 113.986, 112.7, 114.721, 110.222, 114.15, 118.212, 120.242, 120.014, 112.523, 115.967, 118.196, 112.711, 117.266, 122.263, 113.139, 116.307, 116.084, 117.113, 114.31, 112.576, 116.668, 110.464, 113.054, 114.797, 116.545, 112.165, 122.084, 113.586, 114.302, 120.731, 114.194, 121.34, 114.357, 114.769, 108.934, 114.167, 113.171, 113.551, 112.522, 115.712, 114.596, 109.759, 117.858, 118.192, 110.738, 110.55, 119.935, 120.663, 112.928]}, "6": {"entity": [31, 41, 51, 53, 55, 56, 57, 59, 60, 61, 62, 64, 66, 67, 69, 79, 80, 96, 102, 104, 161, 163, 168, 170, 173, 184, 186, 214, 226, 262, 263, 264, 265, 266, 267, 274, 300, 306, 308, 309, 313, 316, 320, 322, 333, 334, 347, 349, 354, 356, 358, 363, 372, 380, 385, 396, 400, 401, 408, 414, 436, 468, 471, 472, 474, 475, 480, 481, 485, 493, 505, 507, 514, 538, 540, 548, 551], "centroid": 160.34306493506494, "entity_value": [157.497, 158.597, 152.736, 158.608, 158.703, 160.269, 167.414, 165.165, 156.363, 151.9, 152.431, 158.694, 164.858, 165.919, 160.461, 167.053, 157.308, 157.766, 156.083, 166.504, 160.235, 157.668, 160.777, 162.594, 156.454, 163.912, 164.754, 158.126, 153.831, 158.74, 159.769, 152.694, 156.836, 166.654, 156.316, 158.094, 166.826, 165.429, 152.589, 162.37, 164.01, 166.385, 164.716, 167.986, 154.492, 153.558, 167.172, 163.171, 160.232, 154.686, 165.591, 166.291, 154.284, 157.984, 161.453, 155.733, 152.274, 152.589, 156.409, 164.667, 165.713, 165.928, 153.108, 152.051, 167.136, 165.257, 158.922, 157.573, 166.887, 165.311, 166.602, 158.362, 153.534, 166.416, 160.901, 167.173, 162.862]}, "7": {"entity": [32, 63, 68, 70, 83, 86, 92, 169, 171, 180, 181, 182, 194, 196, 197, 199, 202, 209, 212, 213, 216, 259, 260, 261, 269, 270, 272, 273, 280, 281, 298, 305, 318, 319, 323, 328, 352, 357, 359, 360, 374, 384, 465, 476, 478, 489, 490, 494, 498, 504, 509, 542], "centroid": 177.0655, "entity_value": [179.11, 178.366, 183.752, 169.574, 171.56, 171.915, 181.057, 173.677, 179.613, 168.811, 178.938, 183.118, 181.493, 177.328, 183.217, 183.723, 170.281, 179.777, 171.116, 182.225, 170.146, 183.367, 182.877, 177.333, 177.038, 169.788, 172.523, 179.596, 182.885, 178.825, 182.895, 184.099, 169.625, 177.047, 170.561, 181.037, 173.328, 182.186, 173.019, 171.128, 175.944, 169.097, 176.585, 185.064, 176.857, 182.609, 184.01, 169.902, 171.577, 172.796, 179.185, 175.826]}, "8": {"entity": [44, 193, 235, 236, 240, 242, 244], "centroid": 245.706, "entity_value": [239.956, 251.246, 248.779, 245.051, 246.424, 251.258, 237.228]}, "9": {"entity": [65, 198, 203, 206, 208, 215, 282, 299, 307, 314, 350, 365, 371, 418, 473, 477, 491, 500], "centroid": 193.3478888888889, "entity_value": [201.076, 195.067, 201.082, 186.665, 189.395, 185.873, 190.579, 195.875, 201.206, 193.533, 198.218, 187.407, 191.224, 188.162, 187.508, 193.392, 194.306, 199.694]}, "10": {"entity": [192, 195, 201, 210, 211, 238, 241, 254, 257, 283, 285, 351, 355, 362], "centroid": 227.93814285714285, "entity_value": [228.119, 220.784, 220.839, 221.889, 225.997, 233.195, 230.609, 232.178, 228.11, 230.487, 232.984, 232.038, 228.576, 225.329]}, "11": {"entity": [200, 361, 366, 367, 369], "centroid": 261.4186, "entity_value": [264.783, 259.063, 255.836, 259.67, 267.741]}, "12": {"entity": [237, 243, 345, 368], "centroid": 285.03774999999996, "entity_value": [284.895, 281.998, 287.082, 286.176]}, "13": {"entity": [167, 204, 205, 239, 251, 255, 256, 258, 315, 317, 324, 348, 488, 495], "centroid": 209.51364285714286, "entity_value": [203.084, 218.276, 206.348, 212.639, 208.477, 208.55, 212.342, 216.742, 203.51, 210.168, 213.71, 208.507, 205.225, 205.613]}, "14": {"entity": [346], "centroid": 299.025, "entity_value": [299.025]}}
 
+    # Data upload
+    def upload_personal_info_to_db(self, dic):
+        print("90121-1-3: \n", dic, "\n", "="*50)
+        app_ = dic["app"]
+        file_path = self.upload_file(dic)["file_path"]
+        # file_path = "/home/amos/projects/development/academycity/data/ms/datasets/excel/raw_data/RAW DATA (607).xlsx"
+        # print('file_path')
+        # print(file_path)
+        # print('file_path')
+        # print('90121-2 dic')
+        dic = dic["cube_dic"]
+        # print('90121-3 dic', dic)
+
+        model_fact_normalized = apps.get_model(app_label=self.app, model_name="factnormalized")
+
+        model_group_name_ = dic["dimensions"]["person_group_dim"]["model"]
+        model_person_group_dim = apps.get_model(app_label=app_, model_name=model_group_name_)
+
+        model_name_ = dic["dimensions"]["person_dim"]["model"]
+        model_person_dim = apps.get_model(app_label=app_, model_name=model_name_)
+
+        model_name_ = dic["dimensions"]["gene_group_dim"]["model"]
+        model_gene_group_dim = apps.get_model(app_label=app_, model_name=model_name_)
+
+        model_name_ = dic["dimensions"]["gene_dim"]["model"]
+        model_gene_dim = apps.get_model(app_label=app_, model_name=model_name_)
+
+        gene_group_obj, is_created = model_gene_group_dim.objects.get_or_create(group_name="dep")
+        gene_group_obj.save()
+        #
+        # qs = model_fact.objects.filter(gene_dim__gene_group_dim_group_name="dep",
+        #                                person_dim__person_group_dim__group_name="Normaliaz")
+        # df = pd.DataFrame(list(qs.values("gene_dim", "person_dim", "amount")))
+        model_name_ = dic["fact"]["model"]
+        model_fact = apps.get_model(app_label=app_, model_name=model_name_)
+
+        wb = load_workbook(filename=file_path, read_only=False)
+        sheet_names = wb.sheetnames
+        for f in sheet_names:
+            # print(f)
+            pg_obj, is_created = model_person_group_dim.objects.get_or_create(group_name=f)
+            pg_obj.save()
+
+            ws = wb[f]
+            data = ws.values
+            columns = next(data)[0:]
+            df = pd.DataFrame(data, columns=columns)
+            # print(df)
+            if f == "Normaliaz":
+                for index, row in df.iterrows():
+                    # print(index, row["ID"])
+                    try:
+                        try:
+                            if row["gender"] == "M":
+                                row["gender"] = 0
+                            else:
+                                row["gender"] = 1
+                            # print(row["gender"])
+                        except Exception as ex:
+                            pass
+                        person_obj, is_create = model_person_dim.objects.get_or_create(person_code=row["ID"])
+                        # print("'", "="*100,"\n",row["ID"])
+                        person_obj.person_group_dim = pg_obj
+                        try:
+                            person_obj.gender = row["gender"]
+                            person_obj.age_at_cdna = row["age_at_cDNA"]
+                        except Exception as ex:
+                            pass
+                        person_obj.set_num = row["set_num"]
+                        person_obj.save()
+                    except Exception as ex:
+                        # pass
+                        print("Error: ", row["ID"], ex)
+
+            if f == "Dependent":
+                # print(columns[4:])
+                for p  in columns[4:]:
+                    gene_obj, is_created = model_gene_dim.objects.get_or_create(gene_group_dim=gene_group_obj,gene_code=p)
+                    # print('\ngene_obj\n', gene_obj,'\n')
+                    for index, row in df.iterrows():
+                        person_obj = model_person_dim.objects.get(person_code=row["ID"])
+                        fact_obj, is_created = model_fact.objects.get_or_create(gene_dim=gene_obj, person_dim=person_obj)
+                        fact_obj_normalized, is_created = model_fact_normalized.objects.get_or_create(gene_dim=gene_obj,
+                                                                                                     person_dim=person_obj)
+                        fact_obj.amount = row[p]
+                        fact_obj.save()
+                        fact_obj_normalized.amount = row[p]
+                        fact_obj_normalized.save()
+
+            if f == "Model":
+                for index, row in df.iterrows():
+                    person_obj = model_person_dim.objects.get(person_code=row["ID"])
+                    person_obj.person_group_dim = pg_obj
+                    person_obj.save()
+
+        result = {"status": "ok"}
+        return result
+
     def load_file_to_db(self, dic):
         # print("90121-1: \n", dic, "="*50)
         clear_log_debug()
@@ -168,99 +266,84 @@ class MSDataProcessing(BaseDataProcessing, BasePotentialAlgo, MSAlgo):
         result = {"status": "ok"}
         return result
 
-    def upload_personal_info_to_db(self, dic):
-        # print("90121-1-3: \n", dic, "\n", "="*50)
+    # =======
+    # add the functions below to this function
+    # def calculate_clusters(self, dic):
+    #     # print("90921-0: \n", dic, "\n", "="*50)
+    #     print(dic)
+    #     # print('dic')
+    #     clear_log_debug()
+    #     log_debug("=== calculate_clusters 100 ===")
+    #     app_ = dic["app"]
+    #     log_debug("=== calculate_clusters 101 " + app_)
+    #     model_name_ = dic["dimensions"]["person_dim"]["model"]
+    #     # print(model_name_)
+    #     model_person_dim = apps.get_model(app_label=app_, model_name=model_name_)
+    #     model_name_ = dic["dimensions"]["gene_dim"]["model"]
+    #     # print(model_name_)
+    #     model_gene_dim = apps.get_model(app_label=app_, model_name=model_name_)
+    #     model_name_ = dic["fact"]["model"]
+    #     # print(model_name_)
+    #     model_fact = apps.get_model(app_label=app_, model_name=model_name_)
+    #     qs = model_fact.objects.filter(gene_dim__gene_group_dim__group_name="indep")
+    #     df_s = pd.DataFrame(list(qs.values('gene_dim', 'person_dim', 'amount')))
+    #     df_s.columns=['gene', 'person', 'amount']
+    #     # print(df_s)
+    #     df = df_s.pivot_table(values='amount', index='gene', columns=['person'], aggfunc='sum')
+    #     # print(df)
+    #     df = df.apply(lambda x: x.sort_values().values, axis=1, result_type='broadcast')
+    #     # print(df)
+    #     df["min"] = df.min(axis=1)
+    #     df["max"] = df.max(axis=1)
+    #     # print(df)
+    #
+    #     for index, row in df.iterrows():
+    #         # print("="*100)
+    #         # print(index)
+    #         # print(row)
+    #         clusters = self.get_gene_clusters(row)
+    #         # print("number of clusters\n\n", len(clusters))
+    #         obj = model_gene_dim.objects.get(id=index)
+    #         obj.clusters = clusters
+    #         # print("="*100)
+    #         obj.save()
+    #     result = {"status": "ok"}
+    #     return result
+
+    def calculate_clusters_a(self, dic):
+        # print("90921-0: \n", dic, "\n", "="*50)
         app_ = dic["app"]
-        file_path = self.upload_file(dic)["file_path"]
-        # file_path = "/home/amos/projects/development/academycity/data/ms/datasets/excel/raw_data/RAW DATA (607).xlsx"
-        # print('file_path')
-        # print(file_path)
-        # print('file_path')
-        # print('90121-2 dic')
-        dic = dic["cube_dic"]
-        # print('90121-3 dic', dic)
+        df = dic["df"]
+        nnn = str(dic["nnn"])
+        # print(nnn, "\n", nnn, "\n", nnn, "\n", "="*10, "\n")
 
-        model_fact_normalized = apps.get_model(app_label=self.app, model_name="factnormalized")
+        model_gene_dim = apps.get_model(app_label=app_, model_name="genedim")
+        # print(df)
 
-        model_group_name_ = dic["dimensions"]["person_group_dim"]["model"]
-        model_person_group_dim = apps.get_model(app_label=app_, model_name=model_group_name_)
+        df["min"] = df.min(axis=1)
+        df["max"] = df.max(axis=1)
+        # print(nnn, "\n", df, "\n", df.shape)
 
-        model_name_ = dic["dimensions"]["person_dim"]["model"]
-        model_person_dim = apps.get_model(app_label=app_, model_name=model_name_)
-
-        model_name_ = dic["dimensions"]["gene_group_dim"]["model"]
-        model_gene_group_dim = apps.get_model(app_label=app_, model_name=model_name_)
-
-        model_name_ = dic["dimensions"]["gene_dim"]["model"]
-        model_gene_dim = apps.get_model(app_label=app_, model_name=model_name_)
-
-        gene_group_obj, is_created = model_gene_group_dim.objects.get_or_create(group_name="dep")
-        gene_group_obj.save()
-        #
-        # qs = model_fact.objects.filter(gene_dim__gene_group_dim_group_name="dep",
-        #                                person_dim__person_group_dim__group_name="Normaliaz")
-        # df = pd.DataFrame(list(qs.values("gene_dim", "person_dim", "amount")))
-        model_name_ = dic["fact"]["model"]
-        model_fact = apps.get_model(app_label=app_, model_name=model_name_)
-
-        wb = load_workbook(filename=file_path, read_only=False)
-        sheet_names = wb.sheetnames
-        for f in sheet_names:
-            # print(f)
-            pg_obj, is_created = model_person_group_dim.objects.get_or_create(group_name=f)
-            pg_obj.save()
-
-            ws = wb[f]
-            data = ws.values
-            columns = next(data)[0:]
-            df = pd.DataFrame(data, columns=columns)
-            # print(df)
-            if f == "Normaliaz":
-                for index, row in df.iterrows():
-                    # print(index, row["ID"])
-                    try:
-                        if row["gender"] == "M":
-                            row["gender"] = 0
-                        else:
-                            row["gender"] = 1
-                        # print(row["gender"])
-                        person_obj, is_create = model_person_dim.objects.get_or_create(person_code=row["ID"])
-                        # print("'", "="*100,"\n",row["ID"])
-                        person_obj.person_group_dim = pg_obj
-                        person_obj.gender = row["gender"]
-                        person_obj.age_at_cdna = row["age_at_cDNA"]
-                        person_obj.set_num = row["set_num"]
-                        person_obj.save()
-                    except Exception as ex:
-                        # pass
-                        print("Error: ", row["ID"], ex)
-
-            if f == "Dependent":
-                # print(columns[4:])
-                for p  in columns[4:]:
-                    gene_obj, is_created = model_gene_dim.objects.get_or_create(gene_group_dim=gene_group_obj,gene_code=p)
-                    # print('\ngene_obj\n', gene_obj,'\n')
-                    for index, row in df.iterrows():
-                        person_obj = model_person_dim.objects.get(person_code=row["ID"])
-                        fact_obj, is_created = model_fact.objects.get_or_create(gene_dim=gene_obj, person_dim=person_obj)
-                        fact_obj_normalized, is_created = model_fact_normalized.objects.get_or_create(gene_dim=gene_obj,
-                                                                                                     person_dim=person_obj)
-                        fact_obj.amount = row[p]
-                        fact_obj.save()
-                        fact_obj_normalized.amount = row[p]
-                        fact_obj_normalized.save()
-
-            if f == "Model":
-                for index, row in df.iterrows():
-                    person_obj = model_person_dim.objects.get(person_code=row["ID"])
-                    person_obj.person_group_dim = pg_obj
-                    person_obj.save()
+        for index, row in df.iterrows():
+            # print("="*100)
+            # print(index)
+            # print(row)
+            clusters = self.get_gene_clusters(row)
+            # print("number of clusters\n\n", len(clusters))
+            obj = model_gene_dim.objects.get(id=index)
+            if nnn == "1":
+                dic_ = {1: clusters}
+            else:
+                dic_ = obj.clusters
+                dic_[nnn] = clusters
+            # print(nnn, "\n\n", dic_)
+            obj.clusters = dic_
+            # print("="*100)
+            obj.save()
 
         result = {"status": "ok"}
         return result
-    #
 
-    # add the functions below to this function
     def calculate_clusters(self, dic):
         # print("90921-0: \n", dic, "\n", "="*50)
         print(dic)
@@ -269,37 +352,52 @@ class MSDataProcessing(BaseDataProcessing, BasePotentialAlgo, MSAlgo):
         log_debug("=== calculate_clusters 100 ===")
         app_ = dic["app"]
         log_debug("=== calculate_clusters 101 " + app_)
-        model_name_ = dic["dimensions"]["person_dim"]["model"]
-        # print(model_name_)
-        model_person_dim = apps.get_model(app_label=app_, model_name=model_name_)
-        model_name_ = dic["dimensions"]["gene_dim"]["model"]
-        # print(model_name_)
-        model_gene_dim = apps.get_model(app_label=app_, model_name=model_name_)
+
         model_name_ = dic["fact"]["model"]
         # print(model_name_)
         model_fact = apps.get_model(app_label=app_, model_name=model_name_)
-        qs = model_fact.objects.filter(gene_dim__gene_group_dim__group_name="indep")
-        df_s = pd.DataFrame(list(qs.values('gene_dim', 'person_dim', 'amount')))
-        df_s.columns=['gene', 'person', 'amount']
-        # print(df_s)
-        df = df_s.pivot_table(values='amount', index='gene', columns=['person'], aggfunc='sum')
-        # print(df)
-        df = df.apply(lambda x: x.sort_values().values, axis=1, result_type='broadcast')
-        # print(df)
-        df["min"] = df.min(axis=1)
-        df["max"] = df.max(axis=1)
-        # print(df)
 
-        for index, row in df.iterrows():
-            # print("="*100)
-            print(index)
-            # print(row)
-            clusters = self.get_gene_clusters(row)
-            # print("number of clusters\n\n", len(clusters))
-            obj = model_gene_dim.objects.get(id=index)
-            obj.clusters = clusters
-            print("="*100)
-            obj.save()
+        nnn = 1
+        l = [0, 131, 10000]
+        while nnn <= 3:
+            if nnn < 3:
+                qs = model_fact.objects.filter(gene_dim__gene_group_dim__group_name="indep",
+                                               person_dim__set_num__gt=l[nnn - 1],
+                                               person_dim__set_num__lte=l[nnn])
+            else:
+                qs = model_fact.objects.filter(gene_dim__gene_group_dim__group_name="indep")
+
+            df_s = pd.DataFrame(list(qs.values('gene_dim', 'person_dim', 'amount')))
+            df_s.columns = ['gene', 'person', 'amount']
+            # print(df_s)
+            df = df_s.pivot_table(values='amount', index='gene', columns=['person'], aggfunc='sum')
+            # print(df)
+            df = df.apply(lambda x: x.sort_values().values, axis=1, result_type='broadcast')
+            # print(df)
+
+            # df["min"] = df.min(axis=1)
+            # df["max"] = df.max(axis=1)
+            #
+            # # print(nnn, "\n", df, "\n", df.shape)
+            # for index, row in df.iterrows():
+            #     # print("="*100)
+            #     # print(index)
+            #     # print(row)
+            #     clusters = self.get_gene_clusters(row)
+            #     # print("number of clusters\n\n", len(clusters))
+            #     obj = model_gene_dim.objects.get(id=index)
+            #     if nnn == 1:
+            #         dic_ = {1: clusters}
+            #     else:
+            #         dic_[nnn] = obj.clusters
+            #     obj.clusters = dic_
+            #     # print("="*100)
+            #     obj.save()
+            dic["nnn"] = nnn
+            dic["df"] = df
+            self.calculate_clusters_a(dic)
+            nnn += 1
+
         result = {"status": "ok"}
         return result
 
@@ -480,111 +578,113 @@ class MSDataProcessing(BaseDataProcessing, BasePotentialAlgo, MSAlgo):
     # (1) if 7/total people < 5% (make parameters T) then combine to the biggest (by nuber of peoples) block
     # (2) a get the lowest block it is 12 compare it to the pick of the other block if it is biger combine
     def add_peaks_to_clusters(self, dic):
-        # print("90966-66: get_peaks\n", dic, "\n", "=" * 50)
+        print("90966-66: get_peaks\n", dic, "\n", "=" * 50)
         app_ = dic["app"]
         t_pop = dic["t_pop"]
         model_person_dim = apps.get_model(app_label=app_, model_name="persondim")
         model_gene_dim = apps.get_model(app_label=app_, model_name="genedim")
         model_fact = apps.get_model(app_label=app_, model_name='fact')
         model_fact_normalized = apps.get_model(app_label=app_, model_name='factnormalized')
-        qsp = model_person_dim.objects.all()
-        qsg = model_gene_dim.objects.filter(gene_group_dim__group_name="indep")
-        qsf = model_fact.objects.filter(gene_dim__gene_group_dim__group_name="indep")
-        #
-        # df_g = pd.DataFrame(list(qsg.values('id', 'gene_code')))
-        # df_g.columns=['id', 'gene_code']
-        # df_g = df_g.set_index("id")
-        # print(df_g)
-        #
-        df_f = pd.DataFrame(list(qsf.values('gene_dim', 'person_dim', 'amount')))
-        df_f.columns=['gene', 'person', 'amount']
-        # print(df_f)
-        df = df_f.pivot_table(values='amount', index='gene', columns=['person'], aggfunc='sum')
-        # print(df)
+        model_fact_normalized_temp = apps.get_model(app_label=app_, model_name='factnormalizedtemp')
+        # ------
+        nnn = 1
+        l = [0, 131, 10000]
+        while nnn <= 3:
+            if nnn < 3:
+                qsp = model_person_dim.objects.filter(set_num__gt=l[nnn-1], set_num__lte=l[nnn]).all()
+                # -------
+                qsf = model_fact.objects.filter(gene_dim__gene_group_dim__group_name="indep",
+                                               person_dim__set_num__gt=l[nnn - 1],
+                                               person_dim__set_num__lte=l[nnn])
+                df_f = pd.DataFrame(list(qsf.values('gene_dim', 'person_dim', 'amount')))
+                df_f.columns = ['gene', 'person', 'amount']
+                df = df_f.pivot_table(values='amount', index='gene', columns=['person'], aggfunc='sum')
+                # print("AAAAA : ", nnn, " : l[nnn-1], l[nnn]\n", l[nnn-1], l[nnn], "\n\n", df, "\n\n", df.shape, "\n", "="*50, "\n\n")
+            else:
+                qsp = model_person_dim.objects.all()
+                # -------
+                qsf = model_fact_normalized_temp.objects.filter(gene_dim__gene_group_dim__group_name="indep")
+                df_f = pd.DataFrame(list(qsf.values('gene_dim', 'person_dim', 'amount')))
+                df_f.columns = ['gene', 'person', 'amount']
+                df = df_f.pivot_table(values='amount', index='gene', columns=['person'], aggfunc='sum')
+                # print("ZZZZZ\n\n", df, "\n", df.shape)
 
-        df_s = pd.DataFrame(list(qsp.values('id', 'person_code', 'set_num')))
-        df_s.columns=['index', 'person_code', 'set_num']
-        df_s = df_s.dropna(axis=0) # .reset_index()
-        # print("df_s\n", df_s)
+            dic["nnn"] = nnn
+            dic["df"] = df.copy()
+            self.calculate_clusters_a(dic)
+            # print("JJJ\n", nnn, "\n", df, "\n", df.shape)
+            # --
+            df_s = pd.DataFrame(list(qsp.values('id', 'person_code', 'set_num')))
+            df_s.columns=['index', 'person_code', 'set_num']
+            df_s = df_s.dropna(axis=0) # .reset_index()
+            # print("df_s\n", df_s)
+            llb = df_s['set_num'].unique().tolist()
+            dic_sets = {}
+            count_ = 0
+            for k in llb:
+                # print("Start k=", k, "\n", "-"*20)
+                df_sk = df_s[df_s['set_num']==k]
+                llk = df_sk['index'].tolist()
+                dfllk = df.loc[:, llk] #
+                dic_sets[k] = dfllk
+                count_ += dfllk.shape[1]
 
-        llb = df_s['set_num'].unique().tolist()
-        # print("llb", llb)
+                dfllk["min"] = dfllk.min(axis=1)
+                dfllk["max"] = dfllk.max(axis=1)
+                dic_sets[k] = dfllk
+            #
+            def take_key(elem):
+                return elem[2]
 
-        dic_sets = {}
-        for k in llb:
-            # print("Start k=", k, "\n", "-"*20)
-            df_sk = df_s[df_s['set_num']==k]
-            llk = df_sk['index'].tolist()
-            # print(llk, "\n")
+            n__ = 0
+            qsg = model_gene_dim.objects.filter(gene_group_dim__group_name="indep")
+            for o in qsg:
+                n__ += 1
+                try:
+                    clusters_ = o.clusters[str(nnn)]
+                except Exception as ex:
+                    print(ex)
 
-            dfllk = df.loc[:, llk] #
-            # print("A k=", k, "\ndfllk=\n", dfllk)# df[llk]
+                ll = []
+                clusters__ = {}
+                for c in clusters_:
+                    ce = clusters_[c]["entity"]
+                    cd = clusters_[c]["centroid"]
+                    n = len(ce)
+                    ll.append([c, n, cd])
+                ll.sort(key=take_key)
+                ll_ = [j[1] for j in ll]
+                ll__ = [[j[0], clusters_[j[0]]] for j in ll]
+                n_clusters__ = 1
+                for h in ll__:
+                    clusters__[n_clusters__] = h[1]
+                    n_clusters__ += 1
 
-            dic_sets[k] = dfllk
-            # dfllk = dfllk.apply(lambda x: x.sort_values().values, axis=1, result_type='broadcast')
-            # print("dfllk", dfllk)
-            # print(dfllk.shape)
-            dfllk["min"] = dfllk.min(axis=1)
-            dfllk["max"] = dfllk.max(axis=1)
-            # if k == 32:
-            # print("set k=", k, "\ndf_sk=\n", df_sk)
-            # print("llk=\n", llk)
-            # print("dfllk=\n", dfllk)
-            dic_sets[k] = dfllk
-        #
-        def take_key(elem):
-            return elem[2]
+                dic_sets_o = {}
+                for k in dic_sets:
+                    # print(k, "\n", o.id, "\n", dic_sets[k], "\n")
+                    dic_sets_o[k] = pd.DataFrame(dic_sets[k].loc[o.id])
 
-        n__ = 0
+                if nnn < 3:
+                    r_ = self.get_peaks({"cl_all":ll_, "t_pop": t_pop, "clusters": clusters__, "dic_sets_o": dic_sets_o,
+                                         "model_fact_normalized": model_fact_normalized_temp,
+                                         "model_person_dim": model_person_dim,
+                                         "gene_obj":o})
+                else:
+                    r_ = self.get_peaks({"cl_all":ll_, "t_pop": t_pop, "clusters": clusters__, "dic_sets_o": dic_sets_o,
+                                         "model_fact_normalized": model_fact_normalized,
+                                         "model_person_dim": model_person_dim,
+                                         "gene_obj":o})
+                if nnn == 3:
+                    r = r_["peak_array"]
+                    # print("\nSummary:\n", "="*50, "\n", r, "\n", "="*150)
+                    o.reduced_clusters = r
+                    o.save()
 
-        for o in qsg:
-            n__ += 1
-            # "201247_at","206484_s_at", "204786_s_at",
-            # "211444_at", "200020_at","200646_s_at","200733_s_at","200737_at","200898_s_at"
-            #                 ,"200959_at","200968_s_at","200986_at","201031_s_at","201034_at","201036_s_at","201222_s_at"
-            #                 ,
-            #                 "201386_s_at","201525_at","203614_at"
-
-            # if n__ not in [1]:
-            #     continue
-
-            # print("-"*50, "\n gene_code=",o.gene_code, " database id=", o.id, "\n", "-"*50)
-            # print("="*50, "\n", o.clusters, "\n", "-"*50)
-
-            ll = []
-            for c in o.clusters:
-                ce = o.clusters[c]["entity"]
-                cd = o.clusters[c]["centroid"]
-                n = len(ce)
-                ll.append([c, n, cd])
-            ll.sort(key=take_key)
-            ll_ = [j[1] for j in ll]
-            dic_sets_o = {}
-            # if o.gene_code in ["201247_at"]:
-            for k in dic_sets:
-                # print(k, "\n", o.id, "\n", dic_sets[k], "\n")
-                # t = dic_sets[k].copy()
-                # t_ = t.merge(df_g, how='inner', left_index=True, right_index=True)
-                # print(t_.loc[o.id])
-
-                # if k == 32:
-                #     print("dic_sets k=", k, "\n", dic_sets[k])
-                dic_sets_o[k] = pd.DataFrame(dic_sets[k].loc[o.id])
-                # if k == 32:
-                #     print("dic_sets_ok=", k, "\n", dic_sets_o[k])
-
-            # print("dic_sets_o\n", dic_sets_o, "\n")
-            # print("="*50, "\n")
-            r_ = self.get_peaks({"cl_all":ll_, "t_pop": t_pop, "clusters": o.clusters, "dic_sets_o": dic_sets_o,
-                                 "model_fact_normalized": model_fact_normalized,
-                                 "model_person_dim": model_person_dim,
-                                 "gene_obj":o})
-            r = r_["peak_array"]
-            # print("\nSummary:\n", "="*50, "\n", r, "\n", "="*150)
-            o.reduced_clusters = r
-            o.save()
+            nnn += 1
 
         result = {"status": "ok", "result": {"a": "a"}}
+        print(result)
         return result
 
     def get_peaks(self, dic):
@@ -595,9 +695,7 @@ class MSDataProcessing(BaseDataProcessing, BasePotentialAlgo, MSAlgo):
         gene_obj = dic["gene_obj"]
         model_fact_normalized = dic["model_fact_normalized"]
         model_person_dim = dic["model_person_dim"]
-        # print(dic_sets_o)
         t_pop = int(dic["t_pop"])/100
-        # print(l, "\n", t_pop, "\n", sum(l))
         t_pop = int(t_pop * sum(l))
         lb = 0
         ub = len(l)
@@ -823,10 +921,12 @@ class MSDataProcessing(BaseDataProcessing, BasePotentialAlgo, MSAlgo):
         sets = {}
         for k in dic_sets_o:
             df = dic_sets_o[k]
-            # if k == 32:
-            #     print("Set number= ", k)
-            #     print(df.columns[0])
-            #     print(df[int(df.columns[0])])
+            # if k == 22:
+
+            # print("Set number= ", k)
+            # print(df.columns[0])
+            # print(df[int(df.columns[0])])
+
             # print(df[int(df.columns[0])].index)
             # print(" set=", k, "\n", "-"*10,"\n", df[int(df.columns[0])].astype(float).values.tolist())
             min_ = float(df.loc["min"])
@@ -837,22 +937,39 @@ class MSDataProcessing(BaseDataProcessing, BasePotentialAlgo, MSAlgo):
             for c_ in clusters_:
                 c_min = min(clusters_[c_]['entity_value'])
                 c_max = max(clusters_[c_]['entity_value'])
-                # print("cluster number=", c_, "min=", c_min, "max=", c_max)
+
+                # if k in [47, 75]:
+                #     print(k, "\n min_=", min_, " max_=", max_)
+                #     # print("\n\n", clusters_[c_]['entity_value'], "\n")
+                #     print(k, "cluster number=", c_, "min=", c_min, "max=", c_max, "\n")
+
                 if c_min <= min_ <= c_max:
                     min_c_ = c_
-                    # print("min cluster= ", c_)
+                    # if k in [47, 75]:
+                    #     print("min cluster= ", c_)
                 if c_min <= max_ <= c_max:
                     max_c_ = c_
-                    # print("max cluster= ", c_)
-            # print(" min and max clusters=", min_c_, max_c_, "\n", "-"*25)
+                    # if k in [47, 75]:
+                    #     print("max cluster= ", c_)
+
+            # if k in [47, 75]:
+            #     print(k, "min_=", min_, " max=", max_)
+            #     print(k, " min and max clusters: min_c_= ", min_c_, " max_c_= ", max_c_, "\n", "-"*25)
+
             rll = []
             for c_ in clusters_:
                 if int(max_c_) >= int(c_) >= int(min_c_) :
                     rll += clusters_[c_]['entity_value']
-            # print(" values in the clusters between the min and the max=\n", rll, "\n number of values=", len(rll))
+
+            # if k in [47, 75]:
+            #     print(k, " values in the clusters between the min and the max=\n", rll, "\n number of values=", len(rll))
+            #     break
+
             if len(rll) > 0:
                 # print(" Median=", median(rll))
                 sets[k] = (median(rll), df)
+            else:
+                print(k, " NONE")
             # print("-"*100)
 
         # print(sets)
@@ -871,9 +988,9 @@ class MSDataProcessing(BaseDataProcessing, BasePotentialAlgo, MSAlgo):
         ##print(" A Create Blocks for l=", l, "sum=", sum(l), "\n","-"*100,"\n", peak_array, "\n", "-"*50, "\n Two_rules_combination")
         if peak_array["number_of_blocks"] > 1:
             two_rules_combination_1(l, peak_array, t_pop)
-            print(" After rule 1\n", "-"*10, "\n", peak_array, "\n", "-"*50)
+            # print(" After rule 1\n", "-"*10, "\n", peak_array, "\n", "-"*50)
         if peak_array["number_of_blocks"] > 1:
-            print(" Rule 2\n", "-"*10)
+            # print(" Rule 2\n", "-"*10)
             peak_array = two_rules_combination_2(l, peak_array)
         ## print(" Final Blocks\n", "-"*10, "\n", peak_array, "\n")
         # print("AAAAAAAAAA")

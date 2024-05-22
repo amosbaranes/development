@@ -1424,6 +1424,7 @@ class BasePotentialAlgo(object):
 
                     nli_ = 0
                     for li in range(l, int(step*100), -int(step*100)):
+                        # print(n, l,li,h,hi)
                         if cn != 0:
                             if round(li - step*100) != c3 and c3_continue == 1:
                                 # print("z")
@@ -1694,8 +1695,12 @@ class BasePotentialAlgo(object):
         # # threshold = float(dic["threshold"])
 
         threshold = 1
-        while threshold > 0.6:
+        while threshold > 0.69:
             threshold = round(100*(threshold-0.01))/100
+
+            if threshold not in [0.8, 0.77, 0.75]:
+                continue
+
             qs1 = model_temp_var.objects.filter(amount__gte=threshold).all()
             # print(threshold, qs1.count())
             # print(qs1)
@@ -1722,11 +1727,8 @@ class BasePotentialAlgo(object):
             df2["l"] = df2["idx"].apply(lambda x: int(x/10000)) - 100*df2["h"]
             df2["hi"] = df2["idx"].apply(lambda x: int(x/100)) - 10000*df2["h"] - 100*df2["l"]
             df2["li"] = df2["idx"].apply(lambda x: int(x)) - 1000000*df2["h"] - 10000*df2["l"] - 100*df2["hi"]
-            # print("XXX\n", df2)
-
             df__ = df2.merge(df1_similarity_, how='inner', left_on='id', right_on='temp_id')
             df__ = df__.drop(["id", "idx", "temp_id"], axis=1)
-            # print("WWW\n", df__)
 
             log_debug("create_similarity_excel 2")
             df__.dropna(how='all', axis=1, inplace=True)
@@ -1736,51 +1738,54 @@ class BasePotentialAlgo(object):
                 if c not in ["h", "l", "hi", "li"]:
                     cc[c] = str(self.measures_name[self.measures_name['id']==c].iloc[0][self.measure_name_]).strip()
                     l.append(cc[c])
-            # print("QQQ\n", cc, l, "\n", df__)
-
             df__.rename(columns=cc, inplace=True)
-            # print("PPP\n", df__)
             df = df__.copy()
             # print("df", "\n", df, "\n", df.shape)
 
-            # for c in l:
-            #     df = df[df[c]>=threshold]
-            #     # print(c, "\n", df)
+            for c in l:
+                df = df[df[c]>=threshold]
+                # print(c, "\n", df)
+            # print("AAAAA\n", df)
 
             df['sum'] = df.loc[:, l].sum(axis=1)
             df = df.sort_values(by='sum', ascending=False)
 
             # print("SSS df \n", df, "\n", df.shape)
 
-            r = {"h": {}, "hi":{}, "l":{}, "li":{}, "hhi": {}, "lli":{}}
-            for index, row in df.iterrows():
+            # r = {"h": {}, "hi":{}, "l":{}, "li":{}, "hih": {}, "lil":{}}
 
+            r = {"hi":{}, "li":{}}
+            r_ = {"h":{}, "l":{}}
+            for index, row in df.iterrows():
                 h_ = int(row["h"])
                 hi_ = int(row["hi"])
                 l_ = int(row["l"])
                 li_ = int(row["li"])
                 # print(h_, hi_, l_, li_)
-
-                if h_ not in r["h"]:
-                    r["h"][h_] = 0
+                if h_ not in r_["h"]:
+                    r_["h"][h_] = 0
                 if hi_ not in r["hi"]:
                     r["hi"][hi_] = 0
-                if l_ not in r["l"]:
-                    r["l"][l_] = 0
+                if l_ not in r_["l"]:
+                    r_["l"][l_] = 0
                 if li_ not in r["li"]:
                     r["li"][li_] = 0
 
-                if str(h_)+"-"+str(hi_) not in r["hhi"]:
-                    r["hhi"][str(h_)+"-"+str(hi_)] = 0
-                if str(l_)+"-"+str(li_) not in r["lli"]:
-                    r["lli"][str(l_)+"-"+str(li_)] = 0
+                # if str(hi_)+"-"+str(h_) not in r["hih"]:
+                #     r["hih"][str(hi_)+"-"+str(h_)] = 0
+                # if str(li_)+"-"+str(l_) not in r["lil"]:
+                #     r["lil"][str(li_)+"-"+str(l_)] = 0
+                # print("1\n", r)
 
-                r["h"][h_] += 1
+                r_["h"][h_] += 1
                 r["hi"][hi_] += 1
-                r["l"][l_] += 1
+                r_["l"][l_] += 1
                 r["li"][li_] += 1
-                r["hhi"][str(h_)+"-"+str(hi_)] += 1
-                r["lli"][str(l_)+"-"+str(li_)] += 1
+
+                # r["hih"][str(hi_)+"-"+str(h_)] += 1
+                # r["lil"][str(li_)+"-"+str(l_)] += 1
+
+                # print("3\n", r)
 
             # print("RRR df\n", df)
             # print("RRR df\n")
@@ -1790,16 +1795,42 @@ class BasePotentialAlgo(object):
                     r[j] = {k: v for k, v in sorted(r[j].items(), key=lambda x: x[1], reverse=True)}
                 except Exception as ex:
                     pass
-            # print(r, "\n")
-            # print("r", "\n")
+
+            for j in r_:
+                try:
+                    r_[j] = {k: v for k, v in sorted(r_[j].items(), key=lambda x: x[1], reverse=True)}
+                except Exception as ex:
+                    pass
+
 
             for j in r:
                 dr = {}
+                n = 1
+                a = 0
+                b = 0
+                for k in r[j]:
+                    if n == 1:
+                        a = r[j][k]
+                    else:
+                        b = r[j][k]
+                    n += 1
+                    if n == 3:
+                        break
+                if b == 0:
+                    rr_ = 100
+                else:
+                    rr_ = round(100*a/b)/100
+                # print(a, b, rr_)
+
                 dr['h'] = j + ": " + str(r[j])
                 df = df.append(dr, ignore_index=True)
+                dr['h'] = "A=" + str(a) + " B=" + str(b) + " A/B=" + str(rr_)
+                df = df.append(dr, ignore_index=True)
 
-            # print("ZZZ\n", df)
-            # print("ZZZ\n")
+            for j in r_:
+                dr = {}
+                dr['h'] = j + ": " + str(r_[j])
+                df = df.append(dr, ignore_index=True)
 
             try:
                 with pd.ExcelWriter(save_to_file, engine='openpyxl', mode="a") as writer:
