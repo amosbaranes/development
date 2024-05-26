@@ -22,6 +22,7 @@ from ...core.utils import log_debug, clear_log_debug
 
 from collections import OrderedDict
 from operator import getitem
+from sklearn.decomposition import PCA
 
 mpl.use('Agg')
 
@@ -344,6 +345,7 @@ class MSDataProcessing(BaseDataProcessing, BasePotentialAlgo, MSAlgo):
         result = {"status": "ok"}
         return result
 
+    # Not used
     def calculate_clusters(self, dic):
         # print("90921-0: \n", dic, "\n", "="*50)
         print(dic)
@@ -400,6 +402,7 @@ class MSDataProcessing(BaseDataProcessing, BasePotentialAlgo, MSAlgo):
 
         result = {"status": "ok"}
         return result
+    # --------
 
     def get_gene_clusters(self, row):
         # print('row')
@@ -1143,6 +1146,86 @@ class MSDataProcessing(BaseDataProcessing, BasePotentialAlgo, MSAlgo):
         # print(reduced_clusters)
         log_debug("get_gene_structure 9")
         result = {"status": "ok", "clusters": clusters, "reduced_clusters": reduced_clusters, "genes_temp": genes_temp}
+        # print(result)
+        return result
+
+    def get_pca(self, dic):
+        print("90944-44: get_pca\n", dic, "\n", "=" * 50)
+        app_ = dic["app"]
+        model_person_dim = apps.get_model(app_label=app_, model_name="persondim")
+        model_gene_dim = apps.get_model(app_label=app_, model_name="genedim")
+        model_fact = apps.get_model(app_label=app_, model_name='fact')
+        model_fact_normalized = apps.get_model(app_label=app_, model_name='factnormalized')
+        model_fact_normalized_temp = apps.get_model(app_label=app_, model_name='factnormalizedtemp')
+        # ------
+        nnn = 1
+        l = [0, 131, 10000]
+        re_dic = {}
+        while nnn <= 3:
+            re_dic[nnn] = {}
+            if nnn == 1:
+                qsf = model_fact.objects.filter(gene_dim__gene_group_dim__group_name="indep")
+                df_f = pd.DataFrame(list(qsf.values('gene_dim', 'person_dim', 'amount')))
+                df_f.columns = ['gene', 'person', 'amount']
+                df = df_f.pivot_table(values='amount', index='person', columns=['gene'], aggfunc='sum')
+                # print("AAAAA : ", nnn, "\n\n", df, "\n\n", df.shape, "\n", "="*50, "\n\n")
+            elif nnn == 2:
+                qsf = model_fact_normalized_temp.objects.filter(gene_dim__gene_group_dim__group_name="indep")
+                df_f = pd.DataFrame(list(qsf.values('gene_dim', 'person_dim', 'amount')))
+                df_f.columns = ['gene', 'person', 'amount']
+                df = df_f.pivot_table(values='amount', index='person', columns=['gene'], aggfunc='sum')
+                # print("WWW\n\n", df, "\n", df.shape)
+            else:
+                # qsp = model_person_dim.objects.all()
+                # -------
+                qsf = model_fact_normalized.objects.filter(gene_dim__gene_group_dim__group_name="indep")
+                df_f = pd.DataFrame(list(qsf.values('gene_dim', 'person_dim', 'amount')))
+                df_f.columns = ['gene', 'person', 'amount']
+                df = df_f.pivot_table(values='amount', index='person', columns=['gene'], aggfunc='sum')
+                # print("ZZZZZ\n\n", df, "\n", df.shape)
+
+            pca = PCA(n_components=3)
+            pca_data = pca.fit_transform(df)
+            # print(nnn, "\n", pca_data)
+            df_pca = pd.DataFrame(pca_data)
+            cc = {0:"x", 1:"y", 2:"z"}
+            df_pca.rename(columns=cc, inplace=True)
+            # print("df_pca\n", df_pca)
+            # --
+            dfi = df.reset_index()
+            dfi.index.name = "p"
+            dfi = dfi.reset_index()
+            dfi = dfi[["p", "person"]]
+            dfi = dfi.set_index("person")
+            # print(nnn, "\ndfi4\n", dfi)
+
+            lll = [model_person_dim.objects.filter(set_num__gt=l[0], set_num__lte=l[1]).all(),
+                   model_person_dim.objects.filter(set_num__gt=l[1], set_num__lte=l[2]).all()]
+
+            n__ = 1
+            for qsp in lll:
+                # print(nnn, "\nLLLLL\n", n__)
+                re_dic[nnn][n__] = {"x": [], "y": [], "z": []}
+                df_p = pd.DataFrame(list(qsp.values('id')))
+                llk = df_p['id'].tolist()
+                # print("llk1\n", llk)
+                dfi_ = dfi.loc[llk, :]
+                # print("dfi_\n", dfi_)
+                llk = dfi_['p'].tolist()
+                # print("llk2\n", llk)
+                df_pca_ = df_pca.loc[llk, :]
+                # print(n__, "\ndf_pca_\n", df_pca_, "\n", df_pca_.shape)
+                # -------
+                for index, row in df_pca_.iterrows():
+                    re_dic[nnn][n__]["x"].append(round(1000*row["x"])/1000)
+                    re_dic[nnn][n__]["y"].append(round(1000*row["y"])/1000)
+                    re_dic[nnn][n__]["z"].append(round(1000*row["z"])/1000)
+                n__ += 1
+            # print("PPPPPP", nnn)
+            nnn += 1
+
+        # print(re_dic)
+        result = {"status": "ok", "result": re_dic}
         # print(result)
         return result
 

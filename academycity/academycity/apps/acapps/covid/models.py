@@ -49,13 +49,15 @@ class Fact(TruncateTableMixin, models.Model):
         return str(self.var_dim) + " - " + str(self.entity_dim) + ": " + str(self.amount)
 
 
-# --------- Temp Data ---------------------------------
+# --------- Temp Data for Min/Max -----------------
 class Temp(TruncateTableMixin, models.Model):
+    dep_var_dim = models.ForeignKey(VarDim, on_delete=models.CASCADE, default=1,
+                                    related_name='dep_var_dim_temp_var')
     idx = models.IntegerField(default=0, blank=True, null=True)
     dic_hp = models.JSONField(null=True)
 
     def __str__(self):
-        return str(self.idx)
+        return str(self.dep_var_dim) +":"+ str(self.idx)
 
 class TempVar(TruncateTableMixin, models.Model):
     class Meta:
@@ -65,7 +67,6 @@ class TempVar(TruncateTableMixin, models.Model):
 
     temp = models.ForeignKey(Temp, on_delete=models.CASCADE, default=1,
                              related_name='temp_vars')
-    # var = models.SmallIntegerField(default=0, blank=True, null=True)
     var_dim = models.ForeignKey(VarDim, on_delete=models.CASCADE, default=1,
                                 related_name='var_dim_temp_var')
     sign = models.SmallIntegerField(default=1, blank=True, null=True)
@@ -73,3 +74,16 @@ class TempVar(TruncateTableMixin, models.Model):
 
     def __str__(self):
         return str(self.temp)
+# -------------------------------------------------
+
+# --------------
+class FactNormalizedMinMax(TruncateTableMixin, models.Model):
+    var_dim = models.ForeignKey(VarDim, on_delete=models.CASCADE, default=1,
+                                 related_name='var_dim_fact_normalized_minmax')
+    entity_dim = models.ForeignKey(EntityDim, on_delete=models.CASCADE, default=1,
+                                   related_name='entity_dim_fact_normalized_minmax')
+    amount = models.DecimalField(max_digits=10, decimal_places=4, default=0, blank=True, null=True)
+
+    def __str__(self):
+        return str(self.gene_dim) + " - " + str(self.person_dim) + ": " + str(self.amount)
+# --------------

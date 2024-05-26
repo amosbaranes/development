@@ -7423,11 +7423,13 @@ acChartCreator.prototype.create_obj = function()
 acChartCreator.prototype.set_chart_data = function(chart_type)
 {
   var pp_=this.parent.data["properties"];
-  //alert("90213-550\n"+JSON.stringify(chart_type));
+//  alert("90213-550\n"+JSON.stringify(chart_type));
+
   var data_=[];
   chart_attributes={"pies":{"type_name":"type", "type_value":"pie", "marker_attribute":"opacity", "marker_attribute_value":"0.7"},
                     "areas":{"type_name":"type", "type_value":"scatter", "marker_attribute":"opacity", "marker_attribute_value":"0.7"},
                     "scatter":{"type_name":"mode", "type_value":"markers", "marker_attribute":"opacity", "marker_attribute_value":"0.7"},
+                    "scatter3d":{"type_name":"mode", "type_value":"markers", "marker_attribute":"opacity", "marker_attribute_value":"0.7"},
                     "mscatter":{"type_name":"mode", "type_value":"markers", "marker_attribute":"opacity", "marker_attribute_value":"0.7"},
                     "lines":{"type_name":"mode", "type_value":"lines", "marker_attribute":"size", "marker_attribute_value":"8"},
                     "bars":{"type_name":"type", "type_value":"bar", "marker_attribute":"opacity", "marker_attribute_value":"0.7"},
@@ -7436,9 +7438,10 @@ acChartCreator.prototype.set_chart_data = function(chart_type)
                     "indicator":{"type_name":"mode", "type_value":"indicator"}
                    }
 
-    //alert("90223-550 chart_attributes\n"+JSON.stringify(chart_attributes));
+//    alert("90223-550 chart_attributes\n"+JSON.stringify(chart_attributes));
 //    chart_type["type_name"]=chart_attributes[chart_type["type"]]["type_name"];
 //    chart_type["type_name_value"]=chart_attributes[chart_type["type"]]["type_value"]
+
     data={"type":chart_type["type"],
          "type_name":chart_attributes[chart_type["type"]]["type_name"],
          "type_name_value":chart_attributes[chart_type["type"]]["type_value"],
@@ -7446,7 +7449,8 @@ acChartCreator.prototype.set_chart_data = function(chart_type)
          "x":{"data":chart_type["x"]},
          "series": chart_type["series"]
         }
-   //alert("90712 data:"+JSON.stringify(data));
+
+//   alert("90712 data:"+JSON.stringify(data));
 
  if(chart_type["type"]=='pies')
  {
@@ -7500,6 +7504,30 @@ acChartCreator.prototype.set_chart_data = function(chart_type)
 
    //alert(JSON.stringify(layout));
    Plotly.newPlot(this.chart, data_, layout );
+ }
+ else if(chart_type["type"]=='scatter3d') {
+
+   //alert("90711 chart_type"+JSON.stringify(chart_type));
+   //alert("90712 data:"+JSON.stringify(data));
+ var data_ = [];
+ for(var k in chart_type["c"])
+ {
+  //alert(k+":\n"+JSON.stringify(chart_type["c"][k]));
+  var trace = {mode: 'markers',name: "Group "+k,
+	marker: {size: 3,symbol: 'circle',line: {color: 'rgba(217, 217, 217, '+(k*0.14)+')',width: k*0.5},opacity: 0.8},
+	type: 'scatter3d'
+  };
+
+  for(var h in chart_type["c"][k])
+  { //alert(k+":"+h+":\n"+JSON.stringify(chart_type["c"][k][h]));
+   trace[h] = chart_type["c"][k][h]
+  }
+  data_.push(trace)
+ }
+
+  // alert(JSON.stringify(layout));
+ var layout = {margin: {l:0,r: 0,b: 0,t: 0}};
+ Plotly.newPlot(this.chart, data_, layout );
  }
  else if(chart_type["type"]=='mscatter') {
    //alert("90213-550-1\n"+JSON.stringify(chart_type["data"]));
