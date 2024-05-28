@@ -1149,8 +1149,9 @@ class MSDataProcessing(BaseDataProcessing, BasePotentialAlgo, MSAlgo):
         # print(result)
         return result
 
-    def get_pca(self, dic):
+    def calculate_pca(self, dic):
         print("90944-44: get_pca\n", dic, "\n", "=" * 50)
+        log_debug(str(dic))
         app_ = dic["app"]
         model_person_dim = apps.get_model(app_label=app_, model_name="persondim")
         model_gene_dim = apps.get_model(app_label=app_, model_name="genedim")
@@ -1158,10 +1159,15 @@ class MSDataProcessing(BaseDataProcessing, BasePotentialAlgo, MSAlgo):
         model_fact_normalized = apps.get_model(app_label=app_, model_name='factnormalized')
         model_fact_normalized_temp = apps.get_model(app_label=app_, model_name='factnormalizedtemp')
         # ------
+
+        model_pca = apps.get_model(app_label=app_, model_name="pca")
+        model_pca_data = apps.get_model(app_label=app_, model_name="pcadata")
+        # ------
         nnn = 1
         l = [0, 131, 10000]
         re_dic = {}
         while nnn <= 3:
+            log_debug("nnn="+str(nnn)+" A")
             re_dic[nnn] = {}
             if nnn == 1:
                 qsf = model_fact.objects.filter(gene_dim__gene_group_dim__group_name="indep")
@@ -1184,6 +1190,7 @@ class MSDataProcessing(BaseDataProcessing, BasePotentialAlgo, MSAlgo):
                 df = df_f.pivot_table(values='amount', index='person', columns=['gene'], aggfunc='sum')
                 # print("ZZZZZ\n\n", df, "\n", df.shape)
 
+            log_debug("nnn="+str(nnn)+" B")
             pca = PCA(n_components=3)
             pca_data = pca.fit_transform(df)
             # print(nnn, "\n", pca_data)
@@ -1191,6 +1198,7 @@ class MSDataProcessing(BaseDataProcessing, BasePotentialAlgo, MSAlgo):
             cc = {0:"x", 1:"y", 2:"z"}
             df_pca.rename(columns=cc, inplace=True)
             # print("df_pca\n", df_pca)
+            log_debug("nnn="+str(nnn)+" C")
             # --
             dfi = df.reset_index()
             dfi.index.name = "p"
@@ -1198,11 +1206,13 @@ class MSDataProcessing(BaseDataProcessing, BasePotentialAlgo, MSAlgo):
             dfi = dfi[["p", "person"]]
             dfi = dfi.set_index("person")
             # print(nnn, "\ndfi4\n", dfi)
+            log_debug("nnn="+str(nnn)+" D")
 
             lll = [model_person_dim.objects.filter(set_num__gt=l[0], set_num__lte=l[1]).all(),
                    model_person_dim.objects.filter(set_num__gt=l[1], set_num__lte=l[2]).all()]
 
             n__ = 1
+            log_debug("nnn="+str(nnn)+" G")
             for qsp in lll:
                 # print(nnn, "\nLLLLL\n", n__)
                 re_dic[nnn][n__] = {"x": [], "y": [], "z": []}
@@ -1216,7 +1226,23 @@ class MSDataProcessing(BaseDataProcessing, BasePotentialAlgo, MSAlgo):
                 df_pca_ = df_pca.loc[llk, :]
                 # print(n__, "\ndf_pca_\n", df_pca_, "\n", df_pca_.shape)
                 # -------
+                log_debug("nnn="+str(nnn)+" H")
                 for index, row in df_pca_.iterrows():
+                    pca_obj, is_created = model_pca.objects.get_or_create(set=nnn, sub_set=n__, component=1)
+                    pca_data_obj, is_created = model_pca_data.objects.get_or_create(pca=pca_obj, idx=index)
+                    pca_data_obj.amount = round(1000*row["x"])/1000
+                    pca_data_obj.save()
+                    #
+                    pca_obj, is_created = model_pca.objects.get_or_create(set=nnn, sub_set=n__, component=2)
+                    pca_data_obj, is_created = model_pca_data.objects.get_or_create(pca=pca_obj, idx=index)
+                    pca_data_obj.amount = round(1000*row["y"])/1000
+                    pca_data_obj.save()
+                    #
+                    pca_obj, is_created = model_pca.objects.get_or_create(set=nnn, sub_set=n__, component=3)
+                    pca_data_obj, is_created = model_pca_data.objects.get_or_create(pca=pca_obj, idx=index)
+                    pca_data_obj.amount = round(1000*row["z"])/1000
+                    pca_data_obj.save()
+                    #
                     re_dic[nnn][n__]["x"].append(round(1000*row["x"])/1000)
                     re_dic[nnn][n__]["y"].append(round(1000*row["y"])/1000)
                     re_dic[nnn][n__]["z"].append(round(1000*row["z"])/1000)
@@ -1225,6 +1251,42 @@ class MSDataProcessing(BaseDataProcessing, BasePotentialAlgo, MSAlgo):
             nnn += 1
 
         # print(re_dic)
+        log_debug("End Process")
+        result = {"status": "ok", "result": re_dic}
+        # print(result)
+        return result
+
+    def get_pca(self, dic):
+        print("90944-44: get_pca\n", dic, "\n", "=" * 50)
+        log_debug(str(dic))
+        app_ = dic["app"]
+        # ------
+        model_pca = apps.get_model(app_label=app_, model_name="pca")
+        model_pca_data = apps.get_model(app_label=app_, model_name="pcadata")
+        # ------
+        pca_sq = model_pca.objects.all()
+        re_dic = {}
+        for q in pca_sq:
+            print(q.id, q.set, q.sub_set, q.component)
+            if q.set not in re_dic:
+                re_dic[q.set] = {}
+            if q.sub_set not in re_dic[q.set]:
+                re_dic[q.set][q.sub_set] = {}
+            if q.component == 1:
+                component = "x"
+            elif q.component == 2:
+                component = "y"
+            elif q.component == 3:
+                component = "z"
+            if component not in re_dic[q.set][q.sub_set]:
+                re_dic[q.set][q.sub_set][component] = []
+
+            pca_data_sq = model_pca_data.objects.filter(pca__id=q.id).all().order_by('idx')
+            for q_ in pca_data_sq:
+                re_dic[q.set][q.sub_set][component].append(float(q_.amount))
+
+        # print(re_dic)
+        log_debug("End Process")
         result = {"status": "ok", "result": re_dic}
         # print(result)
         return result

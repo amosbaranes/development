@@ -74,6 +74,7 @@ urlpatterns += i18n_patterns(
     url(r'mm/', include('academycity.apps.acapps.mm.urls')),
     url(r'ms/', include('academycity.apps.acapps.ms.urls')),
     url(r'nu/', include('academycity.apps.acapps.nu.urls')),
+    url(r'ch/', include('academycity.apps.acapps.ch.urls')),
     url(r'op/', include('academycity.apps.acapps.op.urls')),
     url(r'training/', include('academycity.apps.acapps.training.urls')),
     url(r'dl/', include('academycity.apps.acapps.dl.urls')),

@@ -198,6 +198,7 @@ acApps = [
     'academycity.apps.acapps.mm',
     'academycity.apps.acapps.ms',
     'academycity.apps.acapps.nu',
+    'academycity.apps.acapps.ch',
     'academycity.apps.acapps.op',
     'academycity.apps.acapps.avi',
     'academycity.apps.acapps.avia',

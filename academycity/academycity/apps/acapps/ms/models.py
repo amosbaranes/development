@@ -1,5 +1,6 @@
 from __future__ import unicode_literals
 from django.db import models
+from django.utils.translation import ugettext_lazy as _, get_language
 from academycity.apps.core.sql import TruncateTableMixin
 
 class GeneGroupDim(TruncateTableMixin, models.Model):
@@ -97,6 +98,7 @@ class FactNormalizedTemp(TruncateTableMixin, models.Model):
     def __str__(self):
         return str(self.gene_dim) + " - " + str(self.person_dim) + ": " + str(self.amount)
 
+
 class FactNormalized(TruncateTableMixin, models.Model):
     gene_dim = models.ForeignKey(GeneDim, on_delete=models.CASCADE, default=1,
                                  related_name='gene_dim_fact_normalized')
@@ -106,4 +108,34 @@ class FactNormalized(TruncateTableMixin, models.Model):
 
     def __str__(self):
         return str(self.gene_dim) + " - " + str(self.person_dim) + ": " + str(self.amount)
+
+
+class PCA(TruncateTableMixin, models.Model):
+
+    class Meta:
+        verbose_name = _('pca')
+        verbose_name_plural = _('pcas')
+        ordering = ['set','sub_set','component']
+    #
+    set = models.SmallIntegerField(blank=True, null=True)
+    sub_set = models.SmallIntegerField(blank=True, null=True)
+    component = models.SmallIntegerField(blank=True, null=True)
+
+    def __str__(self):
+        return str(self.set) + " - " + str(self.sub_set) + ": " + str(self.component)
+
+class PCAData(TruncateTableMixin, models.Model):
+
+    class Meta:
+        verbose_name = _('pcadata')
+        verbose_name_plural = _('pcadatas')
+        ordering = ['pca','idx']
+    #
+    pca = models.ForeignKey(PCA, on_delete=models.CASCADE, default=1, related_name='pca_pca_data')
+    idx = models.IntegerField(blank=True, null=True)
+    amount = models.DecimalField(max_digits=10, decimal_places=4, default=0, blank=True, null=True)
+
+    def __str__(self):
+        return str(self.pca) + " - " + str(self.idx)
+
 # --------------------------------------------------------

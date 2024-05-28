@@ -1,7 +1,9 @@
 from __future__ import unicode_literals
 from django.contrib import admin
 from django.utils.translation import ugettext_lazy as _
-from .models import (PersonDim, PersonGroupDim, GeneDim, GeneGroupDim, Fact, FactNormalized, FactNormalizedTemp, Temp, TempVar)
+from .models import (PersonDim, PersonGroupDim, GeneDim, GeneGroupDim, Fact, FactNormalized, FactNormalizedTemp,
+                     Temp, TempVar,
+                     PCA, PCAData)
 
 
 @admin.register(PersonDim)
@@ -52,3 +54,14 @@ class TempAdmin(admin.ModelAdmin):
 class TempVarAdmin(admin.ModelAdmin):
     list_display = ('id', 'temp', 'gene_dim', 'amount', 'sign')
     list_filter = ['temp', 'gene_dim']
+
+# PCA
+@admin.register(PCA)
+class PCAAdmin(admin.ModelAdmin):
+    list_display = ('id', 'set', 'sub_set', 'component')
+    list_filter = ['set', 'sub_set']
+
+@admin.register(PCAData)
+class PCADataAdmin(admin.ModelAdmin):
+    list_display = ('id', 'pca', 'idx', 'amount')
+    list_filter = ['pca']
