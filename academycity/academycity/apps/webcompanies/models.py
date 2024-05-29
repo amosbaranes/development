@@ -37,7 +37,8 @@ class WebCompanies(models.Model):
                                       'institutionweb',
                                       'checkcashingweb',
                                       'tradesweb',
-                                      'portfolioweb'
+                                      'portfolioweb',
+                                      'chweb'
                                   )})
 
     target_id = models.PositiveIntegerField(null=True, blank=True, db_index=True)

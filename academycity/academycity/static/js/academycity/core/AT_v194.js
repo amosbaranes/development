@@ -321,7 +321,7 @@ function AdvancedTabsManager(dic=null)
 
 AdvancedTabsManager.prototype.create_atm = function(dic)
 {
- //alert("create_atm\n"+JSON.stringify(dic))
+ //alert("create_atm \n"+JSON.stringify(dic))
  try{this.add_delete_editor.outerHTML="";this.titles.outerHTML="";this.container.outerHTML="";} catch(er){}
  this.dic=dic;
  this.my_name=dic["my_name"];
@@ -338,7 +338,14 @@ AdvancedTabsManager.prototype.create_atm = function(dic)
  this.get_data_json_link_=dic["get_data_json_link"];
  this.company_obj_id=dic["company_obj_id"];
  this.user_id=dic["user_id"];
+ //--
  this.default_battalion=dic["default_battalion"];
+ this.default_entity=dic["default_entity"];
+ this.entity_name=dic["entity_name"];
+ var s = "this.default_"+this.entity_name+"="+this.default_entity;eval(s)
+ // for the ch application, default_entity is the same as default_branch
+ //--
+
  //alert("atm: "+this.default_battalion)
  //--------------------------
  this.titles=null;this.container=null;this.content={"last_obj_number":0};this.temp_number=1;

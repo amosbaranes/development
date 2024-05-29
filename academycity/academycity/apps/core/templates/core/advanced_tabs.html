@@ -73,6 +73,8 @@ var dic={
 "get_data_json_link":'{% url "core:get_data_json_link" %}',
 "is_show_btns":{%if request.user|has_group:"admins"%}true{% else %}false{%endif%},
 "default_battalion":"{{ default_battalion }}",
+"default_entity":"{{ default_entity }}",
+"entity_name":"{{ entity_name }}",
 "user_id":"{{ user_id }}"
 }
 
