@@ -41,17 +41,11 @@ def app_id(request, app_name, company_obj_id):
 
             if request.user.groups.filter(name="c_admin").exists():
                 app_name = "admin"
-
-            # if request.user.groups.filter(name="t_reports_manager").exists():
-            #     app_name = "reports"
-
-            # elif request.user.groups.filter(name="t_admin").exists():
-            #     if app_name == "admin":
-            #         app_name = "tadmin"
-
             elif request.user.groups.filter(name="admins").exists():
                 if app_name == "login":
                     app_name = "default"
+                else:
+                    app_name = "supperadmin"
                 # app_name = "admin"
                 log_debug("ch home : 60-04: "+app_name)
                 # print("ch home : 60-04: "+app_name)

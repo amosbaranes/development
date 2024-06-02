@@ -114,11 +114,13 @@ class OptionAlgo(object):
         if K < 10:
             f = 2
         elif K < 20:
-            f = 1.5
+            f = 1.2
         elif K < 30:
             f = 1
         elif K < 200:
             f = 0.3
+        elif K < 500:
+            f = 0.5
         elif K < 6000:
             f = 0.06
 

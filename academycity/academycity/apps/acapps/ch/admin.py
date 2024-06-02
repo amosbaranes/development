@@ -11,7 +11,7 @@ class ChWebAdmin(admin.ModelAdmin):
 
 @admin.register(Branches)
 class BranchesAdmin(admin.ModelAdmin):
-    list_display = ('id', )
+    list_display = ('id', 'name', 'branch_leader', )
 
 
 @admin.register(Departments)
@@ -31,7 +31,7 @@ class CellsAdmin(admin.ModelAdmin):
 
 @admin.register(Members)
 class MembersAdmin(admin.ModelAdmin):
-    list_display = ('user', )
+    list_display = ('user', 'full_name', 'branch')
 
 
 @admin.register(Children)

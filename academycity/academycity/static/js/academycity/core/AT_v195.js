@@ -342,7 +342,7 @@ AdvancedTabsManager.prototype.create_atm = function(dic)
  this.default_battalion=dic["default_battalion"];
  this.default_entity=dic["default_entity"];
  this.entity_name=dic["entity_name"];
- var s = "this.default_"+this.entity_name+"="+this.default_entity;eval(s)
+ try{var s="this.default_"+this.entity_name+"="+this.default_entity;eval(s)} catch(er){}
  // for the ch application, default_entity is the same as default_branch
  //--
 

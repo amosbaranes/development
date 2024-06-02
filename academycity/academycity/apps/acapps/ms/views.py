@@ -15,6 +15,7 @@ def home(request):
 
 def app_id(request, app_name, company_obj_id):
     log_debug("training home : 60-03: "+app_name)
+    print("training home : 60-03: "+app_name)
     try:
         if request.user.is_anonymous:
             user_id = -1

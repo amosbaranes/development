@@ -592,6 +592,114 @@ class MSDataProcessing(BaseDataProcessing, BasePotentialAlgo, MSAlgo):
         # ------
         nnn = 1
         l = [0, 131, 10000]
+        while nnn <= 2:
+
+            qsp = model_person_dim.objects.filter(set_num__gt=l[nnn-1], set_num__lte=l[nnn]).all()
+            # -------
+            qsf = model_fact.objects.filter(gene_dim__gene_group_dim__group_name="indep",
+                                           person_dim__set_num__gt=l[nnn - 1],
+                                           person_dim__set_num__lte=l[nnn])
+            df_f = pd.DataFrame(list(qsf.values('gene_dim', 'person_dim', 'amount')))
+            df_f.columns = ['gene', 'person', 'amount']
+            df = df_f.pivot_table(values='amount', index='gene', columns=['person'], aggfunc='sum')
+            # print("AAAAA : ", nnn, " : l[nnn-1], l[nnn]\n", l[nnn-1], l[nnn], "\n\n", df, "\n\n", df.shape, "\n", "="*50, "\n\n")
+
+            dic["nnn"] = nnn
+            dic["df"] = df.copy()
+            self.calculate_clusters_a(dic)
+            # print("JJJ\n", nnn, "\n", df, "\n", df.shape)
+            # --
+            df_s = pd.DataFrame(list(qsp.values('id', 'person_code', 'set_num')))
+            df_s.columns=['index', 'person_code', 'set_num']
+            df_s = df_s.dropna(axis=0) # .reset_index()
+            # print("df_s\n", df_s)
+
+            llb = df_s['set_num'].unique().tolist()
+
+            dic_sets = {}
+
+            for k in llb:
+                # print("Start k=", k, "\n", "-"*20)
+                df_sk = df_s[df_s['set_num']==k]
+                dic_sets[k] = df_sk
+
+            for k in dic_sets:
+                # print(k)
+                df_sk = dic_sets[k]
+                llk = df_sk['index'].tolist()
+                dfllk = df.loc[:, llk]  #
+                dic_sets[k] = dfllk
+
+                dfllk["min"] = dfllk.min(axis=1)
+                dfllk["max"] = dfllk.max(axis=1)
+                dic_sets[k] = dfllk
+
+            #
+            def take_key(elem):
+                return elem[2]
+
+            n__ = 0
+            qsg = model_gene_dim.objects.filter(gene_group_dim__group_name="indep")
+            nz = 0
+            for o in qsg:
+                nz+=1
+                log_debug(str(nnn) + " : " + str(nz) + " : " + str(o.id))
+                n__ += 1
+                try:
+                    clusters_ = o.clusters[str(nnn)]
+                except Exception as ex:
+                    print(ex)
+
+                ll = []
+                clusters__ = {}
+                for c in clusters_:
+                    ce = clusters_[c]["entity"]
+                    cd = clusters_[c]["centroid"]
+                    n = len(ce)
+                    ll.append([c, n, cd])
+                ll.sort(key=take_key)
+                ll_ = [j[1] for j in ll]
+                ll__ = [[j[0], clusters_[j[0]]] for j in ll]
+                n_clusters__ = 1
+                for h in ll__:
+                    clusters__[n_clusters__] = h[1]
+                    n_clusters__ += 1
+
+                dic_sets_o = {}
+
+                for k in dic_sets:
+                    # print(k, "\n", o.id, "\n", dic_sets[k], "\n")
+                    dic_sets_o[k] = pd.DataFrame(dic_sets[k].loc[o.id])
+
+                r_ = self.get_peaks({"cl_all":ll_, "t_pop": t_pop, "clusters": clusters__, "dic_sets_o": dic_sets_o,
+                                         "model_fact_normalized": model_fact_normalized_temp,
+                                         "model_person_dim": model_person_dim,
+                                         "gene_obj":o})
+
+                if nnn == 2:
+                    r = r_["peak_array"]
+                    # print("\nSummary:\n", "="*50, "\n", r, "\n", "="*150)
+                    o.reduced_clusters = r
+                    o.save()
+
+            nnn += 1
+
+        result = {"status": "ok", "result": {"a": "a"}}
+        print(result)
+        return result
+
+    def add_peaks_to_clusters_stage_2(self, dic):
+        print("90966-66: get_peaks\n", dic, "\n", "=" * 50)
+        app_ = dic["app"]
+        t_pop = dic["t_pop"]
+        model_person_dim = apps.get_model(app_label=app_, model_name="persondim")
+        model_gene_dim = apps.get_model(app_label=app_, model_name="genedim")
+        model_fact = apps.get_model(app_label=app_, model_name='fact')
+        model_fact_normalized = apps.get_model(app_label=app_, model_name='factnormalized')
+        model_fact_normalized_temp = apps.get_model(app_label=app_, model_name='factnormalizedtemp')
+        # ------
+        nnn = 1
+        l = [0, 131, 10000]
         while nnn <= 3:
             if nnn < 3:
                 qsp = model_person_dim.objects.filter(set_num__gt=l[nnn-1], set_num__lte=l[nnn]).all()
@@ -621,27 +729,42 @@ class MSDataProcessing(BaseDataProcessing, BasePotentialAlgo, MSAlgo):
             df_s.columns=['index', 'person_code', 'set_num']
             df_s = df_s.dropna(axis=0) # .reset_index()
             # print("df_s\n", df_s)
+
             llb = df_s['set_num'].unique().tolist()
+
             dic_sets = {}
-            count_ = 0
-            for k in llb:
-                # print("Start k=", k, "\n", "-"*20)
-                df_sk = df_s[df_s['set_num']==k]
+            if nnn < 3:
+                for k in llb:
+                    # print("Start k=", k, "\n", "-"*20)
+                    df_sk = df_s[df_s['set_num']==k]
+                    dic_sets[k] = df_sk
+            else:
+                for k in [1, 2]:
+                    df_sk = df_s[l[k-1] < df_s['set_num']]
+                    df_sk = df_sk[l[k] >= df_s['set_num']]
+                    dic_sets[k] = df_sk
+
+            for k in dic_sets:
+                # print(k)
+                df_sk = dic_sets[k]
                 llk = df_sk['index'].tolist()
-                dfllk = df.loc[:, llk] #
+                dfllk = df.loc[:, llk]  #
                 dic_sets[k] = dfllk
-                count_ += dfllk.shape[1]
 
                 dfllk["min"] = dfllk.min(axis=1)
                 dfllk["max"] = dfllk.max(axis=1)
                 dic_sets[k] = dfllk
+
             #
             def take_key(elem):
                 return elem[2]
 
             n__ = 0
             qsg = model_gene_dim.objects.filter(gene_group_dim__group_name="indep")
+            nz = 0
             for o in qsg:
+                nz+=1
+                log_debug(str(nnn) + " : " + str(nz) + " : " + str(o.id))
                 n__ += 1
                 try:
                     clusters_ = o.clusters[str(nnn)]
@@ -664,6 +787,7 @@ class MSDataProcessing(BaseDataProcessing, BasePotentialAlgo, MSAlgo):
                     n_clusters__ += 1
 
                 dic_sets_o = {}
+
                 for k in dic_sets:
                     # print(k, "\n", o.id, "\n", dic_sets[k], "\n")
                     dic_sets_o[k] = pd.DataFrame(dic_sets[k].loc[o.id])
@@ -1288,6 +1412,6 @@ class MSDataProcessing(BaseDataProcessing, BasePotentialAlgo, MSAlgo):
         # print(re_dic)
         log_debug("End Process")
         result = {"status": "ok", "result": re_dic}
-        # print(result)
+        print(result)
         return result
 

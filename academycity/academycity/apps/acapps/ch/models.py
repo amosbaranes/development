@@ -58,12 +58,12 @@ class Cells(models.Model):
         verbose_name_plural = 'cells'
 
     branch = models.ForeignKey(Branches, on_delete=models.CASCADE, blank=True, null=True)
-    cell_leader = models.ForeignKey('Members', on_delete=models.CASCADE, related_name='cell_members')
+    cell_leader = models.ForeignKey('Members', on_delete=models.CASCADE, related_name='cell_leader_members')
+    cell_host = models.ForeignKey('Members', on_delete=models.CASCADE, related_name='cell_host_members')
     cell_code = models.CharField(max_length=10, unique=True, blank=True, null=True)
     cell_name = models.CharField(max_length=100, blank=True, null=True)
     location = models.CharField(max_length=100, blank=True, null=True)
 
-    cell_host = models.CharField(max_length=100, blank=True, null=True)
     meeting_day_and_time = models.CharField(max_length=100, blank=True, null=True)
 
     def __str__(self):
@@ -79,6 +79,7 @@ class Members(TruncateTableMixin, models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, primary_key=True, related_name='members')
     created = models.DateTimeField(auto_now_add=True)
     member_type = models.SmallIntegerField(default=0)
+    suffix = models.CharField(max_length=5,  null=True, blank=True)
     gender = models.CharField(max_length=10,  null=True, blank=True)
     marital_status = models.BooleanField(default=True, null=True, blank=True)
     year_of_marriage = models.CharField(max_length=20, null=True, blank=True)
@@ -100,6 +101,10 @@ class Members(TruncateTableMixin, models.Model):
     department = models.ForeignKey(Departments, on_delete=models.CASCADE, null=True, blank=True)
     cell = models.ForeignKey(Cells, on_delete=models.CASCADE,  null=True, blank=True)
     branch = models.ForeignKey(Branches, on_delete=models.CASCADE, null=True, blank=True)
+
+    @property
+    def full_name(self):
+        return self.user.get_full_name()
 
     def __str__(self):
         return self.user.get_full_name()
