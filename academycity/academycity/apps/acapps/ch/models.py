@@ -61,7 +61,7 @@ class BranchDepartments(TruncateTableMixin, models.Model):
         return str(self.branch.name) + " " + str(self.department.name)
 
 
-class Cells(models.Model):
+class Cells(TruncateTableMixin, models.Model):
     class Meta:
         verbose_name = 'cell'
         verbose_name_plural = 'cells'
@@ -124,8 +124,8 @@ class Children(TruncateTableMixin, models.Model):
         verbose_name = 'child'
         verbose_name_plural = 'children'
 
-    member = models.ForeignKey(Members, on_delete=models.SET_NULL, related_name='children_members')
-    branch = models.ForeignKey(Branches, null=True, blank=True, on_delete=models.SET_NULL)
+    member = models.ForeignKey(Members, on_delete=models.SET_NULL, null=True, blank=True, related_name='children_members')
+    branch = models.ForeignKey(Branches, on_delete=models.SET_NULL, null=True, blank=True, related_name='children_branches')
     first_name = models.CharField(max_length=50, null=True, blank=True)
     last_name = models.CharField(max_length=50, null=True, blank=True)
 
