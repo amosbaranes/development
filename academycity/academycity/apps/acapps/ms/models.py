@@ -139,3 +139,10 @@ class PCAData(TruncateTableMixin, models.Model):
         return str(self.pca) + " - " + str(self.idx)
 
 # --------------------------------------------------------
+
+
+class Debug(TruncateTableMixin, models.Model):
+    value = models.CharField(max_length=1024)
+
+    def __str__(self):
+        return self.value

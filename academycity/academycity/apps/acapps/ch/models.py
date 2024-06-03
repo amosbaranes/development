@@ -58,8 +58,8 @@ class Cells(models.Model):
         verbose_name_plural = 'cells'
 
     branch = models.ForeignKey(Branches, on_delete=models.CASCADE, blank=True, null=True)
-    cell_leader = models.ForeignKey('Members', on_delete=models.CASCADE, related_name='cell_leader_members')
-    cell_host = models.ForeignKey('Members', on_delete=models.CASCADE, related_name='cell_host_members')
+    cell_leader = models.ForeignKey('Members', on_delete=models.CASCADE, blank=True, null=True, related_name='cell_leader_members')
+    cell_host = models.ForeignKey('Members', on_delete=models.CASCADE, blank=True, null=True, related_name='cell_host_members')
     cell_code = models.CharField(max_length=10, unique=True, blank=True, null=True)
     cell_name = models.CharField(max_length=100, blank=True, null=True)
     location = models.CharField(max_length=100, blank=True, null=True)

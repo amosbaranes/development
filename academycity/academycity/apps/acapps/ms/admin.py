@@ -1,9 +1,14 @@
 from __future__ import unicode_literals
 from django.contrib import admin
 from django.utils.translation import ugettext_lazy as _
-from .models import (PersonDim, PersonGroupDim, GeneDim, GeneGroupDim, Fact, FactNormalized, FactNormalizedTemp,
+from .models import (Debug, PersonDim, PersonGroupDim, GeneDim, GeneGroupDim, Fact, FactNormalized, FactNormalizedTemp,
                      Temp, TempVar,
                      PCA, PCAData)
+
+
+@admin.register(Debug)
+class DebugAdmin(admin.ModelAdmin):
+    list_display = ['id', 'value']
 
 
 @admin.register(PersonDim)
