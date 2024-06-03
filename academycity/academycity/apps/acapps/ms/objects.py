@@ -324,6 +324,7 @@ class MSDataProcessing(BaseDataProcessing, BasePotentialAlgo, MSAlgo):
         df = dic["df"]
         nnn = str(dic["nnn"])
         # print(nnn, "\n", nnn, "\n", nnn, "\n", "="*10, "\n")
+        self.log_debug("calculate_clusters_a A")
 
         model_gene_dim = apps.get_model(app_label=app_, model_name="genedim")
         # print(df)
@@ -336,6 +337,7 @@ class MSDataProcessing(BaseDataProcessing, BasePotentialAlgo, MSAlgo):
             # print("="*100)
             # print(index)
             # print(row)
+            self.log_debug("calculate_clusters_a A " + str(index))
             clusters = self.get_gene_clusters(row)
             # print("number of clusters\n\n", len(clusters))
             obj = model_gene_dim.objects.get(id=index)
@@ -611,12 +613,13 @@ class MSDataProcessing(BaseDataProcessing, BasePotentialAlgo, MSAlgo):
         df_f.columns = ['gene', 'person', 'amount']
         df = df_f.pivot_table(values='amount', index='gene', columns=['person'], aggfunc='sum')
         # print("AAAAA : ", nnn, " : l[nnn-1], l[nnn]\n", l[nnn-1], l[nnn], "\n\n", df, "\n\n", df.shape, "\n", "="*50, "\n\n")
-
         self.log_debug(str(nnn) + " C")
-
         dic["df"] = df.copy()
         self.log_debug(str(nnn) + " D")
         self.calculate_clusters_a(dic)
+        self.clear_log_debug()
+        self.log_debug("calculate_clusters_a finished")
+
         self.log_debug(str(nnn) + " E")
         # print("JJJ\n", nnn, "\n", df, "\n", df.shape)
         # --

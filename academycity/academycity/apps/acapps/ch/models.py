@@ -16,13 +16,21 @@ class ChWeb(TruncateTableMixin, models.Model):
         return str(self.program_name)
 
 
+class Debug(TruncateTableMixin, models.Model):
+    value = models.CharField(max_length=1024)
+
+    def __str__(self):
+        return self.value
+# -------------------------------------------------
+
 class Branches(TruncateTableMixin, models.Model):
     class Meta:
         verbose_name = 'branch'
         verbose_name_plural = 'branches'
 
     name = models.CharField(max_length=100, null=True, blank=True)
-    branch_leader = models.ForeignKey('Members', on_delete=models.CASCADE, related_name='branches_members')
+    branch_leader = models.ForeignKey('Members', on_delete=models.SET_NULL, blank=True, null=True,
+                                      related_name='branches_members')
 
     def __str__(self):
         return self.name
@@ -46,7 +54,8 @@ class BranchDepartments(TruncateTableMixin, models.Model):
 
     department = models.ForeignKey(Departments, on_delete=models.CASCADE, related_name='branch_departments_department')
     branch = models.ForeignKey(Branches, on_delete=models.CASCADE, related_name='branch_departments_branch')
-    department_leader = models.ForeignKey('Members', on_delete=models.CASCADE, related_name='departments_members')
+    department_leader = models.ForeignKey('Members', on_delete=models.SET_NULL, blank=True, null=True,
+                                          related_name='departments_members')
 
     def __str__(self):
         return str(self.branch.name) + " " + str(self.department.name)
@@ -58,8 +67,8 @@ class Cells(models.Model):
         verbose_name_plural = 'cells'
 
     branch = models.ForeignKey(Branches, on_delete=models.CASCADE, blank=True, null=True)
-    cell_leader = models.ForeignKey('Members', on_delete=models.CASCADE, blank=True, null=True, related_name='cell_leader_members')
-    cell_host = models.ForeignKey('Members', on_delete=models.CASCADE, blank=True, null=True, related_name='cell_host_members')
+    cell_leader = models.ForeignKey('Members', on_delete=models.SET_NULL, blank=True, null=True, related_name='cell_leader_members')
+    cell_host = models.ForeignKey('Members', on_delete=models.SET_NULL, blank=True, null=True, related_name='cell_host_members')
     cell_code = models.CharField(max_length=10, unique=True, blank=True, null=True)
     cell_name = models.CharField(max_length=100, blank=True, null=True)
     location = models.CharField(max_length=100, blank=True, null=True)
@@ -98,9 +107,9 @@ class Members(TruncateTableMixin, models.Model):
     # discipleship_class = models.ForeignKey('DiscipleshipClass', on_delete=models.CASCADE, null=True, blank=True)
     # discipleship_class_group = models.ForeignKey('CourseSchedule', on_delete=models.CASCADE, null=True, blank=True)
 
-    department = models.ForeignKey(Departments, on_delete=models.CASCADE, null=True, blank=True)
-    cell = models.ForeignKey(Cells, on_delete=models.CASCADE,  null=True, blank=True)
-    branch = models.ForeignKey(Branches, on_delete=models.CASCADE, null=True, blank=True)
+    department = models.ForeignKey(Departments, on_delete=models.SET_NULL, null=True, blank=True)
+    cell = models.ForeignKey(Cells, on_delete=models.SET_NULL,  null=True, blank=True)
+    branch = models.ForeignKey(Branches, on_delete=models.SET_NULL, null=True, blank=True)
 
     @property
     def full_name(self):
@@ -115,8 +124,8 @@ class Children(TruncateTableMixin, models.Model):
         verbose_name = 'child'
         verbose_name_plural = 'children'
 
-    member = models.ForeignKey(Members, on_delete=models.CASCADE, related_name='children_members')
-    branch = models.ForeignKey(Branches, null=True, blank=True, on_delete=models.CASCADE)
+    member = models.ForeignKey(Members, on_delete=models.SET_NULL, related_name='children_members')
+    branch = models.ForeignKey(Branches, null=True, blank=True, on_delete=models.SET_NULL)
     first_name = models.CharField(max_length=50, null=True, blank=True)
     last_name = models.CharField(max_length=50, null=True, blank=True)
 

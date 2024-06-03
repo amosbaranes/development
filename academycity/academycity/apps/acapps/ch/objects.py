@@ -41,12 +41,15 @@ class ChAlgo(object):
             super(ChAlgo, self).__init__()
         except Exception as ex:
             print("Error 90004-010 ChDataProcessing:\n"+str(ex), "\n", '-'*50)
-        # print("AvicAlgo\n", self.app)
+        # print("ChAlgo\n", self.app)
         # print("90004-020 ChAlgo\n", dic, '\n', '-'*50)
         self.app = dic["app"]
         # print("ChAlgo 9004", self.app)
-        measure_group_model_name_ = dic["measure_group_model"]
-        self.model_measure_group = apps.get_model(app_label=self.app, model_name=measure_group_model_name_)
+        try:
+            measure_group_model_name_ = dic["measure_group_model"]
+            self.model_measure_group = apps.get_model(app_label=self.app, model_name=measure_group_model_name_)
+        except Exception as ex:
+            pass
 
 
 class ChDataProcessing(BaseDataProcessing, BasePotentialAlgo, ChAlgo):
@@ -54,9 +57,19 @@ class ChDataProcessing(BaseDataProcessing, BasePotentialAlgo, ChAlgo):
         # print("90005-000 AvicDataProcessing\n", dic, '\n', '-' * 50)
         super().__init__(dic)
         # print("9005 AvicDataProcessing ", self.app)
+        self.Debug = apps.get_model(app_label=self.app, model_name="debug")
+
+
+    def log_debug(self, value):
+        self.Debug.objects.create(value=value)
+
+    def clear_log_debug(self):
+        self.Debug.truncate()
+    # --------------------------------
 
     def upload_branches(self, dic):
         print('90100-1000-1 dic', dic)
+        self.clear_log_debug()
         app_ = dic["app"]
         file_path = self.upload_file(dic)["file_path"]
         # print("-"*100, "\n", file_path, "\n", "-"*100)
@@ -66,13 +79,14 @@ class ChDataProcessing(BaseDataProcessing, BasePotentialAlgo, ChAlgo):
         model_branches = apps.get_model(app_label=app_, model_name="branches")
         #
         my_group, is_created = Group.objects.get_or_create(name='c_admin')
+        ch_group, is_created = Group.objects.get_or_create(name='church')
 
         n_ = 100
         for index, row in df.iterrows():
             n_ += 1
             branch_name_ = str(row["branch_name"]).upper()
             username_ = str(row["username"])
-            password_ = str(row["password"])
+            password_ = username_ +"#"
 
             email_ = str(row["email"])
             if email_ == "":
@@ -81,17 +95,17 @@ class ChDataProcessing(BaseDataProcessing, BasePotentialAlgo, ChAlgo):
             branch_leader_ = str(row["branch_leader"])
 
             l = branch_leader_.split(" ")
-            print(l)
             suffix_ = l[0]
             first_name_ = l[1]
             last_name_ = l[2]
+            # print(suffix_+" "+first_name_+" "+last_name_)
+            self.log_debug(suffix_+" "+first_name_+" "+last_name_)
 
             try:
                 u = User.objects.get(username=username_)
                 count = u.delete()
                 # print("B count\n", count, "\n")
             except Exception as ex:
-                # pass
                 print("9055-55 Error " + str(ex))
             try:
                 u = User.objects.create_user(username=username_, email=email_, password=password_)
@@ -101,13 +115,13 @@ class ChDataProcessing(BaseDataProcessing, BasePotentialAlgo, ChAlgo):
                 u.save()
                 my_group.user_set.add(u)
                 my_group.save()
+                ch_group.user_set.add(u)
+                ch_group.save()
             except Exception as ex:
                 print("9000-00 Error " + str(ex))
 
             try:
                 member_obj, is_created = model_members.objects.get_or_create(user=u)
-                member_obj.first_name = first_name_
-                member_obj.last_name = last_name_
                 member_obj.suffix = suffix_
                 member_obj.save()
             except Exception as ex:
@@ -123,6 +137,81 @@ class ChDataProcessing(BaseDataProcessing, BasePotentialAlgo, ChAlgo):
                 print("9001-02 Error " + str(ex))
 
         print("Done")
+        self.log_debug("Done upload_branches.")
+        result = {"status": "ok"}
+        return result
+
+    def upload_cells_members(self, dic):
+        print('90100-1000-2 dic', dic)
+        app_ = dic["app"]
+        file_path = self.upload_file(dic)["file_path"]
+        # print("-"*100, "\n", file_path, "\n", "-"*100)
+        df = pd.read_excel(file_path, sheet_name="Data", header=0)
+        # print(df)
+
+        model_members = apps.get_model(app_label=app_, model_name="members")
+        ch_group, is_created = Group.objects.get_or_create(name='church')
+
+        # n_cell = 100
+        # n_name = 100
+        for index, row in df.iterrows():
+            username_ = str(row["username"])
+            password_ = username_ + "#"
+            email_ = str(row["email"]).strip()
+            if email_ == "" or email_ == "nan":
+                email_ = username_ + "@gmail.com"
+
+            cell_leader_ = str(row["cell_leader"]).strip()
+
+            l = cell_leader_.split(" ")
+            len_ = len(l)
+            last_name_ = ""
+            first_name_ = ""
+            try:
+                first_name_ = l[0].strip()
+                last_name_ = l[1].strip()
+            except Exception as ex:
+                pass
+
+            # if len_ > 2:
+            #     print(len_)
+            #     print(last_name_, first_name_)
+
+            is_create_member = 1
+            try:
+                # print(username_, first_name_, last_name_)
+                self.log_debug(username_ +": " + first_name_ + " " + last_name_)
+                u = User.objects.get(first_name=first_name_, last_name = last_name_)
+                # print("u", u)
+                if u.groups.filter(name="church").exists():
+                    # print("Already exist and in group church")
+                    is_create_member = 0
+                    # print("found", u)
+            except Exception as ex:
+                # print("Do not exist")
+                pass
+
+            if is_create_member == 1:
+                # print("create member")
+                u = User.objects.create_user(username=username_, email=email_, password=password_)
+                # print(u)
+                # print(u.password)
+                u.first_name = first_name_
+                u.last_name = last_name_
+                u.save()
+                ch_group.user_set.add(u)
+                ch_group.save()
+
+            try:
+                member_obj, is_created = model_members.objects.get_or_create(user=u)
+                member_obj.suffix = ""
+                member_obj.save()
+                print("member: ", member_obj)
+            except Exception as ex:
+                print("9001-02 Error " + str(ex))
+
+        print("Done upload_cells_members.")
+        self.log_debug("Done upload_cells_members.")
         result = {"status": "ok"}
         return result
 
@@ -174,9 +263,7 @@ class ChDataProcessing(BaseDataProcessing, BasePotentialAlgo, ChAlgo):
                 u = User.objects.get(first_name=first_name_, last_name = last_name_)
                 print(u)
             except Exception as ex:
-                print(ex)
-
-
+                print("Error 20-20-1", ex)
 
 
         #
