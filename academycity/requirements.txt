@@ -214,3 +214,7 @@ zope.interface==5.1.2
 tensorflow
 seaborn
 simfin
+quandl
+alpha_vantage
+pyyaml
+v20

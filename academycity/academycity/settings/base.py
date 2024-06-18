@@ -206,6 +206,7 @@ acApps = [
     'academycity.apps.acapps.avic',
     'academycity.apps.acapps.arthur',
     'academycity.apps.acapps.covid',
+    'academycity.apps.acapps.case1',
     'academycity.apps.acapps.ao',
     'academycity.apps.acapps.dl',
     'academycity.apps.acapps.ml',

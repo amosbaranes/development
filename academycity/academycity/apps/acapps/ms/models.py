@@ -110,6 +110,7 @@ class FactNormalized(TruncateTableMixin, models.Model):
         return str(self.gene_dim) + " - " + str(self.person_dim) + ": " + str(self.amount)
 
 
+# --------------------------------------------------------
 class PCA(TruncateTableMixin, models.Model):
 
     class Meta:
@@ -137,9 +138,7 @@ class PCAData(TruncateTableMixin, models.Model):
 
     def __str__(self):
         return str(self.pca) + " - " + str(self.idx)
-
 # --------------------------------------------------------
-
 
 class Debug(TruncateTableMixin, models.Model):
     value = models.CharField(max_length=1024)

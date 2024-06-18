@@ -46,7 +46,7 @@ from ..core.accounting import post_gl
 from ..core.utils import is_role
 from ..core.sql import SQL
 from ..actions.utils import create_action
-from .tasks import asy_email_message
+# from .tasks import asy_email_message
 from ..globsim.views import configure_globsim_game
 from ..corporatevaluation.views import configure_corporatevaluation_project
 # -----------------------------------

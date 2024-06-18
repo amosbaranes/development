@@ -4,7 +4,6 @@ from ...core.utils import log_debug
 from django.urls import reverse
 from ...core.apps_general_functions import activate_obj_function
 from django.http import HttpResponse
-# from .objects import DataProcessing
 import os
 import json
 
@@ -24,7 +23,7 @@ def app_id(request, app_name, company_obj_id):
     except Exception as ex:
         print(ex)
     company_obj_id_ = company_obj_id
-    app_ = "arthur"
+    app_ = "case1"
     log_debug("app_id 60-05: app_name=" + app_name + ", app_="  + app_ + ", company_obj_id_= " + str(company_obj_id_))
     app_activate_function_link_ = reverse(app_+':activate_obj_function', kwargs={})
     logmein_link_ = reverse(app_+':logmein', kwargs={})
@@ -37,8 +36,5 @@ def app_id(request, app_name, company_obj_id):
                                                 "title": app_}
                   )
 
-
 def app(request, app_name):
     return app_id(request, app_name, -1)
-
-

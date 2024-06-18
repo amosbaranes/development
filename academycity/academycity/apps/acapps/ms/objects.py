@@ -108,6 +108,7 @@ class MSDataProcessing(BaseDataProcessing, BasePotentialAlgo, MSAlgo):
         dic = dic["cube_dic"]
         # print('90121-3 dic', dic)
 
+        # dep variables uploaded to fact and factnormalized tables
         model_fact_normalized = apps.get_model(app_label=self.app, model_name="factnormalized")
 
         model_group_name_ = dic["dimensions"]["person_group_dim"]["model"]
@@ -589,6 +590,8 @@ class MSDataProcessing(BaseDataProcessing, BasePotentialAlgo, MSAlgo):
     # count all people
     # (1) if 7/total people < 5% (make parameters T) then combine to the biggest (by nuber of peoples) block
     # (2) a get the lowest block it is 12 compare it to the pick of the other block if it is biger combine
+
+    # ----- Batch Normalization -----
     def add_peaks_to_clusters(self, dic):
         print("90966-66: get_peaks\n", dic, "\n", "=" * 50)
         self.clear_log_debug()
@@ -1387,4 +1390,5 @@ class MSDataProcessing(BaseDataProcessing, BasePotentialAlgo, MSAlgo):
         result = {"status": "ok", "result": re_dic}
         print(result)
         return result
+    # -----------------------------------------
 
