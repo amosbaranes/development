@@ -659,19 +659,20 @@ class BasePotentialAlgo(object):
             # ----
             s_ = 'model_var.objects.filter(' + self.var_name + '_group_dim__group_name="indep").all()'
             qs1 = eval(s_)
-            ll = [dn_text]
+            ll__ = [dn_text]
             for q in qs1:
-                s = "ll.append(q." + self.var_name + "_code)"
-                # print(s)
-                eval(s)
+                s__ = "ll__.append(q." + self.var_name + "_code)"
+                eval(s__)
+
             try:
                 qs = self.model_fact.objects.filter(person_dim__person_group_dim__group_name="Model",
-                                                    gene_dim__gene_group_dim_group_name__in=ll)
+                                                    gene_dim__gene_group_dim_group_name__in=ll__)
             except Exception as ex:
-                s = 'self.model_fact.objects.filter(' + self.var_name + '_dim__' + self.var_name + '_code__in = ll)'
-                # print(s)
+                s = 'self.model_fact.objects.filter(' + self.var_name + '_dim__' + self.var_name + '_code__in = ll__)'
                 qs = eval(s)
+
             df = pd.DataFrame(list(qs.values(self.var_name + "_dim", self.entity_name + "_dim", "amount")))
+
             try:
                 df = df.pivot(index=self.entity_name + "_dim", columns=self.var_name + '_dim', values='amount')
                 df = df.sort_values(dn_, ascending=False)
@@ -679,10 +680,9 @@ class BasePotentialAlgo(object):
                 df = df.drop([self.entity_name + "_dim"], axis=1)
                 # self.to_save_normalize.append((df.copy(), 'Data'))
             except Exception as ex:
-                print(ex)
+                print("Error 80-80-22: ", ex)
 
             # print(df)
-
             # print("BB\n", df)
             # print(df.columns)
             # print(df.head(56),"\n", df.tail(56))
@@ -790,10 +790,10 @@ class BasePotentialAlgo(object):
 
                         # print("h", h_, "hi", hi_, "n_y_h=", n_y_h)
                         # print(df_h_e)
-                        print(df_h_e.iloc[n_y_h])
+                        # print(df_h_e.iloc[n_y_h])
 
                         y_max_cut = df_h_e.iloc[n_y_h][dn_]
-                        print("ZZZ\n", y_max_cut)
+                        # print("ZZZ\n", y_max_cut)
 
                         nli_ = 0
                         for li in range(l, int(step * 100), -int(step * 100)):
@@ -926,8 +926,6 @@ class BasePotentialAlgo(object):
                             # print('AAA')
                         # print('AAA1')
                     # print('AAA2')
-
-            print(9999)
 
         # # #
         print("90099-99-1000 BasePotentialAlgo normalize_similarity: \n", dic, "\n'", "="*100)

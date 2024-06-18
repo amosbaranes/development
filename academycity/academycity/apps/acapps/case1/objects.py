@@ -86,7 +86,7 @@ class Case1DataProcessing(BaseDataProcessing, BasePotentialAlgo, Case1Algo):
         # print(df)
         #
         for i in range(len(columns_)):
-            f_ = columns_[i]
+            f_ = columns_[i].strip()
             print("="*10, "\n", f_, "\n", "-"*10)
             if i > 0:
                 if i < n_independent_variables:
