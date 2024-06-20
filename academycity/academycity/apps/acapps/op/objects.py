@@ -9,6 +9,9 @@ import matplotlib.pyplot as plt
 
 from openpyxl import Workbook, load_workbook
 
+import sklearn
+from sklearn.datasets import make_circles
+
 from sklearn import linear_model, neighbors
 from sklearn import preprocessing
 from sklearn import pipeline
@@ -23,7 +26,6 @@ from sklearn.model_selection import cross_val_score
 from scipy import stats
 import joblib
 
-import yfinance as yf
 from datetime import datetime, timedelta
 
 """
@@ -47,6 +49,16 @@ from alpha_vantage.timeseries import TimeSeries
 
 from abc import ABC, abstractmethod
 import v20
+
+# ----
+import warnings
+warnings.filterwarnings('ignore')
+
+from pathlib import Path
+from copy import deepcopy
+
+# import seaborn as sns
+# ---
 
 # import talib
 # ---
@@ -680,6 +692,51 @@ class OptionDataProcessing(BaseDataProcessing, BasePotentialAlgo, OptionAlgo):
 
 
 # ======================================
+class DeepLearning(object):
+    # print("CC1 DeepLearning")
+    def __init__(self, dic):
+        # print("CC5 DeepLearning\n", "-"*100, "\n", dic, "\n", "-"*100)
+        np.random.seed(seed=42)
+
+class MLAT(BaseDataProcessing, BasePotentialAlgo, DeepLearning):
+    # print("AA MLAT")
+    def __init__(self, dic):
+        # print("AA2 MLAT\n", "-"*100, "\n", dic, "\n", "-"*100)
+        # super().__init__(dic)
+        super(MLAT, self).__init__(dic)
+
+        self.RESULT_PATH = os.path.join(self.PROJECT_ROOT_DIR, "mlat_results")
+        os.makedirs(self.RESULT_PATH, exist_ok=True)
+
+    def test(self, dic):
+        print(" 90-100-1 MLAT.test\n", "-"*100, "\n", dic, "\n", "-"*100)
+
+        N = 50000
+        factor = 0.1
+        noise = 0.1
+
+        n_iterations = 50000
+        learning_rate = 0.0001
+        momentum_factor = .5
+
+        # generate data
+        X, y = make_circles(n_samples=N,shuffle=True,factor=factor,noise=noise)
+        # define outcome matrix
+        # print("y\n", y)
+
+        Y = np.zeros((N, 2))
+        for c in [0, 1]:
+            Y[y == c, c] = 1
+        # print("Y\n", Y)
+        print("X\n", X)
+
+        result = {"status": "ok"}
+        # print(result)
+        return result
+
+
+
+# ======================================
 class Broker(object):
     # print("CC1 OandaBroker")
     def __init__(self, dic):
@@ -791,6 +848,342 @@ class OandaBroker(Broker):
         result = {"status": "ok"}
         # print(result)
         return result
+
+# -- Mastering Python for Finance --
+# ========== Chapter 9 ============================
+class TickData(object):
+    # Stores a single unit of data
+
+    def __init__(self, timestamp='', symbol='', open_price=0, close_price=0, total_volume=0):
+        self.symbol = symbol
+        self.timestamp = timestamp
+        self.open_price = open_price
+        self.close_price = close_price
+        self.total_volume = total_volume
+
+class MarketData(object):
+    def __init__(self):
+        self.recent_ticks = dict()  # indexed by symbol
+
+    def add_tick_data(self, tick_data):
+        self.recent_ticks[tick_data.symbol] = tick_data
+
+    def get_open_price(self, symbol):
+        return self.get_tick_data(symbol).open_price
+
+    def get_close_price(self, symbol):
+        return self.get_tick_data(symbol).close_price
+
+    def get_tick_data(self, symbol):
+        return self.recent_ticks.get(symbol, TickData())
+
+    def get_timestamp(self, symbol):
+        return self.recent_ticks[symbol].timestamp
+
+class MarketDataSource(object):
+    def __init__(self, symbol, tick_event_handler=None, start='', end='', df=None):
+        self.market_data = MarketData()
+        self.symbol = symbol
+        self.tick_event_handler = tick_event_handler
+        self.start, self.end = start, end
+        self.df = df
+
+    def fetch_historical_prices(self):
+        QUANDL_API_KEY = 'qjAWtEj_sxwdficXiePo'
+        quandl.ApiConfig.api_key = QUANDL_API_KEY
+        df = quandl.get(self.symbol, start_date=self.start, end_date=self.end)
+        return df
+
+    def run(self):
+        if self.df is None:
+            self.df = self.fetch_historical_prices()
+
+        # print("run\n", self.df)
+        total_ticks = len(self.df)
+        print('Processing total_ticks:', total_ticks)
+
+        for timestamp, row in self.df.iterrows():
+            open_price = row['Open']
+            close_price = row['Close']
+            volume = row['Volume']
+
+            # print(timestamp.date(), 'TICK', self.symbol, 'open:', open_price, 'close:', close_price)
+
+            tick_data = TickData(timestamp, self.symbol, open_price, close_price, volume)
+            self.market_data.add_tick_data(tick_data)
+
+            if self.tick_event_handler:
+                self.tick_event_handler(self.market_data)
+
+class Order(object):
+    def __init__(self, timestamp, symbol, qty, is_buy, is_market_order, price=0):
+        self.timestamp = timestamp
+        self.symbol = symbol
+        self.qty = qty
+        self.price = price
+        self.is_buy = is_buy
+        self.is_market_order = is_market_order
+        self.is_filled = False
+        self.filled_price = 0
+        self.filled_time = None
+        self.filled_qty = 0
+
+class Position(object):
+    def __init__(self, symbol=''):
+        self.symbol = symbol
+        self.buys = self.sells = self.net = 0
+        self.rpnl = 0
+        self.position_value = 0
+
+    def on_position_event(self, is_buy, qty, price):
+        if is_buy:
+            self.buys += qty
+        else:
+            self.sells += qty
+
+        self.net = self.buys - self.sells
+        changed_value = qty * price * (-1 if is_buy else 1)
+        self.position_value += changed_value
+
+        if self.net == 0:
+            self.rpnl = self.position_value
+            self.position_value = 0
+
+    def calculate_unrealized_pnl(self, price):
+        if self.net == 0:
+            return 0
+
+        market_value = self.net * price
+        upnl = self.position_value + market_value
+        return upnl
+
+class Strategy:
+    def __init__(self, send_order_event_handler):
+        self.send_order_event_handler = send_order_event_handler
+
+    @abstractmethod
+    def on_tick_event(self, market_data):
+        raise NotImplementedError('Method is required!')
+
+    @abstractmethod
+    def on_position_event(self, positions):
+        raise NotImplementedError('Method is required!')
+
+    def send_market_order(self, symbol, qty, is_buy, timestamp):
+        if self.send_order_event_handler:
+            order = Order(timestamp, symbol, qty, is_buy, is_market_order=True, price=0,)
+            self.send_order_event_handler(order)
+
+class MeanRevertingStrategy(Strategy):
+    def __init__(self, symbol, trade_qty,
+        send_order_event_handler=None, lookback_intervals=20,
+        buy_threshold=-1.5, sell_threshold=1.5
+    ):
+        super(MeanRevertingStrategy, self).__init__(
+            send_order_event_handler)
+
+        self.symbol = symbol
+        self.trade_qty = trade_qty
+        self.lookback_intervals = lookback_intervals
+        self.buy_threshold = buy_threshold
+        self.sell_threshold = sell_threshold
+
+        self.prices = pd.DataFrame()
+        self.is_long = self.is_short = False
+
+    def on_position_event(self, positions):
+        position = positions.get(self.symbol)
+
+        self.is_long = position and position.net > 0
+        self.is_short = position and position.net < 0
+
+    def on_tick_event(self, market_data):
+        self.store_prices(market_data)
+
+        # print("self.prices", self.prices.shape, "self.lookback_intervals", self.lookback_intervals)
+
+        if len(self.prices) < self.lookback_intervals:
+            return
+
+        self.generate_signals_and_send_order(market_data)
+
+    def store_prices(self, market_data):
+        timestamp = market_data.get_timestamp(self.symbol)
+        close_price = market_data.get_close_price(self.symbol)
+        self.prices.loc[timestamp, 'close'] = close_price
+
+    def generate_signals_and_send_order(self, market_data):
+        signal_value = self.calculate_z_score()
+        timestamp = market_data.get_timestamp(self.symbol)
+
+        if self.buy_threshold > signal_value and not self.is_long:
+            print(timestamp.date(), 'BUY signal', "self.buy_threshold", self.buy_threshold, "signal_value", signal_value)
+            self.send_market_order(
+                self.symbol, self.trade_qty, True, timestamp)
+        elif self.sell_threshold < signal_value and not self.is_short:
+            print(timestamp.date(), 'SELL signal', "self.sell_threshold" , self.sell_threshold , "signal_value", signal_value)
+            self.send_market_order(
+                self.symbol, self.trade_qty, False, timestamp)
+
+    def calculate_z_score(self):
+        # print("AA self.prices\n", self.prices, "\n", self.prices.shape)
+        self.prices = self.prices[-self.lookback_intervals:]
+        # print("BB self.prices\n", self.prices, "\n", self.prices.shape)
+
+        # print(self.prices['close'].pct_change())
+
+        returns = self.prices['close'].pct_change().dropna()
+        # print(((returns - returns.mean()) / returns.std()))
+        z_score = ((returns - returns.mean()) / returns.std())[-1]
+        return z_score
+
+class BacktestEngine:
+    def __init__(self, symbol, trade_qty, start='', end='', df=None):
+        self.symbol = symbol
+        self.trade_qty = trade_qty
+        self.market_data_source = MarketDataSource(symbol, tick_event_handler=self.on_tick_event, start=start, end=end, df=df)
+
+        self.strategy = None
+        self.unfilled_orders = []
+        self.positions = dict()
+        self.df_rpnl = None
+
+
+    def start(self, **kwargs):
+        print('Backtest started...')
+
+        self.unfilled_orders = []
+        self.positions = dict()
+        self.df_rpnl = pd.DataFrame()
+
+        self.strategy = MeanRevertingStrategy(self.symbol, self.trade_qty,
+                                              send_order_event_handler=self.on_order_received, **kwargs)
+        self.market_data_source.run()
+        print('Backtest completed.')
+
+    def on_order_received(self, order):
+        """ Adds an order to the order book """
+        print(
+            order.timestamp.date(),
+            'ORDER',
+            'BUY' if order.is_buy else 'SELL',
+            order.symbol,
+            order.qty
+        )
+        self.unfilled_orders.append(order)
+
+    def on_tick_event(self, market_data):
+        self.match_order_book(market_data)
+        self.strategy.on_tick_event(market_data)
+        self.print_position_status(market_data)
+
+    def match_order_book(self, market_data):
+        if len(self.unfilled_orders) > 0:
+            self.unfilled_orders = [
+                order for order in self.unfilled_orders
+                if self.match_unfilled_orders(order, market_data)
+            ]
+
+    def match_unfilled_orders(self, order, market_data):
+        symbol = order.symbol
+        timestamp = market_data.get_timestamp(symbol)
+
+        """ Order is matched and filled """
+        if order.is_market_order and timestamp > order.timestamp:
+            open_price = market_data.get_open_price(symbol)
+
+            order.is_filled = True
+            order.filled_timestamp = timestamp
+            order.filled_price = open_price
+
+            self.on_order_filled(
+                symbol, order.qty, order.is_buy,
+                open_price, timestamp
+            )
+            return False
+
+        return True
+
+    def on_order_filled(self, symbol, qty, is_buy, filled_price, timestamp):
+        position = self.get_position(symbol)
+        position.on_position_event(is_buy, qty, filled_price)
+        self.df_rpnl.loc[timestamp, "rpnl"] = position.rpnl
+
+        self.strategy.on_position_event(self.positions)
+
+        print(
+            timestamp.date(),
+            'FILLED', "BUY" if is_buy else "SELL",
+            qty, symbol, 'at', filled_price
+        )
+
+    def get_position(self, symbol):
+        if symbol not in self.positions:
+            self.positions[symbol] = Position(symbol)
+
+        return self.positions[symbol]
+
+    def print_position_status(self, market_data):
+        for symbol, position in self.positions.items():
+            close_price = market_data.get_close_price(symbol)
+            timestamp = market_data.get_timestamp(symbol)
+
+            upnl = position.calculate_unrealized_pnl(close_price)
+
+            print(
+                timestamp.date(),
+                'POSITION',
+                'value:%.3f' % position.position_value,
+                'upnl:%.3f' % upnl,
+                'rpnl:%.3f' % position.rpnl
+            )
+
+# ---
+class StrategyAlgo(object):
+    def __init__(self, dic):  # to_data_path, target_field
+        # print("90004-000-1 StrategyAlgo", dic, '\n', '-'*50)
+        try:
+            super(StrategyAlgo, self).__init__()
+        except Exception as ex:
+            print("Error 90004-010-1 StrategyDataProcessing:\n"+str(ex), "\n", '-'*50)
+        # print("90004-020-1 StrategyAlgo", dic, '\n', '-'*50)
+
+
+class StrategyDataProcessing(BaseDataProcessing, BasePotentialAlgo, StrategyAlgo):
+    def __init__(self, dic):
+        super().__init__(dic)
+
+    def test(self, dic):
+        print("90300-600: \n", "="*50, "\n", dic, "\n", "="*50)
+        app_ = dic["app"]
+        ticker_ = "ALT"
+
+        end_date = datetime.now()
+        start_date = end_date - timedelta(days=100)
+        print("end=", str(end_date.date()), "\nstart=", start_date)
+
+        df = yf.download(ticker_, start_date, end_date)
+        # print("A\n", df)
+        df_ = df.drop('Close', 1).rename(columns={"Adj Close": "Close"})
+        # print("B\n", df_)
+
+        engine = BacktestEngine('WIKI/'+ticker_, 1, start=str(start_date.date()), end=str(end_date.date()), df=df_)
+        engine.start(lookback_intervals=20, buy_threshold=-1.5, sell_threshold=1.5)
+
+
+        result = {"status": "ok"}
+        # print(result)
+        return result
+
+
+
+
+
+
+# ======================================
+
+
+# ==============================================
 
 
 
