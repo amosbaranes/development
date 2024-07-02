@@ -176,7 +176,7 @@ class OptionAlgo(object):
         r = 0.007
         n = int(dic["n"])
         t = int(dic["t"])
-        T = T-t/n
+        T = T*(1-t/n)
 
         x=[]
         lp=[]
@@ -905,7 +905,6 @@ class Position(object):
     def calculate_unrealized_pnl(self, price):
         if self.net == 0:
             return 0
-
         market_value = self.net * price
         upnl = self.position_value + market_value
         return upnl
@@ -915,6 +914,7 @@ class Position(object):
         timestamp = recent_data_ticker.timestamp
         upnl = self.calculate_unrealized_pnl(close_price)
         # print(timestamp.date(), 'POSITION', 'value:%.3f' % self.position_value, 'upnl:%.3f' % upnl, 'rpnl:%.3f' % self.rpnl)
+        self.log_position_status.loc[timestamp, 'price'] = close_price
         self.log_position_status.loc[timestamp, 'value'] = self.position_value
         self.log_position_status.loc[timestamp, 'upnl'] = upnl
         self.log_position_status.loc[timestamp, 'rpnl'] = self.rpnl
@@ -928,12 +928,17 @@ class Strategy:
         self.unfilled_orders = []
         self.position = Position(strategy=self)
 
+    # --- update_tick_event ---
+    def update_tick_event(self, recent_data_ticker):
+        self.set_data(recent_data_ticker)
+        self.generate_signals_and_send_order(recent_data_ticker)
+
     @abstractmethod
-    def match_unfilled_orders(self, order, recent_data_ticker):
+    def set_data(self, recent_data_ticker):
         print("Over load this function 22-22-1")
 
     @abstractmethod
-    def update_tick_event(self, recent_data_ticker):
+    def generate_signals_and_send_order(self, recent_data_ticker):
         print("Over load this function 22-22-2")
 
     # --- match_order_book ---
@@ -943,6 +948,10 @@ class Strategy:
                 order for order in self.unfilled_orders
                 if self.match_unfilled_orders(order, recent_data_ticker)
             ]
+
+    @abstractmethod
+    def match_unfilled_orders(self, order, recent_data_ticker):
+        print("Over load this function 22-22-3")
 
     # ===================
     def on_tick_event(self, timestampe):
@@ -991,18 +1000,13 @@ class MeanRevertingStrategy(Strategy):
         self.position.on_order_filled_event(is_buy, qty, filled_price)
 
     # -----------------------------------------------
-    # --- update_tick_event ---
-    def update_tick_event(self, recent_data_ticker):
-        self.store_prices(recent_data_ticker)
-        if self.prices.shape[0] < self.lookback_intervals:
-            return
-        self.generate_signals_and_send_order(recent_data_ticker)
-
-    def store_prices(self, recent_data_ticker):
+    def set_data(self, recent_data_ticker):
         timestamp = recent_data_ticker.timestamp
         self.prices = self.engin.df.loc[:timestamp]
 
     def generate_signals_and_send_order(self, recent_data_ticker):
+        if self.prices.shape[0] < self.lookback_intervals:
+            return
         timestamp = recent_data_ticker.timestamp
         signal_value = self.calculate_z_score()
 
@@ -1035,160 +1039,11 @@ class MeanRevertingStrategy(Strategy):
         return z_score
     # -----------------------------------------------
 
-class MeanRevertingStrategy1(Strategy):
+
+# ------- Multiple Positions fulfill position based on list of previous prices----------
+class MeanRevertingStrategyMP(Strategy):
     def __init__(self, engin, lookback_intervals = 0, buy_threshold = 1.0, sell_threshold = 1.0, **kwargs):
-        super(MeanRevertingStrategy1, self).__init__(**kwargs)
-        self.prices = pd.DataFrame()
-        self.engin = engin
-        self.trade_qty = engin.trade_qty
-        self.lookback_intervals = lookback_intervals
-        self.buy_threshold = buy_threshold
-        self.sell_threshold = sell_threshold
-
-    # --- match_order_book ---
-    def match_unfilled_orders(self, order, recent_data_ticker):
-        timestamp = recent_data_ticker.timestamp
-        """ Order is matched and filled """
-        if order.is_market_order and timestamp >= order.timestamp:
-            close_price = recent_data_ticker.close_price
-
-            order.is_filled = True
-            order.filled_timestamp = timestamp
-            order.filled_price = close_price
-            self.on_order_filled(order.qty, order.is_buy, close_price, timestamp)
-            return False
-
-        return True
-
-    def on_order_filled(self, qty, is_buy, filled_price, timestamp):
-        self.position.on_position_event(is_buy, qty, filled_price)
-
-    # -----------------------------------------------
-    # --- update_tick_event ---
-    def update_tick_event(self, recent_data_ticker):
-        self.store_prices(recent_data_ticker)
-        # print("self.prices", self.prices.shape, "self.lookback_intervals", self.lookback_intervals)
-        if len(self.prices) < self.lookback_intervals:
-            return
-        self.generate_signals_and_send_order(recent_data_ticker)
-
-    def store_prices(self, recent_data_ticker):
-        timestamp = recent_data_ticker.timestamp
-        self.prices.loc[timestamp, 'close'] = recent_data_ticker.close_price
-        self.prices.loc[timestamp, 'open'] = recent_data_ticker.open_price
-        self.prices.loc[timestamp, 'total_volume'] = recent_data_ticker.total_volume
-
-    def generate_signals_and_send_order(self, recent_data_ticker):
-        signal_value = self.calculate_z_score()
-        timestamp = recent_data_ticker.timestamp
-
-        if self.buy_threshold > signal_value:
-            # print(timestamp.date(), "BUY signal self.buy_threshold", self.buy_threshold, "signal_value", signal_value)
-            self.send_market_order(self.trade_qty, True, timestamp)
-        elif self.sell_threshold < signal_value:
-            # print(timestamp.date(), "SELL signal self.sell_threshold" , self.sell_threshold , "signal_value", signal_value)
-            self.send_market_order(self.trade_qty, False, timestamp)
-
-    def send_market_order(self, qty, is_buy, timestamp):
-        """ Adds an order to the order book """
-        order = Order(timestamp, qty, is_buy, is_market_order=True, price=0, )
-        # print(order.timestamp.date(), 'ORDER', 'BUY' if order.is_buy else 'SELL', order.qty)
-        self.unfilled_orders.append(order)
-
-    def calculate_z_score(self):
-        # print("AA self.prices\n", self.prices, "\n", self.prices.shape)
-        prices_ = self.prices[-self.lookback_intervals:]
-        returns = prices_['close'].pct_change().dropna()
-        returns_ = returns[:-1]
-        last_return = float(returns.iloc[-1])
-        # print("DDDDDDDdd\n", returns, "\nDDDDDDDdd\n", returns_)
-        # print(last_return)
-        z_score = ((last_return - returns_.mean()) / returns_.std())
-        # print("z_score", z_score)
-        return z_score
-    # -----------------------------------------------
-
-class MeanRevertingStrategy2(Strategy):
-    def __init__(self, engin, lookback_intervals = 0, buy_threshold = 1.0, sell_threshold = 1.0, **kwargs):
-        super(MeanRevertingStrategy2, self).__init__(**kwargs)
-        self.prices = pd.DataFrame()
-        self.engin = engin
-        self.trade_qty = engin.trade_qty
-        self.lookback_intervals = lookback_intervals
-        self.buy_threshold = buy_threshold
-        self.sell_threshold = sell_threshold
-        # ---
-        self.last_high_price = self.last_low_price = 0
-        # ---
-
-    # --- match_order_book ---
-    def match_unfilled_orders(self, order, recent_data_ticker):
-        timestamp = recent_data_ticker.timestamp
-        """ Order is matched and filled """
-        if order.is_market_order and timestamp >= order.timestamp:
-            close_price = recent_data_ticker.close_price
-
-            order.is_filled = True
-            order.filled_timestamp = timestamp
-            order.filled_price = close_price
-            self.on_order_filled(order.qty, order.is_buy, close_price, timestamp)
-            return False
-
-        return True
-
-    def on_order_filled(self, qty, is_buy, filled_price, timestamp):
-        self.position.on_position_event(is_buy, qty, filled_price)
-
-    # -----------------------------------------------
-    # --- update_tick_event ---
-    def update_tick_event(self, recent_data_ticker):
-        self.store_prices(recent_data_ticker)
-        # print("self.prices", self.prices.shape, "self.lookback_intervals", self.lookback_intervals)
-        if len(self.prices) < self.lookback_intervals:
-            return
-        self.generate_signals_and_send_order(recent_data_ticker)
-
-    def store_prices(self, recent_data_ticker):
-        timestamp = recent_data_ticker.timestamp
-        self.prices.loc[timestamp, 'close'] = recent_data_ticker.close_price
-        self.prices.loc[timestamp, 'open'] = recent_data_ticker.open_price
-        self.prices.loc[timestamp, 'total_volume'] = recent_data_ticker.total_volume
-
-    def generate_signals_and_send_order(self, recent_data_ticker):
-        signal_value = self.calculate_z_score()
-        timestamp = recent_data_ticker.timestamp
-
-        if (self.buy_threshold > signal_value) and (recent_data_ticker.close_price >= self.last_high_price):
-            self.last_high_price = recent_data_ticker.close_price
-            # print(timestamp.date(), "BUY signal self.buy_threshold", self.buy_threshold, "signal_value", signal_value)
-            self.send_market_order(self.trade_qty, True, timestamp)
-        elif self.sell_threshold < signal_value and (recent_data_ticker.close_price <= self.last_low_price):
-            self.last_low_price = recent_data_ticker.close_price
-            # print(timestamp.date(), "SELL signal self.sell_threshold" , self.sell_threshold , "signal_value", signal_value)
-            self.send_market_order(self.trade_qty, False, timestamp)
-
-    def send_market_order(self, qty, is_buy, timestamp):
-        """ Adds an order to the order book """
-        order = Order(timestamp, qty, is_buy, is_market_order=True, price=0, )
-        # print(order.timestamp.date(), 'ORDER', 'BUY' if order.is_buy else 'SELL', order.qty)
-        self.unfilled_orders.append(order)
-
-    def calculate_z_score(self):
-        # print("AA self.prices\n", self.prices, "\n", self.prices.shape)
-        prices_ = self.prices[-self.lookback_intervals:]
-        returns = prices_['close'].pct_change().dropna()
-        returns_ = returns[:-1]
-        last_return = float(returns.iloc[-1])
-        # print("DDDDDDDdd\n", returns, "\nDDDDDDDdd\n", returns_)
-        # print(last_return)
-        z_score = ((last_return - returns_.mean()) / returns_.std())
-        # print("z_score", z_score)
-        return z_score
-    # -----------------------------------------------
-
-class MeanRevertingStrategy3(Strategy):
-    def __init__(self, engin, lookback_intervals = 0, buy_threshold = 1.0, sell_threshold = 1.0, **kwargs):
-        super(MeanRevertingStrategy3, self).__init__(**kwargs)
+        super(MeanRevertingStrategyMP, self).__init__(**kwargs)
         self.prices = pd.DataFrame()
         self.engin = engin
         self.trade_qty = engin.trade_qty
@@ -1216,7 +1071,7 @@ class MeanRevertingStrategy3(Strategy):
         return True
 
     def on_order_filled(self, qty, is_buy, filled_price, timestamp):
-        self.position.on_position_event(is_buy, qty, filled_price)
+        self.position.on_order_filled_event(is_buy, qty, filled_price)
         if is_buy:
             self.last_buy_price.append(filled_price)
             if self.last_low_price > filled_price:
@@ -1231,24 +1086,105 @@ class MeanRevertingStrategy3(Strategy):
             self.last_sell_price = [0]
 
     # -----------------------------------------------
-    # --- update_tick_event ---
-    def update_tick_event(self, recent_data_ticker):
-        self.store_prices(recent_data_ticker)
-        # print("self.prices", self.prices.shape, "self.lookback_intervals", self.lookback_intervals)
-        if len(self.prices) < self.lookback_intervals:
-            return
-        self.generate_signals_and_send_order(recent_data_ticker)
-
-    def store_prices(self, recent_data_ticker):
+    def set_data(self, recent_data_ticker):
         timestamp = recent_data_ticker.timestamp
-        self.prices.loc[timestamp, 'close'] = recent_data_ticker.close_price
-        self.prices.loc[timestamp, 'open'] = recent_data_ticker.open_price
-        self.prices.loc[timestamp, 'total_volume'] = recent_data_ticker.total_volume
+        self.prices = self.engin.df.loc[:timestamp]
 
     def generate_signals_and_send_order(self, recent_data_ticker):
-        signal_value = self.calculate_z_score()
+        if self.prices.shape[0] < self.lookback_intervals:
+            return
         timestamp = recent_data_ticker.timestamp
+        signal_value = self.calculate_z_score()
+        if self.buy_threshold > signal_value:
+            if self.position.is_short:
+                if recent_data_ticker.close_price <= max(self.last_sell_price):
+                    self.last_sell_price.remove(max(self.last_sell_price))
+                    self.send_market_order(self.trade_qty, True, timestamp)
+            else:
+                self.send_market_order(self.trade_qty, True, timestamp)
+        elif self.sell_threshold < signal_value:
+            if self.position.is_long:
+                if recent_data_ticker.close_price >= min(self.last_buy_price):
+                    self.last_buy_price.remove(min(self.last_buy_price))
+                    self.send_market_order(self.trade_qty, False, timestamp)
+            else:
+                self.send_market_order(self.trade_qty, False, timestamp)
 
+    def send_market_order(self, qty, is_buy, timestamp):
+        """ Adds an order to the order book """
+        order = Order(timestamp, qty, is_buy, is_market_order=True, price=0, )
+        # print(order.timestamp.date(), 'ORDER', 'BUY' if order.is_buy else 'SELL', order.qty)
+        self.unfilled_orders.append(order)
+
+    def calculate_z_score(self):
+        prices_ = self.prices[-self.lookback_intervals:]
+        returns = prices_['Close'].pct_change().dropna()
+
+        returns_ = returns[:-1]
+        last_return = float(returns.iloc[-1])
+
+        # print("DDDDDDDdd\n", returns, "\nDDDDDDDdd\n", returns_)
+        # print(last_return)
+
+        z_score = ((last_return - returns_.mean()) / returns_.std())
+        # print("z_score", z_score)
+        return z_score
+    # -----------------------------------------------
+
+class MRSThreeLastPrices(Strategy):
+    def __init__(self, engin, lookback_intervals = 0, buy_threshold = 1.0, sell_threshold = 1.0, **kwargs):
+        super(MRSThreeLastPrices, self).__init__(**kwargs)
+        self.prices = pd.DataFrame()
+        self.engin = engin
+        self.trade_qty = engin.trade_qty
+        self.lookback_intervals = lookback_intervals
+        self.buy_threshold = buy_threshold
+        self.sell_threshold = sell_threshold
+        # ---
+        self.last_high_price = self.last_low_price = 0
+        self.last_sell_price = self.last_buy_price = [0]
+        # ---
+
+    # --- match_order_book ---
+    def match_unfilled_orders(self, order, recent_data_ticker):
+        timestamp = recent_data_ticker.timestamp
+        """ Order is matched and filled """
+        if order.is_market_order and timestamp >= order.timestamp:
+            close_price = recent_data_ticker.close_price
+
+            order.is_filled = True
+            order.filled_timestamp = timestamp
+            order.filled_price = close_price
+            self.on_order_filled(order.qty, order.is_buy, close_price, timestamp)
+            return False
+
+        return True
+
+    def on_order_filled(self, qty, is_buy, filled_price, timestamp):
+        self.position.on_order_filled_event(is_buy, qty, filled_price)
+        if is_buy:
+            self.last_buy_price.append(filled_price)
+            if self.last_low_price > filled_price:
+                self.last_low_price = filled_price
+        else:
+            self.last_sell_price.append(filled_price)
+            if self.last_high_price < filled_price:
+                self.last_high_price = filled_price
+        if self.position.is_short:
+            self.last_buy_price = [0]
+        if self.position.is_long:
+            self.last_sell_price = [0]
+
+    # -----------------------------------------------
+    def set_data(self, recent_data_ticker):
+        timestamp = recent_data_ticker.timestamp
+        self.prices = self.engin.df.loc[:timestamp]
+
+    def generate_signals_and_send_order(self, recent_data_ticker):
+        if self.prices.shape[0] < self.lookback_intervals:
+            return
+        timestamp = recent_data_ticker.timestamp
+        signal_value = self.calculate_z_score()
         if self.buy_threshold > signal_value:
             if self.position.is_short:
                 if recent_data_ticker.close_price <= max(self.last_sell_price):
@@ -1273,12 +1209,16 @@ class MeanRevertingStrategy3(Strategy):
     def calculate_z_score(self):
         # print("AA self.prices\n", self.prices, "\n", self.prices.shape)
         prices_ = self.prices[-self.lookback_intervals:]
-        returns = prices_['close'].pct_change().dropna()
-        returns_ = returns[:-1]
-        last_return = float(returns.iloc[-1])
+        returns = prices_['Close'].pct_change().dropna()
+
+        n = 4
+        returns_ = returns[:-n]
+        last_returns = returns.iloc[-n:]
+
         # print("DDDDDDDdd\n", returns, "\nDDDDDDDdd\n", returns_)
         # print(last_return)
-        z_score = ((last_return - returns_.mean()) / returns_.std())
+
+        z_score = ((last_returns.mean() - returns_.mean()) / returns_.std())
         # print("z_score", z_score)
         return z_score
     # -----------------------------------------------
@@ -1300,34 +1240,27 @@ class BacktestEngine:
         print('Backtest started...')
         # self.strategy = MeanRevertingStrategy(engin=self, **kwargs)
         try:
-            lookback_intervals_ = 21
+            lookback_intervals_ = 25
             buy_threshold_ = -1.5
             sell_threshold_ = 1.5
 
-            self.strategies["MeanReverting__20_1.5_1.5"] = MeanRevertingStrategy(engin=self,
-                                                                                 lookback_intervals = lookback_intervals_,
-                                                                                 buy_threshold = buy_threshold_,
-                                                                                 sell_threshold=sell_threshold_
-                                                                                 )
-
-            # # allow long/short > 1
-            # self.strategies["MeanReverting1__20_1.5_1.5"] = MeanRevertingStrategy1(engin=self,
+            # self.strategies["MeanReverting"] = MeanRevertingStrategy(engin=self,
             #                                                                      lookback_intervals = lookback_intervals_,
             #                                                                      buy_threshold = buy_threshold_,
             #                                                                      sell_threshold=sell_threshold_
             #                                                                      )
-
-            # self.strategies["MeanReverting2__20_1.5_1.5"] = MeanRevertingStrategy2(engin=self,
-            #                                                                      lookback_intervals = lookback_intervals_,
-            #                                                                      buy_threshold = buy_threshold_,
-            #                                                                      sell_threshold=sell_threshold_
+            #
+            # self.strategies["MeanRevertingStrategyMP"] = MeanRevertingStrategyMP(engin=self,
+            #                                                                                  lookback_intervals = lookback_intervals_,
+            #                                                                                  buy_threshold = buy_threshold_,
+            #                                                                                  sell_threshold=sell_threshold_
             #                                                                      )
 
-            # self.strategies["MeanReverting3__20_1.5_1.5"] = MeanRevertingStrategy3(engin=self,
-            #                                                                      lookback_intervals = lookback_intervals_,
-            #                                                                      buy_threshold = buy_threshold_,
-            #                                                                      sell_threshold=sell_threshold_
-            #                                                                      )
+            self.strategies["MRSThreeLastPrices"] = MRSThreeLastPrices(engin=self,
+                                                                       lookback_intervals = lookback_intervals_,
+                                                                       buy_threshold = -2,
+                                                                       sell_threshold=2
+                                                                       )
 
         except Exception as ex:
             print("Error 55", ex)
@@ -1344,15 +1277,15 @@ class BacktestEngine:
             # print("\n", "="*50, "\nStrategy: ", strategy_name, "\n", "="*50)
             # print("log_position_status\n", self.strategies[strategy_name].position.log_position_status)
 
-            for timestamp, row in self.strategies[strategy_name].position.log_position_status.iterrows():
-                print(timestamp,
-                      "value", str(round(100 * float(row["value"])) / 100),
-                      "urpnl", str(round(100 * float(row["upnl"])) / 100),
-                      "rpnl", str(round(100 * float(row["rpnl"])) / 100),
-                      "net=", str(round(100 * float(row["net"])) / 100),
-                      "is_short", str(row["is_short"]),
-                      "is_long=",str(row["is_long"])
-                      )
+            # for timestamp, row in self.strategies[strategy_name].position.log_position_status.iterrows():
+            #     print(timestamp,
+            #           "value", str(round(100 * float(row["value"])) / 100),
+            #           "urpnl", str(round(100 * float(row["upnl"])) / 100),
+            #           "rpnl", str(round(100 * float(row["rpnl"])) / 100),
+            #           "net=", str(round(100 * float(row["net"])) / 100),
+            #           "is_short", str(row["is_short"]),
+            #           "is_long=",str(row["is_long"])
+            #           )
 
 
             if strategy_name not in dic:
@@ -1382,7 +1315,7 @@ class StrategyDataProcessing(BaseDataProcessing, BasePotentialAlgo, StrategyAlgo
     def test(self, dic):
         print("90300-600: \n", "="*50, "\n", dic, "\n", "="*50)
         app_ = dic["app"]
-        tickers = ["AAPL"] # "NVDA", "MSFT", "ALT", "NICE", "AAPL", "MNDY"
+        tickers = ["AAPL"] # "AAPL", "MSFT", "GOOG", "2223.SR","NVDA", "ALT", "NICE", "MNDY"
 
         end_date = datetime.now()
         start_date = end_date - timedelta(days=365)
@@ -1394,7 +1327,7 @@ class StrategyDataProcessing(BaseDataProcessing, BasePotentialAlgo, StrategyAlgo
             # print("A\n", df)
             df_ = df.drop('Close', 1).rename(columns={"Adj Close": "Close"})
             print("\n", "="*100, "\n", ticker_, "\n", "="*100, "\n")
-            print(df_)
+            # print(df_)
             engine = BacktestEngine(symbol=ticker_, trade_qty=1, start=str(start_date.date()), end=str(end_date.date()), df=df_)
             engine.start()
         result = {"status": "ok"}
