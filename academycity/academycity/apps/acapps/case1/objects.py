@@ -57,6 +57,9 @@ class Case1DataProcessing(BaseDataProcessing, BasePotentialAlgo, Case1Algo):
             l = sheet_name.split(",")
             sheet_name = l[0]
             n_independent_variables = int(l[1].split(":")[1])
+
+            print(n_independent_variables)
+
             dic = dic["cube_dic"]
             # print('90121-3 dic', dic)
 

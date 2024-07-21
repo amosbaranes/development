@@ -6119,7 +6119,17 @@ class Option(object):
                 for c in l_:
                     # print(c, row[c])
                     r[k][c].append(row[c])
+
+        # for k in r:
+        #     if k == 385:
+        #         print("\n", k)
+        #         print("\n", r[k])
+
         # print(r)
+
+        # print("\n")
+        # print(stock_price)
+
         return {"status": "ok", "data": r, "stock_price":stock_price}
 
 
