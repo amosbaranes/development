@@ -194,6 +194,110 @@ class MSDataProcessing(BaseDataProcessing, BasePotentialAlgo, MSAlgo):
         result = {"status": "ok"}
         return result
 
+    def upload_vars_to_db(self, dic):
+        print("902555-1-3: \n", dic, "\n", "="*50)
+        app_ = dic["app"]
+        file_path = self.upload_file(dic)["file_path"]
+        # file_path = "/home/amos/projects/development/academycity/data/ms/datasets/excel/raw_data/RAW DATA (607).xlsx"
+        # print('file_path')
+        # print(file_path)
+        # print('file_path')
+        # print('90121-2 dic')
+        dic = dic["cube_dic"]
+        # print('90121-3 dic', dic)
+
+        # dep variables uploaded to fact and factnormalized tables
+        model_fact_normalized = apps.get_model(app_label=self.app, model_name="factnormalized")
+        #
+        model_group_name_ = dic["dimensions"]["person_group_dim"]["model"]
+        model_person_group_dim = apps.get_model(app_label=app_, model_name=model_group_name_)
+        #
+        model_name_ = dic["dimensions"]["person_dim"]["model"]
+        model_person_dim = apps.get_model(app_label=app_, model_name=model_name_)
+        #
+        model_name_ = dic["dimensions"]["gene_group_dim"]["model"]
+        model_gene_group_dim = apps.get_model(app_label=app_, model_name=model_name_)
+        #
+        model_name_ = dic["dimensions"]["gene_dim"]["model"]
+        model_gene_dim = apps.get_model(app_label=app_, model_name=model_name_)
+        #
+        gene_group_obj, is_created = model_gene_group_dim.objects.get_or_create(group_name="dep")
+        gene_group_obj.save()
+        #
+        # qs = model_fact.objects.filter(gene_dim__gene_group_dim_group_name="dep",
+        #                                person_dim__person_group_dim__group_name="Normaliaz")
+        # df = pd.DataFrame(list(qs.values("gene_dim", "person_dim", "amount")))
+
+        model_name_ = dic["fact"]["model"]
+        model_fact = apps.get_model(app_label=app_, model_name=model_name_)
+        #
+        qsg = model_gene_dim.objects.filter(gene_group_dim__group_name="dep")
+        for q in qsg:
+            q.delete()
+
+        #
+        pg_obj, is_created = model_person_group_dim.objects.get_or_create(group_name="Normaliaz")
+        pg_obj.save()
+        qs = model_person_dim.objects.all()
+        for q in qs:
+            q.person_group_dim = pg_obj
+            q.save()
+
+
+        wb = load_workbook(filename=file_path, read_only=False)
+        sheet_names = wb.sheetnames
+
+        print("="*50)
+
+        for f in sheet_names:
+            print(f)
+            pg_obj, is_created = model_person_group_dim.objects.get_or_create(group_name=f)
+            pg_obj.save()
+
+            ws = wb[f]
+            data = ws.values
+            columns = next(data)[0:]
+            df = pd.DataFrame(data, columns=columns)
+            # print(df)
+
+        #
+            if f == "Model":
+                for p  in columns[1:]:
+                    gene_obj, is_created = model_gene_dim.objects.get_or_create(gene_group_dim=gene_group_obj,gene_code=p)
+                    # print('\ngene_obj\n', gene_obj,'\n')
+
+                    for index, row in df.iterrows():
+                        try:
+                            v = str(row[p])
+                            if v == "" or v == "nan":
+                                print("111 person=", row["ID"], "gene=", p, "v=", str(row[p]))
+                                print(float(v))
+                                continue
+
+                            v = float(row[p])
+
+                            person_obj = model_person_dim.objects.get(person_code=row["ID"])
+                            fact_obj, is_created = model_fact.objects.get_or_create(gene_dim=gene_obj,
+                                                                                    person_dim=person_obj)
+                            fact_obj_normalized, is_created = model_fact_normalized.objects.get_or_create(
+                                gene_dim=gene_obj,
+                                person_dim=person_obj)
+                            fact_obj.amount = row[p]
+                            fact_obj.save()
+
+                            fact_obj_normalized.amount = v
+                            fact_obj_normalized.save()
+                        except Exception as ex:
+                            print("", row[p], "error", ex)
+
+                for index, row in df.iterrows():
+                    person_obj = model_person_dim.objects.get(person_code=row["ID"])
+                    person_obj.person_group_dim = pg_obj
+                    person_obj.save()
+
+        result = {"status": "ok"}
+        return result
+
     def load_file_to_db(self, dic):
         # print("90121-1: \n", dic, "="*50)
         self.clear_log_debug()
@@ -249,7 +353,6 @@ class MSDataProcessing(BaseDataProcessing, BasePotentialAlgo, MSAlgo):
                                                                                         gene_code=g_)
                         p_ = str(columns[j])
                         if p_ != "None" and p_ != "":
-
                             person_dim_obj, is_created = model_person_dim.objects.get_or_create(person_code=p_)
                         try:
                             # print(str(row[columns[j]]), "\n", "="*20)
@@ -1355,6 +1458,90 @@ class MSDataProcessing(BaseDataProcessing, BasePotentialAlgo, MSAlgo):
         result = {"status": "ok", "result": re_dic}
         # print(result)
         return result
+
+    def get_batch_normalised_data(self, dic):
+
+        def set_cols(df_):
+            cc = {}
+            for c in df_.columns:
+                cc[c] = str(self.measures_name[self.measures_name['id'] == c].iloc[0][self.measure_name_]).strip()
+            df_.rename(columns=cc, inplace=True)
+            return df_
+
+        def set_rows(df_):
+            df_ = df_.T
+            cc = {}
+            for c in df_.columns:
+                cc[c] = str(self.entities_name[self.entities_name['id'] == c].iloc[0][self.entity_name+'_'+self.entity_name_suffix]).strip()
+            df_.rename(columns=cc, inplace=True)
+            return df_.T
+
+        print("90977-77: get_batch_normalised_data\n", dic, "\n", "=" * 50)
+        self.log_debug(str(dic))
+        app_ = dic["app"]
+        model_person_dim = apps.get_model(app_label=app_, model_name="persondim")
+        model_gene_dim = apps.get_model(app_label=app_, model_name="genedim")
+        model_fact = apps.get_model(app_label=app_, model_name='fact')
+        model_fact_normalized = apps.get_model(app_label=app_, model_name='factnormalized')
+        model_fact_normalized_temp = apps.get_model(app_label=app_, model_name='factnormalizedtemp')
+        # ------
+        qsf = model_fact_normalized.objects.filter(gene_dim__gene_group_dim__group_name="indep")
+        df_f = pd.DataFrame(list(qsf.values('gene_dim', 'person_dim', 'amount')))
+        df_f.columns = ['gene', 'person', 'amount']
+        df = df_f.pivot_table(values='amount', index='person', columns=['gene'], aggfunc='sum')
+        # print("AAAAA\n\n", df, "\n", df.shape)
+        df = set_cols(df)
+        df = set_rows(df)
+        df = df.T
+        # print("ZZZZZ\n\n", df, "\n", df.shape)
+
+        save_to_file = os.path.join(self.PROJECT_MEDIA_DIR, "get_batch_normalised_data.xlsx")
+        # print(save_to_file)
+        self.log_debug(save_to_file)
+        is_file = os.path.exists(save_to_file)
+        if is_file:
+            try:
+                os.remove(save_to_file)
+            except Exception as ex:
+                print("90-90-90- 1 Error saving file " + save_to_file)
+        is_file = os.path.exists(save_to_file)
+        self.log_debug("2 is_file = " + str(is_file))
+        # print("2 is_file = " + str(is_file))
+        wb2 = Workbook()
+        wb2.save(save_to_file)
+        wb2.close()
+        wb2 = None
+
+        try:
+            # print(save_to_file)
+            with pd.ExcelWriter(save_to_file, engine='openpyxl', mode="a") as writer:
+                df.to_excel(writer, sheet_name="data")
+                self.log_debug("data saved ")
+        except Exception as ex:
+            self.log_debug("Error save file 1 " + str(ex))
+            # print(ex)
+
+        try:
+            writer.save()
+        except Exception as ex:
+            self.log_debug("Error save file 2 " + str(ex))
+            # print("Error Save", ex)
+
+        try:
+            wb = load_workbook(filename=save_to_file, read_only=False)
+            del wb['Sheet']
+            wb.save(save_to_file)
+            wb.close()
+            # print("remove sheet")
+        except Exception as ex:
+            self.log_debug("Error save file 3 " + str(ex))
+            # print(str(ex))
+
+        self.log_debug("End Process")
+        result = {"status": "ok"}
+        # print(result)
+        return result
+
 
     def get_pca(self, dic):
         print("90944-44: get_pca\n", dic, "\n", "=" * 50)

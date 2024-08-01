@@ -273,11 +273,13 @@ class BasePotentialAlgo(object):
         fact_model_to_normalize_name = ""
         try:
             fact_model_to_normalize_name = str(dic["fact_model_to_normalize_name"])
+            # print(fact_model_to_normalize_name)
         except Exception as ex:
             pass
         if fact_model_to_normalize_name != "":
             try:
                 self.model_fact_to_normalize = apps.get_model(app_label=self.app, model_name=fact_model_to_normalize_name)
+                # print(self.model_fact_to_normalize)
             except Exception as ex:
                 print("Error 209543-254 ", ex)
 
@@ -285,6 +287,7 @@ class BasePotentialAlgo(object):
         try:
             fact_normalized_minmax_model_name = dic["fact_normalized_minmax_model"]
             self.model_fact_normalized_minmax = apps.get_model(app_label=self.app, model_name=fact_normalized_minmax_model_name)
+            print("ZZZ model_fact_normalized_minmax", model_fact_normalized_minmax)
         except Exception as ex:
             pass
 
@@ -297,9 +300,12 @@ class BasePotentialAlgo(object):
 
         try:
             measure_model_name_ = dic["measure_model"]
+
             # print('-' * 50, '\n', "90003-000-41 BasePotentialAlgo\nmeasure_model_name_=", measure_model_name_, "\n", '-' * 50)
-            model_measure_dim = apps.get_model(app_label=self.app, model_name=measure_model_name_)
-            self.measures_name = pd.DataFrame(model_measure_dim.objects.all().values('id', self.measure_name_))
+
+            self.model_measure_dim = apps.get_model(app_label=self.app, model_name=measure_model_name_)
+
+            self.measures_name = pd.DataFrame(self.model_measure_dim.objects.all().values('id', self.measure_name_))
         except Exception as ex:
             pass
 
@@ -311,19 +317,19 @@ class BasePotentialAlgo(object):
         try:
             self.entity_name = dic["entity_name"]
             entity_model_name_ = dic["entity_model"]
-            model_entity_dim = apps.get_model(app_label=self.app, model_name=entity_model_name_)
-            entity_name_suffix = "name"
+            self.model_entity_dim = apps.get_model(app_label=self.app, model_name=entity_model_name_)
+            self.entity_name_suffix = "name"
             try:
-                entity_name_suffix = dic["entity_name_suffix"]
+                self.entity_name_suffix = dic["entity_name_suffix"]
             except Exception as ex:
                 pass
             try:
-                self.entities_name = pd.DataFrame(model_entity_dim.objects.all().values('id', self.entity_name+'_'+entity_name_suffix))
+                self.entities_name = pd.DataFrame(self.model_entity_dim.objects.all().values('id', self.entity_name+'_'+self.entity_name_suffix))
             except Exception as ex:
                 pass
             # print("self.entities_name\n",self.entities_name)
             # need to delete the next line
-            # self.countries_name = pd.DataFrame(model_entity_dim.objects.all().values('id', self.entity_name+'_name'))
+            # self.countries_name = pd.DataFrame(self..objects.all().values('id', self.entity_name+'_name'))
             try:
                 # ---------------------
                 year_ = str(dic["time_dim_value"])
@@ -641,6 +647,8 @@ class BasePotentialAlgo(object):
 
         def normalize_similarity_(dn_, dn_text, cn):
             #
+            # print("KKK", dn_, dn_text, cn)
+
             first_high_group = 0.4
             first_low_group = 0.4
             step = 0.05
@@ -664,15 +672,26 @@ class BasePotentialAlgo(object):
                 s__ = "ll__.append(q." + self.var_name + "_code)"
                 eval(s__)
 
+            # try:
+            #     qs = self.model_fact.objects.filter(person_dim__person_group_dim__group_name="Model",
+            #                                         gene_dim__gene_group_dim_group_name__in=ll__)
+            # except Exception as ex:
+            #     s = 'self.model_fact.objects.filter(' + self.var_name + '_dim__' + self.var_name + '_code__in = ll__)'
+            #     qs = eval(s)
+
+            # print("line 100 ", ll__)
+
             try:
-                qs = self.model_fact.objects.filter(person_dim__person_group_dim__group_name="Model",
-                                                    gene_dim__gene_group_dim_group_name__in=ll__)
+                qs = self.model_fact_to_normalize.objects.filter(person_dim__person_group_dim__group_name="Model",
+                                                                 gene_dim__gene_group_dim_group_name__in=ll__)
             except Exception as ex:
-                s = 'self.model_fact.objects.filter(' + self.var_name + '_dim__' + self.var_name + '_code__in = ll__)'
+                # print(5555)
+                s = ('self.model_fact_to_normalize.objects.filter(' + self.entity_name +
+                     '_dim__' + self.entity_name + '_group_dim__group_name="Model", ' + self.var_name + '_dim__' + self.var_name + '_code__in = ll__)')
+                # print(s)
                 qs = eval(s)
-
+                # print(5555)
             df = pd.DataFrame(list(qs.values(self.var_name + "_dim", self.entity_name + "_dim", "amount")))
-
             try:
                 df = df.pivot(index=self.entity_name + "_dim", columns=self.var_name + '_dim', values='amount')
                 df = df.sort_values(dn_, ascending=False)
@@ -683,6 +702,7 @@ class BasePotentialAlgo(object):
                 print("Error 80-80-22: ", ex)
 
             # print(df)
+
             # print("BB\n", df)
             # print(df.columns)
             # print(df.head(56),"\n", df.tail(56))
@@ -759,6 +779,9 @@ class BasePotentialAlgo(object):
                     # l_cut = int(round(l_cut))
 
                     cond_l = df.index > l_cut
+
+                    # print("GGG \n", df)
+
                     df_l_e = df[cond_l]
                     # print(df.shape, "\nL cut index=", l_cut)
                     # print("Low records sorted by Y:\n", df_l_e.head(56))
@@ -797,7 +820,7 @@ class BasePotentialAlgo(object):
 
                         nli_ = 0
                         for li in range(l, int(step * 100), -int(step * 100)):
-                            print(n, l,li,h,hi)
+                            # print("A100", n, l,li,h,hi)
 
                             if cn != 0:
                                 if round(li - step * 100) != c3 and c3_continue == 1:
@@ -821,9 +844,19 @@ class BasePotentialAlgo(object):
                             # print(n_y_l,df_l_e.shape[1])
                             if df_l_e.shape[0] <= n_y_l:
                                 n_y_l -= 1
+
+                            # print("KKK df_l_e\n", df_l_e)
+                            # print("KKK1 \n", df_l_e.iloc[n_y_l], "\n", dn_)
+
                             y_min_cut = df_l_e.iloc[n_y_l][dn_]
+
+                            # print("GGG", y_min_cut)
+
                             dic_hp = {"y": {"max_cut": float(y_max_cut), "min_cut": float(y_min_cut)}}
                             # print(df_h_e.columns)
+
+                            # print("A100-1", n, l,li,h,hi)
+
                             columns = df_h_e.columns.copy()
                             columns = columns.values.tolist()
                             columns.remove(dn_)
@@ -857,8 +890,8 @@ class BasePotentialAlgo(object):
                                 # print(df_lx.iloc[n_x])
 
                                 lx = df_lx.iloc[n_x][gene_num]
-                                li = pd.DataFrame(df_lx.iloc[n_x])
-                                # print("Low person index=", li.columns[0], "value=", lx, "\n", "-"*30)
+                                df_n_x = pd.DataFrame(df_lx.iloc[n_x])
+                                # print("Low person index=", df_n_x.columns[0], "value=", lx, "\n", "-"*30)
                                 df_lx = df_lx.set_index('index')
                                 # print(df_lx)
                                 # h
@@ -894,13 +927,15 @@ class BasePotentialAlgo(object):
                                 else:
                                     dic_hp[gene_num] = {"max_cut": float(hx), "min_cut": float(lx)}
                                 # print("="*10, "\n")
+
                             ndic = {"df": df, "index": index_, "mm": dic_hp, "dn": dn_}
+
+                            # print("A100-1-1", "n=", n, "l=", l, "li=", li, "h=", h, "hi=", hi)
                             ndf_n1, ndf_n2 = normalize(ndic)
+
                             # print("ndf_n1\n", ndf_n1, "\nndf_n2\n", ndf_n2)
                             sim, ll_dic_, idx = similarity(index=index_, n_df=ndf_n2, dn=dn_)
-
                             var_obj_ = model_var.objects.get(id=dn_)
-
                             s_ = 'model_temp.objects.get_or_create(dep_' + self.var_name + '_dim=var_obj_, idx=idx)'
                             try:
                                 temp_obj, is_created = eval(s_)
@@ -948,10 +983,11 @@ class BasePotentialAlgo(object):
         else:
             ll_dep.append([dn__, dn_text_])
 
+        print("CCCC", ll_dep)
         for k in ll_dep:
             dn__ = k[0]
             dn_text_ = k[1]
-            print(dn__, dn_text_)
+            # print("BBB", dn__, dn_text_)
             normalize_similarity_(dn__, dn_text_, cn_)
 
         print("Done normalize_similarity")
@@ -1096,6 +1132,7 @@ class BasePotentialAlgo(object):
                 eval(s)
         else:
             ll_dep.append(dn_text_)
+
         # print(ll_dep)
 
         for dn_text in ll_dep:
@@ -1120,15 +1157,16 @@ class BasePotentialAlgo(object):
             wb2.close()
             wb2 = None
             log_debug("create_similarity_excel")
-            # for threshold in [0.85, 0.82, 0.81, 0.80, 0.77, 0.75]:
-            # # threshold = float(dic["threshold"])
             threshold = 1
             while threshold > 0.69:
                 threshold = round(100*(threshold-0.01))/100
                 if threshold not in [0.8, 0.77, 0.75]:
                     continue
-                s_ = "model_temp_var.objects.filter(temp__dep_"+self.var_name+"_dim__var_code=dn_text, amount__gte=threshold).all()"
+                s_ = "model_temp_var.objects.filter(temp__dep_"+self.var_name+"_dim__"+self.var_name+"_code=dn_text, amount__gte=threshold).all()"
+                # print(s_)
+
                 qs1 = eval(s_)
+
                 # print(threshold, qs1.count())
                 # print(qs1)
                 if qs1.count() == 0:
@@ -1290,43 +1328,55 @@ class BasePotentialAlgo(object):
         # self.model_fact_normalized_minmax
 
         # # #
-        print("90099-99-85 DataProcessing get_model_normalization: \n", dic, "\n'", "="*100)
+        # print("90099-99-85 DataProcessing get_model_normalization: \n", dic, "\n'", "="*100)
         log_debug("get_model_normalization")
         model = str(dic["model"])
         model = eval(model)
-        # print(model)
+
+        # print("model=", model)
 
         dn_ = str(dic["dn"])
         dn_text = str(dic["dn_text"])
 
+        # print("B", dn_, dn_text)
+
         model_ = {}
         if int(dn_) < 0:
+            # print(999999)
             model_ = model
         else:
+            # print(88888)
             model_[dn_text] = model[dn_text]
 
         # print("A", model_)
+
         model_temp = apps.get_model(app_label=self.app, model_name="temp")
         model_temp_var = apps.get_model(app_label=self.app, model_name="tempvar")
         model_factnormalizedminmax = apps.get_model(app_label=self.app, model_name="factnormalizedminmax")
-        model_vardim = apps.get_model(app_label=self.app, model_name="vardim")
-        model_entitydim = apps.get_model(app_label=self.app, model_name="entitydim")
+
+        # model_vardim = apps.get_model(app_label=self.app, model_name="vardim")
+        # model_entitydim = apps.get_model(app_label=self.app, model_name="entitydim")
 
         data_ = {}
         for k in model_:
             # print(k, "\n", model_[k])
             data_[k] = {}
-            temp_ = model_temp.objects.get(dep_var_dim__var_code=k, idx=model_[k]['m'])
+            s = "model_temp.objects.get(dep_" + self.var_name + "_dim__" + self.measure_name_ + "=k, idx=model_[k]['m'])"
+            # print(s)
+            temp_ = eval(s)
             # print("temp_\n", temp_)
             qs1 = model_temp_var.objects.filter(temp=temp_, amount__gte=model_[k]['t']).all()
             # print("qs1\n", k, model_[k]['m'], model_[k]['t'], "\n" , qs1)
+
             ll = [k]
             for q in qs1:
                 s="ll.append(q."+self.var_name+"_dim."+self.var_name+"_code)"
                 # print(s)
                 eval(s)
+
             # print(ll)
             # ----
+
             try:
                 try:
                     s = 'self.model_fact.objects.filter('+self.entity_name+'_dim__'+self.entity_name+'_group_dim__group_name="Model", '+self.var_name+'_dim__'+self.var_name+'_code__in=ll)'
@@ -1427,16 +1477,20 @@ class BasePotentialAlgo(object):
             # print(df_n2)
             g = df_n2.columns[-1]
             fs = df_n2.columns
-            obj_g = model_vardim.objects.get(var_code=g)
+            s = "self.model_measure_dim.objects.get("+self.measure_name_+"=g)"
+            obj_g = eval(s)
             for index, row in df_n2.iterrows():
                 for f in fs:
                     v = float(row[f])
                     # print(f, v)
-                    obj_f = model_vardim.objects.get(var_code=f)
-                    obj_entity = model_entitydim.objects.get(entity_code=index)
-                    obj, is_created = model_factnormalizedminmax.objects.get_or_create(dep_var_dim=obj_g,
-                                                                                       var_dim=obj_f,
-                                                                                       entity_dim=obj_entity)
+                    obj_f = eval("self.model_measure_dim.objects.get("+self.measure_name_+"=f)")
+
+                    s = "self.model_entity_dim.objects.get(" + self.entity_name+"_"+self.entity_name_suffix +"=index)"
+                    # print(s)
+                    obj_entity = eval(s)
+                    s = "model_factnormalizedminmax.objects.get_or_create(dep_"+self.var_name+"_dim=obj_g, "+self.var_name+"_dim=obj_f, " + self.entity_name+"_dim=obj_entity)"
+                    # print(s)
+                    obj, is_created = eval(s)
                     obj.amount = v
                     obj.save()
             # #######################

@@ -63,11 +63,14 @@ class Fact(TruncateTableMixin, models.Model):
 
 # --------- Temp Data for Min/Max ----------------
 class Temp(TruncateTableMixin, models.Model):
+    dep_gene_dim = models.ForeignKey(GeneDim, on_delete=models.CASCADE, default=1,
+                                    related_name='dep_var_dim_temp_var')
     idx = models.IntegerField(default=0, blank=True, null=True)
     dic_hp = models.JSONField(null=True)
 
     def __str__(self):
-        return str(self.idx)
+        return str(self.dep_gene_dim) +":"+ str(self.idx)
+
 
 class TempVar(TruncateTableMixin, models.Model):
     class Meta:
@@ -88,6 +91,7 @@ class TempVar(TruncateTableMixin, models.Model):
 # -------------------------------------------------
 
 # --------- For Analysis for Batch normalization ---------
+
 class FactNormalizedTemp(TruncateTableMixin, models.Model):
     gene_dim = models.ForeignKey(GeneDim, on_delete=models.CASCADE, default=1,
                                  related_name='gene_dim_fact_normalized_temp')
@@ -140,8 +144,24 @@ class PCAData(TruncateTableMixin, models.Model):
         return str(self.pca) + " - " + str(self.idx)
 # --------------------------------------------------------
 
+
+class FactNormalizedMinMax(TruncateTableMixin, models.Model):
+    dep_gene_dim = models.ForeignKey(GeneDim, on_delete=models.CASCADE, default=1,
+                                     related_name='dep_gene_dim_fact_normalized_minmax')
+    gene_dim = models.ForeignKey(GeneDim, on_delete=models.CASCADE, default=1,
+                                 related_name='gene_dim_fact_normalized_minmax')
+    person_dim = models.ForeignKey(PersonDim, on_delete=models.CASCADE, default=1,
+                                   related_name='person_dim_fact_normalized_minmax')
+    amount = models.DecimalField(max_digits=10, decimal_places=4, default=0, blank=True, null=True)
+
+    def __str__(self):
+        return str(self.gene_dim) + " - " + str(self.person_dim) + ": " + str(self.amount)
+# --------------
+
+
 class Debug(TruncateTableMixin, models.Model):
     value = models.CharField(max_length=1024)
 
     def __str__(self):
         return self.value
+

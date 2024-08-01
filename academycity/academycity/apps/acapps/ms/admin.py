@@ -25,6 +25,7 @@ class PersonGroupDimAdmin(admin.ModelAdmin):
 @admin.register(GeneDim)
 class GeneDimAdmin(admin.ModelAdmin):
     list_display = ('id', 'gene_group_dim', 'gene_code', 'score')
+    list_filter = ['gene_group_dim']
 
 
 @admin.register(GeneGroupDim)
