@@ -940,7 +940,11 @@ class BasePotentialAlgo(object):
                                             dic_hp[gene_num] = {"max_cut": float(hx), "min_cut": float(lx)}
                                         # print("="*10, "\n")
                                     except Exception as ex:
-                                        self.log_debug("Error: " + str(gene_num) + " : " + str(ex))
+                                        self.log_debug("Error 11-11-11: " + str(gene_num) + " : " + str(ex)+" n_x=" +
+                                                       str(n_x) + " median_lx" + str(median_lx) +
+                                                       " median_hx" + str(median_hx) + " n_x_h=" +
+                                                       str(n_x_h))
+                                        return {0: False, 1: "Error 11-11-11: " + str(gene_num) + " : " + str(ex)}
 
                                 ndic = {"df": df, "index": index_, "mm": dic_hp, "dn": dn_}
 
@@ -956,11 +960,14 @@ class BasePotentialAlgo(object):
 
                             except Exception as ex:
                                 self.log_debug("Error 11-22-33: " + str(ex))
+                                return {0: False, 1: str(ex)}
 
                             try:
                                 temp_obj, is_created = eval(s_)
                             except Exception as ex:
-                                print(ex)
+                                self.log_debug("Error 11-22-44: " + str(ex))
+                                return {0: False, 1: str(ex)}
+
 
                             temp_obj.idx = idx
                             temp_obj.dic_hp = dic_hp
@@ -982,7 +989,7 @@ class BasePotentialAlgo(object):
                             # print('AAA')
                         # print('AAA1')
                     # print('AAA2')
-
+            return {0:True, 1:"completed ok"}
         # # #
         # print("90099-99-1000 BasePotentialAlgo normalize_similarity: \n", dic, "\n'", "="*100)
         self.clear_log_debug()
@@ -1010,12 +1017,14 @@ class BasePotentialAlgo(object):
             dn__ = k[0]
             dn_text_ = k[1]
             # print("BBB", dn__, dn_text_)
-            normalize_similarity_(dn__, dn_text_, cn_)
+            ret = normalize_similarity_(dn__, dn_text_, cn_)
+            if not ret[0]:
+                return {"status": "ko", "msg": ret[1]}
 
         # print("Done normalize_similarity")
 
         self.log_debug("Done normalize_similarity")
-        result = {"status": "ok"}
+        result = {"status": "ok", "msg": "completed ok"}
         return result
 
     # # # Not used. Created to picking best min max. we changed.
