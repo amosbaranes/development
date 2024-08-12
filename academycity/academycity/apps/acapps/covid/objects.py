@@ -68,7 +68,6 @@ class CovidDataProcessing(BaseDataProcessing, BasePotentialAlgo, CovidAlgo):
             sheet_name = dic["sheet_name"]
             s = sheet_name.split("_")
             sheet_name = s[0]
-            numb_indep_vars = int(s[1])
             dic = dic["cube_dic"]
             # print('90121-3 dic', dic)
 
@@ -96,14 +95,28 @@ class CovidDataProcessing(BaseDataProcessing, BasePotentialAlgo, CovidAlgo):
         df = pd.DataFrame(data, columns=columns_)
         df = df.reset_index()  # make sure indexes pair with number of rows
         # print(df)
-        #
+
+        numb_indep_vars = -1
+        if numb_indep_vars < 0:
+            for c in columns_:
+                numb_indep_vars += 1
+                if c == "end_indeps":
+                    df.drop(['end_indeps'], inplace=True, axis=1)
+                    break
+
+        # print(numb_indep_vars)
+        columns_ = df.columns[1:]
+
+        print(columns_)
+
         for i in range(len(columns_)):
             f_ = columns_[i]
-            # print("="*10, "\n", f_, "\n", "-"*10)
             if i > 0:
                 if i < numb_indep_vars:
+                    # print("="*10, "\nindep ", f_, "\n", "-"*10)
                     group_obj, is_created = model_var_group_dim.objects.get_or_create(group_name='indep')
                 else:
+                    # print("="*10, "\ndep ", f_, "\n", "-"*10)
                     group_obj, is_created = model_var_group_dim.objects.get_or_create(group_name='dep')
                 try:
                     # print(f_)

@@ -659,7 +659,6 @@ class BasePotentialAlgo(object):
         def normalize_similarity_(dn_, dn_text, cn):
             #
             # print("KKK", dn_, dn_text, cn)
-
             first_high_group = 0.4
             first_low_group = 0.4
             step = 0.05
@@ -683,6 +682,8 @@ class BasePotentialAlgo(object):
                 s__ = "ll__.append(q." + self.var_name + "_code)"
                 eval(s__)
 
+            # print(ll__)
+
             # try:
             #     qs = self.model_fact.objects.filter(person_dim__person_group_dim__group_name="Model",
             #                                         gene_dim__gene_group_dim_group_name__in=ll__)
@@ -703,8 +704,11 @@ class BasePotentialAlgo(object):
                     qs = eval(s)
                 except Exception as ex:
                     s = 'self.model_fact_to_normalize.objects.filter(' + self.var_name + '_dim__' + self.var_name + '_code__in = ll__)'
-                    print(s)
-                    qs = eval(s)
+                    # print(s)
+                    try:
+                        qs = eval(s)
+                    except Exception as ex:
+                        print("Error 55-666-77", ex)
 
             df = pd.DataFrame(list(qs.values(self.var_name + "_dim", self.entity_name + "_dim", "amount")))
             try:
@@ -1042,10 +1046,10 @@ class BasePotentialAlgo(object):
 
         # print("CCCC", ll_dep)
         for k in ll_dep:
-            dn__ = k[0]
+            dn___ = k[0]
             dn_text_ = k[1]
-            # print("BBB", dn__, dn_text_)
-            ret = normalize_similarity_(dn__, dn_text_, cn_)
+            print("BBB", dn__, dn_text_)
+            ret = normalize_similarity_(dn___, dn_text_, cn_)
             if not ret[0]:
                 return {"status": "ko", "msg": ret[1]}
 
