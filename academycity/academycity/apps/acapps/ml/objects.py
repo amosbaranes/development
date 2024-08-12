@@ -1,59 +1,42 @@
-import warnings
-import os
-from django.conf import settings
 import matplotlib as mpl
-from bs4 import BeautifulSoup
+
 mpl.use('Agg')
-import matplotlib.pyplot as plt
-
-from openpyxl import Workbook, load_workbook
-
-from sklearn import linear_model, neighbors
-from sklearn import preprocessing
-from sklearn import pipeline
-import tarfile
-import zipfile
-from six.moves import urllib
-import hashlib
-from sklearn.model_selection import train_test_split, StratifiedShuffleSplit
-import matplotlib.image as mpimg
-from sklearn.metrics import mean_squared_error, mean_absolute_error
-from sklearn.model_selection import cross_val_score
-from scipy import stats
-import joblib
 
 """
  to_data_path_ is the place datasets are kept
  topic_id name of the chapter to store images
 """
-import pandas as pd
 import numpy as np
 from ..ml.basic_ml_objects import BaseDataProcessing, BasePotentialAlgo
-from django.apps import apps
+from .objects_extensions.netanya_college import NDataProcessing
+
 #
-import tensorflow as tf
-from tensorflow.keras import backend as K
+from .objects_extensions.netanya_college import NDataProcessing
+from .objects_extensions.reinforcement import RIDataProcessing
+from .objects_extensions.reinforcement_finance import RIFDataProcessing
+#
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Activation, Dropout, SimpleRNN
-from tensorflow.keras.utils import to_categorical, plot_model
+from tensorflow.keras.utils import to_categorical
 from tensorflow.keras.datasets import mnist
 #
 from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten
 #
 
-class MLAlgo(object):
+
+class MAlgo(object):
     def __init__(self, dic):  # to_data_path, target_field
         # print("90004-000 MLAlgo\n", dic, '\n', '-'*50)
         try:
-            super(MLAlgo, self).__init__()
+            super(MAlgo, self).__init__()
         except Exception as ex:
-            print("Error 90004-010 MLDataProcessing:\n"+str(ex), "\n", '-'*50)
+            print("Error 90004-010 MAlgo:\n"+str(ex), "\n", '-'*50)
         # print("MLAlgo\n", self.app)
         # print("90004-020 MLAlgo\n", dic, '\n', '-'*50)
         self.app = dic["app"]
 
 
-class MLDataProcessing(BaseDataProcessing, BasePotentialAlgo, MLAlgo):
+class MLDataProcessing(BaseDataProcessing, BasePotentialAlgo, MAlgo):
     def __init__(self, dic):
         # print("90005-000 MLDataProcessing\n", dic, '\n', '-' * 50)
         super().__init__(dic)
@@ -223,32 +206,4 @@ class MLDataProcessing(BaseDataProcessing, BasePotentialAlgo, MLAlgo):
         result = {"status": "ok RNN", "acc": acc}
         return result
 
-
-
-
-class Algo(object):
-    def __init__(self, dic):  # to_data_path, target_field
-        # print("90040-000 MLAlgo\n", dic, '\n', '-'*50)
-        try:
-            super(Algo, self).__init__()
-        except Exception as ex:
-            print("Error 90004-010 Algo:\n"+str(ex), "\n", '-'*50)
-        # print("MLAlgo\n", self.app)
-        # print("90004-020 Algo\n", dic, '\n', '-'*50)
-        self.app = dic["app"]
-
-class MLAlgo(BaseDataProcessing, BasePotentialAlgo, Algo):
-    def __init__(self, dic):
-        print("90050-000 MLDataProcessing\n", dic, '\n', '-' * 50)
-        super().__init__(dic)
-        # print("9005 MLAlgo ", self.app)
-
-
-    def algo_test(self, dic):
-        print("90121-5: \n", "="*50, "\n", dic, "\n", "="*50)
-
-
-        output = {"numbers":[1,2,3,4,5]}
-        result = {"status": "ok", "output":output}
-        return result
 

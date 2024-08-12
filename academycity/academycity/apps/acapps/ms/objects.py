@@ -97,7 +97,9 @@ class MSDataProcessing(BaseDataProcessing, BasePotentialAlgo, MSAlgo):
 
     # Data upload
     def upload_personal_info_to_db(self, dic):
-        print("90121-1-3: \n", dic, "\n", "="*50)
+        # print("90121-1-3: \n", dic, "\n", "="*50)
+        self.clear_log_debug()
+        self.log_debug("=== upload_personal_info_to_db 100 ===")
         app_ = dic["app"]
         file_path = self.upload_file(dic)["file_path"]
         # file_path = "/home/amos/projects/development/academycity/data/ms/datasets/excel/raw_data/RAW DATA (607).xlsx"
@@ -145,6 +147,7 @@ class MSDataProcessing(BaseDataProcessing, BasePotentialAlgo, MSAlgo):
             df = pd.DataFrame(data, columns=columns)
             # print(df)
             if f == "Normaliaz":
+                self.log_debug("f=" + f)
                 for index, row in df.iterrows():
                     # print(index, row["ID"])
                     try:
@@ -166,9 +169,12 @@ class MSDataProcessing(BaseDataProcessing, BasePotentialAlgo, MSAlgo):
                             pass
                         person_obj.set_num = row["set_num"]
                         person_obj.save()
+                        self.log_debug("SAVED " + str(row["ID"]))
+
                     except Exception as ex:
                         # pass
-                        print("Error: ", row["ID"], ex)
+                        self.log_debug("Error 50-50-50 " + str(row["ID"]))
+                        # print("Error: ", row["ID"], ex)
 
             if f == "Dependent":
                 # print(columns[4:])
@@ -191,11 +197,13 @@ class MSDataProcessing(BaseDataProcessing, BasePotentialAlgo, MSAlgo):
                     person_obj.person_group_dim = pg_obj
                     person_obj.save()
 
+            self.log_debug("Done " + f)
         result = {"status": "ok"}
         return result
 
     def upload_vars_to_db(self, dic):
-        print("902555-1-3: \n", dic, "\n", "="*50)
+        # print("902555-1-3: \n", dic, "\n", "="*50)
+        self.log_debug("=== upload_vars_to_db 100 ===")
         app_ = dic["app"]
         file_path = self.upload_file(dic)["file_path"]
         # file_path = "/home/amos/projects/development/academycity/data/ms/datasets/excel/raw_data/RAW DATA (607).xlsx"
@@ -247,10 +255,10 @@ class MSDataProcessing(BaseDataProcessing, BasePotentialAlgo, MSAlgo):
         wb = load_workbook(filename=file_path, read_only=False)
         sheet_names = wb.sheetnames
 
-        print("="*50)
+        # print("="*50)
 
         for f in sheet_names:
-            print(f)
+            self.log_debug("A0 f=" + f)
             pg_obj, is_created = model_person_group_dim.objects.get_or_create(group_name=f)
             pg_obj.save()
 
@@ -262,7 +270,7 @@ class MSDataProcessing(BaseDataProcessing, BasePotentialAlgo, MSAlgo):
 
         #
             if f == "Model":
-                for p  in columns[1:]:
+                for p in columns[1:]:
                     gene_obj, is_created = model_gene_dim.objects.get_or_create(gene_group_dim=gene_group_obj,gene_code=p)
                     # print('\ngene_obj\n', gene_obj,'\n')
 
@@ -270,8 +278,9 @@ class MSDataProcessing(BaseDataProcessing, BasePotentialAlgo, MSAlgo):
                         try:
                             v = str(row[p])
                             if v == "" or v == "nan":
-                                print("111 person=", row["ID"], "gene=", p, "v=", str(row[p]))
+                                print("111 person=", row["ID"], "gene=", p, "v=", v)
                                 print(float(v))
+                                self.log_debug("A v=" + v + "=" + str(row["ID"]) + " gene=" + p + " ")
                                 continue
 
                             v = float(row[p])
@@ -287,14 +296,21 @@ class MSDataProcessing(BaseDataProcessing, BasePotentialAlgo, MSAlgo):
 
                             fact_obj_normalized.amount = v
                             fact_obj_normalized.save()
+                            self.log_debug("A1 saved v=" + str(v) + "=" + str(row["ID"]) + " gene=" + p + " ")
                         except Exception as ex:
-                            print("", row[p], "error", ex)
+                            self.log_debug("A10 ERROR v=" + str(v) + "=" + str(row["ID"]) + " gene=" + p + " ")
+                            # print("", row[p], "error", ex)
 
                 for index, row in df.iterrows():
-                    person_obj = model_person_dim.objects.get(person_code=row["ID"])
-                    person_obj.person_group_dim = pg_obj
-                    person_obj.save()
+                    try:
+                        person_obj = model_person_dim.objects.get(person_code=row["ID"])
+                        person_obj.person_group_dim = pg_obj
+                        person_obj.save()
+                        self.log_debug("A500 SAVED person_code=" + str(row["ID"]))
+                    except Exception as ex:
+                        self.log_debug("A11 ERROR person_code=" + str(row["ID"]) + " " + str(ex))
 
+        self.log_debug("A200 Done")
         result = {"status": "ok"}
         return result
 
@@ -310,7 +326,7 @@ class MSDataProcessing(BaseDataProcessing, BasePotentialAlgo, MSAlgo):
         # print('file_path')
         # print('90121-2 dic')
         dic = dic["cube_dic"]
-        print('90121-3 dic', dic)
+        # print('90121-3 dic', dic)
         model_name_ = dic["dimensions"]["person_dim"]["model"]
         model_person_dim = apps.get_model(app_label=app_, model_name=model_name_)
 
@@ -329,6 +345,7 @@ class MSDataProcessing(BaseDataProcessing, BasePotentialAlgo, MSAlgo):
         wb = load_workbook(filename=file_path, read_only=False)
         sheet_names = wb.sheetnames
         for f in sheet_names:
+            self.log_debug("f=" + f)
             gene_group_dim_obj, is_created = model_gene_group_dim.objects.get_or_create(group_name=f)
             gene_group_dim_obj.save()
             ws = wb[f]
@@ -343,14 +360,14 @@ class MSDataProcessing(BaseDataProcessing, BasePotentialAlgo, MSAlgo):
 
             list_ = []
             for index, row in df.iterrows():
-                print("index", index)
+                # print("index", index)
                 for j in range(1, len(columns)):
                     # print("j", j)
                     if row[1] is not None and str(row[1]) != "None" and str(row[1]) != "":
                         g_ = str(row[1])
                         # print("g_", g_)
-                        gene_dim_obj, is_created = model_gene_dim.objects.get_or_create(gene_group_dim=gene_group_dim_obj,
-                                                                                        gene_code=g_)
+                        gene_dim_obj, is_created = model_gene_dim.objects.get_or_create(
+                            gene_group_dim=gene_group_dim_obj, gene_code=g_)
                         p_ = str(columns[j])
                         if p_ != "None" and p_ != "":
                             person_dim_obj, is_created = model_person_dim.objects.get_or_create(person_code=p_)
@@ -367,13 +384,14 @@ class MSDataProcessing(BaseDataProcessing, BasePotentialAlgo, MSAlgo):
                             if p_ not in list_:
                                 list_.append(p_)
                                 print(list_)
-        print("\n", "="*100, list_, "\n", "="*100)
+            # print("\n", "="*100, list_, "\n", "="*100)
+            self.log_debug("Error List of patients " + str(list_))
 
             # print(f_, p_, v_)
             # print(n__, max_v, max_d)
         # print(max_v, max_d)
         # print('90121-6 fact')
-        self.log_debug("=== load_file_to_db 101 ===")
+        self.log_debug("=== Done load_file_to_db 101 ===")
         wb.close()
         result = {"status": "ok"}
         return result
@@ -723,9 +741,8 @@ class MSDataProcessing(BaseDataProcessing, BasePotentialAlgo, MSAlgo):
         dic["df"] = df.copy()
         self.log_debug(str(nnn) + " D")
         self.calculate_clusters_a(dic)
-        self.clear_log_debug()
+        # self.clear_log_debug()
         self.log_debug("calculate_clusters_a finished")
-
         self.log_debug(str(nnn) + " E")
         # print("JJJ\n", nnn, "\n", df, "\n", df.shape)
         # --
@@ -811,8 +828,9 @@ class MSDataProcessing(BaseDataProcessing, BasePotentialAlgo, MSAlgo):
         return result
 
     def add_peaks_to_clusters3(self, dic):
-        print("90966-66-3: add_peaks_to_clusters3\n", dic, "\n", "=" * 50)
+        # print("90966-66-3: add_peaks_to_clusters3\n", dic, "\n", "=" * 50)
         self.clear_log_debug()
+        self.log_debug("add_peaks_to_clusters3")
         app_ = dic["app"]
         nnn = dic["nnn"]
         t_pop = dic["t_pop"]
@@ -845,39 +863,72 @@ class MSDataProcessing(BaseDataProcessing, BasePotentialAlgo, MSAlgo):
         df_s = df_s.dropna(axis=0) # .reset_index()
         # print("df_s\n", df_s)
         self.log_debug(str(nnn) + " F")
+        self.log_debug(str(df_s.shape))
 
         dic_sets = {}
         reference_set = 2
-        for k in [1, 2]:
-            df_sk = df_s[l[k-1] < df_s['set_num']]
-            df_sk = df_sk[l[k] >= df_s['set_num']]
-            llk = df_sk['index'].tolist()
-            dfllk = df.loc[:, llk]  #
-            dic_sets[k] = dfllk
+        # print("df_s\n", df_s)
+
+        try:
+            for k in [1, 2]:
+                # print("k", k)
+                df_sk = df_s[l[k-1] < df_s['set_num']]
+                df_sk = df_sk[l[k] >= df_s['set_num']]
+                llk = df_sk['index'].tolist()
+                self.log_debug(str(k) + " \nlist\n" + str(llk)[:1000])
+                # self.log_debug(str(k) + " \ndf.columns\n" + str(df.columns)[:1000])
+                # print("llk\n", llk)
+
+                dfllk = df.loc[:, llk]  #
+
+                # print("dfllk\n", dfllk)
+                dic_sets[k] = dfllk
+                self.log_debug(str(k) + " \n" + str(dfllk.shape))
+        except Exception as ex:
+            # print(str(ex))
+            self.log_debug("Error11-1 " + str(ex))
+            self.log_debug(str(nnn) + " F1")
+            # print(dic_sets)
 
         n__ = 0
-        qsg = model_gene_dim.objects.filter(gene_group_dim__group_name="indep")
         nz = 0
+        try:
+            qsg = model_gene_dim.objects.filter(gene_group_dim__group_name="indep")
+        except Exception as ex:
+            self.log_debug("Error11-2 " + str(ex))
+
         self.log_debug(str(nnn) + " I")
+
+        # print(qsg.count())
+
         for o in qsg:
             nz+=1
-            self.log_debug(str(nnn) + " : " + str(nz) + " : " + str(o.id))
+            self.log_debug("A1 " + str(nnn) + " : " + str(nz) + " : " + str(o.id))
             # print(str(nnn) + " : " + str(nz) + " : " + str(o.id))
             n__ += 1
 
-            dic_sets_o = {}
-            for k in dic_sets:
-                dic_sets_o[k] = pd.DataFrame(dic_sets[k].loc[o.id])
+            try:
+                dic_sets_o = {}
+                for k in dic_sets:
+                    dic_sets_o[k] = pd.DataFrame(dic_sets[k].loc[o.id])
+                # print("B")
+                mr = float(dic_sets_o[reference_set].median())
+            except Exception as ex:
+                self.log_debug("Error11-5 " + str(nnn) + " : " + str(nz) + " : " + str(o.id) + " Error " + str(ex))
 
-            mr = float(dic_sets_o[reference_set].median())
+            # self.log_debug("A2 " + str(nnn) + " : " + str(nz) + " : " + str(o.id))
+
             for k in dic_sets:
                 if k != reference_set:
-                    # print("dic_sets_o[k] A\n", dic_sets_o[k])
-                    mk = float(dic_sets_o[k].median())
-                    f = mr/mk
-                    dic_sets_o[k] = dic_sets_o[k].astype('float') * f
-                    # print(mr, mk, f)
-                    # print("dic_sets_o[k] B\n", dic_sets_o[k])
+                    try:
+                        # print("dic_sets_o[k] A\n", dic_sets_o[k])
+                        mk = float(dic_sets_o[k].median())
+                        f = mr/mk
+                        dic_sets_o[k] = dic_sets_o[k].astype('float') * f
+                        # print(mr, mk, f)
+                        # print("dic_sets_o[k] B\n", dic_sets_o[k])
+                    except Exception as ex:
+                        self.log_debug("Error22 " + str(nnn) + " : " + str(nz) + " : " + str(o.id) + " Error " + str(ex))
 
                 for index, row in dic_sets_o[k].iterrows():
                     try:
@@ -886,9 +937,10 @@ class MSDataProcessing(BaseDataProcessing, BasePotentialAlgo, MSAlgo):
                         obj.amount = float(row[dic_sets_o[k].columns[0]])
                         obj.save()
                     except Exception as ex:
+                        self.log_debug("Error33 " + str(nnn) + " : " + str(nz) + " : " + str(o.id) + " Error " + str(ex))
                         print("Error 1", ex)
 
-        self.log_debug("Done")
+        self.log_debug("Done add_peaks_to_clusters3")
         result = {"status": "ok", "result": {"a": "a"}}
         print(result)
         return result

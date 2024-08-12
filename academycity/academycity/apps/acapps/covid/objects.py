@@ -32,6 +32,10 @@ import numpy as np
 from ..ml.basic_ml_objects import BaseDataProcessing, BasePotentialAlgo
 from django.apps import apps
 
+# ======================================
+# This project can work for covid, neck
+#
+# ======================================
 
 class CovidAlgo(object):
     def __init__(self, dic):  # to_data_path, target_field
@@ -46,14 +50,25 @@ class CovidAlgo(object):
 class CovidDataProcessing(BaseDataProcessing, BasePotentialAlgo, CovidAlgo):
     def __init__(self, dic):
         super().__init__(dic)
+        app_ = dic["app"]
+        self.Debug = apps.get_model(app_label=app_, model_name="debug")
+
+    def log_debug(self, value):
+        self.Debug.objects.create(value=value)
+
+    def clear_log_debug(self):
+        self.Debug.truncate()
 
     def data_upload(self, dic):
-        # print("90121-1: \n", "="*50, "\n", dic, "\n", "="*50)
+        print("90121-1: \n", "="*50, "\n", dic, "\n", "="*50)
         try:
             app_ = dic["app"]
             file_path = self.upload_file(dic)["file_path"]
             # print(file_path)
             sheet_name = dic["sheet_name"]
+            s = sheet_name.split("_")
+            sheet_name = s[0]
+            numb_indep_vars = int(s[1])
             dic = dic["cube_dic"]
             # print('90121-3 dic', dic)
 
@@ -86,7 +101,7 @@ class CovidDataProcessing(BaseDataProcessing, BasePotentialAlgo, CovidAlgo):
             f_ = columns_[i]
             # print("="*10, "\n", f_, "\n", "-"*10)
             if i > 0:
-                if i < 7:
+                if i < numb_indep_vars:
                     group_obj, is_created = model_var_group_dim.objects.get_or_create(group_name='indep')
                 else:
                     group_obj, is_created = model_var_group_dim.objects.get_or_create(group_name='dep')

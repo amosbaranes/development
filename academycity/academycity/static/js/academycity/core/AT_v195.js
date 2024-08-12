@@ -212,7 +212,7 @@ function AdvancedTabsManager(dic=null)
                                                  "functions":[]},
                                         "UploadFile":{"title":"UploadFile", "width":8,
                                                "setting": {"height":[],"width":[],"obj_name":[],"function_name":[],
-                                                           "topic_id":[], "folder_type":["", "excel", "media", "other"],
+                                                           "topic_id":[], "folder_type":["", "excel", "media", "mediafun", "other"],
                                                             "dimensions":[], "fields":[], "fact_model_field": [],
                                                             "entity_name":[], "sheet_name":[]},
                                                "attributes":{"field":[]},

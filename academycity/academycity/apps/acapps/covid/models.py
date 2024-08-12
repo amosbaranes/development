@@ -89,3 +89,10 @@ class FactNormalizedMinMax(TruncateTableMixin, models.Model):
     def __str__(self):
         return str(self.gene_dim) + " - " + str(self.person_dim) + ": " + str(self.amount)
 # --------------
+
+
+class Debug(TruncateTableMixin, models.Model):
+    value = models.CharField(max_length=1024)
+
+    def __str__(self):
+        return self.value

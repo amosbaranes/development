@@ -60,20 +60,26 @@ class BaseDataProcessing(object):
         # --- Change to this when you start to use Django ---
 
         clear_log_debug()
-
         self.PROJECT_ROOT_DIR = os.path.join(settings.WEB_DIR, "data", dic["app"])
         os.makedirs(self.PROJECT_ROOT_DIR, exist_ok=True)
 
         log_debug(settings.MEDIA_ROOT)
-
         self.PROJECT_MEDIA_DIR = os.path.join(settings.MEDIA_ROOT, dic["app"])
         os.makedirs(self.PROJECT_MEDIA_DIR, exist_ok=True)
 
         self.TOPIC_ID = dic["topic_id"]  # "fundamentals"
+
+        self.TO_MEDIA = os.path.join(self.PROJECT_MEDIA_DIR, self.TOPIC_ID)
+        os.makedirs(self.TO_MEDIA, exist_ok=True)
+
         self.TO_DATA_PATH = os.path.join(self.PROJECT_ROOT_DIR, "datasets")
         os.makedirs(self.TO_DATA_PATH, exist_ok=True)
+
         self.TO_EXCEL = os.path.join(self.TO_DATA_PATH, "excel", self.TOPIC_ID)
         os.makedirs(self.TO_EXCEL, exist_ok=True)
+
+        self.TO_OTHER = os.path.join(self.TO_DATA_PATH, "other", self.TOPIC_ID)
+        os.makedirs(self.TO_OTHER, exist_ok=True)
 
         try:
             self.dependent_group = dic["dependent_group"]
@@ -126,9 +132,13 @@ class BaseDataProcessing(object):
         # for example: if data_folder=excel we choose self.TO_EXCEL
 
         # print("target_folder = self.TO_"+dic["folder_type"].upper())
-        self.target_folder = eval("self.TO_" + dic["folder_type"].upper())
+
+        folder_type = dic["folder_type"]
+        if folder_type == "mediafun":
+            self.target_folder = self.TO_MEDIA
+        else:
+            self.target_folder = eval("self.TO_" + folder_type.upper())
         filename = dic["request"].POST['filename']
-        # print(filename)
         self.uploaded_filename = filename
         file_path = os.path.join(self.target_folder, filename)
         with open(file_path, 'wb+') as destination:
@@ -265,6 +275,7 @@ class BasePotentialAlgo(object):
         # ---------------------------------------------------------------------------
         try:
             fact_model_name = dic["fact_model"]
+            # print(fact_model_name)
             self.model_fact = apps.get_model(app_label=self.app, model_name=fact_model_name)
             self.model_fact_to_normalize = apps.get_model(app_label=self.app, model_name=fact_model_name)
         except Exception as ex:
@@ -685,12 +696,16 @@ class BasePotentialAlgo(object):
                 qs = self.model_fact_to_normalize.objects.filter(person_dim__person_group_dim__group_name="Model",
                                                                  gene_dim__gene_group_dim_group_name__in=ll__)
             except Exception as ex:
-                # print(5555)
-                s = ('self.model_fact_to_normalize.objects.filter(' + self.entity_name +
-                     '_dim__' + self.entity_name + '_group_dim__group_name="Model", ' + self.var_name + '_dim__' + self.var_name + '_code__in = ll__)')
-                # print(s)
-                qs = eval(s)
-                # print(5555)
+                try:
+                    s = ('self.model_fact_to_normalize.objects.filter(' + self.entity_name +
+                         '_dim__' + self.entity_name + '_group_dim__group_name="Model", ' + self.var_name + '_dim__' + self.var_name + '_code__in = ll__)')
+                    # print(s)
+                    qs = eval(s)
+                except Exception as ex:
+                    s = 'self.model_fact_to_normalize.objects.filter(' + self.var_name + '_dim__' + self.var_name + '_code__in = ll__)'
+                    print(s)
+                    qs = eval(s)
+
             df = pd.DataFrame(list(qs.values(self.var_name + "_dim", self.entity_name + "_dim", "amount")))
             try:
                 df = df.pivot(index=self.entity_name + "_dim", columns=self.var_name + '_dim', values='amount')
@@ -841,10 +856,8 @@ class BasePotentialAlgo(object):
                             self.log_debug("A00")
 
                             try:
-
-                                index_ = "h-" + str(h_) + "_" + "l-" + str(l_) + "_" + "hi-" + str(hi_) + "_" + "li-" + str(
-                                    li_)
-                                self.log_debug("A0")
+                                index_ = "h-" + str(h_) + "_" + "l-" + str(l_) + "_" + "hi-" + str(hi_) + "_" + "li-" + str(li_)
+                                self.log_debug("A0 index=" + index_)
                                 # print("-"*75, "\nindex", index_, "\n", "-"*40)
                                 # print(dn_)
                                 # print(df_l_e)
@@ -855,19 +868,25 @@ class BasePotentialAlgo(object):
                                 # print("KKK df_l_e\n", df_l_e)
                                 # print("KKK1 \n", df_l_e.iloc[n_y_l], "\n", dn_)
 
-                                self.log_debug("A1")
-                                y_min_cut = df_l_e.iloc[n_y_l][dn_]
+                                self.log_debug("A1 " + " n_y_l=" + str(n_y_l) + " df_l_e= " + str(df_l_e.shape))
+                                try:
+                                    y_min_cut = df_l_e.iloc[n_y_l][dn_]
 
-                                # print("GGG", y_min_cut)
+                                    # print("GGG", y_min_cut)
 
-                                dic_hp = {"y": {"max_cut": float(y_max_cut), "min_cut": float(y_min_cut)}}
-                                # print(df_h_e.columns)
+                                    dic_hp = {"y": {"max_cut": float(y_max_cut), "min_cut": float(y_min_cut)}}
+                                    # print(df_h_e.columns)
 
-                                # print("A100-1", n, l,li,h,hi)
+                                    # print("A100-1", n, l,li,h,hi)
 
-                                columns = df_h_e.columns.copy()
-                                columns = columns.values.tolist()
-                                columns.remove(dn_)
+                                    columns = df_h_e.columns.copy()
+                                    columns = columns.values.tolist()
+                                    columns.remove(dn_)
+
+                                except Exception as ex:
+                                    self.log_debug("Error 11-55-55: " + str(ex) + "l=" + str(l_) + " li=" +
+                                                   str(li_) + " n_y_l=" + str(n_y_l) + " df_l_e=" + str(df_l_e.shape))
+                                    return {0: False, 1: str(ex)}
 
                                 self.log_debug("A")
 
@@ -974,17 +993,26 @@ class BasePotentialAlgo(object):
                             temp_obj.save()
                             # print("Saved = " + str(idx) )
                             self.log_debug("Saved = " + str(idx))
+
                             for j in sim.columns:
+
                                 var_obj = model_var.objects.get(id=j)
                                 s_ = 'model_temp_var.objects.get_or_create(temp=temp_obj, ' + self.var_name + '_dim=var_obj)'
                                 try:
                                     temp_var_obj, is_created = eval(s_)
                                 except Exception as ex:
-                                    print("Err 5567-6678", ex)
-                                temp_var_obj.amount = float(sim.iloc[0][j])
-                                temp_var_obj.sign = ll_dic_.iloc[0][j]
-                                temp_var_obj.save()
-                                # print("Saved temp_var_obj.save()")
+                                    # print("Err 5567-6678", ex)
+                                    self.log_debug("Err 5567-6678 " + str(ex))
+
+                                try:
+                                    temp_var_obj.amount = float(sim.iloc[0][j])
+                                    temp_var_obj.sign = ll_dic_.iloc[0][j]
+                                    temp_var_obj.save()
+                                    # print("Saved temp_var_obj.save()")
+                                except Exception as ex:
+                                    # print("Err 5567-4444", ex)
+                                    self.log_debug("Err 5567-4444 " + str(ex))
+
                             self.log_debug("D")
                             # print('AAA')
                         # print('AAA1')
@@ -1021,7 +1049,7 @@ class BasePotentialAlgo(object):
             if not ret[0]:
                 return {"status": "ko", "msg": ret[1]}
 
-        # print("Done normalize_similarity")
+        print("Done normalize_similarity")
 
         self.log_debug("Done normalize_similarity")
         result = {"status": "ok", "msg": "completed ok"}
@@ -1030,14 +1058,14 @@ class BasePotentialAlgo(object):
     # # # Not used. Created to picking best min max. we changed.
     def calculate_min_max_cuts(self, dic):
         # # #
-        print("90099-99-99-1 MMDataProcessing calculate_min_max_cuts: \n", dic, "\n'", "="*100)
-        log_debug("calculate_min_max_cuts")
+        # print("90099-99-99-1 MMDataProcessing calculate_min_max_cuts: \n", dic, "\n'", "="*100)
+        self.log_debug("calculate_min_max_cuts")
         method = dic["method"]
         variables_model = apps.get_model(app_label=self.app, model_name=self.var_name+'dim')
 
         model_temp_var = apps.get_model(app_label=self.app, model_name="tempvar")
         qs = model_temp_var.objects.all()
-        log_debug("calculate_min_max_cuts 1")
+        self.log_debug("calculate_min_max_cuts 1")
         #
         df = pd.DataFrame(list(qs.values("temp_id", self.var_name+'_dim_id', "amount")))
         df_similarity_ = df.pivot(index="temp_id", columns=self.var_name+'_dim_id', values='amount').fillna(0).astype('float')
@@ -1085,6 +1113,7 @@ class BasePotentialAlgo(object):
             pass
         # print(min_similarity)
         df_similarity_ -= min_similarity
+
         # print("df_similarity_ - 0.7\n", df_similarity_)
         #
         # log_debug("calculate_min_max_cuts 11")
@@ -1120,7 +1149,7 @@ class BasePotentialAlgo(object):
         # print("AAAAAAA\n")
         # print("df_similarity_w_\n", df_similarity_w_)
         # print("temp", temp, "\n\n")
-        log_debug("calculate_min_max_cuts 100")
+        self.log_debug("calculate_min_max_cuts 100")
 
         for index, row in df_similarity_w_.iterrows():
             id_ = int(round(index))
@@ -1141,14 +1170,15 @@ class BasePotentialAlgo(object):
                 log_debug(str(row[df_similarity_w_.columns[0]]))
                 log_debug(str(round(100*row[df_similarity_w_.columns[0]])/100))
 
-        log_debug("Done calculate_min_max_cuts")
+        self.log_debug("Done calculate_min_max_cuts")
         result = {"status": "ok"}
-        print(result)
+        # print(result)
         return result
 
     def create_similarity_excel(self, dic):
         # # #
-        print("90099-99-99 DataProcessing create_similarity_excel: \n", dic, "\n'", "="*100)
+        # print("90099-99-99 DataProcessing create_similarity_excel: \n", dic, "\n'", "="*100)
+        self.clear_log_debug()
         model_temp_var = apps.get_model(app_label=self.app, model_name="tempvar")
 
         dn__ = int(dic["dn"])
@@ -1169,25 +1199,25 @@ class BasePotentialAlgo(object):
         for dn_text in ll_dep:
             save_to_file = os.path.join(self.PROJECT_MEDIA_DIR, "Similarity"+"_"+dn_text+".xlsx")
             # print(save_to_file)
-            log_debug(save_to_file)
+            self.log_debug(save_to_file)
             is_file = os.path.exists(save_to_file)
-            log_debug("1 is_file = " + str(is_file))
+            self.log_debug("1 is_file = " + str(is_file))
             if is_file:
                 try:
                     os.remove(save_to_file)
-                    log_debug("deleted file " + save_to_file)
+                    self.log_debug("deleted file " + save_to_file)
                 except Exception as ex:
-                    log_debug("90-90-90- 1 Error saving file " + save_to_file )
+                    self.log_debug("90-90-90- 1 Error saving file " + save_to_file )
             is_file = os.path.exists(save_to_file)
-            log_debug("2 is_file = " + str(is_file))
+            self.log_debug("2 is_file = " + str(is_file))
             # print("2 is_file = " + str(is_file))
-            log_debug("create_similarity_excel 3")
+            self.log_debug("create_similarity_excel 3")
 
             wb2 = Workbook()
             wb2.save(save_to_file)
             wb2.close()
             wb2 = None
-            log_debug("create_similarity_excel")
+            self.log_debug("create_similarity_excel")
             threshold = 1
             while threshold > 0.69:
                 threshold = round(100*(threshold-0.01))/100
@@ -1205,12 +1235,15 @@ class BasePotentialAlgo(object):
                 df1 = pd.DataFrame(list(qs1.values("temp_id", self.var_name+'_dim_id', "amount")))
                 df1_similarity_ = df1.pivot(index="temp_id", columns=self.var_name+'_dim_id', values='amount').fillna(0).astype('float')
                 df1_similarity_ = df1_similarity_.reset_index()
-                # print("df1_similarity_\n", df1_similarity_)
+
+                # print("df1_similarity_\n", df1_similarity_, "\n", df1_similarity_.shape)
 
                 if df1_similarity_.shape[0] == 0:
                     continue
 
                 log_debug("create_similarity_excel 1")
+                # print("create_similarity_excel 1")
+
                 log_debug("DataFrame size: " + str(df1_similarity_.shape))
                 model_temp = apps.get_model(app_label=self.app, model_name="temp")
                 qs2 = model_temp.objects.all()
@@ -1227,31 +1260,39 @@ class BasePotentialAlgo(object):
 
                 log_debug("create_similarity_excel 2")
                 df__.dropna(how='all', axis=1, inplace=True)
+
                 cc = {}
                 l = []
                 for c in df__.columns:
                     if c not in ["h", "l", "hi", "li"]:
                         cc[c] = str(self.measures_name[self.measures_name['id']==c].iloc[0][self.measure_name_]).strip()
                         l.append(cc[c])
+                # print(l)
+                # print(cc)
                 df__.rename(columns=cc, inplace=True)
                 df = df__.copy()
-                # print("df", "\n", df, "\n", df.shape)
+                dft = df__.copy()
+
+                # print("df 5\n", "\n", df, "\n", df.shape)
 
                 for c in l:
-                    df = df[df[c]>=threshold]
-                    # print(c, "\n", df)
-                # print("AAAAA\n", df)
+                    # print("SS\n", dft[dft[c]>=threshold])
+                    dft = dft[dft[c]>=threshold]
+                    # print(c, "\n", dft)
+                # print("AAAAA\n", dft)
 
-                df['sum'] = df.loc[:, l].sum(axis=1)
-                df = df.sort_values(by='sum', ascending=False)
+                dft['sum'] = dft.loc[:, l].sum(axis=1)
+                dft = dft.sort_values(by='sum', ascending=False)
 
-                # print("SSS df \n", df, "\n", df.shape)
+                # print("df7\n", "\n", dft, "\n", dft.shape)
+
+                # print("SSS dft \n", dft, "\n", dft.shape)
 
                 # r = {"h": {}, "hi":{}, "l":{}, "li":{}, "hih": {}, "lil":{}}
 
                 r = {"hi":{}, "li":{}}
                 r_ = {"h":{}, "l":{}}
-                for index, row in df.iterrows():
+                for index, row in dft.iterrows():
                     h_ = int(row["h"])
                     hi_ = int(row["hi"])
                     l_ = int(row["l"])
@@ -1297,7 +1338,6 @@ class BasePotentialAlgo(object):
                     except Exception as ex:
                         pass
 
-
                 for j in r:
                     dr = {}
                     n = 1
@@ -1318,19 +1358,22 @@ class BasePotentialAlgo(object):
                     # print(a, b, rr_)
 
                     dr['h'] = j + ": " + str(r[j])
-                    df = df.append(dr, ignore_index=True)
+                    dft = dft.append(dr, ignore_index=True)
                     dr['h'] = "A=" + str(a) + " B=" + str(b) + " A/B=" + str(rr_)
-                    df = df.append(dr, ignore_index=True)
+                    dft = dft.append(dr, ignore_index=True)
 
                 for j in r_:
                     dr = {}
                     dr['h'] = j + ": " + str(r_[j])
-                    df = df.append(dr, ignore_index=True)
+                    dft = dft.append(dr, ignore_index=True)
 
                 try:
                     # print(save_to_file)
                     with pd.ExcelWriter(save_to_file, engine='openpyxl', mode="a") as writer:
-                        df.to_excel(writer, sheet_name="similarities_"+str(threshold))
+                        df = df.T
+                        df.to_excel(writer, sheet_name="A_similarities_"+str(threshold))
+                        dft = dft.T
+                        dft.to_excel(writer, sheet_name="B_similarities_"+str(threshold))
                         log_debug("create_similarity_excel threshold: "+str(threshold))
                 except Exception as ex:
                     print(ex)
@@ -1344,13 +1387,13 @@ class BasePotentialAlgo(object):
                 del wb['Sheet']
                 wb.save(save_to_file)
                 wb.close()
-                log_debug("create_similarity_excel 5")
+                self.log_debug("create_similarity_excel 5")
             except Exception as ex:
-                log_debug(str(ex))
+                self.log_debug(str(ex))
             is_file = os.path.exists(save_to_file)
-            log_debug("3 is_file = " + str(is_file))
+            self.log_debug("3 is_file = " + str(is_file))
 
-        log_debug("Done create_similarity_excel")
+        self.log_debug("Done create_similarity_excel")
         result = {"status": "ok"}
         return result
 

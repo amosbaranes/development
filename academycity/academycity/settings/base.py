@@ -94,7 +94,7 @@ DJANGO_APPS = [
     'channels',
     'mathfilters',
     #
-    'django_elasticsearch_dsl',
+    #'django_elasticsearch_dsl',
     'simpy',
     'mesa',
     #
@@ -205,6 +205,7 @@ acApps = [
     'academycity.apps.acapps.avic',
     'academycity.apps.acapps.arthur',
     'academycity.apps.acapps.covid',
+    'academycity.apps.acapps.nces',
     'academycity.apps.acapps.case1',
     'academycity.apps.acapps.ao',
     'academycity.apps.acapps.dl',
@@ -212,7 +213,6 @@ acApps = [
     'academycity.apps.acapps.accounting',
     'academycity.apps.acapps.businesssim',
     'academycity.apps.acapps.liongold',
-    'academycity.apps.acapps.kiu',
 ]
 
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
