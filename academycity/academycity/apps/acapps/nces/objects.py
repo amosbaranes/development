@@ -42,86 +42,108 @@ class NCESDataProcessing(BaseDataProcessing, BasePotentialAlgo, NCESAlgo):
 
     def data_upload(self, dic):
         print("90121-1: \n", "="*50, "\n", dic, "\n", "="*50)
-        try:
-            app_ = dic["app"]
-            file_path = self.upload_file(dic)["file_path"]
-            print(file_path)
 
-        #     sheet_name = dic["sheet_name"]
-        #     s = sheet_name.split("_")
-        #     sheet_name = s[0]
-        #     numb_indep_vars = int(s[1])
-        #     dic = dic["cube_dic"]
-        #     # print('90121-3 dic', dic)
-        #
-        #     model_name_ = dic["dimensions"]["entity_dim"]["model"]
-        #     model_entity_dim = apps.get_model(app_label=app_, model_name=model_name_)
-        #     #
-        #     model_name_ = dic["dimensions"]["var_group_dim"]["model"]
-        #     model_var_group_dim = apps.get_model(app_label=app_, model_name=model_name_)
-        #     #
-        #     model_name_ = dic["dimensions"]["var_dim"]["model"]
-        #     model_var_dim = apps.get_model(app_label=app_, model_name=model_name_)
-        #     #
-        #     model_name_ = dic["fact"]["model"]
-        #     model_fact = apps.get_model(app_label=app_, model_name=model_name_)
-        #     #
-        except Exception as ex:
-            print("Error 90121-100", ex)
+        app_ = dic["app"]
+        file_path = self.upload_file(dic)["file_path"]
+        # print(file_path)
+        country_name_ = file_path.split("/")[-1].split(".")[0]
+        # print(country_name_)
 
-        # wb = load_workbook(filename=file_path, read_only=False)
-        # ws = wb[sheet_name]
-        # data = ws.values
-        # columns_ = next(data)[0:]   # Get the first line in file as a header line
-        # # print(columns_)
-        # # Create a DataFrame based on the second and subsequent lines of data
-        # df = pd.DataFrame(data, columns=columns_)
+        sheet_name = dic["sheet_name"]
+        dic = dic["cube_dic"]
+        # print('90121-3 dic', dic)
+
+        model_country_dim = apps.get_model(app_label=app_, model_name="countrydim")
+        country_obj, is_created = model_country_dim.objects.get_or_create(country_name=country_name_)
+        if is_created:
+            country_obj.country_name = country_name_
+            country_obj.save()
+
+        model_region_dim = apps.get_model(app_label=app_, model_name="regiondim")
+        model_district_dim = apps.get_model(app_label=app_, model_name="districtdim")
+        model_measure_dim = apps.get_model(app_label=app_, model_name="measuredim")
+        model_time_dim = apps.get_model(app_label=app_, model_name="timedim")
+        model_fact = apps.get_model(app_label=app_, model_name="fact")
+
+
+        wb = load_workbook(filename=file_path, read_only=False)
+        ws = wb[sheet_name]
+        data = ws.values
+        columns_ = next(data)[0:]   # Get the first line in file as a header line
+        # print("AA\n", columns_)
+        columns_1 = next(data)[0:]   # Get the first line in file as a header line
+        # print("BB\n", columns_1)
+        # Create a DataFrame based on the second and subsequent lines of data
+
+        columns = []
+        for i in range(len(columns_)):
+            f_ = columns_[i]
+            f_1 = columns_1[i]
+            # print(str(f_)+"_"+str(f_1))
+            columns.append(str(f_)+"_"+str(f_1))
+        df = pd.DataFrame(data, columns=columns)
         # df = df.reset_index()  # make sure indexes pair with number of rows
-        # # print(df)
-        # #
-        # for i in range(len(columns_)):
-        #     f_ = columns_[i]
-        #     # print("="*10, "\n", f_, "\n", "-"*10)
-        #     if i > 0:
-        #         if i < numb_indep_vars:
-        #             group_obj, is_created = model_var_group_dim.objects.get_or_create(group_name='indep')
-        #         else:
-        #             group_obj, is_created = model_var_group_dim.objects.get_or_create(group_name='dep')
-        #         try:
-        #             # print(f_)
-        #             var_obj, is_created = model_var_dim.objects.get_or_create(var_code=f_)
-        #             var_obj.var_group_dim=group_obj
-        #             var_obj.var_code = f_
-        #             var_obj.save()
-        #             # print(group_obj, f_)
-        #             # print(var_obj)
-        #         except Exception as ex:
-        #             print("Error 90121-300", ex)
+        print(df)
         #
-        #         for index, row in df.iterrows():
-        #             # print(row)
-        #             n_ = 0
-        #             entity_code_ = str(row[1]).strip()
-        #             # print("=" * 50)
-        #             try:
-        #                 # print(entity_code_)
-        #                 entity_obj, is_created = model_entity_dim.objects.get_or_create(entity_code=entity_code_)
-        #                 if is_created:
-        #                     entity_obj.entity_code = entity_code_
-        #                     entity_obj.save()
-        #             except Exception as ex:
-        #                 print("Error 90121-400", ex)
-        #             try:
-        #                 v_ = float(str(row[f_]))
-        #                 if v_ is not None and str(v_) != "nan":
-        #                     # print(row[columns[j]], float(str(row[columns[j]])))
-        #                     fact_obj, is_created = model_fact.objects.get_or_create(entity_dim=entity_obj,
-        #                                                                             var_dim=var_obj)
-        #                     fact_obj.amount = v_
-        #                     fact_obj.save()
-        #             except Exception as ex:
-        #                 print("Error 90121-500", ex)
-        # wb.close()
+        for i in range(len(columns)):
+            if i > 1:
+                f_ = columns[i]
+                # print("f_ ", f_)
+                yv = f_.split("_")
+                year_ = yv[0]
+                measure_name_ = yv[1]
+                # print("HHHHHH", measure_name_, year_)
+
+                year_obj, is_created = model_time_dim.objects.get_or_create(id=year_)
+                if is_created:
+                    year_obj.year = year_
+                    year_obj.save()
+
+                measure_obj, is_created = model_measure_dim.objects.get_or_create(measure_name=measure_name_)
+                if is_created:
+                    measure_obj.measure_name = measure_name_
+                    measure_obj.save()
+
+                for index, row in df.iterrows():
+                    # print(row)
+                    n_ = 0
+                    region_name_ = str(row[0]).strip()
+                    district_name_ = str(row[1]).strip()
+                    # print("AAA ", region_name_, district_name_)
+                    try:
+                        region_obj, is_created = model_region_dim.objects.get_or_create(
+                            country_dim=country_obj, region_name=region_name_)
+                        if is_created:
+                            region_obj.region_name = region_name_
+                            region_obj.save()
+                    except Exception as ex:
+                        print("Error 90121-400-1", ex)
+
+                    try:
+                        district_obj, is_created = model_district_dim.objects.get_or_create(
+                            region_dim=region_obj, district_name=district_name_)
+                        if is_created:
+                            district_obj.district_name = district_name_
+                            district_obj.save()
+
+                    except Exception as ex:
+                        print("Error 90121-400-2", ex)
+
+                    try:
+                        v_ = float(str(row[f_]))
+                        # print("ZZZZ ", f_, district_name_, v_)
+
+                        if v_ is not None and str(v_) != "nan":
+                            # print(row[columns[j]], float(str(row[columns[j]])))
+                            fact_obj, is_created = model_fact.objects.get_or_create(district_dim=district_obj,
+                                                                                    time_dim=year_obj,
+                                                                                    measure_dim=measure_obj)
+                            fact_obj.amount = v_
+                            fact_obj.save()
+
+                    except Exception as ex:
+                        print("Error 90121-500", f_, district_name_, v_, "\n", ex)
+        wb.close()
 
         result = {"status": "ok"}
         # print(result)
