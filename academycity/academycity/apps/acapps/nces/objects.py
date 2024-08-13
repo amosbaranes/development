@@ -65,7 +65,6 @@ class NCESDataProcessing(BaseDataProcessing, BasePotentialAlgo, NCESAlgo):
         model_time_dim = apps.get_model(app_label=app_, model_name="timedim")
         model_fact = apps.get_model(app_label=app_, model_name="fact")
 
-
         wb = load_workbook(filename=file_path, read_only=False)
         ws = wb[sheet_name]
         data = ws.values
