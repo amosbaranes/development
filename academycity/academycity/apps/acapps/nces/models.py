@@ -55,4 +55,11 @@ class Fact(TruncateTableMixin, models.Model):
 
     def __str__(self):
         return str(self.var_dim) + " - " + str(self.entity_dim) + ": " + str(self.amount)
+# --------------
 
+
+class Debug(TruncateTableMixin, models.Model):
+    value = models.CharField(max_length=1024)
+
+    def __str__(self):
+        return self.value
