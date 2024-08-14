@@ -27,6 +27,8 @@ class Maze(object):
         self.maze[2, 5:] = 1
         self.maze[3, 2] = 1
         self.maze[3, 3] = 1
+        self.maze[1, 2] = 1
+        self.maze[2, 2] = 1
         self.maze[2, 3] = 1
         self.maze[2, 0] = 1
         self.maze[6, :3] = 1

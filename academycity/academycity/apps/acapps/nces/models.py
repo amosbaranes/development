@@ -45,6 +45,10 @@ class TimeDim(TruncateTableMixin, models.Model):
 
 
 class Fact(TruncateTableMixin, models.Model):
+    class Meta:
+        verbose_name = 'fact'
+        verbose_name_plural = 'factss'
+        ordering = ['district_dim']
     time_dim = models.ForeignKey(TimeDim, on_delete=models.CASCADE, default=1,
                                  related_name='time_dim_fact')
     district_dim = models.ForeignKey(DistrictDim, on_delete=models.CASCADE, default=1,

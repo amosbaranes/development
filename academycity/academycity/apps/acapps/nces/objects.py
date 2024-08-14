@@ -149,3 +149,86 @@ class NCESDataProcessing(BaseDataProcessing, BasePotentialAlgo, NCESAlgo):
 
         return result
 
+    def calculate_support(self, dic):
+        # print(" 90121-100: \n", "=" * 50, "\n", dic, "\n", "=" * 50)
+        app_ = dic["app"]
+        country_id = int(dic["country_id"])
+        region_id = int(dic["region_id"])
+        model_fact = apps.get_model(app_label=app_, model_name="fact")
+
+        qs = model_fact.objects.filter(district_dim__region_dim__id=region_id)
+
+        df = pd.DataFrame(list(qs.values('time_dim_id', 'district_dim_id', 'measure_dim_id', 'amount')))
+
+        # print(df)
+
+        dff = pd.pivot_table(df, index=["district_dim_id"], columns=["measure_dim_id", "time_dim_id"],
+                             values=["amount"], aggfunc="sum")
+
+        dff_1 = dff.xs(1, level=1, axis=1, drop_level=False)
+        dff_2 = dff.xs(2, level=1, axis=1, drop_level=False)
+        # print("dff_1\n", dff_1)
+        # print("dff_2\n", dff_2)
+
+        dff_1_ = dff_1.T.reset_index()
+        dff_2_ = dff_2.T.reset_index()
+        dff_1_.drop(["level_0", "measure_dim_id", "time_dim_id"], axis=1, inplace=True)
+        dff_2_.drop(["level_0", "measure_dim_id", "time_dim_id"], axis=1, inplace=True)
+        dff_1 = dff_1_.T
+        dff_2 = dff_2_.T
+        # print("A21\n", dff_1)
+        # print("A22\n", dff_2)
+
+        d_ = dff_1.div(dff_2, axis=1)
+        # print("d_\n", d_)
+        d_["mean"] = d_.mean(axis=1)
+        # print(d_["mean"])
+        dd = {"district_id":[], "district_name":[], "support":[]}
+        # print("dd\n", d_["mean"])
+        # print(self.entities_name)
+
+        es = self.entities_name.copy()
+        es = es.set_index("id")
+        dfm = pd.DataFrame(d_["mean"])
+        for index, row in dfm.iterrows():
+            try:
+                # print(index, float(row["mean"]))
+                dd["district_id"].append(index)
+                dd["district_name"].append(es.loc[index].district_name)
+                dd["support"].append(row["mean"])
+            except Exception as ex:
+                print("Error calculate_support 90-80-22", ex)
+        # print(dd)
+        d_["min"] = d_.min(axis=1)
+        d_["max"] = d_.max(axis=1)
+        d_["dev"] = d_["max"] - d_["min"]
+        # print("d_2\n", d_)
+        d_s = d_[["mean", "dev"]]
+        # print(d_s)
+        d_s_mean = d_s.mean(axis=0)
+        average_national_support = d_s_mean["mean"]
+        support_control_indicators = d_s_mean["dev"]
+
+        Limits_of_Control = 0.419804464
+        HLC_Value = 0.637830617
+
+        # print(dd)
+        # d = pd.DataFrame(dd)
+        # print(d[:50])
+        # print(d[50:100])
+        # print(d[100:150])
+        # print(d[150:200])
+        # print(d[200:250])
+        # print(d[250:300])
+        # print(d[300:350])
+
+        result = {"average_national_support":average_national_support,
+                  "support_control_indicators": support_control_indicators,
+                  "Limits_of_Control":Limits_of_Control,
+                  "HLC_Value":HLC_Value,
+                  "chart_data":dd}
+        result = {"status": "ok", "result": result}
+        # print(result)
+        return result
+
+
