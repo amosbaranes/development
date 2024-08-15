@@ -7,7 +7,6 @@ from .models import MLWeb
 
 
 def home(request):
-    print("A")
     wsc = WebSiteCompany(request, web_company_id=19, is_test=True)
     company_obj = wsc.site_company()
     company_obj_id_ = company_obj.id
@@ -20,7 +19,6 @@ def home(request):
 
 
 def app_id(request, app_name, company_obj_id):
-    print("AB")
     company_obj = MLWeb.objects.get_or_create(id=company_obj_id)
     app_ = "ml"
     app_activate_function_link_ = reverse(app_+':activate_obj_function', kwargs={})
@@ -31,8 +29,6 @@ def app_id(request, app_name, company_obj_id):
 
 
 def app(request, app_name):
-
-    print("AC")
     wsc = WebSiteCompany(request, web_company_id=19, is_test=True)
     return app_id(request, app_name, wsc.site_company().id)
 
