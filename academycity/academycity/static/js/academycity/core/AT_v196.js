@@ -39,7 +39,7 @@ function AdvancedTabsManager(dic=null)
                                                                "foreign_table":[],
                                                                "dependent":[],
                                                                "min":[],"max":[],"step":[]},
-                                                 "functions":["onchange","oninput", "onkeyup", "onkeydown"]},
+                                                 "functions":["onchange","oninput", "onkeyup", "onkeydown", "onload"]},
                                         "Select":{"title":"Select", "width":5,
                                                   "setting": {"options":[], "global_adjective":[], "app_adjective":[],
                                                               "index":["", "id", "order"],
@@ -4568,6 +4568,11 @@ acVideoCreator.prototype.create_obj = function()
                 xhr.open('post', this.atm.upload_file_link_, true);
                 xhr.setRequestHeader("X-CSRFToken", csrftoken);
                 var fd = new FormData();
+
+                fd.append("user_id", "");
+                fd.append("sheet_name", "");
+                fd.append("entity_name", "");
+
                 fd.append("filename", filename);
                 fd.append("drive_file", file);
                 fd.append("app", this.atm.my_app);

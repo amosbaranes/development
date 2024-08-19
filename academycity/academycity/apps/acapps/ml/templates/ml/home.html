@@ -1,1 +1,106 @@
 {% extends "core/advanced_tabs.html" %}
+{% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
+
+{% block add_style %}
+    <link rel='stylesheet' id='rich_text'  href="{% static 'css/academycity/other/ai.css' %}" media='all' />
+{% endblock add_style %}
+
+
+{% block add_script_head %}
+    <script src="{% static 'js/academycity/core/face-api.js' %}"></script>
+    <script src="{% static 'js/academycity/core/tfjs.js' %}"></script>
+<!--<script defer src="https://cdn.jsdelivr.net/npm/face-api.js"></script>-->
+
+
+{% endblock add_script_head %}
+
+
+{% block add_script %}
+<script>
+        function loadModels() {
+            console.log("Loading models...");
+            const modelUri = '/media/ml//models';
+            return Promise.all([
+                faceapi.nets.ssdMobilenetv1.loadFromUri(modelUri),
+                faceapi.nets.faceLandmark68Net.loadFromUri(modelUri),
+                faceapi.nets.faceRecognitionNet.loadFromUri(modelUri)
+            ]).then(() => {
+                console.log("Models loaded.");
+            }).catch(error => {
+                console.error("Error loading models:", error);
+            });
+        }
+
+        function drawImageOnCanvas(image) {
+            const imageCanvas = getEBI(65);
+            const overlay = getEBI(66);
+            const imageContext = imageCanvas.getContext('2d');
+            const overlayContext = overlay.getContext('2d');
+
+            // Set canvas dimensions to match the image dimensions
+            imageCanvas.width = image.width;
+            imageCanvas.height = image.height;
+            overlay.width = image.width;
+            overlay.height = image.height;
+
+            // Draw the uploaded image onto the canvas
+            imageContext.drawImage(image, 0, 0, image.width, image.height);
+            overlayContext.drawImage(image, 0, 0, image.width, image.height);
+            console.log("Image drawn on imageCanvas:", image);
+        }
+
+
+function detectFaces(image) {
+            const imageCanvas = getEBI(65);
+            const overlay = getEBI(66);
+            const context = overlay.getContext('2d');
+            // Perform face detection
+            faceapi.detectAllFaces(image).withFaceLandmarks().withFaceDescriptors().then(detections => {
+                const resizedDetections = faceapi.resizeResults(detections, { width: image.width, height: image.height });
+                // Clear overlay before drawing
+              //  context.clearRect(0, 0, overlay.width, overlay.height);
+                // Draw detection boxes on the overlay canvas
+                resizedDetections.forEach(detection => {
+                    const box = detection.detection.box;
+
+                    context.strokeStyle = 'red';
+                    context.lineWidth = 2;
+                    context.strokeRect(box.x, box.y, box.width, box.height);
+                    console.log("Face detected:", box);
+                });
+
+                if (resizedDetections.length === 0) {
+                    alert("No faces detected.");
+                }
+
+            }).catch(error => {
+                console.error("Error detecting faces:", error);
+            });
+        }
+
+
+
+
+
+<!--        document.getElementById('imageUpload').addEventListener('change', function(event) {-->
+<!--            const image = new Image();-->
+<!--            image.src = URL.createObjectURL(event.target.files[0]);-->
+
+<!--            image.onload = function() {-->
+<!--                console.log("Image loaded:", image);-->
+
+<!--                // Draw the image on the image canvas-->
+<!--                drawImageOnCanvas(image);-->
+
+<!--                // Wait for the models to load, then detect faces-->
+<!--                detectFaces(image);-->
+<!--            };-->
+
+<!--            image.onerror = function() {-->
+<!--                console.error("Image failed to load.");-->
+<!--            };-->
+<!--        });-->
+
+        loadModels();
+    </script>
+{% endblock add_script %}
