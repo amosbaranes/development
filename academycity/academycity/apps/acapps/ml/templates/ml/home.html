@@ -17,41 +17,21 @@
 
 {% block add_script %}
 <script>
-        function loadModels() {
-            console.log("Loading models...");
+    console.log("faceapi")
+    console.log(faceapi)
+    console.log("faceapi")
+        const loadModels = async () => {
             const modelUri = '/static/js/academycity/ml//models';
-            return Promise.all([
+
+            await Promise.all([
                 faceapi.nets.ssdMobilenetv1.loadFromUri(modelUri),
                 faceapi.nets.faceLandmark68Net.loadFromUri(modelUri),
-                faceapi.nets.faceRecognitionNet.loadFromUri(modelUri)
-            ]).then(() => {
-                console.log("Models loaded.");
-            }).catch(error => {
-                console.error("Error loading models:", error);
-            });
+                faceapi.nets.faceRecognitionNet.loadFromUri(modelUri),
+                faceapi.nets.tinyFaceDetector.loadFromUri(modelUri),
+                faceapi.nets.ageGenderNet.loadFromUri(modelUri),
+
+            ])
         }
-
-
-
-
-<!--        document.getElementById('imageUpload').addEventListener('change', function(event) {-->
-<!--            const image = new Image();-->
-<!--            image.src = URL.createObjectURL(event.target.files[0]);-->
-
-<!--            image.onload = function() {-->
-<!--                console.log("Image loaded:", image);-->
-
-<!--                // Draw the image on the image canvas-->
-<!--                drawImageOnCanvas(image);-->
-
-<!--                // Wait for the models to load, then detect faces-->
-<!--                detectFaces(image);-->
-<!--            };-->
-
-<!--            image.onerror = function() {-->
-<!--                console.error("Image failed to load.");-->
-<!--            };-->
-<!--        });-->
 
         loadModels();
     </script>
