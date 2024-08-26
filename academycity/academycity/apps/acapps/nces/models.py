@@ -58,7 +58,7 @@ class Fact(TruncateTableMixin, models.Model):
     amount = models.DecimalField(max_digits=12, decimal_places=2, default=0, blank=True, null=True)
 
     def __str__(self):
-        return str(self.var_dim) + " - " + str(self.entity_dim) + ": " + str(self.amount)
+        return str(self.measure_dim) + " - " + str(self.district_dim) + ": " + str(self.amount)
 # --------------
 
 

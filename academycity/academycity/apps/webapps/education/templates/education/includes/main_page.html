@@ -1,4 +1,6 @@
 {% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
+{% load core_tags %}
+
 <nav class="topbar topbar--over" id="main-menu">
    <div class="topbar__container">
                 <div class="topbar__brand">
@@ -22,9 +24,17 @@
                     {% if user.is_authenticated %}
                         <li class="topbar__item topbar__item--login richie-react richie-react--user-login" data-props='{"profileUrls": {&quot;dashboard&quot;: {&quot;label&quot;: &quot;Dashboard&quot;, &quot;action&quot;: &quot;https://edx.richie.education/dashboard&quot;}, &quot;profile&quot;: {&quot;label&quot;: &quot;Profile&quot;, &quot;action&quot;: &quot;https://edx.richie.education/u/(username)&quot;}, &quot;account&quot;: {&quot;label&quot;: &quot;Account&quot;, &quot;action&quot;: &quot;https://edx.richie.education/account/settings&quot;}}}'>
                             <div class="user-login">
-                                <a href="/ml" class="user-login__btn user-login__btn--sign-up">
-                                    Free Artificial Intelligence course
-                                </a>
+
+                                {%if request.user|has_group:"ml" %}
+                                    <a href="/ml" class="user-login__btn user-login__btn--sign-up">
+                                        Free Artificial Intelligence course
+                                    </a>
+                                {% elif request.user|has_group:"nces" %}
+                                    <a href="/nces" class="user-login__btn user-login__btn--sign-up">
+                                        NCES
+                                    </a>
+                                {%endif%}
+
                                 <a href="{% url 'users:logout' %}" class="user-login__btn user-login__btn--sign-up">
                                     {% trans "Logout" %}
                                 </a>
@@ -34,6 +44,7 @@
                                 </a>
                             </div>
                         </li>
+
                     {% else %}
                         <li class="topbar__item topbar__item--login richie-react richie-react--user-login" >
                             <div class="user-login">

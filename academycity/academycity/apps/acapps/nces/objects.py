@@ -161,38 +161,38 @@ class NCESDataProcessing(BaseDataProcessing, BasePotentialAlgo, NCESAlgo):
 
         qs = model_fact.objects.filter(district_dim__region_dim__id=region_id)
         df = pd.DataFrame(list(qs.values('time_dim_id', 'district_dim_id', 'measure_dim_id', 'amount')))
-        print("A1 df", df)
+        # print("A1 df", df)
 
         dff = pd.pivot_table(df, index=["district_dim_id"], columns=["measure_dim_id", "time_dim_id"],
                              values=["amount"], aggfunc="sum")
-        print("A dff", dff)
+        # print("A dff", dff)
 
         dff_1 = dff.xs(1, level=1, axis=1, drop_level=False)
         dff_2 = dff.xs(2, level=1, axis=1, drop_level=False)
 
-        print("dff_1\n", dff_1)
-        print("dff_2\n", dff_2)
+        # print("dff_1\n", dff_1)
+        # print("dff_2\n", dff_2)
 
-        print("A dff_1.T", dff_1.T)
+        # print("A dff_1.T", dff_1.T)
 
         dff_1_ = dff_1.T.reset_index()
 
-        print("B dff_1.T", dff_1_)
+        # print("B dff_1.T", dff_1_)
 
         dff_2_ = dff_2.T.reset_index()
         dff_1_.drop(["level_0", "measure_dim_id", "time_dim_id"], axis=1, inplace=True)
         dff_2_.drop(["level_0", "measure_dim_id", "time_dim_id"], axis=1, inplace=True)
         dff_1 = dff_1_.T
         dff_2 = dff_2_.T
-        print("A21\n", dff_1)
-        print("A22\n", dff_2)
+        # print("A21\n", dff_1)
+        # print("A22\n", dff_2)
 
         d_ = dff_1.div(dff_2, axis=1)
-        print("d_\n", d_)
+        # print("d_\n", d_)
         d_["mean"] = d_.mean(axis=1)
         dd = {"district_id":[], "district_name":[], "support":[]}
-        print("dd\n", d_["mean"])
-        print(self.entities_name)
+        # print("dd\n", d_["mean"])
+        # print(self.entities_name)
 
         es = self.entities_name.copy()
         es = es.set_index("id")
@@ -205,12 +205,12 @@ class NCESDataProcessing(BaseDataProcessing, BasePotentialAlgo, NCESAlgo):
                 dd["support"].append(row["mean"])
             except Exception as ex:
                 print("Error calculate_support 90-80-22", ex)
-        print(dd)
+        # print(dd)
 
         d_["min"] = d_.min(axis=1)
         d_["max"] = d_.max(axis=1)
         d_["dev"] = d_["max"] - d_["min"]
-        print("d_2\n", d_)
+        # print("d_2\n", d_)
 
         d_s = d_[["mean", "dev"]]
         # print(d_s)

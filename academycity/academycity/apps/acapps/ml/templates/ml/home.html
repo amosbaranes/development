@@ -29,10 +29,9 @@
                 faceapi.nets.faceRecognitionNet.loadFromUri(modelUri),
                 faceapi.nets.tinyFaceDetector.loadFromUri(modelUri),
                 faceapi.nets.ageGenderNet.loadFromUri(modelUri),
-
+                faceapi.nets.faceExpressionNet.loadFromUri(modelUri),
             ])
         }
-
         loadModels();
     </script>
 {% endblock add_script %}
