@@ -27,12 +27,15 @@
 
                                 {%if request.user|has_group:"ml" %}
                                     <a href="/ml" class="user-login__btn user-login__btn--sign-up">
-                                        Free Artificial Intelligence course
-                                    </a>
+                                        Free Artificial Intelligence course</a>
                                 {% elif request.user|has_group:"nces" %}
-                                    <a href="/nces" class="user-login__btn user-login__btn--sign-up">
-                                        NCES
-                                    </a>
+                                    <a href="/nces" class="user-login__btn user-login__btn--sign-up">NCES</a>
+                                {% elif request.user|has_group:"ms" %}
+                                    <a href="/ms" class="user-login__btn user-login__btn--sign-up">Multiple Sclerosis</a>
+                                {% elif request.user|has_group:"admins" %}
+                                    <a href="/ml" class="user-login__btn user-login__btn--sign-up">ML</a>
+                                    <a href="/nces" class="user-login__btn user-login__btn--sign-up">NCES</a>
+                                    <a href="/ms" class="user-login__btn user-login__btn--sign-up">MS</a>
                                 {%endif%}
 
                                 <a href="{% url 'users:logout' %}" class="user-login__btn user-login__btn--sign-up">
