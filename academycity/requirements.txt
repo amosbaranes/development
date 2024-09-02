@@ -221,3 +221,5 @@ alpha_vantage
 pyyaml
 v20
 opencv-python
+gym==0.23.0
+pygame==2.1.3

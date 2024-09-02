@@ -12,6 +12,7 @@ from .objects_extensions.netanya_college import NDataProcessing
 
 #
 from .objects_extensions.netanya_college import NDataProcessing
+from .objects_extensions.rl_dnq import DNQDataProcessing
 from .objects_extensions.reinforcement import RIDataProcessing
 from .objects_extensions.reinforcement_finance import RIFDataProcessing
 #

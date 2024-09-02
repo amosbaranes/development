@@ -3,6 +3,8 @@ import os
 from django.conf import settings
 import matplotlib as mpl
 from bs4 import BeautifulSoup
+from django.contrib.admin.templatetags.admin_list import results
+
 mpl.use('Agg')
 from openpyxl import Workbook, load_workbook
 
@@ -154,87 +156,64 @@ class NCESDataProcessing(BaseDataProcessing, BasePotentialAlgo, NCESAlgo):
         app_ = dic["app"]
         # not used but if we want data for all the country we can use it.
         country_id = int(dic["country_id"])
-        #
-
-        region_id = int(dic["region_id"])
         model_fact = apps.get_model(app_label=app_, model_name="fact")
-
-        qs = model_fact.objects.filter(district_dim__region_dim__id=region_id)
+        # ######
+        support_dic={2:1.88, 3:1.02, 4:0.73, 5:0.58, 6:0.48, 7:0.42, 8:0.37, 9:0.34, 10:0.31}
+        # ######
+        qs = model_fact.objects.filter(district_dim__region_dim__country_dim__id=country_id)
         df = pd.DataFrame(list(qs.values('time_dim_id', 'district_dim_id', 'measure_dim_id', 'amount')))
-        # print("A1 df", df)
-
         dff = pd.pivot_table(df, index=["district_dim_id"], columns=["measure_dim_id", "time_dim_id"],
                              values=["amount"], aggfunc="sum")
-        # print("A dff", dff)
-
         dff_1 = dff.xs(1, level=1, axis=1, drop_level=False)
+        # print(dff_1)
         dff_2 = dff.xs(2, level=1, axis=1, drop_level=False)
-
-        # print("dff_1\n", dff_1)
-        # print("dff_2\n", dff_2)
-
-        # print("A dff_1.T", dff_1.T)
-
         dff_1_ = dff_1.T.reset_index()
-
-        # print("B dff_1.T", dff_1_)
-
+        number_of_years =dff_1_.shape[0]
+        A2 = support_dic[number_of_years]
+        # print(number_of_years, "A2", A2)
         dff_2_ = dff_2.T.reset_index()
         dff_1_.drop(["level_0", "measure_dim_id", "time_dim_id"], axis=1, inplace=True)
         dff_2_.drop(["level_0", "measure_dim_id", "time_dim_id"], axis=1, inplace=True)
         dff_1 = dff_1_.T
         dff_2 = dff_2_.T
-        # print("A21\n", dff_1)
-        # print("A22\n", dff_2)
-
         d_ = dff_1.div(dff_2, axis=1)
-        # print("d_\n", d_)
         d_["mean"] = d_.mean(axis=1)
-        dd = {"district_id":[], "district_name":[], "support":[]}
-        # print("dd\n", d_["mean"])
-        # print(self.entities_name)
-
-        es = self.entities_name.copy()
-        es = es.set_index("id")
-        dfm = pd.DataFrame(d_["mean"])
-        for index, row in dfm.iterrows():
-            try:
-                # print(index, float(row["mean"]))
-                dd["district_id"].append(index)
-                dd["district_name"].append(es.loc[index].district_name)
-                dd["support"].append(row["mean"])
-            except Exception as ex:
-                print("Error calculate_support 90-80-22", ex)
-        # print(dd)
-
         d_["min"] = d_.min(axis=1)
         d_["max"] = d_.max(axis=1)
         d_["dev"] = d_["max"] - d_["min"]
-        # print("d_2\n", d_)
-
         d_s = d_[["mean", "dev"]]
         # print(d_s)
         d_s_mean = d_s.mean(axis=0)
         average_national_support = d_s_mean["mean"]
         support_control_indicators = d_s_mean["dev"]
-        Limits_of_Control = 0.419804464
-        HLC_Value = 0.637830617
-
-        # print(dd)
-        # d = pd.DataFrame(dd)
-        # print(d[:50])
-        # print(d[50:100])
-        # print(d[100:150])
-        # print(d[150:200])
-        # print(d[200:250])
-        # print(d[250:300])
-        # print(d[300:350])
-
+        HLC_Value = average_national_support + support_control_indicators*A2
+        Limits_of_Control = average_national_support - support_control_indicators*A2
+        # print(HLC_Value, Limits_of_Control)
+        # print("d_2\n", d_)
+        # print("A1 df", d_["mean"])
+        es = pd.DataFrame(self.model_entity_dim.objects.all().values("id", "district_name", "region_dim_id"))
+        es = es.set_index("id")
+        # print(es)
+        dd = {}
+        dfm = pd.DataFrame(d_["mean"])
+        # print(dfm)
+        for index, row in dfm.iterrows():
+            n_ = int(es.loc[index]["region_dim_id"])
+            if n_ not in dd:
+                dd[n_] = {"district_id": [], "district_name": [], "support": []}
+            try:
+                # print(index, float(row["mean"]))
+                dd[n_]["district_id"].append(index)
+                dd[n_]["district_name"].append(es.loc[index].district_name)
+                dd[n_]["support"].append(row["mean"])
+            except Exception as ex:
+                print("Error calculate_support 90-80-22", ex)
         result = {"average_national_support":average_national_support,
                   "support_control_indicators": support_control_indicators,
                   "Limits_of_Control":Limits_of_Control,
                   "HLC_Value":HLC_Value,
                   "chart_data":dd}
+        # print(result)
         result = {"status": "ok", "result": result}
         # print(result)
         return result
