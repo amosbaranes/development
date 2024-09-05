@@ -1594,9 +1594,9 @@ class BasePotentialAlgo(object):
             log_debug("create_similarity_excel 3")
             try:
                 with pd.ExcelWriter(save_to_file, engine='openpyxl', mode="a") as writer:
-                    df.to_excel(writer, sheet_name="source_data")
-                    df_n1.to_excel(writer, sheet_name="normalization_n1")
-                    df_n2.to_excel(writer, sheet_name="normalization_n2")
+                    df.T.to_excel(writer, sheet_name="source_data")
+                    df_n1.T.to_excel(writer, sheet_name="normalization_n1")
+                    df_n2.T.to_excel(writer, sheet_name="normalization_n2")
                     writer.save()
                     log_debug("normalization_excel 4")
             except Exception as ex:

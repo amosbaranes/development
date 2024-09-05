@@ -59,6 +59,10 @@ function AdvancedTabsManager(dic=null)
                                                     "setting": {"height":[], "width":[]},
                                                     "attributes":{"field":[]},
                                                     "functions":["onchange"]},
+                                        "Object":{"title":"object", "width":7,
+                                                    "setting": {"color":[],"background-color":[]},
+                                                    "attributes":{"data":[], "width":[], "height":[]},
+                                                    "functions":[]},
                                         "Canvas":{"title":"canvas", "width":7,
                                                     "setting": {"overflow":[],"color":[],"background-color":[]},
                                                     "attributes":{"width":[], "height":[]}, "functions":[]},
@@ -353,6 +357,7 @@ AdvancedTabsManager.prototype.create_atm = function(dic)
  //--------------------------
  this.init_create_containers();
  this.fun_to_run_by_timer=[];this.interval=100;this.init_timer();
+ this.is_show_btns = dic["is_show_btns"]
  if(dic["is_show_btns"] == true){this.create_add_delete_editor();}
  this.setTabs();
  //--------------------------
@@ -1487,6 +1492,7 @@ acObj.prototype.create_obj = function(){
   //alert("9016"+container.outerHTML)
   //alert(container) //alert(container.outerHTML)
   var ee_=this.data["element_name"];if(ee_=="RichText"){ee_="div"}
+  if(ee_=="Object"){ee_="div"}
   this.new_obj=document.createElement(ee_);
   this.new_obj.my_creator_obj=this;
   this.new_obj.is_call_on_change=true;
@@ -1504,13 +1510,11 @@ acObj.prototype.create_obj = function(){
   if(this.data["element_name"]!="Textarea")
   {this.new_obj.innerHTML=this.data["properties"]["title"];}
   // -- attribute --
-
   for (k in this.attributes)
   {
    if(k in this.data["properties"]){this.new_obj.setAttribute(k, this.data["properties"][k])}
    else{if (k != "download"){this.new_obj.setAttribute(k, "")}}
   }
-
   if("width" in this.data["properties"]){var width_=this.data["properties"]["width"];} else {var width_="100"}
   if("height" in this.data["properties"]){var height_=this.data["properties"]["height"];} else {var height_="100"}
   var u="px";if(width_.includes("%")){u=""};
@@ -1528,6 +1532,7 @@ acObj.prototype.create_obj = function(){
   var color_=this.data["properties"]["color"]; if(color_=="" || color_==null){var color="black";} else {var color=color_}
   var background_color_=this.data["properties"]["background-color"];if(background_color_=="" || background_color_==null){var background_color_="";}
   else {var background_color_=";background-color:"+background_color_}
+
   if(this.data["element_name"]=="Input")
   {
     //alert("9015-15"+JSON.stringify(this.data));
@@ -1552,7 +1557,20 @@ acObj.prototype.create_obj = function(){
 
     container.appendChild(span);
 
-  } else if (this.data["element_name"]=="DIV") {
+  } else if(this.data["element_name"]=="Object")
+  {
+    if(atm.is_show_btns==true){this.new_obj.innerHTML="X"}else{this.new_obj.innerHTML=""}
+    var obj=document.createElement("Object")
+    this.new_obj.appendChild(obj);
+    var param=document.createElement("param")
+    param.setAttribute("name", "allowfullscreen");
+    param.setAttribute("value", "true");
+    obj.appendChild(param);
+    obj.setAttribute("type", "text/html");
+    obj.setAttribute("data", this.new_obj.getAttribute("data"))
+    obj.setAttribute("width", this.new_obj.getAttribute("width"))
+    obj.setAttribute("height", this.new_obj.getAttribute("height"))
+  }  else if (this.data["element_name"]=="DIV") {
     var s_ = this.data["properties"]["overflow"];if(s_!=null || s_!=""){s_="overflow:"+s_+";"}
     s_+="color:"+color+background_color_;
     var ss="position:absolute;left:"+this.data["properties"]["x"]+"px;top:"+this.data["properties"]["y"]+"px;"
@@ -1609,12 +1627,14 @@ acObj.prototype.create_obj = function(){
   {
    try{this.get_select_data()} catch(er){}
   }
+
   container.appendChild(this.new_obj)
  for(f in this.data["functions"]){var s="this.new_obj."+f+"="+this.data["functions"][f];eval(s)}
  //alert(this.new_obj.outerHTML);
  //alert(JSON.stringify(this.obj_properties));
  //this.obj_properties;
  //this.functions;
+//  alert("A13\n"+this.new_obj.outerHTML)
 }
 
 acObj.prototype.get_select_data = function()

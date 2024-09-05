@@ -208,5 +208,3 @@ class DNQDataProcessing(BaseDataProcessing, BasePotentialAlgo, DNQAlgo):
         result = {"status": "ok dqn", "results": results}
         return result
 
-
-
