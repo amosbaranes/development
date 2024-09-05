@@ -1570,6 +1570,11 @@ acObj.prototype.create_obj = function(){
     obj.setAttribute("data", this.new_obj.getAttribute("data"))
     obj.setAttribute("width", this.new_obj.getAttribute("width"))
     obj.setAttribute("height", this.new_obj.getAttribute("height"))
+
+    var s_="position:absolute;left:"+this.data["properties"]["x"]+"px;top:"+this.data["properties"]["y"]+"px;width:"+width_+u+";text-align:"+align+";";
+    s_+="color:"+color+background_color_+font_weight+font_size+font_family;
+    this.new_obj.setAttribute("style", s_);
+
   }  else if (this.data["element_name"]=="DIV") {
     var s_ = this.data["properties"]["overflow"];if(s_!=null || s_!=""){s_="overflow:"+s_+";"}
     s_+="color:"+color+background_color_;
