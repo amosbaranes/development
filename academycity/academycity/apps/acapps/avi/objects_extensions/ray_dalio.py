@@ -57,7 +57,6 @@ class RDAlgo(object):
     def chat_with_gpt(self, messages):
         client = OpenAI(
             # This is the default and can be omitted
-            api_key="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",
         )
         try:
             chat_completion = client.chat.completions.create(
