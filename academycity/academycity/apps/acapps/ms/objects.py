@@ -184,11 +184,13 @@ class MSDataProcessing(BaseDataProcessing, BasePotentialAlgo, MSAlgo):
                     for index, row in df.iterrows():
                         person_obj = model_person_dim.objects.get(person_code=row["ID"])
                         fact_obj, is_created = model_fact.objects.get_or_create(gene_dim=gene_obj, person_dim=person_obj)
-                        fact_obj_normalized, is_created = model_fact_normalized.objects.get_or_create(gene_dim=gene_obj,
-                                                                                                     person_dim=person_obj)
+                        fact_obj_normalized, is_created = model_fact_normalized.objects.get_or_create(run_number = 100,
+                                                                                                      gene_dim=gene_obj,
+                                                                                                      person_dim=person_obj)
                         fact_obj.amount = row[p]
                         fact_obj.save()
                         fact_obj_normalized.amount = row[p]
+                        fact_obj_normalized.run_number = 100
                         fact_obj_normalized.save()
 
             if f == "Model":
@@ -289,8 +291,10 @@ class MSDataProcessing(BaseDataProcessing, BasePotentialAlgo, MSAlgo):
                             fact_obj, is_created = model_fact.objects.get_or_create(gene_dim=gene_obj,
                                                                                     person_dim=person_obj)
                             fact_obj_normalized, is_created = model_fact_normalized.objects.get_or_create(
+                                run_number = 100,
                                 gene_dim=gene_obj,
                                 person_dim=person_obj)
+                            fact_obj_normalized.run_number = 100
                             fact_obj.amount = row[p]
                             fact_obj.save()
 
@@ -440,11 +444,21 @@ class MSDataProcessing(BaseDataProcessing, BasePotentialAlgo, MSAlgo):
     #     result = {"status": "ok"}
     #     return result
 
+    def fix_run_in_gene(self, dic):
+        model_gene_dim = apps.get_model(app_label=app_, model_name="genedim")
+        qs = model_gene_dim.objects.filter(gene_group_dim__group_name="indep")
+        for q in qs:
+            q.clusters = {"run_1": q.clusters}
+            q.save()
+
+
+    # Fix add run_number
     def calculate_clusters_a(self, dic):
         # print("90921-0: \n", dic, "\n", "="*50)
         app_ = dic["app"]
         df = dic["df"]
         nnn = str(dic["nnn"])
+        run_number = str(dic["run_number"])
         # print(nnn, "\n", nnn, "\n", nnn, "\n", "="*10, "\n")
         self.log_debug("calculate_clusters_a A")
 
@@ -463,11 +477,18 @@ class MSDataProcessing(BaseDataProcessing, BasePotentialAlgo, MSAlgo):
             clusters = self.get_gene_clusters(row)
             # print("number of clusters\n\n", len(clusters))
             obj = model_gene_dim.objects.get(id=index)
-            if nnn == "1":
-                dic_ = {1: clusters}
+
+            if run_number == "1" and nnn == "1":
+                # print("both 1")
+                dic_ = {"run_1": {1: clusters}}
             else:
+                # print("one is not 1")
                 dic_ = obj.clusters
-                dic_[nnn] = clusters
+                ss_ = "run_"+str(run_number)
+                if not ss_ in dic_:
+                    dic_[ss_] = {}
+                dic_[ss_][nnn] = clusters
+
             # print(nnn, "\n\n", dic_)
             obj.clusters = dic_
             # print("="*100)
@@ -476,7 +497,7 @@ class MSDataProcessing(BaseDataProcessing, BasePotentialAlgo, MSAlgo):
         result = {"status": "ok"}
         return result
 
-    # Not used
+    # Not used  Not updated for run_number
     def calculate_clusters(self, dic):
         # print("90921-0: \n", dic, "\n", "="*50)
         print(dic)
@@ -718,20 +739,31 @@ class MSDataProcessing(BaseDataProcessing, BasePotentialAlgo, MSAlgo):
         self.clear_log_debug()
         app_ = dic["app"]
         nnn = dic["nnn"]
+        run_number = dic["run_number"]
         t_pop = dic["t_pop"]
         model_person_dim = apps.get_model(app_label=app_, model_name="persondim")
         model_gene_dim = apps.get_model(app_label=app_, model_name="genedim")
-        model_fact = apps.get_model(app_label=app_, model_name='fact')
-        model_fact_normalized = apps.get_model(app_label=app_, model_name='factnormalized')
-        model_fact_normalized_temp = apps.get_model(app_label=app_, model_name='factnormalizedtemp')
-        # ------
+
+        # -----------------
         l = [0, 131, 10000]
+        # -----------------
+        if run_number == 1:
+            model_fact = apps.get_model(app_label=app_, model_name='fact')
+            qsf = model_fact.objects.filter(gene_dim__gene_group_dim__group_name="indep",
+                                            person_dim__set_num__gt=l[nnn - 1],
+                                            person_dim__set_num__lte=l[nnn])
+        else:
+            model_fact = apps.get_model(app_label=app_, model_name='factnormalized')
+            run_number_ = run_number-1
+            qsf = model_fact.objects.filter(run_number=run_number_,
+                                            gene_dim__gene_group_dim__group_name="indep",
+                                            person_dim__set_num__gt=l[nnn - 1],
+                                            person_dim__set_num__lte=l[nnn])
+
+        model_fact_normalized_temp = apps.get_model(app_label=app_, model_name='factnormalizedtemp')
         self.log_debug(str(nnn) + " A")
         qsp = model_person_dim.objects.filter(set_num__gt=l[nnn-1], set_num__lte=l[nnn]).all()
         # -------
-        qsf = model_fact.objects.filter(gene_dim__gene_group_dim__group_name="indep",
-                                       person_dim__set_num__gt=l[nnn - 1],
-                                       person_dim__set_num__lte=l[nnn])
         self.log_debug(str(nnn) + " B")
         df_f = pd.DataFrame(list(qsf.values('gene_dim', 'person_dim', 'amount')))
         df_f.columns = ['gene', 'person', 'amount']
@@ -743,7 +775,7 @@ class MSDataProcessing(BaseDataProcessing, BasePotentialAlgo, MSAlgo):
         self.calculate_clusters_a(dic)
         # self.clear_log_debug()
         self.log_debug("calculate_clusters_a finished")
-        self.log_debug(str(nnn) + " E")
+        self.log_debug(str(run_number) + " : " + str(nnn) + " E")
         # print("JJJ\n", nnn, "\n", df, "\n", df.shape)
         # --
         df_s = pd.DataFrame(list(qsp.values('id', 'person_code', 'set_num')))
@@ -786,7 +818,8 @@ class MSDataProcessing(BaseDataProcessing, BasePotentialAlgo, MSAlgo):
             # print(str(nnn) + " : " + str(nz) + " : " + str(o.id))
             n__ += 1
             try:
-                clusters_ = o.clusters[str(nnn)]
+                clusters_ = o.clusters["run_"+str(run_number)][str(nnn)]
+                # print("AAA\nclusters_\n", clusters_)
             except Exception as ex:
                 print(ex)
 
@@ -814,7 +847,7 @@ class MSDataProcessing(BaseDataProcessing, BasePotentialAlgo, MSAlgo):
             r_ = self.get_peaks({"cl_all":ll_, "t_pop": t_pop, "clusters": clusters__, "dic_sets_o": dic_sets_o,
                                      "model_fact_normalized": model_fact_normalized_temp,
                                      "model_person_dim": model_person_dim,
-                                     "gene_obj":o})
+                                     "gene_obj":o, "run_number":run_number})
             # Should delete this ?
             if nnn == 2:
                 r = r_["peak_array"]
@@ -828,11 +861,12 @@ class MSDataProcessing(BaseDataProcessing, BasePotentialAlgo, MSAlgo):
         return result
 
     def add_peaks_to_clusters3(self, dic):
-        # print("90966-66-3: add_peaks_to_clusters3\n", dic, "\n", "=" * 50)
+        print("90966-66-3: add_peaks_to_clusters3\n", dic, "\n", "=" * 50)
         self.clear_log_debug()
         self.log_debug("add_peaks_to_clusters3")
         app_ = dic["app"]
         nnn = dic["nnn"]
+        run_number = dic["run_number"]
         t_pop = dic["t_pop"]
         model_person_dim = apps.get_model(app_label=app_, model_name="persondim")
         model_gene_dim = apps.get_model(app_label=app_, model_name="genedim")
@@ -844,7 +878,8 @@ class MSDataProcessing(BaseDataProcessing, BasePotentialAlgo, MSAlgo):
         self.log_debug(str(nnn) + " A")
         qsp = model_person_dim.objects.all()
         # -------
-        qsf = model_fact_normalized_temp.objects.filter(gene_dim__gene_group_dim__group_name="indep")
+        qsf = model_fact_normalized_temp.objects.filter(run_number=run_number,
+                                                        gene_dim__gene_group_dim__group_name="indep")
         df_f = pd.DataFrame(list(qsf.values('gene_dim', 'person_dim', 'amount')))
         df_f.columns = ['gene', 'person', 'amount']
         self.log_debug(str(nnn) + " B")
@@ -903,7 +938,7 @@ class MSDataProcessing(BaseDataProcessing, BasePotentialAlgo, MSAlgo):
 
         for o in qsg:
             nz+=1
-            self.log_debug("A1 " + str(nnn) + " : " + str(nz) + " : " + str(o.id))
+            self.log_debug("A1 " + str(run_number) + " : "  + str(nnn) + " : " + str(nz) + " : " + str(o.id))
             # print(str(nnn) + " : " + str(nz) + " : " + str(o.id))
             n__ += 1
 
@@ -914,7 +949,7 @@ class MSDataProcessing(BaseDataProcessing, BasePotentialAlgo, MSAlgo):
                 # print("B")
                 mr = float(dic_sets_o[reference_set].median())
             except Exception as ex:
-                self.log_debug("Error11-5 " + str(nnn) + " : " + str(nz) + " : " + str(o.id) + " Error " + str(ex))
+                self.log_debug("Error11-5 " + str(run_number) + " : "  + str(nnn) + " : " + str(nz) + " : " + str(o.id) + " Error " + str(ex))
 
             # self.log_debug("A2 " + str(nnn) + " : " + str(nz) + " : " + str(o.id))
 
@@ -933,8 +968,10 @@ class MSDataProcessing(BaseDataProcessing, BasePotentialAlgo, MSAlgo):
                 for index, row in dic_sets_o[k].iterrows():
                     try:
                         obj_p = model_person_dim.objects.get(id=index)
-                        obj, is_created = model_fact_normalized.objects.get_or_create(gene_dim=o, person_dim=obj_p)
+                        obj, is_created = model_fact_normalized.objects.get_or_create(run_number=run_number,
+                                                                                      gene_dim=o, person_dim=obj_p)
                         obj.amount = float(row[dic_sets_o[k].columns[0]])
+                        obj.run_number = run_number
                         obj.save()
                     except Exception as ex:
                         self.log_debug("Error33 " + str(nnn) + " : " + str(nz) + " : " + str(o.id) + " Error " + str(ex))
@@ -953,6 +990,7 @@ class MSDataProcessing(BaseDataProcessing, BasePotentialAlgo, MSAlgo):
         gene_obj = dic["gene_obj"]
         model_fact_normalized = dic["model_fact_normalized"]
         model_person_dim = dic["model_person_dim"]
+        run_number = dic["run_number"]
         t_pop = int(dic["t_pop"])/100
         t_pop = int(t_pop * sum(l))
         lb = 0
@@ -1071,7 +1109,7 @@ class MSDataProcessing(BaseDataProcessing, BasePotentialAlgo, MSAlgo):
                     n_of_b = peaks["number_of_blocks"]
                 else:
                     z += 1
-                print(peaks)
+                # print(peaks)
             return peaks
             # elif n_of_b == 3:
             #     z = 2
@@ -1323,7 +1361,8 @@ class MSDataProcessing(BaseDataProcessing, BasePotentialAlgo, MSAlgo):
                         #       "person("+str(index)+")=", obj_p.person_code, "Amount=",
                         #       float(row[int(dfs.columns[0])]), ">> NAmount=",
                         #       round(100000*mcb_ * float(row[int(dfs.columns[0])])/m)/100000)
-                        obj, is_created = model_fact_normalized.objects.get_or_create(gene_dim=gene_obj,
+                        obj, is_created = model_fact_normalized.objects.get_or_create(run_number=run_number,
+                                                                                      gene_dim=gene_obj,
                                                                                       person_dim=obj_p)
                     except Exception as ex:
                         print("Error 1", ex)
@@ -1333,6 +1372,7 @@ class MSDataProcessing(BaseDataProcessing, BasePotentialAlgo, MSAlgo):
                     except Exception as ex:
                         print("Error 2", ex)
                     try:
+                        obj.run_number = run_number
                         obj.save()
                     except Exception as ex:
                         print("Error 3", ex)
@@ -1408,6 +1448,7 @@ class MSDataProcessing(BaseDataProcessing, BasePotentialAlgo, MSAlgo):
         print("90944-44: calculate_pca\n", dic, "\n", "=" * 50)
         self.log_debug(str(dic))
         app_ = dic["app"]
+        run_number = dic["run_number"]
         model_person_dim = apps.get_model(app_label=app_, model_name="persondim")
         model_gene_dim = apps.get_model(app_label=app_, model_name="genedim")
         model_fact = apps.get_model(app_label=app_, model_name='fact')
@@ -1431,7 +1472,8 @@ class MSDataProcessing(BaseDataProcessing, BasePotentialAlgo, MSAlgo):
                 df = df_f.pivot_table(values='amount', index='person', columns=['gene'], aggfunc='sum')
                 # print("AAAAA : ", nnn, "\n\n", df, "\n\n", df.shape, "\n", "="*50, "\n\n")
             elif nnn == 2:
-                qsf = model_fact_normalized_temp.objects.filter(gene_dim__gene_group_dim__group_name="indep")
+                qsf = model_fact_normalized_temp.objects.filter(run_number=run_number,
+                                                                gene_dim__gene_group_dim__group_name="indep")
                 df_f = pd.DataFrame(list(qsf.values('gene_dim', 'person_dim', 'amount')))
                 df_f.columns = ['gene', 'person', 'amount']
                 df = df_f.pivot_table(values='amount', index='person', columns=['gene'], aggfunc='sum')
@@ -1439,7 +1481,8 @@ class MSDataProcessing(BaseDataProcessing, BasePotentialAlgo, MSAlgo):
             else:
                 # qsp = model_person_dim.objects.all()
                 # -------
-                qsf = model_fact_normalized.objects.filter(gene_dim__gene_group_dim__group_name="indep")
+                qsf = model_fact_normalized.objects.filter(run_number=run_number,
+                                                           gene_dim__gene_group_dim__group_name="indep")
                 df_f = pd.DataFrame(list(qsf.values('gene_dim', 'person_dim', 'amount')))
                 df_f.columns = ['gene', 'person', 'amount']
                 df = df_f.pivot_table(values='amount', index='person', columns=['gene'], aggfunc='sum')
@@ -1483,17 +1526,20 @@ class MSDataProcessing(BaseDataProcessing, BasePotentialAlgo, MSAlgo):
                 # -------
                 self.log_debug("nnn="+str(nnn)+" H")
                 for index, row in df_pca_.iterrows():
-                    pca_obj, is_created = model_pca.objects.get_or_create(set=nnn, sub_set=n__, component=1)
+                    pca_obj, is_created = model_pca.objects.get_or_create(run_number=run_number,
+                                                                          set=nnn, sub_set=n__, component=1)
                     pca_data_obj, is_created = model_pca_data.objects.get_or_create(pca=pca_obj, idx=index)
                     pca_data_obj.amount = round(1000*row["x"])/1000
                     pca_data_obj.save()
                     #
-                    pca_obj, is_created = model_pca.objects.get_or_create(set=nnn, sub_set=n__, component=2)
+                    pca_obj, is_created = model_pca.objects.get_or_create(run_number=run_number,
+                                                                          set=nnn, sub_set=n__, component=2)
                     pca_data_obj, is_created = model_pca_data.objects.get_or_create(pca=pca_obj, idx=index)
                     pca_data_obj.amount = round(1000*row["y"])/1000
                     pca_data_obj.save()
                     #
-                    pca_obj, is_created = model_pca.objects.get_or_create(set=nnn, sub_set=n__, component=3)
+                    pca_obj, is_created = model_pca.objects.get_or_create(run_number=run_number,
+                                                                          set=nnn, sub_set=n__, component=3)
                     pca_data_obj, is_created = model_pca_data.objects.get_or_create(pca=pca_obj, idx=index)
                     pca_data_obj.amount = round(1000*row["z"])/1000
                     pca_data_obj.save()
@@ -1531,13 +1577,15 @@ class MSDataProcessing(BaseDataProcessing, BasePotentialAlgo, MSAlgo):
         print("90977-77: get_batch_normalised_data\n", dic, "\n", "=" * 50)
         self.log_debug(str(dic))
         app_ = dic["app"]
+        run_number = dic["run_number"]
         model_person_dim = apps.get_model(app_label=app_, model_name="persondim")
         model_gene_dim = apps.get_model(app_label=app_, model_name="genedim")
         model_fact = apps.get_model(app_label=app_, model_name='fact')
         model_fact_normalized = apps.get_model(app_label=app_, model_name='factnormalized')
         model_fact_normalized_temp = apps.get_model(app_label=app_, model_name='factnormalizedtemp')
         # ------
-        qsf = model_fact_normalized.objects.filter(gene_dim__gene_group_dim__group_name="indep")
+        qsf = model_fact_normalized.objects.filter(run_number=run_number,
+                                                   gene_dim__gene_group_dim__group_name="indep")
         df_f = pd.DataFrame(list(qsf.values('gene_dim', 'person_dim', 'amount')))
         df_f.columns = ['gene', 'person', 'amount']
         df = df_f.pivot_table(values='amount', index='person', columns=['gene'], aggfunc='sum')
@@ -1547,7 +1595,7 @@ class MSDataProcessing(BaseDataProcessing, BasePotentialAlgo, MSAlgo):
         df = df.T
         # print("ZZZZZ\n\n", df, "\n", df.shape)
 
-        save_to_file = os.path.join(self.PROJECT_MEDIA_DIR, "get_batch_normalised_data.xlsx")
+        save_to_file = os.path.join(self.PROJECT_MEDIA_DIR, "get_batch_normalised_data_"+str(run_number)+".xlsx")
         # print(save_to_file)
         self.log_debug(save_to_file)
         is_file = os.path.exists(save_to_file)
@@ -1597,13 +1645,14 @@ class MSDataProcessing(BaseDataProcessing, BasePotentialAlgo, MSAlgo):
 
     def get_pca(self, dic):
         print("90944-44: get_pca\n", dic, "\n", "=" * 50)
+        run_number = dic["run_number"]
         self.log_debug(str(dic))
         app_ = dic["app"]
         # ------
         model_pca = apps.get_model(app_label=app_, model_name="pca")
         model_pca_data = apps.get_model(app_label=app_, model_name="pcadata")
         # ------
-        pca_sq = model_pca.objects.all()
+        pca_sq = model_pca.objects.filter(run_number=run_number)
         re_dic = {}
         for q in pca_sq:
             print(q.id, q.set, q.sub_set, q.component)

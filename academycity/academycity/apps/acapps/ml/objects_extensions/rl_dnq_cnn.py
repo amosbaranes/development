@@ -24,6 +24,7 @@ import os
 import numpy as np
 import pandas as pd
 from collections import deque
+import pickle
 
 # For more repetitive results
 random.seed(1)
@@ -40,6 +41,7 @@ class Field:
         self.width = width
         self.height = height
         self.body = np.zeros(shape=(self.height, self.width))
+        self.field_records = []
 
     def update_field(self, walls, player):
         try:
@@ -51,8 +53,11 @@ class Field:
                     self.body[wall.y:min(wall.y + wall.height, self.height), :] = wall.body
 
             # Put the player on the field:
-            self.body[player.y:player.y + player.height,
-            player.x:player.x + player.width] += player.body
+            self.body[player.y:player.y + player.height, player.x:player.x + player.width] += player.body
+            self.field_records.append(
+                [[player.x, player.width],
+                 [walls[-1].y, walls[-1].hole_pos, walls[-1].hole_width]]
+            )
         except:
             pass
 
@@ -70,12 +75,13 @@ class Wall:
         self.body_unit = 1
         self.body = np.ones(shape=(self.height, self.width)) * self.body_unit
         self.out_of_range = False
+        self.hole_pos = 0
         self.create_hole()
 
     def create_hole(self):
         hole = np.zeros(shape=(self.height, self.hole_width))
-        hole_pos = randint(0, self.width - self.hole_width)
-        self.body[:, hole_pos:hole_pos + self.hole_width] = 0
+        self.hole_pos = randint(0, self.width - self.hole_width)
+        self.body[:, self.hole_pos:self.hole_pos + self.hole_width] = 0
 
     def move(self):
         self.y += self.speed
@@ -162,8 +168,11 @@ class Environment:
         self.BLUE = (80, 80, 255)
         self.field = self.walls = self.player = None
         self.current_state = self.reset()
+        self.MAX_VAL = 3
         self.val2color = {0: self.WHITE, self.walls[0].body_unit: self.BLACK,
                           self.player.body_unit: self.BLACK, self.MAX_VAL: self.RED}
+        self.game_over = False
+        self.episodes_records = {}
 
     def reset(self):
         self.score = 0
@@ -176,8 +185,7 @@ class Environment:
                   field=self.field)
         self.walls = deque([w1])
         p_width = randint(self.MIN_P_WIDTH, self.MAX_P_WIDTH)
-        self.player = Player(height=self.P_HEIGHT, max_width=self.WIDTH,
-                             width=p_width,
+        self.player = Player(height=self.P_HEIGHT, max_width=self.WIDTH, width=p_width,
                              x=randint(0, self.field.width - p_width),
                              y=int(self.field.height * 0.7), speed=1)
         self.MAX_VAL = self.player.body_unit + w1.body_unit
@@ -201,7 +209,6 @@ class Environment:
         WINDOW.blit(text_to_print, textRect)
 
     def step(self, action):
-
 
         self.frames_counter += 1
         reward = 0
@@ -295,53 +302,56 @@ class Environment:
 
         pygame.display.update()
 
+    def record_episode(self, episode):
+        self.episodes_records[episode] = self.field.field_records
+        self.field.field_records = []
+
+    def save_recorded_episodes(self, file_name):
+        with open(file_name, 'wb') as handle:
+            pickle.dump(self.episodes_records, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+    def get_recorded_episodes(self, file_name):
+        with open(file_name, 'rb') as handle:
+            results = pickle.load(handle)
+        return results
+
 
 ######################################################################################
 class ModifiedTensorBoard(TensorBoard):
-    # Overriding init to set initial step and writer (we want one log file for all .fit() calls)
     def __init__(self, name, **kwargs):
         super().__init__(**kwargs)
         self.step = 1
         self.writer = tf.summary.create_file_writer(self.log_dir)
         self._log_write_dir = os.path.join(self.log_dir, name)
 
-    # Overriding this method to stop creating default log writer
     def set_model(self, model):
-        pass
+        self.model = model
+        self._train_dir = os.path.join(self._log_write_dir, 'train')
+        self._train_step = self.model._train_counter
+        self._val_dir = os.path.join(self._log_write_dir, 'validation')
+        self._val_step = self.model._test_counter
+        self._should_write_train_graph = False
 
-    # Overrided, saves logs with our step number
-    # (otherwise every .fit() will start writing from 0th step)
     def on_epoch_end(self, epoch, logs=None):
         self.update_stats(**logs)
 
-    # Overrided
-    # We train for one batch only, no need to save anything at epoch end
     def on_batch_end(self, batch, logs=None):
         pass
 
-    # Overrided, so won't close writer
     def on_train_end(self, _):
         pass
 
-    def on_train_batch_end(self, batch, logs=None):
-        pass
-
-    # Custom method for saving own metrics
-    # Creates writer, writes custom metrics and closes writer
     def update_stats(self, **stats):
-        self._write_logs(stats, self.step)
-
-    def _write_logs(self, logs, index):
         with self.writer.as_default():
-            for name, value in logs.items():
-                tf.summary.scalar(name, value, step=index)
-                self.step += 1
+            for key, value in stats.items():
+                tf.summary.scalar(key, value, step = self.step)
                 self.writer.flush()
 
 
 ######################################################################################
 class DQNAgent:
     def __init__(self, name, env, conv_list, dense_list, util_list, path, MINIBATCH_SIZE):
+        self.path = path
         self.env = env
         self.conv_list = conv_list
         self.dense_list = dense_list
@@ -350,10 +360,10 @@ class DQNAgent:
             str(d) + "D | " for d in dense_list) + "".join(u + " | " for u in util_list)][0]
 
         # Main model
-        self.model = self.create_model(self.conv_list, self.dense_list)
+        self.model = self.create_model()
 
         # Target network
-        self.target_model = self.create_model(self.conv_list, self.dense_list)
+        self.target_model = self.create_model()
         self.target_model.set_weights(self.model.get_weights())
 
         # An array with last n steps for training
@@ -379,7 +389,9 @@ class DQNAgent:
         return _
 
     # Creates the model with the given specifications:
-    def create_model(self, conv_list, dense_list):
+    def create_model(self):
+        conv_list = self.conv_list
+        dense_list = self.dense_list
         # Defines the input layer with shape = ENVIRONMENT_SHAPE
         input_layer = Input(shape=self.env.ENVIRONMENT_SHAPE)
         # Defines the first convolutional block:
@@ -400,7 +412,7 @@ class DQNAgent:
 
         # Put it all together:
         model = Model(inputs=input_layer, outputs=[output])
-        model.compile(optimizer=Adam(lr=0.001),
+        model.compile(optimizer=Adam(learning_rate=0.001),
                       loss={'output': 'mse'},
                       metrics={'output': 'accuracy'})
 
@@ -411,15 +423,18 @@ class DQNAgent:
     def update_replay_memory(self, transition):
         self.replay_memory.append(transition)
 
-    # Trains main network every step during episode
-    def train(self, terminal_state, step):
+    def act(self, state, epsilon):
+        if np.random.random() <= epsilon:
+            return choice(self.env.ACTION_SPACE)
+        else:
+            return np.argmax(self.model.predict(state.reshape(-1, *self.env.ENVIRONMENT_SHAPE)))
+
+    def replay(self, game_over):
         # Start training only if certain number of samples is already saved
         if len(self.replay_memory) < MIN_REPLAY_MEMORY_SIZE:
             return
-
         # Get a minibatch of random samples from memory replay table
         minibatch = random.sample(self.replay_memory, self.MINIBATCH_SIZE)
-
         # Get current states from minibatch, then query NN model for Q values
         current_states = np.array([transition[0] for transition in minibatch])
         current_qs_list = self.model.predict(current_states.reshape(-1, *self.env.ENVIRONMENT_SHAPE))
@@ -451,38 +466,133 @@ class DQNAgent:
             X.append(current_state)
             y.append(current_qs)
 
-        # Fit on all samples as one batch, log only on terminal state
-        self.model.fit(x=np.array(X).reshape(-1, *self.env.ENVIRONMENT_SHAPE),
-                       y=np.array(y),
-                       batch_size=self.MINIBATCH_SIZE, verbose=0,
-                       shuffle=False, callbacks=[] if terminal_state else None)
         # self.model.fit(x=np.array(X).reshape(-1, *self.env.ENVIRONMENT_SHAPE),
         #                y=np.array(y),
         #                batch_size=self.MINIBATCH_SIZE, verbose=0,
-        #                shuffle=False, callbacks=[self.tensorboard] if terminal_state else None)
+        #                shuffle=False, callbacks=[] if game_over else None)
+
+        self.model.fit(x=np.array(X).reshape(-1, *self.env.ENVIRONMENT_SHAPE),
+                       y=np.array(y),
+                       batch_size=self.MINIBATCH_SIZE, verbose=0,
+                       shuffle=False, callbacks=[self.tensorboard] if game_over else None)
 
         # Update target network counter every episode
-        if terminal_state:
+        if game_over:
             self.target_update_counter += 1
 
-        # If counter reaches set value, update target network with weights of main network
-        if self.target_update_counter > UPDATE_TARGET_EVERY:
-            self.target_model.set_weights(self.model.get_weights())
-            self.target_update_counter = 0
+    def save(self, episode, max_reward, average_reward, min_reward, path):
+        checkpoint_name = f"{self.name}| Eps({episode}) | max({max_reward:_>7.2f}) | avg({average_reward:_>7.2f}) | min({min_reward:_>7.2f}).model"
+        self.model.save(f'{path}models/{checkpoint_name}')
+        best_weights = self.model.get_weights()
+        print("save: ", path)
+        return best_weights
 
-    # Queries main network for Q values given current observation space (environment state)
-    def get_qs(self, state):
-        return self.model.predict(state.reshape(-1, *self.env.ENVIRONMENT_SHAPE))
+    # Trains main network every step during episode
+    def train(self, m, epsilon, best_average, ecc_enabled, epsilon_decay, max_epsilon, ef_enabled, avg_reward_info,
+              fluctuate_every, EPISODES):
+        if ecc_enabled: MAX_EPS_NO_INC = m["ECC_Settings"]["MAX_EPS_NO_INC"]
+        MIN_EPSILON = 0.001  # Minimum epsilon value
+        EPSILON_DECAY = epsilon_decay
+        MAX_EPSILON = max_epsilon
+        EF_Enabled = ef_enabled
+        FLUCTUATE_EVERY = fluctuate_every
+        best_score = -100
+        max_reward_info = [[1, best_score, epsilon]]
+        eps_no_inc_counter = 0  # Counts episodes with no increment in reward
+        best_weights = [self.model.get_weights()]
+        ep_rewards = [best_average]
 
+        for episode in tqdm(range(1, EPISODES + 1), ascii=True, unit='episodes'):
+            if m["best_only"]: self.model.set_weights(best_weights[0])
+            self.env.score_increased = False
+            # Update tensorboard step every episode
+            self.tensorboard.step = episode
+
+            # Restarting episode - reset episode reward and step number
+            episode_reward = 0
+            # ==
+            step = 1
+            # action = 0
+            current_state = self.env.reset()
+            # print(current_state)
+
+            game_over = self.env.game_over
+            while not game_over:
+                # This part stays mostly the same, the change is to query a model for Q values
+                action = self.act(current_state, epsilon)
+                new_state, reward, game_over = self.env.step(action)
+                # Transform new continuous state to new discrete state and count reward
+                episode_reward += reward
+
+                # Uncomment the next block if you want to show preview on your screen
+                # if SHOW_PREVIEW and not episode % SHOW_EVERY:
+                #     clock.tick(27)
+                #     env.render(WINDOW)
+
+                # Every step we update replay memory and train main network
+                self.update_replay_memory((current_state, action, reward, new_state, game_over))
+                self.replay(game_over)
+                # If counter reaches set value, update target network with weights of main network
+                if self.target_update_counter > UPDATE_TARGET_EVERY:
+                    self.target_model.set_weights(self.model.get_weights())
+                    self.target_update_counter = 0
+
+                current_state = new_state
+                step += 1
+            # ==
+            self.env.record_episode(episode)
+            # ==
+            if ecc_enabled: eps_no_inc_counter += 1
+            # Append episode reward to a list and log stats (every given number of episodes)
+            ep_rewards.append(episode_reward)
+
+            if not episode % AGGREGATE_STATS_EVERY:
+                average_reward = sum(ep_rewards[-AGGREGATE_STATS_EVERY:]) / len(ep_rewards[-AGGREGATE_STATS_EVERY:])
+                min_reward = min(ep_rewards[-AGGREGATE_STATS_EVERY:])
+                max_reward = max(ep_rewards[-AGGREGATE_STATS_EVERY:])
+                self.tensorboard.update_stats(reward_avg=average_reward, reward_min=min_reward,
+                                               reward_max=max_reward,
+                                               epsilon=epsilon)
+
+                # Save models, but only when avg reward is greater or equal a set value
+                if not episode % SAVE_MODEL_EVERY:
+                    _ = self.save(episode, max_reward, average_reward, min_reward, self.path)
+
+                if average_reward > best_average:
+                    best_average = average_reward
+                    # update ECC variables:
+                    avg_reward_info.append([episode, best_average, epsilon])
+                    eps_no_inc_counter = 0
+                    best_weights[0] = self.save(episode, max_reward, average_reward,
+                                                 min_reward, self.path)
+
+                if ecc_enabled and eps_no_inc_counter >= MAX_EPS_NO_INC:
+                    epsilon = avg_reward_info[-1][2]  # Get epsilon value of the last best reward
+                    eps_no_inc_counter = 0
+
+            if episode_reward > best_score:
+                try:
+                    best_score = episode_reward
+                    max_reward_info.append([episode, best_score, epsilon])
+
+                    # Save Agent :
+                    best_weights[0] = self.save(episode, max_reward, average_reward,
+                                                min_reward, self.path)
+                except:
+                    pass
+
+            # Decay epsilon
+            if epsilon > MIN_EPSILON:
+                epsilon *= EPSILON_DECAY
+                epsilon = max(MIN_EPSILON, epsilon)
+
+            # Epsilon Fluctuation:
+            if EF_Enabled:
+                if not episode % FLUCTUATE_EVERY:
+                    epsilon = MAX_EPSILON
+        return round(sum(ep_rewards) / len(ep_rewards), 2), max_reward_info, avg_reward_info
 
 ######################################################################################
-def save_model_and_weights(agent, model_name, episode, max_reward, average_reward, min_reward, path):
-    checkpoint_name = f"{model_name}| Eps({episode}) | max({max_reward:_>7.2f}) | avg({average_reward:_>7.2f}) | min({min_reward:_>7.2f}).model"
-    agent.model.save(f'{path}models/{checkpoint_name}')
-    best_weights = agent.model.get_weights()
-    print("save_model_and_weights: ", path)
-    return best_weights
-
 
 ######################################################################################
 # ## Constants:
@@ -494,7 +604,6 @@ UPDATE_TARGET_EVERY = 20  # Terminal states (end of episodes)
 MIN_REWARD = 1000  # For model save
 SAVE_MODEL_EVERY = 1000  # Episodes
 SHOW_EVERY = 20  # Episodes
-EPISODES = 100  # Number of episodes
 #  Stats settings
 AGGREGATE_STATS_EVERY = 20  # episodes
 SHOW_PREVIEW = False
@@ -565,16 +674,26 @@ class DNQCNNDataProcessing(BaseDataProcessing, BasePotentialAlgo, DNQCNNAlgo):
         # print("90567-010 DNQCNNDataProcessing\n", dic, '\n', '-' * 50)
         super().__init__(dic)
         # print("9005 DNQCNNDataProcessing ", self.app)
+
         self.PATH = os.path.join(self.TO_OTHER, "dqncnn")
         print(f'{self.PATH}models')
+
         if not os.path.isdir(f'{self.PATH}models'):
             os.makedirs(f'{self.PATH}models')
+
         if not os.path.isdir(f'{self.PATH}results'):
             os.makedirs(f'{self.PATH}results')
+
+        if not os.path.isdir(f'{self.PATH}pickles'):
+            os.makedirs(f'{self.PATH}pickles')
+
         self.MINIBATCH_SIZE = None
 
     def run(self, dic):
         print("90300-50: \n", "="*50, "\n", dic, "\n", "="*50)
+        clear_log_debug()
+        log_debug("dqn-cnn run")
+        EPISODES = int(dic["episodes"])
 
         models_arch = [{"conv_list": [32], "dense_list": [32, 32], "util_list": ["ECC2", "1A-5Ac"],
                         "MINIBATCH_SIZE": 128, "best_only": False,
@@ -599,6 +718,9 @@ class DNQCNNDataProcessing(BaseDataProcessing, BasePotentialAlgo, DNQCNNAlgo):
 
         # Grid Search:
         for i, m in enumerate(models_arch):
+
+            log_debug("dqn-cnn run: " + str(i))
+
             startTime = time.time()  # Used to count episode training time
             self.MINIBATCH_SIZE = m["MINIBATCH_SIZE"]
 
@@ -606,8 +728,8 @@ class DNQCNNDataProcessing(BaseDataProcessing, BasePotentialAlgo, DNQCNNAlgo):
             # Epsilon Fluctuation (EF):
             EF_Enabled = m["EF_Settings"]["EF_Enabled"]  # Enable Epsilon Fluctuation
             MAX_EPSILON = 1  # Maximum epsilon value
-            MIN_EPSILON = 0.001  # Minimum epsilon value
 
+            FLUCTUATE_EVERY = None
             if EF_Enabled:
                 FLUCTUATIONS = m["EF_Settings"]["FLUCTUATIONS"]  # How many times epsilon will fluctuate
                 FLUCTUATE_EVERY = int(EPISODES / FLUCTUATIONS)  # Episodes
@@ -619,134 +741,48 @@ class DNQCNNDataProcessing(BaseDataProcessing, BasePotentialAlgo, DNQCNNAlgo):
 
             # Initialize some variables:
             best_average = -100
-            best_score = -100
-
             # Epsilon Conditional Constantation (ECC):
+            log_debug("dqn-cnn run: B " + str(i))
             ECC_Enabled = m["ECC_Settings"]["ECC_Enabled"]
             avg_reward_info = [
                 [1, best_average, epsilon]]  # [[episode1, reward1 , epsilon1] ... [episode_n, reward_n , epsilon_n]]
-            max_reward_info = [[1, best_score, epsilon]]
-            if ECC_Enabled: MAX_EPS_NO_INC = m["ECC_Settings"][
-                "MAX_EPS_NO_INC"]  # Maximum number of episodes without any increment in reward average
-            eps_no_inc_counter = 0  # Counts episodes with no increment in reward
 
-            # For stats
-            ep_rewards = [best_average]
-
+            # Maximum number of episodes without any increment in reward average
+            # -------------------
             env = Environment()
             env.MOVE_WALL_EVERY = 1  # Every how many frames the wall moves.
 
+            log_debug("dqn-cnn run: C " + str(i))
+
             agent = DQNAgent(f"M{i}", env, m["conv_list"], m["dense_list"], m["util_list"], self.PATH, self.MINIBATCH_SIZE)
             MODEL_NAME = agent.name
-
-            best_weights = [agent.model.get_weights()]
+            # -------------------
 
             # Uncomment these two lines if you want to show preview on your screen
             # WINDOW          = pygame.display.set_mode((env.WINDOW_WIDTH, env.WINDOW_HEIGHT))
             # clock           = pygame.time.Clock()
 
 
-            # Iterate over episodes
-            for episode in tqdm(range(1, EPISODES + 1), ascii=True, unit='episodes'):
-                if m["best_only"]: agent.model.set_weights(best_weights[0])
-                # agent.target_model.set_weights(best_weights[0])
+            # ===============================================
+            # Get Average reward:
 
-                self.score_increased = False
-                # Update tensorboard step every episode
-                agent.tensorboard.step = episode
+            log_debug("dqn-cnn run: D " + str(i))
 
-                # Restarting episode - reset episode reward and step number
-                episode_reward = 0
-                step = 1
-                action = 0
-                # Reset environment and get initial state
-                current_state = env.reset()
-                game_over = env.game_over
-                while not game_over:
-                    # This part stays mostly the same, the change is to query a model for Q values
-                    if np.random.random() > epsilon:
-                        # Get action from Q table
-                        action = np.argmax(agent.get_qs(current_state))
-                    else:
-                        # Get random action
-                        action = choice(env.ACTION_SPACE)
+            average_reward, max_reward_info, avg_reward_info = agent.train(m, epsilon, best_average, ECC_Enabled,
+                                                                           EPSILON_DECAY, MAX_EPSILON, EF_Enabled,
+                                                                           avg_reward_info, FLUCTUATE_EVERY, EPISODES)
 
-                    new_state, reward, game_over = env.step(action)
+            file_name = f'{self.PATH}pickles/{"result_for_M"+ str(i+1) +".pkl"}'
 
-                    # Transform new continuous state to new discrete state and count reward
-                    episode_reward += reward
+            log_debug("dqn-cnn run: E " + file_name)
 
-                    # Uncomment the next block if you want to show preview on your screen
-                    # if SHOW_PREVIEW and not episode % SHOW_EVERY:
-                    #     clock.tick(27)
-                    #     env.render(WINDOW)
-
-                    # Every step we update replay memory and train main network
-                    agent.update_replay_memory((current_state, action, reward, new_state, game_over))
-                    agent.train(game_over, step)
-                    current_state = new_state
-                    step += 1
-
-                if ECC_Enabled: eps_no_inc_counter += 1
-                # Append episode reward to a list and log stats (every given number of episodes)
-                ep_rewards.append(episode_reward)
-
-                if not episode % AGGREGATE_STATS_EVERY:
-                    average_reward = sum(ep_rewards[-AGGREGATE_STATS_EVERY:]) / len(ep_rewards[-AGGREGATE_STATS_EVERY:])
-                    min_reward = min(ep_rewards[-AGGREGATE_STATS_EVERY:])
-                    max_reward = max(ep_rewards[-AGGREGATE_STATS_EVERY:])
-                    agent.tensorboard.update_stats(reward_avg=average_reward, reward_min=min_reward,
-                                                   reward_max=max_reward,
-                                                   epsilon=epsilon)
-
-                    # Save models, but only when avg reward is greater or equal a set value
-                    if not episode % SAVE_MODEL_EVERY:
-                        # Save Agent :
-                        _ = save_model_and_weights(agent, MODEL_NAME, episode, max_reward, average_reward, min_reward,self.PATH)
-
-                    if average_reward > best_average:
-                        best_average = average_reward
-                        # update ECC variables:
-                        avg_reward_info.append([episode, best_average, epsilon])
-                        eps_no_inc_counter = 0
-                        # Save Agent :
-                        best_weights[0] = save_model_and_weights(agent, MODEL_NAME, episode, max_reward, average_reward,
-                                                                 min_reward, self.PATH)
-
-                    if ECC_Enabled and eps_no_inc_counter >= MAX_EPS_NO_INC:
-                        epsilon = avg_reward_info[-1][2]  # Get epsilon value of the last best reward
-                        eps_no_inc_counter = 0
-
-                if episode_reward > best_score:
-                    try:
-                        best_score = episode_reward
-                        max_reward_info.append([episode, best_score, epsilon])
-
-                        # Save Agent :
-                        best_weights[0] = save_model_and_weights(agent, MODEL_NAME, episode, max_reward, average_reward,
-                                                                 min_reward, self.PATH)
-
-                    except:
-                        pass
-
-                # Decay epsilon
-                if epsilon > MIN_EPSILON:
-                    epsilon *= EPSILON_DECAY
-                    epsilon = max(MIN_EPSILON, epsilon)
-
-                # Epsilon Fluctuation:
-                if EF_Enabled:
-                    if not episode % FLUCTUATE_EVERY:
-                        epsilon = MAX_EPSILON
-
+            env.save_recorded_episodes(file_name)
+            # ===============================================
 
             endTime = time.time()
             total_train_time_sec = round((endTime - startTime))
             total_train_time_min = round((endTime - startTime) / 60, 2)
-            time_per_episode_sec = round((total_train_time_sec) / EPISODES, 3)
-
-            # Get Average reward:
-            average_reward = round(sum(ep_rewards) / len(ep_rewards), 2)
+            time_per_episode_sec = round(total_train_time_sec / EPISODES, 3)
 
             # Update Results DataFrames:
             res = res.append(
@@ -771,6 +807,26 @@ class DNQCNNDataProcessing(BaseDataProcessing, BasePotentialAlgo, DNQCNNAlgo):
         print(f"Training took {round((TendTime - TstartTime) / 60)} Minutes ")
         print(f"Training took {round((TendTime - TstartTime) / 3600)} Hours ")
 
+        log_debug("dqn-cnn run: Z ")
+
         result = {"status": "ok"}
         return result
+
+    def get_recorded_episodes(self, dic):
+        print("90500-450: \n", "="*50, "\n", dic, "\n", "="*50)
+        i = int(dic['i'])
+        env = Environment()
+        env.MOVE_WALL_EVERY = 1  # Every how many frames the wall moves.
+
+        file_name = f'{self.PATH}pickles/{"result_for_M" + str(i) + ".pkl"}'
+        result = env.get_recorded_episodes(file_name)
+        # ======================
+
+        result = {"status": "ok", "result": result}
+
+        print(result)
+
+        return result
+
+
 

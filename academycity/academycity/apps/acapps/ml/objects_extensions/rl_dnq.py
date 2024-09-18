@@ -12,27 +12,6 @@ from keras.models import Model, load_model
 from keras.layers import Input, Dense
 from keras.optimizers import Adam, RMSprop
 
-def OurModel(input_shape, action_space):
-    X_input = Input(input_shape)
-
-    # 'Dense' is the basic form of a neural network layer
-    # Input Layer of state size(4) and Hidden Layer with 512 nodes
-    X = Dense(512, input_shape=input_shape, activation="relu", kernel_initializer='he_uniform')(X_input)
-
-    # Hidden layer with 256 nodes
-    X = Dense(256, activation="relu", kernel_initializer='he_uniform')(X)
-
-    # Hidden layer with 64 nodes
-    X = Dense(64, activation="relu", kernel_initializer='he_uniform')(X)
-
-    # Output Layer with # of actions: 2 nodes (left, right)
-    X = Dense(action_space, activation="linear", kernel_initializer='he_uniform')(X)
-
-    model = Model(inputs=X_input, outputs=X, name='CartPole')
-    model.compile(loss="mse", optimizer=RMSprop(lr=0.00025, rho=0.95, epsilon=0.01), metrics=["accuracy"])
-
-    model.summary()
-    return model
 
 class DQNAgent:
     def __init__(self):
@@ -50,10 +29,33 @@ class DQNAgent:
         self.train_start = 1000
 
         # create main model
-        self.model = OurModel(input_shape=(self.state_size,), action_space=self.action_size)
+        self.model = self.create_model()
 
-    def remember(self, state, action, reward, next_state, done):
-        self.memory.append((state, action, reward, next_state, done))
+    def create_model(self):
+        X_input = Input((self.state_size,))
+        action_space = self.action_size
+
+        # 'Dense' is the basic form of a neural network layer
+        # Input Layer of state size(4) and Hidden Layer with 512 nodes
+        X = Dense(512, input_shape=(self.state_size,), activation="relu", kernel_initializer='he_uniform')(X_input)
+
+        # Hidden layer with 256 nodes
+        X = Dense(256, activation="relu", kernel_initializer='he_uniform')(X)
+
+        # Hidden layer with 64 nodes
+        X = Dense(64, activation="relu", kernel_initializer='he_uniform')(X)
+
+        # Output Layer with # of actions: 2 nodes (left, right)
+        X = Dense(action_space, activation="linear", kernel_initializer='he_uniform')(X)
+
+        model = Model(inputs=X_input, outputs=X, name='CartPole')
+        model.compile(loss="mse", optimizer=RMSprop(lr=0.00025, rho=0.95, epsilon=0.01), metrics=["accuracy"])
+
+        model.summary()
+        return model
+
+    def update_replay_memory(self, transition):
+        self.memory.append(transition)
         if len(self.memory) > self.train_start:
             if self.epsilon > self.epsilon_min:
                 self.epsilon *= self.epsilon_decay
@@ -69,7 +71,6 @@ class DQNAgent:
             return
         # Randomly sample minibatch from the memory
         minibatch = random.sample(self.memory, min(len(self.memory), self.batch_size))
-
         state = np.zeros((self.batch_size, self.state_size))
         next_state = np.zeros((self.batch_size, self.state_size))
         action, reward, done = [], [], []
@@ -108,7 +109,7 @@ class DQNAgent:
     def save(self, name):
         self.model.save(name)
 
-    def run(self, file_name, episodes):
+    def train(self, file_name, episodes):
         clear_log_debug()
         for e in range(episodes):
             log_debug("Episode A: " + str(e))
@@ -126,7 +127,8 @@ class DQNAgent:
                     reward = reward
                 else:
                     reward = -100
-                self.remember(state, action, reward, next_state, done)
+                self.update_replay_memory((state, action, reward, next_state, done))
+
                 state = next_state
                 i += 1
                 if done:
@@ -137,7 +139,6 @@ class DQNAgent:
                         log_debug("Episode Z1: ")
                         self.save(file_name)
                         log_debug("Episode Z2: ")
-                        return
                 self.replay()
             log_debug("Episode B: " + str(e))
         log_debug("End Train...")
@@ -184,12 +185,24 @@ class DNQDataProcessing(BaseDataProcessing, BasePotentialAlgo, DNQAlgo):
 
     def train(self, dic):
         print("90155-dqn: \n", "="*50, "\n", dic, "\n", "="*50)
+
+        # n_timesteps = 60  # Lookback window of 60 days
+        # n_features = 5  # e.g., OHLC and volume
+        #
+        # # Example of running the model (for simplicity, using random data)
+        # X = np.random.rand(1000, n_timesteps, n_features)  # Simulated stock data
+        # y = np.random.randint(0, 3, size=(1000,))  # Random actions (buy/sell/hold)
+        # print(X, "\n\n", X.shape, "\n\n", y)
+        #
+        #
+        # return
+
         episodes = int(dic["episodes"])
         # ---
 
         agent = DQNAgent()
         save_to_file = os.path.join(self.TO_OTHER, "cartpole-dqn.keras")
-        agent.run(save_to_file, episodes)
+        agent.train(save_to_file, episodes)
 
         result = {"status": "ok dqn"}
         return result

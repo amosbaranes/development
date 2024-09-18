@@ -41,13 +41,13 @@ class FactAdmin(admin.ModelAdmin):
 
 @admin.register(FactNormalized)
 class FactNormalizedAdmin(admin.ModelAdmin):
-    list_display = ('id', 'gene_dim', 'person_dim', 'amount')
-    list_filter = ['gene_dim', 'person_dim']
+    list_display = ('id', 'run_number', 'gene_dim', 'person_dim', 'amount')
+    list_filter = ['run_number', 'gene_dim', 'person_dim']
 
 @admin.register(FactNormalizedTemp)
 class FactNormalizedTempAdmin(admin.ModelAdmin):
-    list_display = ('id', 'gene_dim', 'person_dim', 'amount')
-    list_filter = ['gene_dim', 'person_dim']
+    list_display = ('id', 'run_number', 'gene_dim', 'person_dim', 'amount')
+    list_filter = ['run_number', 'gene_dim', 'person_dim']
 
 # Temp
 @admin.register(Temp)
@@ -64,7 +64,7 @@ class TempVarAdmin(admin.ModelAdmin):
 # PCA
 @admin.register(PCA)
 class PCAAdmin(admin.ModelAdmin):
-    list_display = ('id', 'set', 'sub_set', 'component')
+    list_display = ('id', 'run_number', 'set', 'sub_set', 'component')
     list_filter = ['set', 'sub_set']
 
 @admin.register(PCAData)

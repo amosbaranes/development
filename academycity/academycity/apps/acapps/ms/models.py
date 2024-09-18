@@ -93,6 +93,7 @@ class TempVar(TruncateTableMixin, models.Model):
 # --------- For Analysis for Batch normalization ---------
 
 class FactNormalizedTemp(TruncateTableMixin, models.Model):
+    run_number = models.SmallIntegerField(blank=True, null=True, default=0)
     gene_dim = models.ForeignKey(GeneDim, on_delete=models.CASCADE, default=1,
                                  related_name='gene_dim_fact_normalized_temp')
     person_dim = models.ForeignKey(PersonDim, on_delete=models.CASCADE, default=1,
@@ -104,6 +105,7 @@ class FactNormalizedTemp(TruncateTableMixin, models.Model):
 
 
 class FactNormalized(TruncateTableMixin, models.Model):
+    run_number = models.SmallIntegerField(blank=True, null=True, default=0)
     gene_dim = models.ForeignKey(GeneDim, on_delete=models.CASCADE, default=1,
                                  related_name='gene_dim_fact_normalized')
     person_dim = models.ForeignKey(PersonDim, on_delete=models.CASCADE, default=1,
@@ -122,6 +124,7 @@ class PCA(TruncateTableMixin, models.Model):
         verbose_name_plural = _('pcas')
         ordering = ['set','sub_set','component']
     #
+    run_number = models.SmallIntegerField(blank=True, null=True, default=0)
     set = models.SmallIntegerField(blank=True, null=True)
     sub_set = models.SmallIntegerField(blank=True, null=True)
     component = models.SmallIntegerField(blank=True, null=True)
