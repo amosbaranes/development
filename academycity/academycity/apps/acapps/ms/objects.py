@@ -765,10 +765,13 @@ class MSDataProcessing(BaseDataProcessing, BasePotentialAlgo, MSAlgo):
         qsp = model_person_dim.objects.filter(set_num__gt=l[nnn-1], set_num__lte=l[nnn]).all()
         # -------
         self.log_debug(str(nnn) + " B")
+
         df_f = pd.DataFrame(list(qsf.values('gene_dim', 'person_dim', 'amount')))
         df_f.columns = ['gene', 'person', 'amount']
         df = df_f.pivot_table(values='amount', index='gene', columns=['person'], aggfunc='sum')
         # print("AAAAA : ", nnn, " : l[nnn-1], l[nnn]\n", l[nnn-1], l[nnn], "\n\n", df, "\n\n", df.shape, "\n", "="*50, "\n\n")
+
+
         self.log_debug(str(nnn) + " C")
         dic["df"] = df.copy()
         self.log_debug(str(nnn) + " D")
@@ -1325,8 +1328,19 @@ class MSDataProcessing(BaseDataProcessing, BasePotentialAlgo, MSAlgo):
         for s in sets:
             # if s == 174:
             #     print("set", s, sets[s])
+
+
+            # ================================
             m = sets[s][0]
             # (median(rll), df)
+
+            # A change we did on Sept 20 2024
+            m = float(sets[s][1].median())
+            # ================================
+
+            # print(sets[s][1])
+            # print("m=", m, "\n\nsm=", float(sets[s][1].median()))
+
             bs = 1000000000
             mcb_ = -1
             for b in peak_array:

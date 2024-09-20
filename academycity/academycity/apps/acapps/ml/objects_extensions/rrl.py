@@ -379,6 +379,7 @@ class RRLDataProcessing(BaseDataProcessing, BasePotentialAlgo, RRLAlgo):
         # print("9005 DataProcessing ", self.app)
 
         self.PATH = os.path.join(self.TO_OTHER, "rrl")
+        os.makedirs(self.PATH, exist_ok=True)
         print(f'{self.PATH}')
 
         self.days_of_investment = 30
@@ -420,7 +421,7 @@ class RRLDataProcessing(BaseDataProcessing, BasePotentialAlgo, RRLAlgo):
 
         env = TradingEnv(df)
         # Create and train the trading agent
-        file_name_ = f'{self.PATH}pickles/{"rrl.pkl"}'
+        file_name_ = f'{self.PATH}/pickles/{"rrl.pkl"}'
         agent = TradingAgent(env, model_path=file_name_, target_update_freq=1)
 
         agent.test()
