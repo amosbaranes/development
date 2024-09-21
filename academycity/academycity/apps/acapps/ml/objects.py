@@ -18,6 +18,7 @@ from .objects_extensions.reinforcement import RIDataProcessing
 from .objects_extensions.reinforcement_finance import RIFDataProcessing
 from .objects_extensions.rrl import RRLDataProcessing
 from .objects_extensions.nn import NNDataProcessing
+from .objects_extensions.mlnn import MLNNDataProcessing
 #
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Activation, Dropout, SimpleRNN
