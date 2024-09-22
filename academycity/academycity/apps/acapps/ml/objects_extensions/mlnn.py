@@ -145,8 +145,16 @@ class MLNNDataProcessing(BaseDataProcessing, BasePotentialAlgo, MLNNAlgo):
 
     def get_image(self, dic):
         print("90200-mlnn: \n", "="*50, "\n", dic, "\n", "="*50)
-
         (train_images, train_labels), (test_images, test_labels) = mnist.load_data()
+        # -----------------
+        index = random.randint(0, len(test_images) - 1)
+        img_ = test_images[index]
+        img = Image.fromarray((img_ * 255).astype('uint8'), mode='L')
+        # print("AA\n", test_labels[index])
+        file_name_ = 'test_image'+str(test_labels[index])+'.png'
+        file_name = self.TO_MEDIA + '/' + file_name_
+        file_name_ = "/media"+file_name.split("media")[1]
+        # -------------
         # Normalize the images to values between 0 and 1
         train_images = train_images / 255.0
         test_images = test_images / 255.0
@@ -159,12 +167,6 @@ class MLNNDataProcessing(BaseDataProcessing, BasePotentialAlgo, MLNNAlgo):
         self.load()
         history = self.model.fit(train_images, train_labels, epochs=self.epochs, batch_size=32)
         # ----------------
-        index = random.randint(0, len(test_images) - 1)
-        img_ = test_images[index]
-        img = Image.fromarray((img_ * 255).astype('uint8'), mode='L')
-        file_name_ = 'test_image.png'
-        file_name = self.TO_MEDIA + '/' + file_name_
-        file_name_ = "/media"+file_name.split("media")[1]
         img.save(file_name)
         # ----------------
         image = np.expand_dims(img_, axis=0)  # Add batch dimension
