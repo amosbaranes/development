@@ -82,7 +82,8 @@ class NNDataProcessing(BaseDataProcessing, BasePotentialAlgo, NNAlgo):
 
         model_path = f'{self.PATH}/pickles/{"nn.pkl"}'
         model_path_l = f'{self.PATH}/pickles/{"nn_lose.pkl"}'
-        print(model_path)
+        # print(model_path)
+
         if model_path and os.path.exists(model_path) and continue_train==1:
             print(f"Loading model from {model_path}")
             self.model = load_model(model_path)
