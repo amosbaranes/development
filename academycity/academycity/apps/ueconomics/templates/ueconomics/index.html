@@ -91,7 +91,7 @@
                 </tr>
                     {% for p in products.all %}
                         <tr>
-                            <td class="left">{{ p.sitc2 }}</td><td class="left">{{ p.description }}</td>
+                            <td class="left">{{ p.sitc  }}</td><td class="left">{{ p.description }}</td>
                             {% for y in p.product_year_data.all %}
                               {% if y.source == s %}
                                <td class="right">{{ y.value }}</td>

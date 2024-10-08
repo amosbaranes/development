@@ -57,11 +57,11 @@ h1 {
   }
 }
 
-h2 {
+h  {
   font-size: calc(1.325rem + 0.9vw);
 }
 @media (min-width: 1200px) {
-  h2 {
+  h  {
     font-size: 2rem;
   }
 }

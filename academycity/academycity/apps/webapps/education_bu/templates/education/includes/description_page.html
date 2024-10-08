@@ -1,0 +1,21 @@
+{% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
+<nav class="topbar " id="main-menu">
+    <div class="topbar__container">
+        <div class="topbar__brand">
+            <button class="topbar__hamburger" data-target="main-menu" aria-label="menu" aria-expanded="false">&#8801;</button>
+            <a href="/" style="margin-bottom:-40px ">
+                <img src="{{ institution_obj.logo_image.url }}" width="72px" height="100px" alt="HOME">
+            </a>
+        </div>
+        <div class="topbar__menu">
+            <ul class="topbar__list">
+                <li class="topbar__item topbar__item--sibling"><a href="#news">News</a></li>
+                        <li class="topbar__item topbar__item--sibling"><a href="#courses">Courses</a></li>
+                        <li class="topbar__item topbar__item--sibling"><a href="#programs">Programs</a></li>
+                        <li class="topbar__item topbar__item--sibling"><a href="#services">Services</a></li>
+                        <li class="topbar__item topbar__item--sibling"><a href="#persons">Persons</a></li>
+            </ul>
+        </div>
+
+    </div>
+</nav>

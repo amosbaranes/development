@@ -1,0 +1,195 @@
+{% extends "base_education.html" %}
+{% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
+
+{% block title %}
+<title>{{ course.course_name }}</title>
+{% endblock%}
+
+{% block nav_bar %}
+          {% include 'education/includes/description_page.html' %}
+{% endblock %}
+
+
+{% block main_page %}
+<div class="subheader">
+                    <div class="breadcrumbs">
+                        <ul class="breadcrumbs__list">
+                            <li class="breadcrumbs__item">You are here:</li>
+                            <li class="breadcrumbs__item">
+                                <a href="/en/">Home</a>
+                            </li>
+                            <li class="breadcrumbs__item">
+                                <span class="active">News</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="subheader__container">
+                        <h1 class="subheader__title">News</h1>
+                    </div>
+                </div>
+<div class="category-tag-list category-tag-list--primary">
+                    <div class="category-tag-list__container">
+                        <a class="category-tag" href="/en/categories/level/beginner/">
+                            <span class="category-tag__title">Beginner</span>
+                        </a>
+                        <a class="category-tag" href="/en/categories/level/advanced/">
+                            <span class="category-tag__title">Advanced</span>
+                        </a>
+                        <a class="category-tag" href="/en/categories/level/expert/">
+                            <span class="category-tag__title">Expert</span>
+                        </a>
+                        <a class="category-tag" href="/en/categories/tag/event/">
+                            <span class="category-tag__title">Event</span>
+                        </a>
+                        <a class="category-tag" href="/en/categories/tag/feature/">
+                            <span class="category-tag__title">Feature</span>
+                        </a>
+                        <a class="category-tag" href="/en/categories/tag/around-the-course/">
+                            <span class="category-tag__title">Around the course</span>
+                        </a>
+                        <a class="category-tag" href="/en/categories/tag/partner/">
+                            <span class="category-tag__title">Partner</span>
+                        </a>
+                        <a class="category-tag" href="/en/categories/tag/portrait/">
+                            <span class="category-tag__title">Portrait</span>
+                        </a>
+                        <a class="category-tag" href="/en/categories/tag/recruitment/">
+                            <span class="category-tag__title">Recruitment</span>
+                        </a>
+                    </div>
+                </div>
+{% endblock %}
+
+{% block body_content %}
+<div class="blogpost-list">
+    {% for news_detail in news_detail_ %}
+    <a href="/en/news/organized-value-added-open-architecture/"class="blogpost-glimpse">
+        <p class="blogpost-glimpse__date">{{news_detail.news_date}}</p>
+        <div class="blogpost-glimpse__media">
+            <img src="{{news_detail.image.url}}"
+                 srcset="{{news_detail.image.url}} 300w " sizes="300px" alt="">
+        </div>
+        <div class="blogpost-glimpse__content">
+            <div class="blogpost-glimpse__wrapper">
+                <div class="blogpost-glimpse__categories">
+                    <span class="category-tag">
+                        <span class="category-tag__title">{{news_detail.news_type}}</span>
+                    </span>
+                    <span class="category-tag">
+                        <span class="category-tag__title">{{news_detail.news_type_description}}</span>
+                    </span>
+                </div>
+                <p class="blogpost-glimpse__title">{{news_detail.news_title}}</p>
+                <p class="blogpost-glimpse__excerpt">
+                    {{news_detail.news_description}}
+                </p>
+            </div>
+        </div>
+    </a>
+    {% endfor %}
+    <div class="pagination">
+                 <div id="pagination-label" class="offscreen">Pagination</div>
+                    <nav aria-labelledby="pagination-label">
+                        <ul class="pagination__list">
+                            <li class="pagination__item pagination__item--current">
+                                <span class="pagination__page-number">
+                                    <span class="offscreen">
+                                        Currently reading page 1
+                                    </span>
+                                    <span aria-hidden="true">Page 1</span>
+                                </span>
+                            </li>
+                            <li class="pagination__item">
+                                <a href="?page=2#page" class="pagination__page-number">
+                                    <span class="offscreen">
+                                        Last page 2
+                                    </span>
+                                    <span aria-hidden="true">2</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                    </div>
+</div>
+{% endblock %}
+
+
+
+
+
+
+
+
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        <script>
+            window.__richie_frontend_context__ = JSON.parse('{"context": {"csrftoken": "zzp8iri4PzotR2Kjp38CIClEFxhtMG8rNa5EyyxYplLraowSPF6qjAG7KsvDqBIL", "environment": "production", "release": "demo-1.11.1", "sentry_dsn": "https://b0ed6c7e47554152918928057029315c@sentry.io/1198559", "authentication": {"endpoint": "https://edx.richie.education", "backend": "openedx-hawthorn"}, "lms_backends": [{"endpoint": "https://edx.richie.education", "backend": "openedx-hawthorn", "course_regexp": "^.*/courses/(.*)/course/?$"}]}}');
+        </script>
+        <script src="//dpaz9rouqy0e2.cloudfront.net/static/richie/js/build/index.bf40ec0469cf.js"></script>
+        <script>
+            function initializeHamburgerMenu() {
+                // Get all topbar burger elements
+                const topbarBurgers = Array.prototype.slice.call(
+                    document.querySelectorAll(".topbar__hamburger"), 0
+                );
+
+                // Check if there are any navbar burgers
+                if (topbarBurgers.length > 0) {
+                    // Add a click event on each of them
+                    topbarBurgers.forEach(function(el) {
+                        el.addEventListener("click", function() {
+                            // Get the target from the "data-target" attribute
+                            const target = document.getElementById(el.dataset.target);
+                            // Toggle the "is-active" class on both the burger and container
+                            el.classList.toggle("is-active");
+                            target.classList.toggle("is-open");
+                        });
+                    });
+                }
+            }
+
+            function initializeAccordions() {
+                // Implement accordion item behaviors
+                const $accordionItems = Array.prototype.slice.call(
+                    document.querySelectorAll('[data-accordion-button]'), 0
+                );
+
+                if ($accordionItems.length > 0) {
+                    $accordionItems.forEach(function(itemObject, itemIndex) {
+                        itemObject.addEventListener('click', function () {
+                            var $closestLi = itemObject.closest('li');
+
+                            $closestLi.hasAttribute('data-accordion-active')
+                                ? $closestLi.removeAttribute('data-accordion-active')
+                                : $closestLi.setAttribute('data-accordion-active', true);
+
+                            itemObject.hasAttribute('data-accordion-open')
+                                ? itemObject.removeAttribute('data-accordion-open')
+                                : itemObject.setAttribute('data-accordion-open', true);
+                        });
+                    });
+                }
+            }
+
+            document.addEventListener("DOMContentLoaded", function() {
+                initializeAccordions();
+                initializeHamburgerMenu();
+            });
+        </script>
+        
+        
+    </body>
+</html>

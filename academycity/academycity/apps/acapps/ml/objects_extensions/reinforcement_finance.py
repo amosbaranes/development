@@ -25,7 +25,7 @@ class RIFDataProcessing(BaseDataProcessing, BasePotentialAlgo, RIFAlgo):
     def __init__(self, dic):
         # print("90567-888-1 RIFDataProcessing\n", dic, '\n', '-' * 50)
         super().__init__(dic)
-        # print("9057-888-2 RIFDataProcessing ", self.app)
+        # print("9057-888-  RIFDataProcessing ", self.app)
 
     def test(self, dic):
         print("9057-999-1: \n", "="*50, "\n", dic, "\n", "="*50)

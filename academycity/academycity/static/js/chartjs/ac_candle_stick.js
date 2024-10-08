@@ -8,10 +8,10 @@ function CandlestickChartManager(tickers=null)
   var t = this.tickers[i];
   var tr_ = document.createElement("tr");
   var td = document.createElement("td");td.innerHTML=t;tr_.appendChild(td);
-
   td = document.createElement("td");var td_div = document.createElement("div");td_div.setAttribute("id", "host_div_"+t);
-  td_div.setAttribute("style", "width:500px;height=250px");td.appendChild(td_div); tr_.appendChild(td);
-
+  td_div.setAttribute("style", "width:500px;height=250px");
+  td.appendChild(td_div);
+  tr_.appendChild(td);
   td = document.createElement("td");td.setAttribute("id", "analysis_"+t);td.innerHTML=t;tr_.appendChild(td);
   this.container.appendChild(tr_);
   this.objs[t] = new CandlestickChart(ticker=t, data_function=getRandomData)

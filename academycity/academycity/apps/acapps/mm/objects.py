@@ -30,7 +30,7 @@ class MMAlgo(object):
     def __init__(self, dic):  # to_data_path, target_field
         # print("90004-000-1 MMAlgo", dic, '\n', '-'*50)
         super(MMAlgo, self).__init__()
-        # print("90004-000-2 MMAlgo", dic, '\n', '-'*50)
+        # print("90004-000-  MMAlgo", dic, '\n', '-'*50)
         # -----
         self.to_save_normalize = []
         self.to_save_similarity = []
@@ -48,7 +48,7 @@ class MMDataProcessing(BaseDataProcessing, BasePotentialAlgo, MMAlgo):
     def __init__(self, dic):
         # print("90001-000-1 MMDataProcessing", dic, '\n', '-'*50)
         super().__init__(dic)
-        # print("90001-000-2 MMDataProcessing", dic, '\n', '-'*50)
+        # print("90001-000-  MMDataProcessing", dic, '\n', '-'*50)
 
         self.file_similarity = os.path.join(self.PICKLE_PATH, "similarity"+".pkl")
         self.file_similarity_dic = os.path.join(self.PICKLE_PATH, "similarity_dic"+".pkl")
@@ -65,7 +65,7 @@ class MMDataProcessing(BaseDataProcessing, BasePotentialAlgo, MMAlgo):
         # print('file_path')
         print(file_path)
         # print('file_path')
-        # print('90121-2 dic')
+        # print('90121-  dic')
 
         dic = dic["cube_dic"]
         # print('90121-3 dic', dic)

@@ -241,7 +241,7 @@ function acWin(win_name="none", win_title="none", width="500", height="300", lef
   s += 'pos3 = elm_win_frame_title_'+this.win_name+'.getAttribute("pos3");'
   s += 'pos4 = elm_win_frame_title_'+this.win_name+'.getAttribute("pos4");'
   s += 'pos1 = pos3 - event.clientX;'
-  s += 'pos2 = pos4 - event.clientY;'
+  s += 'pos  = pos4 - event.clientY;'
   s += 'pos3 = event.clientX;'
   s += 'pos4 = event.clientY;'
   s += 'elm_win_frame_title_'+this.win_name+'.setAttribute("pos3", pos3);'

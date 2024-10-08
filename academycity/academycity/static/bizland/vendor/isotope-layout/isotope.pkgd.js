@@ -716,7 +716,7 @@ utils.docReady = function( callback ) {
 
 // http://jamesroberts.name/blog/2010/02/22/string-functions-for-javascript-trim-to-camel-case-to-dashed-and-to-underscore/
 utils.toDashed = function( str ) {
-  return str.replace( /(.)([A-Z])/g, function( match, $1, $2 ) {
+  return str.replace( /(.)([A-Z])/g, function( match, $1, $  ) {
     return $1 + '-' + $2;
   }).toLowerCase();
 };
@@ -2639,7 +2639,7 @@ return Item;
    * @returns {Array} colGroup
    */
   proto._getTopColGroup = function( colSpan ) {
-    if ( colSpan < 2 ) {
+    if ( colSpan <   ) {
       // if brick spans only one column, use all the column Ys
       return this.colYs;
     }
@@ -2655,7 +2655,7 @@ return Item;
   };
 
   proto._getColGroupY = function( col, colSpan ) {
-    if ( colSpan < 2 ) {
+    if ( colSpan <   ) {
       return this.colYs[ col ];
     }
     // make an array of colY values for that one group

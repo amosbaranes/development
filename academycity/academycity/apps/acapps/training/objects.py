@@ -4213,7 +4213,7 @@ class BaseTrainingAlgo(object):
     def __init__(self, dic):  # to_data_path, target_field
         # print("90050-01 BaseTrainingAlgo", dic, '\n', '-'*50)
         # super(BaseTrainingAlgo, self).__init__()
-        # print("90050-02 BaseTrainingAlgo", dic, '\n', '-'*50)
+        # print("90050-0  BaseTrainingAlgo", dic, '\n', '-'*50)
         self.app = dic["app"]
         self.excel_dir = settings.MEDIA_ROOT + '/'+self.app+'/excel'
         os.makedirs(self.excel_dir, exist_ok=True)
@@ -4228,7 +4228,7 @@ class BaseTrainingAlgo(object):
             # create a Path object with the path to the file
             path = Path(self.save_to_file)
             if not path.is_file():
-                wb2 = Workbook()
+                wb  = Workbook()
                 wb2.save(self.save_to_file)
                 wb2.close()
             else:
@@ -4239,10 +4239,10 @@ class BaseTrainingAlgo(object):
                         wb.remove(wb[folder])
                         wb.save(self.save_to_file)
                         break
-            df2 = df.copy()
+            df  = df.copy()
             total, used, free = shutil.disk_usage("/")
         except Exception as ee:
-            print("90555-52 Error objects save_to_excel: "+str(ee))
+            print("90555-5  Error objects save_to_excel: "+str(ee))
         nnn = 0
         try:
             with pd.ExcelWriter(self.save_to_file, engine='openpyxl', mode='a') as writer_:
@@ -4255,7 +4255,7 @@ class BaseTrainingAlgo(object):
             nnn = 1
             # print("OK")
         except Exception as ee:
-            print("90555-12 Error objects save_to_excel: "+str(ee))
+            print("90555-1  Error objects save_to_excel: "+str(ee))
             time.sleep(5)
             self.save_to_excel(df2, folder)
             self.second_time_save = self.save_to_file
@@ -4344,7 +4344,7 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
                                           "position_name": ["Captain","Officer","Soldier","Colonel","Sous Officer","Other"]})
 
         self.df_instructor_positions = pd.DataFrame.from_dict({"id" :[1,2,3,4,5,6,7,8],
-                                          "position_name": ['מפקד גדוד', 'מפקד פלוגה', 'מספר 2 – צ', 'מוביל צוות', 'מספר 2',
+                                          "position_name": ['מפקד גדוד', 'מפקד פלוגה', 'מספר   – צ', 'מוביל צוות', 'מספר 2',
                                                             'אימון גופני', 'מתגבר', 'קמ”ג']})
         self.inventory_with_pn = ["mz4psn", "ramonsn", "mz10", "mz15", "negev"]
 
@@ -4444,7 +4444,7 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
         return weeks_dic
 
     def get_units_structure(self, dic):
-        # print("\n", "-"*50, '\n90035-12 dic\n', dic, "\n", "-"*50)
+        # print("\n", "-"*50, '\n90035-1  dic\n', dic, "\n", "-"*50)
         app_ = dic["app"]
         weeks_ = dic["weeks"]
         battalion_ = dic["battalion"]
@@ -4615,19 +4615,19 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
                     try:
                         battalion_obj.instructor.add(instructor_obj)
                     except Exception as ex:
-                        print("9011-1122 Error " + str(ex))
+                        print("9011-112  Error " + str(ex))
                     try:
                         battalion_obj.save()
                     except Exception as ex:
                         print("9011-1133 Error " + str(ex))
             except Exception as ex:
-                print("9022-22 Error " + str(ex))
+                print("9022-2  Error " + str(ex))
 
         print("Done")
         result = {"status": "ok"}
         return result
 
-    # v2 --
+    # v  --
     def set_soldiers_and_org_structure(self, dic):
         print('90022-7 dic', dic)
         app_ = dic["app"]
@@ -4746,7 +4746,7 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
         return result
 
     def update_soldiers_info(self, dic):
-        print('90022-2 dic', dic)
+        print('90022-  dic', dic)
         app_ = dic["app"]
         file_path = self.upload_file(dic)["file_path"]
         # print("-"*100, "\n", file_path, "\n", "-"*100)
@@ -4811,7 +4811,7 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
                 u.last_name = last_name
                 u.save()
             except Exception as ex:
-                print("9011-11-2 Error ", username_, str(ex))
+                print("9011-11-  Error ", username_, str(ex))
                 try:
                     u_username_ = "U"+userid
                     my_group, is_created = Group.objects.get_or_create(name='t_simple_user')
@@ -4874,7 +4874,7 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
         return result
 
     def set_units_equipment(self, dic):
-        print('90022-2 dic\n', dic)
+        print('90022-  dic\n', dic)
         app_ = dic["app"]
         file_path = self.upload_file(dic)["file_path"]
         # print("-"*100, "\n", file_path, "\n", "-"*100)
@@ -5002,14 +5002,14 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
                         continue
                     if kl == "drone_t1" and title.lower()=="delta":
                         q_ -= 1
-                    if kl == "drone_t2" and unit_type_ == 2 and title.lower()=="delta":
+                    if kl == "drone_t2" and unit_type_ ==   and title.lower()=="delta":
                         q_ = 0
                     elif kl == "drone_t2" and unit_type_ == 1:
                         q_ = 1
                     if v < q_:
                         is_equiped = 0
                 except Exception as ex:
-                    print("9011-55-2 Error \n", k, v, str(ex))
+                    print("9011-55-  Error \n", k, v, str(ex))
             unit__["is_equiped"] = is_equiped
             print(title, unit_type_, is_equiped)
 
@@ -5036,7 +5036,7 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
         #                         v = int(float(v))
         #             except Exception as ex:
         #                 pass
-        #                 # print("9011-77-77-2 Error " + str(ex))
+        #                 # print("9011-77-77-  Error " + str(ex))
         #             qty_per_unit = 1 #  maby we need to add a column for qty_per_unit in the table q.qty_per_soldier
         #             unit_critical = q.unit_critical
         #             if unit_critical == 0 or unit_critical != unit_type_:
@@ -5050,7 +5050,7 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
         #
         #
             # except Exception as ex:
-            #     print("9011-55-2 Error \n", k, v, soldier_obj, str(ex))
+            #     print("9011-55-  Error \n", k, v, soldier_obj, str(ex))
         #
         #
         #
@@ -5183,7 +5183,7 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
             # print("1 columns\n", df.columns)
             log_debug("Start 3")
             columns = df.columns[13:]
-            print("2 columns\n", columns)
+            print("  columns\n", columns)
 
             try:
                 model_inventorys = apps.get_model(app_label=app_, model_name="inventorys")
@@ -5334,7 +5334,7 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
             soldier_obj.last_name = last_name
             soldier_obj.save()
         except Exception as ex:
-            print("Error 200-200-12 basic Soldier: ", ex)
+            print("Error 200-200-1  basic Soldier: ", ex)
         try:
             soldier_obj.rank = rank
             soldier_obj.save()
@@ -5360,7 +5360,7 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
             soldier_obj.clothes_size = clothes_size
             soldier_obj.save()
         except Exception as ex:
-            print("9011-22-2 Error ", clothes_size, str(ex))
+            print("9011-22-  Error ", clothes_size, str(ex))
         try:
             soldier_obj.shoes_size = shoes_size
             soldier_obj.save()
@@ -5456,7 +5456,7 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
                             v = int(float(v))
                 except Exception as ex:
                     pass
-                    # print("9011-77-77-2 Error " + str(ex))
+                    # print("9011-77-77-  Error " + str(ex))
                 qty_per_soldier = q.qty_per_soldier
                 critical = q.critical
                 if critical == 0 or critical != profession:
@@ -6283,12 +6283,12 @@ class TrainingDataProcessing(BaseDataProcessing, BaseTrainingAlgo):
                         soldier_obj = model_soldiers.objects.filter(first_name=first_name, last_name=last_name).all()
                         count = soldier_obj.count()
                         if count > 1:
-                            multiple_soldiers.append("2 "+full_name)
+                            multiple_soldiers.append("  "+full_name)
                             print(n__, "BBB(count >1)=", platoon+": " + section + ": " + full_name)
                             continue
                         elif count == 0:
                             print(n__, "DDD (count == 1 w LN count=0)=", platoon+": " + section + ": " + full_name)
-                            multiple_soldiers.append("2 "+full_name)
+                            multiple_soldiers.append("  "+full_name)
                             continue
                     if soldier_obj.count() == 1:
                         try:

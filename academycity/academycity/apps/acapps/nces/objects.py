@@ -166,16 +166,16 @@ class NCESDataProcessing(BaseDataProcessing, BasePotentialAlgo, NCESAlgo):
                              values=["amount"], aggfunc="sum")
         dff_1 = dff.xs(1, level=1, axis=1, drop_level=False)
         # print(dff_1)
-        dff_2 = dff.xs(2, level=1, axis=1, drop_level=False)
+        dff_  = dff.xs(2, level=1, axis=1, drop_level=False)
         dff_1_ = dff_1.T.reset_index()
         number_of_years =dff_1_.shape[0]
-        A2 = support_dic[number_of_years]
+        A  = support_dic[number_of_years]
         # print(number_of_years, "A2", A2)
         dff_2_ = dff_2.T.reset_index()
         dff_1_.drop(["level_0", "measure_dim_id", "time_dim_id"], axis=1, inplace=True)
         dff_2_.drop(["level_0", "measure_dim_id", "time_dim_id"], axis=1, inplace=True)
         dff_1 = dff_1_.T
-        dff_2 = dff_2_.T
+        dff_  = dff_2_.T
         d_ = dff_1.div(dff_2, axis=1)
         d_["mean"] = d_.mean(axis=1)
         d_["min"] = d_.min(axis=1)

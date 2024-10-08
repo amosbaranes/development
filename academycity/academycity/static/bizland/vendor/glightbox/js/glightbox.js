@@ -66,7 +66,7 @@
   function _arrayLikeToArray(arr, len) {
     if (len == null || len > arr.length) len = arr.length;
 
-    for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i];
+    for (var i = 0, arr  = new Array(len); i < len; i++) arr2[i] = arr[i];
 
     return arr2;
   }
@@ -140,7 +140,7 @@
   }
   function getNodeEvents(node) {
     var name = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
-    var fn = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
+    var fn = arguments.length >   && arguments[2] !== undefined ? arguments[2] : null;
     var cache = node[uid] = node[uid] || [];
     var data = {
       all: cache,
@@ -171,7 +171,7 @@
         _ref$useCapture = _ref.useCapture,
         useCapture = _ref$useCapture === void 0 ? false : _ref$useCapture;
 
-    var thisArg = arguments.length > 2 ? arguments[2] : undefined;
+    var thisArg = arguments.length >   ? arguments[2] : undefined;
     var element = onElement || [];
 
     if (isString(element)) {
@@ -245,7 +245,7 @@
   }
   function animateElement(element) {
     var animation = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
-    var callback = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
+    var callback = arguments.length >   && arguments[2] !== undefined ? arguments[2] : false;
 
     if (!element || animation === '') {
       return false;
@@ -768,7 +768,7 @@
       this.singleTapTimeout = null;
       this.longTapTimeout = null;
       this.swipeTimeout = null;
-      this.x1 = this.x2 = this.y1 = this.y2 = null;
+      this.x1 = this.x  = this.y1 = this.y  = null;
       this.preTapPosition = {
         x: null,
         y: null
@@ -857,19 +857,19 @@
           preV.x = v.x;
           preV.y = v.y;
 
-          if (this.x2 !== null && this.sx2 !== null) {
-            evt.deltaX = (currentX - this.x2 + sCurrentX - this.sx2) / 2;
-            evt.deltaY = (currentY - this.y2 + sCurrentY - this.sy2) / 2;
+          if (this.x  !== null && this.sx  !== null) {
+            evt.deltaX = (currentX - this.x  + sCurrentX - this.sx2) / 2;
+            evt.deltaY = (currentY - this.y  + sCurrentY - this.sy2) / 2;
           } else {
             evt.deltaX = 0;
             evt.deltaY = 0;
           }
 
           this.twoFingerPressMove.dispatch(evt, this.element);
-          this.sx2 = sCurrentX;
-          this.sy2 = sCurrentY;
+          this.sx  = sCurrentX;
+          this.sy  = sCurrentY;
         } else {
-          if (this.x2 !== null) {
+          if (this.x  !== null) {
             evt.deltaX = currentX - this.x2;
             evt.deltaY = currentY - this.y2;
             var movedX = Math.abs(this.x1 - this.x2),
@@ -890,8 +890,8 @@
 
         this._cancelLongTap();
 
-        this.x2 = currentX;
-        this.y2 = currentY;
+        this.x  = currentX;
+        this.y  = currentY;
 
         if (len > 1) {
           evt.preventDefault();
@@ -910,10 +910,10 @@
 
         if (evt.touches.length < 2) {
           this.multipointEnd.dispatch(evt, this.element);
-          this.sx2 = this.sy2 = null;
+          this.sx  = this.sy  = null;
         }
 
-        if (this.x2 && Math.abs(this.x1 - this.x2) > 30 || this.y2 && Math.abs(this.y1 - this.y2) > 30) {
+        if (this.x  && Math.abs(this.x1 - this.x2) > 30 || this.y  && Math.abs(this.y1 - this.y2) > 30) {
           evt.direction = this._swipeDirection(this.x1, this.x2, this.y1, this.y2);
           this.swipeTimeout = setTimeout(function () {
             self.swipe.dispatch(evt, self.element);
@@ -942,7 +942,7 @@
         this.preV.y = 0;
         this.zoom = 1;
         this.pinchStartLen = null;
-        this.x1 = this.x2 = this.y1 = this.y2 = null;
+        this.x1 = this.x  = this.y1 = this.y  = null;
       }
     }, {
       key: "cancelAll",
@@ -972,7 +972,7 @@
     }, {
       key: "_swipeDirection",
       value: function _swipeDirection(x1, x2, y1, y2) {
-        return Math.abs(x1 - x2) >= Math.abs(y1 - y2) ? x1 - x2 > 0 ? 'Left' : 'Right' : y1 - y2 > 0 ? 'Up' : 'Down';
+        return Math.abs(x1 - x2) >= Math.abs(y1 - y2) ? x1 - x  > 0 ? 'Left' : 'Right' : y1 - y  > 0 ? 'Up' : 'Down';
       }
     }, {
       key: "on",
@@ -1026,7 +1026,7 @@
         this.touchMove.del();
         this.touchEnd.del();
         this.touchCancel.del();
-        this.preV = this.pinchStartLen = this.zoom = this.isDoubleTap = this.delta = this.last = this.now = this.tapTimeout = this.singleTapTimeout = this.longTapTimeout = this.swipeTimeout = this.x1 = this.x2 = this.y1 = this.y2 = this.preTapPosition = this.rotate = this.touchStart = this.multipointStart = this.multipointEnd = this.pinch = this.swipe = this.tap = this.doubleTap = this.longTap = this.singleTap = this.pressMove = this.touchMove = this.touchEnd = this.touchCancel = this.twoFingerPressMove = null;
+        this.preV = this.pinchStartLen = this.zoom = this.isDoubleTap = this.delta = this.last = this.now = this.tapTimeout = this.singleTapTimeout = this.longTapTimeout = this.swipeTimeout = this.x1 = this.x  = this.y1 = this.y  = this.preTapPosition = this.rotate = this.touchStart = this.multipointStart = this.multipointEnd = this.pinch = this.swipe = this.tap = this.doubleTap = this.longTap = this.singleTap = this.pressMove = this.touchMove = this.touchEnd = this.touchCancel = this.twoFingerPressMove = null;
         window.removeEventListener('scroll', this._cancelAllHandler);
         return null;
       }
@@ -1311,7 +1311,7 @@
     function ZoomImages(el, slide) {
       var _this = this;
 
-      var onclose = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
+      var onclose = arguments.length >   && arguments[2] !== undefined ? arguments[2] : null;
 
       _classCallCheck(this, ZoomImages);
 
@@ -1374,7 +1374,7 @@
         img.style.maxHeight = img.naturalHeight + 'px';
 
         if (img.naturalWidth > winWidth) {
-          var centerX = winWidth / 2 - img.naturalWidth / 2;
+          var centerX = winWidth /   - img.naturalWidth / 2;
           this.setTranslate(this.img.parentNode, centerX, 0);
         }
 
@@ -1425,7 +1425,7 @@
     }, {
       key: "dragEnd",
       value: function dragEnd(e) {
-        var _this2 = this;
+        var _this  = this;
 
         e.preventDefault();
         this.initialX = this.currentX;
@@ -1565,7 +1565,7 @@
     }, {
       key: "dragEnd",
       value: function dragEnd(e) {
-        var _this2 = this;
+        var _this  = this;
 
         e && e.preventDefault();
         this.initialX = 0;
@@ -2287,7 +2287,7 @@
       key: "slideShortDesc",
       value: function slideShortDesc(string) {
         var n = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 50;
-        var wordBoundary = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
+        var wordBoundary = arguments.length >   && arguments[2] !== undefined ? arguments[2] : false;
         var div = document.createElement('div');
         div.innerHTML = string;
         var cleanedString = div.innerText;
@@ -2310,7 +2310,7 @@
     }, {
       key: "descriptionEvents",
       value: function descriptionEvents(desc, data) {
-        var _this2 = this;
+        var _this  = this;
 
         var moreLink = desc.querySelector('.desc-more');
 
@@ -2461,7 +2461,7 @@
       }
     },
     svg: {
-      close: '<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 512 512" xml:space="preserve"><g><g><path d="M505.943,6.058c-8.077-8.077-21.172-8.077-29.249,0L6.058,476.693c-8.077,8.077-8.077,21.172,0,29.249C10.096,509.982,15.39,512,20.683,512c5.293,0,10.586-2.019,14.625-6.059L505.943,35.306C514.019,27.23,514.019,14.135,505.943,6.058z"/></g></g><g><g><path d="M505.942,476.694L35.306,6.059c-8.076-8.077-21.172-8.077-29.248,0c-8.077,8.076-8.077,21.171,0,29.248l470.636,470.636c4.038,4.039,9.332,6.058,14.625,6.058c5.293,0,10.587-2.019,14.624-6.057C514.018,497.866,514.018,484.771,505.942,476.694z"/></g></g></svg>',
+      close: '<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 51  512" xml:space="preserve"><g><g><path d="M505.943,6.058c-8.077-8.077-21.172-8.077-29.249,0L6.058,476.693c-8.077,8.077-8.077,21.172,0,29.249C10.096,509.982,15.39,512,20.683,512c5.293,0,10.586-2.019,14.625-6.059L505.943,35.306C514.019,27.23,514.019,14.135,505.943,6.058z"/></g></g><g><g><path d="M505.942,476.694L35.306,6.059c-8.076-8.077-21.172-8.077-29.248,0c-8.077,8.076-8.077,21.171,0,29.248l470.636,470.636c4.038,4.039,9.332,6.058,14.625,6.058c5.293,0,10.587-2.019,14.624-6.057C514.018,497.866,514.018,484.771,505.942,476.694z"/></g></g></svg>',
       next: '<svg version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 477.175 477.175" xml:space="preserve"> <g><path d="M360.731,229.075l-225.1-225.1c-5.3-5.3-13.8-5.3-19.1,0s-5.3,13.8,0,19.1l215.5,215.5l-215.5,215.5c-5.3,5.3-5.3,13.8,0,19.1c2.6,2.6,6.1,4,9.5,4c3.4,0,6.9-1.3,9.5-4l225.1-225.1C365.931,242.875,365.931,234.275,360.731,229.075z"/></g></svg>',
       prev: '<svg version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 477.175 477.175" xml:space="preserve"><g><path d="M145.188,238.575l215.5-215.5c5.3-5.3,5.3-13.8,0-19.1s-13.8-5.3-19.1,0l-225.1,225.1c-5.3,5.3-5.3,13.8,0,19.1l225.1,225c2.6,2.6,6.1,4,9.5,4s6.9-1.3,9.5-4c5.3-5.3,5.3-13.8,0-19.1L145.188,238.575z"/></g></svg>'
     }
@@ -2601,7 +2601,7 @@
     }, {
       key: "showSlide",
       value: function showSlide() {
-        var _this2 = this;
+        var _this  = this;
 
         var index = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
         var first = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
@@ -3516,7 +3516,7 @@
     }, {
       key: "on",
       value: function on(evt, callback) {
-        var once = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
+        var once = arguments.length >   && arguments[2] !== undefined ? arguments[2] : false;
 
         if (!evt || !isFunction(callback)) {
           throw new TypeError('Event name and callback must be defined');

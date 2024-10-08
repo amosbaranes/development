@@ -1,4 +1,5 @@
 from ..basic_ml_objects import BaseDataProcessing, BasePotentialAlgo
+from ....core.templatetags.core_tags import model_name
 
 from ....core.utils import log_debug, clear_log_debug
 
@@ -19,7 +20,6 @@ from datetime import datetime, timedelta
 import numpy as np
 import tensorflow as tf
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense, LSTM, Dropout
 
 
 import torch
@@ -32,6 +32,14 @@ import yfinance as yf
 import pandas as pd
 from tensorflow.keras import layers
 
+import pickle
+from sklearn.preprocessing import MinMaxScaler
+from sklearn.model_selection import train_test_split
+
+import matplotlib.pyplot as plt
+import json
+from sklearn.metrics import mean_absolute_percentage_error
+from abc import ABC, abstractmethod
 
 # # Define a simple LSTM model for trading
 # def create_rrl_model(input_shape):
@@ -55,7 +63,7 @@ from tensorflow.keras import layers
 #         return self.get_observation()
 #
 #     def step(self, action):
-#         # Actions: 0 = left, 1 = right, 2 = up, 3 = down
+#         # Actions: 0 = left, 1 = right,   = up, 3 = down
 #         if action == 0:  # left
 #             self.agent_pos[1] = max(0, self.agent_pos[1] - 1)
 #         elif action == 1:  # right
@@ -87,7 +95,7 @@ from tensorflow.keras import layers
 #         super(RNN_DQN, self).__init__()
 #         self.fc1 = nn.Linear(input_dim, hidden_dim)
 #         self.lstm = nn.LSTM(hidden_dim, hidden_dim, batch_first=True)
-#         self.fc2 = nn.Linear(hidden_dim, output_dim)
+#         self.fc  = nn.Linear(hidden_dim, output_dim)
 #         self.hidden_dim = hidden_dim
 #
 #     def forward(self, x, hidden):
@@ -209,7 +217,6 @@ class TradingEnv(gym.Env):
 
     def step(self, action):
         prev_net_worth = self.net_worth
-
         if action == 1:  # Buy
             if self.balance > self.current_price:
                 self.shares_held += 1
@@ -236,129 +243,239 @@ class TradingEnv(gym.Env):
         print(f'Profit: {profit}')
 
 
-# LSTM model for stock trading
-def create_lstm_model(input_shape, output_shape, dropout_rate=0.2):
-    model = tf.keras.Sequential([
-        layers.LSTM(64, return_sequences=True, input_shape=input_shape),
-        layers.Dropout(dropout_rate),
-        layers.LSTM(64),
-        layers.Dropout(dropout_rate),
-        layers.Dense(32, activation='relu'),
-        layers.Dense(output_shape, activation='softmax')
-    ])
+class AbstractModels(ABC):
+    def __init__(self):
+        # print("Abstract")
+        pass
 
-    model.compile(optimizer='adam', loss='mse')
-    return model
+    @abstractmethod
+    def normalize_data(self, **data):
+        pass
+
+
+class Models(AbstractModels):
+    def __init__(self, dic):
+        super(Models, self).__init__()
+        # print("Models 99-99-100", dic)
+        self.files_path = dic["files_path"]
+
+    # Function to pull stock data using yfinance
+    @staticmethod
+    def get_stock_data(ticker, start, end):
+        stock_data = yf.download(ticker, start=start, end=end)
+        return stock_data[['Open', 'High', 'Low', 'Close', 'Volume']]
+
+    def normalize_data(self, **data):
+        print("nd")
+
+    def normalize_data_min_max(self, **data):
+            df_ = data["df"]
+            # print(df_, df_.shape)
+            scaler_file = data["scaler_file"]
+            is_get = data["is_get"]
+            if is_get:
+                with open(scaler_file, 'rb') as f:
+                    scaler = pickle.load(f)
+                df = scaler.transform(df_)
+            else:
+                scaler = MinMaxScaler(feature_range=(0, 1))
+                df = scaler.fit_transform(df_)
+                with open(scaler_file, 'wb') as f:
+                    pickle.dump(scaler, f)
+
+            # print("Z\n", df, df.shape)
+            df = pd.DataFrame(df, index=df_.index, columns=df_.columns)
+            # print("Za\n", df, df.shape)
+            d_ = {"scaler": scaler, "df":df}
+            return d_
+
+    @staticmethod
+    def create_sequences(**kwargs):
+        data = kwargs["data"]
+        timesteps = kwargs["timesteps"]
+        X = []
+        y = []
+        for i in range(len(data) - timesteps):
+            X.append(data[i:i + timesteps])
+            y.append(data.iloc[i + timesteps]['Close'])  # Predict the 'Close' price
+        return np.array(X), np.array(y)
+
+    def get_model(self, dic):
+        print("get_model\n", dic)
+        model_name_ = dic["model_name"]
+        model_index = dic["model_index"]
+        ticker = dic["ticker"]
+        model_file = self.files_path + "/" + ticker + "_" + model_name_ + "_" + str(model_index) + ".pkl"
+        # print(model_file)
+        # ---------------
+        s_model = "Models." + model_name_ + "(dic)"
+        # print(s_model)
+
+        if model_file and os.path.exists(model_file):
+            print(f"Loading model from {model_file}")
+            model = load_model(model_file)
+        else:
+            print("Creating new model")
+            # self.model = create_lstm_model((1, 6), env.action_space.n)
+            s = "Models." + model_name_ + "(dic)"
+            print(s)
+            model = eval(s_model)
+        target_model = eval(s_model)
+        target_model.set_weights(model.get_weights())
+        # -----------------
+        return model, target_model, model_file
+
+    @staticmethod
+    def create_lstm_model(dic):
+        input_shape = dic["input_shape"]
+        output_shape = dic["output_shape"]
+        try:
+            dropout_rate = dic["dropout_rate"]
+        except Exception as ex:
+            dropout_rate = 0.2
+        try:
+            numer_nodes = dic["numer_nodes"]
+        except Exception as ex:
+            numer_nodes = 64
+
+        model = Sequential([
+            layers.LSTM(numer_nodes, return_sequences=True, input_shape=input_shape),
+            layers.Dropout(dropout_rate),
+            layers.LSTM(numer_nodes, return_sequences=True, input_shape=input_shape),
+            layers.Dropout(dropout_rate),
+            #
+            layers.Dense(32, activation='relu'),
+            # layers.Dense(output_shape, activation='softmax')
+            layers.Dense(output_shape, activation='linear')
+        ])
+        model.compile(optimizer='adam', loss='mse')
+        return model
+
+    @staticmethod
+    def create_cnn_lstm_model(dic):
+        input_shape = dic["input_shape"]
+        output_shape = dic["output_shape"]
+        try:
+            dropout_rate = dic["dropout_rate"]
+        except Exception as ex:
+            dropout_rate = 0.2
+        try:
+            numer_nodes = dic["numer_nodes"]
+        except Exception as ex:
+            numer_nodes = 64
+
+        model = Sequential([
+            # CNN layers for feature extraction
+            layers.Conv1D(filters=64, kernel_size=3, activation='relu', input_shape=input_shape),
+            layers.MaxPooling1D(pool_size=2),
+            layers.Conv1D(filters=128, kernel_size=3, activation='relu'),
+            layers.MaxPooling1D(pool_size=2),
+            layers.Dropout(dropout_rate),
+
+            # LSTM layers for sequential data processing
+            layers.LSTM(64, return_sequences=True),
+            layers.LSTM(64),
+            layers.Dropout(dropout_rate),
+
+            # Dense layers for decision making
+            layers.Dense(32, activation='relu'),
+            layers.Dropout(dropout_rate),
+
+            # Output layer
+            layers.Dense(output_shape, activation='softmax')
+        ])
+
+        model.compile(optimizer='adam', loss='mse')
+        return model
 
 
 # Trading Agent with LSTM
 class TradingAgent:
-    def __init__(self, env, model_path=None,
-                 target_update_freq=1,
-                 epsilon=0.1, min_epsilon=0.01, epsilon_decay = 0.99):
-        self.env = env
-        if model_path and os.path.exists(model_path):
-            print(f"Loading model from {model_path}")
-            self.model = load_model(model_path)
-        else:
-            print("Creating new model")
-            self.model = create_lstm_model((1, 6), env.action_space.n)
-
-
-        self.target_model = create_lstm_model((1, 6), env.action_space.n)
-        self.update_target_model()
-
-        self.target_update_freq = target_update_freq
+    def __init__(self, dic):
+        self.model = dic["model"]
+        self.target_model = dic["target_model"]
+        self.env = dic["env"]
+        self.target_update_freq = dic["target_update_freq"]
+        self.alpha = dic["alpha"]
+        self.gama = dic["gama"]
+        self.target_update_freq = dic["target_update_freq"]
         # Notice: epsilon is not use due to the choose function
-        self.epsilon = epsilon
-        self.min_epsilon = min_epsilon
-        self.epsilon_decay = epsilon_decay
-        # --------------------------------
-
-    def update_target_model(self):
-        self.target_model.set_weights(self.model.get_weights())
 
     def choose_action(self, state):
         state = state.reshape((1, 1, 6))  # Reshape for LSTM input
-        probabilities = self.model.predict(state, verbose=0)[0]
+        target_f = self.model.predict(state, verbose=0)
+        # print(target_f)
+        # probabilities = tf.nn.softmax(target_f[0][0])
+        t_ = target_f[0][0]
+        # print("t_  ", t_)
+        s = sum(t_)
+        if s == 0:
+            t_ = [1/len(t_) for _ in t_]
+        else:
+            mi = min(t_)
+            ma = max(t_)
+            t_ = [(_-mi)/(ma-mi) for _ in t_]
+        s = sum(t_)
+        probabilities = [x / s for x in t_]
+        # print("BBB", t_, probabilities)
+
+        # print("AAA\n", probabilities, "\n", self.env.action_space.n)
         action = np.random.choice(self.env.action_space.n, p=probabilities)
-        return action
+        # print("action=", action)
+        return action, target_f
 
-    def train(self, episodes, file_name):
-
+    def train(self, episodes, file_name, scaler):
         for episode in range(episodes):
             print("E", episode)
-
             state, _= self.env.reset()
-            # print("F", state)
+            print("F", state)
             done = False
             total_reward = 0
-
             while not done:
-                action = self.choose_action(state)
+                action, target_f = self.choose_action(state)
+                # print("A", target_f)
                 next_state, reward, done, _ = self.env.step(action)
-                # print("h", next_state)
-                # print("kk", self.model.predict(next_state.reshape((1, 1, 6))))
-                target = reward + (0.99 * np.max(self.model.predict(next_state.reshape((1, 1, 6)), verbose=0)))
-                # print("i", target)
-                target_f = self.model.predict(state.reshape((1, 1, 6)), verbose=0)
-                target_f[0][action] = target
+                pr_ = self.target_model.predict(next_state.reshape((1, 1, 6)), verbose=0)
+                target = reward + (self.gama * np.max(pr_))
+                target_f[0][0][action] += self.alpha*(target-target_f[0][0][action])
+                # print("B1 target=", target_f[0], target)
                 self.model.fit(state.reshape((1, 1, 6)), target_f, epochs=1, verbose=0)
-
                 state = next_state
                 total_reward += reward
 
             if (episode + 1) % self.target_update_freq == 0:
-                self.update_target_model()
+                self.target_model.set_weights(self.model.get_weights())
 
-            if (episode + 1) % 2 == 0:
-                self.save(file_name)
-
-            # Notice Decay epsilon has no effect. see choose function
-            if self.epsilon > self.min_epsilon:
-                self.epsilon *= self.epsilon_decay
-                self.epsilon = max(self.min_epsilon, self.epsilon)
+            if (episode + 1) % 2  == 0:
+                # print("save", episode, file_name)
+                self.model.save(file_name)
 
             print(f'Episode {episode + 1}/{episodes}, Total Reward: {total_reward}')
-            print(next_state)
-
+            # print(next_state)
 
     def test(self):
-
         state, _= self.env.reset()
+        print(state)
+        # print(self.model.get_weights())
         done = False
         total_reward = 0
         while not done:
-            action = self.choose_action(state)
+            action, target_f = self.choose_action(state)
             next_state, reward, done, _ = self.env.step(action)
             # print("h", next_state)
             # print("kk", self.model.predict(next_state.reshape((1, 1, 6))))
-            target = reward + (0.99 * np.max(self.model.predict(next_state.reshape((1, 1, 6)), verbose=0)))
 
+            pr_ = self.target_model.predict(next_state.reshape((1, 1, 6)), verbose=0)
+            target = reward + (self.gama * np.max(pr_))
             # print("i", target)
-            target_f = self.model.predict(state.reshape((1, 1, 6)), verbose=0)
-            target_f[0][action] = target
-
+            target_f[0][0][action] += self.alpha*(target - target_f[0][0][action])
             self.model.fit(state.reshape((1, 1, 6)), target_f, epochs=1, verbose=0)
-
             state = next_state
             total_reward += reward
         print("Total Reward", str(total_reward))
+        return total_reward
 
-    def load(self, name):
-        self.model = load_model(name)
-
-    def save(self, file_name):
-        self.model.save(file_name)
-
-# Function to pull stock data using yfinance
-def get_stock_data(ticker, start_date, end_date):
-    stock_data = yf.download(ticker, start=start_date, end=end_date)
-    return stock_data[['Open', 'High', 'Low', 'Close', 'Volume']]
-
-# --------------------------------------------
-
-
+# ---------------------------------------------------------------
 class RRLAlgo(object):
     def __init__(self, dic):
         # print("90567-8-000 Algo\n", dic, '\n', '-'*50)
@@ -370,65 +487,190 @@ class RRLAlgo(object):
         # print("90004-020 Algo\n", dic, '\n', '-'*50)
         self.app = dic["app"]
 
-
-# https://chatgpt.com/c/66e0947c-6714-800c-9ef3-3aa45026ed5a
+# https://chatgpt.com/c/66e0947c-6714-800c-9probabilitiesef3-3aa45026ed5a
 class RRLDataProcessing(BaseDataProcessing, BasePotentialAlgo, RRLAlgo):
     def __init__(self, dic):
-        # print("90567-010 DataProcessing\n", dic, '\n', '-' * 50)
+        print("90567-010 RRLDataProcessing\n", dic, '\n', '-' * 50)
         super().__init__(dic)
         # print("9005 DataProcessing ", self.app)
-
-        self.PATH = os.path.join(self.TO_OTHER, "rrl")
-        os.makedirs(self.PATH, exist_ok=True)
-        print(f'{self.PATH}')
-
-        self.days_of_investment = 30
+        self.MODELS_PATH = os.path.join(self.TO_OTHER, "models")
+        os.makedirs(self.MODELS_PATH, exist_ok=True)
+        # print(self.MODELS_PATH)
+        models_dic = {"files_path": self.MODELS_PATH}
+        self.models = Models(models_dic)
+        # --------
+        self.days_of_investment = int(dic["days_of_investment"])
         self.now_date = datetime.now()
-        # -----
+        training_years = int(dic["training_years"])
         self.end_date_1 = self.now_date - timedelta(days=self.days_of_investment-1)
-
         self.end_date = self.now_date - timedelta(days=self.days_of_investment)
-        self.start_date = self.end_date - timedelta(days=365)
-
-        print("self.now_date", self.now_date, "self.end_date", self.end_date,
-              "self.end_date_1", self.end_date_1, "self.start_date", self.start_date)
+        self.start_date = self.end_date - timedelta(days=training_years*365)
+        # -----
+        print("self.now_date", self.now_date, "\nself.end_date", self.end_date,
+              "\nself.end_date_1", self.end_date_1, "\nself.start_date", self.start_date)
+        # -----
+        self.SCALER_PATH = os.path.join(self.TO_OTHER, "scalers")
+        os.makedirs(self.SCALER_PATH, exist_ok=True)
+        self.scaler = None
 
     def train(self, dic):
-        print("90199-RLL: \n", "="*50, "\n", dic, "\n", "="*50)
-
+        print("\n90199-RLL train: \n", "="*50, "\n", dic, "\n", "="*50)
         # Load stock data using Yahoo Finance
-        ticker = 'AAPL'  # Example: Apple stock
-        df = yf.download(ticker, self.start_date, self.end_date)
+        ticker = dic["ticker"]
+        episodes = int(dic["episodes"])
+        # ---------------
+        print("train: ", ticker, self.start_date, self.end_date)
+        df_ = Models.get_stock_data(ticker, self.start_date, self.end_date)
+        scaler_file = self.SCALER_PATH + "/" + ticker + ".pkl"
+        dic_ = self.models.normalize_data_min_max(df = df_, scaler_file = scaler_file, is_get=False)
+        scaler = dic_["scaler"]
+        df = dic_["df"]
+        print("A\n", df)
 
-        # print(df)
+        return
+
+        # ---------------
         env = TradingEnv(df)
-        file_name_ = f'{self.PATH}pickles/{"rrl.pkl"}'
-        # print(file_name_)
-        agent = TradingAgent(env, model_path=file_name_, target_update_freq=1)
-        agent.train(episodes=100, file_name=file_name_)
-
+        # -----------
+        model_index = 1
+        model_dic = {"model_name": "create_lstm_model",
+                     "ticker": ticker,
+                     "model_index": model_index,
+                     "input_shape": (1, 6),
+                     "output_shape": env.action_space.n,
+                     "dropout_rate": 0.2,
+                     "number_nodes": 64}
+        model, target_model, model_file = self.models.get_model(model_dic)
+        # -------------------------
+        dic = {"env":env, "model": model, "target_model": target_model,
+               "gama": 0.99, "alpha": 0.2,"target_update_freq": 1}
+        agent = TradingAgent(dic)
+        agent.train(episodes=episodes, file_name=model_file, scaler=scaler)
+        # ---------------
         print("Training is done")
-
         result = {"status": "ok"}
         return result
 
     def test(self, dic):
         print("90222-RLL: \n", "="*50, "\n", dic, "\n", "="*50)
+        ticker = dic["ticker"]
 
-        ticker = 'AAPL'  # Example: Apple stock
-        df = yf.download(ticker, self.end_date_1, self.now_date)
-        print(df)
+        # ---------------
+        print("test: ", ticker, self.now_date, self.end_date_1)
+        df_ = Models.get_stock_data(ticker, self.end_date_1, self.now_date)
+        scaler_file = self.SCALER_PATH + "/" + ticker + ".pkl"
+        dic_ = self.models.normalize_data_min_max(df = df_, scaler_file = scaler_file, is_get=True)
+        scaler = dic_["scaler"]
+        df = dic_["df"]
+        print("B\n", df)
 
         env = TradingEnv(df)
-        # Create and train the trading agent
-        file_name_ = f'{self.PATH}/pickles/{"rrl.pkl"}'
-        agent = TradingAgent(env, model_path=file_name_, target_update_freq=1)
-
-        agent.test()
-
-        result = {"status": "ok"}
+        # -----------
+        model_index = 1
+        model_dic = {"model_name": "create_lstm_model",
+                     "ticker": ticker,
+                     "model_index": model_index,
+                     "input_shape": (1, 6),
+                     "output_shape": env.action_space.n,
+                     "dropout_rate": 0.2,
+                     "number_nodes": 64}
+        model, target_model, model_file = self.models.get_model(model_dic)
+        # -------------------------
+        dic = {"env":env, "model": model, "target_model": target_model,
+               "gama": 0.99, "alpha": 0.2,"target_update_freq": 1}
+        agent = TradingAgent(dic)
+        total_reward = agent.test()
+        # ----------
+        result = {"status": "ok", "total_reward": total_reward}
         return result
 
+    def temp_fun(self, dic):
+        print("90333-RLL: \n", "="*50, "\n", dic, "\n", "="*50)
+        ticker = dic["ticker"]
+        data = Models.get_stock_data(ticker, self.start_date, self.end_date)
+        data = (data - data.mean()) / data.std()
+        print(data)
+        # Create sequences
+        timesteps = 10
+        X, y = Models.create_sequences(data=data, timesteps=timesteps)
+        X = X.reshape((X.shape[0], timesteps, X.shape[2], 1))  # (samples, time steps, features, channels)
+        print(X, y, X.shape, y.shape)
+
+        # Split the dataset into training and testing sets
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+        input_shape = (timesteps, X.shape[2], 1)
+        model = Sequential()
+        model.add(layers.Conv2D(filters=64, kernel_size=(3, 2), activation='relu', input_shape=input_shape))
+
+        model.add(layers.MaxPooling2D(pool_size=(2, 1)))
+        model.add(layers.Conv2D(filters=64, kernel_size=(3, 3), activation='relu'))
+        model.add(layers.MaxPooling2D(pool_size=(2, 1)))
+
+        # Reshape for LSTM layer
+        model.add(layers.Reshape((model.output_shape[1], model.output_shape[2] * model.output_shape[3])))
+
+        # LSTM layer for sequence learning
+        model.add(layers.LSTM(50, activation='tanh', return_sequences=False))
+
+        # Dense layer for output
+        model.add(layers.Dense(50, activation='relu'))
+        model.add(layers.Dense(1))  # Output
+
+        # Compile the model
+        model.compile(optimizer='adam', loss='mean_squared_error')
+
+        # Train the model
+        history = model.fit(X_train, y_train, epochs=20, batch_size=32, validation_split=0.2)
+
+        train_loss = history.history['loss']
+        val_loss = history.history['val_loss']
+        # --------------------------------------
+        # Evaluate the model on the test set
+        test_loss = model.evaluate(X_test, y_test)
+        print(f'Test Loss: {test_loss}')
+        y_pred = model.predict(X_test)
+
+        mape = mean_absolute_percentage_error(y_test, y_pred)
+        print(f'Mean Absolute Percentage Error (MAPE): {mape * 100:.2f}%')
+
+        result = {"y_test": json.dumps(y_test.tolist()),
+                  "y_pred": json.dumps(y_pred.squeeze().tolist()),
+                  "test_loss": test_loss,
+                  "mape": mape,
+                  "train_loss":train_loss, "val_loss":val_loss}
+
+        # print(result)
+
+        # try:
+        #     # Plot training history
+        #     plt.plot(history.history['loss'], label='Training Loss')
+        #     plt.plot(history.history['val_loss'], label='Validation Loss')
+        #     plt.title('Training and Validation Loss')
+        #     plt.xlabel('Epochs')
+        #     plt.ylabel('Loss')
+        #     plt.legend()
+        #     plt.show()
+        #     plt.pause(0.1)
+        #
+        #     # Predictions
+        #     y_pred = model.predict(X_test)
+        #
+        #     # Plot the predictions vs actual values
+        #     plt.figure(figsize=(12, 6))
+        #     plt.plot(y_test, label='Actual', color='blue')
+        #     plt.plot(y_pred, label='Predicted', color='red', alpha=0.7)
+        #     plt.title('Predictions vs Actual Values')
+        #     plt.xlabel('Sample Index')
+        #     plt.ylabel('Sine Value')
+        #     plt.legend()
+        #     plt.show()
+        #     plt.pause(0.1)
+        # except Exception as ex:
+        #     print("Error", ex)
+        # ----------
+        result = {"status": "ok", "result": result}
+        return result
 
     def train2(self, dic):
         print("90199-RLL: \n", "="*50, "\n", dic, "\n", "="*50)
@@ -463,7 +705,6 @@ class RRLDataProcessing(BaseDataProcessing, BasePotentialAlgo, RRLAlgo):
 
         result = {"status": "ok"}
         return result
-
 
     def train1(self, dic):
         print("90155-dqn: \n", "="*50, "\n", dic, "\n", "="*50)

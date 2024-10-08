@@ -307,7 +307,7 @@ if (!self.__WB_pmw) { self.__WB_pmw = function(obj) { this.__WB_source = obj; re
 				setTimeout(function()
 				{
 					if(preloader_active.is('.av-preloader-active')) 
-					{ 
+					{
 						hide(); 
 						$.avia_utilities.log('Hide Preloader (Fallback)');
 					}
@@ -729,7 +729,7 @@ if (!self.__WB_pmw) { self.__WB_pmw = function(obj) { this.__WB_source = obj; re
 						
 						if(tempPadding > 0 && shrink) 
 						{
-							tempPadding = (tempPadding / 2 ) + non_shrinking + non_shrinking2;
+							tempPadding = (tempPadding /   ) + non_shrinking + non_shrinking2;
 						}
 						else
 						{
@@ -1054,12 +1054,12 @@ if (!self.__WB_pmw) { self.__WB_pmw = function(obj) { this.__WB_source = obj; re
 		calc_dimensions = function()
 		{	
 			var css			= "",
-				w_12 		= Math.round( the_main.width() );
+				w_1  		= Math.round( the_main.width() );
 				
-			css += " #header .three.units{width:"	+ ( w_12 * 0.25)+	"px;}";
-			css += " #header .six.units{width:"		+ ( w_12 * 0.50)+	"px;}";
-			css += " #header .nine.units{width:"	+ ( w_12 * 0.75)+	"px;}";
-			css += " #header .twelve.units{width:"	+( w_12 )		+	"px;}";
+			css += " #header .three.units{width:"	+ ( w_1  * 0.25)+	"px;}";
+			css += " #header .six.units{width:"		+ ( w_1  * 0.50)+	"px;}";
+			css += " #header .nine.units{width:"	+ ( w_1  * 0.75)+	"px;}";
+			css += " #header .twelve.units{width:"	+( w_1  )		+	"px;}";
 			
 			//ie8 needs different insert method
 			try{
@@ -1899,15 +1899,15 @@ if (!self.__WB_pmw) { self.__WB_pmw = function(obj) { this.__WB_source = obj; re
             if((newTip.is(':animated:visible') && e.type == 'click') || element.is('.'+this.options['class']) || element.parents('.'+this.options['class']).length != 0) return;
 
 
-            var animate1 = {}, animate2	= {}, pos1 = "", pos2 = "";
+            var animate1 = {}, animate2	= {}, pos1 = "", pos  = "";
 			
-			if(position == "top" || position == "bottom")
+			if(position == "top" ||  position == "bottom")
 			{
 				switch(align)
 				{
-					case "left": pos2 = offset.left; break;
-					case "right": pos2 = offset.left + element.outerWidth() - newTip.outerWidth();  break;
-					default: pos2 = (offset.left + (element.outerWidth() / 2)) - (newTip.outerWidth() / 2); break;
+					case "left": pos  = offset.left; break;
+					case "right": pos  = offset.left + element.outerWidth() - newTip.outerWidth();  break;
+					default: pos  = (offset.left + (element.outerWidth() / 2)) - (newTip.outerWidth() / 2); break;
 				}	
 			}
 			else
@@ -1925,22 +1925,22 @@ if (!self.__WB_pmw) { self.__WB_pmw = function(obj) { this.__WB_source = obj; re
 				case "top": 
 				pos1 = offset.top - newTip.outerHeight();
                 animate1 = {top: pos1 - 10, left: pos2};
-                animate2 = {top: pos1};
+                animate  = {top: pos1};
 				break;
 				case "bottom": 	
 				pos1 = offset.top + element.outerHeight();
 				animate1 = {top: pos1 + 10, left: pos2};
-				animate2 = {top: pos1};
+				animate  = {top: pos1};
 				break;
 				case "left": 
-				pos2 = offset.left  - newTip.outerWidth();
-				animate1 = {top: pos1, left: pos2 -10};
-            	animate2 = {left: pos2};	
+				pos  = offset.left  - newTip.outerWidth();
+				animate1 = {top: pos1, left: pos  -10};
+            	animate  = {left: pos2};
 				break;
 				case "right": 	
-				pos2 = offset.left + element.outerWidth();
-				animate1 = {top: pos1, left: pos2 + 10};
-            	animate2 = {left: pos2};	
+				pos  = offset.left + element.outerWidth();
+				animate1 = {top: pos1, left: pos  + 10};
+            	animate  = {left: pos2};
 				break;
 			}
 			

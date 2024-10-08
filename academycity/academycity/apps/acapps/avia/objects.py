@@ -175,7 +175,7 @@ class AviaDataProcessing(BaseDataProcessing, BasePotentialAlgo):
             try:
                 city, is_created = model_city_dim.objects.get_or_create(country_dim=c, city_name=row["city"])
             except Exception as ex:
-                print("90987-2 Error measure:"+str(ex))
+                print("90987-  Error measure:"+str(ex))
 
             for k in df.columns[3:]:
                 # print(k, row[k])
@@ -241,7 +241,7 @@ class AviaDataProcessing(BaseDataProcessing, BasePotentialAlgo):
                 s_city = self.check_city(s_city)
                 city, is_created = model_city_dim.objects.get_or_create(country_dim=c, city_name=s_city)
             except Exception as ex:
-                print("90987-2 Error measure:"+str(ex))
+                print("90987-  Error measure:"+str(ex))
 
             for k in df.columns[2:]:
                 # print(k, row[k])

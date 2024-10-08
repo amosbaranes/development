@@ -542,7 +542,7 @@ msgid ""
 msgstr ""
 "Merci d'ouvrir une session avec l'un de vos comptes sociaux. Vous pouvez "
 "aussi <a href=\"%(signup_url)s\">ouvrir un compte</a> %(site_name)s puis "
-"vous connecter ci-dessous :"
+"vous connecter ci-dessous  :"
 
 #: allauth/templates/account/login.html:38
 #, python-format

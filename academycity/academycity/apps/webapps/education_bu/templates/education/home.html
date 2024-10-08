@@ -1,0 +1,360 @@
+{% extends "base_education.html" %}
+{% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
+
+{% block title %}
+<title>{{ company_obj.company_name }}</title>
+{% endblock %}
+
+
+{% block nav_bar %}
+      {% include 'education/includes/main_page.html' %}
+{% endblock %}
+
+
+{% block main_page %}
+<div class="hero-intro" style="background-image: url('{{ institution_obj.institution_image.url }}');">
+            <div class="hero-intro__inner">
+                <div class="hero-intro__body">
+                    <div class="hero-intro__content">
+                        <h1 class="hero-intro__title">
+                            <strong style="color:{{institution_obj.institute_name_color}}">{{institution_obj.institution_name}}</strong>
+                        </h1>
+                        <p style="color:{{institution_obj.introduction_phrase_color}}">{{institution_obj.welcome_phrase}}</p>
+                    </div>
+                    <div class="hero-intro__search">
+                        <p class="hero-intro__search-title">{{institution_obj.searching_title}}</p>
+                        <div class="richie-react richie-react--root-search-suggest-field" data-props='{"courseSearchPageUrl": "/en/courses/"}'>
+                            <div role="combobox" aria-haspopup="listbox" aria-owns="react-autowhatever-1" aria-expanded="false" class="react-autosuggest__container">
+                            <div class="search-input">
+                                <input id="search_input" type="text" autocomplete="off" aria-autocomplete="list" aria-controls="react-autowhatever-1"
+                                       class="react-autosuggest__input" placeholder="Search for courses" value="">
+                                <button class="search-input__btn"
+                                    onclick="search(event)">
+                                    <svg aria-hidden="true" role="img" class="icon search-input__btn__icon"><use xlink:href="#icon-magnifying-glass"></use></svg>
+                                    <span class="offscreen">Search</span>
+                                </button>
+                            </div>
+                                <div id="react-autowhatever-1" role="listbox" class="react-autosuggest__suggestions-container">
+                                </div>
+                            </div>
+                        </div>
+                        <a class="hero-intro__cta" href="/en/courses/">{{institution_obj.search_explore_catalog_title}}</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+{% endblock%}
+
+
+{% block body_content %}
+ <!--program section-->
+ <section class="section ">
+        <div class="section__row">
+            <h  class="section__title">{{ institution_obj.programs_title }}</h2>
+            <div id="program" class="section__items">
+                {% for program in programs %}
+                <a href="{% url 'education:program_description' program.id %}" target="_blank" class="program-glimpse program-glimpse--link">
+                    <div class="program-glimpse__media">
+                        <img src="{{program.image.url}}"
+                             srcset="{{program.image.url}}" sizes="300px" alt="">
+                    </div>
+                    <div class="program-glimpse__content">
+                        <div class="program-glimpse__wrapper">
+                            <p class="program-glimpse__title">{{program.name}}</p>
+                            <p>{{program.short_description}}</p>
+                        </div>
+                    </div>
+                </a>
+                {% endfor %}
+                <div id="more_program_btn" class="button-caesura">
+<!--                   <a href="/en/programs/">More {{ institution_obj.programs_title }}</a>-->
+                </div>
+            </div>
+        </div>
+    </section>
+<!--end of program section-->
+
+<!--course section-->
+<section class="section ">
+        <div class="section__row">
+            <h  class="section__title">{{ institution_obj.courses_title }}</h2>
+            <div id="courses" class="section__items">
+        {% for course in courses %}
+          <a class="course-glimpse" href="{% url 'education:course_description' course.id %}" target="_blank">
+            <div class="course-glimpse__media">
+                <img src="{{course.image.url}}"
+                     srcset="{{course.image.url}} 300w"
+                     sizes="300px" alt="">
+            </div>
+            <div class="course-glimpse__content">
+                <div class="course-glimpse__wrapper">
+                    <p class="course-glimpse__title">{{course.name}}</p>
+                    <div class="icon" role="img" aria-hidden="true">
+                     <!--<svg><use href="#icon-pin"></use></svg>-->
+                        <span>{{course.short_description}}</span>
+                    </div>
+                </div>
+                <div class="course-glimpse-footer">
+                    <div class="course-glimpse-footer__date">
+                        <svg role="img" aria-hidden="true" class="icon">
+                            <use href="#icon-calendar"></use>
+                        </svg>
+                        {{course.date}}
+                    </div>
+                </div>
+            </div>
+            </a>
+          {% endfor %}
+            <div id="more_courses_btn" class="button-caesura">
+                <!-- <a href="/en/courses/">More {{ institution_obj.courses_title }}</a>-->
+            </div>
+        </div>
+        </div>
+    </section>
+<!--end of course section-->
+
+<!--service section-->
+<section class="section ">
+        <div class="section__row">
+            <h  class="section__title">{{ institution_obj.services_title }}</h2>
+            <div id="service" class="section__items">
+                {% for service in services %}
+                <a href="{% url 'education:service_description' service.id %}" target="_blank" class="program-glimpse program-glimpse--link">
+                    <div class="program-glimpse__media">
+                        <img src="{{service.image.url}}"
+                             srcset="{{service.image.url}} 300w" sizes="300px" alt="">
+                    </div>
+                    <div class="program-glimpse__content">
+                        <div class="program-glimpse__wrapper">
+                            <p class="program-glimpse__title">{{service.name}}</p>
+                            <p>{{service.short_description}}</p>
+                        </div>
+                    </div>
+                </a>
+                {% endfor %}
+                <div id="more_service_btn" class="button-caesura">
+<!--                    <a href="/en/Services/">More Services</a>-->
+                </div>
+            </div>
+        </div>
+    </section>
+<!--end of service section-->
+
+<!--news section   -->
+<section class="section ">
+        <div class="section__row">
+            <h  class="section__title">{{ institution_obj.new_title }}</h2>
+            <div id="news" class="section__items">
+            {% for new in news %}
+            <a {% if new.is_links %} href="{% url 'education:news_description' new.id %}" target="_blank" {% endif %} class="blogpost-glimpse">
+                <p class="blogpost-glimpse__date">{{new.news_date}}</p>
+                <div class="blogpost-glimpse__media">
+                    <img src="{{new.image.url}}"
+                         srcset="{{new.image.url}} 300w" sizes="300px" alt="">
+                </div>
+                <div class="blogpost-glimpse__content">
+                    <div class="blogpost-glimpse__wrapper">
+                        <div class="blogpost-glimpse__categories">
+                            <span class="category-tag">
+                                <span class="category-tag__title">{{new.news_title}}</span>
+                            </span>
+                            <span class="category-tag__title">{{new.news_type_description}}</span>
+                        </div>
+                        <p class="blogpost-glimpse__title">{{new.news_type}}</p>
+                        <p class="blogpost-glimpse__excerpt">{{new.news_description}}</p>
+                    </div>
+                </div>
+            </a>
+            {% endfor %}
+                <div id="more_news_btn" class="button-caesura">
+            <!--<a href="{% url 'education:news_detail' %}">More {{ institution_obj.new_title }}</a>-->
+                </div>
+            </div>
+        </div>
+    </section>
+<!--end of news section-->
+
+<!-- subject section-->
+<!--    <section class="section ">
+        <div class="section__row">
+            <h  class="section__title">{{ institution_obj.subjects_title }}</h2>
+            <div id="subject" class="section__items">
+           {% for subject in subjects %}
+            <a class="category-glimpse" href="{% url 'education:subject_description' subject.id %}" target="_blank">
+                <div class="category-glimpse__body">
+                    <div class="category-glimpse__logo">
+                        <img src="{{subject.image.url}}"
+                             srcset="{{subject.image.url}} 200w" sizes="200px" alt="">
+                    </div>
+                    <h3 class="category-glimpse__title">{{subject.name}}</h3>
+                </div>
+            </a>
+            {% endfor %}
+                <div id="more_subject_btn" class="button-caesura">
+            <a href="/en/categories/">More {{ institution_obj.subjects_title }}</a>
+                </div>
+            </div>
+        </div>
+    </section>
+-->
+<!-- end of subject section -->
+
+<!--persons section-->
+<section class="section ">
+    <div class="section__row">
+            <h  class="section__title">{{ institution_obj.person_title }}</h2>
+            <div id="person-" class="section__items">
+                {% for person in persons %}
+                <div class="person-glimpse">
+                    <a class="person-glimpse__media" href="/p/{{person.cv_type}}/{{person.cv_number}}" target="_blank" tabindex="-1" aria-hidden="true">
+                        <img src="{{person.image.url}}" srcset="{{person.image.url}} 200w">
+                    </a>
+                    <div class="person-glimpse__content">
+                        <div class="person-glimpse__wrapper">
+                            <a href="/p/{{person.cv_type}}/{{person.cv_number}}" target="_blank">
+                                <h3 class="person-glimpse__title">{{person.persons_name}}</h3>
+                            </a>
+                            <div class="person-glimpse__categories">
+                                <div class="category-tag-list category-tag-list--primary">
+                                    <a class="category-tag" href="/p/{{person.cv_type}}/{{person.cv_number}}" target="_blank">
+                                        <span class="category-tag__title">{{person.persons_duty}}</span>
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="person-glimpse__bio">{{person.persons_description}}</div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+                <div id="more_person_btn" class="button-caesura">
+                    <!--<a href="/en/persons/">More {{ institution_obj.person_title }}</a>-->
+                </div>
+            </div>
+        </div>
+</section>
+<!-- end of persons section-->
+
+
+<!--persons phrase section-->
+<section class="section ">
+        <div class="section__row">
+            <h  class="section__title">{{ institution_obj.person_phrase_title }}</h2>
+            <div class="section__items">
+                {% for phrase in phrases %}
+                <div class="glimpse-quote">
+                    <div class="glimpse-quote__wrapper">
+                        <div class="glimpse-quote__media">
+                            <img src="{{ phrase.image.url }}"
+                                 srcset="{{ phrase.image.url }} 200w"  sizes="200px" alt="">
+                        </div>
+                    </div>
+                    <div class="glimpse-quote__content">
+                        <svg role="img"><use href="#icon-quote" /></svg>
+                        <p>{{phrase.persons_phrase}}</p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+<!--end of persons phrase section-->
+
+<!--other section -->
+<section class="section ">
+        <div class="section__row">
+             <h  class="section__title">{{ institution_obj.other_title }}</h2>
+            <div class="section__items">
+                 {% for topic in topics %}
+             <div class="glimpse-card_square">
+                 <a {% if topic.is_links %} href="{% url 'education:additional_topics' topic.id %}" target="_blank" {% endif %}>
+                    <div class="glimpse-card_square__media">
+                        <img src="{{topic.image.url }}"
+                         srcset="{{topic.image.url }} 300w, 600w" sizes="300px" alt="">
+                    </div>
+                    <div class="glimpse-card_square__wrapper">
+                        <h3 class="glimpse-card_square__title">{{topic.topic_name}}</h3>
+                    </div>
+                 </a>
+
+             </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+<!--end of other section-->
+{% endblock %}
+
+
+{% block js %}
+<script>
+    window.__richie_frontend_context__ = JSON.parse('{"context": {"csrftoken": "768IGrqrYPenfUujq5oHR37cYmw17KZbHxhX2QTj8PkvXmQxe6TVz7SlIgIpdIVw", "environment": "production", "release": "demo-1.9.0", "sentry_dsn": "https://b0ed6c7e47554152918928057029315c@sentry.io/1198559", "authentication": {"endpoint": "https://edx.richie.education", "backend": "openedx-hawthorn"}, "lms_backends": [{"endpoint": "https://edx.richie.education", "backend": "openedx-hawthorn", "course_regexp": "^.*/courses/(?<course_id>.*)/course/?$"}]}}');
+</script>
+<script src="{% static 'js/index.dc82dfe6f1fc.js' %}"></script>
+<script>
+
+    function search(event)
+    {
+
+      elm = document.getElementById("search_input")
+      alert(elm.value)
+
+      var value = elm.value
+        try{
+            $.post('{% url "search:search" %}',
+              {
+                q: value
+              },
+              function(data){
+                  alert(data['status'])
+              });
+          } catch(er){alert(er)}
+    }
+
+
+
+    function initializeHamburgerMenu() {
+        // Get all topbar burger elements
+        const topbarBurgers = Array.prototype.slice.call(
+            document.querySelectorAll(".topbar__hamburger"), 0
+        );
+
+        // Check if there are any navbar burgers
+        if (topbarBurgers.length > 0) {
+            // Add a click event on each of them
+            topbarBurgers.forEach(function(el) {
+                el.addEventListener("click", function() {
+                    // Get the target from the "data-target" attribute
+                    const target = document.getElementById(el.dataset.target);
+                    // Toggle the "is-active" class on both the burger and container
+                    el.classList.toggle("is-active");
+                    target.classList.toggle("is-open");
+                });
+            });
+        }
+    }
+
+    function initializeAccordions() {
+        // Implement accordion item behaviors
+        const $accordionItems = Array.prototype.slice.call(
+            document.querySelectorAll('[data-accordion-button]'), 0
+        );
+
+        if ($accordionItems.length > 0) {
+            $accordionItems.forEach(function(itemObject, itemIndex) {
+                itemObject.addEventListener('click', function () {
+                    itemObject.closest('li').toggleAttribute('data-accordion-active');
+                    itemObject.toggleAttribute('data-accordion-open');
+                });
+            });
+        }
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+        initializeAccordions();
+        initializeHamburgerMenu();
+    });
+</script>
+{% endblock %}
+
+{% block domready %}
+{% endblock %}

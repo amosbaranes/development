@@ -454,7 +454,7 @@ class AviDataProcessing(BaseDataProcessing, BasePotentialAlgo):
                 exec(s)
                 m.save()
         except Exception as ex:
-            print("9022-2 Error measure:"+str(ex))
+            print("9022-  Error measure:"+str(ex))
         with open(file_path) as f:
             soup = BeautifulSoup(f.read())
             tbody_tag = soup.find('tbody')
@@ -1080,15 +1080,15 @@ class AviDataProcessing(BaseDataProcessing, BasePotentialAlgo):
             # print(r)
             s = r["data"]
             ns1 = 0
-            ns2 = 0
+            ns  = 0
             for h in range(2, 200):
                 # print("h=", h)
                 if h > 2:
-                    ns1 = ns2 + 1
+                    ns1 = ns  + 1
                 else:
                     ns1 = ns2
-                ns2 = s.find(" "+str(h)+" ")
-                if ns2 < 0:
+                ns  = s.find(" "+str(h)+" ")
+                if ns  < 0:
                     break
                 # print("ns1, ns2=", ns1, ns2)
                 si = s[ns1:ns2]

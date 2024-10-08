@@ -156,7 +156,7 @@ class RIDataProcessing(BaseDataProcessing, BasePotentialAlgo, RIAlgo):
     def __init__(self, dic):
         # print("90567-888-1 RIDataProcessing\n", dic, '\n', '-' * 50)
         super().__init__(dic)
-        # print("9057-888-2 RIDataProcessing ", self.app)
+        # print("9057-888-  RIDataProcessing ", self.app)
 
     def reinforcement(self, dic):
         print("90555-500: \n", "="*50, "\n", dic, "\n", "="*50)

@@ -475,7 +475,7 @@ h1, h2, h3, h4, h5, h6 {
   color: #106eea;
 }
 
-#hero h2 {
+#hero h  {
   color: #555555;
   margin: 5px 0 30px 0;
   font-size: 24px;
@@ -540,7 +540,7 @@ h1, h2, h3, h4, h5, h6 {
     font-size: 28px;
     line-height: 36px;
   }
-  #hero h2 {
+  #hero h  {
     font-size: 18px;
     line-height: 24px;
     margin-bottom: 30px;
@@ -573,7 +573,7 @@ section {
   padding-bottom: 30px;
 }
 
-.section-title h2 {
+.section-title h  {
   font-size: 13px;
   letter-spacing: 1px;
   font-weight: 700;
@@ -616,14 +616,14 @@ section {
   min-height: 40px;
 }
 
-.breadcrumbs h2 {
+.breadcrumbs h  {
   font-size: 24px;
   font-weight: 300;
   margin: 0;
 }
 
 @media (max-width: 992px) {
-  .breadcrumbs h2 {
+  .breadcrumbs h  {
     margin: 0 0 10px 0;
   }
 }
@@ -1199,7 +1199,7 @@ section {
   padding-top: 30px;
 }
 
-.portfolio-details .portfolio-description h2 {
+.portfolio-details .portfolio-description h  {
   font-size: 26px;
   font-weight: 700;
   margin-bottom: 20px;

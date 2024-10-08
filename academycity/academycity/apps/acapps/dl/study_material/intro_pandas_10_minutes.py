@@ -64,7 +64,7 @@ print('-st'*10)
 df = pd.DataFrame(np.random.randn(6, 4), index=dates, columns=list("ABCD"))
 print(df)
 
-df2 = pd.DataFrame(
+df  = pd.DataFrame(
     {
         "A": 1.0,
         "B": pd.Timestamp("20130102"),
@@ -107,7 +107,7 @@ df.iat[1, 1]
 # Boolean indexing
 df[df["A"] > 0]
 df[df > 0]
-df2 = df.copy()
+df  = df.copy()
 df2["E"] = ["one", "one", "two", "three", "four", "three"]
 df2
 df2[df2["E"].isin(["two", "four"])]
@@ -119,8 +119,8 @@ df.at[dates[0], "A"] = 0
 df.iat[0, 1] = 0
 df.loc[:, "D"] = np.array([5] * len(df))
 df
-df2 = df.copy()
-df2[df2 > 0] = -df2
+df  = df.copy()
+df2[df  > 0] = -df2
 df2
 # Missing data
 

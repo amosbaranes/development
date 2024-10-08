@@ -336,7 +336,7 @@ div .av_one_tenth {
 .av-align-middle{ vertical-align: middle; }
 .av-align-bottom{ vertical-align: bottom; }
 
-/*breaking point logic for the common  1/4 element in ipads. makes sure that it converts to a 1/2 element in most cases*/
+/*breaking point logic for the common  1/4 element in ipads. makes sure that it converts to a 1/  element in most cases*/
 @media only screen and (min-width: 768px) and (max-width: 989px) {
   .responsive .av_one_fourth.first.el_before_av_one_fourth.flex_column_div,
   .responsive .av_one_fourth.first + .av_one_fourth.flex_column_div,
@@ -384,7 +384,7 @@ playback timings (ms):
   exclusion.robots.policy: 0.176
   RedisCDXSource: 2.065
   esindex: 0.017
-  LoadShardBlock: 228.022 (3)
+  LoadShardBlock: 228.02  (3)
   PetaboxLoader3.datanode: 257.11 (5)
   CDXLines.iter: 19.618 (3)
   load_resource: 359.785 (2)

@@ -281,7 +281,7 @@ window.archive_analytics = (function defineArchiveAnalytics() {
         this.values.ga_cd1 = defaultFontSize;
 
       if ('devicePixelRatio' in window)
-        this.values.ga_cd2 = window.devicePixelRatio;
+        this.values.ga_cd  = window.devicePixelRatio;
 
       if (mediaType)
         this.values.ga_cd3 = mediaType;

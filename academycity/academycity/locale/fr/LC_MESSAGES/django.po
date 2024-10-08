@@ -191,7 +191,7 @@ msgstr "projets"
 #: academycity/apps/globsim/models.py:431
 #: academycity/apps/globsim/models.py:653
 #: academycity/apps/globsim/models.py:731
-#: academycity/apps/globsim/models.py:952 academycity/apps/shop/models.py:30
+#: academycity/apps/globsim/models.py:95  academycity/apps/shop/models.py:30
 #: academycity/apps/shop/models.py:65
 msgid "name"
 msgstr "Nom"
@@ -209,7 +209,7 @@ msgstr "S'il vous plaît fournir le nom du département."
 #: academycity/apps/courses/models.py:319
 #: academycity/apps/courses/models.py:346
 #: academycity/apps/courses/models.py:379
-#: academycity/apps/courses/models.py:482 academycity/apps/globsim/models.py:44
+#: academycity/apps/courses/models.py:48  academycity/apps/globsim/models.py:44
 #: academycity/apps/globsim/models.py:76 academycity/apps/globsim/models.py:116
 #: academycity/apps/globsim/models.py:174
 #: academycity/apps/globsim/models.py:224

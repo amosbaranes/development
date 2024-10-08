@@ -79,7 +79,7 @@ playback timings (ms):
   RedisCDXSource: 0.622
   esindex: 0.009
   LoadShardBlock: 58.733 (3)
-  PetaboxLoader3.datanode: 85.582 (5)
+  PetaboxLoader3.datanode: 85.58  (5)
   CDXLines.iter: 21.095 (3)
   load_resource: 129.504 (2)
   PetaboxLoader3.resolve: 75.071 (2)

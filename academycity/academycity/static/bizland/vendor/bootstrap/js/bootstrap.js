@@ -1025,10 +1025,10 @@
   const EVENT_POINTERDOWN = `pointerdown${EVENT_KEY$9}`;
   const EVENT_POINTERUP = `pointerup${EVENT_KEY$9}`;
   const EVENT_DRAG_START = `dragstart${EVENT_KEY$9}`;
-  const EVENT_LOAD_DATA_API$2 = `load${EVENT_KEY$9}${DATA_API_KEY$6}`;
+  const EVENT_LOAD_DATA_API$  = `load${EVENT_KEY$9}${DATA_API_KEY$6}`;
   const EVENT_CLICK_DATA_API$5 = `click${EVENT_KEY$9}${DATA_API_KEY$6}`;
   const CLASS_NAME_CAROUSEL = 'carousel';
-  const CLASS_NAME_ACTIVE$2 = 'active';
+  const CLASS_NAME_ACTIVE$  = 'active';
   const CLASS_NAME_SLIDE = 'slide';
   const CLASS_NAME_END = 'carousel-item-end';
   const CLASS_NAME_START = 'carousel-item-start';
@@ -1935,7 +1935,7 @@
   const DATA_KEY$7 = 'bs.dropdown';
   const EVENT_KEY$7 = `.${DATA_KEY$7}`;
   const DATA_API_KEY$4 = '.data-api';
-  const ESCAPE_KEY$2 = 'Escape';
+  const ESCAPE_KEY$  = 'Escape';
   const SPACE_KEY = 'Space';
   const TAB_KEY = 'Tab';
   const ARROW_UP_KEY = 'ArrowUp';
@@ -2344,7 +2344,7 @@
       //  - If key is other than escape
       //    - If key is not up or down => not a dropdown command
       //    - If trigger inside the menu => not a dropdown command
-      if (/input|textarea/i.test(event.target.tagName) ? event.key === SPACE_KEY || event.key !== ESCAPE_KEY$2 && (event.key !== ARROW_DOWN_KEY && event.key !== ARROW_UP_KEY || event.target.closest(SELECTOR_MENU)) : !REGEXP_KEYDOWN.test(event.key)) {
+      if (/input|textarea/i.test(event.target.tagName) ? event.key === SPACE_KEY || event.key !== ESCAPE_KEY$  && (event.key !== ARROW_DOWN_KEY && event.key !== ARROW_UP_KEY || event.target.closest(SELECTOR_MENU)) : !REGEXP_KEYDOWN.test(event.key)) {
         return;
       }
 
@@ -2457,11 +2457,11 @@
   const EVENT_SHOWN$3 = `shown${EVENT_KEY$6}`;
   const EVENT_FOCUSIN$1 = `focusin${EVENT_KEY$6}`;
   const EVENT_RESIZE = `resize${EVENT_KEY$6}`;
-  const EVENT_CLICK_DISMISS$2 = `click.dismiss${EVENT_KEY$6}`;
+  const EVENT_CLICK_DISMISS$  = `click.dismiss${EVENT_KEY$6}`;
   const EVENT_KEYDOWN_DISMISS = `keydown.dismiss${EVENT_KEY$6}`;
   const EVENT_MOUSEUP_DISMISS = `mouseup.dismiss${EVENT_KEY$6}`;
   const EVENT_MOUSEDOWN_DISMISS = `mousedown.dismiss${EVENT_KEY$6}`;
-  const EVENT_CLICK_DATA_API$2 = `click${EVENT_KEY$6}${DATA_API_KEY$3}`;
+  const EVENT_CLICK_DATA_API$  = `click${EVENT_KEY$6}${DATA_API_KEY$3}`;
   const CLASS_NAME_SCROLLBAR_MEASURER = 'modal-scrollbar-measure';
   const CLASS_NAME_BACKDROP = 'modal-backdrop';
   const CLASS_NAME_OPEN = 'modal-open';
@@ -2470,8 +2470,8 @@
   const CLASS_NAME_STATIC = 'modal-static';
   const SELECTOR_DIALOG = '.modal-dialog';
   const SELECTOR_MODAL_BODY = '.modal-body';
-  const SELECTOR_DATA_TOGGLE$2 = '[data-bs-toggle="modal"]';
-  const SELECTOR_DATA_DISMISS$2 = '[data-bs-dismiss="modal"]';
+  const SELECTOR_DATA_TOGGLE$  = '[data-bs-toggle="modal"]';
+  const SELECTOR_DATA_DISMISS$  = '[data-bs-dismiss="modal"]';
   const SELECTOR_FIXED_CONTENT$1 = '.fixed-top, .fixed-bottom, .is-fixed, .sticky-top';
   const SELECTOR_STICKY_CONTENT$1 = '.sticky-top';
   /**
@@ -2595,7 +2595,7 @@
       [window, this._element, this._dialog].forEach(htmlElement => EventHandler.off(htmlElement, EVENT_KEY$6));
       super.dispose();
       /**
-       * `document` has 2 events `EVENT_FOCUSIN` and `EVENT_CLICK_DATA_API`
+       * `document` has   events `EVENT_FOCUSIN` and `EVENT_CLICK_DATA_API`
        * Do not move `document` in `htmlElements` array
        * It will remove `EVENT_CLICK_DATA_API` event that should remain
        */
@@ -3068,7 +3068,7 @@
   const NAME$5 = 'offcanvas';
   const DATA_KEY$5 = 'bs.offcanvas';
   const EVENT_KEY$5 = `.${DATA_KEY$5}`;
-  const DATA_API_KEY$2 = '.data-api';
+  const DATA_API_KEY$  = '.data-api';
   const EVENT_LOAD_DATA_API$1 = `load${EVENT_KEY$5}${DATA_API_KEY$2}`;
   const ESCAPE_KEY = 'Escape';
   const Default$4 = {
@@ -3086,10 +3086,10 @@
   const CLASS_NAME_TOGGLING = 'offcanvas-toggling';
   const OPEN_SELECTOR = '.offcanvas.show';
   const ACTIVE_SELECTOR = `${OPEN_SELECTOR}, .${CLASS_NAME_TOGGLING}`;
-  const EVENT_SHOW$2 = `show${EVENT_KEY$5}`;
-  const EVENT_SHOWN$2 = `shown${EVENT_KEY$5}`;
-  const EVENT_HIDE$2 = `hide${EVENT_KEY$5}`;
-  const EVENT_HIDDEN$2 = `hidden${EVENT_KEY$5}`;
+  const EVENT_SHOW$  = `show${EVENT_KEY$5}`;
+  const EVENT_SHOWN$  = `shown${EVENT_KEY$5}`;
+  const EVENT_HIDE$  = `hide${EVENT_KEY$5}`;
+  const EVENT_HIDDEN$  = `hidden${EVENT_KEY$5}`;
   const EVENT_FOCUSIN = `focusin${EVENT_KEY$5}`;
   const EVENT_CLICK_DATA_API$1 = `click${EVENT_KEY$5}${DATA_API_KEY$2}`;
   const EVENT_CLICK_DISMISS$1 = `click.dismiss${EVENT_KEY$5}`;
@@ -3493,7 +3493,7 @@
     allowList: DefaultAllowlist,
     popperConfig: null
   };
-  const Event$2 = {
+  const Event$  = {
     HIDE: `hide${EVENT_KEY$4}`,
     HIDDEN: `hidden${EVENT_KEY$4}`,
     SHOW: `show${EVENT_KEY$4}`,
@@ -4189,14 +4189,14 @@
   const EVENT_KEY$3 = `.${DATA_KEY$3}`;
   const CLASS_PREFIX = 'bs-popover';
   const BSCLS_PREFIX_REGEX = new RegExp(`(^|\\s)${CLASS_PREFIX}\\S+`, 'g');
-  const Default$2 = { ...Tooltip.Default,
+  const Default$  = { ...Tooltip.Default,
     placement: 'right',
     offset: [0, 8],
     trigger: 'click',
     content: '',
     template: '<div class="popover" role="tooltip">' + '<div class="popover-arrow"></div>' + '<h3 class="popover-header"></h3>' + '<div class="popover-body"></div>' + '</div>'
   };
-  const DefaultType$2 = { ...Tooltip.DefaultType,
+  const DefaultType$  = { ...Tooltip.DefaultType,
     content: '(string|element|function)'
   };
   const Event$1 = {
@@ -4211,8 +4211,8 @@
     MOUSEENTER: `mouseenter${EVENT_KEY$3}`,
     MOUSELEAVE: `mouseleave${EVENT_KEY$3}`
   };
-  const CLASS_NAME_FADE$2 = 'fade';
-  const CLASS_NAME_SHOW$2 = 'show';
+  const CLASS_NAME_FADE$  = 'fade';
+  const CLASS_NAME_SHOW$  = 'show';
   const SELECTOR_TITLE = '.popover-header';
   const SELECTOR_CONTENT = '.popover-body';
   /**
@@ -4334,9 +4334,9 @@
    * ------------------------------------------------------------------------
    */
 
-  const NAME$2 = 'scrollspy';
-  const DATA_KEY$2 = 'bs.scrollspy';
-  const EVENT_KEY$2 = `.${DATA_KEY$2}`;
+  const NAME$  = 'scrollspy';
+  const DATA_KEY$  = 'bs.scrollspy';
+  const EVENT_KEY$  = `.${DATA_KEY$2}`;
   const DATA_API_KEY$1 = '.data-api';
   const Default$1 = {
     offset: 10,

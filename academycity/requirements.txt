@@ -214,7 +214,7 @@ YURL==1.0.0
 zipp==3.3.2
 zope.interface==5.1.2
 tensorflow==2.13.1
-seaborn
+seaborn==0.13.0
 simfin
 quandl
 alpha_vantage

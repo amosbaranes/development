@@ -15,7 +15,7 @@
         <tbody>
                 {% for p in products.all %}
                     <tr>
-                        <td class="left">{{ p.sitc2 }}</td><td id="{{source}}_{{p.id}}" class="left" style="cursor:pointer">{{ p.description }}</td>
+                        <td class="left">{{ p.sitc  }}</td><td id="{{source}}_{{p.id}}" class="left" style="cursor:pointer">{{ p.description }}</td>
                         {% for y in p.product_year_data.all %}
                           {% if y.source == source %}
                            <td id="{{source}}_{{p.id}}_{{y.year}}" class="right">{{ y.value }}</td>

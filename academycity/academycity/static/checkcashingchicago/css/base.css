@@ -74,16 +74,16 @@
 	h1, h2, h3, h4, h5, h6 {
 	/*	font-family: "Georgia", "Times New Roman", Helvetica, Arial, sans-serif; */
 		font-weight: 600; }
-	#top h1 a, #top h2 a, #top h3 a, #top h4 a, #top h5 a, #top h6 a { font-weight: inherit; text-decoration: none; color: inherit; }
-	#top h1 strong, #top h2 strong, #top h3 strong, #top h4 strong, #top h5 strong, #top h6 strong { color: inherit; }
+	#top h1 a, #top h  a, #top h3 a, #top h4 a, #top h5 a, #top h6 a { font-weight: inherit; text-decoration: none; color: inherit; }
+	#top h1 strong, #top h  strong, #top h3 strong, #top h4 strong, #top h5 strong, #top h6 strong { color: inherit; }
 	h1 { font-size: 34px; line-height: 1.1em; margin-bottom: 14px;}
-	h2 { font-size: 28px; line-height: 1.1em; margin-bottom: 10px; }
+	h  { font-size: 28px; line-height: 1.1em; margin-bottom: 10px; }
 	h3 { font-size: 20px; line-height: 1.1em; margin-bottom: 8px; } /*28*/
 	h4 { font-size: 18px; line-height: 1.1em; margin-bottom: 4px; } /*21*/
 	h5 { font-size: 16px; line-height: 1.1em; }						/*17*/
 	h6 { font-size: 14px; line-height: 1.1em; }
 
-	 .flex_column h1 a:hover, .flex_column h2 a:hover, .flex_column h3 a:hover, .flex_column h4 a:hover, .flex_column h5 a:hover, .flex_column h6 a:hover{text-decoration: underline;}
+	 .flex_column h1 a:hover, .flex_column h  a:hover, .flex_column h3 a:hover, .flex_column h4 a:hover, .flex_column h5 a:hover, .flex_column h6 a:hover{text-decoration: underline;}
 
 	p + h1, p + h2, p + h3, p + h4, p + h5, p + h6{
 	margin-top:1.5em;
@@ -484,7 +484,7 @@ padding: 3px;
 
 /*
      FILE ARCHIVED ON 11:01:40 Aug 17, 2018 AND RETRIEVED FROM THE
-     INTERNET ARCHIVE ON 11:45:32 Jun 17, 2021.
+     INTERNET ARCHIVE ON 11:45:3  Jun 17, 2021.
      JAVASCRIPT APPENDED BY WAYBACK MACHINE, COPYRIGHT INTERNET ARCHIVE.
 
      ALL OTHER CONTENT MAY ALSO BE PROTECTED BY COPYRIGHT (17 U.S.C.

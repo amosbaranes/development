@@ -1,0 +1,90 @@
+{% extends "base_education.html" %}
+{% load static i18n cms_tags menu_tags sekizai_tags thumbnail %}
+
+{% block title %}
+<title>{{ course.name }}</title>
+{% endblock%}
+
+
+{% block add_css %}
+
+<style>
+.subheader__container{color:#090909;background:linear-gradient(
+{{course.name_gradient_deg}}deg,
+{{course.gradient_color_1}} 3%,
+{{course.gradient_color_2}} 98%);padding:1rem .5rem}
+
+.subheader__container svg:not(.no-scheme-fill){fill:#090909}
+.subheader__container h1,.subheader__container .h1{color:{{course.name_text_color}}}
+.subheader__container h2,.subheader__container .h2{color:{{course.name_text_color}}}
+.subheader__container h3,.subheader__container .h3{color:{{course.name_text_color}}}
+.subheader__container h4,.subheader__container .h4{color:{{course.name_text_color}}}
+.subheader__container h5,.subheader__container .h5{color:{{course.name_text_color}}}
+.subheader__container h6,.subheader__container .h6{color:{{course.name_text_color}}}
+</style>
+
+{% endblock add_css %}
+
+{% block nav_bar %}
+          {% include 'education/includes/description_page.html' %}
+{% endblock %}
+
+{% block main_page %}
+<div class="subheader" style="margin-bottom:40px;">
+    <div class="subheader__container">
+        <h1 class="subheader__title">{% render_model course "name" %}</h1>
+    </div>
+</div>
+{% endblock %}
+
+{% block body_content %}
+
+<style>
+.button_courses {
+  border: none;
+  color: white;
+  padding:15px 30px 10px 30px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 2px;
+  cursor: pointer;
+  background-color: {{course.gradient_color_1}};
+  height: 50px;
+  border-radius: 25px;
+}
+</style>
+
+<!--<h3 style="color:blue">{% render_model course "name" %}</h3><br>-->
+
+{% render_placeholder course.description %}
+<br/>
+<br/>
+<br/>
+
+<div class="container">
+
+<a href="{{ course.course.get_schedule_url }}" class="button_courses">
+                    {% trans "Register for the course." %}
+
+</a>
+
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+</div>
+
+
+{% endblock %}
+
+
+{% block domready %}
+var elm = document.getElementById
+{% endblock %}
+
+

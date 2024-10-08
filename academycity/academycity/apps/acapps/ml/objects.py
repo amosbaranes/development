@@ -17,8 +17,13 @@ from .objects_extensions.rl_dnq import DNQDataProcessing
 from .objects_extensions.reinforcement import RIDataProcessing
 from .objects_extensions.reinforcement_finance import RIFDataProcessing
 from .objects_extensions.rrl import RRLDataProcessing
+from .objects_extensions.rrl_cnn_sltm import RRLCNNSLTMDataProcessing
 from .objects_extensions.nn import NNDataProcessing
 from .objects_extensions.mlnn import MLNNDataProcessing
+from .objects_extensions.predict_shocks import SPDataProcessing
+from .objects_extensions.simple_nn import SNNDataProcessing
+#
+from .objects_extensions.test import Test
 #
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Activation, Dropout, SimpleRNN

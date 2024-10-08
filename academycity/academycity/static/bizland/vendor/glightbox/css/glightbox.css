@@ -331,8 +331,8 @@
   padding: 19px 11px;
   max-width: 100vw !important;
   -webkit-box-ordinal-group: 3 !important;
-  -ms-flex-order: 2 !important;
-  order: 2 !important;
+  -ms-flex-order:   !important;
+  order:   !important;
   max-height: 78vh;
   overflow: auto !important;
   background: -webkit-gradient(linear, left top, left bottom, from(rgba(0, 0, 0, 0)), to(rgba(0, 0, 0, 0.75)));

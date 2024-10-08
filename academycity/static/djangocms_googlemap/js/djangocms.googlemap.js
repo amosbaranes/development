@@ -43,7 +43,7 @@
             this.bounds = new google.maps.LatLngBounds();
             this.settings = {
                 zoom: parseInt(getAttr(container, 'zoom')),
-                styles: JSON.parse(getAttr(container, 'style') || false),
+                styles: JSON.parse(getAttr(container, 'style') ||  false),
                 zoomControl: getAttr(container, 'zoom-control'),
                 streetViewControl: getAttr(container, 'street-view-control'),
                 rotateControl: getAttr(container, 'rotate-control'),
@@ -109,7 +109,7 @@
                     }
                 }, this);
 
-                list.forEach(function (marker) {
+                list.forEach(function (marker)  {
                     this.addMarker(marker);
                 }, this);
             },
@@ -277,7 +277,7 @@
              * @private
              * @param {Object} marker google map marker node
              */
-            _addEditing: function _addEditing(marker) {
+            _addEditing: function _addEditing(marker)  {
                 // attach double-click to edit for markers
                 if (window.CMS && window.CMS.Modal) {
                     google.maps.event.addListener(marker, 'dblclick', function (e) {

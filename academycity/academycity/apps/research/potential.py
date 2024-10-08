@@ -87,33 +87,22 @@ class ProcessData:
         to_save = []
         try:
             df = pd.read_excel(srr, sheet_name="Data", index_col=0, header=1)
-            print("1\n", df, "-"*50)
             df = df.apply(pd.to_numeric, errors='coerce')
-            print("2\n", df, "-"*50)
             df_min_max = df.iloc[0:2, :]
-            print('df_min_max')
-            print(df_min_max)
-            print('df_min_max')
             df = df.iloc[2:, :]
-
             df_index = df.index
             df_columns = df.columns
             first_row = df_min_max.iloc[[0]].values[0]
             second_row = df_min_max.iloc[[1]].values[0]
             diff_row = second_row - first_row
             df_n1 = df.apply(lambda row: (row - first_row)/diff_row, axis=1)
-            print("10\n", first_row, "\n11\n", second_row, "\n12\n", diff_row, "\n13\n", df_n1)
-
             to_save.append((df_n1.copy(), srr, 'Normalized1'))
-            self.save_to_excel(df_n1, srr, 'Normalized1')
+            # self.save_to_excel(df_n1, srr, 'Normalized1')
             df_n2 = df_n1.copy()
             df_n2[df_n2 < 0] = 0
             df_n2[df_n2 > 1] = 1
             to_save.append((df_n2.copy(), srr, 'Normalized2'))
             # self.save_to_excel(df_n2, srr, 'Normalized2')
-            # print('to_save')
-            # print(to_save)
-            # print('to_save')
             if len(df_n1.columns) < 2:
                 df_n1["max"] = df_n1[df_n1.columns[0]]  # df_n1["Birth Rate"]
                 df_n2["max"] = df_n2[df_n2.columns[0]]  # df_n2["Birth Rate"]
@@ -151,6 +140,7 @@ class ProcessData:
                         d = np.concatenate((d, (a_1[:, n + 1:n + 2] - a_1[:, 0:1])), axis=1)
             to_save.append((pd.DataFrame(a_1).copy(), srr, 'Left'))
             # self.save_to_excel(pd.DataFrame(a_1), srr, 'Left')
+
             a_1 = self.clean_rows(a=a_1, d=d, srr=srr, n=0, to_save=to_save)
             a_1 = -1 * a_1
             a_1.sort(axis=1)
@@ -193,7 +183,7 @@ class ProcessData:
             # a_1.columns = df_columns
             to_save.append((a_1.copy(), srr, 'twenty2_n1'))
             # self.save_to_excel(a_1, srr, 'twenty2_n1')
-            # print("9003")
+
             a_1 = a_1.apply(self.min_max_rule, axis=1)
             a_1.columns = ['min-n1', 'max-n1']
             #
@@ -202,12 +192,10 @@ class ProcessData:
             a_1_2 = pd.merge(left=a_1, right=a_2, left_index=True, right_index=True)
             to_save.append((a_1_2.copy(), srr, 'min-max'))
             # self.save_to_excel(a_1_2, srr, 'min-max')
-            print("9005")
             self.save_to_excel_(to_save, srr)
-            print("9005-1")
         except Exception as e:
-            log_debug('process_files_1: 2001 ' + str(e))
-            print('process_files_1: 2001' + str(e))
+            log_debug('process_files_1: 2001' + str(e))
+            print(e)
 
     # collect min-max from all the files of each variable
     def collect_data(self, year, files):
@@ -216,9 +204,6 @@ class ProcessData:
         log_debug('collect_data 1004: ')
         log_debug(sr)
         log_debug('collect_data 1004: ')
-        print('collect_data 1004: ')
-        print(sr)
-        print('collect_data 1004: ')
 
         n = 0
         sss = ""
@@ -288,9 +273,7 @@ class ProcessData:
             ssr = self.output_dir + "/" + variable + "_RRA.xlsx"
             try:
                 log_debug('main 1002: ' + ssr)
-                print('main 1002: ' + ssr)
                 self.process_files_1(ssr)
-                print('main 1003: ' + ssr)
                 log_debug('main 1003: ' + ssr)
             except Exception as e:
                 print(e)
@@ -605,17 +588,10 @@ class ProcessData:
         return a
 
     def save_to_excel_(self, to_save, srr):
-        with pd.ExcelWriter(srr, engine='openpyxl', mode="a") as writer:
-            print(90011)
+        with pd.ExcelWriter(srr, mode='a') as writer:
             for d in to_save:
-                print("9006-1")
-                print(d[2])
-                print("9006-2")
-                try:
-                    d[0].to_excel(writer, sheet_name=d[2])
-                except Exception as ex:
-                    print("9006-3 " + d[2] + str(ex))
-                print(9007)
+                log_debug(d[2])
+                d[0].to_excel(writer, sheet_name=d[2])
 
     def save_to_excel(self, df, srr, folder):
         df2 = df.copy()

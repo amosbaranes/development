@@ -43,7 +43,7 @@ class PotentialDataProcessing(BaseDataProcessing, BasePotentialAlgo):
         print("90121-1: \n", dic, "="*50)
         app_ = dic["app"]
         file_path = self.upload_file(dic)["file_path"]
-        # print('90121-2 dic')
+        # print('90121-  dic')
         dic = dic["cube_dic"]
         # print('90121-3 dic', dic)
         model_name_ = dic["dimensions"]["time_dim"]["model"]

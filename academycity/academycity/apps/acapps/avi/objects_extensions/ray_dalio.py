@@ -146,7 +146,7 @@ class RDDataProcessing(BaseDataProcessing, BasePotentialAlgo, RDAlgo):
             headers = {'User-Agent': 'Mozilla/5.0', 'Accept': 'application/vnd.sdmx.data+csv; charset=utf-8'}
 
             download = requests.get(url=url, headers=headers)
-            df2 = pd.read_csv(io.StringIO(download.text))
+            df  = pd.read_csv(io.StringIO(download.text))
             print(df2[["REF_AREA", "TIME_PERIOD","OBS_VALUE"]])
 
         # technology: GB.XPD.RSDV.GD.ZS  population: SP.POP.TOTL

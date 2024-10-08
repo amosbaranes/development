@@ -73,7 +73,7 @@ class MLNNDataProcessing(BaseDataProcessing, BasePotentialAlgo, MLNNAlgo):
     def create_model1(self):
         model = Sequential([
             Flatten(input_shape=(28, 28)),  # Flatten 28x28 images to a 784-dimensional vector
-            Dense(512, activation='relu'),  # First dense layer with 512 neurons
+            Dense(512, activation='relu'),  # First dense layer with 51  neurons
             BatchNormalization(),  # Apply Batch Normalization
             Dropout(0.2),  # Add Dropout to prevent overfitting
             Dense(256, activation='relu'),  # Second dense layer with 256 neurons

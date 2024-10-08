@@ -30,7 +30,7 @@ class MSAlgo(object):
     def __init__(self, dic):  # to_data_path, target_field
         # print("90004-000-1 MSAlgo", dic, '\n', '-'*50)
         super(MSAlgo, self).__init__()
-        # print("90004-000-2 MSAlgo", dic, '\n', '-'*50)
+        # print("90004-000-  MSAlgo", dic, '\n', '-'*50)
         # -----
         self.to_save_normalize = []
         self.to_save_similarity = []
@@ -106,7 +106,7 @@ class MSDataProcessing(BaseDataProcessing, BasePotentialAlgo, MSAlgo):
         # print('file_path')
         # print(file_path)
         # print('file_path')
-        # print('90121-2 dic')
+        # print('90121-  dic')
         dic = dic["cube_dic"]
         # print('90121-3 dic', dic)
 
@@ -212,7 +212,7 @@ class MSDataProcessing(BaseDataProcessing, BasePotentialAlgo, MSAlgo):
         # print('file_path')
         # print(file_path)
         # print('file_path')
-        # print('90121-2 dic')
+        # print('90121-  dic')
         dic = dic["cube_dic"]
         # print('90121-3 dic', dic)
 
@@ -240,12 +240,13 @@ class MSDataProcessing(BaseDataProcessing, BasePotentialAlgo, MSAlgo):
 
         model_name_ = dic["fact"]["model"]
         model_fact = apps.get_model(app_label=app_, model_name=model_name_)
-        #
+
+        # remove all dep variables
         qsg = model_gene_dim.objects.filter(gene_group_dim__group_name="dep")
         for q in qsg:
             q.delete()
 
-        #
+        # convert all persons to normaliaz group
         pg_obj, is_created = model_person_group_dim.objects.get_or_create(group_name="Normaliaz")
         pg_obj.save()
         qs = model_person_dim.objects.all()
@@ -253,12 +254,11 @@ class MSDataProcessing(BaseDataProcessing, BasePotentialAlgo, MSAlgo):
             q.person_group_dim = pg_obj
             q.save()
 
-
+        # create group for every folder in excel
+        # assign all the persons in that folder to that group
         wb = load_workbook(filename=file_path, read_only=False)
         sheet_names = wb.sheetnames
-
         # print("="*50)
-
         for f in sheet_names:
             self.log_debug("A0 f=" + f)
             pg_obj, is_created = model_person_group_dim.objects.get_or_create(group_name=f)
@@ -328,7 +328,7 @@ class MSDataProcessing(BaseDataProcessing, BasePotentialAlgo, MSAlgo):
         # print('file_path')
         # print(file_path)
         # print('file_path')
-        # print('90121-2 dic')
+        # print('90121-  dic')
         dic = dic["cube_dic"]
         # print('90121-3 dic', dic)
         model_name_ = dic["dimensions"]["person_dim"]["model"]
@@ -720,7 +720,7 @@ class MSDataProcessing(BaseDataProcessing, BasePotentialAlgo, MSAlgo):
             obj.save()
         except Exception as ex:
             print("Error 9026-67: "+str(ex))
-            self.log_debug("9002 Error saving genes: ")
+            self.log_debug("900  Error saving genes: ")
 
         self.log_debug("saved gene data")
 
@@ -731,7 +731,7 @@ class MSDataProcessing(BaseDataProcessing, BasePotentialAlgo, MSAlgo):
     # pop 7
     # count all people
     # (1) if 7/total people < 5% (make parameters T) then combine to the biggest (by nuber of peoples) block
-    # (2) a get the lowest block it is 12 compare it to the pick of the other block if it is biger combine
+    # (2) a get the lowest block it is 1  compare it to the pick of the other block if it is biger combine
 
     # ----- Batch Normalization -----
     def add_peaks_to_clusters(self, dic):
@@ -933,7 +933,7 @@ class MSDataProcessing(BaseDataProcessing, BasePotentialAlgo, MSAlgo):
         try:
             qsg = model_gene_dim.objects.filter(gene_group_dim__group_name="indep")
         except Exception as ex:
-            self.log_debug("Error11-2 " + str(ex))
+            self.log_debug("Error11-  " + str(ex))
 
         self.log_debug(str(nnn) + " I")
 
@@ -954,7 +954,7 @@ class MSDataProcessing(BaseDataProcessing, BasePotentialAlgo, MSAlgo):
             except Exception as ex:
                 self.log_debug("Error11-5 " + str(run_number) + " : "  + str(nnn) + " : " + str(nz) + " : " + str(o.id) + " Error " + str(ex))
 
-            # self.log_debug("A2 " + str(nnn) + " : " + str(nz) + " : " + str(o.id))
+            # self.log_debug("A  " + str(nnn) + " : " + str(nz) + " : " + str(o.id))
 
             for k in dic_sets:
                 if k != reference_set:
@@ -966,7 +966,7 @@ class MSDataProcessing(BaseDataProcessing, BasePotentialAlgo, MSAlgo):
                         # print(mr, mk, f)
                         # print("dic_sets_o[k] B\n", dic_sets_o[k])
                     except Exception as ex:
-                        self.log_debug("Error22 " + str(nnn) + " : " + str(nz) + " : " + str(o.id) + " Error " + str(ex))
+                        self.log_debug("Error2  " + str(nnn) + " : " + str(nz) + " : " + str(o.id) + " Error " + str(ex))
 
                 for index, row in dic_sets_o[k].iterrows():
                     try:
@@ -1091,9 +1091,9 @@ class MSDataProcessing(BaseDataProcessing, BasePotentialAlgo, MSAlgo):
                 # print("AAA\nA1=", peaks[z - 1]['ub'], "ub-3=: ", ll[peaks[z - 1]['ub'] - 3], "\npeaks[z]['peak']=",
                 #       peaks[z]['peak'],
                 #       "\nll[peaks[z]['peak']-1]=", ll[peaks[z]['peak'] - 1])
-                # print("AAA\nA1 ll[peaks[z-1]['ub']-3]=", ll[peaks[z-1]['ub']-3], " > ", "\nA2 ll[peaks[z]['peak']-1]=",
+                # print("AAA\nA1 ll[peaks[z-1]['ub']-3]=", ll[peaks[z-1]['ub']-3], " > ", "\nA  ll[peaks[z]['peak']-1]=",
                 #       ll[peaks[z]['peak']-1])
-                # print("BBB\n B1 ", ll[peaks[z-1]['peak']-1],"\n < B2 ",ll[peaks[z]['lb']+1])
+                # print("BBB\n B1 ", ll[peaks[z-1]['peak']-1],"\n < B  ",ll[peaks[z]['lb']+1])
 
                 # if (ll[peaks[z-1]['ub']-3] > ll[peaks[z]['peak']-1]) or (ll[peaks[z-1]['peak']-1] < ll[peaks[z]['lb']+1]):
                 if (ll[peaks[z-1]['ub']-2] > ll[peaks[z]['peak']-1]) or (ll[peaks[z-1]['peak']-1] < ll[peaks[z]['lb']]):
@@ -1619,12 +1619,12 @@ class MSDataProcessing(BaseDataProcessing, BasePotentialAlgo, MSAlgo):
             except Exception as ex:
                 print("90-90-90- 1 Error saving file " + save_to_file)
         is_file = os.path.exists(save_to_file)
-        self.log_debug("2 is_file = " + str(is_file))
-        # print("2 is_file = " + str(is_file))
-        wb2 = Workbook()
+        self.log_debug("  is_file = " + str(is_file))
+        # print("  is_file = " + str(is_file))
+        wb  = Workbook()
         wb2.save(save_to_file)
         wb2.close()
-        wb2 = None
+        wb  = None
 
         try:
             # print(save_to_file)
@@ -1638,7 +1638,7 @@ class MSDataProcessing(BaseDataProcessing, BasePotentialAlgo, MSAlgo):
         try:
             writer.save()
         except Exception as ex:
-            self.log_debug("Error save file 2 " + str(ex))
+            self.log_debug("Error save file   " + str(ex))
             # print("Error Save", ex)
 
         try:

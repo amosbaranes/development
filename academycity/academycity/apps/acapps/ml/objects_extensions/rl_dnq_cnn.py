@@ -135,13 +135,13 @@ class Player:
 
 ######################################################################################
 class Environment:
-    P_HEIGHT = 2  # Height of the player
+    P_HEIGHT = 2   # Height of the player
     F_HEIGHT = 20  # Height of the field
-    W_HEIGHT = 2  # Height of the walls
+    W_HEIGHT = 2   # Height of the walls
     WIDTH = 10  # Width of the field and the walls
-    MIN_H_WIDTH = 2  # Minimum width of the holes
+    MIN_H_WIDTH = 2   # Minimum width of the holes
     MAX_H_WIDTH = 6  # Maximum width of the holes
-    MIN_P_WIDTH = 2  # Minimum Width of the player
+    MIN_P_WIDTH = 2   # Minimum Width of the player
     MAX_P_WIDTH = 6  # Maximum Width of the player
     HEIGHT_MUL = 30  # Height Multiplier (used to draw np.array as blocks in pygame )
     WIDTH_MUL = 40  # Width Multiplier (used to draw np.array as blocks in pygame )
@@ -242,7 +242,7 @@ class Environment:
 
         #  Lose Conditions :
         # C1 : The player hits a wall
-        # C2 : Player's width was far thinner than hole's width
+        # C  : Player's width was far thinner than hole's width
         # C3 : Player fully consumed its stamina (energy)
         lose_conds = [self.MAX_VAL in self.field.body,
                       ((self.player.y == self.walls[-1].y) and (self.player.width < (self.walls[-1].hole_width - 1))),
@@ -396,7 +396,7 @@ class DQNAgent:
         input_layer = Input(shape=self.env.ENVIRONMENT_SHAPE)
         # Defines the first convolutional block:
         _ = self.conv_block(input_layer, filters=conv_list[0], bn=False, pool=False)
-        # If number of convolutional layers is 2 or more, use a loop to create them.
+        # If number of convolutional layers is   or more, use a loop to create them.
         if len(conv_list) > 1:
             for c in conv_list[1:]:
                 _ = self.conv_block(_, filters=c)

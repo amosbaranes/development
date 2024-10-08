@@ -892,7 +892,7 @@ window.aviaOnGoogleMapsLoaded = function(){ $('body').trigger('av-google-maps-ap
 				break;
 			}
 			
-			//fallback always trigger after 2 seconds
+			//fallback always trigger after   seconds
 			setTimeout(function()
 			{ 	
 				if(_self.eventsBound == true || typeof _self.eventsBound == 'undefined' || _self.type == 'youtube' ) { return; }
@@ -1596,7 +1596,7 @@ $.fn.avia_masonry = function(options)
 						{
 							content_retrieved[is_open].attr({'style':""}).removeClass('open_slide');
 							content_retrieved[post_id].addClass('open_slide');
-																										  //+ 2 fixes border problem (slides move up and down 2 px on transition)
+																										  //+   fixes border problem (slides move up and down   px on transition)
 							target_container.avia_animate({height: content_retrieved[post_id].outerHeight() + 2}, options.timing/2, options.easing, function()
 							{
 								target_container.attr({'style':""});
@@ -1858,7 +1858,7 @@ $.fn.avia_masonry = function(options)
     		var winTop 		= this.$win.scrollTop(),
     			winBottom	=  winTop + this.property.wh,
     			scrollPos 	= "0", 
-    			prop 		= {}, prop2 = {};
+    			prop 		= {}, prop  = {};
     		
     		if(this.property.offset < winTop && winTop <= this.property.offset + this.property.height)
     		{	
@@ -2764,7 +2764,7 @@ $.fn.avia_sc_tabs= function(options)
 					//fallback for decimals like 00 or 000
 					if(zeroOnly && countTo !== 0) fakeCountTo = countTo.replace(/0/g, '9');
 					
-					increment = Math.round( fakeCountTo * 32 / countTimer);
+					increment = Math.round( fakeCountTo * 3  / countTimer);
 					if(increment == 0 || increment % 10 == 0) increment += 1;
 					
 					setTimeout(function(){ start_count(element, countTo, increment, current, fakeCountTo);}, 300);
@@ -2947,7 +2947,7 @@ $.fn.avia_sc_tabs= function(options)
 				send.button.addClass('av-sending-button');
 				send.button.val(send.button.data('sending-label'));
 				
-				var redirect_to = form.data('avia-redirect') || false,
+				var redirect_to = form.data('avia-redirect') ||  false,
 					action		= form.attr('action');
 				
 				responseContainer.load(action+' '+options.responseContainer, send.dataObj, function()
@@ -2979,7 +2979,7 @@ $.fn.avia_sc_tabs= function(options)
 				send.button.val(send.button.data('sending-label'));
 				send.dataObj.ajax_mailchimp = true;
 				
-				var redirect_to 		= form.data('avia-redirect') || false,
+				var redirect_to 		= form.data('avia-redirect') ||  false,
 					action				= form.attr('action'),
 					error_msg_container = form.find('.av-form-error-container'),
 					form_id 			= form.data('avia-form-id'); 
@@ -3562,30 +3562,30 @@ $.extend( $.easing,
 	swing: function (x, t, b, c, d) { return $.easing[$.easing.def](x, t, b, c, d); },
 	easeInQuad: function (x, t, b, c, d) { return c*(t/=d)*t + b; },
 	easeOutQuad: function (x, t, b, c, d) { return -c *(t/=d)*(t-2) + b; },
-	easeInOutQuad: function (x, t, b, c, d) { if ((t/=d/2) < 1) return c/2*t*t + b; return -c/2 * ((--t)*(t-2) - 1) + b; },
+	easeInOutQuad: function (x, t, b, c, d) { if ((t/=d/2) < 1) return c/2*t*t + b; return -c/  * ((--t)*(t-2) - 1) + b; },
 	easeInCubic: function (x, t, b, c, d) { return c*(t/=d)*t*t + b; },
 	easeOutCubic: function (x, t, b, c, d) { return c*((t=t/d-1)*t*t + 1) + b; },
 	easeInOutCubic: function (x, t, b, c, d) { if ((t/=d/2) < 1) return c/2*t*t*t + b; return c/2*((t-=2)*t*t + 2) + b;	},
 	easeInQuart: function (x, t, b, c, d) { return c*(t/=d)*t*t*t + b;	},
 	easeOutQuart: function (x, t, b, c, d) { return -c * ((t=t/d-1)*t*t*t - 1) + b; },
-	easeInOutQuart: function (x, t, b, c, d) { if ((t/=d/2) < 1) return c/2*t*t*t*t + b; return -c/2 * ((t-=2)*t*t*t - 2) + b;	},
+	easeInOutQuart: function (x, t, b, c, d) { if ((t/=d/2) < 1) return c/2*t*t*t*t + b; return -c/  * ((t-=2)*t*t*t - 2) + b;	},
 	easeInQuint: function (x, t, b, c, d) { return c*(t/=d)*t*t*t*t + b;	},
 	easeOutQuint: function (x, t, b, c, d) { return c*((t=t/d-1)*t*t*t*t + 1) + b;	},
 	easeInOutQuint: function (x, t, b, c, d) { if ((t/=d/2) < 1) return c/2*t*t*t*t*t + b; return c/2*((t-=2)*t*t*t*t + 2) + b;	},
 	easeInSine: function (x, t, b, c, d) {	return -c * Math.cos(t/d * (Math.PI/2)) + c + b;	},
 	easeOutSine: function (x, t, b, c, d) { return c * Math.sin(t/d * (Math.PI/2)) + b;	},
-	easeInOutSine: function (x, t, b, c, d) { return -c/2 * (Math.cos(Math.PI*t/d) - 1) + b;	},
+	easeInOutSine: function (x, t, b, c, d) { return -c/  * (Math.cos(Math.PI*t/d) - 1) + b;	},
 	easeInExpo: function (x, t, b, c, d) { return (t==0) ? b : c * Math.pow(2, 10 * (t/d - 1)) + b;	},
 	easeOutExpo: function (x, t, b, c, d) { return (t==d) ? b+c : c * (-Math.pow(2, -10 * t/d) + 1) + b;	},
 	easeInOutExpo: function (x, t, b, c, d) {
 		if (t==0) return b;
 		if (t==d) return b+c;
-		if ((t/=d/2) < 1) return c/2 * Math.pow(2, 10 * (t - 1)) + b;
-		return c/2 * (-Math.pow(2, -10 * --t) + 2) + b;
+		if ((t/=d/2) < 1) return c/  * Math.pow(2, 10 * (t - 1)) + b;
+		return c/  * (-Math.pow(2, -10 * --t) + 2) + b;
 	},
 	easeInCirc: function (x, t, b, c, d) { return -c * (Math.sqrt(1 - (t/=d)*t) - 1) + b;	},
 	easeOutCirc: function (x, t, b, c, d) {return c * Math.sqrt(1 - (t=t/d-1)*t) + b;	},
-	easeInOutCirc: function (x, t, b, c, d) { if ((t/=d/2) < 1) return -c/2 * (Math.sqrt(1 - t*t) - 1) + b;	return c/2 * (Math.sqrt(1 - (t-=2)*t) + 1) + b;	},
+	easeInOutCirc: function (x, t, b, c, d) { if ((t/=d/2) < 1) return -c/  * (Math.sqrt(1 - t*t) - 1) + b;	return c/  * (Math.sqrt(1 - (t-=2)*t) + 1) + b;	},
 	easeInElastic: function (x, t, b, c, d) {
 		var s=1.70158;var p=0;var a=c;
 		if (t==0) return b;  if ((t/=d)==1) return b+c;  if (!p) p=d*.3;
@@ -3711,7 +3711,7 @@ $.extend( $.easing,
 			{	
 				pp.loading_item.removeClass('av-play av-pause');
 				pp.to1 = setTimeout(function(){ pp.loading_item.addClass('av-' + status); },10);
-				pp.to2 = setTimeout(function(){ pp.loading_item.removeClass('av-' + status); },1500);
+				pp.to  = setTimeout(function(){ pp.loading_item.removeClass('av-' + status); },1500);
 			},
 
 			attach: function()
@@ -4353,7 +4353,7 @@ Avia Slideshow
     	//calculate which slide should be displayed next and call the executing transition function
     	_navigate : function( dir, pos ) {
 			
-			if( this.isAnimating || this.itemsCount < 2 || !this.$slider.is(":visible") )
+			if( this.isAnimating || this.itemsCount <    || !this.$slider.is(":visible") )
 			{
 				return false;
 			}
@@ -4477,9 +4477,9 @@ Avia Slideshow
 			var sliderWidth		= this.$slider.width(),
 				direction		= dir === 'next' ? -1 : 1,
 				property  		= this.browserPrefix + 'transform',
-				reset			= {}, transition = {},  transition2 = {},
+				reset			= {}, transition = {},  transition  = {},
 				trans_val 		= ( sliderWidth * direction * -1),
-				trans_val2 		= ( sliderWidth * direction);
+				trans_val  		= ( sliderWidth * direction);
 			
 			//do a css3 animation
 			if(this.cssActive)
@@ -4490,13 +4490,13 @@ Avia Slideshow
 				if(this.css3DActive)
 				{
 					reset[property]  = "translate3d(" + trans_val + "px, 0, 0)";
-					transition[property]  = "translate3d(" + trans_val2 + "px, 0, 0)";
+					transition[property]  = "translate3d(" + trans_val  + "px, 0, 0)";
 					transition2[property] = "translate3d(0,0,0)";
 				}
 				else //do a 2d transform. still faster than a position "left" change
 				{
 					reset[property]  = "translate(" + trans_val + "px,0)";
-					transition[property]  = "translate(" + trans_val2 + "px,0)";
+					transition[property]  = "translate(" + trans_val  + "px,0)";
 					transition2[property] = "translate(0,0)";					}
 			}
 			else
@@ -4514,9 +4514,9 @@ Avia Slideshow
 			var sliderHeight	= this.$slider.height(),
 				direction		= dir === 'next' ? -1 : 1,
 				property  		= this.browserPrefix + 'transform',
-				reset			= {}, transition = {},  transition2 = {},
+				reset			= {}, transition = {},  transition  = {},
 				trans_val 		= ( sliderHeight * direction * -1),
-				trans_val2 		= ( sliderHeight * direction);
+				trans_val  		= ( sliderHeight * direction);
 			
 			//do a css3 animation
 			if(this.cssActive)
@@ -4527,13 +4527,13 @@ Avia Slideshow
 				if(this.css3DActive)
 				{
 					reset[property]  = "translate3d( 0," + trans_val + "px, 0)";
-					transition[property]  = "translate3d( 0," + trans_val2 + "px, 0)";
+					transition[property]  = "translate3d( 0," + trans_val  + "px, 0)";
 					transition2[property] = "translate3d(0,0,0)";
 				}
 				else //do a 2d transform. still faster than a position "left" change
 				{
 					reset[property]  = "translate( 0," + trans_val + "px)";
-					transition[property]  = "translate( 0," + trans_val2 + "px)";
+					transition[property]  = "translate( 0," + trans_val  + "px)";
 					transition2[property] = "translate(0,0)";					}
 			}
 			else
@@ -4548,7 +4548,7 @@ Avia Slideshow
 		
 		
 		//slide animation: do a slide transition by css3 transform if possible. if not simply do a position left transition
-		_slide_animate: function( reset , transition , transition2 )
+		_slide_animate: function( reset , transition , transition  )
 		{
 			
 			var self			= this,
@@ -4659,7 +4659,7 @@ Avia Slideshow
 				if(event.data.iteration === 0) 
 				{	
 					event.data.wrap.css('opacity',0);
-					if(!event.data.self.isMobile && !event.data.slide.data('disableAutoplay')) { event.data.slide.trigger('play'); } 
+					if(!event.data.self.isMobile && !event.data.slide.data('disableAutoplay')) { event.data.slide.trigger('play'); }
 					setTimeout(function(){ event.data.wrap.avia_animate({opacity:1}, 400); }, 50);
 				}
 				else if ($html.is('.avia-msie') && !event.data.slide.is('.av-video-service-html5'))
@@ -4783,7 +4783,7 @@ Avia Slideshow
 		},
 
 		// public method: goes to a specific image
-		go2 : function( pos )
+		go  : function( pos )
 		{
 			//if we didnt pass a number directly lets asume someone clicked on a link that triggered the goto transition
 			if(isNaN(pos))
@@ -5069,7 +5069,7 @@ playback timings (ms):
   esindex: 0.013
   LoadShardBlock: 338.115 (3)
   PetaboxLoader3.datanode: 478.018 (5)
-  CDXLines.iter: 36.452 (3)
+  CDXLines.iter: 36.45  (3)
   load_resource: 295.009 (2)
   PetaboxLoader3.resolve: 118.704 (2)
 */

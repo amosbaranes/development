@@ -63,7 +63,7 @@ class DeepLearning(object):
 
 class MLAT(BaseDataProcessing, BasePotentialAlgo, DeepLearning):
     def __init__(self, dic):
-        # print("AA2 MLAT\n", "-"*100, "\n", dic, "\n", "-"*100)
+        # print("AA  MLAT\n", "-"*100, "\n", dic, "\n", "-"*100)
         # super().__init__(dic)
         super(MLAT, self).__init__(dic)
 
