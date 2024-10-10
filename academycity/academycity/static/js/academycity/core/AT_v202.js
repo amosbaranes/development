@@ -7534,7 +7534,7 @@ acChartCreator.prototype.set_chart_data = function(chart_type)
     trace["y"]=chart_type["y"];
     trace[data["type_name"]]=data["type_name_value"];
     trace["type"]="scatter";
-    trace["marker"] = { size: 3 }
+    trace["marker"] = { size: 5 }
     data_.push(trace);
    var layout = {title: data["title"],
                  xaxis: {title: chart_type["x-axis-title"], range: chart_type["x-axis-range"]},

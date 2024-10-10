@@ -1,22 +1,24 @@
-from ..basic_ml_objects import BaseDataProcessing, BasePotentialAlgo
-
-from ....core.utils import log_debug, clear_log_debug
-
 import os
+
+from twisted.mail.smtp import xtext_codec
+
 os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
-import random
-import gym
 import numpy as np
-from collections import deque
+from datetime import datetime
 import pickle
 
 from keras.models import Model, load_model
-from keras.layers import Input, Dense
 from keras.optimizers import Adam, RMSprop
-
 import tensorflow as tf
 from tensorflow.keras import layers, models, initializers, optimizers
-
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import MinMaxScaler
+#
+from ..basic_ml_objects import BaseDataProcessing, BasePotentialAlgo
+from ....core.utils import log_debug, clear_log_debug
+#
+import wbdata
+#
 
 class NNAlgo(object):
     def __init__(self, dic):  # to_data_path, target_field
@@ -46,6 +48,7 @@ class NNDataProcessing(BaseDataProcessing, BasePotentialAlgo, NNAlgo):
     def save(self, file_name):
         self.model.save(file_name)
 
+    # For Simple one independent variable.
     def train(self, dic):
         print("90155-nn: \n", "="*50, "\n", dic, "\n", "="*50)
         epochs = int(dic["epochs"])
@@ -122,4 +125,171 @@ class NNDataProcessing(BaseDataProcessing, BasePotentialAlgo, NNAlgo):
                                              "loss_values": self.lose_list}}
 
         return result
+
+    def train_wb(self, dic):
+        print("9019-nnwb: \n", "="*50, "\n", dic, "\n", "="*50)
+        # epochs = int(dic["epochs"])
+        dic["datadir"] = self.MODELS_PATH
+        dic["model_name"] = "wb_analysis"
+        wba = WBAnalysis(dic)
+        results = wba.train({"countries":['US'],
+                             "indicators": {
+                                 'NY.GDP.PCAP.CD': 'gdp_per_capita',
+                                 'NE.EXP.GNFS.CD': 'exports_per_capita',
+                                 'SE.XPD.TOTL.GD.ZS': 'education_per_capita',
+                                 'BX.GSR.ROYL.CD': 'natural_resources_per_capita',
+                                 'BX.KLT.DINV.WD.GD.ZS': 'high_tech_investment_per_capita'
+                             },
+                             "dep_var": 'gdp_per_capita',
+                             "indep_var": ['exports_per_capita', 'education_per_capita', 'natural_resources_per_capita',
+                                           'high_tech_investment_per_capita'],
+                             "epochs": int(dic["epochs"])
+                             })
+
+        result = {"status": "ok wbb nn", "results": results}
+        return result
+
+
+    # For Multiple Independent variables - World Bank Example
+    # We create a special Object to manage this example.
+
+
+# --------------------------
+class WBAnalysis(object):
+    def __init__(self, dic):
+        # print("WBAnalysis\n", dic)
+        try:
+            self.datadir = dic['datadir']
+        except Exception as ex:
+            print("Error 20-01", ex, "need to provide dir name")
+            self.datadir = ""
+        try:
+            self.model_name = dic['model_name']
+        except Exception as ex:
+            print("Error 20-02", ex, "need to provide model name")
+            self.model_name = "General_name"
+        self.checkpoint_file = os.path.join(self.datadir, "checkpoint_"+self.model_name+"_wt")
+        # print(self.checkpoint_file)
+        # ---
+        self.scaler_X = MinMaxScaler()
+        self.scaler_y = MinMaxScaler()
+        # ---
+        self.model = None
+        self.get_model()
+        # ---
+        self.trainData = None
+        self.testData = None
+        # =--
+        self.history = None
+
+        # --- Data ---
+    def fetch_world_bank_data(self, countries, indicators):
+        try:
+            df = wbdata.get_dataframe(indicators, country=countries, date=("1980", "2024"), freq='Y')
+        except Exception as ex:
+            print("Err500-50-5", ex)
+        df.reset_index(inplace=True)
+        # print("AAAdf\n\n", df)
+        # Handle missing data
+        df.fillna(method='ffill', inplace=True)
+        df = df.dropna()
+        # print("\n\nBBBBBdf\n\n", df)
+        return df
+
+    def normalize_data(self, **data):
+        trainx = data["trainx"]
+        trainy = data["trainy"]
+        testx = data["testx"]
+        testy = data["testy"]
+        # scale
+        trainx = self.scaler_X.fit_transform(trainx)
+        trainy = self.scaler_y.fit_transform(trainy).reshape(-1)
+
+        # Transform the test data using the fitted scaler (no fitting here)
+        testx = self.scaler_X.transform(testx)
+        testy = self.scaler_y.transform(testy).reshape(-1)
+
+        return (trainx, trainy), (testx, testy)
+
+    def get_data(self, countries, indicators, dep_var, indep_var):
+        df = self.fetch_world_bank_data(countries, indicators)
+        # Extract input features and target variable
+        # print("\ndf from WB\n", df)
+        X = df[indep_var].values
+        y = df[dep_var].values.reshape(-1, 1)  # Reshape y for the scaler
+        # print("X\n", X)
+        # print("y\n", y)
+        # Split data into training and testing sets
+
+        # NEED TO CHECK SPLIT from random for testing to take only last records
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+        # print("X_train\n", X_train, "\nX_test", X_test)
+        # print("y_train\n", y_train, "\ny_test", y_test)
+
+        # Normalize the data
+        self.trainData, self.testData = self.normalize_data(trainx=X_train, trainy=y_train, testx=X_test, testy=y_test)
+        # print("\nAAtrain_data\n", train_data, "\nBBtest_data\n", test_data)
+
+        self.trainData = tf.data.Dataset.from_tensor_slices((self.trainData[0], self.trainData[1]))
+        self.trainData = self.trainData.batch(32).shuffle(buffer_size=1024).prefetch(tf.data.AUTOTUNE)
+
+    # --- End Data ---
+
+    # --- Model ---
+    def save(self):
+        tf.keras.models.save_model(self.model, self.checkpoint_file, overwrite=True)
+
+    def checkpoint_model(self):
+        if not os.path.exists(self.checkpoint_file):
+            # self.model.predict(np.ones((20, 28, 28), dtype=np.float32))
+            self.save()
+        else:
+            self.model = tf.keras.models.load_model(self.checkpoint_file)
+
+    def get_model(self):
+        self.model = tf.keras.models.Sequential()
+        self.model.add(tf.keras.layers.Dense(1, activation='linear', input_shape=(4, )))
+        self.model.compile(optimizer='adam', loss='mse')
+        # ---
+        self.checkpoint_model()
+        # ---
+    # --- End Model ---
+
+    def get_convergence_history(self, metric_name):
+        # print(metric_name)
+        # print(self.history.epoch, self.history.history[metric_name])
+        y = self.history.history[metric_name]
+        y = [round(1000*h)/1000 for h in y]
+        return {"x": self.history.epoch, "y": y}
+
+    def train(self, dic):
+        countries = dic["countries"]  # Add any countries you want to analyze
+        indicators = dic["indicators"]
+        dep_var = dic["dep_var"]
+        indep_var = dic["indep_var"]
+        epochs_ = dic["epochs"]
+        # ---
+        self.get_data(countries, indicators, dep_var, indep_var)
+        # print(self.trainData, "\n\n", self.testData)
+        # ---
+        self.history = self.model.fit(self.trainData, epochs=epochs_, batch_size=32, validation_data=self.testData)
+        matrices = {}
+        for k in ["loss", "val_loss"]:
+            matrices[k] = self.get_convergence_history(metric_name=k)
+        # ---
+        weights, biases = self.model.layers[0].get_weights()
+        weights, biases = weights.reshape(-11).tolist(), biases.reshape(-1).tolist()
+        weights = [round(1000*w)/1000 for w in weights]
+        biases = [round(1000*b)/1000 for b in biases]
+        # ---
+        predictions = self.model.predict(self.testData[0])
+        p = self.scaler_y.inverse_transform(predictions).reshape(-1).tolist()
+        p = [round(x) for x in p]
+        a = self.scaler_y.inverse_transform(self.testData[1].reshape(1, -1)).reshape(-1).tolist()
+        a = [round(x) for x in a]
+        ret = {"matrices":matrices, "a":a, "p": p, "weights":weights, "biases": biases}
+        # print(ret)
+        return ret
+
+
 

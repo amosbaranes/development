@@ -79,7 +79,6 @@ class FashionMNistClassify(AbstractModels, ABC):
         self.optimizer = None
         self.metric = None
         # ---
-        self.model = None
         self.get_model()
         # ---
 
