@@ -17,6 +17,8 @@ from sklearn.preprocessing import MinMaxScaler
 from ..basic_ml_objects import BaseDataProcessing, BasePotentialAlgo
 from ....core.utils import log_debug, clear_log_debug
 #
+from ....core.utils import log_debug, clear_log_debug
+#
 import wbdata
 #
 
@@ -41,12 +43,16 @@ class NNDataProcessing(BaseDataProcessing, BasePotentialAlgo, NNAlgo):
         # print(f'{self.PATH}')
         self.model = None
         self.lose_list = None
+        clear_log_debug()
+        #
 
-    def load(self, name):
-        self.model = load_model(name)
+    def load(self, file_name):
+        self.model = load_model(file_name)
+        log_debug("model loaded: " +str(file_name))
 
     def save(self, file_name):
         self.model.save(file_name)
+        log_debug("model saved: " +str(file_name))
 
     # For Simple one independent variable.
     def train(self, dic):
@@ -129,9 +135,13 @@ class NNDataProcessing(BaseDataProcessing, BasePotentialAlgo, NNAlgo):
     def train_wb(self, dic):
         print("9019-nnwb: \n", "="*50, "\n", dic, "\n", "="*50)
         # epochs = int(dic["epochs"])
+
+        log_debug("train_wb 100")
+
         dic["datadir"] = self.MODELS_PATH
         dic["model_name"] = "wb_analysis"
         wba = WBAnalysis(dic)
+        log_debug("train_wb 200")
         results = wba.train({"countries":['US'],
                              "indicators": {
                                  'NY.GDP.PCAP.CD': 'gdp_per_capita',
@@ -169,6 +179,9 @@ class WBAnalysis(object):
             print("Error 20-02", ex, "need to provide model name")
             self.model_name = "General_name"
         self.checkpoint_file = os.path.join(self.datadir, "checkpoint_"+self.model_name+"_wt")
+
+        log_debug("train_wb 110:" + self.checkpoint_file)
+
         # print(self.checkpoint_file)
         # ---
         self.scaler_X = MinMaxScaler()
@@ -181,6 +194,7 @@ class WBAnalysis(object):
         self.testData = None
         # =--
         self.history = None
+        log_debug("train_wb 120:")
 
         # --- Data ---
     def fetch_world_bank_data(self, countries, indicators):
@@ -213,6 +227,9 @@ class WBAnalysis(object):
 
     def get_data(self, countries, indicators, dep_var, indep_var):
         df = self.fetch_world_bank_data(countries, indicators)
+
+        log_debug("train_wb 120: data shape: " + str(df.shape))
+
         # Extract input features and target variable
         # print("\ndf from WB\n", df)
         X = df[indep_var].values
@@ -228,6 +245,9 @@ class WBAnalysis(object):
 
         # Normalize the data
         self.trainData, self.testData = self.normalize_data(trainx=X_train, trainy=y_train, testx=X_test, testy=y_test)
+
+        log_debug("train_wb 120: data normalized.")
+
         # print("\nAAtrain_data\n", train_data, "\nBBtest_data\n", test_data)
 
         self.trainData = tf.data.Dataset.from_tensor_slices((self.trainData[0], self.trainData[1]))
@@ -270,12 +290,20 @@ class WBAnalysis(object):
         epochs_ = dic["epochs"]
         # ---
         self.get_data(countries, indicators, dep_var, indep_var)
+
+        log_debug("train_wb 130: got data.")
+
         # print(self.trainData, "\n\n", self.testData)
         # ---
         self.history = self.model.fit(self.trainData, epochs=epochs_, batch_size=32, validation_data=self.testData)
+
+        log_debug("train_wb 140: finished fit data.")
+
         matrices = {}
         for k in ["loss", "val_loss"]:
             matrices[k] = self.get_convergence_history(metric_name=k)
+        # ---
+        log_debug("train_wb 150: finished get_convergence_history.")
         # ---
         weights, biases = self.model.layers[0].get_weights()
         weights, biases = weights.reshape(-11).tolist(), biases.reshape(-1).tolist()
@@ -283,6 +311,9 @@ class WBAnalysis(object):
         biases = [round(1000*b)/1000 for b in biases]
         # ---
         predictions = self.model.predict(self.testData[0])
+        # ---
+        log_debug("train_wb 160: finished model.predict.")
+        # ---
         p = self.scaler_y.inverse_transform(predictions).reshape(-1).tolist()
         p = [round(x) for x in p]
         a = self.scaler_y.inverse_transform(self.testData[1].reshape(1, -1)).reshape(-1).tolist()
