@@ -12,6 +12,7 @@ from tensorflow.keras.models import Sequential, load_model
 
 # -----
 from ..basic_ml_objects import BaseDataProcessing, BasePotentialAlgo
+from ....core.utils import Debug, log_debug, clear_log_debug
 # -----
 from abc import ABC, abstractmethod
 
@@ -201,8 +202,11 @@ class FashionMNistClassify(AbstractModels, ABC):
         n = 0
         ds = ["train", "test"]
         for X, y in [self.trainingData, self.testingData]:
+            log_debug("before model.predict")
             predictClass = self.model.predict(X)
+            log_debug("after model.predict")
             cm = self.getConfusionMatrix(y, predictClass)
+            log_debug("after getConfusionMatrix")
             dic[ds[n]] = cm
             n +=1
         return dic
@@ -237,16 +241,22 @@ class FashionMNistClassify(AbstractModels, ABC):
             history = self.gradTapeTraining()
         else:
             try:
+                log_debug("before model.fit")
                 history = self.model.fit(self.trainingData[0], self.trainingData[1],
                                         batch_size = self.batchSize,
                                         epochs = self.nEpoch)
+                log_debug("after model.fit")
                 self.save()
+                log_debug("after save")
             except Exception as ex:
                 print("Error 22-22-3", ex)
 
         dic = {}
+        log_debug("before getConvergenceHistory 1")
         dic[self.metric._name] = self.getConvergenceHistory(history, self.metric._name)
+        log_debug("before getConvergenceHistory 2")
         dic["loss"] = self.getConvergenceHistory(history, "loss")
+        log_debug("after getConvergenceHistory 1")
         return dic
 
 
@@ -301,6 +311,7 @@ class SNNDataProcessing(BaseDataProcessing, BasePotentialAlgo, SNNAlgo):
         print("\n90445-SNN train: \n", "=" * 50, "\n", dic, "\n", "=" * 50)
         # Load stock data using Yahoo Finance
         # ---------------
+        clear_log_debug()
         model_name = dic["model_name"]
         epochs = int(dic["epochs"])
         batch_size = int(dic["batch_size"])
@@ -308,10 +319,12 @@ class SNNDataProcessing(BaseDataProcessing, BasePotentialAlgo, SNNAlgo):
         dic = {"model_dir": self.MODELS_PATH, "model_name": model_name,
                "batchsize": batch_size, "epochs": epochs}
         fmnist = FashionMNistClassify(dic)
+        log_debug("ob FashionMNistClassify was created")
         charts = fmnist.trainModel()
         for k in charts:
             charts[k]["y"] = [round(100*x)/100 for x in charts[k]["y"]]
-        print(charts)
+
+        print("charts\n", charts)
 
         result = {"status": "ok", "charts": charts}
         return result
@@ -319,6 +332,7 @@ class SNNDataProcessing(BaseDataProcessing, BasePotentialAlgo, SNNAlgo):
     def test(self, dic):
         print("90444-SNN: \n", "=" * 50, "\n", dic, "\n", "=" * 50)
         # ---------------
+        clear_log_debug()
         model_name = dic["model_name"]
         epochs = int(dic["epochs"])
         batch_size = int(dic["batch_size"])
@@ -326,6 +340,7 @@ class SNNDataProcessing(BaseDataProcessing, BasePotentialAlgo, SNNAlgo):
         dic = {"model_dir": self.MODELS_PATH, "model_name": model_name,
                "batchsize": batch_size, "epochs": epochs}
         fmnist = FashionMNistClassify(dic)
+        log_debug("ob FashionMNistClassify was created")
         cms = fmnist.testModel()
         for cm in cms:
             cms[cm] = eval(json.dumps(cms[cm].tolist()))
