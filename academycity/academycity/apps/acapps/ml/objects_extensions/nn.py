@@ -137,12 +137,13 @@ class NNDataProcessing(BaseDataProcessing, BasePotentialAlgo, NNAlgo):
         # epochs = int(dic["epochs"])
 
         log_debug("train_wb 100")
+        countries=[dic["country"]]
 
         dic["datadir"] = self.MODELS_PATH
         dic["model_name"] = "wb_analysis"
         wba = WBAnalysis(dic)
         log_debug("train_wb 200")
-        results = wba.train({"countries":['US'],
+        results = wba.train({"countries":countries,
                              "indicators": {
                                  'NY.GDP.PCAP.CD': 'gdp_per_capita',
                                  'NE.EXP.GNFS.CD': 'exports_per_capita',
@@ -199,15 +200,29 @@ class WBAnalysis(object):
         # --- Data ---
     def fetch_world_bank_data(self, countries, indicators):
         try:
-            df = wbdata.get_dataframe(indicators, country=countries, date=("1980", "2024"), freq='Y')
+            log_debug("train_wb 123-1: get_data.")
+
+            # df = wbdata.get_dataframe(indicators, country=countries, date=("1980", "2024"), freq='Y')
+
+            # Fetch data
+            # countries = ['US', 'GB', 'CN']  # Example countries: United States, Great Britain, China
+            df = wbdata.get_dataframe(indicators, country=countries, freq='Y')
+            # Filter by date range (e.g., from 1980 to 2024)
+            df = df[(df.index.get_level_values('date') >= datetime(1980, 1, 1)) &
+                             (df.index.get_level_values('date') <= datetime(2024, 12, 31))]
         except Exception as ex:
             print("Err500-50-5", ex)
+            log_debug("train_wb 123-2 Error: get_data." + str(ex))
+
         df.reset_index(inplace=True)
         # print("AAAdf\n\n", df)
         # Handle missing data
         df.fillna(method='ffill', inplace=True)
         df = df.dropna()
         # print("\n\nBBBBBdf\n\n", df)
+
+        log_debug("train_wb 123-5: get_data.")
+
         return df
 
     def normalize_data(self, **data):
@@ -228,7 +243,7 @@ class WBAnalysis(object):
     def get_data(self, countries, indicators, dep_var, indep_var):
         df = self.fetch_world_bank_data(countries, indicators)
 
-        log_debug("train_wb 120: data shape: " + str(df.shape))
+        log_debug("train_wb 125: data shape: " + str(df.shape))
 
         # Extract input features and target variable
         # print("\ndf from WB\n", df)
@@ -289,6 +304,8 @@ class WBAnalysis(object):
         indep_var = dic["indep_var"]
         epochs_ = dic["epochs"]
         # ---
+        log_debug("train_wb 122: got data.")
+
         self.get_data(countries, indicators, dep_var, indep_var)
 
         log_debug("train_wb 130: got data.")

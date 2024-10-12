@@ -70,7 +70,7 @@ class MLNNDataProcessing(BaseDataProcessing, BasePotentialAlgo, MLNNAlgo):
         model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
         return model
 
-    def create_model1(self):
+    def create_model_cnn(self):
         model = Sequential([
             Flatten(input_shape=(28, 28)),  # Flatten 28x28 images to a 784-dimensional vector
             Dense(512, activation='relu'),  # First dense layer with 51  neurons

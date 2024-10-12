@@ -7,6 +7,9 @@ import seaborn as sns
 from tensorboard.plugins.image.summary import image
 from twisted.words.protocols.jabber.error import exceptionFromStreamError
 
+
+from tensorflow.keras.models import Sequential, load_model
+
 # -----
 from ..basic_ml_objects import BaseDataProcessing, BasePotentialAlgo
 # -----
@@ -16,16 +19,25 @@ class AbstractModels(ABC):
     def __init__(self, dic):
         # print("AbstractModels\n", dic)
         try:
-            self.datadir = dic['datadir']
+            self.model_dir = dic['model_dir']
         except Exception as ex:
             print("Error 20-01", ex, "need to provide dir name")
-            self.datadir = ""
+            self.model_dir = ""
         try:
             self.model_name = dic['model_name']
         except Exception as ex:
             print("Error 20-02", ex, "need to provide model name")
-            self.model_name = "General_name"
-        self.checkpoint_file = os.path.join(self.datadir, "checkpoint_"+self.model_name+"_wt")
+        self.category = "general"
+        try:
+            self.category = dic["category"]
+        except Exception as ex:
+            pass
+        self.model_path = os.path.join(self.model_dir, self.model_name)
+        os.makedirs(self.model_path, exist_ok=True)
+        try:
+            self.model_file = os.path.join(self.model_path, f"{self.model_name}_{self.category}.pkl")
+        except Exception as ex:
+            print("Error 9900-9", ex)
         self.model = None
 
     @abstractmethod
@@ -36,19 +48,25 @@ class AbstractModels(ABC):
     def normalize_data(self, **data):
         pass
 
-    @abstractmethod
+    # @abstractmethod
+    # def get_model(self):
+    #     pass
+
     def get_model(self):
-        pass
+        s_model = f"self.create_{self.model_name}_model()"
+        # print(s_model)
+        self.model = eval(s_model)
+        self.checkpoint_model()
 
     def save(self):
-        tf.keras.models.save_model(self.model, self.checkpoint_file, overwrite=True)
+        tf.keras.models.save_model(self.model, self.model_file, overwrite=True)
 
     def checkpoint_model(self):
-        if not os.path.exists(self.checkpoint_file):
-            self.model.predict(np.ones((20, 28, 28), dtype=np.float32))
+        if not os.path.exists(self.model_file):
+            # self.model.predict(np.ones((20, 28, 28), dtype=np.float32))
             self.save()
         else:
-            self.model = tf.keras.models.load_model(self.checkpoint_file)
+            self.model = tf.keras.models.load_model(self.model_file)
 
 class History(object):
    def __init__(self):
@@ -90,6 +108,13 @@ class FashionMNistClassify(AbstractModels, ABC):
         self.trainingData = (trainx, trainy)
         self.testingData = (testx, testy)
 
+    def normalize_data(self, **data):
+        trainx = data["trainx"]
+        testx = data["testx"]
+        trainx = trainx/255.0
+        testx = testx/255.0
+        return trainx, testx
+
     def save_images(self):
         # Directory to save images
         image_dir = self.dic["imagesdir"]
@@ -111,14 +136,7 @@ class FashionMNistClassify(AbstractModels, ABC):
                 plt.imsave(image_path, image, cmap='gray')
         return image_urls
 
-    def normalize_data(self, **data):
-        trainx = data["trainx"]
-        testx = data["testx"]
-        trainx = trainx/255.0
-        testx = testx/255.0
-        return trainx, testx
-
-    def get_model(self):
+    def create_ml_model(self):
         self.model = tf.keras.models.Sequential()
         self.model.add(tf.keras.layers.Flatten(input_shape=(28, 28)))
         self.model.add(tf.keras.layers.Dense(80,activation="relu"))
@@ -133,6 +151,38 @@ class FashionMNistClassify(AbstractModels, ABC):
         self.checkpoint_model()
         # ---
 
+    def create_cnn_model(self):
+
+        # nnet = tf.keras.models.Sequential()
+        # net.add(tf.keras.layers.Conv2D(filters=100, kernel_size=(2, 2), padding="same", input_shape = (28, 28, 1)))
+        # nnet.add(tf.keras.layers.MaxPooling2D(pool_size = (2, 2)))
+        # nnet.add(tf.keras.layers.Conv2D(filters=60, kernel_size=(2, 2), padding="same", activation="relu"))
+        # nnet.add(tf.keras.layers.Flatten())
+        # nnet.add(tf.keras.layers.Dense(50, activation="relu"))
+        # nnet.add(tf.keras.layers.Dense(10))
+
+        # self.loss = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
+        # self.optimizer = tf.keras.optimizers.Adam(learning_rate=0.002)
+        # self.metric = tf.keras.metrics.SparseCategoricalAccuracy()
+        # nnet.compile(optimizer=self.optimizer, loss = self.loss, etrics = [self.metric])
+        # nnet = self.checkpointModel(nnet)
+
+        self.model = tf.keras.models.Sequential()
+        self.model.add(tf.keras.layers.Conv2D(filters=100, kernel_size=(2, 2), padding="same", input_shape = (28, 28, 1)))
+        self.model.add(tf.keras.layers.MaxPooling2D(pool_size = (2, 2)))
+        self.model.add(tf.keras.layers.Conv2D(filters=60, kernel_size=(2, 2), padding="same", activation="relu"))
+        self.model.add(tf.keras.layers.Flatten())
+        self.model.add(tf.keras.layers.Dense(50, activation="relu"))
+        self.model.add(tf.keras.layers.Dense(10))
+        # ---None
+        self.loss = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
+        self.optimizer = tf.keras.optimizers.Adam(learning_rate=0.002)
+        self.metric = tf.keras.metrics.SparseCategoricalAccuracy()
+        self.model.compile(optimizer=self.optimizer, loss=self.loss, metrics=[self.metric])
+        # ---
+        self.checkpoint_model()
+        # ---
+
     def getConfusionMatrix(self, labels: np.ndarray,predictions: np.ndarray):
         predictedLabels = np.argmax(predictions, axis=1)
         # fig, ax = plt.subplots()
@@ -141,7 +191,7 @@ class FashionMNistClassify(AbstractModels, ABC):
             cm[labels[i], predictedLabels[i]] += 1
         return cm
 
-    def plotConvergenceHistory(self, history, metricName):
+    def getConvergenceHistory(self, history, metricName):
         # print(metricName)
         # print(history.epoch, history.history[metricName])
         return {"x": history.epoch, "y": history.history[metricName]}
@@ -195,9 +245,10 @@ class FashionMNistClassify(AbstractModels, ABC):
                 print("Error 22-22-3", ex)
 
         dic = {}
-        dic[self.metric._name] = self.plotConvergenceHistory(history, self.metric._name)
-        dic["loss"] = self.plotConvergenceHistory(history, "loss")
+        dic[self.metric._name] = self.getConvergenceHistory(history, self.metric._name)
+        dic["loss"] = self.getConvergenceHistory(history, "loss")
         return dic
+
 
 class SNNAlgo(object):
     def __init__(self, dic):
@@ -233,8 +284,8 @@ class SNNDataProcessing(BaseDataProcessing, BasePotentialAlgo, SNNAlgo):
         # ticker = dic["ticker"]
         # ---------------
         # print(self.IMAGES_PATH)
-        dic = {"n_images":int(dic["n_images"]) ,"imagesdir": self.IMAGES_PATH, "datadir": self.MODELS_PATH,
-               "model_name": "FashionMNistClassify", "batchsize": 10000, "epochs": 60}
+        dic = {"n_images":int(dic["n_images"]) ,"imagesdir": self.IMAGES_PATH, "model_dir": self.MODELS_PATH,
+               "model_name": "ml", "batchsize": 10000, "epochs": 60}
         fmnist = FashionMNistClassify(dic)
 
         image_urls = fmnist.save_images()  # Save the images
@@ -245,15 +296,18 @@ class SNNDataProcessing(BaseDataProcessing, BasePotentialAlgo, SNNAlgo):
         result = {"status": "ok", "image_urls": image_urls}
         return result
 
+
     def train(self, dic):
         print("\n90445-SNN train: \n", "=" * 50, "\n", dic, "\n", "=" * 50)
         # Load stock data using Yahoo Finance
-        # ticker = dic["ticker"]
         # ---------------
-        dic = {"datadir": self.MODELS_PATH, "model_name": "FashionMNistClassify", "batchsize": 10000, "epochs": 60}
+        model_name = dic["model_name"]
+        epochs = int(dic["epochs"])
+        batch_size = int(dic["batch_size"])
+        # ---------------
+        dic = {"model_dir": self.MODELS_PATH, "model_name": model_name,
+               "batchsize": batch_size, "epochs": epochs}
         fmnist = FashionMNistClassify(dic)
-        # fmnist = FashionMNistClassify(dname, batchsize=10000, epochs=60)
-
         charts = fmnist.trainModel()
         for k in charts:
             charts[k]["y"] = [round(100*x)/100 for x in charts[k]["y"]]
@@ -264,8 +318,13 @@ class SNNDataProcessing(BaseDataProcessing, BasePotentialAlgo, SNNAlgo):
 
     def test(self, dic):
         print("90444-SNN: \n", "=" * 50, "\n", dic, "\n", "=" * 50)
-        # ticker = dic["ticker"]
-        dic = {"datadir": self.MODELS_PATH, "model_name": "FashionMNistClassify", "batchsize": 10000, "epochs": 60}
+        # ---------------
+        model_name = dic["model_name"]
+        epochs = int(dic["epochs"])
+        batch_size = int(dic["batch_size"])
+        # ---------------
+        dic = {"model_dir": self.MODELS_PATH, "model_name": model_name,
+               "batchsize": batch_size, "epochs": epochs}
         fmnist = FashionMNistClassify(dic)
         cms = fmnist.testModel()
         for cm in cms:
