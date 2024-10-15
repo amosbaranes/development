@@ -56,8 +56,16 @@ class AbstractModels(ABC):
     def get_model(self):
         s_model = f"self.create_{self.model_name}_model()"
         # print(s_model)
+
+        log_debug("in get_model 151:" + s_model)
+        print("in get_model 151:" + s_model)
+
         self.model = eval(s_model)
+        print("model 2233" ,self.model)
+
+        log_debug("in get_model 155:")
         self.checkpoint_model()
+        log_debug("in get_model 156:")
 
     def save(self):
         tf.keras.models.save_model(self.model, self.model_file, overwrite=True)
@@ -77,19 +85,26 @@ class History(object):
 class FashionMNistClassify(AbstractModels, ABC):
     def __init__(self, dic) -> None:
         # print("A FashionMNistClassify\n", dic)
+
+        log_debug("in obj int of FashionMNistClassify 1")
+
         super(FashionMNistClassify, self).__init__(dic)
+        log_debug("in obj int of FashionMNistClassify 12")
         # print("B FashionMNistClassify\n", dic)
         self.dic = dic
         useGradTape = False
         self.trainingData = None
         self.testingData = None
         # ---
+        log_debug("in obj int of FashionMNistClassify 13")
         self.get_data()
+        log_debug("in obj int of FashionMNistClassify 14")
         # print(self.trainingData[0][0])
         # ---
         self.classes = ["Top", "Trouser", "Pullover", "Dress", "Coat", "Sandal", "Shirt", "Sneaker", "Bag", "Boot"]
         self.nClass = len(self.classes)
         # ---
+        log_debug("in obj int of FashionMNistClassify 14")
         self.batchSize = int(dic["batchsize"])
         self.nEpoch = int(dic["epochs"])
         self.useGradientTape = useGradTape
@@ -98,7 +113,9 @@ class FashionMNistClassify(AbstractModels, ABC):
         self.optimizer = None
         self.metric = None
         # ---
+        log_debug("in obj int of FashionMNistClassify 15")
         self.get_model()
+        log_debug("in obj int of FashionMNistClassify 16")
         # ---
 
     def get_data(self, **data):
@@ -138,19 +155,22 @@ class FashionMNistClassify(AbstractModels, ABC):
         return image_urls
 
     def create_ml_model(self):
-        self.model = tf.keras.models.Sequential()
-        self.model.add(tf.keras.layers.Flatten(input_shape=(28, 28)))
-        self.model.add(tf.keras.layers.Dense(80,activation="relu"))
-        self.model.add(tf.keras.layers.Dense(20, activation="relu"))
-        self.model.add(tf.keras.layers.Dense(10))
-        # ---None
-        self.loss = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
-        self.optimizer = tf.keras.optimizers.Adam(learning_rate=0.005)
-        self.metric = tf.keras.metrics.SparseCategoricalAccuracy()
-        self.model.compile(optimizer=self.optimizer, loss=self.loss, metrics=[self.metric])
-        # ---
-        self.checkpoint_model()
-        # ---
+        try:
+            self.model = tf.keras.models.Sequential()
+            self.model.add(tf.keras.layers.Flatten(input_shape=(28, 28)))
+            self.model.add(tf.keras.layers.Dense(80,activation="relu"))
+            self.model.add(tf.keras.layers.Dense(20, activation="relu"))
+            self.model.add(tf.keras.layers.Dense(10))
+            # ---None
+            self.loss = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
+            self.optimizer = tf.keras.optimizers.Adam(learning_rate=0.005)
+            self.metric = tf.keras.metrics.SparseCategoricalAccuracy()
+            self.model.compile(optimizer=self.optimizer, loss=self.loss, metrics=[self.metric])
+            # ---
+            self.checkpoint_model()
+            # ---
+        except Exception as ex:
+            log_debug("in create model 160-1" + str(ex))
 
     def create_cnn_model(self):
 
@@ -197,7 +217,7 @@ class FashionMNistClassify(AbstractModels, ABC):
         # print(history.epoch, history.history[metricName])
         return {"x": history.epoch, "y": history.history[metricName]}
 
-    def testModel(self):
+    def test(self):
         dic = {}
         n = 0
         ds = ["train", "test"]
@@ -236,7 +256,7 @@ class FashionMNistClassify(AbstractModels, ABC):
         history.epoch = np.arange(self.nEpoch)
         return history
 
-    def trainModel(self):
+    def train(self):
         if self.useGradientTape:
             history = self.gradTapeTraining()
         else:
@@ -250,6 +270,7 @@ class FashionMNistClassify(AbstractModels, ABC):
                 log_debug("after save")
             except Exception as ex:
                 print("Error 22-22-3", ex)
+                log_debug("Error 22-22-3: " + str(ex))
 
         dic = {}
         log_debug("before getConvergenceHistory 1")
@@ -306,7 +327,6 @@ class SNNDataProcessing(BaseDataProcessing, BasePotentialAlgo, SNNAlgo):
         result = {"status": "ok", "image_urls": image_urls}
         return result
 
-
     def train(self, dic):
         print("\n90445-SNN train: \n", "=" * 50, "\n", dic, "\n", "=" * 50)
         # Load stock data using Yahoo Finance
@@ -318,9 +338,10 @@ class SNNDataProcessing(BaseDataProcessing, BasePotentialAlgo, SNNAlgo):
         # ---------------
         dic = {"model_dir": self.MODELS_PATH, "model_name": model_name,
                "batchsize": batch_size, "epochs": epochs}
+        log_debug("before creating obj FashionMNistClassify")
         fmnist = FashionMNistClassify(dic)
         log_debug("ob FashionMNistClassify was created")
-        charts = fmnist.trainModel()
+        charts = fmnist.train()
         for k in charts:
             charts[k]["y"] = [round(100*x)/100 for x in charts[k]["y"]]
 
@@ -341,11 +362,10 @@ class SNNDataProcessing(BaseDataProcessing, BasePotentialAlgo, SNNAlgo):
                "batchsize": batch_size, "epochs": epochs}
         fmnist = FashionMNistClassify(dic)
         log_debug("ob FashionMNistClassify was created")
-        cms = fmnist.testModel()
+        cms = fmnist.test()
         for cm in cms:
             cms[cm] = eval(json.dumps(cms[cm].tolist()))
         result = {"status": "ok", "cms":cms, "classes":fmnist.classes}
-
         # print(result)
 
         return result

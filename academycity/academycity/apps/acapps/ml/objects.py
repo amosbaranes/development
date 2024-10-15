@@ -22,6 +22,8 @@ from .objects_extensions.nn import NNDataProcessing
 from .objects_extensions.mlnn import MLNNDataProcessing
 from .objects_extensions.predict_shocks import SPDataProcessing
 from .objects_extensions.simple_nn import SNNDataProcessing
+from .objects_extensions.cup_handle import CHDataProcessing
+from .objects_extensions.rnn_sp500 import SP500DataProcessing
 #
 from .objects_extensions.test import Test
 #

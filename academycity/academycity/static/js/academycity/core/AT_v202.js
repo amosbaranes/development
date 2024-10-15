@@ -7655,8 +7655,15 @@ acChartCreator.prototype.set_chart_data = function(chart_type)
     var layout = {
       title: chart_type["title"],
       hovermode: ss,
-      xaxis: {title: chart_type["x-axis-title"]},
-      yaxis: {title: chart_type["y-axis-title"]}
+      xaxis: {title: chart_type["x-axis-title"], range: chart_type["x-axis-range"]},
+      yaxis: {title: chart_type["y-axis-title"], range: chart_type["y-axis-range"]}
+
+//, range: chart_type["x-axis-range"]
+            //"range": [/* Start range */, /* End range */]
+
+
+
+
     };
 
     var ss=pp_["remove_buttons"];if(ss==null || ss=="false"){ss=true}else{ss=false}

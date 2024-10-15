@@ -4,6 +4,7 @@ from django.conf import settings
 import matplotlib as mpl
 import numpy as np
 import pandas as pd
+import tensorflow as tf
 from django.apps import apps
 from openpyxl import Workbook, load_workbook
 import math
@@ -12,7 +13,10 @@ import shutil
 from statistics import mean
 import pickle
 from django.db.models import Q
+#
 from ...core.utils import Debug, log_debug, clear_log_debug
+#
+from abc import ABC, abstractmethod
 #
 import matplotlib.pyplot as plt
 from sklearn import linear_model, neighbors
@@ -2877,3 +2881,65 @@ class BasePotentialAlgo(object):
         row_[1] = row.max()
         return row_
 
+
+class AbstractModels(ABC):
+    def __init__(self, dic):
+        # print("AbstractModels\n", dic)
+        try:
+            self.model_dir = dic['model_dir']
+        except Exception as ex:
+            print("Error 20-01", ex, "need to provide dir name")
+            self.model_dir = ""
+        try:
+            self.model_name = dic['model_name']
+        except Exception as ex:
+            print("Error 20-02", ex, "need to provide model name")
+        self.category = "general"
+        try:
+            self.category = dic["category"]
+        except Exception as ex:
+            pass
+        self.model_path = os.path.join(self.model_dir, self.model_name)
+        os.makedirs(self.model_path, exist_ok=True)
+        try:
+            self.model_file = os.path.join(self.model_path, f"{self.model_name}_{self.category}.pkl")
+        except Exception as ex:
+            print("Error 9900-9", ex)
+        self.model = None
+
+    @abstractmethod
+    def get_data(self, **data):
+        pass
+
+    @abstractmethod
+    def normalize_data(self, **data):
+        pass
+
+    # @abstractmethod
+    # def get_model(self):
+    #     pass
+
+    def get_model(self):
+        s_model = f"self.create_{self.model_name}_model()"
+        # print(s_model)
+
+        log_debug("in get_model 151:" + s_model)
+        print("in get_model 151:" + s_model)
+
+        self.model = eval(s_model)
+        print("model 2233" ,self.model)
+
+        log_debug("in get_model 155:")
+        self.checkpoint_model()
+        log_debug("in get_model 156:")
+
+    def save(self):
+        tf.keras.models.save_model(self.model, self.model_file, overwrite=True)
+
+    def checkpoint_model(self):
+        if not os.path.exists(self.model_file):
+            # self.model.predict(np.ones((20, 28, 28), dtype=np.float32))
+            # self.model.predict(np.ones((20, 10, 4), dtype=np.float32))
+            self.save()
+        else:
+            self.model = tf.keras.models.load_model(self.model_file)

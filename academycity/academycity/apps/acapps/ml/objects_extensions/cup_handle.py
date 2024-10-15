@@ -1,202 +1,438 @@
 import numpy as np
 import pandas as pd
+from datetime import datetime, timedelta
+import math
+import json
 import tensorflow as tf
-from tensorflow.keras import layers, models
-import os
-
 import matplotlib.pyplot as plt
+import os
+import seaborn as sns
+from tensorboard.plugins.image.summary import image
+from twisted.words.protocols.jabber.error import exceptionFromStreamError
+from tensorflow.keras.models import Sequential, load_model
+
+from sklearn.model_selection import train_test_split
+from tensorflow.keras import layers
 from matplotlib.dates import (YEARLY, DateFormatter,
                               YearLocator, MonthLocator, DayLocator)
+# -----
+from ..basic_ml_objects import BaseDataProcessing, BasePotentialAlgo, AbstractModels
+from ....core.utils import Debug, log_debug, clear_log_debug
+# -----
+import yfinance as yf
+# -----
+from abc import ABC, abstractmethod
+
+class History(object):
+   def __init__(self):
+    self.history = {}
+    self.epoch = None
+
+class CupHandle(AbstractModels, ABC):
+    def __init__(self, dic) -> None:
+        # print("A FashionMNistClassify\n", dic)
+        # log_debug("in obj init of CupHandle 1")
+        super(CupHandle, self).__init__(dic)
+        log_debug("in obj init of CupHandle 12")
+        # print("B CupHandle\n", dic)
+        self.dic = dic
+        self.trainData = None
+        self.testData = None
+
+        # ---
+        log_debug("in obj init 13")
+        is_get_data = True
+        try:
+            is_get_data = dic["is_get_data"]
+        except Exception as ex:
+            pass
+        if is_get_data:
+            self.get_data()
+        log_debug("in obj init 14")
+        # print(self.trainData[0][0])
+        # ---
+        self.classes = ["cup_handle_event", "not_cup_handle_event"]
+        self.nClass = len(self.classes)
+        # ---
+        log_debug("in obj int of FashionMNistClassify 14")
+        self.batchSize = int(dic["batchsize"])
+        self.nEpoch = int(dic["epochs"])
+        # ---
+        self.loss = None
+        self.optimizer = None
+        self.metric = None
+        # ---
+        log_debug("in obj int of FashionMNistClassify 15")
+        self.get_model()
+        log_debug("in obj int of FashionMNistClassify 16")
+        # ---
+
+    def get_data(self, **data):
+        df = pd.read_csv(os.path.join(self.dic["input_dir"], "train.csv"))
+        # print("A\n", df, "\n", df.shape)
+        df.drop(columns=["Day"], inplace=True)
+        # print("B\n", df.columns)
+        data = np.transpose(df.reset_index(drop=True).values)
+        # print("train B1")
+        y_actual = np.array([int(c.startswith("t")) for c in df.columns], dtype=np.int)
+        # print(y_actual)
+        # -------
+        # Split data and label array into train and test sets
+        trainx, testx, trainy, testy = train_test_split(
+            data, y_actual, test_size=0.05, random_state=42, stratify=y_actual  # Stratify for label balance if needed
+        )
+        # ------
+        trainx, testx = self.normalize_data(trainx=trainx, testx=testx)
+        # ---
+        self.trainData = (trainx, trainy)
+        self.testData = (testx, testy)
+
+    def normalize_data(self, **data):
+        trainx = data["trainx"]
+        testx = data["testx"]
+        def get_image_data(data_to_convert):
+            data_final = np.zeros((data_to_convert.shape[0], 20, 20, 1), dtype=np.float32)
+            for i in range(data_to_convert.shape[0]):
+                for j in range(20):
+                    pixel = int(data_to_convert[i, j] * 20)
+                    if pixel == 20:
+                        pixel = 19
+                    data_final[i, j, pixel, 0] = 1
+            return data_final
+        trainx = get_image_data(trainx)
+        testx = get_image_data(testx)
+        return trainx, testx
+
+    def create_cnn_model(self):
+        self.model = Sequential()
+        self.model.add(layers.Conv2D(10, (3, 3), activation="relu", input_shape=(20, 20, 1)))
+        self.model.add(layers.AveragePooling2D(pool_size=(2, 2)))
+        self.model.add(layers.Conv2D(5, (4, 4), activation="relu"))
+        self.model.add(layers.Flatten())
+        self.model.add(layers.Dense(2, activation="relu"))
+        self.model.add(layers.Dense(2))
+        # ---
+        self.model.summary()
+        # ---
+        self.loss = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
+        self.optimizer = tf.keras.optimizers.Adam(learning_rate=0.002)
+        self.metric = tf.keras.metrics.SparseCategoricalAccuracy()
+        self.model.compile(optimizer=self.optimizer, loss=self.loss, metrics=[self.metric])
+        # ---
+        self.checkpoint_model()
+        # ---
+
+    def getConfusionMatrix(self, labels: np.ndarray,predictions: np.ndarray):
+        predictedLabels = np.argmax(predictions, axis=1)
+        # fig, ax = plt.subplots()
+        cm = np.zeros((self.nClass, self.nClass),dtype=np.int32)
+        for i in range(labels.shape[0]):
+            cm[labels[i], predictedLabels[i]] += 1
+        return cm
+
+    def getConvergenceHistory(self, history, metricName):
+        # print(metricName)
+        # print(history.epoch, history.history[metricName])
+        return {"x": history.epoch, "y": history.history[metricName]}
+
+    def test(self):
+        dic = {}
+        n = 0
+        ds = ["train", "test"]
+        for X, y in [self.trainData, self.testData]:
+            log_debug("before model.predict")
+            predictClass = self.model.predict(X)
+            log_debug("after model.predict")
+            cm = self.getConfusionMatrix(y, predictClass)
+            log_debug("after getConfusionMatrix")
+            dic[ds[n]] = cm
+            n +=1
+        return dic
+
+    def train(self):
+        dic = {}
+        try:
+            log_debug("before model.fit")
+            history = self.model.fit(self.trainData[0], self.trainData[1],
+                                    epochs = self.nEpoch)
+            log_debug("after model.fit")
+            self.save()
+            log_debug("after save")
+            # ---
+            log_debug("before getConvergenceHistory 1")
+            dic[self.metric._name] = self.getConvergenceHistory(history, self.metric._name)
+            log_debug("before getConvergenceHistory 2")
+            dic["loss"] = self.getConvergenceHistory(history, "loss")
+            log_debug("after getConvergenceHistory 1")
+        except Exception as ex:
+            print("Error 22-22-3", ex)
+            log_debug("Error 22-22-3: " + str(ex))
+
+        try:
+            self.model.evaluate(self.testData[0], self.testData[1], verbose=2)
+            print("C66 End train")
+            # ---
+            # predictions = self.model(self.trainData[0][:1]).numpy()
+            # print(predictions)
+            # ---
+            # this is a probabilistic model, add a softmax layer at the end
+            self.model = tf.keras.Sequential([self.model, tf.keras.layers.Softmax()])
+        except Exception as ex:
+            print("Error 22-22-5", ex)
+            log_debug("Error 22-22-5: " + str(ex))
+        return dic
+
+    def predict(self):
+        print("predict")
+
+        tickers = self.dic["tickers"]
+        if tickers[0] == "ALL":
+            url = 'https://en.wikipedia.org/wiki/List_of_S%26P_500_companies'
+            # Read the tables from the Wikipedia page
+            tables = pd.read_html(url)
+            # The first table on the page contains the S&P 500 tickers
+            sp500_table = tables[0]
+            # Get the 'Symbol' column, which contains the tickers
+            tickers = sp500_table['Symbol'].tolist()
+            # print(tickers)
+
+        output_dir = self.dic["output_dir"]
+        days_of_data = int(self.dic["days_of_data"])
+        # ---
+        period_begin = 40
+        period_end = 70
+        now_date = datetime.now()
+        start_train_date = now_date - timedelta(days=math.ceil(days_of_data))
+        # ---
+        res_df = pd.DataFrame(data={"ticker": [], "days": [], "Begin": [], "End": []})
+        for ticker in tickers:
+            # -----------
+            if ticker in ["BRK.B", "BF.B"]:
+                continue
+            print(ticker)
+            # -----------
+            df_ticker = yf.download(ticker, start=start_train_date, end=now_date)
+            df_ticker.reset_index(inplace=True)
+            # print(df_ticker)
+            # -----------
+            for period in range(period_begin, period_end):
+                # print(ticker, period)
+                res_df = self.identify(self.model, df_ticker, period, ticker, res_df)
+        res_df = res_df.sort_values(by='Begin')
+        # output_file = os.path.join(output_dir, ticker+"_output.csv")
+        output_file = os.path.join(output_dir, "all_output.csv")
+        print(res_df)
+        res_df.to_csv(output_file, index=False)
+
+    def get_plots(self):
+        print("plots")
+        output_dir = self.dic["output_dir"]
+        # ---
+        output_file = os.path.join(output_dir, "all_output.csv")
+        df = pd.read_csv(output_file)
+        df.loc[:, "Begin"] = pd.to_datetime(df.loc[:, "Begin"])
+        df.loc[:, "End"] = pd.to_datetime(df.loc[:, "End"])
+        ticker = None
+        ticker_df = None
+        last_ticker = ""
+        plots = {}
+        for rownum in range(df.shape[0]):
+            ticker = df.loc[rownum, "ticker"]
+            begin_date = df.loc[rownum, "Begin"]
+            end_date = df.loc[rownum, "End"]
+
+            begin_date_ = begin_date.strftime('%Y/%m/%d')
+            print(begin_date, end_date)
+            # ---
+            if ticker != last_ticker:
+                ticker_df = yf.download(ticker, start=begin_date, end=end_date)
+                ticker_df.reset_index(inplace=True)
+                ticker_df["Date"] = ticker_df["Date"].dt.date
+                # Convert the 'Date' column to string with a custom format (e.g., 'YYYY/MM/DD')
+                ticker_df['Date'] = ticker_df['Date'].apply(lambda x: x.strftime('%Y/%m/%d'))
+
+                t = ticker+":"+begin_date_
+                plots[t] = {"index":[], "date":[], "price":[]}
+                for index, row in ticker_df.iterrows():
+                    plots[t]["date"].append(row["Date"])
+                    plots[t]["index"].append(index)
+                    plots[t]["price"].append(round(float(row["Adj Close"])*100)/100)
+        return plots
+
+    def rescaleXDimension(self, ar, xsize):
+        if ar.shape[0] == xsize:
+            return ar
+
+        if ar.shape[0] > xsize:
+            px = ar
+            px2 = np.zeros(xsize, dtype=np.float64)
+            px2[0] = px[0]
+            px2[-1] = px[-1]
+            delta = float(ar.shape[0])/xsize
+            for i in range(1, xsize-1):
+                k = int(i*delta)
+                fac1 = i*delta - k
+                fac2 = k + 1 - i*delta
+                px2[i] = fac1 * px[k+1] + fac2 * px[k]
+
+            return px2
+        raise ValueError("df rows are less than required array elements")
+
+    def identify(self, model, df_ticker, ndays, ticker, res_df):
+        px_arr = df_ticker.loc[:, "Adj Close"].values
+        date_arr = df_ticker.loc[:, "Date"].values
+        days_identified = set(res_df.loc[res_df.loc[:, "ticker"].eq(ticker), "Begin"])
+        inp = np.zeros((1, 20, 20, 1), dtype=np.float32)
+        for i in range(df_ticker.shape[0] - ndays):
+            if date_arr[i] in days_identified:
+                continue
+            inp[:, :, :, :] = 0
+            px = px_arr[i:i+ndays]
+            mn = px.min()
+            mx = px.max()
+            transform_px = np.divide(np.subtract(px, mn), mx-mn)
+            transform = self.rescaleXDimension(transform_px, 20)
+            for j in range(20):
+                vl = int(transform[j] * 20)
+                if vl == 20:
+                    vl = 19
+                inp[0, j, vl, 0] = 1
+            outval = model(inp).numpy()
+            if outval[0, 1] >= 0.9:
+                print("%s from %s - %s dates" % (ticker, date_arr[i], date_arr[i+ndays-1]))
+                res_df = res_df.append({"ticker":ticker, "days":ndays, "Begin": date_arr[i], "End": date_arr[i+ndays-1]},
+                                       ignore_index=True)
+        return res_df
 
 
-class DatePlotter(object):
-    def __init__(self):
-        self.majorLocator = MonthLocator() #YearLocator()  # every year
-        self.minorLocator = DayLocator()  # every month
-        self.formatter = DateFormatter('%m/%d/%y') #DateFormatter('%Y')
+class CHAlgo(object):
+    def __init__(self, dic):
+        # print("90567-8-000 Algo\n", dic, '\n', '-'*50)
+        try:
+            super(CHAlgo, self).__init__()
+        except Exception as ex:
+            print("Error 9057-010 Algo:\n" + str(ex), "\n", '-' * 50)
+        self.app = dic["app"]
 
-    def plot(self, df, datecol, valcols, xlabel='date', ylabel=None, labels=None, round='Y'):
-        if not labels:
-            labels = valcols
+class CHDataProcessing(BaseDataProcessing, BasePotentialAlgo, CHAlgo):
+    def __init__(self, dic):
+        # print("908889-010 CHDataProcessing\n", dic, '\n', '-' * 50)
+        super().__init__(dic)
+        # # print("9005 DataProcessing ", self.app)
+        # self.MODELS_PATH = os.path.join(self.TO_OTHER, "models")
+        # os.makedirs(self.MODELS_PATH, exist_ok=True)
+        # # print(self.MODELS_PATH)
+        # # -----
+        # self.SCALER_PATH = os.path.join(self.TO_OTHER, "scalers")
+        # os.makedirs(self.SCALER_PATH, exist_ok=True)
+        # -----
 
-        fig, ax = plt.subplots()
-        for val,lb in zip(valcols, labels):
-            ax.plot(datecol, val, data=df, label=lb)
-        plt.xlabel(xlabel)
-        if ylabel:
-            plt.ylabel(ylabel)
+    def upload_train_file(self, dic):
+        print("90974-1-3: \n", dic, "\n", "="*50)
 
-        # format the ticks
-        ax.xaxis.set_major_locator(self.majorLocator)
-        ax.xaxis.set_major_formatter(self.formatter)
-        ax.xaxis.set_minor_locator(self.minorLocator)
+        file_path = self.upload_file(dic)["file_path"]
+        # print('file_path')
+        # print(file_path)
+        result = {"status": "ok"}
+        # print(result)
+        return result
 
-        # round to nearest years.
-        datemin = np.datetime64(df[datecol].values[0], round)
-        nr = df.shape[0]-1
-        datemax = np.datetime64(df[datecol].values[nr], round) + np.timedelta64(1, round)
-        ax.set_xlim(datemin, datemax)
+    def train(self, dic):
+        print("\n90466-CH train: \n", "=" * 50, "\n", dic, "\n", "=" * 50)
 
-        # format the coords message box
-        ax.format_xdata = DateFormatter('%Y-%m-%d')
-        ax.format_ydata = lambda x: '$%1.2f' % x  # format the price.
-        handles, labels = ax.get_legend_handles_labels()
-        ax.legend(handles, labels, loc='upper left')
-        ax.grid(True)
+        clear_log_debug()
+        model_name = "cnn" # dic["model_name"]
+        epochs = 5         # int(dic["epochs"])
+        batch_size = 32    # int(dic["batch_size"])
+        # ---------------
+        # tickers = ["MMM", "AXP", "AAP", "LBA", "CAT", "CVX", "CSCO", "KO", "DOW", "XOM", "GS", "HD", "IBM",
+        #                 "INTC", "JNJ", "JPM", "MCD", "MRK", "MSFT", "NKE", "PFE", "PG", "RTX", "TRV", "UNH",
+        #                 "VZ", "V", "WMT", "WBA", "DIS"]
+        tickers = ["TRV"] # "IBM"
+        # ---------------
+        dic = {"model_dir": self.MODELS_PATH, "model_name": model_name,
+               "batchsize": batch_size, "epochs": epochs,
+               "tickers": tickers, "input_dir": self.TO_EXCEL,
+               "output_dir": self.TO_EXCEL_OUTPUT}
 
-        # rotates and right aligns the x labels, and moves the bottom of the
-        # axes up to make room for them
-        fig.autofmt_xdate()
-        return plt
+        log_debug("before creating obj CupHandle")
+        ch_obj=CupHandle(dic)
 
+        # not needed
+        # ch_obj.get_data()
 
-def plotData(price_data_dir, output_dir):
-    df = pd.read_csv(os.path.join(output_dir, "ch_out.csv"))
-    df.loc[:, "Begin"] = pd.to_datetime(df.loc[:, "Begin"])
-    df.loc[:, "End"] = pd.to_datetime(df.loc[:, "End"])
-    last_stock = None
-    stock_df = None
-    cnt = 0
-    for rownum in range(df.shape[0]):
-        stock = df.loc[rownum, "Stock"]
-        begin = df.loc[rownum, "Begin"]
-        end = df.loc[rownum, "End"]
-        if stock != last_stock:
-            stock_df = pd.read_csv(os.path.join(price_data_dir, "%s.csv" % stock))
-            stock_df.loc[:, "Date"] = pd.to_datetime(stock_df.loc[:, "Date"])
-            cnt = 0
+        # print("Z12")
+        charts = ch_obj.train()
+        # print("Z13")
+        for k in charts:
+            charts[k]["y"] = [round(100*x)/100 for x in charts[k]["y"]]
+        print("charts\n", charts)
 
-        ibeg = stock_df.loc[stock_df.loc[:, "Date"].eq(begin), :].index[0]
-        iend = stock_df.loc[stock_df.loc[:, "Date"].eq(end), :].index[0]
-
-        dplt = DatePlotter()
-        plt = dplt.plot(stock_df.loc[ibeg:iend, :], 'Date', ["Adj Close"], xlabel='Date',
-                        ylabel='Price', labels=[stock], round='D')
-        plt.title("Cup-and-Handle in %s" % stock)
-        # plt.show()
-        filename = os.path.join(output_dir, "%s_%d.png" % (stock, cnt))
-        plt.savefig(filename)
-        cnt = cnt + 1
-
-def buildModel():
-    model = models.Sequential()
-    model.add(layers.Conv2D(10, (3, 3), activation="relu", input_shape=(20, 20, 1)))
-    model.add(layers.AveragePooling2D(pool_size=(2, 2)))
-    model.add(layers.Conv2D(5, (4, 4), activation="relu"))
-    model.add(layers.Flatten())
-    model.add(layers.Dense(2, activation="relu"))
-    model.add(layers.Dense(2))
-    model.summary()
-    loss_fn = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
-    model.compile(optimizer='adam',
-                  loss=loss_fn,
-                  metrics=['accuracy'])
-    return model
+        # plotData(price_data_dir=self.PRICE_PATH, output_dir=self.TO_EXCEL_OUTPUT)
 
 
-def trainModel(model, df, training_rows):
-    data = np.transpose(df.reset_index(drop=True).values)
-    y_actual = np.array([int(c.startswith("t")) for c in df.columns], dtype=np.int)
-    train_data = data[0:training_rows, :]
-    train_data_final = np.zeros((training_rows, 20, 20, 1), dtype=np.float32)
-    for i in range(training_rows):
-        for j in range(20):
-            pixel = int(train_data[i, j] * 20)
-            if pixel == 20:
-                pixel = 19
-            train_data_final[i, j, pixel, 0] = 1
-    train_output = y_actual[0:training_rows]
-    model.fit(train_data_final, train_output, epochs=5)
 
-    validation_data = data[training_rows:, :]
-    validation_dt = np.zeros((validation_data.shape[0], 20, 20, 1), dtype=np.int)
-    for i in range(training_rows, validation_dt.shape[0]):
-        for j in range(20):
-            pixel = int(train_data[i, j] * 20)
-            if pixel == 20:
-                pixel = 19
-            validation_dt[i, j, pixel, 0] = 1
-    validation_output = y_actual[training_rows:]
-    model.evaluate(validation_dt, validation_output, verbose=2)
-    #predictions = model(x_train[:1]).numpy()
-    # this is a probabilistic model, add a softmax layer at the end
-    new_model = tf.keras.Sequential([model, tf.keras.layers.Softmax()])
-    return new_model
+        result = {"status": "ok", "charts": charts}
+        return result
 
+    def test(self, dic):
+        print("90499-CH: \n", "=" * 50, "\n", dic, "\n", "=" * 50)
 
-def rescaleXDimension(ar, xsize):
-    if ar.shape[0] == xsize:
-        return ar
+        # not used here
 
-    if ar.shape[0] > xsize:
-        px = ar
-        px2 = np.zeros(xsize, dtype=np.float64)
-        px2[0] = px[0]
-        px2[-1] = px[-1]
-        delta = float(ar.shape[0])/xsize
-        for i in range(1, xsize-1):
-            k = int(i*delta)
-            fac1 = i*delta - k
-            fac2 = k + 1 - i*delta
-            px2[i] = fac1 * px[k+1] + fac2 * px[k]
+        result = {"status": "ok"}
+        # print(result)
+        return result
 
-        return px2
-    raise ValueError("df rows are less than required price array elements")
+    def predict(self, dic):
+        print("\n90477-1-CH predic: \n", "=" * 50, "\n", dic, "\n", "=" * 50)
 
+        clear_log_debug()
+        model_name = "cnn"  # dic["model_name"]
+        epochs = 5  # int(dic["epochs"])
+        batch_size = 32  # int(dic["batch_size"])
+        ticker = dic["ticker"].upper()
+        tickers = [ticker]  # "IBM"
+        days_of_data = dic["days_of_data"]
+        print(tickers)
+        # ---------------
+        dic = {"model_dir": self.MODELS_PATH, "model_name": model_name,
+               "batchsize": batch_size, "epochs": epochs,
+               "days_of_data":days_of_data,
+               "tickers": tickers, "input_dir": self.TO_EXCEL,
+               "output_dir": self.TO_EXCEL_OUTPUT,
+               "is_get_data": False}
 
-def identify(model, df_stock, ndays, stock, res_df):
-    px_arr = df_stock.loc[:, "Adj Close"].values
-    date_arr = df_stock.loc[:, "Date"].values
-    days_identified = set(res_df.loc[res_df.loc[:, "Stock"].eq(stock), "Begin"])
-    inp = np.zeros((1, 20, 20, 1), dtype=np.float32)
-    for i in range(df_stock.shape[0] - ndays):
-        if date_arr[i] in days_identified:
-            continue
-        inp[:, :, :, :] = 0
-        px = px_arr[i:i+ndays]
-        mn = px.min()
-        mx = px.max()
-        transform_px = np.divide(np.subtract(px, mn), mx-mn)
-        transform = rescaleXDimension(transform_px, 20)
-        for j in range(20):
-            vl = int(transform[j] * 20)
-            if vl == 20:
-                vl = 19
-            inp[0, j, vl, 0] = 1
+        log_debug("before creating obj CupHandle")
+        ch_obj = CupHandle(dic)
+        ch_obj.predict()
 
-        outval = model(inp).numpy()
-        if outval[0, 1] >= 0.9:
-            print("%s from %s - %s dates" % (stock, date_arr[i], date_arr[i+ndays-1]))
-            res_df = res_df.append({"Stock":stock, "Begin": date_arr[i], "End": date_arr[i+ndays-1]},
-                                   ignore_index=True)
-    return res_df
+        # plotData(price_data_dir=self.PRICE_PATH, output_dir=self.TO_EXCEL_OUTPUT)
 
+        result = {"status": "ok"}
+        return result
 
-def processData(stock_list, input_dir, price_data_dir, output_dir):
-    res_df = pd.DataFrame(data={"Stock":[], "Begin":[], "End":[]})
-    df = pd.read_csv(os.path.join(input_dir, "train.csv"))
-    df.drop(columns=["Day"], inplace=True)
-    obs = len(df.columns)
-    training_perc = 0.95
-    train_rows = int(obs * training_perc)
-    model = buildModel()
-    model = trainModel(model, df, training_rows=train_rows)
+    def get_plots(self, dic):
+        print("90488-CH: \n", "=" * 50, "\n", dic, "\n", "=" * 50)
 
-    # predict
-    period_begin = 40
-    period_end = 70
-    for stock in stock_list:
-        df_stock = pd.read_csv(os.path.join(price_data_dir, "%s.csv"%stock))
-        for period in range(period_begin, period_end):
-            res_df = identify(model, df_stock, period, stock, res_df)
-    res_df.to_csv(os.path.join(output_dir, "ch_out.csv"), index=False)
+        clear_log_debug()
+        model_name = "cnn"  # dic["model_name"]
+        epochs = 5  # int(dic["epochs"])
+        batch_size = 32  # int(dic["batch_size"])
+        # ---------------
+        dic = {"model_dir": self.MODELS_PATH, "model_name": model_name,
+               "batchsize": batch_size, "epochs": epochs,
+               "days_of_data":0,
+               "tickers": "", "input_dir": self.TO_EXCEL,
+               "output_dir": self.TO_EXCEL_OUTPUT,
+               "is_get_data": False}
+        log_debug("before creating obj CupHandle")
+        ch_obj = CupHandle(dic)
+        plots = ch_obj.get_plots()
 
+        print(plots)
 
-if __name__ == "__main__":
-    input_dir = r"C:\prog\cygwin\home\samit_000\value_momentum_new\value_momentum\data"
-    price_data_dir = r"C:\prog\cygwin\home\samit_000\value_momentum_new\value_momentum\data\price"
-    output_dir = r"C:\prog\cygwin\home\samit_000\value_momentum_new\value_momentum\output\pattern"
-    df = pd.read_table(os.path.join(input_dir, "dow.txt"), header=None)
-    stocks = ["TRV", "IBM"] # df.loc[:, 0].values
-    processData(stocks, input_dir, price_data_dir, output_dir)
-    plotData(price_data_dir, output_dir)
+        result = {"status": "ok", "plots": plots}
+        # print(result)
+        return result
+
