@@ -1,6 +1,10 @@
+from tensorflow.python.keras.backend_config import epsilon
+
 from ..basic_ml_objects import BaseDataProcessing, BasePotentialAlgo
 
 from ....core.utils import log_debug, clear_log_debug
+
+from stable_baselines3 import DQN
 
 import os
 os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
@@ -79,7 +83,7 @@ class Wall:
         self.create_hole()
 
     def create_hole(self):
-        hole = np.zeros(shape=(self.height, self.hole_width))
+        # hole = np.zeros(shape=(self.height, self.hole_width))
         self.hole_pos = randint(0, self.width - self.hole_width)
         self.body[:, self.hole_pos:self.hole_pos + self.hole_width] = 0
 
@@ -358,13 +362,12 @@ class DQNAgent:
         self.MINIBATCH_SIZE = MINIBATCH_SIZE
         self.name = [str(name) + " | " + "".join(str(c) + "C | " for c in conv_list) + "".join(
             str(d) + "D | " for d in dense_list) + "".join(u + " | " for u in util_list)][0]
-
-        # Main model
-        self.model = self.create_model()
-
-        # Target network
-        self.target_model = self.create_model()
-        self.target_model.set_weights(self.model.get_weights())
+        self.model = None
+        self.target_model = None
+        self.epsilon = None
+        # ---
+        self.load_model()
+        # ---
 
         # An array with last n steps for training
         self.replay_memory = deque(maxlen=REPLAY_MEMORY_SIZE)
@@ -415,7 +418,6 @@ class DQNAgent:
         model.compile(optimizer=Adam(learning_rate=0.001),
                       loss={'output': 'mse'},
                       metrics={'output': 'accuracy'})
-
         return model
 
     # Adds step's data to a memory replay array
@@ -480,6 +482,36 @@ class DQNAgent:
         if game_over:
             self.target_update_counter += 1
 
+    def load_model(self):
+        checkpoint_name = f"{self.name}.model"
+        file_name = f'{self.path}models/{checkpoint_name}'
+        # Main model
+        if os.path.exists(file_name):
+            print(f"Loading model from {file_name}")
+            self.model = load_model(file_name)
+        else:
+            print("Creating new model")
+            self.model = self.create_model()
+        self.target_model = self.create_model()
+        self.target_model.set_weights(self.model.get_weights())
+        # ---
+        epsilon_name = f"{self.name}.pkl"
+        epsilon_file_name = f'{self.path}pickles/{epsilon_name}'
+        if os.path.exists(epsilon_file_name):
+            print(f"Loading epsilon from {epsilon_file_name}")
+            with open(epsilon_file_name, 'rb') as handle:
+                self.epsilon = pickle.load(handle)
+
+    def save_model(self):
+        checkpoint_name = f"{self.name}.model"
+        file_name = f'{self.path}models/{checkpoint_name}'
+        self.model.save(file_name)
+
+        epsilon_name = f"{self.name}.pkl"
+        epsilon_file_name = f'{self.path}pickles/{epsilon_name}'
+        with open(epsilon_file_name, 'wb') as handle:
+            pickle.dump(self.epsilon, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
     def save(self, episode, max_reward, average_reward, min_reward, path):
         checkpoint_name = f"{self.name}| Eps({episode}) | max({max_reward:_>7.2f}) | avg({average_reward:_>7.2f}) | min({min_reward:_>7.2f}).model"
         self.model.save(f'{path}models/{checkpoint_name}')
@@ -490,6 +522,10 @@ class DQNAgent:
     # Trains main network every step during episode
     def train(self, m, epsilon, best_average, ecc_enabled, epsilon_decay, max_epsilon, ef_enabled, avg_reward_info,
               fluctuate_every, EPISODES):
+
+        if self.epsilon is None:
+            self.epsilon = epsilon
+
         if ecc_enabled: MAX_EPS_NO_INC = m["ECC_Settings"]["MAX_EPS_NO_INC"]
         MIN_EPSILON = 0.001  # Minimum epsilon value
         EPSILON_DECAY = epsilon_decay
@@ -497,12 +533,13 @@ class DQNAgent:
         EF_Enabled = ef_enabled
         FLUCTUATE_EVERY = fluctuate_every
         best_score = -100
-        max_reward_info = [[1, best_score, epsilon]]
+        max_reward_info = [[1, best_score, self.epsilon]]
         eps_no_inc_counter = 0  # Counts episodes with no increment in reward
         best_weights = [self.model.get_weights()]
         ep_rewards = [best_average]
 
         for episode in tqdm(range(1, EPISODES + 1), ascii=True, unit='episodes'):
+            print("Episode: ", episode, "\n", "="*30)
             if m["best_only"]: self.model.set_weights(best_weights[0])
             self.env.score_increased = False
             # Update tensorboard step every episode
@@ -519,7 +556,7 @@ class DQNAgent:
             game_over = self.env.game_over
             while not game_over:
                 # This part stays mostly the same, the change is to query a model for Q values
-                action = self.act(current_state, epsilon)
+                action = self.act(current_state, self.epsilon)
                 new_state, reward, game_over = self.env.step(action)
                 # Transform new continuous state to new discrete state and count reward
                 episode_reward += reward
@@ -552,7 +589,7 @@ class DQNAgent:
                 max_reward = max(ep_rewards[-AGGREGATE_STATS_EVERY:])
                 self.tensorboard.update_stats(reward_avg=average_reward, reward_min=min_reward,
                                                reward_max=max_reward,
-                                               epsilon=epsilon)
+                                               epsilon=self.epsilon)
 
                 # Save models, but only when avg reward is greater or equal a set value
                 if not episode % SAVE_MODEL_EVERY:
@@ -561,35 +598,37 @@ class DQNAgent:
                 if average_reward > best_average:
                     best_average = average_reward
                     # update ECC variables:
-                    avg_reward_info.append([episode, best_average, epsilon])
+                    avg_reward_info.append([episode, best_average, self.epsilon])
                     eps_no_inc_counter = 0
                     best_weights[0] = self.save(episode, max_reward, average_reward,
                                                  min_reward, self.path)
+                    self.save_model()
 
                 if ecc_enabled and eps_no_inc_counter >= MAX_EPS_NO_INC:
-                    epsilon = avg_reward_info[-1][2]  # Get epsilon value of the last best reward
+                    self.epsilon = avg_reward_info[-1][2]  # Get epsilon value of the last best reward
                     eps_no_inc_counter = 0
 
             if episode_reward > best_score:
                 try:
                     best_score = episode_reward
-                    max_reward_info.append([episode, best_score, epsilon])
+                    max_reward_info.append([episode, best_score, self.epsilon])
 
                     # Save Agent :
                     best_weights[0] = self.save(episode, max_reward, average_reward,
                                                 min_reward, self.path)
+                    self.save_model()
                 except:
                     pass
 
             # Decay epsilon
             if epsilon > MIN_EPSILON:
-                epsilon *= EPSILON_DECAY
-                epsilon = max(MIN_EPSILON, epsilon)
+                self.epsilon *= EPSILON_DECAY
+                self.epsilon = max(MIN_EPSILON, self.epsilon)
 
             # Epsilon Fluctuation:
             if EF_Enabled:
                 if not episode % FLUCTUATE_EVERY:
-                    epsilon = MAX_EPSILON
+                    self.epsilon = MAX_EPSILON
         return round(sum(ep_rewards) / len(ep_rewards), 2), max_reward_info, avg_reward_info
 
 ######################################################################################
@@ -598,8 +637,8 @@ class DQNAgent:
 # ## Constants:
 # RL Constants:
 DISCOUNT = 0.99
-REPLAY_MEMORY_SIZE = 3_000  # How many last steps to keep for model training
-MIN_REPLAY_MEMORY_SIZE = 1_000  # Minimum number of steps in a memory to start training
+REPLAY_MEMORY_SIZE = 3000  # How many last steps to keep for model training
+MIN_REPLAY_MEMORY_SIZE = 1000  # Minimum number of steps in a memory to start training
 UPDATE_TARGET_EVERY = 20  # Terminal states (end of episodes)
 MIN_REWARD = 1000  # For model save
 SAVE_MODEL_EVERY = 1000  # Episodes
@@ -657,6 +696,7 @@ SHOW_PREVIEW = False
 
 
 # https://github.com/ModMaamari/reinforcement-learning-using-python
+
 class DNQCNNAlgo(object):
     def __init__(self, dic):
         # print("90567-8-000 DNQCNNAlgo\n", dic, '\n', '-'*50)
@@ -708,8 +748,6 @@ class DNQCNNDataProcessing(BaseDataProcessing, BasePotentialAlgo, DNQCNNAlgo):
                         "EF_Settings": {"EF_Enabled": True, "FLUCTUATIONS": 2},
                         "ECC_Settings": {"ECC_Enabled": True, "MAX_EPS_NO_INC": int(EPISODES * 0.2)}}]
 
-        TendTime = time.time()
-
         # A dataframe used to store grid search results
         res = pd.DataFrame(columns=["Model Name", "Convolution Layers", "Dense Layers", "Batch Size", "ECC", "EF",
                                     "Best Only", "Average Reward", "Best Average", "Epsilon 4 Best Average",
@@ -718,6 +756,8 @@ class DNQCNNDataProcessing(BaseDataProcessing, BasePotentialAlgo, DNQCNNAlgo):
 
         # Grid Search:
         for i, m in enumerate(models_arch):
+            # if i == 1 or i == 2:
+            #     continue
 
             log_debug("dqn-cnn run: " + str(i))
 
@@ -804,6 +844,8 @@ class DNQCNNDataProcessing(BaseDataProcessing, BasePotentialAlgo, DNQCNNAlgo):
             max_df.to_csv(f"{self.PATH}results/{MODEL_NAME}-Results-Max.csv")
 
         ######################################################################################
+
+        TendTime = time.time()
         print(f"Training took {round((TendTime - TstartTime) / 60)} Minutes ")
         print(f"Training took {round((TendTime - TstartTime) / 3600)} Hours ")
 

@@ -9,6 +9,7 @@ from twisted.words.protocols.jabber.error import exceptionFromStreamError
 
 
 from tensorflow.keras.models import Sequential, load_model
+from tensorflow.keras.layers import Dense, Flatten, Activation, Dropout, SimpleRNN
 
 # -----
 from ..basic_ml_objects import BaseDataProcessing, BasePotentialAlgo
@@ -58,23 +59,28 @@ class AbstractModels(ABC):
         # print(s_model)
 
         log_debug("in get_model 151:" + s_model)
-        print("in get_model 151:" + s_model)
+        print("get_model 151:" + s_model)
 
-        self.model = eval(s_model)
+        eval(s_model)
         print("model 2233" ,self.model)
-
         log_debug("in get_model 155:")
         self.checkpoint_model()
         log_debug("in get_model 156:")
 
     def save(self):
+        print("save 1 self.model_file\n", self.model_file, self.model)
         tf.keras.models.save_model(self.model, self.model_file, overwrite=True)
+        print("save 2 self.model_file", self.model_file)
 
     def checkpoint_model(self):
         if not os.path.exists(self.model_file):
             # self.model.predict(np.ones((20, 28, 28), dtype=np.float32))
+
+            print("checkpoint_model 1 self.model_file\n", self.model_file, "\n", self.model)
+
             self.save()
         else:
+            print("self.model_file\n", self.model_file)
             self.model = tf.keras.models.load_model(self.model_file)
 
 class History(object):
@@ -157,36 +163,46 @@ class FashionMNistClassify(AbstractModels, ABC):
     def create_ml_model(self):
         try:
             self.model = tf.keras.models.Sequential()
-            self.model.add(tf.keras.layers.Flatten(input_shape=(28, 28)))
-            self.model.add(tf.keras.layers.Dense(80,activation="relu"))
-            self.model.add(tf.keras.layers.Dense(20, activation="relu"))
-            self.model.add(tf.keras.layers.Dense(10))
+            self.model.add(Flatten(input_shape=(28, 28)))
+            self.model.add(Dense(80,activation="relu"))
+            self.model.add(Dense(20, activation="relu"))
+            self.model.add(Dense(10))
             # ---None
             self.loss = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
             self.optimizer = tf.keras.optimizers.Adam(learning_rate=0.005)
             self.metric = tf.keras.metrics.SparseCategoricalAccuracy()
             self.model.compile(optimizer=self.optimizer, loss=self.loss, metrics=[self.metric])
-            # ---
-            self.checkpoint_model()
-            # ---
+            # # ---
+            # self.checkpoint_model()
+            # # ---
         except Exception as ex:
             log_debug("in create model 160-1" + str(ex))
 
+    def create_rnn_model(self):
+        # -------------
+        batch_size = 128
+        units = 256
+        dropout = 0.2
+        # model is RNN with 256 units, input is 28-dim vector 28 timesteps
+        self.model = Sequential()
+        self.model.add(SimpleRNN(units=units,
+                                 dropout=dropout,
+                                 input_shape=(28, 28)))
+        num_labels = len(np.unique(self.trainingData[1]))
+        self.model.add(Dense(num_labels))
+        self.model.add(Activation('softmax'))
+        # ---
+        self.loss = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
+        self.optimizer = tf.keras.optimizers.Adam(learning_rate=0.005)
+        self.metric = tf.keras.metrics.SparseCategoricalAccuracy()
+        self.model.compile(optimizer=self.optimizer, loss=self.loss, metrics=[self.metric])
+        self.model.summary()
+
+        # # ---
+        # self.checkpoint_model()
+        # # ---
+
     def create_cnn_model(self):
-
-        # nnet = tf.keras.models.Sequential()
-        # net.add(tf.keras.layers.Conv2D(filters=100, kernel_size=(2, 2), padding="same", input_shape = (28, 28, 1)))
-        # nnet.add(tf.keras.layers.MaxPooling2D(pool_size = (2, 2)))
-        # nnet.add(tf.keras.layers.Conv2D(filters=60, kernel_size=(2, 2), padding="same", activation="relu"))
-        # nnet.add(tf.keras.layers.Flatten())
-        # nnet.add(tf.keras.layers.Dense(50, activation="relu"))
-        # nnet.add(tf.keras.layers.Dense(10))
-
-        # self.loss = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
-        # self.optimizer = tf.keras.optimizers.Adam(learning_rate=0.002)
-        # self.metric = tf.keras.metrics.SparseCategoricalAccuracy()
-        # nnet.compile(optimizer=self.optimizer, loss = self.loss, etrics = [self.metric])
-        # nnet = self.checkpointModel(nnet)
 
         self.model = tf.keras.models.Sequential()
         self.model.add(tf.keras.layers.Conv2D(filters=100, kernel_size=(2, 2), padding="same", input_shape = (28, 28, 1)))
@@ -200,9 +216,9 @@ class FashionMNistClassify(AbstractModels, ABC):
         self.optimizer = tf.keras.optimizers.Adam(learning_rate=0.002)
         self.metric = tf.keras.metrics.SparseCategoricalAccuracy()
         self.model.compile(optimizer=self.optimizer, loss=self.loss, metrics=[self.metric])
-        # ---
-        self.checkpoint_model()
-        # ---
+        # # ---
+        # self.checkpoint_model()
+        # # ---
 
     def getConfusionMatrix(self, labels: np.ndarray,predictions: np.ndarray):
         predictedLabels = np.argmax(predictions, axis=1)

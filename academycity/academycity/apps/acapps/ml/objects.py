@@ -8,20 +8,20 @@ mpl.use('Agg')
 """
 import numpy as np
 from ..ml.basic_ml_objects import BaseDataProcessing, BasePotentialAlgo
-from .objects_extensions.netanya_college import NDataProcessing
 
-#
 from .objects_extensions.netanya_college import NDataProcessing
-from .objects_extensions.rl_dnq_cnn import DNQCNNDataProcessing
+# #
 from .objects_extensions.rl_dnq import DNQDataProcessing
+from .objects_extensions.rl_dnq_cnn import DNQCNNDataProcessing
+from .objects_extensions.nn import NNDataProcessing
+from .objects_extensions.mlnn import MLNNDataProcessing
+from .objects_extensions.simple_nn import SNNDataProcessing
+
 from .objects_extensions.reinforcement import RIDataProcessing
 from .objects_extensions.reinforcement_finance import RIFDataProcessing
 from .objects_extensions.rrl import RRLDataProcessing
 from .objects_extensions.rrl_cnn_sltm import RRLCNNSLTMDataProcessing
-from .objects_extensions.nn import NNDataProcessing
-from .objects_extensions.mlnn import MLNNDataProcessing
 from .objects_extensions.predict_shocks import SPDataProcessing
-from .objects_extensions.simple_nn import SNNDataProcessing
 from .objects_extensions.cup_handle import CHDataProcessing
 from .objects_extensions.rnn_sp500 import SP500DataProcessing
 #
@@ -57,7 +57,7 @@ class MLDataProcessing(BaseDataProcessing, BasePotentialAlgo, MAlgo):
 
     # _1  I adjusted this function to work after uploading Eli data
     def mlp(self, dic):
-        # print("90121-5: \n", "="*50, "\n", dic, "\n", "="*50)
+        print("90121-5: \n", "="*50, "\n", dic, "\n", "="*50)
         # load mnist dataset
         (x_train, y_train), (x_test, y_test) = mnist.load_data()
         # compute the number of labels
@@ -78,6 +78,7 @@ class MLDataProcessing(BaseDataProcessing, BasePotentialAlgo, MAlgo):
         hidden_units = 256
         dropout = 0.45
         # model is a 3-layer MLP with ReLU and dropout after each layer
+        # -------------------
         model = Sequential()
         model.add(Dense(hidden_units, input_dim=input_size))
         model.add(Activation('relu'))
@@ -90,6 +91,7 @@ class MLDataProcessing(BaseDataProcessing, BasePotentialAlgo, MAlgo):
         model.add(Activation('softmax'))
         print("model.summary()")
         model.summary()
+        # -------------------
         # file_path = os.path.join(self.PICKLE_PATH, "mlp-mnist.png")
         # plot_model(model, to_file=file_path, show_shapes=True)
         # loss function for one-hot vector
@@ -105,9 +107,10 @@ class MLDataProcessing(BaseDataProcessing, BasePotentialAlgo, MAlgo):
                                 y_test,
                                 batch_size=batch_size,
                                 verbose=0)
-        print("\nTest accuracy: %.1f%%" % (100.0 * acc))
+        acc = round(acc*10000)/100
+        print("\nTest accuracy: %.1f%%" % acc)
 
-        result = {"status": "ok"}
+        result = {"status": "ok", "acc": (100.0 * acc)}
         return result
 
     def cnn(self, dic):
@@ -128,6 +131,7 @@ class MLDataProcessing(BaseDataProcessing, BasePotentialAlgo, MAlgo):
         x_test = x_test.astype('float32') / 255
         # network parameters
         # image is processed as is (square grayscale)
+        # -------------------
         input_shape = (image_size, image_size, 1)
         batch_size = 128
         kernel_size = 3
@@ -135,6 +139,7 @@ class MLDataProcessing(BaseDataProcessing, BasePotentialAlgo, MAlgo):
         filters = 64
         dropout = 0.2
         # model is a stack of CNN-ReLU-MaxPooling
+        # -------------------
         model = Sequential()
         model.add(Conv2D(filters=filters,
                          kernel_size=kernel_size,
@@ -155,6 +160,7 @@ class MLDataProcessing(BaseDataProcessing, BasePotentialAlgo, MAlgo):
         model.add(Dense(num_labels))
         model.add(Activation('softmax'))
         model.summary()
+        # -------------------
         # plot_model(model, to_file='cnn-mnist.png', show_shapes=True)
         # loss function for one-hot vector
         # use of adam optimizer
@@ -168,9 +174,10 @@ class MLDataProcessing(BaseDataProcessing, BasePotentialAlgo, MAlgo):
                                 y_test,
                                 batch_size=batch_size,
                                 verbose=0)
-        print("\nTest accuracy: %.1f%%" % (100.0 * acc))
+        acc = round(acc*10000)/100
+        print("\nTest accuracy: %.1f%%" % acc)
 
-        result = {"status": "ok CNN"}
+        result = {"status": "ok CNN", "acc": acc}
         return result
 
     def rnn(self, dic):
@@ -189,6 +196,7 @@ class MLDataProcessing(BaseDataProcessing, BasePotentialAlgo, MAlgo):
         x_test = x_test.astype('float32') / 255
         # network parameters
         input_shape = (image_size, image_size)
+        # -------------
         batch_size = 128
         units = 256
         dropout = 0.2
@@ -200,6 +208,7 @@ class MLDataProcessing(BaseDataProcessing, BasePotentialAlgo, MAlgo):
         model.add(Dense(num_labels))
         model.add(Activation('softmax'))
         model.summary()
+        # --------------
         # plot_model(model, to_file='rnn-mnist.png', show_shapes=True)
         # loss function for one-hot vector
         # use of sgd optimizer
@@ -213,8 +222,8 @@ class MLDataProcessing(BaseDataProcessing, BasePotentialAlgo, MAlgo):
                                 y_test,
                                 batch_size=batch_size,
                                 verbose=0)
+        acc = round(acc*10000)/100
         print("\nTest accuracy: %.1f%%" % (100.0 * acc))
-
         result = {"status": "ok RNN", "acc": acc}
         return result
 

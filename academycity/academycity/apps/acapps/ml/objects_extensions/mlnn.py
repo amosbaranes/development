@@ -8,6 +8,7 @@ import gym
 import numpy as np
 from collections import deque
 import pickle
+import pandas as pd
 # ---------------------
 import tensorflow as tf
 from tensorflow.keras.models import Sequential
@@ -145,12 +146,34 @@ class MLNNDataProcessing(BaseDataProcessing, BasePotentialAlgo, MLNNAlgo):
 
     def get_image(self, dic):
         print("90200-mlnn: \n", "="*50, "\n", dic, "\n", "="*50)
-        (train_images, train_labels), (test_images, test_labels) = mnist.load_data()
+        #
+        # from collections import defaultdict
+        # _Q = defaultdict(lambda: defaultdict(lambda: 0))
+        #
+        # # Accessing a nested entry
+        # print("A", _Q['some_state']['some_action'])  # Outputs: 0
+        #
+        # for k in _Q:
+        #     print("B", _Q[k])
+        #     for i in _Q[k]:
+        #         print("C", _Q[k][i])
+        #
+        # # Setting a value
+        # _Q['some_state']['some_action'] = 1
+        #
+        # print("D", _Q)
+
+        (train_images, train_labels), (test_images_, test_labels) = mnist.load_data()
         # Normalize the images to values between 0 and 1
         train_images = train_images / 255.0
-        test_images = test_images / 255.0
+        test_images = test_images_ / 255.0
         # -----------------
-        index = random.randint(0, len(test_images) - 1)
+        index = random.randint(0, len(test_images_) - 1)
+        #
+        img_ = test_images_[index]
+        df = pd.DataFrame(img_)
+        print(df)
+        #
         img_ = test_images[index]
         img = Image.fromarray((img_ * 255).astype('uint8'), mode='L')
         # print("AA\n", test_labels[index])
@@ -170,7 +193,9 @@ class MLNNDataProcessing(BaseDataProcessing, BasePotentialAlgo, MLNNAlgo):
         img.save(file_name)
         # ----------------
         image = np.expand_dims(img_, axis=0)  # Add batch dimension
+
         prediction = self.model.predict(image)
+
         predicted_label = np.argmax(prediction)
         # -------
         result = {"status": "ok nn", "data":{'index': index, 'prediction': int(predicted_label),"file_name":file_name_}}

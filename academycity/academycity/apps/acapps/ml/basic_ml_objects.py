@@ -555,7 +555,11 @@ class BasePotentialAlgo(object):
                 # print( "="*20, "normalize:", ohi_[0], hi__, oli_[0], li__, "="*20, "\nmm", mm)
             # print("n_df", "\n", n_df, "\n")
             df_n1 = pd.DataFrame(index=n_df.index.copy())
-            df_n  = pd.DataFrame(index=n_df.index.copy())
+            try:
+                print(("AAAAAAAAAAAA"))
+                df_n2 = pd.DataFrame(index=n_df.index.copy())
+            except Exception as ex:
+                print("Error -44: ", ex)
 
             for xi in mm:
                 if xi == "y":
@@ -976,7 +980,7 @@ class BasePotentialAlgo(object):
                                 ndic = {"df": df, "index": index_, "mm": dic_hp, "dn": dn_}
 
                                 # print("A100-1-1", "n=", n, "l=", l, "li=", li, "h=", h, "hi=", hi)
-                                ndf_n1, ndf_n  = normalize(ndic)
+                                ndf_n1, ndf_n2  = normalize(ndic)
                                 # self.log_debug("B")
 
                                 # print("ndf_n1\n", ndf_n1, "\nndf_n2\n", ndf_n2)
@@ -1055,12 +1059,12 @@ class BasePotentialAlgo(object):
         for k in ll_dep:
             dn___ = k[0]
             dn_text_ = k[1]
-            print("BBB", dn__, dn_text_)
+            # print("BBB AA - dn__=", dn__, dn_text_)
             ret = normalize_similarity_(dn___, dn_text_, cn_)
             if not ret[0]:
                 return {"status": "ko", "msg": ret[1]}
 
-        print("Done normalize_similarity")
+        # print("Done normalize_similarity")
 
         self.log_debug("Done normalize_similarity")
         result = {"status": "ok", "msg": "completed ok"}
@@ -1089,22 +1093,22 @@ class BasePotentialAlgo(object):
         #
         # model_temp = apps.get_model(app_label=self.app, model_name="temp")
         # qs  = model_temp.objects.all()
-        # df  = pd.DataFrame(list(qs2.values("id", "idx")))
-        # # df  = df2.assign(h=lambda x: x['idx']/1000000)
-        # df2["h"] = df2["idx"].apply(lambda x: int(x/1000000))
-        # df2["l"] = df2["idx"].apply(lambda x: int(x/10000)) - 100*df2["h"]
-        # df2["hi"] = df2["idx"].apply(lambda x: int(x/100)) - 10000*df2["h"] - 100*df2["l"]
-        # df2["li"] = df2["idx"].apply(lambda x: int(x)) - 1000000*df2["h"] - 10000*df2["l"] - 100*df2["hi"]
-        # # print(df2)
-        # df__ = df2.merge(df1_similarity_, how='inner', left_on='id', right_on='temp_id')
+        # df  = pd.DataFrame(list(qs.values("id", "idx")))
+        # # df  = df.assign(h=lambda x: x['idx']/1000000)
+        # df["h"] = df["idx"].apply(lambda x: int(x/1000000))
+        # df["l"] = df["idx"].apply(lambda x: int(x/10000)) - 100*df["h"]
+        # df["hi"] = df["idx"].apply(lambda x: int(x/100)) - 10000*df["h"] - 100*df["l"]
+        # df["li"] = df["idx"].apply(lambda x: int(x)) - 1000000*df["h"] - 10000*df["l"] - 100*df["hi"]
+        # # print(df)
+        # df__ = df.merge(df1_similarity_, how='inner', left_on='id', right_on='temp_id')
         # df__ = df__.drop(["id", "idx", "temp_id"], axis=1)
         # print(df__)
         #
         # df__.dropna(how='all', axis=1, inplace=True)
         # save_to_file = os.path.join(self.PROJECT_MEDIA_DIR, "Similarity.xlsx")
         # wb  = Workbook()
-        # wb2.save(save_to_file)
-        # wb2.close()
+        # wb.save(save_to_file)
+        # wb.close()
         # wb  = None
         # with pd.ExcelWriter(save_to_file, engine='openpyxl', mode="a") as writer:
         #     df__.to_excel(writer, sheet_name="similarities")
@@ -1225,8 +1229,8 @@ class BasePotentialAlgo(object):
             self.log_debug("create_similarity_excel 3")
 
             wb  = Workbook()
-            wb2.save(save_to_file)
-            wb2.close()
+            wb.save(save_to_file)
+            wb.close()
             wb  = None
             self.log_debug("create_similarity_excel")
             threshold = 1
@@ -1258,15 +1262,15 @@ class BasePotentialAlgo(object):
                 log_debug("DataFrame size: " + str(df1_similarity_.shape))
                 model_temp = apps.get_model(app_label=self.app, model_name="temp")
                 qs  = model_temp.objects.all()
-                df  = pd.DataFrame(list(qs2.values("id", "idx")))
-                # df  = df2.assign(h=lambda x: x['idx']/1000000)
-                # print("df2\n", df2)
+                df  = pd.DataFrame(list(qs.values("id", "idx")))
+                # df  = df.assign(h=lambda x: x['idx']/1000000)
+                # print("df\n", df)
 
-                df2["h"] = df2["idx"].apply(lambda x: int(x/1000000))
-                df2["l"] = df2["idx"].apply(lambda x: int(x/10000)) - 100*df2["h"]
-                df2["hi"] = df2["idx"].apply(lambda x: int(x/100)) - 10000*df2["h"] - 100*df2["l"]
-                df2["li"] = df2["idx"].apply(lambda x: int(x)) - 1000000*df2["h"] - 10000*df2["l"] - 100*df2["hi"]
-                df__ = df2.merge(df1_similarity_, how='inner', left_on='id', right_on='temp_id')
+                df["h"] = df["idx"].apply(lambda x: int(x/1000000))
+                df["l"] = df["idx"].apply(lambda x: int(x/10000)) - 100*df["h"]
+                df["hi"] = df["idx"].apply(lambda x: int(x/100)) - 10000*df["h"] - 100*df["l"]
+                df["li"] = df["idx"].apply(lambda x: int(x)) - 1000000*df["h"] - 10000*df["l"] - 100*df["hi"]
+                df__ = df.merge(df1_similarity_, how='inner', left_on='id', right_on='temp_id')
                 df__ = df__.drop(["id", "idx", "temp_id"], axis=1)
 
                 log_debug("create_similarity_excel 2")
@@ -1488,7 +1492,7 @@ class BasePotentialAlgo(object):
             #
             df_mm = pd.DataFrame()
             df_n1 = pd.DataFrame(index=df.index.copy())
-            df_n  = pd.DataFrame(index=df.index.copy())
+            df_n2  = pd.DataFrame(index=df.index.copy())
             for mi in df.columns:
                 mi_=str(mi)
                 if mi_ == str(model_[k]['dn']):
@@ -1536,15 +1540,15 @@ class BasePotentialAlgo(object):
                 c_ = df_n1.pop(self.entity_name + '_code')
                 df_n1.insert(0, self.entity_name + '_code', c_)
             except Exception as ex:
-                print("Error 90-90-88-2-1: ", str(ex))
+                print("Error 90-90-88-2-2: ", str(ex))
             df_n1=df_n1.set_index(self.entity_name + '_code')
 
-            df_n  = pd.merge(left=df_n2, how='inner', right=self.entities_name, left_index=True, right_index=True)
+            df_n2  = pd.merge(left=df_n2, how='inner', right=self.entities_name, left_index=True, right_index=True)
             try:
                 c_ = df_n2.pop(self.entity_name + '_code')
                 df_n2.insert(0, self.entity_name + '_code', c_)
             except Exception as ex:
-                print("Error 90-90-88-2-1: ", str(ex))
+                print("Error 90-90-88-2-3: ", str(ex))
             df_n2=df_n2.set_index(self.entity_name + '_code')
 
             cc = {}
@@ -1595,8 +1599,8 @@ class BasePotentialAlgo(object):
             is_file = os.path.exists(save_to_file)
             log_debug("  is_file = " + str(is_file))
             wb  = Workbook()
-            wb2.save(save_to_file)
-            wb2.close()
+            wb.save(save_to_file)
+            wb.close()
             wb  = None
             log_debug("create_similarity_excel 3")
             try:
@@ -2268,7 +2272,7 @@ class BasePotentialAlgo(object):
         result = {"status": "ok"}
         return result
 
-    # new version of process ..
+    # new version of process ...
     def process_regression(self, dic):
         # ---- Assiting function -----------------------
         def get_culomns_names(self, l):
@@ -2293,8 +2297,8 @@ class BasePotentialAlgo(object):
             is_file = os.path.exists(save_to_file_)
             log_debug("  is_file = " + str(is_file))
             wb  = Workbook()
-            wb2.save(save_to_file_)
-            wb2.close()
+            wb.save(save_to_file_)
+            wb.close()
 
             wb  = None
             log_debug("save_dataframe_to_file 3")
@@ -2406,7 +2410,12 @@ class BasePotentialAlgo(object):
                 qs = model_factnormalizedminmax.objects.filter(
                     dep_var_dim__var_code=k).values_list(self.var_name + "_dim_id", self.entity_name + "_dim_id", "amount")
                 df = pd.DataFrame(list(qs.values(self.entity_name + "_dim_id", self.var_name + "_dim_id", "amount")))
-                df_n  = df.pivot(index=self.entity_name + "_dim_id", columns=self.var_name + "_dim_id", values='amount')
+                # print(df)
+                try:
+                    df_n2 = df.pivot(index=self.entity_name + "_dim_id", columns=self.var_name + "_dim_id", values='amount')
+                except Exception as ex:
+                    print(ex)
+
                 # print("AAA222\n", k, "\n", "df_n2", "\n", df_n2)
 
                 col_index = {}
@@ -2419,7 +2428,7 @@ class BasePotentialAlgo(object):
 
                 df_summary = create_similarity_(df_n2)
                 df_dic_[k] = df_summary
-                print(k, "normalization 2", "\n", df_summary, "\n")
+                # print(k, "normalization 2", "\n", df_summary, "\n")
             except Exception as ex:
                 print(ex)
         save_dataframe_to_file("relimp", df_dic_)
@@ -2661,7 +2670,7 @@ class BasePotentialAlgo(object):
         nnn = 0
         try:
             with pd.ExcelWriter(self.save_to_file, engine='openpyxl', mode='a') as writer_:
-                df2.to_excel(writer_, sheet_name=folder)
+                df.to_excel(writer_, sheet_name=folder)
                 writer_.save()
                 time.sleep(5)
             if self.second_time_save != '':
@@ -2671,7 +2680,7 @@ class BasePotentialAlgo(object):
         except Exception as ee:
             print(ee)
             time.sleep(5)
-            self.save_to_excel(df2, folder)
+            self.save_to_excel(df, folder)
             self.second_time_save = self.save_to_file
             nnn = 1
         finally:
@@ -2679,7 +2688,7 @@ class BasePotentialAlgo(object):
                 print(self.save_to_file + ' 55 finally -' + str(nnn) + ' - ' + folder)
                 time.sleep(5)
                 print(self.save_to_file + ' 551 finally -' + str(nnn) + ' - ' + folder)
-                self.save_to_excel(df2, folder)
+                self.save_to_excel(df, folder)
                 self.second_time_save = self.save_to_file
 
     def save_to_excel_(self, save_to_file = None, to_save = None):
@@ -2689,8 +2698,8 @@ class BasePotentialAlgo(object):
         if to_save is None:
             to_save = self.to_save
 
-        wb2.save(save_to_file)
-        wb2.close()
+        wb.save(save_to_file)
+        wb.close()
         wb  = None
         log_debug("save_to_excel_ 11")
         # print("save_to_excel_\n", save_to_file)
@@ -2719,8 +2728,8 @@ class BasePotentialAlgo(object):
         save_to_file_all = os.path.join(self.TO_EXCEL_OUTPUT, "all_" + str(year) + ".xlsx")
         # print("save_to_excel_all_", save_to_file_all)
         wb  = Workbook()
-        wb2.save(save_to_file_all)
-        wb2.close()
+        wb.save(save_to_file_all)
+        wb.close()
 
         with pd.ExcelWriter(save_to_file_all, engine='openpyxl', mode="a") as writer:
             for d in self.to_save_all:
@@ -2903,9 +2912,16 @@ class AbstractModels(ABC):
         os.makedirs(self.model_path, exist_ok=True)
         try:
             self.model_file = os.path.join(self.model_path, f"{self.model_name}_{self.category}.pkl")
+            print(self.model_file)
         except Exception as ex:
             print("Error 9900-9", ex)
         self.model = None
+
+        self.continue_train = True
+        try:
+            self.continue_train = int(dic["continue_train"])
+        except Exception as ex:
+            pass
 
     @abstractmethod
     def get_data(self, **data):
@@ -2934,12 +2950,18 @@ class AbstractModels(ABC):
         log_debug("in get_model 156:")
 
     def save(self):
+        log_debug("model_file: " + str(self.model_file))
         tf.keras.models.save_model(self.model, self.model_file, overwrite=True)
 
     def checkpoint_model(self):
-        if not os.path.exists(self.model_file):
-            # self.model.predict(np.ones((20, 28, 28), dtype=np.float32))
-            # self.model.predict(np.ones((20, 10, 4), dtype=np.float32))
-            self.save()
-        else:
+        # if not os.path.exists(self.model_file):
+        #     # self.model.predict(np.ones((20, 28, 28), dtype=np.float32))
+        #     # self.model.predict(np.ones((20, 10, 4), dtype=np.float32))
+        #     self.save()
+        # else:
+        #     self.model = tf.keras.models.load_model(self.model_file)
+
+        if os.path.exists(self.model_file) and self.continue_train == True:
             self.model = tf.keras.models.load_model(self.model_file)
+        else:
+            self.save()

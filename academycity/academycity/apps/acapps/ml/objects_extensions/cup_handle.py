@@ -74,6 +74,7 @@ class CupHandle(AbstractModels, ABC):
         # print("B\n", df.columns)
         data = np.transpose(df.reset_index(drop=True).values)
         # print("train B1")
+        # print("B\n", df, "\n", data)
         y_actual = np.array([int(c.startswith("t")) for c in df.columns], dtype=np.int)
         # print(y_actual)
         # -------
@@ -183,9 +184,16 @@ class CupHandle(AbstractModels, ABC):
         return dic
 
     def predict(self):
-        print("predict")
+        self.model = tf.keras.Sequential([self.model, tf.keras.layers.Softmax()])
+
+        # print("predict")
+        log_debug("CupHandle obj predict 1-1 Begin")
 
         tickers = self.dic["tickers"]
+        # print(tickers)
+
+        log_debug(tickers)
+
         if tickers[0] == "ALL":
             url = 'https://en.wikipedia.org/wiki/List_of_S%26P_500_companies'
             # Read the tables from the Wikipedia page
@@ -197,6 +205,7 @@ class CupHandle(AbstractModels, ABC):
             # print(tickers)
 
         output_dir = self.dic["output_dir"]
+        print(output_dir)
         days_of_data = int(self.dic["days_of_data"])
         # ---
         period_begin = 40
@@ -209,7 +218,7 @@ class CupHandle(AbstractModels, ABC):
             # -----------
             if ticker in ["BRK.B", "BF.B"]:
                 continue
-            print(ticker)
+            print("A100\n", ticker)
             # -----------
             df_ticker = yf.download(ticker, start=start_train_date, end=now_date)
             df_ticker.reset_index(inplace=True)
@@ -218,10 +227,13 @@ class CupHandle(AbstractModels, ABC):
             for period in range(period_begin, period_end):
                 # print(ticker, period)
                 res_df = self.identify(self.model, df_ticker, period, ticker, res_df)
+
+        # print(res_df)
+
         res_df = res_df.sort_values(by='Begin')
         # output_file = os.path.join(output_dir, ticker+"_output.csv")
         output_file = os.path.join(output_dir, "all_output.csv")
-        print(res_df)
+        # print(res_df)
         res_df.to_csv(output_file, index=False)
 
     def get_plots(self):
@@ -298,6 +310,9 @@ class CupHandle(AbstractModels, ABC):
                     vl = 19
                 inp[0, j, vl, 0] = 1
             outval = model(inp).numpy()
+
+            # print(outval)
+
             if outval[0, 1] >= 0.9:
                 print("%s from %s - %s dates" % (ticker, date_arr[i], date_arr[i+ndays-1]))
                 res_df = res_df.append({"ticker":ticker, "days":ndays, "Begin": date_arr[i], "End": date_arr[i+ndays-1]},
@@ -341,14 +356,15 @@ class CHDataProcessing(BaseDataProcessing, BasePotentialAlgo, CHAlgo):
         print("\n90466-CH train: \n", "=" * 50, "\n", dic, "\n", "=" * 50)
 
         clear_log_debug()
+        log_debug("CupHandle train 1-1 Begin")
         model_name = "cnn" # dic["model_name"]
-        epochs = 5         # int(dic["epochs"])
+        epochs = 5        # int(dic["epochs"])
         batch_size = 32    # int(dic["batch_size"])
         # ---------------
         # tickers = ["MMM", "AXP", "AAP", "LBA", "CAT", "CVX", "CSCO", "KO", "DOW", "XOM", "GS", "HD", "IBM",
         #                 "INTC", "JNJ", "JPM", "MCD", "MRK", "MSFT", "NKE", "PFE", "PG", "RTX", "TRV", "UNH",
         #                 "VZ", "V", "WMT", "WBA", "DIS"]
-        tickers = ["TRV"] # "IBM"
+        tickers = ["IBM"] # "IBM"
         # ---------------
         dic = {"model_dir": self.MODELS_PATH, "model_name": model_name,
                "batchsize": batch_size, "epochs": epochs,
@@ -370,8 +386,6 @@ class CHDataProcessing(BaseDataProcessing, BasePotentialAlgo, CHAlgo):
 
         # plotData(price_data_dir=self.PRICE_PATH, output_dir=self.TO_EXCEL_OUTPUT)
 
-
-
         result = {"status": "ok", "charts": charts}
         return result
 
@@ -388,13 +402,15 @@ class CHDataProcessing(BaseDataProcessing, BasePotentialAlgo, CHAlgo):
         print("\n90477-1-CH predic: \n", "=" * 50, "\n", dic, "\n", "=" * 50)
 
         clear_log_debug()
+        log_debug("CupHandle predict 1-1 Begin")
         model_name = "cnn"  # dic["model_name"]
         epochs = 5  # int(dic["epochs"])
         batch_size = 32  # int(dic["batch_size"])
-        ticker = dic["ticker"].upper()
-        tickers = [ticker]  # "IBM"
+        # ticker = dic["ticker"].upper()
+        # tickers = [ticker]  # "IBM"
+        tickers = [dic["ticker"]] # ["IBM"] # "IBM"
         days_of_data = dic["days_of_data"]
-        print(tickers)
+        # print(tickers)
         # ---------------
         dic = {"model_dir": self.MODELS_PATH, "model_name": model_name,
                "batchsize": batch_size, "epochs": epochs,
@@ -405,10 +421,13 @@ class CHDataProcessing(BaseDataProcessing, BasePotentialAlgo, CHAlgo):
 
         log_debug("before creating obj CupHandle")
         ch_obj = CupHandle(dic)
+        log_debug("CupHandle predict 1-2")
         ch_obj.predict()
+        log_debug("CupHandle predict 1-3")
 
         # plotData(price_data_dir=self.PRICE_PATH, output_dir=self.TO_EXCEL_OUTPUT)
 
+        log_debug("CupHandle predict 1-9 End")
         result = {"status": "ok"}
         return result
 
@@ -430,7 +449,7 @@ class CHDataProcessing(BaseDataProcessing, BasePotentialAlgo, CHAlgo):
         ch_obj = CupHandle(dic)
         plots = ch_obj.get_plots()
 
-        print(plots)
+        # print(plots)
 
         result = {"status": "ok", "plots": plots}
         # print(result)

@@ -1,0 +1,4 @@
+,Model Name,Convolution Layers,Dense Layers,Batch Size,ECC,EF,Best Only,Average Reward,Best Average,Epsilon 4 Best Average,Best Average On,Max Reward,Epsilon 4 Max Reward,Max Reward On,Total Training Time (min),Time Per Episode (sec)
+2,M2 | 32C | 32D | 32D | ECC2 | 1A-5Ac | ,[32],"[32, 32]",128,"{'ECC_Enabled': True, 'MAX_EPS_NO_INC': 40}","{'EF_Enabled': True, 'FLUCTUATIONS': 2}",False,-99.41,-98.5,0.24983705645845267,160,-90,0.45660974774391455,20,5.75,1.716
+0,M1 | 32C | 32D | 32D | 32D | ECC2 | 1A-5Ac | ,[32],"[32, 32, 32]",128,{'ECC_Enabled': False},{'EF_Enabled': False},False,-99.06,-97.5,0.001,60,-80,0.001,100,6.91,2.065
+1,M0 | 32C | 32D | 32D | ECC2 | 1A-5Ac | ,[32],"[32, 32]",128,{'ECC_Enabled': False},{'EF_Enabled': False},False,-84.7,-74.5,0.001,60,0,0.001,16,23.7,7.075

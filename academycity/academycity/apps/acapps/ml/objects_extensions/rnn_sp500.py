@@ -13,7 +13,8 @@ import math
 import json
 from tensorboard.plugins.image.summary import image
 from twisted.words.protocols.jabber.error import exceptionFromStreamError
-from tensorflow.keras.models import Sequential, load_model
+from tensorflow.keras import Sequential
+from tensorflow.keras.models import load_model
 from sklearn.model_selection import train_test_split
 from tensorflow.keras import layers
 from matplotlib.dates import (YEARLY, DateFormatter,
@@ -70,6 +71,7 @@ class SP500(AbstractModels, ABC):
         except Exception as ex:
             pass
         if is_get_data:
+            log_debug("in obj init 13-1")
             self.get_data()
         log_debug("in obj init 14")
         # ---
@@ -86,6 +88,7 @@ class SP500(AbstractModels, ABC):
         # ---
         # log_debug("in obj int 15")
         self.get_model()
+        log_debug("in obj init 15 End")
         # log_debug("in obj int 16")
         # ---
 
@@ -156,24 +159,34 @@ class SP500(AbstractModels, ABC):
         return df
 
     def get_data(self, **data):
-
+        log_debug("get_data 1-1")
         years = 10
         end_date = datetime.now()
         start_date = end_date - timedelta(days=math.ceil(365*years))
         # start_date = datetime.strptime('20000103', '%Y%m%d')
         # end_date = datetime.strptime('20220722', '%Y%m%d')
         # ===
-        df = yf.download(self.dic["tickers"], start=start_date, end=end_date)
+        log_debug("get_data 1-2")
+        try:
+            df = yf.download(self.dic["tickers"], start=start_date, end=end_date)
+        except Exception as ex:
+            log_debug("Error get_data e-1-2: ticker=" + self.dic["tickers"] + ", " + str(ex))
+        log_debug("get_data 1-3")
         df.reset_index(inplace=True)
         # print("B\n", df)
         df = self.feature_engineer(df)
+        log_debug("get_data 1-4")
         # print("B1\n", df)
         # print("B\n", df.columns)
-        ntrain = int(self.trainTestSplit * df.shape[0])
+
+        ntrain = int((self.trainTestSplit * (df.shape[0]-14*self.daysInMonth+1))+14*self.daysInMonth+1)
+
         self.trainXData = df.loc[14*self.daysInMonth+1:ntrain, :].reset_index(drop=True)
         self.testXData = df.loc[ntrain:, :].reset_index(drop=True)
+
         self.trainData = self.prepare_data_for_rnn(self.trainXData)
         self.testData = self.prepare_data_for_rnn(self.testXData)
+        log_debug("get_data 1-5 End")
 
     def prepare_data_for_rnn(self, df):
         nfeat = len(self.featureCols)
@@ -181,9 +194,11 @@ class SP500(AbstractModels, ABC):
         results = np.zeros((df.shape[0]-self.nTimestep, self.nTimestep), dtype=np.float32)
         raw_data = df[self.featureCols].values
         raw_results = df.loc[:, self.resultCol].values
+
         for i in range(0, data.shape[0]):
             data[i, :, :] = raw_data[i:i+self.nTimestep, :]
             results[i, :] = raw_results[i:i+self.nTimestep]
+
         return data, results
 
     def normalize_data(self, **data):
@@ -206,14 +221,15 @@ class SP500(AbstractModels, ABC):
         # ---
         self.loss = tf.keras.losses.MeanSquaredError()
         self.optimizer = tf.keras.optimizers.Adam(learning_rate=0.005)
-
-        self.metric = tf.keras.metrics.MeanSquaredError()
-        self.model.compile(optimizer=self.optimizer, loss=self.loss, metrics=[self.metric])
+        # self.metric = tf.keras.metrics.MeanSquaredError()
+        # self.model.compile(optimizer=self.optimizer, loss=self.loss, metrics=[self.metric])
+        self.model.compile(optimizer=self.optimizer, loss=self.loss)
         # ---
         self.checkpoint_model()
         # ---
 
     def get_plots(self):
+        log_debug("obj get_plots 1-1 Begin")
         r = {"train":{}, "test":{}}
         for d in ["train", "test"]:
             df=eval("self."+d+"XData")
@@ -223,7 +239,7 @@ class SP500(AbstractModels, ABC):
 
             l = df.loc[:, self.priceCol].values.tolist()
             l0 = l[0]
-            l = [round(n, 3)/l0 for n in l]
+            l = [round(n/l0, 3) for n in l]
             r[d][self.dic["tickers"]] = l
 
             for i, col in enumerate(self.featureCols):
@@ -232,6 +248,7 @@ class SP500(AbstractModels, ABC):
                 l = [round(n, 3) for n in l]
                 # print(l)
                 r[d][col]= l
+        log_debug("obbj get_plots 1-5 End")
         return r
 
     def getConvergenceHistory(self, history, metricName):
@@ -240,6 +257,7 @@ class SP500(AbstractModels, ABC):
         return {"x": history.epoch, "y": history.history[metricName]}
 
     def test(self):
+        log_debug("obj test 1-1 Begin")
         mse = tf.keras.losses.MeanSquaredError()
         dic = {}
         n = 0
@@ -247,23 +265,35 @@ class SP500(AbstractModels, ABC):
         for X, y in [self.trainData, self.testData]:
             dic[ds[n]] = {}
             predict = self.model.predict(X)
-            dic[ds[n]]["final_loss"] = round(1000*float(mse(y[:, -1], predict[:, 0]).numpy()))/1000
+
+            # print(ds[n], "X\n", X)
+            # print(ds[n], "y\n", y)
+            # print(ds[n], "predict\n", predict)
+            #
+            # print(ds[n], "y[:, -1]\n", y[:, -1])
+            # print(ds[n], "predict[:, 0]\n", predict[:, 0])
+
+            dic[ds[n]]["final_loss"] = float(mse(y[:, -1], predict[:, 0]).numpy())
             # baseline model prediction that uses last month's return as prediction for 1 month return
-            dic[ds[n]]["baseline_loss"] = round(1000*float(mse(y[:, -1], X[:, -1, 0]).numpy()))/1000
+            dic[ds[n]]["baseline_loss"] = float(mse(y[:, -1], X[:, -1, 0]).numpy())
             # plot predicted vs actual vs baseline
             y = [round(x, 3) for x in np.round(y[:, -1], decimals=3).tolist()]
             p = [round(x, 3) for x in np.round(predict[:, 0], decimals=3).tolist()]
 
             d = pd.DataFrame({"y":y, "p":p})
             d = d.sort_values("y")
+
             dic[ds[n]]["y"] = d["y"].tolist()
             dic[ds[n]]["predict"] = d["p"].tolist()
 
             n += 1
+
         # print(dic)
+        log_debug("obj test 1-9 End")
         return dic
 
     def train(self):
+        log_debug("obj train 1-1 Begin")
         dic = {}
         try:
             log_debug("before model.fit")
@@ -274,23 +304,29 @@ class SP500(AbstractModels, ABC):
             log_debug("after save")
             # ---
             log_debug("before getConvergenceHistory 1")
-            dic[self.metric._name] = self.getConvergenceHistory(history, self.metric._name)
-            log_debug("before getConvergenceHistory 2")
+            # dic[self.metric._name] = self.getConvergenceHistory(history, self.metric._name)
+            # log_debug("before getConvergenceHistory 2")
             dic["loss"] = self.getConvergenceHistory(history, "loss")
             log_debug("after getConvergenceHistory 1")
         except Exception as ex:
-            print("Error 22-22-3", ex)
+            # print("Error 22-22-3", ex)
             log_debug("Error 22-22-3: " + str(ex))
-        try:
-            self.model.evaluate(self.testData[0], self.testData[1], verbose=2)
-            print("C66 End train")
-        except Exception as ex:
-            print("Error 22-22-5", ex)
+        # try:
+        #     self.model.evaluate(self.testData[0], self.testData[1], verbose=2)
+        #     log_debug("obj train 1-5")
+        #     # print("C66 End train")
+        # except Exception as ex:
+        #     print("Error 22-22-5", ex)
             log_debug("Error 22-22-5: " + str(ex))
+        log_debug("obj train 1-9 End")
+
+        # print(dic)
+
         return dic
 
 
 # =========== AcademyCity Object ===========
+# Based on the book: Reinforcement Learning for Finance chapter 4.5
 class SP500Algo(object):
     def __init__(self, dic):
         # print("90888-8-000 Algo\n", dic, '\n', '-'*50)
@@ -313,6 +349,7 @@ class SP500DataProcessing(BaseDataProcessing, BasePotentialAlgo, SP500Algo):
         # os.makedirs(self.SCALER_PATH, exist_ok=True)
         # -----
 
+    # Not used ---
     def upload_train_file(self, dic):
         print("90974-1-3: \n", dic, "\n", "="*50)
 
@@ -326,6 +363,7 @@ class SP500DataProcessing(BaseDataProcessing, BasePotentialAlgo, SP500Algo):
     def train(self, dic):
         print("\n90466-CH train: \n", "=" * 50, "\n", dic, "\n", "=" * 50)
         clear_log_debug()
+        log_debug("train 1-1")
         model_name = "rnn"  # dic["model_name"]
         epochs = 40  # int(dic["epochs"])
         batch_size = 10  # int(dic["batch_size"])
@@ -333,24 +371,25 @@ class SP500DataProcessing(BaseDataProcessing, BasePotentialAlgo, SP500Algo):
         # ---------------
         dic = {"model_dir": self.MODELS_PATH, "model_name": model_name,
                "batchsize": batch_size, "epochs": epochs,
-               "tickers": tickers, "input_dir": self.TO_EXCEL,
+               "tickers": tickers,
                "output_dir": self.TO_EXCEL_OUTPUT}
         log_debug("before creating obj CupHandle")
         sp500_obj = SP500(dic)
-        print("Z15")
+        log_debug("train 1-2")
         charts = sp500_obj.train()
-        # print("Z13")
+        log_debug("train 1-3")
         for k in charts:
-            charts[k]["y"] = [round(100*x)/100 for x in charts[k]["y"]]
-        print("charts\n", charts)
+            charts[k]["y"] = [round(10000*x)/10 for x in charts[k]["y"]]
+        log_debug("train 1-4 End")
+        # print("charts\n", charts)
 
-        result = {"status": "ok"}
+        result = {"status": "ok", "charts":charts}
         return result
 
     def get_plots(self, dic):
         print("\n90999-SP500 get_plots: \n", "=" * 50, "\n", dic, "\n", "=" * 50)
-
         clear_log_debug()
+        log_debug("get_plots 1-1")
         model_name = "rnn"  # dic["model_name"]
         epochs = 40  # int(dic["epochs"])
         batch_size = 10  # int(dic["batch_size"])
@@ -358,13 +397,14 @@ class SP500DataProcessing(BaseDataProcessing, BasePotentialAlgo, SP500Algo):
         # ---------------
         dic = {"model_dir": self.MODELS_PATH, "model_name": model_name,
                "batchsize": batch_size, "epochs": epochs,
-               "tickers": tickers, "input_dir": self.TO_EXCEL,
+               "tickers": tickers,
                "output_dir": self.TO_EXCEL_OUTPUT}
-        log_debug("before creating obj CupHandle")
+        log_debug("get_plots 1-2")
         sp500_obj = SP500(dic)
-        print("Z12")
+        log_debug("get_plots 1-3")
         plots = sp500_obj.get_plots()
-        print(plots)
+        log_debug("get_plots 1-4 End")
+        # print(plots)
 
         # # print("Z13")
         # for k in charts:
@@ -376,6 +416,7 @@ class SP500DataProcessing(BaseDataProcessing, BasePotentialAlgo, SP500Algo):
 
     def test(self, dic):
         print("90499-CH: \n", "=" * 50, "\n", dic, "\n", "=" * 50)
+        log_debug("test 1-1 Begin")
         model_name = "rnn"  # dic["model_name"]
         epochs = 40  # int(dic["epochs"])
         batch_size = 10  # int(dic["batch_size"])
@@ -383,13 +424,14 @@ class SP500DataProcessing(BaseDataProcessing, BasePotentialAlgo, SP500Algo):
         # ---------------
         dic = {"model_dir": self.MODELS_PATH, "model_name": model_name,
                "batchsize": batch_size, "epochs": epochs,
-               "tickers": tickers, "input_dir": self.TO_EXCEL,
+               "tickers": tickers,
                "output_dir": self.TO_EXCEL_OUTPUT}
         log_debug("before creating obj CupHandle")
         sp500_obj = SP500(dic)
         test_results = sp500_obj.test()
         # print("Z35")
         # print(test_results)
+        log_debug("test 1-9 End")
         result = {"status": "ok", "test_results": test_results}
         # print(result)
         return result

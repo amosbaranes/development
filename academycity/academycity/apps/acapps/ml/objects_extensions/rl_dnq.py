@@ -12,14 +12,63 @@ from keras.models import Model, load_model
 from keras.layers import Input, Dense
 from keras.optimizers import Adam, RMSprop
 
+from stable_baselines3.common.vec_env import VecVideoRecorder, DummyVecEnv
+
+
+class ReplayBuffer:
+    def __init__(self, size):
+        self.size = size  # max number of items in buffer
+        self.buffer = []  # array to holde buffer
+        self.next_id = 0
+
+    def __len__(self):
+        return len(self.buffer)
+
+    def add(self, transition):
+        # transition = (state, action, reward, next_state, done)
+        # item = (state, action, reward, next_state, done)
+        if len(self.buffer) < self.size:
+            self.buffer.append(transition)
+        else:
+            self.buffer[self.next_id] = transition
+        self.next_id = (self.next_id + 1) % self.size
+
+    def sample(self, batch_size, state_size):
+        # idxs = np.random.choice(len(self.buffer), batch_size)
+        # samples = [self.buffer[i] for i in idxs]
+        # states, actions, rewards, next_states, done_flags = list(zip(*samples))
+        # return np.array(states), np.array(actions), np.array(rewards), np.array(next_states), np.array(done_flags)
+
+        minibatch = random.sample(self.buffer, min(len(self.buffer), batch_size))
+        state = np.zeros((batch_size, state_size))
+        next_state = np.zeros((batch_size, state_size))
+        action, reward, done = [], [], []
+
+        # do this before prediction
+        # for speedup, this could be done on the tensor level
+        # but easier to understand using a loop
+        for i in range(batch_size):
+            state[i] = minibatch[i][0]
+            action.append(minibatch[i][1])
+            reward.append(minibatch[i][2])
+            next_state[i] = minibatch[i][3]
+            done.append(minibatch[i][4])
+        return state, action, reward, next_state,done
+
+    def is_ready(self):
+        if len(self.buffer) >= self.size:
+            return True
+        else:
+            return False
 
 class DQNAgent:
     def __init__(self):
-        self.env = gym.make('CartPole-v1')
+        self.env_id = 'CartPole-v1'
+        self.env = gym.make(self.env_id)
         # by default, CartPole-v1 has max episode steps = 500
         self.state_size = self.env.observation_space.shape[0]
         self.action_size = self.env.action_space.n
-        self.memory = deque(maxlen=2000)
+        # self.memory = deque(maxlen=2000)
 
         self.gamma = 0.95  # discount rate
         self.epsilon = 1.0  # exploration rate
@@ -28,6 +77,7 @@ class DQNAgent:
         self.batch_size = 64
         self.train_start = 1000
 
+        self.replay_buffer = ReplayBuffer(size = 2000)
         # create main model
         self.model = self.create_model()
 
@@ -54,11 +104,11 @@ class DQNAgent:
         model.summary()
         return model
 
-    def update_replay_memory(self, transition):
-        self.memory.append(transition)
-        if len(self.memory) > self.train_start:
-            if self.epsilon > self.epsilon_min:
-                self.epsilon *= self.epsilon_decay
+    # def update_replay_memory(self, transition):
+    #     self.memory.append(transition)
+    #     if len(self.memory) > self.train_start:
+    #         if self.epsilon > self.epsilon_min:
+    #             self.epsilon *= self.epsilon_decay
 
     def act(self, state):
         if np.random.random() <= self.epsilon:
@@ -67,25 +117,27 @@ class DQNAgent:
             return np.argmax(self.model.predict(state))
 
     def replay(self):
-        if len(self.memory) < self.train_start:
-            return
-        # Randomly sample minibatch from the memory
-        minibatch = random.sample(self.memory, min(len(self.memory), self.batch_size))
-        state = np.zeros((self.batch_size, self.state_size))
-        next_state = np.zeros((self.batch_size, self.state_size))
-        action, reward, done = [], [], []
 
-        # do this before prediction
-        # for speedup, this could be done on the tensor level
-        # but easier to understand using a loop
-        for i in range(self.batch_size):
-            state[i] = minibatch[i][0]
-            action.append(minibatch[i][1])
-            reward.append(minibatch[i][2])
-            next_state[i] = minibatch[i][3]
-            done.append(minibatch[i][4])
+        # A33
+        # # Randomly sample minibatch from the memory
+        # minibatch = random.sample(self.memory, min(len(self.memory), self.batch_size))
+        # state = np.zeros((self.batch_size, self.state_size))
+        # next_state = np.zeros((self.batch_size, self.state_size))
+        # action, reward, done = [], [], []
+        #
+        # # do this before prediction
+        # # for speedup, this could be done on the tensor level
+        # # but easier to understand using a loop
+        # for i in range(self.batch_size):
+        #     state[i] = minibatch[i][0]
+        #     action.append(minibatch[i][1])
+        #     reward.append(minibatch[i][2])
+        #     next_state[i] = minibatch[i][3]
+        #     done.append(minibatch[i][4])
 
         # do batch prediction to save speed
+        state, action, reward, next_state, done = self.replay_buffer.sample(self.batch_size, self.state_size)
+
         target = self.model.predict(state)
         target_next = self.model.predict(next_state)
 
@@ -127,7 +179,14 @@ class DQNAgent:
                     reward = reward
                 else:
                     reward = -100
-                self.update_replay_memory((state, action, reward, next_state, done))
+
+                # A33
+                # self.update_replay_memory((state, action, reward, next_state, done))
+                self.replay_buffer.add((state, action, reward, next_state, done))
+                if self.replay_buffer.is_ready():
+                    if self.epsilon > self.epsilon_min:
+                        self.epsilon *= self.epsilon_decay
+                    self.replay()
 
                 state = next_state
                 i += 1
@@ -139,7 +198,8 @@ class DQNAgent:
                         log_debug("Episode Z1: ")
                         self.save(file_name)
                         log_debug("Episode Z2: ")
-                self.replay()
+
+
             log_debug("Episode B: " + str(e))
         log_debug("End Train...")
 
@@ -163,6 +223,43 @@ class DQNAgent:
             log_debug("Episode B: " + str(e))
         log_debug("End Test...")
         return all_states
+
+    def record_video(self, video_folder, video_length):
+
+        # vec_env = DummyVecEnv([lambda: gym.make(self.env_id, render_mode="rgb_array")])
+        # # Record the video starting at the first step
+        # vec_env = VecVideoRecorder(vec_env, video_folder,
+        #                        record_video_trigger=lambda x: x == 0, video_length=video_length,
+        #                        name_prefix=f"{type(self).__name__}-{self.env_id}")
+
+        # Initialize DummyVecEnv without render_mode
+        vec_env = DummyVecEnv([lambda: gym.make(self.env_id)])
+
+        # Set up VecVideoRecorder to record the video
+        vec_env = VecVideoRecorder(vec_env, video_folder,
+            record_video_trigger=lambda x: x == 0, video_length=video_length,
+            name_prefix=f"{type(self).__name__}-{self.env_id}"
+        )
+
+        obs = vec_env.reset()
+        for _ in range(video_length + 1):
+            # action = np.argmax(self.get_qvalues(obs),axis=-1)
+            action = np.argmax(self.model.predict(obs))
+            obs, _, _, _ = vec_env.step(action)
+        # video filename
+        file_path = "./"+video_folder+vec_env.video_recorder.path.split("/")[-1]
+        # Save the video
+        vec_env.close()
+        return file_path
+
+    def play_video(self, file_path):
+        mp4 = open(file_path, 'rb').read()
+        data_url = "data:video/mp4;base64," + b64encode(mp4).decode()
+        return HTML("""
+            <video width=400 controls>
+                  <source src="%s" type="video/mp4">
+            </video>
+            """ % data_url)
 
 
 class DNQAlgo(object):
@@ -219,5 +316,18 @@ class DNQDataProcessing(BaseDataProcessing, BasePotentialAlgo, DNQAlgo):
             print(i)
 
         result = {"status": "ok dqn", "results": results}
+        return result
+
+    def record_video(self, dic):
+        print("9034-dqn-video: \n", "="*50, "\n", dic, "\n", "="*50)
+
+        video_folder = self.TO_OTHER
+        video_length = 500
+        agent = DQNAgent()
+        agent.record_video(video_folder, video_length)
+
+
+
+        result = {"status": "ok dqn record_video"}
         return result
 

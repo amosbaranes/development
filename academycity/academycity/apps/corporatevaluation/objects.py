@@ -5620,6 +5620,7 @@ class BaseCorporateValuationAlgo(object):
 class CorporateValuationDataProcessing(BaseDataProcessing, BaseCorporateValuationAlgo):
     def __init__(self, dic):
         super().__init__(dic)
+        self.app = dic["app"]
 
     def download_companies_to_excel(self, dic):
         # print('    90033-100 dic\n', '-'*100, '\n', dic, '\n', '-'*100)

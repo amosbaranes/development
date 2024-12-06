@@ -595,7 +595,7 @@ def get_data_link(request):
             ("Error 90855-23 "+str(ex))
 
         # print("9030-221")
-        # print(order_by)
+        # print("order_by", order_by)
         # print("9030-221-1")
 
         if order_by != "":
@@ -613,7 +613,7 @@ def get_data_link(request):
         # print("9030-223")
         s += '.all()[:number_of_rows_].values('+fields_str+')'
 
-        # print("="*100, '\ns111-1 for d_data\n', "\ns=", number_of_rows_, s, "=\n", "="*100, "\n")
+        print("="*100, '\ns111-1 for d_data\n', "\ns=", s, "=\n", "="*100, "\n")
 
         log_debug("get_data_link 99999: s="+s)
         d_data = eval(s)
@@ -664,6 +664,9 @@ def get_data_link(request):
     # print(dic, "=2"*50)
     dic = {'status': 'ok', "dic": dic}
     # print('core view 9055 get_data_link dic_= ', dic)
+
+    # for k in dic["dic"]:
+    #     print(k, "\n", dic["dic"][k])
     log_debug("3033-167 core views error 335")
     return JsonResponse(dic)
 
