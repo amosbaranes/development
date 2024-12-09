@@ -5648,7 +5648,7 @@ class CorporateValuationDataProcessing(BaseDataProcessing, BaseCorporateValuatio
                 o.is_active = False
                 o.save()
         else:
-            o = XBRLDimCompany.objects.filter(ticker=ticker_)
+            o = XBRLDimCompany.objects.filter(ticker=ticker_)[0]
             o.is_active = False
             o.save()
         result = {"status": "ok"}
