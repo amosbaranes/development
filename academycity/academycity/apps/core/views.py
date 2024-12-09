@@ -553,8 +553,26 @@ def get_data_link(request):
                         # s += '.filter(' + foreign_table_ + '__' + filter_field_ + '=' + filter_value_ + ')'
                     else:
                         # print(44444555)
-                        s += '.filter(' + foreign_table_ + '__' + filter_field_ + '__icontains="'+filter_value_+'")'
-                        # s += '.filter(' + foreign_table_ + '__' + filter_field_ + '__icontains="'+filter_value_+'")'
+                        ss_=""
+                        # print(ss_, "", filter_value_)
+                        if filter_value_[0] == ">":
+                            filter_value_ = filter_value_[1:]
+                            ss_="__gt"
+                            if filter_value_[0] == "=":
+                                filter_value_ = filter_value_[1:]
+                                ss_ += "e"
+                        if filter_value_[0] =="<":
+                            filter_value_ = filter_value_[1:]
+                            ss_="__lt"
+                            if filter_value_[0] == "=":
+                                filter_value_ = filter_value_[1:]
+                                ss_ += "e"
+                        # print(ss_, "", filter_value_)
+                        if ss_ != "":
+                            s += '.filter(' + foreign_table_ + '__' + filter_field_+ss_ + '="'+filter_value_+'")'
+                        else:
+                            s += '.filter(' + foreign_table_ + '__' + filter_field_ + '__icontains="'+filter_value_+'")'
+                        # =======
                 else:
                     # print(22222222222)
                     if filter_field_ == "id":

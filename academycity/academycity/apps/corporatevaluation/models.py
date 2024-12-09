@@ -1349,6 +1349,10 @@ class XBRLDimCompany(TruncateTableMixin, models.Model):
     zip = models.CharField(max_length=10, default="", blank=True)
     is_active = models.BooleanField(default=False)
 
+    @property
+    def company_name_ticker(self):
+        return str(self.company_name) + " (" + str(self.ticker)+")"
+
     def __str__(self):
         return str(self.ticker) + ":" + str(self.company_name)
 
@@ -1362,6 +1366,10 @@ class XBRLDimTime(TruncateTableMixin, models.Model):
     id = models.PositiveSmallIntegerField(primary_key=True)
     year = models.PositiveSmallIntegerField(default=0)
     quarter = models.PositiveSmallIntegerField(default=0)
+
+    @property
+    def year_quarter(self):
+        return str(self.year) + ":" + str(self.quarter)
 
     def __str__(self):
         return str(self.id)
