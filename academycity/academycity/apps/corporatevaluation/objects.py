@@ -5320,9 +5320,6 @@ class FinancialAnalysis(object):
     # https://webix-ui.medium.com/top-7-javascript-pivot-widgets-in-2019-2020-8d81d4042f51
     # https://github.com/nicolaskruchten/pivottable
     def update_fact_table(self, **kwargs):
-
-        print(kwargs)
-
         log_debug("--update_chart_of_accounts--")
         # print("--update_chart_of_accounts--")
         ticker_ = kwargs['ticker'].upper()
@@ -5332,17 +5329,16 @@ class FinancialAnalysis(object):
         # print(ticker_)
         company = XBRLCompanyInfo.objects.get(ticker=ticker_)
         log_debug("got company: " + ticker_)
-        print("company", company)
+        # print("company", company)
 
         try:
-            print("AAAA")
-            print(company.id)
+            # print(company.id)
             company_, is_created = XBRLDimCompany.objects.get_or_create(id=company.id,
                                                                         ticker=ticker_,
                                                                         main_sic_code = company.industry.main_sic.sic_code,
                                                                         sic_code = company.industry.sic_code)
 
-            print("is_created", is_created, company.id, company.company_name)
+            # print("is_created", is_created, company.id, company.company_name)
             # if is_created:
             company_.main_sic_description = company.industry.main_sic.sic_description
             company_.sic_description = company.industry.sic_description
@@ -5641,6 +5637,23 @@ class CorporateValuationDataProcessing(BaseDataProcessing, BaseCorporateValuatio
     def __init__(self, dic):
         super().__init__(dic)
         self.app = dic["app"]
+
+    # ----
+    def remove_is_active(self, dic):
+        print('90033-168-1 remove_is_active dic\n', '-'*100, '\n', dic, '\n', '-'*100)
+        ticker_ = dic['ticker']
+        if ticker_ == 'all':
+            objs = XBRLDimCompany.objects.all()
+            for o in objs:
+                o.is_active = False
+                o.save()
+        else:
+            o = XBRLDimCompany.objects.filter(ticker=ticker_)
+            o.is_active = False
+            o.save()
+        result = {"status": "ok"}
+        return result
+    # ----
 
     def download_companies_to_excel(self, dic):
         # print('    90033-100 dic\n', '-'*100, '\n', dic, '\n', '-'*100)
