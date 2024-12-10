@@ -5273,6 +5273,7 @@ class FinancialAnalysis(object):
         result = {'status': "ok"}
         return result
 
+    # Not needed any more --
     def update_companies(self, **kwargs):
         # print("update_companies")
         for company in XBRLCompanyInfo.objects.all():
@@ -5337,7 +5338,6 @@ class FinancialAnalysis(object):
                                                                         ticker=ticker_,
                                                                         main_sic_code = company.industry.main_sic.sic_code,
                                                                         sic_code = company.industry.sic_code)
-
             # print("is_created", is_created, company.id, company.company_name)
             # if is_created:
             company_.main_sic_description = company.industry.main_sic.sic_description
@@ -5345,8 +5345,11 @@ class FinancialAnalysis(object):
             company_.cik = company.cik
             company_.company_name = company.company_name
             company_.is_active = True
+            company_.exchange = company.exchange
+            company_.city = company.city
+            company_.state = company.state
+            company_.zip = company.zip
             company_.save()
-
             # print("company_", company_)
         except Exception as ex:
             print("Error 9876: " + ticker_ + str(ex))

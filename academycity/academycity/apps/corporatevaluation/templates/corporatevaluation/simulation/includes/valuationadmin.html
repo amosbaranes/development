@@ -21,13 +21,17 @@
                     <tr>
                         <td onclick="analysis_setup_attribute(event)">
                             <button fun="update_chart_of_accounts" style="width: 50px;">CofA</button>
-                            <button fun="update_companies" style="width: 50px;">Com</button>
-                            <button fun="update_time" style="width: 50px;">Time</button>
+<!--                            <button fun="update_companies" style="width: 50px;">Com</button>-->
+<!--                            <button fun="update_time" style="width: 50px;">Time</button>-->
                             <button fun="update_fact_table" style="width: 50px;">Fact</button>
                             <button fun="get_data_for_ticker" style="width: 50px;">Pivot</button>
                         </td><td>
                             <input id="bi_attribute_name" type="text" value="ticker" size="4" placeholder="attribute name"/>
                             <input id="bi_attribute_value" type="text" value="AAPL" size="4" placeholder="attribute value"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Update XBRLValuationAccounts, <br/>then click CofA button</td><td>
                         </td>
                     </tr>
                 </table>

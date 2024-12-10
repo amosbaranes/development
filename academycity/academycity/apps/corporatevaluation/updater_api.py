@@ -1,4 +1,4 @@
-from ..corporatevaluation.objects import AcademyCityXBRL, StockPrices, CorporateValuationDataProcessing
+from ..corporatevaluation.objects import AcademyCityXBRL, FinancialAnalysis, StockPrices, CorporateValuationDataProcessing
 from ..corporatevaluation.models import XBRLRealEquityPrices
 from ..core.sql import SQL
 
@@ -29,11 +29,14 @@ def update_forecast():
                 count = SQL().exc_sql(ssql, data)
                 XBRLRealEquityPrices.truncate()
             elif h == 5:
-                # print("Start")
+                print("Start")
+                fa = FinancialAnalysis()
+                fa.update_time()
+                print("Start 1")
                 dp = CorporateValuationDataProcessing(dic={"app":"corporatevaluation","topic_id":"general"})
-                # print("Start 1")
+                # print("Start 11")
                 dp.data_transfer_to_process_fact(dic={"app":"corporatevaluation"})
-                # print("Start 2")
+                # print("Start 12")
                 dp.create_new_group_accounts(dic={"app":"corporatevaluation",
                                                   "aggregate_accounts":[11057, 11400, 11600, 11990, 12990, 12999,
                                                                         13990,14100, 14145, 14999, 15390, 15990,
