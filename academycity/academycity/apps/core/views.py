@@ -533,7 +533,7 @@ def get_data_link(request):
             if filter_value_ != "":
                 # print(foreign_table_)
                 if foreign_table_ != "":
-                    # print(1111111111)
+                    print(1111111111)
                     if filter_field_a != "":
                         # need need need to check this one. I changed it and it might have effect on other reports
                         filter_field_ = filter_field_a
@@ -571,7 +571,11 @@ def get_data_link(request):
                         if ss_ != "":
                             s += '.filter(' + foreign_table_ + '__' + filter_field_+ss_ + '="'+filter_value_+'")'
                         else:
-                            s += '.filter(' + foreign_table_ + '__' + filter_field_ + '__icontains="'+filter_value_+'")'
+                            if filter_value_ in ["False", "True"]:
+                                s += '.filter(' + foreign_table_ + '__' + filter_field_ + '=' + filter_value_ + ')'
+                            else:
+                                s += '.filter(' + foreign_table_ + '__' + filter_field_ + '__icontains="'+filter_value_+'")'
+
                         # =======
                 else:
                     # print(22222222222)

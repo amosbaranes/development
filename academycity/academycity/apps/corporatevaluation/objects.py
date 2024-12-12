@@ -5265,13 +5265,17 @@ class FinancialAnalysis(object):
             # print('-' * 50)
             # print(account.id, account.order, account.statement.id, account.statement.statement, account.sic,
             #       account.account, account.type, account.scale)
+
+            # print('\nprocess 1: '+ str(account.order)+str(account.account)+str(account.statement.order)+str(account.statement.statement))
+
             try:
                 a, c = XBRLDimAccount.objects.get_or_create(order=account.order, account=account.account,
                                                         statement_order=account.statement.order,
                                                         statement=account.statement.statement)
             except Exception as ex:
-                print('Error 5432-1: ', account.order, account.account, account.statement.order,
-                      account.statement.statement, '\n', str(ex))
+                # print('Error 5432-1: '+str(ex))
+                log_debug('Error 5432-1: '+str(ex))
+
         log_debug('End: update_chart_of_accounts')
         result = {'status': "ok"}
         return result
@@ -5950,63 +5954,6 @@ class CorporateValuationDataProcessing(BaseDataProcessing, BaseCorporateValuatio
             o = XBRLDimCompany.objects.filter(ticker=ticker_)[0]
             o.is_active = False
             o.save()
-        result = {"status": "ok"}
-        return result
-
-    def create_ratios(self, dic):
-        # print('create_ratios 90044-666-66 dic\n', '-'*100, '\n', dic, '\n', '-'*100)
-        app_ = dic["app"]
-
-        model_from = apps.get_model(app_label=app_, model_name="XBRLFactCompany")
-        model_to = apps.get_model(app_label=app_, model_name="XBRLFactRatiosCompany")
-        model_ratio = apps.get_model(app_label=app_, model_name="XBRLRatioDim")
-
-        cs = model_from.objects.values('company_id').distinct()
-        df_cs=pd.DataFrame(list(cs))
-
-        qs_r = model_ratio.objects.all().values()
-        df_r=pd.DataFrame(qs_r)
-        # print(df_r)
-
-        for index, row in df_cs.iterrows():
-            c_id = int(row["company_id"])
-            # print("-"*50,"\n",c_id,"\n","-"*50)
-            csi = model_from.objects.filter(company_id=c_id).values('time_id').distinct()
-            df_csi=pd.DataFrame(list(csi))
-            for index_, row_ in df_csi.iterrows():
-                time_id = int(row_["time_id"])
-                # print("-"*50,"\n",time_id,"\n","-"*50)
-                for index_r, row_r in df_r.iterrows():
-                    try:
-                        numerator = int(row_r["numerator"])
-                        denominator = int(row_r["denominator"])
-                        # print(numerator, denominator)
-                        n = model_from.objects.get(company_id=c_id, time_id=time_id, account=numerator).amount
-                        d = model_from.objects.get(company_id=c_id, time_id=time_id, account=denominator).amount
-                        r = n/d
-                        # print(n, d, r)
-                        ratio_id = row_r.id
-                        obj, is_created = model_to.objects.get_or_create(company_id=c_id, time_id=time_id, ratio_id = ratio_id)
-                        obj.amount=r
-                        obj.save()
-                    except Exception as ex:
-                        pass
-                        # print("Error 202-202", ex)
-
-        # qs = model_from.objects.all().values()
-        #
-        # df = pd.DataFrame(list(qs))
-        # print(df)
-        # print(qs)
-        # for q in qs:
-        #     print(q.company.id,
-        #           q.time,
-        #           q.account,
-        #           q.amount)
-        #     obj, is_created = model_to.objects.get_or_create(company_id=q.company.id, time=q.time, account=q.account.order)
-        #     obj.amount=q.amount
-        #     obj.save()
-
         result = {"status": "ok"}
         return result
     # ----
