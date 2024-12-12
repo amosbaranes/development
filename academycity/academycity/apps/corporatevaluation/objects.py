@@ -63,11 +63,13 @@ from .models import (XBRLMainIndustryInfo, XBRLIndustryInfo, XBRLCompanyInfoInPr
                      XBRLRegion, XBRLRegionYearData, XBRLSPEarningForecast, XBRLSPStatistics,
                      XBRLDimTime, XBRLDimCompany, XBRLDimAccount, XBRLFactCompany,
                      XBRLRealEquityPrices, XBRLRealEquityPricesArchive,
-                     ETFS, ETFWatchLists, StockPricesMinutes, StockPricesDays)
+                     ETFS, ETFWatchLists, StockPricesMinutes, StockPricesDays,
+                     XBRLFactRatiosCompany, XBRLRatioDim)
 
 from ..acapps.ml.basic_ml_objects import BaseDataProcessing
 from django.db.models import Count
 from scipy.stats import norm, binom
+import copy
 
 # cik = '0000051143'
 # type = '10-K'
@@ -2663,7 +2665,7 @@ class AcademyCityXBRL(object):
         except Exception as ex:
             log_debug("get_dic_company_info ex1: " + str(ex))
         result = {'dic_company_info': dic_company_info, 'dataq': dataq}
-        # print(result)
+        print(result)
         return result
 
     def get_dic_company_info(self, company, type_="10-K"):
@@ -5268,7 +5270,8 @@ class FinancialAnalysis(object):
                                                         statement_order=account.statement.order,
                                                         statement=account.statement.statement)
             except Exception as ex:
-                print('Error 5432: '+str(ex))
+                print('Error 5432-1: ', account.order, account.account, account.statement.order,
+                      account.statement.statement, '\n', str(ex))
         log_debug('End: update_chart_of_accounts')
         result = {'status': "ok"}
         return result
@@ -5358,41 +5361,233 @@ class FinancialAnalysis(object):
         log_debug("Start yearly data")
         print("Start yearly data")
         # print(company.financial_data['data'])
-        for y in company.financial_data['data']:
+
+        accounts_structure_ = {
+            '11990': {'star_other': [11100, 11800], 'total':0},
+            '12990': {'star_other': [12500, 12900], 'total':0},
+            '13990': {'star_other': [13100, 13200], 'total':0},
+            '14990': {'star_other': [14100, 14200], 'total':0},
+            '15390': {'star_other': [15000, 15350], 'total':0}}
+
+        accounting_equality_ = {
+            '14145': {'1': {'account': '14142', 'data': 0}, '2': {'account': '14144', 'data': 0},
+                   '3': {'account': '14145', 'data': 0}},
+            '12998': {'1': {'account': '11990', 'data': 0}, '2': {'account': '12990', 'data': 0},
+                   '3': {'account': '12999', 'data': 0}},
+            '12999': {'1': {'account': '14999', 'data': 0}, '2': {'account': '15990', 'data': 0},
+                   '3': {'account': '12999', 'data': 0}},
+            '14999': {'1': {'account': '13990', 'data': 0}, '2': {'account': '14990', 'data': 0},
+                   '3': {'account': '14999', 'data': 0}},
+            '012999': {'1': {'account': '14999', 'data': 0}, '2': {'account': '15990', 'data': 0},
+                    '3': {'account': '12999', 'data': 0}},
+            '014999': {'1': {'account': '13990', 'data': 0}, '2': {'account': '14990', 'data': 0},
+                    '3': {'account': '14999', 'data': 0}},
+            '0012998': {'1': {'account': '11990', 'data': 0}, '2': {'account': '12990', 'data': 0},
+                     '3': {'account': '12999', 'data': 0}},
+            '15990': {'1': {'account': '15390', 'data': 0}, '2': {'account': '15400', 'data': 0},
+                   '3': {'account': '15990', 'data': 0}},
+            '20100': {'1': {'account': '20200', 'data': 0}, '2': {'account': '20300', 'data': 0},
+                   '3': {'account': '20100', 'data': 0}},
+            '20101': {'1': {'account': '20700', 'data': 0}, '2': {'account': '20800', 'data': 0},
+                   '3': {'account': '20300', 'data': 0}},
+            '20102': {'1': {'account': '30030', 'data': 0}, '2': {'account': '30040', 'data': 0},
+                   '3': {'account': '20999', 'data': 0}},
+            '120800': {'1': {'account': '20850', 'data': 0}, '2': {'account': '20900', 'data': 0},
+                   '3': {'account': '20800', 'data': 0}},
+            '20900': {'1': {'account': '20999', 'data': 0}, '2': {'account': '20970', 'data': 0},
+                   '3': {'account': '20900', 'data': 0}},
+            '220800': {'1': {'account': '20850', 'data': 0}, '2': {'account': '20900', 'data': 0},
+                   '3': {'account': '20800', 'data': 0}}}
+
+        def calculate_new_account(a, b, c, f, company__, time__):
             try:
-                yd = company.financial_data['data'][y]
-                # print("-"*30, "\n", yd, "\n", "-"*30)
-                # print("-"*30, "\n", y, "\n", "-"*30)
-
-                if int(yd['dei']['documentfiscalyearfocus']) < 2012:
-                    continue
-                yq = int(yd['dei']['documentfiscalyearfocus'] + "0")
-                time_ = XBRLDimTime.objects.get(id=yq)
-                log_debug("start update fact table for " + ticker_ + " year: " + str(y))
-                for account in yd['year_data']:
-                    # print(account)
-                    account_ = XBRLDimAccount.objects.get(order=int(account))
-                    amount_ = yd['year_data'][account]
-                    # print('account_')
-                    # print(account_)
-                    # print('amount_')
-                    # print(amount_)
-                    try:
-                        f, c = XBRLFactCompany.objects.get_or_create(company=company_, time=time_, account=account_)
-                        # print(f)
-                        f.amount = amount_
-                        f.save()
-                        # print('--saved--')
-                    except Exception as ex:
-                        log_debug(str(ex))
-                        # print(str(account_) + "  " + str(ex))
-                log_debug("End update fact table for " + ticker_ + " year: " + str(y))
-                # print("End update fact table for " + ticker_ + " year: " + str(y))
+                a_ = XBRLDimAccount.objects.get(order=a)
+                b_ = XBRLDimAccount.objects.get(order=b)
+                c_ = XBRLDimAccount.objects.get(order=c)
             except Exception as ex:
-                log_debug("Err 9123: "+str(ex))
-                # print("Err 9123: "+str(ex))
-                continue
+                log_debug("Error 12-12-1" + str(ex))
+                return
+            try:
+                aa = XBRLFactCompany.objects.get(company=company__, time=time__, account=a_).amount
+                bb = XBRLFactCompany.objects.get(company=company__, time=time__, account=b_).amount
+            except Exception as ex:
+                try:
+                    o = XBRLFactCompany.objects.get(company=company_, time=time_, account=c_)
+                    o.delete()
+                except Exception as ex:
+                    pass
+                return
+            try:
+                o, c = XBRLFactCompany.objects.get_or_create(company=company_, time=time_, account=c_)
+                o.amount = aa + f * bb
+                o.save()
+            except Exception as ex:
+                log_debug("Error789-9-2: " + str(ex))
 
+        def create_ratios(company__, time__):
+            # print("A", company__, time__)
+            qs_r = XBRLRatioDim.objects.all().values()
+            df_r = pd.DataFrame(qs_r)
+            # print(df_r)
+
+            for index_r, row_r in df_r.iterrows():
+                try:
+                    numerator = int(row_r["numerator"])
+                    denominator = int(row_r["denominator"])
+                    # print(numerator, denominator)
+
+                    n = XBRLFactCompany.objects.get(company=company__, time=time__, account=numerator).amount
+                    d = XBRLFactCompany.objects.get(company=company__, time=time__, account=denominator).amount
+                    r = n / d
+                    # print("B", n, d, r)
+                    ratio_id = row_r.id
+                    obj, _ = XBRLFactRatiosCompany.objects.get_or_create(company=company__, time=time__,
+                                                                         ratio_id=ratio_id)
+                    obj.amount = r
+                    obj.save()
+                except Exception as ex:
+                    pass
+                    # print("Error 202-202", ex)
+
+        try:
+            for y in company.financial_data['data']:
+                try:
+                    accounting_equality = copy.deepcopy(accounting_equality_)
+                    yd = company.financial_data['data'][y]
+                    # print("-"*30, "\n", yd, "\n", "-"*30)
+                    # print("-"*30, "\n", y, "\n", "-"*30)
+
+                    if int(yd['dei']['documentfiscalyearfocus']) < 2012:
+                        continue
+                    yq = int(yd['dei']['documentfiscalyearfocus'] + "0")
+                    time_ = XBRLDimTime.objects.get(id=yq)
+                    log_debug("start update fact table for " + ticker_ + " year: " + str(y))
+                    # ----
+                    for account in yd['year_data']:
+                        # print(account)
+                        account_ = XBRLDimAccount.objects.get(order=int(account))
+                        amount_ = yd['year_data'][account]
+                        # print('account_')
+                        # print(account_)
+                        # print('amount_')
+                        # print(amount_)
+                        try:
+                            f, c = XBRLFactCompany.objects.get_or_create(company=company_, time=time_, account=account_)
+                            # print(f)
+                            f.amount = amount_
+                            f.save()
+                            # print('--saved--')
+                        except Exception as ex:
+                            log_debug(str(ex))
+                            # print(str(account_) + "  " + str(ex))
+                    # ===============accounting_equality=================
+                    matching_accounts = yd['matching_accounts']
+                    for k in accounting_equality:
+                        # if int(y) == 2020 and k == '12998':
+                        #     print(k, accounting_equality[k])
+                        num = 0
+                        nums = []
+                        for k1 in accounting_equality[k]:
+                            nn=0
+                            key=accounting_equality[k][k1]['account']
+                            # if int(y) == 2020 and k == '12998':
+                            #     print(k1, key, matching_accounts[key][0], "\n\n", matching_accounts)
+                            try:
+                                f = XBRLFactCompany.objects.get(company=company_, time=time_, account__order=int(key))
+                                nn = f.amount
+                                if nn != 0:
+                                    num += 1
+                                    nums.append(k1)
+                                    accounting_equality[k][k1]['data']=nn
+                            except Exception as ex:
+                                pass
+
+                        # if int(y) == 2020 and k == '12998':
+                        #     print("AAA11\n", "num=", num)
+
+                        if num == 2:
+                            if "3" in nums:
+                                nums = [item for item in nums if item != '3']
+                                nn_ = str(3 - int(nums[0]))
+                                amount_ = float(accounting_equality[k]['3']['data']) - float(accounting_equality[k][nums[0]]['data'])
+                                account_ = accounting_equality[k][nn_]['account']
+                            else:
+                                account_ = accounting_equality[k]['3']['account']
+                                amount_ = float(accounting_equality[k]['2']['data']) + float(accounting_equality[k]['1']['data'])
+                            try:
+                                account_ = XBRLDimAccount.objects.get(order=int(account_))
+                                f, c = XBRLFactCompany.objects.get_or_create(company=company_, time=time_, account=account_)
+                                f.amount = amount_
+                                f.save()
+                            except Exception as ex:
+                                print("Error 444", ex)
+
+                    # ===============accounts_structure=================
+                    accounts_structure = copy.deepcopy(accounts_structure_)
+                    for key in matching_accounts:
+                        nn = 0
+                        try:
+                            if matching_accounts[key][0] != '':
+                                nn_=yd['year_data'][key]
+                                try:
+                                    nn=float(nn_)
+                                except Exception as ex:
+                                    pass
+                        except Exception as ex:
+                            pass
+                        for k in accounts_structure:
+                            l = accounts_structure[k]['star_other']
+                            if int(k) > int(key) >= int(l[0]) and int(key) != int(l[1]):
+                                accounts_structure[k]['total'] += nn
+
+                    for k in accounts_structure:
+                        account_ = accounts_structure[k]['star_other'][1]
+                        # if k == '14990':
+                        #     print(k, accounts_structure[k], "account_=", account_)
+                        nn = 0
+                        try:
+                            o_account_ = XBRLDimAccount.objects.get(order=int(k))
+                            o = XBRLFactCompany.objects.get(company=company_, time=time_, account=o_account_)
+                            nn = o.amount
+                        except Exception as ex:
+                            pass
+                        if nn == 0:
+                            continue
+                        t = accounts_structure[k]['total']
+                        try:
+                            amount_ = float(nn) - t
+                            account_ = XBRLDimAccount.objects.get(order=int(account_))
+                            f, c = XBRLFactCompany.objects.get_or_create(company=company_, time=time_, account=account_)
+                            f.amount = amount_
+                            f.save()
+                        except Exception as ex:
+                            print("Error 8652", ex)
+
+                    # ===Working Caital EBITDA Total Current Assets excluding Inventory ===
+                    try:
+                        # Working Capital
+                        calculate_new_account(11990, 13990, 31240, -1,company_,time_)
+                        # EBITDA
+                        calculate_new_account(20800, 20250, 31250, 1,company_,time_)
+                        # Total Current Assets excluding Inventory
+                        calculate_new_account(11990, 11600, 31260, -1,company_,time_)
+                    except Exception as ex:
+                        pass
+                    # ####### Calculate Ratio ########
+                    create_ratios(company_, time_)
+                    # ===End Ratios ===
+
+                    log_debug("End update fact table for " + ticker_ + " year: " + str(y))
+                    # print("End update fact table for " + ticker_ + " year: " + str(y))
+
+                except Exception as ex:
+                    log_debug("Err 9123: "+str(ex))
+                    # print("Err 9123: "+str(ex))
+                    continue
+        except Exception as ex:
+            pass
+
+        # ===== Quarterly data ====
         log_debug("Start quarterly data")
         print("Start quarterly data")
         try:
@@ -5406,6 +5601,7 @@ class FinancialAnalysis(object):
                         log_debug("start update fact table for ticker=" + ticker_ + " year=" + str(y) + " q=" + str(q))
                         yq = int(yd['dei']['documentfiscalyearfocus'] + str(q))
                         time_ = XBRLDimTime.objects.get(id=yq)
+                        # ---
                         for account in yd['year_data']:
                             account_ = XBRLDimAccount.objects.get(order=int(account))
                             amount_ = yd['year_data'][account]
@@ -5416,11 +5612,111 @@ class FinancialAnalysis(object):
                             except Exception as ex:
                                 log_debug(str(ex))
                         log_debug("End update fact table for ticker=" + ticker_ + " year=" + str(y) + " q=" + str(q))
+                        # ===============accounting_equality=================
+                        matching_accounts = yd['matching_accounts']
+                        accounting_equality = copy.deepcopy(accounting_equality_)
+
+                        for k in accounting_equality:
+                            # if int(y) == 2020 and k == '12998':
+                            #     print(k, accounting_equality[k])
+                            num = 0
+                            nums = []
+                            for k1 in accounting_equality[k]:
+                                nn = 0
+                                key = accounting_equality[k][k1]['account']
+                                # if int(y) == 2020 and k == '12998':
+                                #     print(k1, key, matching_accounts[key][0], "\n\n", matching_accounts)
+                                try:
+                                    f = XBRLFactCompany.objects.get(company=company_, time=time_,
+                                                                    account__order=int(key))
+                                    nn = f.amount
+                                    if nn != 0:
+                                        num += 1
+                                        nums.append(k1)
+                                        accounting_equality[k][k1]['data'] = nn
+                                except Exception as ex:
+                                    pass
+
+                            # if int(y) == 2020 and k == '12998':
+                            #     print("AAA11\n", "num=", num)
+
+                            if num == 2:
+                                if "3" in nums:
+                                    nums = [item for item in nums if item != '3']
+                                    nn_ = str(3 - int(nums[0]))
+                                    amount_ = float(accounting_equality[k]['3']['data']) - float(
+                                        accounting_equality[k][nums[0]]['data'])
+                                    account_ = accounting_equality[k][nn_]['account']
+                                else:
+                                    account_ = accounting_equality[k]['3']['account']
+                                    amount_ = float(accounting_equality[k]['2']['data']) + float(
+                                        accounting_equality[k]['1']['data'])
+                                try:
+                                    account_ = XBRLDimAccount.objects.get(order=int(account_))
+                                    f, c = XBRLFactCompany.objects.get_or_create(company=company_, time=time_,
+                                                                                 account=account_)
+                                    f.amount = amount_
+                                    f.save()
+                                except Exception as ex:
+                                    print("Error 444", ex)
+                        # ===============accounts_structure=================
+                        accounts_structure = copy.deepcopy(accounts_structure_)
+                        for key in matching_accounts:
+                            nn = 0
+                            try:
+                                if matching_accounts[key][0] != '':
+                                    nn_=yd['year_data'][key]
+                                    try:
+                                        nn=float(nn_)
+                                    except Exception as ex:
+                                        pass
+                            except Exception as ex:
+                                pass
+                            for k in accounts_structure:
+                                l = accounts_structure[k]['star_other']
+                                if int(k) > int(key) >= int(l[0]) and int(key) != int(l[1]):
+                                    accounts_structure[k]['total'] += nn
+                        for k in accounts_structure:
+                            account_ = accounts_structure[k]['star_other'][1]
+                            nn = 0
+                            try:
+                                o_account_ = XBRLDimAccount.objects.get(order=int(k))
+                                o = XBRLFactCompany.objects.get(company=company_, time=time_, account=o_account_)
+                                nn = o.amount
+                            except Exception as ex:
+                                pass
+                            if nn == 0:
+                                continue
+                            t = accounts_structure[k]['total']
+                            try:
+                                amount_ = float(nn) - t
+                                account_ = XBRLDimAccount.objects.get(order=int(account_))
+                                f, c = XBRLFactCompany.objects.get_or_create(company=company_, time=time_,
+                                                                             account=account_)
+                                f.amount = amount_
+                                f.save()
+                            except Exception as ex:
+                                print("Error 8652", ex)
+                        # ===Working Caital EBITDA Total Current Assets excluding Inventory ===
+                        try:
+                            # Working Capital
+                            calculate_new_account(11990, 13990, 31240, -1, company_, time_)
+                            # EBITDA
+                            calculate_new_account(20800, 20250, 31250, 1, company_, time_)
+                            # Total Current Assets excluding Inventory
+                            calculate_new_account(11990, 11600, 31260, -1, company_, time_)
+                        except Exception as ex:
+                            pass
+                        # ####### Calculate Ratio ########
+                        create_ratios(company_, time_)
+                        # ===End Ratios ===
+
                 except Exception as ex:
                     log_debug("Err 6537: "+str(ex))
                     continue
         except Exception as exx:
             pass
+        # ===== End Quarterly data ====
 
         log_debug("End quarterly data")
         result = {'status': "ok"}
@@ -5656,141 +5952,12 @@ class CorporateValuationDataProcessing(BaseDataProcessing, BaseCorporateValuatio
             o.save()
         result = {"status": "ok"}
         return result
-    # ----
-
-    def download_companies_to_excel(self, dic):
-        # print('    90033-100 dic\n', '-'*100, '\n', dic, '\n', '-'*100)
-        app_ = dic["app"]
-        etfwatchlist_symbol_ = dic["etfwatchlist_symbol"]
-        file_name_ = dic['file_name']
-
-        model_name_ = "xbrlcompanyinfo"
-        model_xci = apps.get_model(app_label=app_, model_name=model_name_)
-        qs = model_xci.objects.filter(etfwatchlist__symbol=etfwatchlist_symbol_).all()
-        df = pd.DataFrame(list(qs.values('exchange', 'company_name', 'ticker', 'company_letter', 'cik', 'is_active')))
-        try:
-            self.save_to_excel(df, "Data", file_name=file_name_)
-        except Exception as ex:
-            print("Error 90876-5543"+ex)
-        result = {"status": "ok"}
-        return result
-
-    def upload_companies_to_excel(self, dic):
-        # print('    90033-100 dic\n', '-'*100, '\n', dic, '\n', '-'*100)
-        app_ = dic["app"]
-        file_path = self.upload_file(dic)["file_path"]
-        # print('90022-1 dic')
-        # print(file_path)
-        dic = dic["cube_dic"]
-        # print('90022-1 dic', dic)
-
-        model_name_ = "etfwatchlists"
-        model_etfwl = apps.get_model(app_label=app_, model_name=model_name_)
-        etfwl_obj, is_created = model_etfwl.objects.get_or_create(symbol="HighV")
-
-        model_name_ = "xbrlcompanyinfo"
-        model_xci = apps.get_model(app_label=app_, model_name=model_name_)
-        df = pd.read_excel(file_path, sheet_name="Data", header=0)
-        # print(df)
-        for index, row in df.iterrows():
-            # print(str(row["ticker"]))
-            o, is_created = model_xci.objects.get_or_create(ticker=str(row["ticker"]))
-            o.etfwatchlist = etfwl_obj
-            o.company_name = str(row["company_name"])
-            o.company_letter = str(row["company_letter"])
-            o.cik = str(row["cik"])
-            o.is_active = bool(row["is_active"])
-            o.financial_data = {"a":"a"}
-            o.financial_dataq = {"a":"a"}
-            o.save()
-            # print("saved", str(row["ticker"]))
-        result = {"status": "ok"}
-        return result
-
-    def data_transfer_to_process_fact(self, dic):
-        # print('data_transfer_to_process_fact 90033-100 dic\n', '-'*100, '\n', dic, '\n', '-'*100)
-        app_ = dic["app"]
-
-        model_from = apps.get_model(app_label=app_, model_name="XBRLFactCompany")
-        model_to = apps.get_model(app_label=app_, model_name="XBRLProcessedFactCompany")
-        qs = model_from.objects.all()
-        for q in qs:
-            # print(q.company.id, q.time, q.account.order, q.amount)
-            obj, is_created = model_to.objects.get_or_create(company_id=q.company.id, time=q.time, account=q.account.order)
-            obj.amount=q.amount
-            obj.save()
-
-        result = {"status": "ok"}
-        return result
-
-    def create_new_group_accounts(self, dic):
-        # print('data_transfer_to_process_fact 90044-100 dic\n', '-'*100, '\n', dic, '\n', '-'*100)
-        app_ = dic["app"]
-        model_from = apps.get_model(app_label=app_, model_name="XBRLProcessedFactCompany")
-        model_to = apps.get_model(app_label=app_, model_name="XBRLAccountsGroupsFactCompany")
-
-        #
-        # Need to add special ratios like for the banking industry.
-        #
-        ll_aggregate_accounts = dic["aggregate_accounts"]
-        dic_new_accounts = dic["new_accounts"]
-        #
-        qs = model_from.objects.filter(account__in=ll_aggregate_accounts).all()
-        # print(qs)
-
-        for q in qs:
-            # print(q.company.id, q.time, q.account, q.amount)
-            obj, is_created = model_to.objects.get_or_create(company_id=q.company.id, time=q.time, account=q.account)
-            obj.amount=q.amount
-            obj.save()
-
-        cs = model_from.objects.values('company_id').distinct()
-        df_cs=pd.DataFrame(list(cs))
-        for index, row in df_cs.iterrows():
-            c_id = int(row["company_id"])
-            # print("-"*50,"\n",c_id,"\n","-"*50)
-            csi = model_from.objects.filter(company_id=c_id).values('time_id').distinct()
-            df_csi=pd.DataFrame(list(csi))
-            for index_, row_ in df_csi.iterrows():
-                for new_account in dic_new_accounts:
-                    detail = dic_new_accounts[new_account]
-                    new_account = int(new_account)
-                    n = 0
-                    try:
-                        time_id = int(row_["time_id"])
-                        # print(c_id, time_id)
-                        add = detail["add"]
-                        subtract = detail["subtract"]
-                        for add_account in add:
-                            obj_1 = model_from.objects.get(company_id=c_id, time_id=time_id, account=add_account)
-                            n += obj_1.amount
-                            # print("add_account\n", obj_1.amount, add_account, "\n", n)
-                        for subtract_account in subtract:
-                            # print("add_account, add_account")
-                            obj_2 = model_from.objects.get(company_id=c_id, time_id=time_id, account=subtract_account)
-                            n -= obj_2.amount
-                            # print("subtract_account\n", obj_2.amount, subtract_account, "\n", n)
-                    except Exception as ex:
-                        pass
-                        # print("Errror 560\n", ex)
-
-                    try:
-                        obj_to, is_created = model_to.objects.get_or_create(company_id=c_id, time_id=time_id, account=new_account)
-                        # print("n\n", n)
-                        obj_to.amount = n
-                        obj_to.save()
-                        # print("-"*50, "\n", obj_to, "\n", "-"*50)
-                    except Exception as ex:
-                        print("Errror 600\n", ex)
-
-        result = {"status": "ok"}
-        return result
 
     def create_ratios(self, dic):
         # print('create_ratios 90044-666-66 dic\n', '-'*100, '\n', dic, '\n', '-'*100)
         app_ = dic["app"]
 
-        model_from = apps.get_model(app_label=app_, model_name="XBRLAccountsGroupsFactCompany")
+        model_from = apps.get_model(app_label=app_, model_name="XBRLFactCompany")
         model_to = apps.get_model(app_label=app_, model_name="XBRLFactRatiosCompany")
         model_ratio = apps.get_model(app_label=app_, model_name="XBRLRatioDim")
 
@@ -5842,6 +6009,196 @@ class CorporateValuationDataProcessing(BaseDataProcessing, BaseCorporateValuatio
 
         result = {"status": "ok"}
         return result
+    # ----
+
+    def download_companies_to_excel(self, dic):
+        # print('    90033-100 dic\n', '-'*100, '\n', dic, '\n', '-'*100)
+        app_ = dic["app"]
+        etfwatchlist_symbol_ = dic["etfwatchlist_symbol"]
+        file_name_ = dic['file_name']
+
+        model_name_ = "xbrlcompanyinfo"
+        model_xci = apps.get_model(app_label=app_, model_name=model_name_)
+        qs = model_xci.objects.filter(etfwatchlist__symbol=etfwatchlist_symbol_).all()
+        df = pd.DataFrame(list(qs.values('exchange', 'company_name', 'ticker', 'company_letter', 'cik', 'is_active')))
+        try:
+            self.save_to_excel(df, "Data", file_name=file_name_)
+        except Exception as ex:
+            print("Error 90876-5543"+ex)
+        result = {"status": "ok"}
+        return result
+
+    def upload_companies_to_excel(self, dic):
+        # print('    90033-100 dic\n', '-'*100, '\n', dic, '\n', '-'*100)
+        app_ = dic["app"]
+        file_path = self.upload_file(dic)["file_path"]
+        # print('90022-1 dic')
+        # print(file_path)
+        dic = dic["cube_dic"]
+        # print('90022-1 dic', dic)
+
+        model_name_ = "etfwatchlists"
+        model_etfwl = apps.get_model(app_label=app_, model_name=model_name_)
+        etfwl_obj, is_created = model_etfwl.objects.get_or_create(symbol="HighV")
+
+        model_name_ = "xbrlcompanyinfo"
+        model_xci = apps.get_model(app_label=app_, model_name=model_name_)
+        df = pd.read_excel(file_path, sheet_name="Data", header=0)
+        # print(df)
+        for index, row in df.iterrows():
+            # print(str(row["ticker"]))
+            o, is_created = model_xci.objects.get_or_create(ticker=str(row["ticker"]))
+            o.etfwatchlist = etfwl_obj
+            o.company_name = str(row["company_name"])
+            o.company_letter = str(row["company_letter"])
+            o.cik = str(row["cik"])
+            o.is_active = bool(row["is_active"])
+            o.financial_data = {"a":"a"}
+            o.financial_dataq = {"a":"a"}
+            o.save()
+            # print("saved", str(row["ticker"]))
+        result = {"status": "ok"}
+        return result
+
+    # # The following functions should be removed --
+    # # it is activated in the daily update
+    # def data_transfer_to_process_fact(self, dic):
+    #     # print('data_transfer_to_process_fact 90033-100 dic\n', '-'*100, '\n', dic, '\n', '-'*100)
+    #     app_ = dic["app"]
+    #
+    #     model_from = apps.get_model(app_label=app_, model_name="XBRLFactCompany")
+    #     model_to = apps.get_model(app_label=app_, model_name="XBRLProcessedFactCompany")
+    #     qs = model_from.objects.all()
+    #     for q in qs:
+    #         # print(q.company.id, q.time, q.account.order, q.amount)
+    #         obj, is_created = model_to.objects.get_or_create(company_id=q.company.id, time=q.time, account=q.account.order)
+    #         obj.amount=q.amount
+    #         obj.save()
+    #
+    #     result = {"status": "ok"}
+    #     return result
+    #
+    # def create_new_group_accounts(self, dic):
+    #     # print('data_transfer_to_process_fact 90044-100 dic\n', '-'*100, '\n', dic, '\n', '-'*100)
+    #     app_ = dic["app"]
+    #     model_from = apps.get_model(app_label=app_, model_name="XBRLProcessedFactCompany")
+    #     model_to = apps.get_model(app_label=app_, model_name="XBRLAccountsGroupsFactCompany")
+    #
+    #     #
+    #     # Need to add special ratios like for the banking industry.
+    #     #
+    #     ll_aggregate_accounts = dic["aggregate_accounts"]
+    #     dic_new_accounts = dic["new_accounts"]
+    #     #
+    #     qs = model_from.objects.filter(account__in=ll_aggregate_accounts).all()
+    #     # print(qs)
+    #
+    #     for q in qs:
+    #         # print(q.company.id, q.time, q.account, q.amount)
+    #         obj, is_created = model_to.objects.get_or_create(company_id=q.company.id, time=q.time, account=q.account)
+    #         obj.amount=q.amount
+    #         obj.save()
+    #
+    #     cs = model_from.objects.values('company_id').distinct()
+    #     df_cs=pd.DataFrame(list(cs))
+    #     for index, row in df_cs.iterrows():
+    #         c_id = int(row["company_id"])
+    #         # print("-"*50,"\n",c_id,"\n","-"*50)
+    #         csi = model_from.objects.filter(company_id=c_id).values('time_id').distinct()
+    #         df_csi=pd.DataFrame(list(csi))
+    #         for index_, row_ in df_csi.iterrows():
+    #             for new_account in dic_new_accounts:
+    #                 detail = dic_new_accounts[new_account]
+    #                 new_account = int(new_account)
+    #                 n = 0
+    #                 try:
+    #                     time_id = int(row_["time_id"])
+    #                     # print(c_id, time_id)
+    #                     add = detail["add"]
+    #                     subtract = detail["subtract"]
+    #                     for add_account in add:
+    #                         obj_1 = model_from.objects.get(company_id=c_id, time_id=time_id, account=add_account)
+    #                         n += obj_1.amount
+    #                         # print("add_account\n", obj_1.amount, add_account, "\n", n)
+    #                     for subtract_account in subtract:
+    #                         # print("add_account, add_account")
+    #                         obj_2 = model_from.objects.get(company_id=c_id, time_id=time_id, account=subtract_account)
+    #                         n -= obj_2.amount
+    #                         # print("subtract_account\n", obj_2.amount, subtract_account, "\n", n)
+    #                 except Exception as ex:
+    #                     pass
+    #                     # print("Errror 560\n", ex)
+    #
+    #                 try:
+    #                     obj_to, is_created = model_to.objects.get_or_create(company_id=c_id, time_id=time_id, account=new_account)
+    #                     # print("n\n", n)
+    #                     obj_to.amount = n
+    #                     obj_to.save()
+    #                     # print("-"*50, "\n", obj_to, "\n", "-"*50)
+    #                 except Exception as ex:
+    #                     print("Errror 600\n", ex)
+    #
+    #     result = {"status": "ok"}
+    #     return result
+    #
+    # # The following functions should be removed --
+    # def create_ratios(self, dic):
+    #     # print('create_ratios 90044-666-66 dic\n', '-'*100, '\n', dic, '\n', '-'*100)
+    #     app_ = dic["app"]
+    #
+    #     model_from = apps.get_model(app_label=app_, model_name="XBRLAccountsGroupsFactCompany")
+    #     model_to = apps.get_model(app_label=app_, model_name="XBRLFactRatiosCompany")
+    #     model_ratio = apps.get_model(app_label=app_, model_name="XBRLRatioDim")
+    #
+    #     cs = model_from.objects.values('company_id').distinct()
+    #     df_cs=pd.DataFrame(list(cs))
+    #
+    #     qs_r = model_ratio.objects.all().values()
+    #     df_r=pd.DataFrame(qs_r)
+    #     # print(df_r)
+    #
+    #     for index, row in df_cs.iterrows():
+    #         c_id = int(row["company_id"])
+    #         # print("-"*50,"\n",c_id,"\n","-"*50)
+    #         csi = model_from.objects.filter(company_id=c_id).values('time_id').distinct()
+    #         df_csi=pd.DataFrame(list(csi))
+    #         for index_, row_ in df_csi.iterrows():
+    #             time_id = int(row_["time_id"])
+    #             # print("-"*50,"\n",time_id,"\n","-"*50)
+    #             for index_r, row_r in df_r.iterrows():
+    #                 try:
+    #                     numerator = int(row_r["numerator"])
+    #                     denominator = int(row_r["denominator"])
+    #                     # print(numerator, denominator)
+    #                     n = model_from.objects.get(company_id=c_id, time_id=time_id, account=numerator).amount
+    #                     d = model_from.objects.get(company_id=c_id, time_id=time_id, account=denominator).amount
+    #                     r = n/d
+    #                     # print(n, d, r)
+    #                     ratio_id = row_r.id
+    #                     obj, is_created = model_to.objects.get_or_create(company_id=c_id, time_id=time_id, ratio_id = ratio_id)
+    #                     obj.amount=r
+    #                     obj.save()
+    #                 except Exception as ex:
+    #                     pass
+    #                     # print("Error 202-202", ex)
+    #
+    #     # qs = model_from.objects.all().values()
+    #     #
+    #     # df = pd.DataFrame(list(qs))
+    #     # print(df)
+    #     # print(qs)
+    #     # for q in qs:
+    #     #     print(q.company.id,
+    #     #           q.time,
+    #     #           q.account,
+    #     #           q.amount)
+    #     #     obj, is_created = model_to.objects.get_or_create(company_id=q.company.id, time=q.time, account=q.account.order)
+    #     #     obj.amount=q.amount
+    #     #     obj.save()
+    #
+    #     result = {"status": "ok"}
+    #     return result
+
 
 
 class SimFin(BaseDataProcessing, BaseCorporateValuationAlgo):

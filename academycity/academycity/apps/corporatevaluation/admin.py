@@ -151,7 +151,7 @@ class XBRLValuationStatementsAccountsAdmin(admin.ModelAdmin):
 @admin.register(XBRLValuationAccountsMatch)
 class XBRLValuationAccountsMatchAdmin(admin.ModelAdmin):
     list_display = ('id', 'company', 'year', 'account', 'match_account', 'accounting_standard')
-    list_filter = ('company', 'year')
+    list_filter = ('year', 'account', 'company', 'match_account')
 
 
 @admin.register(XBRLCompanyInfo)

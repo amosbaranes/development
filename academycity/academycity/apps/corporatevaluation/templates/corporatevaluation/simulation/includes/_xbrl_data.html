@@ -117,7 +117,7 @@ function balance_accounts()
    for(var h in sm.accounts_structure){sm.accounts_structure[h]['total']=0}
    for (var key in matching_data)
    { var nn=0;try{if(matching_data[key][0].toLowerCase()!=''){var nn_=y_data['year_data'][key];if(!isNaN(nn_)){nn=Number(nn_)}}} catch(er){}
-     for(k in sm.accounts_structure)
+     for(var k in sm.accounts_structure)
      {var l=sm.accounts_structure[k]['star_other'];
       if(Number(key)<Number(k) && Number(key)>=Number(l[0]) && Number(key)!=Number(l[1])){sm.accounts_structure[k]['total']+=nn}}
      }

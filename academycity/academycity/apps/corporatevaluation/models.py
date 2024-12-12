@@ -1401,6 +1401,8 @@ class XBRLFactCompany(TruncateTableMixin, models.Model):
     account = models.ForeignKey(XBRLDimAccount, on_delete=models.CASCADE, default=None, related_name='dim_companies')
     amount = models.DecimalField(max_digits=18, decimal_places=2, default=0)
 
+
+# I decided for now not to use the following two tables #######
 # needs a matching matrix to calculate special accounts (by industry)
 # so that account will include the ones in the XBRLDimAccount and the special calculated ones
 # which will be used in XBRLRatioDim
@@ -1431,13 +1433,18 @@ class XBRLAccountsGroupsFactCompany(TruncateTableMixin, models.Model):
     time = models.ForeignKey(XBRLDimTime, on_delete=models.CASCADE, default=None, related_name='dim_accounts_groups_times')
     account = models.IntegerField(default=0)
     amount = models.DecimalField(max_digits=18, decimal_places=2, default=0)
+###############################################################
 
 class XBRLRatioDim(TruncateTableMixin, models.Model):
     class Meta:
         verbose_name = _('XBRL Ratio Dim')
         verbose_name_plural = _('XBRL Ratio Dims')
         ordering = ['industry', 'ratio_group']
-    #
+    # 1 Liquidity
+    # 2 Efficiency
+    # 3 Solvency
+    # 4 Profitability
+    # 5 Market Ratios
     industry = models.PositiveSmallIntegerField(default=0)
     ratio_group = models.PositiveSmallIntegerField(default=0)
     ratio_name = models.CharField(max_length=250, null=True)

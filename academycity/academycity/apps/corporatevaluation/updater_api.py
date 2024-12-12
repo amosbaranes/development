@@ -33,22 +33,22 @@ def update_forecast():
                 fa = FinancialAnalysis()
                 fa.update_time()
                 print("Start 1")
-                dp = CorporateValuationDataProcessing(dic={"app":"corporatevaluation","topic_id":"general"})
-                # print("Start 11")
-                dp.data_transfer_to_process_fact(dic={"app":"corporatevaluation"})
-                # print("Start 12")
-                dp.create_new_group_accounts(dic={"app":"corporatevaluation",
-                                                  "aggregate_accounts":[11057, 11400, 11600, 11990, 12990, 12999,
-                                                                        13990,14100, 14145, 14999, 15390, 15990,
-                                                                        20100, 20200, 20300, 20700, 20800, 20850,
-                                                                        20900, 20970,20999],
-                                                  "new_accounts":{11991: {"add": [11990], "subtract": [11100]},
-                                                                  20997: {"add": [20999, 20850], "subtract": []},
-                                                                  20890: {"add": [20851], "subtract": [20850]}}
-                                                  })
-                # print("Start 3")
-                dp.create_ratios(dic={"app":"corporatevaluation"})
-                # print("End End End End End End End End ")
+                # dp = CorporateValuationDataProcessing(dic={"app":"corporatevaluation","topic_id":"general"})
+                # # print("Start 11")
+                # dp.data_transfer_to_process_fact(dic={"app":"corporatevaluation"})
+                # # print("Start 12")
+                # dp.create_new_group_accounts(dic={"app":"corporatevaluation",
+                #                                   "aggregate_accounts":[11057, 11400, 11600, 11990, 12990, 12999,
+                #                                                         13990,14100, 14145, 14999, 15390, 15990,
+                #                                                         20100, 20200, 20300, 20700, 20800, 20850,
+                #                                                         20900, 20970,20999],
+                #                                   "new_accounts":{11991: {"add": [11990], "subtract": [11100]},
+                #                                                   20997: {"add": [20999, 20850], "subtract": []},
+                #                                                   20890: {"add": [20851], "subtract": [20850]}}
+                #                                   })
+                # # print("Start 3")
+                # dp.create_ratios(dic={"app":"corporatevaluation"})
+                # # print("End End End End End End End End ")
             elif h == 4:
                 sp = StockPrices()
                 # print("Start Days")
