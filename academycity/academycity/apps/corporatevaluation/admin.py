@@ -16,7 +16,8 @@ from .models import (Project, RBOIC, CountryRegion, CountryRating, Industry,
                      StockPricesMinutes, StockPricesDays,
                      XBRLProcessedFactCompany, XBRLRatioDim, XBRLAccountsGroupsFactCompany, XBRLFactRatiosCompany,
                      TwoSpreadStrategy, TwoSpreadStrategyDetails,
-                     FactSimulation)
+                     FactSimulation,
+                     XBRLVarDim, XBRLFactVarsCompany)
 
 
 # -*- coding: utf-8 -*-
@@ -30,8 +31,8 @@ class XBRLProcessedFactCompanyAdmin(admin.ModelAdmin):
 
 @admin.register(XBRLRatioDim)
 class XBRLRatioDimAdmin(admin.ModelAdmin):
-    list_display = ('industry', 'ratio_group', 'ratio_name', 'numerator', 'denominator')
-    list_filter = ('industry', 'ratio_group', 'numerator', 'denominator')
+    list_display = ('industry', 'ratio_order', 'ratio_name', 'numerator', 'denominator')
+    list_filter = ('industry', 'ratio_order', 'numerator', 'denominator')
 
 @admin.register(XBRLAccountsGroupsFactCompany)
 class XBRLAccountsGroupsFactCompanyAdmin(admin.ModelAdmin):
@@ -348,3 +349,14 @@ class FactSimulationAdmin(admin.ModelAdmin):
     list_display = ['company', 'time', 'spread', 'inner_range', 'stock_price', 'ch', 'c', 'ph', 'p']
     list_filter = ('company', 'spread', 'inner_range', 'time', 'stock_price')
 
+##########################
+@admin.register(XBRLVarDim)
+class XBRLVarDimAdmin(admin.ModelAdmin):
+    list_display = ['var_order', 'var_name', 'source', 'type']
+    list_filter = ('var_order', 'var_name')
+
+@admin.register(XBRLFactVarsCompany)
+class XBRLFactVarsCompanyAdmin(admin.ModelAdmin):
+    list_display = ['company', 'time', 'var', 'amount']
+    list_filter = ('company', 'time', 'var')
+##########################

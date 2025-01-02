@@ -9,6 +9,10 @@ mpl.use('Agg')
 import numpy as np
 from ..ml.basic_ml_objects import BaseDataProcessing, BasePotentialAlgo
 
+
+#
+from .objects_extensions.cyber import CyberDataProcessing
+#
 from .objects_extensions.netanya_college import NDataProcessing
 # #
 from .objects_extensions.rl_dnq import DNQDataProcessing

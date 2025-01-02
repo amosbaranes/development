@@ -5392,8 +5392,8 @@ class FinancialAnalysis(object):
                    '3': {'account': '15990', 'data': 0}},
             '20100': {'1': {'account': '20200', 'data': 0}, '2': {'account': '20300', 'data': 0},
                    '3': {'account': '20100', 'data': 0}},
-            '20101': {'1': {'account': '20700', 'data': 0}, '2': {'account': '20800', 'data': 0},
-                   '3': {'account': '20300', 'data': 0}},
+            # '20101': {'1': {'account': '20700', 'data': 0}, '2': {'account': '20800', 'data': 0},
+            #        '3': {'account': '20300', 'data': 0}},
             '20102': {'1': {'account': '30030', 'data': 0}, '2': {'account': '30040', 'data': 0},
                    '3': {'account': '20999', 'data': 0}},
             '120800': {'1': {'account': '20850', 'data': 0}, '2': {'account': '20900', 'data': 0},
@@ -5401,7 +5401,12 @@ class FinancialAnalysis(object):
             '20900': {'1': {'account': '20999', 'data': 0}, '2': {'account': '20970', 'data': 0},
                    '3': {'account': '20900', 'data': 0}},
             '220800': {'1': {'account': '20850', 'data': 0}, '2': {'account': '20900', 'data': 0},
-                   '3': {'account': '20800', 'data': 0}}}
+                   '3': {'account': '20800', 'data': 0}},
+            '20101': {'1': {'account': '20700', 'data': 0}, '2': {'account': '20800', 'data': 0},
+                   '3': {'account': '20300', 'data': 0}},
+            '20100': {'1': {'account': '20200', 'data': 0}, '2': {'account': '20300', 'data': 0},
+                   '3': {'account': '20100', 'data': 0}}
+        }
 
         def calculate_new_account(a, b, c, f, company__, time__):
             try:
@@ -5458,8 +5463,10 @@ class FinancialAnalysis(object):
                 try:
                     accounting_equality = copy.deepcopy(accounting_equality_)
                     yd = company.financial_data['data'][y]
-                    # print("-"*30, "\n", yd, "\n", "-"*30)
-                    # print("-"*30, "\n", y, "\n", "-"*30)
+
+                    # print("-"*30, "\ny=", y, "\n", "-"*30, "\n")
+                    # print("-"*30, "\nyd=\n", yd, "\n", "-"*30)
+                    # print("-"*30, "\ny=", y, "\n", "-"*30, "\n")
 
                     if int(yd['dei']['documentfiscalyearfocus']) < 2012:
                         continue
@@ -5471,6 +5478,8 @@ class FinancialAnalysis(object):
                         # print(account)
                         account_ = XBRLDimAccount.objects.get(order=int(account))
                         amount_ = yd['year_data'][account]
+                        if int(account) == 20850:
+                            amount_ = abs(amount_)
                         # print('account_')
                         # print(account_)
                         # print('amount_')
@@ -5489,7 +5498,6 @@ class FinancialAnalysis(object):
                     for k in accounting_equality:
                         # if int(y) == 2020 and k == '12998':
                         #     print(k, accounting_equality[k])
-                        num = 0
                         nums = []
                         for k1 in accounting_equality[k]:
                             nn=0
@@ -5499,30 +5507,69 @@ class FinancialAnalysis(object):
                             try:
                                 f = XBRLFactCompany.objects.get(company=company_, time=time_, account__order=int(key))
                                 nn = f.amount
+                                # nn = yd['year_data'][key]
                                 if nn != 0:
-                                    num += 1
                                     nums.append(k1)
                                     accounting_equality[k][k1]['data']=nn
+                                # if k == '120800':
+                                #     print(key, f.amount, nums)
                             except Exception as ex:
                                 pass
 
-                        # if int(y) == 2020 and k == '12998':
+                        # if int(y) == 2020 and k == '120800':
                         #     print("AAA11\n", "num=", num)
 
-                        if num == 2:
-                            if "3" in nums:
-                                nums = [item for item in nums if item != '3']
-                                nn_ = str(3 - int(nums[0]))
+                        # if len(nums) == 2:
+                        #     if "3" in nums:
+                        #         nums = [item for item in nums if item != '3']
+                        #         nn_ = str(3 - int(nums[0]))
+                        #         a_ = float(accounting_equality[k][nums[0]]['data'])
+                        #         if int(accounting_equality[k][nums[0]]['account']) == 20850:
+                        #             a_ = abs(a_)
+                        #         amount_ = float(accounting_equality[k]['3']['data']) - a_
+                        #         account_ = accounting_equality[k][nn_]['account']
+                        #     else:
+                        #         account_ = accounting_equality[k]['3']['account']
+                        #         a1 = float(accounting_equality[k]['1']['data'])
+                        #         a2 = float(accounting_equality[k]['2']['data'])
+                        #         if int(accounting_equality[k]['1']['account']) == 20850:
+                        #             a1 = abs(a1)
+                        #         if int(accounting_equality[k]['2']['account']) == 20850:
+                        #             a2 = abs(a2)
+                        #         amount_ = a1 + a2
+
+                        # if k == '120800':
+                        #     print('AAAA', k, "\n", yq, "\n", accounting_equality[k], y, nums, "\n", "="*100)
+
+                        if len(nums) == 2:
+                            # if k == '120800':
+                            #     print("BBB", y, nums)
+
+                            if '3' in nums:
+                                nums_ = [item for item in nums if item != '3']
+                                nn_ = str(3 - int(nums_[0]))
+
                                 amount_ = float(accounting_equality[k]['3']['data']) - float(accounting_equality[k][nums[0]]['data'])
                                 account_ = accounting_equality[k][nn_]['account']
+
+                                # if k == '120800':
+                                #     print(y, 'is 3', nums_, "nn_", nn_, "account_", account_)
                             else:
+                                # if k == '120800':
+                                #     print(y, 'not 3', nums)
+
                                 account_ = accounting_equality[k]['3']['account']
-                                amount_ = float(accounting_equality[k]['2']['data']) + float(accounting_equality[k]['1']['data'])
+                                amount_ = float(accounting_equality[k]['1']['data']) + float(accounting_equality[k]['2']['data'])
+
+                                # if k == '120800':
+                                #     print(y, 'not 3', nums, "account_=", account_)
+
                             try:
                                 account_ = XBRLDimAccount.objects.get(order=int(account_))
                                 f, c = XBRLFactCompany.objects.get_or_create(company=company_, time=time_, account=account_)
                                 f.amount = amount_
                                 f.save()
+
                             except Exception as ex:
                                 print("Error 444", ex)
 
@@ -5609,6 +5656,8 @@ class FinancialAnalysis(object):
                         for account in yd['year_data']:
                             account_ = XBRLDimAccount.objects.get(order=int(account))
                             amount_ = yd['year_data'][account]
+                            if int(account) == 20850:
+                                amount_ = abs(amount_)
                             try:
                                 f, c = XBRLFactCompany.objects.get_or_create(company=company_, time=time_, account=account_)
                                 f.amount = amount_
@@ -5954,6 +6003,69 @@ class CorporateValuationDataProcessing(BaseDataProcessing, BaseCorporateValuatio
             o = XBRLDimCompany.objects.filter(ticker=ticker_)[0]
             o.is_active = False
             o.save()
+        result = {"status": "ok"}
+        return result
+
+    def calculate_variables(self, dic):
+        print('90033-199-2 calculate_variables dic\n', '-'*100, '\n', dic, '\n', '-'*100)
+        ticker_ = dic['ticker']
+        period_type = "annual"
+
+        model_var_dim = apps.get_model(app_label=self.app, model_name="XBRLVarDim")
+        model_fact = apps.get_model(app_label=self.app, model_name="XBRLFactVarsCompany")
+        vqs = model_var_dim.objects.all()
+        for q in vqs:
+            print("q.source, q.type=", q.source, q.type)
+            if int(q.source) == 1:
+                source_fact = "XBRLFactCompany"
+                source_fact_field = "order"
+                source_dim = "XBRLValuationAccounts"
+                source_dim_field = "order"
+            elif int(q.source) == 2:
+                source_fact = "XBRLFactRatiosCompany"
+                source_fact_field = "ratio"
+                source_dim = "XBRLRatioDim"
+                source_dim_field = "ratio_order"
+            model_source_dim = apps.get_model(app_label=self.app, model_name=source_dim)
+            model_source_fact = apps.get_model(app_label=self.app, model_name=source_fact)
+            s_ = "model_source_dim.objects.get("+source_dim_field+"="+str(q.var_order)+")"
+            # print(s_)
+            od = eval(s_)
+            print("od=",od)
+
+            if ticker_ != 'all':
+                o = XBRLDimCompany.objects.get(ticker=ticker_)
+                s_ = "model_source_fact.objects.filter("+source_fact_field+"=od, company=o)"
+            else:
+                s_ = "model_source_fact.objects.filter("+source_fact_field+"=od)"
+
+            if period_type == "annual":
+                s_ += ".filter(time__quarter=0)"
+            else:
+                s_ += ".filter(time__quarter__gt=0)"
+            s_ += ".order_by('time')"
+            print(s_)
+            fos = eval(s_)
+
+            df_ = pd.DataFrame(list(fos.values("company_id", "time_id", "amount")))
+            # print(df_)
+
+            df = df_.pivot_table(values='amount', index='company_id', columns=['time_id'], aggfunc='sum')
+            print(df)
+
+            # Type:
+            # 1 change
+            # 2 Lag
+            # 2 Lag change
+            if int(q.type) == 1:
+                dff = df.diff(axis=1)
+            elif int(q.type) == 2:
+                dff = df.shift(periods=1, axis=1)
+            elif int(q.type) == 3:
+                df = df.diff(axis=1)
+                dff = df.shift(periods=1, axis=1)
+            print(dff)
+
         result = {"status": "ok"}
         return result
     # ----

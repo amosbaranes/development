@@ -9622,6 +9622,16 @@ var get_date_idx=function(type="basic"){var date = new Date;
  return r
 }
 
+
+var call_fun_for_obj=function (e, fun, param="", select_value="")
+{
+   //alert(e+"  "+fun+"  "+param+"  "+select_value)
+   if(select_value!=""){e.value = select_value}
+   const event = new Event(fun, { bubbles: true });
+   event.param = param;
+   try{e.dispatchEvent(event)} catch (er){alert(er)}
+}
+
 var nice_number = function(z){
  var kk="";if(z*1<0){kk="-";z=-1*z};
  var s=z+"";s_=s.split(".");
@@ -9685,7 +9695,6 @@ return c;}
 // {var b=binomial(n,0.50068,i);s+=b;l.push(b)}
 //
 //alert(n+"\n\n"+s+"\n\n"+l)
-
 
 
 

@@ -1439,20 +1439,20 @@ class XBRLRatioDim(TruncateTableMixin, models.Model):
     class Meta:
         verbose_name = _('XBRL Ratio Dim')
         verbose_name_plural = _('XBRL Ratio Dims')
-        ordering = ['industry', 'ratio_group']
+        ordering = ['industry', 'ratio_order']
     # 1 Liquidity
     # 2 Efficiency
     # 3 Solvency
     # 4 Profitability
     # 5 Market Ratios
     industry = models.PositiveSmallIntegerField(default=0)
-    ratio_group = models.PositiveSmallIntegerField(default=0)
+    ratio_order = models.PositiveSmallIntegerField(default=0)  # it is really a ratio id
     ratio_name = models.CharField(max_length=250, null=True)
     numerator = models.IntegerField(default=0)
     denominator = models.IntegerField(default=0)
 
     def __str__(self):
-        return str(self.industry) + ":" + str(self.ratio_group) + ":"  + str(self.ratio_name)
+        return str(self.industry) + ":" + str(self.ratio_order) + ":"  + str(self.ratio_name)
 
 class XBRLFactRatiosCompany(TruncateTableMixin, models.Model):
     class Meta:
@@ -1466,8 +1466,74 @@ class XBRLFactRatiosCompany(TruncateTableMixin, models.Model):
 
     def __str__(self):
         return str(self.company) + ":" + str(self.ratio) + ":"  + str(self.amount)
+###############################################################
+# Type:
+# 1 change
+# 2 Lag
+# 2 Lag change
+# source
+# 1 var = XBRLFactCompany
+# 2 ratio = XBRLFactRatiosCompany
+class XBRLVarDim(TruncateTableMixin, models.Model):
+    class Meta:
+        verbose_name = _('XBRL Var Dim')
+        verbose_name_plural = _('XBRL Var Dims')
+        ordering = ['var_order']
+    # 1 Liquidity
+    # 2 Efficiency
+    # 3 Solvency
+    # 4 Profitability
+    # 5 Market Ratios
+    var_order = models.PositiveSmallIntegerField(default=0)
+    var_name = models.CharField(max_length=250, null=True)
+    source = models.IntegerField(default=0)
+    type = models.IntegerField(default=0)
+
+    def __str__(self):
+        return str(self.var_order) + ":" + str(self.var_name) + ":"  + str(self.source) + ":"  + str(self.type)
+
+
+class XBRLFactVarsCompany(TruncateTableMixin, models.Model):
+    class Meta:
+        verbose_name = _('XBRL Fact Var Company')
+        verbose_name_plural = _('XBRL Fact Vars Companies')
+
+    company = models.ForeignKey(XBRLDimCompany, on_delete=models.CASCADE, default=None, related_name='dim_fact_var_companies')
+    time = models.ForeignKey(XBRLDimTime, on_delete=models.CASCADE, default=None, related_name='dim_fact_var_times')
+    var = models.ForeignKey(XBRLVarDim, on_delete=models.CASCADE, default=None, related_name='dim_fact_var_ratio')
+    amount = models.DecimalField(max_digits=18, decimal_places=2, default=0)
+
+    def __str__(self):
+        return str(self.company) + ":" + str(self.var) + ":"  + str(self.amount)
+
+
+# class XBRLResearchDim(TruncateTableMixin, models.Model):
+#     class Meta:
+#         verbose_name = _('XBRL Research Dim')
+#         verbose_name_plural = _('XBRL Research Dims')
+#
+#     research_name = models.CharField(max_length=250, null=True)
+#
+#
+# class XBRLResearchVarDim(TruncateTableMixin, models.Model):
+#     class Meta:
+#         verbose_name = _('XBRL Research Var Dim')
+#         verbose_name_plural = _('XBRL Research Var Dims')
+#         ordering = ['industry', 'ratio_group']
+#
+#     research = models.ForeignKey(XBRLResearchDim, on_delete=models.CASCADE, default=None,
+#                                  related_name='research_var_dim_research')
+#     var = models.ForeignKey(XBRLVarDim, on_delete=models.CASCADE, default=None, related_name='research_var_dim_var')
+#
+#     def __str__(self):
+#         return str(self.industry) + ":" + str(self.ratio_group) + ":" + str(self.ratio_name)
+
+
+
+###############################################################
 
 # -- Admin tables --
+
 class ToDoList(TruncateTableMixin, models.Model):
     class Meta:
         verbose_name = _('todolist')
