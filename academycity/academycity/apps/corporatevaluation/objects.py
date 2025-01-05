@@ -5327,9 +5327,11 @@ class FinancialAnalysis(object):
 
     # https://webix-ui.medium.com/top-7-javascript-pivot-widgets-in-2019-2020-8d81d4042f51
     # https://github.com/nicolaskruchten/pivottable
+
     def update_fact_table(self, **kwargs):
-        log_debug("--update_chart_of_accounts--")
-        # print("--update_chart_of_accounts--")
+        log_debug("--update_fact_table--")
+        # print("--update_fact_table--")
+
         ticker_ = kwargs['ticker'].upper()
         # log_debug(ticker_)
         # print("--update_chart_of_accounts--")
@@ -5479,7 +5481,7 @@ class FinancialAnalysis(object):
                         continue
                     yq = int(yd['dei']['documentfiscalyearfocus'] + "0")
                     time_ = XBRLDimTime.objects.get(id=yq)
-                    log_debug("start update fact table for " + ticker_ + " year: " + str(y))
+                    # log_debug("start update fact table for " + ticker_ + " year: " + str(y))
                     # ----
                     for account in yd['year_data']:
                         # print(y, account)
@@ -5648,7 +5650,7 @@ class FinancialAnalysis(object):
                     create_ratios(company_, time_)
                     # ===End Ratios ===
 
-                    log_debug("End update fact table for " + ticker_ + " year: " + str(y))
+                    # log_debug("End update fact table for " + ticker_ + " year: " + str(y))
                     # print("End update fact table for " + ticker_ + " year: " + str(y))
 
                 except Exception as ex:
@@ -5669,7 +5671,7 @@ class FinancialAnalysis(object):
                         if int(yd['dei']['documentfiscalyearfocus']) < 2012:
                             continue
                         q = yd['dei']['documentfiscalperiodfocus'][1]
-                        log_debug("start update fact table for ticker=" + ticker_ + " year=" + str(y) + " q=" + str(q))
+                        # log_debug("start update fact table for ticker=" + ticker_ + " year=" + str(y) + " q=" + str(q))
                         yq = int(yd['dei']['documentfiscalyearfocus'] + str(q))
                         time_ = XBRLDimTime.objects.get(id=yq)
                         # ---
@@ -5684,7 +5686,7 @@ class FinancialAnalysis(object):
                                 f.save()
                             except Exception as ex:
                                 log_debug(str(ex))
-                        log_debug("End update fact table for ticker=" + ticker_ + " year=" + str(y) + " q=" + str(q))
+                        # log_debug("End update fact table for ticker=" + ticker_ + " year=" + str(y) + " q=" + str(q))
                         # ===============accounting_equality=================
                         matching_accounts = yd['matching_accounts']
                         accounting_equality = copy.deepcopy(accounting_equality_)
@@ -6088,6 +6090,50 @@ class CorporateValuationDataProcessing(BaseDataProcessing, BaseCorporateValuatio
 
         result = {"status": "ok"}
         return result
+
+    def update_fact_table_all(self, dic):
+        print('90055-166-2 update_fact_table_all dic\n', '-'*100, '\n', dic, '\n', '-'*100)
+        log_debug("--update_fact_table_all--")
+        # print("--update_fact_table_all--")
+        ticker_ = dic['ticker'].lower()
+        # ticker_="CAG"
+        # ticker_="AAPL"
+        # ticker_="MDLZ"
+        # ticker_="IBM"
+        # print(ticker_)
+
+        # log_debug(ticker_)
+        fa = FinancialAnalysis()
+        def u(ticker):
+            print("u:", ticker)
+            try:
+                o = XBRLDimCompany.objects.get(ticker=ticker)
+                o.delete()
+            except Exception as ex:
+                pass
+                # print(ex)
+            try:
+                # print("AAA")
+                fa.update_fact_table(ticker=ticker)
+            except Exception as ex:
+                print(ex)
+
+        if ticker_ == 'all':
+            os = XBRLDimCompany.objects.filter(is_active=True)
+            for o in os:
+                log_debug("Running ticker: " + str(o.ticker))
+                u(o.ticker)
+        else:
+            log_debug("Running ticker: " + ticker_)
+            u(ticker_)
+        log_debug("Done all tickers")
+
+        log_debug("End update_fact_table_all")
+        result = {'status': "ok"}
+        print(result)
+        return result
+
+
     # ----
 
     def download_companies_to_excel(self, dic):
