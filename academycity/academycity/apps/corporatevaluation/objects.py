@@ -5375,7 +5375,8 @@ class FinancialAnalysis(object):
 
         accounting_equality_ = {
             '14145': {'1': {'account': '14142', 'data': 0}, '2': {'account': '14144', 'data': 0},
-                   '3': {'account': '14145', 'data': 0}},
+                   '3': {'account': '14145', 'data': 0}}
+            ,
             '12998': {'1': {'account': '11990', 'data': 0}, '2': {'account': '12990', 'data': 0},
                    '3': {'account': '12999', 'data': 0}},
             '12999': {'1': {'account': '14999', 'data': 0}, '2': {'account': '15990', 'data': 0},
@@ -5390,14 +5391,20 @@ class FinancialAnalysis(object):
                      '3': {'account': '12999', 'data': 0}},
             '15990': {'1': {'account': '15390', 'data': 0}, '2': {'account': '15400', 'data': 0},
                    '3': {'account': '15990', 'data': 0}},
+            # 20100=Revenue, 20200=Cost of Revenue, 20300=Gross profit
             '20100': {'1': {'account': '20200', 'data': 0}, '2': {'account': '20300', 'data': 0},
                    '3': {'account': '20100', 'data': 0}},
             # '20101': {'1': {'account': '20700', 'data': 0}, '2': {'account': '20800', 'data': 0},
             #        '3': {'account': '20300', 'data': 0}},
             '20102': {'1': {'account': '30030', 'data': 0}, '2': {'account': '30040', 'data': 0},
                    '3': {'account': '20999', 'data': 0}},
+
+            # 20800=Operating Income (EBIT), 20850=Interest Exp, 20900=Income before taxes (EBT)
             '120800': {'1': {'account': '20850', 'data': 0}, '2': {'account': '20900', 'data': 0},
                    '3': {'account': '20800', 'data': 0}},
+
+            # 20999=Net Income, 20970=Taxes
+
             '20900': {'1': {'account': '20999', 'data': 0}, '2': {'account': '20970', 'data': 0},
                    '3': {'account': '20900', 'data': 0}},
             '220800': {'1': {'account': '20850', 'data': 0}, '2': {'account': '20900', 'data': 0},
@@ -5475,11 +5482,13 @@ class FinancialAnalysis(object):
                     log_debug("start update fact table for " + ticker_ + " year: " + str(y))
                     # ----
                     for account in yd['year_data']:
-                        # print(account)
+                        # print(y, account)
                         account_ = XBRLDimAccount.objects.get(order=int(account))
                         amount_ = yd['year_data'][account]
                         if int(account) == 20850:
                             amount_ = abs(amount_)
+                            # if y==2013:
+                            # print("amount_", amount_)
                         # print('account_')
                         # print(account_)
                         # print('amount_')
@@ -5493,6 +5502,17 @@ class FinancialAnalysis(object):
                         except Exception as ex:
                             log_debug(str(ex))
                             # print(str(account_) + "  " + str(ex))
+
+                    try:
+                        f20850 = XBRLFactCompany.objects.get(company=company_, time=time_, account__order=20850)
+                        f20800 = XBRLFactCompany.objects.get(company=company_, time=time_, account__order=20800)
+                        f20900 = XBRLFactCompany.objects.get(company=company_, time=time_, account__order=20900)
+                        if f20900.amount - f20800.amount > 0:
+                            f20850.amount = -abs(f20850.amount)
+                            f20850.save()
+                    except Exception as ex:
+                        pass
+
                     # ===============accounting_equality=================
                     matching_accounts = yd['matching_accounts']
                     for k in accounting_equality:

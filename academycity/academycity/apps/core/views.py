@@ -533,7 +533,7 @@ def get_data_link(request):
             if filter_value_ != "":
                 # print(foreign_table_)
                 if foreign_table_ != "":
-                    print(1111111111)
+                    # print(1111111111)
                     if filter_field_a != "":
                         # need need need to check this one. I changed it and it might have effect on other reports
                         filter_field_ = filter_field_a
