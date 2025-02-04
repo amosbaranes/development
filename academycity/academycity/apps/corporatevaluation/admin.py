@@ -157,7 +157,7 @@ class XBRLValuationAccountsMatchAdmin(admin.ModelAdmin):
 
 @admin.register(XBRLCompanyInfo)
 class XBRLCompanyInfoAdmin(admin.ModelAdmin):
-    list_display = ('id', 'exchange', 'ticker', 'cik', 'company_name', 'company_letter')
+    list_display = ('id', 'exchange', 'ticker', 'cik', 'company_name', 'company_letter', 'is_active')
     list_filter = ('exchange', 'company_letter')
     search_fields = ('ticker', )
 

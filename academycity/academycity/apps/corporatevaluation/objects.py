@@ -6014,8 +6014,11 @@ class CorporateValuationDataProcessing(BaseDataProcessing, BaseCorporateValuatio
 
     # ----
     def remove_is_active(self, dic):
+
+        log_debug("--remove_is_active--")
         print('90033-168-1 remove_is_active dic\n', '-'*100, '\n', dic, '\n', '-'*100)
         ticker_ = dic['ticker']
+        log_debug(ticker_)
         if ticker_ == 'all':
             objs = XBRLDimCompany.objects.all()
             for o in objs:
@@ -6025,6 +6028,7 @@ class CorporateValuationDataProcessing(BaseDataProcessing, BaseCorporateValuatio
             o = XBRLDimCompany.objects.filter(ticker=ticker_)[0]
             o.is_active = False
             o.save()
+        log_debug(ticker_)
         result = {"status": "ok"}
         return result
 
@@ -6093,7 +6097,6 @@ class CorporateValuationDataProcessing(BaseDataProcessing, BaseCorporateValuatio
 
     def update_fact_table_all(self, dic):
         print('90055-166-2 update_fact_table_all dic\n', '-'*100, '\n', dic, '\n', '-'*100)
-        log_debug("--update_fact_table_all--")
         # print("--update_fact_table_all--")
         ticker_ = dic['ticker'].lower()
         # ticker_="CAG"
@@ -6103,7 +6106,14 @@ class CorporateValuationDataProcessing(BaseDataProcessing, BaseCorporateValuatio
         # print(ticker_)
 
         # log_debug(ticker_)
-        fa = FinancialAnalysis()
+        try:
+            fa = FinancialAnalysis()
+        except Exception as ex:
+            log_debug(str(ex))
+
+        log_debug("update_fact_table_all")
+        log_debug("update_fact_table_all: ticker: "+ticker_)
+
         def u(ticker):
             print("u:", ticker)
             try:
@@ -6126,16 +6136,12 @@ class CorporateValuationDataProcessing(BaseDataProcessing, BaseCorporateValuatio
         else:
             log_debug("Running ticker: " + ticker_)
             u(ticker_)
-        log_debug("Done all tickers")
-
         log_debug("End update_fact_table_all")
         result = {'status': "ok"}
         print(result)
         return result
 
-
     # ----
-
     def download_companies_to_excel(self, dic):
         # print('    90033-100 dic\n', '-'*100, '\n', dic, '\n', '-'*100)
         app_ = dic["app"]

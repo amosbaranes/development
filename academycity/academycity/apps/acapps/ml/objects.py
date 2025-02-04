@@ -11,26 +11,32 @@ from ..ml.basic_ml_objects import BaseDataProcessing, BasePotentialAlgo
 
 
 #
+from .objects_extensions.ae_ import AEDataProcessing
+#
+from .objects_extensions.ai_cup_handle import CHDataProcessing
+from .objects_extensions.ai_mlnn import MLNNDataProcessing
+from .objects_extensions.ai_regression_nn import NNDataProcessing
+from .objects_extensions.ai_rnn_sp500 import SP500DataProcessing
+from .objects_extensions.ai_snn import SNNDataProcessing
+#
 from .objects_extensions.cyber import CyberDataProcessing
 #
 from .objects_extensions.netanya_college import NDataProcessing
-# #
+#
+from .objects_extensions.other_predict_shocks import SPDataProcessing
+from .objects_extensions.other_reinforcement import RIDataProcessing
+#
+from .objects_extensions.ri_finance_1 import RIFDataProcessing
+from .objects_extensions.ri_finance_2 import RRLDataProcessing
+#
 from .objects_extensions.rl_dnq import DNQDataProcessing
 from .objects_extensions.rl_dnq_cnn import DNQCNNDataProcessing
-from .objects_extensions.nn import NNDataProcessing
-from .objects_extensions.mlnn import MLNNDataProcessing
-from .objects_extensions.simple_nn import SNNDataProcessing
-
-from .objects_extensions.reinforcement import RIDataProcessing
-from .objects_extensions.reinforcement_finance import RIFDataProcessing
-from .objects_extensions.rrl import RRLDataProcessing
+#
 from .objects_extensions.rrl_cnn_sltm import RRLCNNSLTMDataProcessing
-from .objects_extensions.predict_shocks import SPDataProcessing
-from .objects_extensions.cup_handle import CHDataProcessing
-from .objects_extensions.rnn_sp500 import SP500DataProcessing
 #
 from .objects_extensions.test import Test
 #
+
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Activation, Dropout, SimpleRNN
 from tensorflow.keras.utils import to_categorical

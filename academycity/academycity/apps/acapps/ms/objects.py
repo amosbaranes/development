@@ -319,7 +319,7 @@ class MSDataProcessing(BaseDataProcessing, BasePotentialAlgo, MSAlgo):
         return result
 
     def load_file_to_db(self, dic):
-        # print("90121-1: \n", dic, "="*50)
+        print("90121-1: \n", dic, "="*50)
         self.clear_log_debug()
         self.log_debug("=== load_file_to_db 100 ===")
         app_ = dic["app"]
@@ -735,10 +735,12 @@ class MSDataProcessing(BaseDataProcessing, BasePotentialAlgo, MSAlgo):
 
     # ----- Batch Normalization -----
     def add_peaks_to_clusters(self, dic):
-        print("90966-66: get_peaks\n", dic, "\n", "=" * 50)
+        print("90966-66: add_peaks_to_clusters\n", dic, "\n", "=" * 50)
+
         self.clear_log_debug()
         app_ = dic["app"]
         nnn = dic["nnn"]
+
         run_number = dic["run_number"]
         t_pop = dic["t_pop"]
         model_person_dim = apps.get_model(app_label=app_, model_name="persondim")

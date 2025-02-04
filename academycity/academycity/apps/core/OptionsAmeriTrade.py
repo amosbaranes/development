@@ -27,8 +27,8 @@ class BaseTDAmeriTrade(object):
         self.sp_tickers_list = ["SPX", "RUT", "IWM", "QQQ", "NDX", "SPY", "TSLA", "PYPL", "AMZN", "BABA", "FB"]
         self.sp_tickers_str = None
         # need to move to env file
-        self.password = "Sigal2105Shir930"
-        self.user_name = "amosbaranes"
+        self.password = ""
+        self.user_name = ""
         self.callback_url = "https://academycity.org/en/corporatevaluation/options"
         self.app_name = "academycity"
         self.customer_key = "LLGYGYRSAMWGZJNMXY8B8KGTOYG9BNDU"
