@@ -245,7 +245,7 @@ class AvicDataProcessing(BaseDataProcessing, BasePotentialAlgo, AvicAlgo):
             cc = "Korea Rep."
         elif cc == "Yemen Arab Rep.":
             cc = "Yemen"
-        elif cc == "Yemen, Arab Rep.":
+        elif cc == "Yemen, Rep.":
             cc = "Yemen"
         elif cc == "El Salvodor":
             cc = "El Salvador"

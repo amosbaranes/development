@@ -35,12 +35,12 @@ from django.apps import apps
 
 class AoAlgo(object):
     def __init__(self, dic):  # to_data_path, target_field
-        # print("90004-000 AvibAlgo", dic, '\n', '-'*50)
+        # print("90004-000 AoAlgo", dic, '\n', '-'*50)
         try:
             super(AoAlgo, self).__init__()
         except Exception as ex:
-            print("Error 90004-010 AvibDataProcessing:\n"+str(ex), "\n", '-'*50)
-        # print("90004-020 AvibAlgo", dic, '\n', '-'*50)
+            print("Error 90004-010 AoDataProcessing:\n"+str(ex), "\n", '-'*50)
+        # print("90004-020 AoAlgo", dic, '\n', '-'*50)
 
 class AoDataProcessing(BaseDataProcessing, BasePotentialAlgo, AoAlgo):
     def __init__(self, dic):
@@ -125,7 +125,6 @@ class AoDataProcessing(BaseDataProcessing, BasePotentialAlgo, AoAlgo):
             cc = "Moldova"
         return cc
 
-    # _1
     def load_wbfile_to_db(self, dic):
         print("90121-5: \n", dic, "="*50)
         app_ = dic["app"]
@@ -304,30 +303,40 @@ class AoDataProcessing(BaseDataProcessing, BasePotentialAlgo, AoAlgo):
         return result
 
     def load_eli_file_to_db(self, dic):
-        print("90121-1: \n", "="*50, "\n", dic, "\n", "="*50)
+        # print("90121-1 load_eli_file_to_db: \n", "="*50, "\n", dic, "\n", "="*50)
         app_ = dic["app"]
         file_path = self.upload_file(dic)["file_path"]
-        print(file_path)
-        # print('90121-2 dic')
+        # print(file_path)
+
         dic = dic["cube_dic"]
         print('90121-3 dic', dic)
 
         model_name_ = dic["dimensions"]["time_dim"]["model"]
         model_time_dim = apps.get_model(app_label=app_, model_name=model_name_)
         model_name_ = dic["dimensions"]["country_dim"]["model"]
+        model_country_group_dim = apps.get_model(app_label=self.app, model_name="CountryGroupDim")
         model_country_dim = apps.get_model(app_label=app_, model_name=model_name_)
         model_name_ = dic["dimensions"]["measure_dim"]["model"]
         model_measure_dim = apps.get_model(app_label=app_, model_name=model_name_)
-        model_measure_group_dim = apps.get_model(app_label=app_, model_name="measuregroupdim")
+
+        measure_group_dim_ = dic["dimensions"]["measure_group_dim"]["model"]
+        model_measure_group_dim = apps.get_model(app_label=app_, model_name=measure_group_dim_)
+        #
+        country_group_obj, is_created = model_country_group_dim.objects.get_or_create(group_name="eli")
+
         model_min_max_cut = apps.get_model(app_label=app_, model_name="minmaxcut")
+
         model_name_ = dic["fact"]["model"]
         model_fact = apps.get_model(app_label=app_, model_name=model_name_)
-        #
+
+
         year = int(self.uploaded_filename.split(".")[0])
+        # print(year)
         try:
             year_obj, is_created = model_time_dim.objects.get_or_create(id=year)
             if is_created:
                 s = 'year_obj.' + dic["dimensions"]["time_dim"]["field_name"]+' = year'
+                # print(s)
                 exec(s)
                 year_obj.save()
         except Exception as ex:
@@ -337,6 +346,7 @@ class AoDataProcessing(BaseDataProcessing, BasePotentialAlgo, AoAlgo):
         wb = load_workbook(filename=file_path, read_only=False)
         sheet_names = wb.sheetnames
         for f in sheet_names:
+            print(f)
             ws = wb[f]
             f = self.clean_name(f)
             try:
@@ -346,6 +356,7 @@ class AoDataProcessing(BaseDataProcessing, BasePotentialAlgo, AoAlgo):
                     group_obj.save()
             except Exception as ex:
                 pass
+            # print("5", f)
             # files.append(f)
             data = ws.values
             # Get the first line in file as a header line
@@ -354,13 +365,23 @@ class AoDataProcessing(BaseDataProcessing, BasePotentialAlgo, AoAlgo):
             # Create a DataFrame based on the second and subsequent lines of data
             df = pd.DataFrame(data, columns=columns)
             df = df.reset_index()  # make sure indexes pair with number of rows
-            # print(df)
+            # if f == "Export":
+            #     print(df)
+            #     print(columns)
+
             min_cut = []
             max_cut = []
             for j in range(0, len(columns)):
                 min_cut.append(None)
                 max_cut.append(None)
+
+            # if f == "Export":
+            #     print("6", f)
+
             for index, row in df.iterrows():
+                # if f == "Export":
+                #     print(row)
+
                 if row[1] is not None and str(row[1]) != "None" and str(row[1]) != "":
                     n_ = 0
                     for j in range(1, len(columns)):
@@ -399,17 +420,22 @@ class AoDataProcessing(BaseDataProcessing, BasePotentialAlgo, AoAlgo):
                                             pass
 
                                 except Exception as ex:
-                                    print(ex)
+                                    print("Error 9044-44: "+str(ex))
                             else:
                                 try:
                                     country_name = str(row[1]).strip()
+                                    country_name = self.check_country(country_name)
                                     # print(country_name)
+
                                     country_dim_obj, is_created = model_country_dim.objects.get_or_create(country_name=country_name)
+                                    # print(country_dim_obj)
                                     if is_created:
                                         country_dim_obj.country_code = country_name
+                                        country_dim_obj.country_group_dim = country_group_obj
                                         country_dim_obj.save()
                                 except Exception as ex:
-                                    pass
+                                    print("Error 9044-44: "+str(ex))
+
                                 try:
                                     v_ = float(str(row[columns[j]]))
                                     if v_ is not None and str(v_) != "nan":
@@ -421,8 +447,9 @@ class AoDataProcessing(BaseDataProcessing, BasePotentialAlgo, AoAlgo):
                                         fact_obj.save()
                                 except Exception as ex:
                                     print("Error 9055-33: "+str(ex))
+            print("Done", f)
         wb.close()
-
+        #
         result = {"status": "ok"}
         print(result)
 
