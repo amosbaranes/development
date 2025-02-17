@@ -276,6 +276,13 @@ class BasePotentialAlgo(object):
         # if str(dic["fact_model_to_normalize_name"]) is given or not equale to empty.
         # the default is replaced
         # ---------------------------------------------------------------------------
+
+        try:
+            measure_group_model_name_ = dic["measure_group_model"]
+            self.model_measure_group = apps.get_model(app_label=self.app, model_name=measure_group_model_name_)
+        except Exception as ex:
+            pass
+
         try:
             fact_model_name = dic["fact_model"]
             # print(fact_model_name)
@@ -448,6 +455,7 @@ class BasePotentialAlgo(object):
 
         return df_
 
+    # This function create a dic for df. DataFrame for every Grou of variables {"GDP": dataframe ....}
     def pre_process_data(self, dic):
         # print("90033-133 pre_process_data: \n", dic, "\n", "="*50)
         year_ = str(dic["time_dim_value"])
@@ -1628,6 +1636,7 @@ class BasePotentialAlgo(object):
         print("Done get_model_normalization")
         result = {"status": "ok"}
         return result
+
     # ----------------
 
     # version used for avi avib ... ---
@@ -1642,24 +1651,24 @@ class BasePotentialAlgo(object):
         # -------- Variables definition ----------------
         clear_log_debug()
         print("90011-111 process_algo: \n", dic, "\n", "="*50)
+
         log_debug("BasePotentialAlgo: process_algo 1: " + str(dic))
 
         # print("9015-1 BasePotentialAlgo process_algo\n", dic)
-        # --- parames --------------------------
+        # --- params --------------------------
         output_fact_model_name_ = dic["output_fact_model"]
         relimp_fact_model_name_ = dic["relimp_fact_model"]
         range_model_model_name_ = dic["range_model"]
         year_ = dic["time_dim_value"]
         min_max_model_name_ = dic["min_max_model"]
-        self.rule_  = int(dic["rule_2"])/100
+        self.rule_2  = int(dic["rule_2"])/100
         self.rule_0 = float(dic["rule_0"])
         self.missing_data_range = int(dic["missing_data_range"])/100
         measure_model_name_ = dic["measure_model"]
-        # ----------------------------------------
+        # -------- Models --------------------------------
         model_range = apps.get_model(app_label=self.app, model_name=range_model_model_name_)
         model_output_fact = apps.get_model(app_label=self.app, model_name=output_fact_model_name_)
         model_relimp_fact = apps.get_model(app_label=self.app, model_name=relimp_fact_model_name_)
-
         # Add min_max algo
         # ----------------
         # try:
@@ -1669,8 +1678,8 @@ class BasePotentialAlgo(object):
         #     print("Error 9016: \n"+str(ex))
         # if not self.is_calculate_min_max:
         model_min_max = apps.get_model(app_label=self.app, model_name=min_max_model_name_)
+        model_measure = apps.get_model(app_label=self.app, model_name=measure_model_name_)
         # -------------------------------------------------------------------------------
-        # -- total population ---
         try:
             qs = model_min_max.objects.filter(measure_dim__measure_name="TotalPop",
                                                  time_dim_id=year_).all()[0]
@@ -1682,17 +1691,18 @@ class BasePotentialAlgo(object):
 
         # else:
         #     self.calculate_min_max_cuts(dic)
-        model_measure = apps.get_model(app_label=self.app, model_name=measure_model_name_)
+
         # print("90060-10 PotentialAlgo: \n", "="*50)
+
         wb  = None
         groups = self.model_measure_group.objects.all()
         nn__ = 0
         sign_n1 = pd.DataFrame([[0, 0, 0, 0]])
-        sign_n  = pd.DataFrame([[0, 0, 0, 0]])
+        sign_n2  = pd.DataFrame([[0, 0, 0, 0]])
         sign_n1.columns = self.options
         sign_n2.columns = self.options
         similarity_n1 = pd.DataFrame([[0, 0, 0, 0]])
-        similarity_n  = pd.DataFrame([[0, 0, 0, 0]])
+        similarity_n2  = pd.DataFrame([[0, 0, 0, 0]])
         similarity_n1.columns = self.options
         similarity_n2.columns = self.options
         contribution_n1 = pd.DataFrame([[0, 0, 0, 0]])
@@ -1714,53 +1724,58 @@ class BasePotentialAlgo(object):
             try:
                 self.save_to_file = os.path.join(self.TO_EXCEL_OUTPUT, str(dic["time_dim_value"]) + "_" + group + "_o.xlsx")
                 self.to_save = []
-                print("file_path\n", self.save_to_file, "\n", "="*50)
+                # print("file_path\n", self.save_to_file, "\n", "="*50)
                 s = ""
 
                 df = ll_dfs[group]
                 df_columns = df.columns
                 self.df_index = df.index
                 # print(self.df_index)
-                print("Before", df, "\n", "="*100)
+                # print("Before", df, "\n", "="*100)
                 df_ = self.add_entity_to_df(df).sort_values(self.entity_name+'_name', ascending=True)
-
                 print("After", df_, "\n", "="*100)
                 self.to_save.append((df_.copy(), 'Data'))
                 qs_mm = model_min_max.objects.filter(measure_dim__measure_group_dim__group_name=group,
                                                      time_dim_id=dic["time_dim_value"]).all()
                 df_mm = pd.DataFrame(list(qs_mm.values('measure_dim', 'min', 'max')))
 
-                print("="*200)
-                print("="*200)
-                print("df_mm\n", df_mm)
+                # print("="*100)
+                # print("="*100)
+                # print("df_mm\n", df_mm)
                 print("df_mm.T\n", df_mm.T)
-                print('df_mm.T.loc["min"]\n', pd.DataFrame(df_mm.T.loc["min"]))
-                print('pd.DataFrame(df_mm.T.loc["min"]).T\n', pd.DataFrame(df_mm.T.loc["min"]).T)
-                print('pd.DataFrame(df_mm.T.loc["min"]).T.reset_index()\n', pd.DataFrame(df_mm.T.loc["min"]).T.reset_index())
-                print('pd.DataFrame(df_mm.T.loc["min"]).T.reset_index().drop(["index"]\n',
-                      pd.DataFrame(df_mm.T.loc["min"]).T.reset_index().drop(['index'], axis=1))
+                # print('df_mm.T.loc["min"]\n', pd.DataFrame(df_mm.T.loc["min"]))
+                # print('pd.DataFrame(df_mm.T.loc["min"]).T\n', pd.DataFrame(df_mm.T.loc["min"]).T)
+                # print('pd.DataFrame(df_mm.T.loc["min"]).T.reset_index()\n', pd.DataFrame(df_mm.T.loc["min"]).T.reset_index())
+                # print('pd.DataFrame(df_mm.T.loc["min"]).T.reset_index().drop(["index"]\n',
+                #       pd.DataFrame(df_mm.T.loc["min"]).T.reset_index().drop(['index'], axis=1))
 
 
-                print("="*200)
-                print("="*200)
-
+                print("="*100)
+                print("="*100)
 
                 first_row = pd.DataFrame(df_mm.T.loc["min"]).T.reset_index().drop(['index'], axis=1)
                 second_row = pd.DataFrame(df_mm.T.loc["max"]).T.reset_index().drop(['index'], axis=1)
                 first_row.columns = df_mm.T.loc["measure_dim"]
                 second_row.columns = df_mm.T.loc["measure_dim"]
+
                 # print("1111 first_row\n", first_row, "\nsecond_row", "\n", second_row)
+
                 for f in first_row:
                     if f in self.total_variables:
                         first_row[f] = first_row[f]/tot_pop_min
                         second_row[f] = second_row[f]/tot_pop_max
+
                 diff_row = second_row.subtract(first_row, fill_value=None)
                 diff_row.columns = first_row.columns
-                # print("diff_row\n", diff_row)
+
+                print("diff_row\n", diff_row)
+
                 df = ll_dfs[group]
                 df_columns = df.columns
-                # print("df.columns\n", df.columns)
-                # print("df\n", df)
+                print("df.columns\n", df.columns)
+
+                print("df\n", df)
+
                 df_n1 = df.copy()
                 try:
                     df_n1 = df_n1.astype(float)
@@ -1774,17 +1789,19 @@ class BasePotentialAlgo(object):
                                 df_n1.loc[i][j] = z
                         except Exception as ex:
                             print("Error i " + str(i) + " " + str(ex))
-                # print("11 df_n1\n", df_n1, "\n", "="*100)
+
+                print("11 df_n1\n", df_n1, "\n", "="*100)
 
                 df_n1 = df_n1.apply(pd.to_numeric, errors='coerce').round(6)
                 self.add_to_save(title='Normalized-1', a=df_n1, cols=None)
                 #
-                df_n  = df_n1.copy()
-                df_n2[df_n  < 0] = 0
-                df_n2[df_n  > 1] = 1
+                df_n2  = df_n1.copy()
+                df_n2[df_n2 < 0] = 0
+                df_n2[df_n2 > 1] = 1
 
                 self.add_to_save(title='Normalized-2', a=df_n2, cols=None)
-                # print("  df_n2\n", df_n2, "\n", "="*100)
+                print("  df_n2\n", df_n2, "\n", "="*100)
+
                 #
                 if len(df_n1.columns) < 2:
                     df_n1["max"] = df_n1[df_n1.columns[0]]  # df_n1["Birth Rate"]
@@ -1874,6 +1891,7 @@ class BasePotentialAlgo(object):
                     # a_1.sort(axis=1)  #
                     # self.add_to_save(title='Final-1', a=a_1, cols=-1)
                     # # #
+
                     a_1 = pd.DataFrame(a_1)
                     a_1.dropna(how='all', axis=1, inplace=True)
                     # print("600000000-100-1")
@@ -1889,11 +1907,12 @@ class BasePotentialAlgo(object):
 
                     a_1 = a_1.apply(self.thirty_rule, axis=1)
                     self.add_to_save(title="Final-"+str(self.rule_2)+"-rule", a=a_1, cols=-1)
-                    a_  = a_1.copy()
+                    a_2  = a_1.copy()
                     #
                     # print("zero_list\n", zero_list, "\n", "="*100)
                     # print("one_list\n", one_list, "\n", "="*100)
                     # print("1-14\n", a_1)
+
                     ff = []
                     for j in a_1.index:
                         nn = list(a_1.loc[j])
@@ -1911,17 +1930,18 @@ class BasePotentialAlgo(object):
                         # print("EEEE j=", j,"nn=", nn)
                         nn.sort()
                         ff.append(nn)
+
                     self.add_to_save(title='Final-30-rule-n1', a=ff, cols=-1)
                     a_1 = pd.DataFrame(ff, index=list(self.df_index))
                     #
                     df_n1 = a_1.apply(self.min_max_rule, axis=1)
                     df_n1.columns = ['min-n1', 'max-n1']
                     #
-                    df_n  = a_2.apply(self.min_max_rule, axis=1)
+                    df_n2  = a_2.apply(self.min_max_rule, axis=1)
                     df_n2.columns = ['min-n2', 'max-n2']
-                    df_1_  = pd.merge(left=df_n1, right=df_n2, left_index=True, right_index=True)
+                    df_1_2  = pd.merge(left=df_n1, right=df_n2, left_index=True, right_index=True)
                     # print("2-3 df_1_2\n", df_1_2, "\n", "="*100)
-                # print("3 df_n1\n", df_n1, "\n", "="*100)
+
                 df_1_2.columns = ['min-n1', 'max-n1', 'min-n2', 'max-n2']
                 cols = df_1_2.columns
                 cols = cols.insert(0, self.entity_name+'_name')
@@ -1930,6 +1950,8 @@ class BasePotentialAlgo(object):
                 # self.add_to_save(title='min-max', a=df_1_2, cols=-1)
                 # print("50001-3-9")
                 self.save_to_excel_()
+
+                return
 
                 # print("50001-3-9-1")
             except Exception as ex:
