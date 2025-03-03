@@ -1720,9 +1720,10 @@ class BasePotentialAlgo(object):
         lll_groups = []
         for k in ll_dfs:
             group = k #.group_name
-            print("="*50,"\n", group, "\n", "="*50)
             try:
                 self.save_to_file = os.path.join(self.TO_EXCEL_OUTPUT, str(dic["time_dim_value"]) + "_" + group + "_o.xlsx")
+                print("=" * 50, "\n", group, "\n", self.save_to_file, "\n", "=" * 50)
+
                 self.to_save = []
                 # print("file_path\n", self.save_to_file, "\n", "="*50)
                 s = ""
@@ -1735,6 +1736,7 @@ class BasePotentialAlgo(object):
                 df_ = self.add_entity_to_df(df).sort_values(self.entity_name+'_name', ascending=True)
                 print("After", df_, "\n", "="*100)
                 self.to_save.append((df_.copy(), 'Data'))
+
                 qs_mm = model_min_max.objects.filter(measure_dim__measure_group_dim__group_name=group,
                                                      time_dim_id=dic["time_dim_value"]).all()
                 df_mm = pd.DataFrame(list(qs_mm.values('measure_dim', 'min', 'max')))
@@ -1836,6 +1838,7 @@ class BasePotentialAlgo(object):
                     # print(df_)
                     # self.to_save.append((df_.copy(), 'min-max'))
                 else:
+                    print("Above 5")
                     zero_list = {}
                     one_list = {}
                     # print(df_n1)

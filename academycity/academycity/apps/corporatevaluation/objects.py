@@ -1981,6 +1981,8 @@ class StockPrices(object):
         # print("9099 output dic: \n", dic, "\n"+"="*30)
         return dic
 
+    # l = ["AAPL", "NVDA", "MSFT", "GOOG", "AMZN", "META", "TSLA", "AVGO", "BRK.B", "WMT"]
+
     def update_prices_days(self, dic):
         print("9015 input dic: \n", dic, "\n"+"-"*30)
         l_f = str(dic["letter_from"])
@@ -1993,24 +1995,36 @@ class StockPrices(object):
             companies = XBRLCompanyInfo.objects.filter(etfwatchlist=w).all()
             for c in companies:
                 if l_t >= c.company_letter >= l_f or (c.ticker == "$SPX.X" and w == "HighV"):
-                    ticker = c.ticker
-                    if ticker == "$SPX.X":
-                        ticker = "^GSPC"
-                    print("90152 company info: \n", w.symbol, ticker, c.company_letter, "\n"+"-"*30)
-                    obj = yf.Ticker(ticker)
-                    date_e = datetime.datetime.now()
-                    date_b = (datetime.datetime.now() + datetime.timedelta(days=-d_))
-                    date_b = (date_b + relativedelta(years = -y_))
-                    date_b_ = date_b.date()
-                    date_e_ = date_e.date()
-                    # print("9016 dates: \n", date_b_, date_e_, "\n"+"-"*30)
-                    end_ = str(date_e_.year)+"-"+str(date_e_.month)+"-"+str(date_e_.day)
-                    beg_ = str(date_b_.year)+"-"+str(date_b_.month)+"-"+str(date_b_.day)
-                    hist = obj.history(interval="1d", start=beg_, end=end_)
+                    try:
+                        ticker = c.ticker
+                        if ticker == "$SPX.X":
+                            ticker = "^GSPC"
+                        print("90152 company info: \n", w.symbol, ticker, c.company_letter, "\n"+"-"*30)
 
-                    # hist = hist[:-1]
-                    # print("9016 hist: \n", hist, "\n"+"-"*30)
-                    # print("-2"*50)
+                        log_debug("90152 : "+ticker)
+
+                        obj = yf.Ticker(ticker)
+                        date_e = datetime.datetime.now()
+                        date_b = (datetime.datetime.now() + datetime.timedelta(days=-d_))
+                        date_b = (date_b + relativedelta(years = -y_))
+                        date_b_ = date_b.date()
+                        date_e_ = date_e.date()
+                        # print("9016 dates: \n", date_b_, date_e_, "\n"+"-"*30)
+                        end_ = str(date_e_.year)+"-"+str(date_e_.month)+"-"+str(date_e_.day)
+                        beg_ = str(date_b_.year)+"-"+str(date_b_.month)+"-"+str(date_b_.day)
+                        # print("90162 dates: ", beg_, end_, "\n"+"-"*30)
+
+                        hist = obj.history(interval="1d", start=beg_, end=end_)
+                        # print("90163 dates: \n", hist.tail(), "\n"+"-"*30)
+                        hist = hist[:-1]
+                        # print("9016 hist: \n", hist, "\n"+"-"*30)
+                        # print("-2"*50)
+                    except Exception as ex:
+                        print("\n"+"="*30, "\n", ticker, "\n", ex, "\n"+"="*30)
+                        log_debug("Error 90152 : "+ticker+str(ex))
+
+                        continue
+
                     for index, row in hist.iterrows():
                         idx = pd.Timestamp(index)
                         idx_ = idx.year*100000000+idx.month*1000000+idx.day*10000+idx.hour*100+idx.minute
@@ -2025,6 +2039,7 @@ class StockPrices(object):
                             volume_ = round(row["Volume"]/100)
                             dividends_ = round(100*row["Dividends"])/100
                             stock_splits_ = round(100*row["Stock Splits"])/100
+                            # print("9017-1 idx_: \n"+"-"*30)
                             try:
                                 sp, is_created = StockPricesDays.objects.get_or_create(company=c, idx=idx_)
                                 if is_created:
@@ -2037,7 +2052,7 @@ class StockPrices(object):
                                     sp.stock_splits = stock_splits_
                                     sp.save()
                             except Exception as ex:
-                                print(ex)
+                                print("901566", ex)
 
         dic = {'data': {"status": "ok"}}
         # print("9099 output dic: \n", dic, "\n"+"="*30)

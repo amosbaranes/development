@@ -301,7 +301,7 @@ xlrd==1.2.0
 XlsxWriter==3.0.1
 yahoofinancials==1.6
 yarl==1.7.2
-yfinance==0.1.64
+yfinance==0.2.54
 YURL==1.0.0
 zipp==3.3.2
 zope.interface==5.1.2
