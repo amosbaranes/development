@@ -1706,9 +1706,9 @@ class BasePotentialAlgo(object):
         similarity_n1.columns = self.options
         similarity_n2.columns = self.options
         contribution_n1 = pd.DataFrame([[0, 0, 0, 0]])
-        contribution_n  = pd.DataFrame([[0, 0, 0, 0]])
+        contribution_n2  = pd.DataFrame([[0, 0, 0, 0]])
         adj_contribution_n1 = pd.DataFrame([[0, 0, 0, 0]])
-        adj_contribution_n  = pd.DataFrame([[0, 0, 0, 0]])
+        adj_contribution_n2  = pd.DataFrame([[0, 0, 0, 0]])
         # relimp_n1 = pd.DataFrame([[0, 0, 0, 0]])
         # relimp_n  = pd.DataFrame([[0, 0, 0, 0]])
         group_d = ""
@@ -1928,39 +1928,32 @@ class BasePotentialAlgo(object):
             except Exception as ex:
                 print("Error 50001-136-1: " + str(ex))
 
-            # df_n1_ = df_n1.copy()
-            # df_n1_.columns = ['m-' + group, 'x-' + group]
-            # df_n2_ = df_n2.copy()
-            # df_n2_.columns = ['m-' + group, 'x-' + group]
-            #
-            # if group == self.dependent_group:
-            #     ss_n_mm = ""
-            #     ss_n_xm = ""
-            #     ss_n_mx = ""
-            #     ss_n_xx = ""
-            #     group_d = group
-            #     df_n1_all = df_n1_
-            #     df_n2_all = df_n2_
-            # else:
-            #     # print(group_d, group)
-            #     group_d, group, df_n1_all, df_n2_all, df_n1_, df_n2_, sign_n1, sign_n2, similarity_n1, similarity_n  = \
-            #         self.create_similarity(group_d, group, df_n1_all, df_n2_all, df_n1_, df_n2_, sign_n1, sign_n2,
-            #                                similarity_n1, similarity_n2)
-            #     ss_n_mm += '"' + group_d + '-' + group + '-mm",'
-            #     ss_n_mx += '"' + group_d + '-' + group + '-mx",'
-            #     ss_n_xm += '"' + group_d + '-' + group + '-xm",'
-            #     ss_n_xx += '"' + group_d + '-' + group + '-xx",'
-            #     # print(group, sign_n1)
-            #     # print(group, sign_n2)
-            #
-            # lll_groups.append(group)
-        #
-        return
+            df_n1_ = df_n1.copy()
+            df_n1_.columns = ['m-' + group, 'x-' + group]
+            df_n2_ = df_n2.copy()
+            df_n2_.columns = ['m-' + group, 'x-' + group]
 
+            if group == self.dependent_group:
+                ss_n_mm = ""
+                ss_n_xm = ""
+                ss_n_mx = ""
+                ss_n_xx = ""
+                group_d = group
+                df_n1_all = df_n1_
+                df_n2_all = df_n2_
+            else:
+                # print(group_d, group)
+                group_d, group, df_n1_all, df_n2_all, df_n1_, df_n2_, sign_n1, sign_n2, similarity_n1, similarity_n  = \
+                    self.create_similarity(group_d, group, df_n1_all, df_n2_all, df_n1_, df_n2_, sign_n1, sign_n2,
+                                           similarity_n1, similarity_n2)
+                ss_n_mm += '"' + group_d + '-' + group + '-mm",'
+                ss_n_mx += '"' + group_d + '-' + group + '-mx",'
+                ss_n_xm += '"' + group_d + '-' + group + '-xm",'
+                ss_n_xx += '"' + group_d + '-' + group + '-xx",'
+                # print(group, sign_n1)
+                # print(group, sign_n2)
 
-        # print("QQQQQQQQQQQQQQQQQ")
-        # print("df_n1_all\n", df_n1_all)
-        # print("RRRRRRRRRRRrRRR")
+            lll_groups.append(group)
 
         ss_n_mm = ss_n_mm[:-1]
         ss_n_mx = ss_n_mx[:-1]
@@ -1970,6 +1963,7 @@ class BasePotentialAlgo(object):
         df_n2_all_corr = df_n2_all.copy()
         # print("1 - df_n2_all_corr\n", df_n2_all_corr, "\n", ll_dfs)
         # print(df_n2_all_corr.columns)
+
         # Calculate corr
         for o in ["m", "x"]:
             s_corr = ""
@@ -1988,7 +1982,6 @@ class BasePotentialAlgo(object):
             corr_ = df_corr.corr(method='pearson')
             # print("90050-30\n", corr_,"\n", type(corr_))
             self.add_to_save_all(title='corr-' + o, a=corr_, cols=-1)
-        # print("  - ")
         for n in ["1", "2"]:
             ll = []
             for k in self.options:
@@ -2013,7 +2006,6 @@ class BasePotentialAlgo(object):
             exec(s)
             self.add_to_save_all(title='similarity-n' + n, a=eval("similarity_n" + n), cols=-1)
         # print("90050-27\n")
-
         for n in ["1", "2"]:
             nn__ = 0
             llg = []
@@ -2034,28 +2026,19 @@ class BasePotentialAlgo(object):
                             exec(s__)
                         s___ = "ll*similarity_n" + n + ".loc['SComb'].T"
                         ll_adj = eval(s___).tolist()
-                        # if n == "1":
-                        #     print(s___)
-                        #     print("ll\n", ll, "\n", type(ll))
-                        #     print("similarity_n1.loc['SComb'].T\n", similarity_n1.loc['SComb'].T)
-                        # print("ll_adj\n", ll_adj, "\n", type(ll_adj))
-                        #
                         llc = [(x - 0.7) if x > 0.7 else 0 for x in ll]
                         llg.append(llc)
-                        # print("llg\n", llg)
                         llc_adj = [(x - 0.7) if x > 0.7 else 0 for x in ll_adj]
                         llg_adj.append(llc_adj)
-                        # print("llg_adj\n", llg_adj)
-
                         exec("contribution_n" + n + ".loc[group] = ll")
                         exec("adj_contribution_n" + n + ".loc[group] = ll_adj")
-                        # print("A   contribution_n" + n, eval("contribution_n"+n), "\n", ll)
                     else:
                         nn__ += 1
                 except Exception as ex:
                     print("Error 50008-8: " + str(ex))
 
             # print(n, "\nCC\n", llg, "\n\n", llg_adj)
+
             df_temp = eval("df_n" + n + "_all")
             df_temp = df_temp.reset_index()
             df_temp = df_temp.rename(columns={'index': 'country_dim'})
@@ -2068,6 +2051,7 @@ class BasePotentialAlgo(object):
             exec("contribution_n" + n + ".drop([0], axis=0, inplace=True)")
             exec("adj_contribution_n" + n + ".drop([0], axis=0, inplace=True)")
             # print("=1"*50)
+
             npg = np.array(llg)
             npg_adj = np.array(llg_adj)
             npgs = np.sum(llg, axis=0)
@@ -2081,7 +2065,7 @@ class BasePotentialAlgo(object):
             df_relimp.columns = self.options
             df_relimp_adj.columns = self.options
             if n == "2":
-                df_relimp_adj_  = df_relimp_adj.copy(deep=True)
+                df_relimp_adj_2  = df_relimp_adj.copy(deep=True)
             df_relimp_adj.columns = self.options
 
             self.add_to_save_all(title='contribution-n' + n, a=eval("contribution_n" + n), cols=-1)
@@ -2090,12 +2074,16 @@ class BasePotentialAlgo(object):
             self.add_to_save_all(title='adj_relimp-n' + n, a=df_relimp_adj, cols=-1)
             # print("=2"*50)
 
-        np_sign_n  = sign_n2.to_numpy()
+        np_sign_n2  = sign_n2.to_numpy()
         ll = [*range(np_sign_n2.shape[0])]
 
         mg_obj, is_created = self.model_measure_group.objects.get_or_create(group_name="Output")
         mm_obj, is_created = model_measure.objects.get_or_create(measure_name="Pot-"+self.dependent_group, measure_group_dim=mg_obj,
                                                                  measure_code=self.dependent_group, description="Potential for "+self.dependent_group)
+
+        l_ = ["mm", "mx", "xm", "xx"]
+        for h in l_:
+            o, i = model_range.objects.get_or_create(range_name=h)
 
         for i, r in df_relimp_adj_2.iterrows():
             for c in df_relimp_adj_2.columns:
@@ -2109,11 +2097,11 @@ class BasePotentialAlgo(object):
                                                                               measure_group_dim=group_obj)
                     obj.amount=round(100*float(r[c]))/100
                     obj.save()
-        np_relimp_adj_  = df_relimp_adj_2.to_numpy()
-        np_signed_relimp_  = np_relimp_adj_2*np_sign_n2
+
+        np_relimp_adj_2  = df_relimp_adj_2.to_numpy()
+        np_signed_relimp_2  = np_relimp_adj_2*np_sign_n2
         np_signed_relimp = {"m": np_signed_relimp_2[np.ix_(ll, [0, 1, 2, 3])],
                             "x": np_signed_relimp_2[np.ix_(ll, [0, 1, 2, 3])]}
-
         df_n1_all_temp = df_n1_all.copy()
         df_n1_all_temp = df_n1_all_temp.reset_index()
         df_n1_all_temp = df_n1_all_temp.rename(columns={'index': 'country_dim'})
@@ -2135,7 +2123,7 @@ class BasePotentialAlgo(object):
                 # print(np_df)
                 if k_ == "m":
                     potential_m_z1 = None
-                    potential_m_z  = None
+                    potential_m_z2  = None
                     potential_m_z3 = None
                     potential_m_z4 = None
                     potential_m = None
@@ -2181,7 +2169,7 @@ class BasePotentialAlgo(object):
                         if z == 0:
                             potential_m_z1 = np.dot(np_df_clone, np.array([np_signed_relimp[k_][..., z]]).T)
                         elif z == 1:
-                            potential_m_z  = np.dot(np_df_clone, np.array([np_signed_relimp[k_][..., z]]).T)
+                            potential_m_z2  = np.dot(np_df_clone, np.array([np_signed_relimp[k_][..., z]]).T)
                         elif z == 2:
                             potential_m_z3 = np.dot(np_df_clone, np.array([np_signed_relimp[k_][..., z]]).T)
                         elif z == 3:
@@ -2191,7 +2179,7 @@ class BasePotentialAlgo(object):
                             potential_m = np.column_stack((potential_m_z1, potential_m_z2, potential_m_z3, potential_m_z4))
                 elif k_ == "x":
                     potential_x_z1 = None
-                    potential_x_z  = None
+                    potential_x_z2  = None
                     potential_x_z3 = None
                     potential_x_z4 = None
                     potential_x = None
@@ -2219,7 +2207,7 @@ class BasePotentialAlgo(object):
                         if z == 0:
                             potential_x_z1 = np.dot(np_df_clone, np.array([np_signed_relimp[k_][..., z]]).T)
                         elif z == 1:
-                            potential_x_z  = np.dot(np_df_clone, np.array([np_signed_relimp[k_][..., z]]).T)
+                            potential_x_z2  = np.dot(np_df_clone, np.array([np_signed_relimp[k_][..., z]]).T)
                         elif z == 2:
                             potential_x_z3 = np.dot(np_df_clone, np.array([np_signed_relimp[k_][..., z]]).T)
                         elif z == 3:
@@ -2246,14 +2234,9 @@ class BasePotentialAlgo(object):
             self.add_to_save_all(title='potential', a=df_potential, cols=-1)
         except Exception as ex:
             print(ex)
-
-        # print("90050-28\n")
         self.save_to_excel_all_(dic["time_dim_value"])
-        # print("90050-29\n")
-
         for i, r in df_potential_cube.iterrows():
             for c in df_potential_cube.columns[1:]:
-                # print(c, float(r[c]), "="+str(r[c])+"=")
                 if str(r[c]) != "nan":
                     l = c.split("_")
                     range_obj = model_range.objects.get(range_name=l[1])
@@ -2264,7 +2247,6 @@ class BasePotentialAlgo(object):
                                                                               measure_dim=mm_obj)
                     obj.amount=round(100*float(r[c]))/100
                     obj.save()
-
         result = {"status": "ok"}
         return result
 
