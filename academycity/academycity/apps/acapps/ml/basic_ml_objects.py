@@ -1720,6 +1720,9 @@ class BasePotentialAlgo(object):
         lll_groups = []
         for k in ll_dfs:
             group = k #.group_name
+            # We create the normalization 1 and 2.
+            # remove outliers.
+            # get min max for every entity of evry variable (country, GDP ...)
             try:
                 self.save_to_file = os.path.join(self.TO_EXCEL_OUTPUT, str(dic["time_dim_value"]) + "_" + group + "_o.xlsx")
                 print("=" * 50, "\n", group, "\n", self.save_to_file, "\n", "=" * 50)
@@ -1734,7 +1737,7 @@ class BasePotentialAlgo(object):
                 # print(self.df_index)
                 # print("Before", df, "\n", "="*100)
                 df_ = self.add_entity_to_df(df).sort_values(self.entity_name+'_name', ascending=True)
-                print("After", df_, "\n", "="*100)
+                # print("After", df_, "\n", "="*100)
                 self.to_save.append((df_.copy(), 'Data'))
 
                 qs_mm = model_min_max.objects.filter(measure_dim__measure_group_dim__group_name=group,
@@ -1744,7 +1747,7 @@ class BasePotentialAlgo(object):
                 # print("="*100)
                 # print("="*100)
                 # print("df_mm\n", df_mm)
-                print("df_mm.T\n", df_mm.T)
+                # print("df_mm.T\n", df_mm.T)
                 # print('df_mm.T.loc["min"]\n', pd.DataFrame(df_mm.T.loc["min"]))
                 # print('pd.DataFrame(df_mm.T.loc["min"]).T\n', pd.DataFrame(df_mm.T.loc["min"]).T)
                 # print('pd.DataFrame(df_mm.T.loc["min"]).T.reset_index()\n', pd.DataFrame(df_mm.T.loc["min"]).T.reset_index())
@@ -1752,8 +1755,8 @@ class BasePotentialAlgo(object):
                 #       pd.DataFrame(df_mm.T.loc["min"]).T.reset_index().drop(['index'], axis=1))
 
 
-                print("="*100)
-                print("="*100)
+                # print("="*100)
+                # print("="*100)
 
                 first_row = pd.DataFrame(df_mm.T.loc["min"]).T.reset_index().drop(['index'], axis=1)
                 second_row = pd.DataFrame(df_mm.T.loc["max"]).T.reset_index().drop(['index'], axis=1)
@@ -1770,13 +1773,13 @@ class BasePotentialAlgo(object):
                 diff_row = second_row.subtract(first_row, fill_value=None)
                 diff_row.columns = first_row.columns
 
-                print("diff_row\n", diff_row)
+                # print("diff_row\n", diff_row)
 
                 df = ll_dfs[group]
                 df_columns = df.columns
-                print("df.columns\n", df.columns)
+                # print("df.columns\n", df.columns)
 
-                print("df\n", df)
+                # print("df\n", df)
 
                 df_n1 = df.copy()
                 try:
@@ -1792,7 +1795,7 @@ class BasePotentialAlgo(object):
                         except Exception as ex:
                             print("Error i " + str(i) + " " + str(ex))
 
-                print("11 df_n1\n", df_n1, "\n", "="*100)
+                # print("11 df_n1\n", df_n1, "\n", "="*100)
 
                 df_n1 = df_n1.apply(pd.to_numeric, errors='coerce').round(6)
                 self.add_to_save(title='Normalized-1', a=df_n1, cols=None)
@@ -1802,46 +1805,26 @@ class BasePotentialAlgo(object):
                 df_n2[df_n2 > 1] = 1
 
                 self.add_to_save(title='Normalized-2', a=df_n2, cols=None)
-                print("  df_n2\n", df_n2, "\n", "="*100)
+                # print("  df_n2\n", df_n2, "\n", "="*100)
 
                 #
                 if len(df_n1.columns) < 2:
                     df_n1["max"] = df_n1[df_n1.columns[0]]  # df_n1["Birth Rate"]
                     df_n2["max"] = df_n2[df_n2.columns[0]]  # df_n2["Birth Rate"]
-                    df_1_  = pd.merge(left=df_n1, right=df_n2, left_index=True, right_index=True)
-                    # print("2-1 df_1_2\n", df_1_2, "\n", "="*100)
-
-                    # df_1_2.columns = ['min-n1', 'max-n1', 'min-n2', 'max-n2']
-                    # cols = df_1_2.columns
-                    # cols = cols.insert(0, self.entity_name+'_name')
-                    # self.add_to_save(title='min-max', a=df_1_2, cols=cols)
+                    df_1_2  = pd.merge(left=df_n1, right=df_n2, left_index=True, right_index=True)
                 elif len(df_n1.columns) < 5:
-                    # print("-1"*30)
-                    # print(group)
-                    # print("-000"*30)
                     df_n1 = df_n1.apply(lambda x: np.sort(x), axis=1, raw=True)
-                    df_n  = df_n2.apply(lambda x: np.sort(x), axis=1, raw=True)
+                    df_n2 = df_n2.apply(lambda x: np.sort(x), axis=1, raw=True)
                     df_n1["max"] = df_n1.max(axis=1)
                     df_n1["min"] = df_n1.min(axis=1)
                     df_n2["max"] = df_n2.max(axis=1)
                     df_n2["min"] = df_n2.min(axis=1)
-                    # df_n1 = df_n1.drop(df_n1_columns, axis=1)
-                    # df_n  = df_n2.drop(df_n2_columns, axis=1)
                     df_n1 = df_n1[["min", "max"]]
-                    df_n  = df_n2[["min", "max"]]
-                    df_1_  = pd.merge(left=df_n1, right=df_n2, left_index=True, right_index=True)
-                    # print("2-  df_1_2\n", df_1_2, "\n", "="*100)
-                    # df_1_2.columns = ['min-n1', 'max-n1', 'min-n2', 'max-n2']
-                    # cols = df_1_2.columns
-                    # cols = cols.insert(0, self.entity_name+'_name')
-                    # df_ = self.add_entity_to_df(df_1_2, cols)
-                    # print(df_)
-                    # self.to_save.append((df_.copy(), 'min-max'))
+                    df_n2  = df_n2[["min", "max"]]
+                    df_1_2  = pd.merge(left=df_n1, right=df_n2, left_index=True, right_index=True)
                 else:
-                    print("Above 5")
                     zero_list = {}
                     one_list = {}
-                    # print(df_n1)
                     for i in df_n1.index:
                         n0 = []
                         n1 = []
@@ -1852,23 +1835,17 @@ class BasePotentialAlgo(object):
                                 elif num >= 1:
                                     n1.append(num)
                         if len(n0) > 0:
-                            # print("n0\n", n0)
                             n0.sort(reverse=True)
-                            # print("A n0\n", n0)
-                            # print("="*10)
                             zero_list[i] = n0
                         if len(n1) > 0:
                             n1.sort()
                             one_list[i] = n1
-                    # # #
                     a = df_n2.values
                     a_1 = a.copy()
                     a_1.sort(axis=1)
                     self.add_to_save(title='Sort L', a=a_1, cols=-1)
-
                     a_1 = self.clean_rows(a=a_1, j=1, side="L")
                     #
-                    # print("1-1\n", a_1)
                     a_1m = pd.DataFrame(a_1)
                     a_1m = a_1m.apply(self.move_elements_to_right, axis=1)
                     a_1m = a_1m.apply(self.revers_elements_in_row, axis=1)
@@ -1876,7 +1853,6 @@ class BasePotentialAlgo(object):
                     #
                     a_1 = -1 * a_1.copy()
                     a_1.sort(axis=1)
-                    # print("1-11\n", a_1)
                     self.add_to_save(title='Sort R', a=a_1, cols=-1)
                     a_1 = self.clean_rows(a=a_1, j=1, side="R")
                     a_1 = -1 * a_1.copy()
@@ -1901,20 +1877,13 @@ class BasePotentialAlgo(object):
                     #
                     # print("1-13\n", a_1)
                     a_1 = a_1.apply(self.twenty_rule, axis=1)
-                    # print("600000000-100-12")
                     a_1 = a_1.apply(lambda x: np.sort(x), axis=1, raw=True)
-                    # print("600000000-100-13")
-                    self.add_to_save(title='Final-20-rule', a=a_1, cols=-1)
-
-                    # print("600000000-100-2")
+                    # self.add_to_save(title='Final-20-rule', a=a_1, cols=-1)
+                    self.add_to_save(title='RangeReduction-rule', a=a_1, cols=-1)
 
                     a_1 = a_1.apply(self.thirty_rule, axis=1)
-                    self.add_to_save(title="Final-"+str(self.rule_2)+"-rule", a=a_1, cols=-1)
+                    self.add_to_save(title="RecordDeletion-"+str(self.rule_2)+"-rule", a=a_1, cols=-1)
                     a_2  = a_1.copy()
-                    #
-                    # print("zero_list\n", zero_list, "\n", "="*100)
-                    # print("one_list\n", one_list, "\n", "="*100)
-                    # print("1-14\n", a_1)
 
                     ff = []
                     for j in a_1.index:
@@ -1934,7 +1903,7 @@ class BasePotentialAlgo(object):
                         nn.sort()
                         ff.append(nn)
 
-                    self.add_to_save(title='Final-30-rule-n1', a=ff, cols=-1)
+                    self.add_to_save(title='Final-rule-n1', a=ff, cols=-1)
                     a_1 = pd.DataFrame(ff, index=list(self.df_index))
                     #
                     df_n1 = a_1.apply(self.min_max_rule, axis=1)
@@ -1949,43 +1918,45 @@ class BasePotentialAlgo(object):
                 cols = df_1_2.columns
                 cols = cols.insert(0, self.entity_name+'_name')
                 # print("4 df_n1\n", group, "\n", df_1_2, "\n", "="*100)
+
                 self.add_to_save(title='min-max', a=df_1_2, cols=cols)
+
                 # self.add_to_save(title='min-max', a=df_1_2, cols=-1)
                 # print("50001-3-9")
                 self.save_to_excel_()
-
-                return
-
                 # print("50001-3-9-1")
             except Exception as ex:
                 print("Error 50001-136-1: " + str(ex))
-            df_n1_ = df_n1.copy()
-            df_n1_.columns = ['m-' + group, 'x-' + group]
-            df_n2_ = df_n2.copy()
-            df_n2_.columns = ['m-' + group, 'x-' + group]
 
-            if group == self.dependent_group:
-                ss_n_mm = ""
-                ss_n_xm = ""
-                ss_n_mx = ""
-                ss_n_xx = ""
-                group_d = group
-                df_n1_all = df_n1_
-                df_n2_all = df_n2_
-            else:
-                # print(group_d, group)
-                group_d, group, df_n1_all, df_n2_all, df_n1_, df_n2_, sign_n1, sign_n2, similarity_n1, similarity_n  = \
-                    self.create_similarity(group_d, group, df_n1_all, df_n2_all, df_n1_, df_n2_, sign_n1, sign_n2,
-                                           similarity_n1, similarity_n2)
-                ss_n_mm += '"' + group_d + '-' + group + '-mm",'
-                ss_n_mx += '"' + group_d + '-' + group + '-mx",'
-                ss_n_xm += '"' + group_d + '-' + group + '-xm",'
-                ss_n_xx += '"' + group_d + '-' + group + '-xx",'
-                # print(group, sign_n1)
-                # print(group, sign_n2)
-
-            lll_groups.append(group)
+            # df_n1_ = df_n1.copy()
+            # df_n1_.columns = ['m-' + group, 'x-' + group]
+            # df_n2_ = df_n2.copy()
+            # df_n2_.columns = ['m-' + group, 'x-' + group]
+            #
+            # if group == self.dependent_group:
+            #     ss_n_mm = ""
+            #     ss_n_xm = ""
+            #     ss_n_mx = ""
+            #     ss_n_xx = ""
+            #     group_d = group
+            #     df_n1_all = df_n1_
+            #     df_n2_all = df_n2_
+            # else:
+            #     # print(group_d, group)
+            #     group_d, group, df_n1_all, df_n2_all, df_n1_, df_n2_, sign_n1, sign_n2, similarity_n1, similarity_n  = \
+            #         self.create_similarity(group_d, group, df_n1_all, df_n2_all, df_n1_, df_n2_, sign_n1, sign_n2,
+            #                                similarity_n1, similarity_n2)
+            #     ss_n_mm += '"' + group_d + '-' + group + '-mm",'
+            #     ss_n_mx += '"' + group_d + '-' + group + '-mx",'
+            #     ss_n_xm += '"' + group_d + '-' + group + '-xm",'
+            #     ss_n_xx += '"' + group_d + '-' + group + '-xx",'
+            #     # print(group, sign_n1)
+            #     # print(group, sign_n2)
+            #
+            # lll_groups.append(group)
         #
+        return
+
 
         # print("QQQQQQQQQQQQQQQQQ")
         # print("df_n1_all\n", df_n1_all)

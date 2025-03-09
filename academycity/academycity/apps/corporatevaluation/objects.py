@@ -17,6 +17,8 @@ import pandas as pd
 import numpy as np
 from pandas_datareader import data
 
+import matplotlib.pyplot as plt
+
 import string
 import datetime
 import time
@@ -6346,7 +6348,6 @@ class CorporateValuationDataProcessing(BaseDataProcessing, BaseCorporateValuatio
     #     return result
 
 
-
 class SimFin(BaseDataProcessing, BaseCorporateValuationAlgo):
     def __init__(self, dic):
         super().__init__(dic)
@@ -6359,9 +6360,11 @@ class SimFin(BaseDataProcessing, BaseCorporateValuationAlgo):
         sf.set_api_key(simfin_key)
         sf.set_data_dir(self.TO_EXCEL)
         df = sf.load_income(variant='annual', market='us')
-        # print(df.loc['MSFT', [REVENUE, NET_INCOME]])
+
+        print(df.loc['MSFT', [REVENUE, NET_INCOME]])
+
         df_prices = sf.load_shareprices(market='us', variant='daily')
-        # print(df_prices)
+        print(df_prices)
         print(df_prices.loc['MSFT', CLOSE]) # .plot(grid=True, figsize=(20,10), title='MSFT Close')
 
         dic = {'status': "ok"}
@@ -6734,3 +6737,154 @@ class Option(object):
                                            "two_spread_price_pu":round(100 * (two_spread_price_0-two_spread_price_u)) / 100,
                                            "two_spread_price_pd":round(100 * (two_spread_price_0-two_spread_price_d)) / 100}}
         return result
+
+
+class LargestTenStocks(BaseDataProcessing, BaseCorporateValuationAlgo):
+    def __init__(self, dic):
+        super().__init__(dic)
+        self.app = dic["app"]
+
+    def data_up(self, dic):
+        file_path = self.upload_file(dic)["file_path"]
+        print(file_path)
+
+    def data(self, dic):
+        print('80-80-80-11 TenStocks data 90055-300 dic\n', '-'*100, '\n', dic, '\n', '-'*100)
+        app_ = dic["app"]
+
+        file = "/home/amos/projects/development/academycity/data/corporatevaluation/datasets/excel/general/monthly_csv.csv"
+        temperatures = pd.read_csv(file)
+        # print(temperatures)
+        temperatures['Date'] = pd.to_datetime(temperatures['Date'])
+        temperatures = temperatures.pivot('Date', 'Source', 'Mean')
+
+        from numpy import polyfit
+        def fit(X, y, degree=3):
+            coef = polyfit(X, y, degree)
+            trendpoly = np.poly1d(coef)
+            return trendpoly(X)
+
+        def get_season(s, yearly_periods=4, degree=3):
+            X = [i % (365 / 4) for i in range(0, len(s))]
+            seasonal = fit(X, s.values, degree)
+            return pd.Series(data=seasonal, index=s.index)
+
+        def get_trend(s, degree=3):
+            X = list(range(len(s)))
+            trend = fit(X, s.values, degree)
+            return pd.Series(data=trend, index=s.index)
+
+        def get_chart_dic(data, ll):
+            results_dict = {'date': data['Date'].dt.strftime('%Y-%m-%d').tolist()}
+            for c in ll:
+                results_dict[c] = data[c].tolist()
+            return results_dict
+
+        temperatures['trend'] = get_trend(temperatures['GCAG'])
+        temperatures['season'] = get_season(temperatures['GCAG'] - temperatures['trend'])
+        # print(temperatures)
+
+        temperatures = temperatures.reset_index()
+        ll = ["GCAG", "trend", "season"]
+        results_dict = get_chart_dic(temperatures, ll)
+
+        # print({k: v[:5] for k, v in results_dict.items()})
+
+        result = {"status": "ok", "data": results_dict}
+        return result
+
+
+        def get_portfolio_values(year, l):
+            sp500_ticker = '^GSPC'
+            sp500_data = yf.download(sp500_ticker, start=year+'-01-01', auto_adjust=True)['Close']
+            if isinstance(sp500_data, pd.DataFrame):
+                sp500_data = sp500_data[sp500_ticker]
+
+            data = yf.download(l, start=year+'-01-01', auto_adjust=True)['Close']
+            data = data.dropna()
+            # Calculate the correlation matrix
+            correlation_matrix = data.corr()
+            print(correlation_matrix)
+
+            # Align the dates
+            common_index = data.index.intersection(sp500_data.index)
+            data = data.loc[common_index]
+            sp500_data = sp500_data.loc[common_index]
+            # Equal weights
+            weights = [1 / len(l)] * len(l)
+            # Normalize prices (starting from 1)
+            normalized_portfolio = data / data.iloc[0]
+            normalized_sp500 = sp500_data / sp500_data.iloc[0]
+            # Calculate equal-weighted portfolio value
+            portfolio_value = (normalized_portfolio * weights).sum(axis=1)
+            # Combine into a results DataFrame
+            results = pd.DataFrame({
+                'Portfolio': portfolio_value,
+                'S&P500': normalized_sp500
+            }).round(2)
+            results_reset = results.reset_index()
+            # Create dictionary
+            results_dict = {
+                'date': results_reset['Date'].dt.strftime('%Y-%m-%d').tolist(),  # Format dates as strings
+                'Portfolio': results_reset['Portfolio'].tolist(),
+                'S&P500': results_reset['S&P500'].tolist()
+            }
+            return results_dict, correlation_matrix
+
+        year_ = str(2020)
+
+        # high_tech_tickers = ['AMD', 'AVGO', 'CRM']
+        # data, correlation_matrix = get_portfolio_values(year_, high_tech_tickers)
+        # portfolio_tickers = ['AAPL', 'MSFT', 'GOOG', 'NVDA', 'AMZN', 'META', 'TSLA', 'AVGO', 'BRK-B', 'WMT']
+        # data, correlation_matrix = get_portfolio_values(year_, portfolio_tickers)
+
+        ai_tickers = ["NVDA", "SMCI", "ALAB", "ARM", "AVGO", "MRVL"]
+        data, correlation_matrix = get_portfolio_values(year_, ai_tickers)
+
+        # # Download portfolio data
+        # portfolio_data = yf.download(portfolio_tickers, start=year+'-01-01', auto_adjust=True)['Close']
+        #
+        # sp500_data = yf.download(sp500_ticker, start=year+'-01-01', auto_adjust=True)['Close']
+        # # Ensure sp500_data is a Series (extract the single column if it's still a DataFrame)
+        # if isinstance(sp500_data, pd.DataFrame):
+        #     sp500_data = sp500_data[sp500_ticker]
+        #
+        # # Align the dates
+        # common_index = portfolio_data.index.intersection(sp500_data.index)
+        # portfolio_data = portfolio_data.loc[common_index]
+        # sp500_data = sp500_data.loc[common_index]
+        #
+        # # Equal weights
+        # weights = [1 / len(portfolio_tickers)] * len(portfolio_tickers)
+        #
+        # # Normalize prices (starting from 1)
+        # normalized_portfolio = portfolio_data / portfolio_data.iloc[0]
+        # normalized_sp500 = sp500_data / sp500_data.iloc[0]
+        #
+        # # Calculate equal-weighted portfolio value
+        # portfolio_value = (normalized_portfolio * weights).sum(axis=1)
+        #
+        # # Combine into a results DataFrame
+        # results = pd.DataFrame({
+        #     'Equal_Weight_Portfolio': portfolio_value,
+        #     'S&P500': normalized_sp500
+        # })
+        #
+        # # Display results
+        # results = results.round(2)
+        # results_reset = results.reset_index()
+        #
+        # # Create dictionary
+        # results_dict = {
+        #     'date': results_reset['Date'].dt.strftime('%Y-%m-%d').tolist(),  # Format dates as strings
+        #     'Portfolio': results_reset['Equal_Weight_Portfolio'].tolist(),
+        #     'S&P500': results_reset['S&P500'].tolist()
+        # }
+        #
+        # # Show the first few entries
+        # # print({k: v[:5] for k, v in results_dict.items()})
+
+        result = {"status": "ok", "data": data}
+        return result
+
+
