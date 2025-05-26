@@ -224,9 +224,10 @@ class XBRLSPMoodysAdmin(admin.ModelAdmin):
 
 @admin.register(XBRLSPEarningForecast)
 class XBRLSPEarningForecastAdmin(admin.ModelAdmin):
-    list_display = ('id', 'company', 'year', 'quarter', 'forecast', 'actual', 'today_price', 'yesterday_price',
+    list_display = ('id', 'company', 'year', 'quarter', 'forecast', 'actual',
+                    'revenue_forecast', 'revenue_actual', 'market_cap', 'release_time', 'today_price', 'yesterday_price',
                     'date', 'next_release_date')
-    list_filter = ('company', 'year', 'quarter',)
+    list_filter = ('company', 'year', 'quarter', )
 
 
 @admin.register(XBRLSPStatistics)

@@ -1613,26 +1613,27 @@ class MSDataProcessing(BaseDataProcessing, BasePotentialAlgo, MSAlgo):
 
         save_to_file = os.path.join(self.PROJECT_MEDIA_DIR, "get_batch_normalised_data_"+str(run_number)+".xlsx")
         # print(save_to_file)
+
         self.log_debug(save_to_file)
         is_file = os.path.exists(save_to_file)
         if is_file:
             try:
                 os.remove(save_to_file)
             except Exception as ex:
-                print("90-90-90- 1 Error saving file " + save_to_file)
+                print("90-90-90- 1 Error removing saved file " + save_to_file)
         is_file = os.path.exists(save_to_file)
-        self.log_debug("  is_file = " + str(is_file))
+        self.log_debug("Confirmed is_file = " + str(is_file))
         # print("  is_file = " + str(is_file))
-        wb  = Workbook()
+        wb2  = Workbook()
         wb2.save(save_to_file)
         wb2.close()
-        wb  = None
+        wb2  = None
 
         try:
             # print(save_to_file)
             with pd.ExcelWriter(save_to_file, engine='openpyxl', mode="a") as writer:
                 df.to_excel(writer, sheet_name="data")
-                self.log_debug("data saved ")
+                self.log_debug("data saved to file:" + save_to_file)
         except Exception as ex:
             self.log_debug("Error save file 1 " + str(ex))
             # print(ex)
@@ -1640,7 +1641,7 @@ class MSDataProcessing(BaseDataProcessing, BasePotentialAlgo, MSAlgo):
         try:
             writer.save()
         except Exception as ex:
-            self.log_debug("Error save file   " + str(ex))
+            self.log_debug("Error save file 2 (ignore) " + str(ex))
             # print("Error Save", ex)
 
         try:
@@ -1648,6 +1649,7 @@ class MSDataProcessing(BaseDataProcessing, BasePotentialAlgo, MSAlgo):
             del wb['Sheet']
             wb.save(save_to_file)
             wb.close()
+            self.log_debug("After removal of sheet, data saved to file:" + save_to_file)
             # print("remove sheet")
         except Exception as ex:
             self.log_debug("Error save file 3 " + str(ex))

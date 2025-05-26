@@ -107,7 +107,7 @@ class CovidDataProcessing(BaseDataProcessing, BasePotentialAlgo, CovidAlgo):
         # print(numb_indep_vars)
         columns_ = df.columns[1:]
 
-        print(columns_)
+        # print(columns_)
 
         for i in range(len(columns_)):
             f_ = columns_[i]

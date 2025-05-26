@@ -564,7 +564,7 @@ class BasePotentialAlgo(object):
             # print("n_df", "\n", n_df, "\n")
             df_n1 = pd.DataFrame(index=n_df.index.copy())
             try:
-                print(("AAAAAAAAAAAA"))
+                # print(("AAAAAAAAAAAA"))
                 df_n2 = pd.DataFrame(index=n_df.index.copy())
             except Exception as ex:
                 print("Error -44: ", ex)
@@ -673,7 +673,8 @@ class BasePotentialAlgo(object):
 
         def normalize_similarity_(dn_, dn_text, cn):
             #
-            # print("KKK", dn_, dn_text, cn)
+            print("KKK", dn_, dn_text, cn)
+
             first_high_group = 0.4
             first_low_group = 0.4
             step = 0.05
@@ -715,17 +716,18 @@ class BasePotentialAlgo(object):
                 try:
                     s = ('self.model_fact_to_normalize.objects.filter(' + self.entity_name +
                          '_dim__' + self.entity_name + '_group_dim__group_name="Model", ' + self.var_name + '_dim__' + self.var_name + '_code__in = ll__)')
-                    # print(s)
+                    # print(1, s)
                     qs = eval(s)
                 except Exception as ex:
                     s = 'self.model_fact_to_normalize.objects.filter(' + self.var_name + '_dim__' + self.var_name + '_code__in = ll__)'
-                    # print(s)
+                    # print(2, s)
                     try:
                         qs = eval(s)
                     except Exception as ex:
                         print("Error 55-666-77", ex)
 
             df = pd.DataFrame(list(qs.values(self.var_name + "_dim", self.entity_name + "_dim", "amount")))
+            # print(df)
             try:
                 df = df.pivot(index=self.entity_name + "_dim", columns=self.var_name + '_dim', values='amount')
                 df = df.sort_values(dn_, ascending=False)
@@ -1007,7 +1009,6 @@ class BasePotentialAlgo(object):
                                 self.log_debug("Error 11-22-44: " + str(ex))
                                 return {0: False, 1: str(ex)}
 
-
                             temp_obj.idx = idx
                             temp_obj.dic_hp = dic_hp
                             temp_obj.save()
@@ -1042,7 +1043,8 @@ class BasePotentialAlgo(object):
             return {0:True, 1:"completed ok"}
 
         # # #
-        # print("90099-99-1000 BasePotentialAlgo normalize_similarity: \n", dic, "\n'", "="*100)
+        print("90099-99-1000 BasePotentialAlgo normalize_similarity: \n", dic, "\n'", "="*100)
+
         self.clear_log_debug()
         self.log_debug("90099-99-1000 BasePotentialAlgo normalize_similarity:" + str(dic))
 
@@ -1075,8 +1077,21 @@ class BasePotentialAlgo(object):
         # print("Done normalize_similarity")
 
         self.log_debug("Done normalize_similarity")
+
         result = {"status": "ok", "msg": "completed ok"}
         return result
+
+    def normalize_similarity_a(self, dic):
+
+        # # #
+        print("90099-99-1000 BasePotentialAlgo normalize_similarity_a: \n", dic, "\n'", "="*100)
+        self.clear_log_debug()
+        self.log_debug("90099-99-1000 BasePotentialAlgo normalize_similarity_a:" + str(dic))
+
+        result = {"status": "ok", "msg": "completed ok"}
+        return result
+
+
 
     # # # Not used. Created to picking best min max. we changed.
     def calculate_min_max_cuts(self, dic):
@@ -1200,7 +1215,7 @@ class BasePotentialAlgo(object):
 
     def create_similarity_excel(self, dic):
         # # #
-        # print("90099-99-99 DataProcessing create_similarity_excel: \n", dic, "\n'", "="*100)
+        print("90099-99-99 DataProcessing create_similarity_excel: \n", dic, "\n'", "="*100)
         self.clear_log_debug()
         model_temp_var = apps.get_model(app_label=self.app, model_name="tempvar")
 
@@ -1221,26 +1236,34 @@ class BasePotentialAlgo(object):
 
         for dn_text in ll_dep:
             save_to_file = os.path.join(self.PROJECT_MEDIA_DIR, "Similarity"+"_"+dn_text+".xlsx")
-            # print(save_to_file)
+            print(save_to_file)
             self.log_debug(save_to_file)
+
             is_file = os.path.exists(save_to_file)
             self.log_debug("1 is_file = " + str(is_file))
             if is_file:
                 try:
                     os.remove(save_to_file)
+                    # print("deleted file " + save_to_file)
                     self.log_debug("deleted file " + save_to_file)
                 except Exception as ex:
+                    # print("90-90-90- 1 Error saving file " + save_to_file )
                     self.log_debug("90-90-90- 1 Error saving file " + save_to_file )
+
             is_file = os.path.exists(save_to_file)
             self.log_debug("  is_file = " + str(is_file))
             # print("  is_file = " + str(is_file))
+
+            # print("create_similarity_excel 3")
             self.log_debug("create_similarity_excel 3")
 
             wb  = Workbook()
             wb.save(save_to_file)
             wb.close()
             wb  = None
-            self.log_debug("create_similarity_excel")
+            # print("create_similarity_excel 100")
+            self.log_debug("create_similarity_excel 100")
+
             threshold = 1
             while threshold > 0.69:
                 threshold = round(100*(threshold-0.01))/100
@@ -1401,10 +1424,13 @@ class BasePotentialAlgo(object):
                 except Exception as ex:
                     print(ex)
                     log_debug(str(ex))
+            # print("create_similarity_excel 200")
             try:
+                # I put it for making sure it save.  I do not remember exectly why.
                 writer.save()
             except Exception as ex:
                 print(ex)
+            # print("create_similarity_excel 300")
             try:
                 wb = load_workbook(filename=save_to_file, read_only=False)
                 del wb['Sheet']
@@ -1413,7 +1439,9 @@ class BasePotentialAlgo(object):
                 self.log_debug("create_similarity_excel 5")
             except Exception as ex:
                 self.log_debug(str(ex))
+            # print("create_similarity_excel 400")
             is_file = os.path.exists(save_to_file)
+            print("3 is_file = " + str(is_file))
             self.log_debug("3 is_file = " + str(is_file))
 
         self.log_debug("Done create_similarity_excel")
@@ -1456,10 +1484,12 @@ class BasePotentialAlgo(object):
 
         data_ = {}
         for k in model_:
-            # print(k, "\n", model_[k])
+            print(k, "\n", model_[k])
+
             data_[k] = {}
             s = "model_temp.objects.get(dep_" + self.var_name + "_dim__" + self.measure_name_ + "=k, idx=model_[k]['m'])"
-            # print(s)
+            # print(1, s)
+
             temp_ = eval(s)
             # print("temp_\n", temp_)
             qs1 = model_temp_var.objects.filter(temp=temp_, amount__gte=model_[k]['t']).all()
@@ -1468,7 +1498,7 @@ class BasePotentialAlgo(object):
             ll = [k]
             for q in qs1:
                 s="ll.append(q."+self.var_name+"_dim."+self.var_name+"_code)"
-                # print(s)
+                # print(2, s)
                 eval(s)
 
             # print(ll)
@@ -1477,7 +1507,7 @@ class BasePotentialAlgo(object):
             try:
                 try:
                     s = 'self.model_fact.objects.filter('+self.entity_name+'_dim__'+self.entity_name+'_group_dim__group_name="Model", '+self.var_name+'_dim__'+self.var_name+'_code__in=ll)'
-                    # print(s)
+                    # print(3, s)
                     qs = eval(s)
                     # print(qs)
                 except Exception as ex:
@@ -1490,13 +1520,14 @@ class BasePotentialAlgo(object):
             except Exception as ex:
                 print("Error 1:  ", ex)
             # ----
-            # print("AA\n", df)
+            print("AA\n", df)
             # ----
             log_debug("get_model_normalization 1")
             log_debug("DataFrame size: " + str(df.shape))
-            # print("DataFrame size: " + str(df.shape))
+            print("DataFrame size: " + str(df.shape))
             # ---
             mm = temp_.dic_hp
+            print("mm\n", mm)
             #
             df_mm = pd.DataFrame()
             df_n1 = pd.DataFrame(index=df.index.copy())
@@ -1512,7 +1543,9 @@ class BasePotentialAlgo(object):
                 data = pd.DataFrame({mi: [min_cut, max_cut]})
                 df_mm[mi] = data
                 #
-                # print("YY\n", mi, mi_)
+                print("YY\n", mi, mi_)
+                print("YY-1\n", df_mm)
+
                 if min_cut == -1 or min_cut == max_cut:
                     continue
                 # print("YY1")
@@ -1531,7 +1564,8 @@ class BasePotentialAlgo(object):
             df_mm["idx"] = data
             df_mm.set_index('idx', inplace=True)
 
-            # print("G\n", df_n1, "\n", df_n2,"\n", df_mm, "\n", df)
+            print("G\n", df_n1, "\n", df_n2,"\n", df_mm, "\n", df)
+
             df = pd.merge(left=df, how='inner', right=self.entities_name, left_index=True, right_index=True)
             df = df.drop(["id"], axis=1)
             try:
@@ -1650,7 +1684,7 @@ class BasePotentialAlgo(object):
             return cs
         # -------- Variables definition ----------------
         clear_log_debug()
-        print("90011-111 process_algo: \n", dic, "\n", "="*50)
+        print("90011-111-1 process_algo: \n", dic, "\n", "="*50)
 
         log_debug("BasePotentialAlgo: process_algo 1: " + str(dic))
 
@@ -1714,6 +1748,7 @@ class BasePotentialAlgo(object):
         group_d = ""
 
         # ---- PreProcessing - pull data Stage ----
+        # pulls the data from the database for the specified year
         ll_dfs = self.pre_process_data(dic)
         # ---------------------------------------------
         # ------ Normalization stage -----------------
@@ -1786,6 +1821,7 @@ class BasePotentialAlgo(object):
                     df_n1 = df_n1.astype(float)
                 except Exception as ex:
                     print("1000: " + str(ex))
+                # Normalization 1
                 for i, r in df_n1.iterrows():
                     for j in df_columns:
                         try:
@@ -1799,7 +1835,8 @@ class BasePotentialAlgo(object):
 
                 df_n1 = df_n1.apply(pd.to_numeric, errors='coerce').round(6)
                 self.add_to_save(title='Normalized-1', a=df_n1, cols=None)
-                #
+
+                # Normalization 2
                 df_n2  = df_n1.copy()
                 df_n2[df_n2 < 0] = 0
                 df_n2[df_n2 > 1] = 1
@@ -1807,11 +1844,12 @@ class BasePotentialAlgo(object):
                 self.add_to_save(title='Normalized-2', a=df_n2, cols=None)
                 # print("  df_n2\n", df_n2, "\n", "="*100)
 
-                #
+                # if we have only one measure of the variable
                 if len(df_n1.columns) < 2:
                     df_n1["max"] = df_n1[df_n1.columns[0]]  # df_n1["Birth Rate"]
                     df_n2["max"] = df_n2[df_n2.columns[0]]  # df_n2["Birth Rate"]
                     df_1_2  = pd.merge(left=df_n1, right=df_n2, left_index=True, right_index=True)
+                # if we have up to 4 measures of the variable.
                 elif len(df_n1.columns) < 5:
                     df_n1 = df_n1.apply(lambda x: np.sort(x), axis=1, raw=True)
                     df_n2 = df_n2.apply(lambda x: np.sort(x), axis=1, raw=True)
@@ -2303,7 +2341,7 @@ class BasePotentialAlgo(object):
 
         # -------- Variables definition ----------------
         clear_log_debug()
-        print("90011-111 process_algo: \n", dic, "\n", "="*50)
+        print("90011-112-2 process_algo: \n", dic, "\n", "="*50)
         log_debug("BasePotentialAlgo: process_algo 1: " + str(dic))
         # ----------------------------------------
         def create_similarity_(df_):

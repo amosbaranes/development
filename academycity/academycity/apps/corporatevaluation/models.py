@@ -1237,6 +1237,12 @@ class XBRLSPEarningForecast(TruncateTableMixin, models.Model):
                                 related_name='company_forecast')
     forecast = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     actual = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+
+    revenue_forecast = models.BigIntegerField(default=0)
+    revenue_actual = models.BigIntegerField(default=0)
+    market_cap = models.BigIntegerField(default=0)
+    release_time = models.BooleanField(default=0)
+
     date = models.DateField(blank=True, null=True)
     next_release_date = models.DateField(blank=True, null=True)
     year = models.PositiveSmallIntegerField(default=datetime.datetime.now().year, blank=True)

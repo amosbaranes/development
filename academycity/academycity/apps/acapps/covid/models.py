@@ -74,6 +74,7 @@ class TempVar(TruncateTableMixin, models.Model):
 
     def __str__(self):
         return str(self.temp)
+
 # -------------------------------------------------
 
 # --------------
@@ -87,7 +88,7 @@ class FactNormalizedMinMax(TruncateTableMixin, models.Model):
     amount = models.DecimalField(max_digits=10, decimal_places=4, default=0, blank=True, null=True)
 
     def __str__(self):
-        return str(self.gene_dim) + " - " + str(self.person_dim) + ": " + str(self.amount)
+        return str(self.var_dim) + " - " + str(self.entity_dim) + ": " + str(self.amount)
 # --------------
 
 

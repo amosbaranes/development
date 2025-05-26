@@ -47,83 +47,405 @@ class AoDataProcessing(BaseDataProcessing, BasePotentialAlgo, AoAlgo):
         super().__init__(dic)
 
     def check_country(self, cc):
-        if cc == "Viet Nam":
-            cc = "Vietnam"
+        if cc == "Upper Volta":
+            cc = "Burkina Faso"
+        elif cc == "Kyrgyz Republiuc":
+            cc = "Kyrgyz Republic"
+        elif cc == "Kyrgyzstan":
+            cc = "Kyrgyz Republic"
+        elif cc == "Lao":
+            cc = "Laos"
+        elif cc == "Macedonia, FYR":
+            cc = "Macedonia"
+        elif cc == "Yemen, Rep":
+            cc = "Yemen"
+        elif cc == "Bosnia and Herzegovina":
+            cc = "Bosnia"
+        elif cc == "Comoro Islands":
+            cc = "Comoros"
+        elif cc == "Czechia":
+            cc = "Czech Republic"
+        elif cc == "Ethiopia  and  Eritrea":
+            cc = "Ethiopia"
+        elif cc == "Serbia and Montenegro":
+            cc = "Serbia"
+        elif cc == "Serbia/Montenegro/Kosovo":
+            cc = "Serbia"
+        elif cc == "Burma":
+            cc = "Myanmar"
+        elif cc == "Kampuchea, Dem.":
+            cc = "Cambodia"
+        elif cc == "Kampuchea.Dem.":
+            cc = "Cambodia"
+        elif cc == "Cabo Verde":
+            cc = "Cape Verde"
+        elif cc == "Central African Republic":
+            cc = "Central African Rep."
+        elif cc == "Central Arab Rep.":
+            cc = "Central African Rep."
+        elif cc == "China (Mainland)":
+            cc = "China"
         elif cc == "Congo":
-            cc = "Democratic Republic of the Congo"
+            cc = "Congo, Dem. Rep."
         elif cc == "DR Congo":
-            cc = "Democratic Republic of the Congo"
+            cc = "Congo, Dem. Rep."
         elif cc == "Democratic Republic Of The Congo":
-            cc = "Democratic Republic of the Congo"
-        elif cc == "Congo":
-            cc = "Republic of the Congo"
+            cc = "Congo, Dem. Rep."
+        elif cc == "Democratic Republic Of the Congo":
+            cc = "Congo, Dem. Rep."
+        elif cc == "Zaire":
+            cc = "Congo, Dem. Rep."
+        elif cc == "Zaire (Congo Kinshasa)":
+            cc = "Congo, Dem. Rep."
         elif cc == "Republic of the Congo":
             cc = "Congo, Rep."
-        elif cc == "Russian Federation":
-            cc = "Russia"
-        elif cc == "Côte d’Ivoire":
+        elif cc == "Congo 'Brazzaville'":
+            cc = "Congo, Rep."
+        elif cc == "Congo' People's Rep.":
+            cc = "Congo, Rep."
+        elif cc == "Congo, People's Rep.":
+            cc = "Congo, Rep."
+        elif cc == "Congo,People's rep.":
+            cc = "Congo, Rep."
+        elif cc == "Congo, People's Rep":
+            cc = "Congo, Rep."
+        elif cc == "Côte d'Ivoire":
             cc = "Cote d'Ivoire"
         elif cc == "Ivory Coast":
             cc = "Cote d'Ivoire"
+        elif cc == "Dominican Republic":
+            cc = "Dominican Rep."
+        elif cc == "Egypt, Arab Rep.":
+            cc = "Egypt"
+        elif cc == "El Salvodor":
+            cc = "El Salvador"
         elif cc == "Eswatini (Swaziland)":
             cc = "Eswatini"
-        elif cc == "Slovak Republic":
-            cc = "Slovakia"
+        elif cc == "Swaziland":
+            cc = "Eswatini"
+        elif cc == "Eritrea and Ethiopia":
+            cc = "Ethiopia"
+        elif cc == "Ethiopia and Eritrea":
+            cc = "Ethiopia"
+        elif cc == "Germany  (West)":
+            cc = "Germany"
+        elif cc == "Iran,Islamic Rep.":
+            cc = "Iran"
+        elif cc == "Korea Rep.":
+            cc = "Korea, Rep"
+        elif cc == "Turkiye":
+            cc = "Turkey"
+        elif cc == "Kampuchea":
+            cc = "Cambodia"
+        elif cc == "Yemen, Arab Rep.":
+            cc = "Yemen"
+        elif cc == "Gambia, The":
+            cc = "Gambia"
+        elif cc == "Germany, Fed Rep.":
+            cc = "Germany"
+        elif cc == "Germany Fed. Rep.":
+            cc = "Germany"
+        elif cc == "Germany, Fed. Rep.":
+            cc = "Germany"
+        elif cc == "Guinea-bissau":
+            cc = "Guinea Bissau"
+        elif cc == "Guinea-Bissau":
+            cc = "Guinea Bissau"
+        elif cc == "Haïti":
+            cc = "Haiti"
+        elif cc == "Hong Kong SAR":
+            cc = "Hong Kong"
+        elif cc == "Hong Kong (China)":
+            cc = "Hong Kong"
+        elif cc == "China-Hong Kong":
+            cc = "Hong Kong"
+        elif cc == "Hong Kong SAR, China":
+            cc = "Hong Kong"
+        elif cc == "Hong Kong, China":
+            cc = "Hong Kong"
+        elif cc == "Indonesia (including Timor until 1999)":
+            cc = "Indonesia"
+        elif cc == "Iran, Islamic Rep.":
+            cc = "Iran"
         elif cc == "Korea":
-            cc = "South Korea"
+            cc = "Korea, Rep"
+        elif cc == "South Korea":
+            cc = "Korea, Rep"
         elif cc == "Republic Of Korea":
-            cc = "South Korea"
+            cc = "Korea, Rep"
+        elif cc == "Korea, Rep. of":
+            cc = "Korea, Rep"
+        elif cc == "Korea, Rep.":
+            cc = "Korea, Rep"
         elif cc == "Korea, Dem. People's Rep":
             cc = "North Korea"
-        elif cc == "United States Of America":
-            cc = "United States"
-        elif cc == "Cabo Verde":
-            cc = "Cape Verde"
-        elif cc == "United Republic Of Tanzania":
-            cc = "Tanzania"
-        elif cc == "Guinea Bissau":
-            cc = "Guinea-bissau"
         elif cc == "Lao People's Democratic Republic":
+            cc = "Laos"
+        elif cc == "Lao PDR":
             cc = "Laos"
         elif cc == "Republic Of Moldova":
             cc = "Moldova"
         elif cc == "Republic Of North Macedonia":
-            cc = "North Macedonia"
-        elif cc == "Macedonia":
-            cc = "North Macedonia"
-        elif cc == "EU (27)":
-            cc = "EU27"
+            cc = "Macedonia"
+        elif cc == "Papua New  Guinea":
+            cc = "Papua New Guinea"
+        elif cc == "North Macedonia":
+            cc = "Macedonia"
+        elif cc == "Russian Federation":
+            cc = "Russia"
+        elif cc == "Slovak Republic":
+            cc = "Slovakia"
+        elif cc == "Syrian Arab Republic":
+            cc = "Syria"
+        elif cc == "Syrian Arab Rep.":
+            cc = "Syria"
+        elif cc == "turkiye":
+            cc = "Turkey"
+        elif cc == "turkey":
+            cc = "Turkey"
+        elif cc == "USA":
+            cc = "United States"
+        elif cc == "United States Of America":
+            cc = "United States"
+        elif cc == "Total Former USSR":
+            cc = "USSR"
+        elif cc == "United Republic Of Tanzania":
+            cc = "Tanzania"
+        elif cc == "Yemen Arab Rep.":
+            cc = "Yemen"
         elif cc == "Yemen, Rep.":
             cc = "Yemen"
         elif cc == "Venezuela, RB":
             cc = "Venezuela"
-        elif cc == "turkiye":
-            cc = "turkey"
-        elif cc == "Egypt, Arab Rep.":
-            cc = "Egypt"
-        elif cc == "China (Mainland)":
-            cc = "China"
-        elif cc == "Hong Kong SAR":
-            cc = "China-Hong Kong"
-        elif cc == "Hong Kong (China)":
-            cc = "China-Hong Kong"
-        elif cc == "Hong Kong":
-            cc = "China-Hong Kong"
-        elif cc == "USA":
-            cc = "United States"
-        elif cc == "Slovak Republic":
-            cc = "Slovakia"
         elif cc == "Macau":
             cc = "China-Macau"
-        elif cc == "Cabo Verde":
-            cc = "Cape Verde"
-        elif cc == "United Republic Of Tanzania":
-            cc = "Tanzania"
-        elif cc == "Guinea Bissau":
-            cc = "Guinea-bissau"
-        elif cc == "Republic Of Moldova":
-            cc = "Moldova"
+        if cc == "Viet Nam":
+            cc = "Vietnam"
         return cc
+
+    # def check_country(self, cc):
+    #     if cc == "Upper Volta":
+    #         cc = "Burkina Faso"
+    #     elif cc == "Burma":
+    #         cc = "Myanmar"
+    #     elif cc == "Kampuchea, Dem.":
+    #         cc = "Cambodia"
+    #     elif cc == "Kampuchea.Dem.":
+    #         cc = "Cambodia"
+    #     elif cc == "Cabo Verde":
+    #         cc = "Cape Verde"
+    #     elif cc == "Central African Republic":
+    #         cc = "Central African Rep."
+    #     elif cc == "Central Arab Rep.":
+    #         cc = "Central African Rep."
+    #     elif cc == "China (Mainland)":
+    #         cc = "China"
+    #     elif cc == "Congo":
+    #         cc = "Congo, Dem. Rep."
+    #     elif cc == "DR Congo":
+    #         cc = "Congo, Dem. Rep."
+    #     elif cc == "Democratic Republic Of The Congo":
+    #         cc = "Congo, Dem. Rep."
+    #     elif cc == "Democratic Republic Of the Congo":
+    #         cc = "Congo, Dem. Rep."
+    #     elif cc == "Zaire":
+    #         cc = "Congo, Dem. Rep."
+    #     elif cc == "Zaire (Congo Kinshasa)":
+    #         cc = "Congo, Dem. Rep."
+    #     elif cc == "Republic of the Congo":
+    #         cc = "Congo, Rep."
+    #     elif cc == "Congo 'Brazzaville'":
+    #         cc = "Congo, Rep."
+    #     elif cc == "Congo' People's Rep.":
+    #         cc = "Congo, Rep."
+    #     elif cc == "Congo, People's Rep.":
+    #         cc = "Congo, Rep."
+    #     elif cc == "Côte d’Ivoire":
+    #         cc = "Cote d'Ivoire"
+    #     elif cc == "Ivory Coast":
+    #         cc = "Cote d'Ivoire"
+    #     elif cc == "Dominican Republic":
+    #         cc = "Dominican Rep."
+    #     elif cc == "Egypt, Arab Rep.":
+    #         cc = "Egypt"
+    #     elif cc == "El Salvodor":
+    #         cc = "El Salvador"
+    #     elif cc == "Eswatini (Swaziland)":
+    #         cc = "Eswatini"
+    #     elif cc == "Swaziland":
+    #         cc = "Eswatini"
+    #     elif cc == "Eritrea and Ethiopia":
+    #         cc = "Ethiopia"
+    #     elif cc == "Germany Fed. Rep.":
+    #         cc = "Germany"
+    #     elif cc == "Germany, Fed. Rep.":
+    #         cc = "Germany"
+    #     elif cc == "Guinea-bissau":
+    #         cc = "Guinea Bissau"
+    #     elif cc == "Haïti":
+    #         cc = "Haiti"
+    #     elif cc == "Hong Kong SAR":
+    #         cc = "Hong Kong"
+    #     elif cc == "Hong Kong (China)":
+    #         cc = "Hong Kong"
+    #     elif cc == "China-Hong Kong":
+    #         cc = "Hong Kong"
+    #     elif cc == "Indonesia (including Timor until 1999)":
+    #         cc = "Indonesia"
+    #     elif cc == "Iran, Islamic Rep.":
+    #         cc = "Iran"
+    #     elif cc == "Korea":
+    #         cc = "Korea, Rep"
+    #     elif cc == "South Korea":
+    #         cc = "Korea, Rep"
+    #     elif cc == "Republic Of Korea":
+    #         cc = "Korea, Rep"
+    #     elif cc == "Korea, Rep. of":
+    #         cc = "Korea, Rep"
+    #     elif cc == "Korea, Dem. People's Rep":
+    #         cc = "North Korea"
+    #     elif cc == "Lao People's Democratic Republic":
+    #         cc = "Laos"
+    #     elif cc == "Lao PDR":
+    #         cc = "Laos"
+    #     elif cc == "Republic Of Moldova":
+    #         cc = "Moldova"
+    #     elif cc == "Republic Of North Macedonia":
+    #         cc = "Macedonia"
+    #     elif cc == "North Macedonia":
+    #         cc = "Macedonia"
+    #     elif cc == "Russian Federation":
+    #         cc = "Russia"
+    #     elif cc == "Slovak Republic":
+    #         cc = "Slovakia"
+    #     elif cc == "Syrian Arab Republic":
+    #         cc = "Syria"
+    #     elif cc == "Syrian Arab Rep.":
+    #         cc = "Syria"
+    #     elif cc == "turkiye":
+    #         cc = "Turkey"
+    #     elif cc == "turkey":
+    #         cc = "Turkey"
+    #     elif cc == "USA":
+    #         cc = "United States"
+    #     elif cc == "United States Of America":
+    #         cc = "United States"
+    #     elif cc == "Total Former USSR":
+    #         cc = "USSR"
+    #     elif cc == "United Republic Of Tanzania":
+    #         cc = "Tanzania"
+    #     elif cc == "Yemen Arab Rep.":
+    #         cc = "Yemen"
+    #     elif cc == "Yemen, Rep.":
+    #         cc = "Yemen"
+    #     elif cc == "Venezuela, RB":
+    #         cc = "Venezuela"
+    #     elif cc == "Macau":
+    #         cc = "China-Macau"
+    #     if cc == "Viet Nam":
+    #         cc = "Vietnam"
+    #     return cc
+
+    # def check_country(self, cc):
+    #     if cc == "Viet Nam":
+    #         cc = "Vietnam"
+    #
+    #     elif cc == "Central African Republic":
+    #         cc = "Central African Rep."
+    #     elif cc == "":
+    #         cc = "Central African Rep."
+    #     elif cc == "":
+    #         cc = ""
+    #     elif cc == "":
+    #         cc = ""
+    #     elif cc == "":
+    #         cc = ""
+    #     elif cc == "":
+    #         cc = ""
+    #
+    #
+    #     elif cc == "Kampuchea, Dem.":
+    #         cc = "Cambodia"
+    #     elif cc == "Kampuchea.Dem.":
+    #         cc = "Cambodia"
+    #     elif cc == "Congo":
+    #         cc = "Democratic Republic of the Congo"
+    #     elif cc == "DR Congo":
+    #         cc = "Democratic Republic of the Congo"
+    #     elif cc == "Democratic Republic Of The Congo":
+    #         cc = "Democratic Republic of the Congo"
+    #     elif cc == "Congo":
+    #         cc = "Republic of the Congo"
+    #     elif cc == "Republic of the Congo":
+    #         cc = "Congo, Rep."
+    #     elif cc == "Russian Federation":
+    #         cc = "Russia"
+    #     elif cc == "Côte d’Ivoire":
+    #         cc = "Cote d'Ivoire"
+    #     elif cc == "Ivory Coast":
+    #         cc = "Cote d'Ivoire"
+    #     elif cc == "Eswatini (Swaziland)":
+    #         cc = "Eswatini"
+    #     elif cc == "Slovak Republic":
+    #         cc = "Slovakia"
+    #     elif cc == "Korea":
+    #         cc = "South Korea"
+    #     elif cc == "Republic Of Korea":
+    #         cc = "South Korea"
+    #     elif cc == "Korea, Dem. People's Rep":
+    #         cc = "North Korea"
+    #     elif cc == "United States Of America":
+    #         cc = "United States"
+    #     elif cc == "Cabo Verde":
+    #         cc = "Cape Verde"
+    #     elif cc == "United Republic Of Tanzania":
+    #         cc = "Tanzania"
+    #     elif cc == "Guinea Bissau":
+    #         cc = "Guinea-bissau"
+    #     elif cc == "Lao People's Democratic Republic":
+    #         cc = "Laos"
+    #     elif cc == "Republic Of Moldova":
+    #         cc = "Moldova"
+    #     elif cc == "Republic Of North Macedonia":
+    #         cc = "North Macedonia"
+    #     elif cc == "Macedonia":
+    #         cc = "North Macedonia"
+    #     elif cc == "EU (27)":
+    #         cc = "EU27"
+    #     elif cc == "Yemen, Rep.":
+    #         cc = "Yemen"
+    #     elif cc == "Venezuela, RB":
+    #         cc = "Venezuela"
+    #     elif cc == "turkiye":
+    #         cc = "turkey"
+    #     elif cc == "Egypt, Arab Rep.":
+    #         cc = "Egypt"
+    #     elif cc == "China (Mainland)":
+    #         cc = "China"
+    #
+    #
+    #     elif cc == "Hong Kong SAR":
+    #         cc = "China-Hong Kong"
+    #     elif cc == "Hong Kong (China)":
+    #         cc = "China-Hong Kong"
+    #     elif cc == "Hong Kong":
+    #         cc = "China-Hong Kong"
+    #
+    #     elif cc == "USA":
+    #         cc = "United States"
+    #     elif cc == "Slovak Republic":
+    #         cc = "Slovakia"
+    #     elif cc == "Macau":
+    #         cc = "China-Macau"
+    #     elif cc == "Cabo Verde":
+    #         cc = "Cape Verde"
+    #     elif cc == "United Republic Of Tanzania":
+    #         cc = "Tanzania"
+    #     elif cc == "Guinea Bissau":
+    #         cc = "Guinea-bissau"
+    #     elif cc == "Republic Of Moldova":
+    #         cc = "Moldova"
+    #     return cc
 
     def load_wbfile_to_db(self, dic):
         print("90121-5: \n", dic, "="*50)
@@ -345,8 +667,10 @@ class AoDataProcessing(BaseDataProcessing, BasePotentialAlgo, AoAlgo):
         # files = []
         wb = load_workbook(filename=file_path, read_only=False)
         sheet_names = wb.sheetnames
+        # print(sheet_names)
+
         for f in sheet_names:
-            print(f)
+            print("Start", f)
             ws = wb[f]
             f = self.clean_name(f)
             try:
@@ -356,7 +680,9 @@ class AoDataProcessing(BaseDataProcessing, BasePotentialAlgo, AoAlgo):
                     group_obj.save()
             except Exception as ex:
                 pass
-            # print("5", f)
+
+            # print("A>\n", f)
+
             # files.append(f)
             data = ws.values
             # Get the first line in file as a header line
@@ -368,6 +694,8 @@ class AoDataProcessing(BaseDataProcessing, BasePotentialAlgo, AoAlgo):
             # if f == "Export":
             #     print(df)
             #     print(columns)
+
+            # print("B>\n", f, "\n", df)
 
             min_cut = []
             max_cut = []
@@ -437,8 +765,12 @@ class AoDataProcessing(BaseDataProcessing, BasePotentialAlgo, AoAlgo):
                                     print("Error 9044-44: "+str(ex))
 
                                 try:
-                                    v_ = float(str(row[columns[j]]))
-                                    if v_ is not None and str(v_) != "nan":
+                                    v_ = str(row[columns[j]]).strip()
+                                except Exception as ex:
+                                    print("Error 9055-22: "+str(ex), columns[j], country_name, "="+v_+"=")
+                                try:
+                                    if v_ != "" and v_ != "nan" and v_ is not None and v_ != "None":
+                                        v_ = float(v_)
                                         # print(row[columns[j]], float(str(row[columns[j]])))
                                         fact_obj, is_created = model_fact.objects.get_or_create(time_dim=year_obj,
                                                                                                 country_dim=country_dim_obj,
@@ -446,7 +778,7 @@ class AoDataProcessing(BaseDataProcessing, BasePotentialAlgo, AoAlgo):
                                         fact_obj.amount = v_
                                         fact_obj.save()
                                 except Exception as ex:
-                                    print("Error 9055-33: "+str(ex))
+                                    print("Error 9055-33: "+str(ex), columns[j], country_name, "="+v_+"=")
             print("Done", f)
         wb.close()
         #
