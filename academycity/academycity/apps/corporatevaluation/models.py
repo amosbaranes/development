@@ -1702,3 +1702,11 @@ class FactSimulation(TruncateTableMixin, models.Model):
 
     def __str__(self):
         return str(self.stock_price)
+
+
+# --------------------------------------------------
+class Debug(TruncateTableMixin, models.Model):
+    value = models.CharField(max_length=1024)
+
+    def __str__(self):
+        return self.value

@@ -26,13 +26,18 @@ def update_forecast():
         acx = AcademyCityXBRL()
         if nday < 6:
             if h == 1:
+                print("1.A hour 1"+str(datetime.today().hour)+str(datetime.today().minute))
+                log_debug("1.A hour 1"+str(datetime.today().hour)+str(datetime.today().minute))
                 data = ()
                 ssql = " insert into corporatevaluation_XBRLRealEquityPricesArchive(ticker,t,o,h,l,c,v) "
                 ssql += "select ticker,t,o,h,l,c,v from corporatevaluation_XBRLRealEquityPrices"
                 count = SQL().exc_sql(ssql, data)
                 XBRLRealEquityPrices.truncate()
-                print("1. hour 1", datetime.today().hour, datetime.today().minute)
+                print("1.B hour 1"+str(datetime.today().hour)+str(datetime.today().minute))
+                log_debug("1.B hour 1"+str(datetime.today().hour)+str(datetime.today().minute))
             elif h == 4:
+                print("2.A hour 4"+str(datetime.today().hour)+str(datetime.today().minute))
+                log_debug("2.A hour 4"+str(datetime.today().hour)+str(datetime.today().minute))
                 sp = StockPrices()
                 # print("Start Days")
                 try:
@@ -41,15 +46,19 @@ def update_forecast():
                 except Exception as ex:
                     print("m - " + str(ex))
                 # print("Start Minutes")
+                print("2.A-1 hour 4"+str(datetime.today().hour)+str(datetime.today().minute))
+                log_debug("2.A-1 hour 4"+str(datetime.today().hour)+str(datetime.today().minute))
                 try:
                     dic = {"letter_from": "A", "letter_to": "Z", "numer_of_weeks": 1, "numer_of_days": 1}
                     sp.update_prices_minutes(dic)
                 except Exception as ex:
                     print("m - "+str(ex))
                 del sp
-                print("2. hour 4", datetime.today().hour, datetime.today().minute)
-            elif h == 5:
-                print("Start")
+                print("2.B hour 4"+str(datetime.today().hour)+str(datetime.today().minute))
+                log_debug("2.B hour 4"+str(datetime.today().hour)+str(datetime.today().minute))
+            elif h == 8:
+                print("3.A hour 8"+str(datetime.today().hour)+str(datetime.today().minute))
+                log_debug("3.A hour 8"+str(datetime.today().hour)+str(datetime.today().minute))
                 fa = FinancialAnalysis()
                 fa.update_time()
                 print("Start 1")
@@ -69,12 +78,14 @@ def update_forecast():
                 # # print("Start 3")
                 # dp.create_ratios(dic={"app":"corporatevaluation"})
                 # # print("End End End End End End End End ")
-                print("3. hour 5", datetime.today().hour, datetime.today().minute)
-            elif h == 6:
+                print("3.B hour 8"+str(datetime.today().hour)+str(datetime.today().minute))
+                log_debug("3.B hour 8"+str(datetime.today().hour)+str(datetime.today().minute))
+                # -----
                 acx.update_release_date()
                 acx.get_earning_forecast_sp500()
                 del acx
-                print("4. hour 6", datetime.today().hour, datetime.today().minute)
+                print("4.B hour 8"+str(datetime.today().hour)+str(datetime.today().minute))
+                log_debug("4.B hour 8"+str(datetime.today().hour)+str(datetime.today().minute))
             print("Runed update_forecast " + str(h))
             log_debug("Runed update_forecast " + str(h))
     except Exception as ex:

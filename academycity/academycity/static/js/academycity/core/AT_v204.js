@@ -6372,6 +6372,7 @@ acSearchTableCreator.prototype.set_primary_key_list_filter = function(list=[])
 acSearchTableCreator.prototype.get_data = function(data_table_name=null,parent_model=null, parent_id=null,
                                                    company_obj_id=null, parent_model_fk_name=null)
 {
+//alert(data_table_name+":"+parent_model+":"+parent_id)
   //alert("acSearchTableCreator.prototype.get_data = "+ 1)
   //alert("parent_model_fk_name\n"+parent_model_fk_name)
   //alert("9090-12 data_table_name\n"+data_table_name)
@@ -6386,20 +6387,22 @@ acSearchTableCreator.prototype.get_data = function(data_table_name=null,parent_m
     var parent_id_="";
     var model_=container.my_creator_obj.link_dic["properties"]["table"];
     try{
-        if(this.parent_model_==null){
+        if(this.parent_model_==null || this.parent_model_==""){
            if(parent_model!=null){this.parent_model_=parent_model}
            else {this.parent_model_=container.my_creator_obj.link_dic["properties"]["parent_table"]}
         }
         if(this.parent_model_==null){this.parent_model_="";}
 
     } catch(er){alert(er)};
+
     // var record_id_=container.getAttribute("record_id");
 
     var c_parent_id=null;
     try{var c_parent_id=container.getAttribute("parent_id")}catch(er){}
+
     if(parent_id!=null){this.parent_id_=parent_id}
     else if(c_parent_id!=null && c_parent_id!="new" && c_parent_id!="-1"){this.parent_id_=c_parent_id}
-    if(this.parent_id==null){this.parent_id_=""}
+//    if(this.parent_id==null){this.parent_id_=""}
 //alert(153)
     // if(this.parent_id_=="" || this.parent_id_==null){return}
 //alert(18)

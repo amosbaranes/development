@@ -17,12 +17,18 @@ from .models import (Project, RBOIC, CountryRegion, CountryRating, Industry,
                      XBRLProcessedFactCompany, XBRLRatioDim, XBRLAccountsGroupsFactCompany, XBRLFactRatiosCompany,
                      TwoSpreadStrategy, TwoSpreadStrategyDetails,
                      FactSimulation,
-                     XBRLVarDim, XBRLFactVarsCompany)
+                     XBRLVarDim, XBRLFactVarsCompany,
+                     Debug)
 
 
 # -*- coding: utf-8 -*-
 from cms.admin.placeholderadmin import PlaceholderAdminMixin
 from parler.admin import TranslatableAdmin, TranslatableStackedInline, TranslatableTabularInline
+
+
+@admin.register(Debug)
+class DebugAdmin(admin.ModelAdmin):
+    list_display = ['id', 'value']
 
 @admin.register(XBRLProcessedFactCompany)
 class XBRLProcessedFactCompanyAdmin(admin.ModelAdmin):
@@ -158,7 +164,7 @@ class XBRLValuationAccountsMatchAdmin(admin.ModelAdmin):
 @admin.register(XBRLCompanyInfo)
 class XBRLCompanyInfoAdmin(admin.ModelAdmin):
     list_display = ('id', 'exchange', 'ticker', 'cik', 'company_name', 'company_letter', 'is_active')
-    list_filter = ('exchange', 'company_letter')
+    list_filter = ('exchange', 'company_letter', 'etfwatchlist')
     search_fields = ('ticker', )
 
 

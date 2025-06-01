@@ -404,10 +404,19 @@ def get_data_link(request):
 
     multiple_select_fields = None
     if "multiple_select_fields" in dic_:
-        if len(dic_["multiple_select_fields"]) > 0:
-            multiple_select_fields = dic_["multiple_select_fields"]
-    app_ = dic_['app']
-    model_ = dic_['model']
+        try:
+            if len(dic_["multiple_select_fields"]) > 0:
+                multiple_select_fields = dic_["multiple_select_fields"]
+        except Exception as ex:
+            pass
+    app_ = ""
+    model_ = ""
+    try:
+        app_ = dic_['app']
+        model_ = dic_['model']
+    except Exception as ex:
+        pass
+
     # print("model_: "+model_)
     if model_ == "":
         dic = {'status': 'ko', "dic": {}}

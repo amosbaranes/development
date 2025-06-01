@@ -621,7 +621,7 @@ class TDAmeriTrade(BaseTDAmeriTrade):
 
     # need to check to delete
     def get_prices_minutes(self, dic):
-        # print("9010")
+        # print("90101")
         # print(dic)
         # print("9011")
 
@@ -650,7 +650,7 @@ class TDAmeriTrade(BaseTDAmeriTrade):
 
     # need to check to delete
     def update_prices(self, dic):
-        # print("9010")
+        # print("90102")
         # print(dic)
         # print("9011")
         try:
@@ -693,7 +693,7 @@ class TDAmeriTrade(BaseTDAmeriTrade):
         # print(result)
 
         #
-        # # print("9010 input dic: \n", dic, "\n"+"-"*30)
+        # # print("90103 input dic: \n", dic, "\n"+"-"*30)
         # # print(dic)
         # # print(dic["ticker"])
         # l_f = str(dic["letter_from"])
@@ -770,7 +770,7 @@ class TDAmeriTrade(BaseTDAmeriTrade):
         return result
 
     def get_prices(self, dic):
-        # print("9010")
+        # print("90104")
         # print(dic)
         # print("9011")
         try:
@@ -1572,10 +1572,17 @@ class TDAmeriTrade(BaseTDAmeriTrade):
 class StockPrices(object):
     def __init__(self):
         try:
-            clear_log_debug()
+            self.Debug = apps.get_model(app_label="corporatevaluation", model_name="debug")
+            self.clear_log_debug()
         except Exception as ex:
             pass
         h = 0
+
+    def log_debug(self, value):
+        self.Debug.objects.create(value=value)
+
+    def clear_log_debug(self):
+        self.Debug.truncate()
 
     def record_option_strategy(self, dic):
         print("9044-40 input dic: \n", dic, "\n"+"-"*30)
@@ -1701,7 +1708,7 @@ class StockPrices(object):
         return dic
 
     def analyze_prices_minutes(self, dic):
-        # print("9010 input dic: \n", dic, "\n"+"-"*30)
+        # print("90105 input dic: \n", dic, "\n"+"-"*30)
         # ^GSPC
         ticker = dic["ticker"]
         num_of_bars = 99999999
@@ -1808,7 +1815,7 @@ class StockPrices(object):
         return dic
 
     def get_prices_minutes(self, dic):
-        # print("9010 input dic: \n", dic, "\n"+"-"*30)
+        # print("90106 input dic: \n", dic, "\n"+"-"*30)
         # ^GSPC
         ticker = dic["ticker"]
         num_of_bars = int(dic["num_of_bars"])
@@ -1832,7 +1839,7 @@ class StockPrices(object):
         return dic
 
     def get_prices_days(self, dic):
-        # print("9010 input dic: \n", dic, "\n"+"-"*30)
+        # print("90107 input dic: \n", dic, "\n"+"-"*30)
         # ^GSPC
         ticker = dic["ticker"]
         num_of_bars = int(dic["num_of_bars"])
@@ -1884,7 +1891,7 @@ class StockPrices(object):
                         ticker = "^GSPC"
                     # if ticker == "CMS":
                     print("90151 company info: ", w.symbol, ticker, c.company_letter, "\n"+"-"*30)
-                    log_debug(ticker)
+                    self.log_debug(ticker)
                     remove_duplicates(StockPricesMinutes, c)
 
 
@@ -1893,8 +1900,8 @@ class StockPrices(object):
         return dic
 
     def update_prices_minutes(self, dic):
-        log_debug("9010 start update_prices_minutes")
-        print("9010 input dic: \n", dic, "\n"+"-"*30)
+        self.log_debug("90108 start update_prices_minutes")
+        print("90108 input dic: \n", dic, "\n"+"-"*30)
 
         def get_data(stockpricesminutes, c, idx_, n=0):
             try:
@@ -1956,8 +1963,8 @@ class StockPrices(object):
                     if symbol == "$SPX.X":
                         symbol = "^GSPC"
                     try:
-                        print("90151 company info: \n", w.symbol, symbol, c.company_letter, "\n"+"-"*30)
-                        log_debug("90151 Start Process for: " + symbol)
+                        print("90151 company info: ", w.symbol, symbol, c.company_letter)
+                        self.log_debug("90151 Start Process for: " + symbol)
 
                         url = (
                             f"https://query1.finance.yahoo.com/v8/finance/chart/{symbol}"
@@ -2008,17 +2015,17 @@ class StockPrices(object):
 
                     except Exception as ex:
                         print("\n"+"="*30, "\n", "Error with ", symbol, "\n", ex, "\n"+"="*30)
-                        log_debug("Error 90152 : " + symbol + str(ex))
-                    log_debug("90152 End Process for: " + symbol)
-        log_debug("9012 End update_prices_minutes")
+                        self.log_debug("Error 90152 : " + symbol + str(ex))
+                    self.log_debug("90152 End Process for: " + symbol)
+        self.log_debug("9012 End update_prices_minutes")
 
         dic = {'data': {"status": "ok"}}
         # print("9099 output dic: \n", dic, "\n"+"="*30)
         return dic
 
     def update_prices_minutes_1(self, dic):
-        log_debug("9010 start update_prices_minutes")
-        print("9010 input dic: \n", dic, "\n"+"-"*30)
+        log_debug("90109 start update_prices_minutes")
+        print("90109 input dic: \n", dic, "\n"+"-"*30)
 
         def get_data(stockpricesminutes, c, idx_, n=0):
             try:
@@ -2179,10 +2186,8 @@ class StockPrices(object):
             return None
 
     def update_prices_days(self, dic):
-
-        print("9015 input dic: \n", dic, "\n" + "-" * 30)
-
-        log_debug("9015 update_prices_days")
+        print("90154 input dic: \n", dic, "\n" + "-" * 30)
+        self.log_debug("90154 update_prices_days")
         l_f = str(dic["letter_from"])
         l_t = str(dic["letter_to"])
         y_ = int(dic["numer_of_years"])  # I use w for years
@@ -2206,373 +2211,78 @@ class StockPrices(object):
             companies = XBRLCompanyInfo.objects.filter(etfwatchlist=w).all()
             for c in companies:
                 if l_t >= c.company_letter >= l_f or (c.ticker == "$SPX.X" and w == "HighV"):
-                    symbol = c.ticker
-                    if symbol == "$SPX.X":
-                        symbol = "^GSPC"
-                        continue
-                    print(symbol)
-
-                    # 2. Fetch JSON
-                    url = (
-                        f"https://query1.finance.yahoo.com/v8/finance/chart/{symbol}"
-                        f"?period1={period1}&period2={period2}&interval={interval}"
-                    )
-                    resp = requests.get(url, headers={"User-Agent": "Mozilla/5.0"})
-                    resp.raise_for_status()
-                    data = resp.json()["chart"]["result"][0]
-
-                    # 3. Extract timestamps & quotes
-                    timestamps = data["timestamp"]
-                    quotes = data["indicators"]["quote"][0]
-
-                    # 4. Build DataFrame
-                    df = pd.DataFrame({
-                        "open": quotes["open"],
-                        "high": quotes["high"],
-                        "low": quotes["low"],
-                        "close": quotes["close"],
-                        "volume": quotes["volume"]
-                    }, index=pd.to_datetime(timestamps, unit="s"))
-
-                    # 5. (Optional) clean out any null rows
-                    df = df.dropna()
-                    # print(df.tail())
-                    for index, row in df.iterrows():
-                        idx = pd.Timestamp(index)
-                        idx_ = idx.year * 100000000 + idx.month * 1000000 + idx.day * 10000 + idx.hour * 100 + idx.minute
-                        # print("9017 idx_: \n", idx_, row, "\n"+"-"*30)
-                        # print("process index : " + symbol + ": " + str(idx_))
-                        # log_debug("process index : " + ticker + ": " + str(idx_))
-
-                        if row["volume"] > 0:
-                            # print(row["volume"])
-                            # print("9019 dates: \n", round(row["Volume"]/100), "\n"+"-"*30)
-                            open_ = round(100 * row["open"]) / 100
-                            high_ = round(100 * row["high"]) / 100
-                            low_ = round(100 * row["low"]) / 100
-                            close_ = round(100 * row["close"]) / 100
-                            volume_ = round(row["volume"] / 100)
-                            # dividends_ = round(100 * row["Dividends"]) / 100
-                            # stock_splits_ = round(100 * row["Stock Splits"]) / 100
-                            # print("9017-1 idx_: \n"+"-"*30)
-                            try:
-                                sp, is_created = StockPricesDays.objects.get_or_create(company=c, idx=idx_)
-                                if is_created:
-                                    sp.open = open_
-                                    sp.high = high_
-                                    sp.low = low_
-                                    sp.close = close_
-                                    sp.volume = volume_
-                                    # sp.dividends = dividends_
-                                    # sp.stock_splits = stock_splits_
-                                    sp.save()
-                            except Exception as ex:
-                                print("Error 901566", ex)
-                                log_debug("Error 901566 : " + symbol + str(ex))
-                    # print("Done (90000) : " + symbol)
-                    log_debug("Done (90000) : " + symbol)
-
-        dic = {'data': {"status": "ok"}}
-        # print("9099 output dic: \n", dic, "\n"+"="*30)
-        return dic
-
-    def update_prices_days_2(self, dic):
-        print("9015 input dic: \n", dic, "\n" + "-" * 30)
-        log_debug("9015 update_prices_days")
-        l_f = str(dic["letter_from"])
-        l_t = str(dic["letter_to"])
-        y_ = int(dic["numer_of_years"])  # I use w for years
-        d_ = int(dic["numer_of_days"])  # d_ = 7
-
-        date_e = datetime.datetime.now()
-        date_b = (datetime.datetime.now() + datetime.timedelta(days=-d_))
-        date_b = (date_b + relativedelta(years=-y_))
-        date_b_ = date_b.date()
-        date_e_ = date_e.date()
-        # print("9016 dates: \n", date_b_, date_e_, "\n"+"-"*30)
-        end_ = str(date_e_.year) + "-" + str(date_e_.month) + "-" + str(date_e_.day)
-        beg_ = str(date_b_.year) + "-" + str(date_b_.month) + "-" + str(date_b_.day)
-        # api_key = '5YFOPPQC43DMASEC'  # Amos
-        api_key = 'AAEE3TOFRVCTAC4OE'  # sigal
-        print("B E = ", beg_, end_)
-
-        url = "https://stooq.com/q/d/l/?s=AAPL.US&i=d"
-        df = pd.read_csv(url)
-        print(df)
-
-
-
-        # watch_list = ETFWatchLists.objects.all()
-        # for w in watch_list:
-        #     companies = XBRLCompanyInfo.objects.filter(etfwatchlist=w).all()
-        #     for c in companies:
-        #         if l_t >= c.company_letter >= l_f or (c.ticker == "$SPX.X" and w == "HighV"):
-        #             symbol = c.ticker
-        #             if symbol == "$SPX.X":
-        #                 symbol = "^GSPC"
-        #                 continue
-        #             print(symbol)
-        #             # Daily prices ---
-        #             url = f'https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol={symbol}&apikey={api_key}&outputsize=full'
-        #             print(url)
-        #             response = requests.get(url)
-        #             data = response.json()
-        #             print(data)
-        #             # Extract daily time series
-        #             daily_data = data['Time Series (Daily)']
-        #             df = pd.DataFrame.from_dict(daily_data, orient='index')
-        #             df.index = pd.to_datetime(df.index)
-        #             df = df.rename(columns=lambda x: x.split('. ')[1])
-        #             df = df.sort_index()
-        #             # print("\n", symbol, "\n", df)
-        #             # Filter for a date range
-        #             df = df.loc[beg_:end_]
-        #             print(df)
-        #
-        #             for index, row in df.iterrows():
-        #                 idx = pd.Timestamp(index)
-        #                 idx_ = idx.year * 100000000 + idx.month * 1000000 + idx.day * 10000 + idx.hour * 100 + idx.minute
-        #                 # print("9017 idx_: \n", idx_, row, "\n"+"-"*30)
-        #                 print("process index : " + ticker + ": " + str(idx_))
-        #                 # log_debug("process index : " + ticker + ": " + str(idx_))
-        #
-        #                 if row["Volume"] > 0:
-        #                     # print(row["Volume"])
-        #                     # print("9019 dates: \n", round(row["Volume"]/100), "\n"+"-"*30)
-        #                     open_ = round(100 * row["Open"]) / 100
-        #                     high_ = round(100 * row["High"]) / 100
-        #                     low_ = round(100 * row["Low"]) / 100
-        #                     close_ = round(100 * row["Close"]) / 100
-        #                     volume_ = round(row["Volume"] / 100)
-        #                     dividends_ = round(100 * row["Dividends"]) / 100
-        #                     stock_splits_ = round(100 * row["Stock Splits"]) / 100
-        #                     # print("9017-1 idx_: \n"+"-"*30)
-        #                     try:
-        #                         sp, is_created = StockPricesDays.objects.get_or_create(company=c, idx=idx_)
-        #                         if is_created:
-        #                             sp.open = open_
-        #                             sp.high = high_
-        #                             sp.low = low_
-        #                             sp.close = close_
-        #                             sp.volume = volume_
-        #                             sp.dividends = dividends_
-        #                             sp.stock_splits = stock_splits_
-        #                             sp.save()
-        #                     except Exception as ex:
-        #                         print("Error 901566", ex)
-        #                         log_debug("Error 901566 : " + symbol + str(ex))
-        #             log_debug("Done (90000) : " + symbol)
-
-
-        # try:
-        #
-        #     # # Setup
-        #     symbol = 'spy'
-        #
-        #
-        #
-        #
-        #     # minutes ----
-        #     m = 1
-        #     url = f'https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol={symbol}&interval='+str(m)+'min&apikey={api_key}&outputsize=full'
-        #     print(url)
-        #     try:
-        #         response = requests.get(url)
-        #     except Exception as ex:
-        #         print(ex)
-        #     data = response.json()
-        #
-        #     # Extract intraday time series
-        #     intraday_data = data['Time Series ('+str(m)+'min)']
-        #     df_min = pd.DataFrame.from_dict(intraday_data, orient='index')
-        #     df_min.index = pd.to_datetime(df_min.index)
-        #     df_min = df_min.rename(columns=lambda x: x.split('. ')[1])
-        #     # print("\nA2", df_min)
-        #
-        #     df_min = df_min.sort_index(ascending=True)
-        #     df_min = df_min[df_min.index.date == pd.to_datetime('2025-05-15').date()]
-        #     print(df_min, "\n")
-        #
-        # except Exception as ex:
-        #     print(ex)
-
-
-        # Old Yahoo finance code
-        # Old Yahoo finance code
-        # watch_list = ETFWatchLists.objects.all()
-        #
-        # for w in watch_list:
-        #     companies = XBRLCompanyInfo.objects.filter(etfwatchlist=w).all()
-        #     for c in companies:
-        #         if l_t >= c.company_letter >= l_f or (c.ticker == "$SPX.X" and w == "HighV"):
-        #             ticker = c.ticker
-        #             if ticker == "$SPX.X":
-        #                 ticker = "^GSPC"
-        #                 continue
-        #
-        #             # for attempt in range(5):
-        #             #     try:
-        #             #         ticker = c.ticker
-        #             #         if ticker == "$SPX.X":
-        #             #             ticker = "^GSPC"
-        #             #         print("90152 company info: \n", w.symbol, ticker, c.company_letter, "\n" + "-" * 30)
-        #             #         log_debug("process (90152) : " + ticker)
-        #             #
-        #             #         obj = yf.Ticker(ticker)
-        #             #         print("90162 dates: ", beg_, end_, "\n" + "-" * 30)
-        #             #         hist = obj.history(interval="1d", start=beg_, end=end_)
-        #             #         # print("90163 dates: \n", hist.tail(), "\n"+"-"*30)
-        #             #         hist = hist[:-1]
-        #             #         time.sleep(1)
-        #             #         # print("9016 hist: \n", hist, "\n"+"-"*30)
-        #             #         # print("-2"*50)
-        #             #         break
-        #             #     except Exception as ex:
-        #             #         print("\n" + "=" * 30, "\n", ticker, "\n", ex, "\n" + "=" * 30)
-        #             #         log_debug("Error 90152 : " + ticker + str(ex))
-        #             #         continue
-        #             #
-        #             # for index, row in hist.iterrows():
-        #             #     idx = pd.Timestamp(index)
-        #             #     idx_ = idx.year * 100000000 + idx.month * 1000000 + idx.day * 10000 + idx.hour * 100 + idx.minute
-        #             #     # print("9017 idx_: \n", idx_, row, "\n"+"-"*30)
-        #             #     # log_debug("process index : " + ticker + ": " + str(idx_))
-        #             #
-        #             #     if row["Volume"] > 0:
-        #             #         # print(row["Volume"])
-        #             #         # print("9019 dates: \n", round(row["Volume"]/100), "\n"+"-"*30)
-        #             #         open_ = round(100 * row["Open"]) / 100
-        #             #         high_ = round(100 * row["High"]) / 100
-        #             #         low_ = round(100 * row["Low"]) / 100
-        #             #         close_ = round(100 * row["Close"]) / 100
-        #             #         volume_ = round(row["Volume"] / 100)
-        #             #         dividends_ = round(100 * row["Dividends"]) / 100
-        #             #         stock_splits_ = round(100 * row["Stock Splits"]) / 100
-        #             #         # print("9017-1 idx_: \n"+"-"*30)
-        #             #         try:
-        #             #             sp, is_created = StockPricesDays.objects.get_or_create(company=c, idx=idx_)
-        #             #             if is_created:
-        #             #                 sp.open = open_
-        #             #                 sp.high = high_
-        #             #                 sp.low = low_
-        #             #                 sp.close = close_
-        #             #                 sp.volume = volume_
-        #             #                 sp.dividends = dividends_
-        #             #                 sp.stock_splits = stock_splits_
-        #             #                 sp.save()
-        #             #         except Exception as ex:
-        #             #             print("Error 901566", ex)
-        #             #             log_debug("Error 901566 : " + ticker + str(ex))
-        #             # log_debug("Done (90000) : " + ticker)
-        #
-        #             try:
-        #                 # tickers = yf.download(ticker, start=beg_, end=end_, interval="1d", group_by='ticker')
-        #                 # tickers = web.DataReader(ticker, 'yahoo', start=beg_, end=end_)
-        #                 # print(tickers.head())
-        #                 #
-        #                 # print("tickers:\n", tickers)
-        #                 # time.sleep(2)
-        #
-        #                 # ticker = "SPY"  # Replace with your ticker
-        #                 # start_date = "2020-01-01"  # Start date in YYYY-MM-DD format
-        #                 # end_date = "2021-01-01"  # End date in YYYY-MM-DD format
-        #
-        #
-        #                 # Example usage
-        #                 start = datetime.date(2024, 5, 1)
-        #                 end = datetime.date(2024, 5, 10)
-        #                 ticker = "ZBRA"
-        #
-        #                 df = self.fetch_yahoo_data(ticker, start, end)
-        #                 if df is not None:
-        #                     print(df)
-        #
-        #             except Exception as ex:
-        #                 print("Error 22-22: ", ex)
-        #             time.sleep(2)
-
-        dic = {'data': {"status": "ok"}}
-        # print("9099 output dic: \n", dic, "\n"+"="*30)
-        return dic
-
-    def update_prices_days_1(self, dic):
-        print("9015 input dic: \n", dic, "\n" + "-" * 30)
-        log_debug("9015 update_prices_days")
-        l_f = str(dic["letter_from"])
-        l_t = str(dic["letter_to"])
-        y_ = int(dic["numer_of_years"])  # I use w for years
-        d_ = int(dic["numer_of_days"])  # d_ = 7
-
-        date_e = datetime.datetime.now()
-        date_b = (datetime.datetime.now() + datetime.timedelta(days=-d_))
-        date_b = (date_b + relativedelta(years=-y_))
-        date_b_ = date_b.date()
-        date_e_ = date_e.date()
-        # print("9016 dates: \n", date_b_, date_e_, "\n"+"-"*30)
-        end_ = str(date_e_.year) + "-" + str(date_e_.month) + "-" + str(date_e_.day)
-        beg_ = str(date_b_.year) + "-" + str(date_b_.month) + "-" + str(date_b_.day)
-
-        watch_list = ETFWatchLists.objects.all()
-
-        for w in watch_list:
-            companies = XBRLCompanyInfo.objects.filter(etfwatchlist=w).all()
-            for c in companies:
-                if l_t >= c.company_letter >= l_f or (c.ticker == "$SPX.X" and w == "HighV"):
-
-                    for attempt in range(5):
-                        try:
-                            ticker = c.ticker
-                            if ticker == "$SPX.X":
-                                ticker = "^GSPC"
-                            print("90152 company info: \n", w.symbol, ticker, c.company_letter, "\n" + "-" * 30)
-                            log_debug("process (90152) : " + ticker)
-
-                            obj = yf.Ticker(ticker)
-                            print("90162 dates: ", beg_, end_, "\n" + "-" * 30)
-                            hist = obj.history(interval="1d", start=beg_, end=end_)
-                            # print("90163 dates: \n", hist.tail(), "\n"+"-"*30)
-                            hist = hist[:-1]
-                            time.sleep(1)
-                            # print("9016 hist: \n", hist, "\n"+"-"*30)
-                            # print("-2"*50)
-                            break
-                        except Exception as ex:
-                            print("\n" + "=" * 30, "\n", ticker, "\n", ex, "\n" + "=" * 30)
-                            log_debug("Error 90152 : " + ticker + str(ex))
+                    try:
+                        symbol = c.ticker
+                        if symbol == "$SPX.X":
+                            symbol = "^GSPC"
                             continue
 
-                    for index, row in hist.iterrows():
-                        idx = pd.Timestamp(index)
-                        idx_ = idx.year * 100000000 + idx.month * 1000000 + idx.day * 10000 + idx.hour * 100 + idx.minute
-                        # print("9017 idx_: \n", idx_, row, "\n"+"-"*30)
-                        # log_debug("process index : " + ticker + ": " + str(idx_))
+                        # 2. Fetch JSON
+                        url = (
+                            f"https://query1.finance.yahoo.com/v8/finance/chart/{symbol}"
+                            f"?period1={period1}&period2={period2}&interval={interval}"
+                        )
 
-                        if row["Volume"] > 0:
-                            # print(row["Volume"])
-                            # print("9019 dates: \n", round(row["Volume"]/100), "\n"+"-"*30)
-                            open_ = round(100 * row["Open"]) / 100
-                            high_ = round(100 * row["High"]) / 100
-                            low_ = round(100 * row["Low"]) / 100
-                            close_ = round(100 * row["Close"]) / 100
-                            volume_ = round(row["Volume"] / 100)
-                            dividends_ = round(100 * row["Dividends"]) / 100
-                            stock_splits_ = round(100 * row["Stock Splits"]) / 100
-                            # print("9017-1 idx_: \n"+"-"*30)
-                            try:
-                                sp, is_created = StockPricesDays.objects.get_or_create(company=c, idx=idx_)
-                                if is_created:
-                                    sp.open = open_
-                                    sp.high = high_
-                                    sp.low = low_
-                                    sp.close = close_
-                                    sp.volume = volume_
-                                    sp.dividends = dividends_
-                                    sp.stock_splits = stock_splits_
-                                    sp.save()
-                            except Exception as ex:
-                                print("Error 901566", ex)
-                                log_debug("Error 901566 : " + ticker + str(ex))
-                    log_debug("Done (90000) : " + ticker)
+                        # print(symbol, url)
+                        self.log_debug(symbol+": "+url)
+
+                        resp = requests.get(url, headers={"User-Agent": "Mozilla/5.0"})
+                        resp.raise_for_status()
+                        data = resp.json()["chart"]["result"][0]
+
+                        # 3. Extract timestamps & quotes
+                        timestamps = data["timestamp"]
+                        quotes = data["indicators"]["quote"][0]
+
+                        # 4. Build DataFrame
+                        df = pd.DataFrame({
+                            "open": quotes["open"],
+                            "high": quotes["high"],
+                            "low": quotes["low"],
+                            "close": quotes["close"],
+                            "volume": quotes["volume"]
+                        }, index=pd.to_datetime(timestamps, unit="s"))
+
+                        # 5. (Optional) clean out any null rows
+                        df = df.dropna()
+                        # print(df.tail())
+                        for index, row in df.iterrows():
+                            idx = pd.Timestamp(index)
+                            idx_ = idx.year * 100000000 + idx.month * 1000000 + idx.day * 10000 + idx.hour * 100 + idx.minute
+                            # print("9017 idx_: \n", idx_, row, "\n"+"-"*30)
+                            # print("process index : " + symbol + ": " + str(idx_))
+                            # self.log_debug("process index : " + ticker + ": " + str(idx_))
+
+                            if row["volume"] > 0:
+                                # print(row["volume"])
+                                # print("9019 dates: \n", round(row["Volume"]/100), "\n"+"-"*30)
+                                open_ = round(100 * row["open"]) / 100
+                                high_ = round(100 * row["high"]) / 100
+                                low_ = round(100 * row["low"]) / 100
+                                close_ = round(100 * row["close"]) / 100
+                                volume_ = round(row["volume"] / 100)
+                                # dividends_ = round(100 * row["Dividends"]) / 100
+                                # stock_splits_ = round(100 * row["Stock Splits"]) / 100
+                                # print("9017-1 idx_: \n"+"-"*30)
+                                try:
+                                    sp, is_created = StockPricesDays.objects.get_or_create(company=c, idx=idx_)
+                                    if is_created:
+                                        sp.open = open_
+                                        sp.high = high_
+                                        sp.low = low_
+                                        sp.close = close_
+                                        sp.volume = volume_
+                                        # sp.dividends = dividends_
+                                        # sp.stock_splits = stock_splits_
+                                        sp.save()
+                                except Exception as ex:
+                                    print("Error 901566", ex)
+                                    self.log_debug("Error 901566 : " + symbol + str(ex))
+                        # print("Done (90000) : " + symbol)
+                        self.log_debug("Done (90000) : " + symbol)
+                    except Exception as ex:
+                        print("Error 44-44-12:"+symbol+str(ex))
+                        self.log_debug("Error 44-44-12:"+symbol+str(ex))
 
         dic = {'data': {"status": "ok"}}
         # print("9099 output dic: \n", dic, "\n"+"="*30)
@@ -2580,7 +2290,7 @@ class StockPrices(object):
 
     def create_return_statistics_minutes(self, dic):
         # print("create_return_statistics_minutes\n90600")
-        # print(dic)
+        print(dic)
         ticker = dic["ticker"]
         # print("90601  "+ticker)
 
@@ -2728,7 +2438,7 @@ class StockPrices(object):
         dic = dic["dic"]
         idx_from = int(dic["from_date"]+"0000")
         idx_to = int(dic["to_date"]+"0000")
-        # print("9015 : \nfrom: ", idx_from, "\nto: ", idx_to, "\n"+"-"*30)
+        # print("90159 : \nfrom: ", idx_from, "\nto: ", idx_to, "\n"+"-"*30)
 
         # ^GSPC
         ticker = dic["ticker"]
@@ -2753,7 +2463,7 @@ class StockPrices(object):
 
     # https://analyzingalpha.com/yfinance-python
     def explore_yfinance(self, dic):
-        print("9010 input dic: \n", dic, "\n"+"-"*30)
+        print("901044 input dic: \n", dic, "\n"+"-"*30)
         ticker = dic["ticker"]
         obj = yf.Ticker(ticker)
         date_e = datetime.datetime.now()
