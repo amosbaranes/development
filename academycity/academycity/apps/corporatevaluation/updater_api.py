@@ -54,8 +54,8 @@ def update_forecast():
                 except Exception as ex:
                     print("m - "+str(ex))
                 del sp
-                print("2.B hour 4"+str(datetime.today().hour)+str(datetime.today().minute))
-                log_debug("2.B hour 4"+str(datetime.today().hour)+str(datetime.today().minute))
+                print("2.B hour 4 "+str(datetime.today().hour)+":"+str(datetime.today().minute))
+                log_debug("2.B hour 4"+str(datetime.today().hour)+":"+str(datetime.today().minute))
             elif h == 8:
                 print("3.A hour 8"+str(datetime.today().hour)+str(datetime.today().minute))
                 log_debug("3.A hour 8"+str(datetime.today().hour)+str(datetime.today().minute))

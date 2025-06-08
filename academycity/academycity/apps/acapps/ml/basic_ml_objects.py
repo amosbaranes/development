@@ -457,7 +457,7 @@ class BasePotentialAlgo(object):
 
     # This function create a dic for df. DataFrame for every Grou of variables {"GDP": dataframe ....}
     def pre_process_data(self, dic):
-        # print("90033-133 pre_process_data: \n", dic, "\n", "="*50)
+        print("90033-133 pre_process_data: \n", dic, "\n", "="*50)
         year_ = str(dic["time_dim_value"])
 
         groups = self.model_measure_group.objects.filter(~Q(group_name__in=self.do_not_include_groups)).all()
@@ -494,6 +494,7 @@ class BasePotentialAlgo(object):
                 s = "pd.DataFrame(list(qs.values(" + s + ")))"
                 # print("eval(s)", s)
                 df = eval(s)
+
                 # print("1.  df =", k ,"\n", df)
 
                 if df.shape[0] == 0:
@@ -503,7 +504,7 @@ class BasePotentialAlgo(object):
                     df = df.pivot(index=self.entity_name+"_dim", columns='measure_dim', values=self.value_column)
                 except Exception as ex:
                     print(ex)
-                # print("90-111-2-100\n", k ,"\n", df)
+                print("90-111-2-100\n", k ,"\n", df)
 
                 ll_dfs[k] = df.apply(pd.to_numeric, errors='coerce').round(6)
                 for f__ in ll_dfs[k]:
@@ -1760,7 +1761,7 @@ class BasePotentialAlgo(object):
             # get min max for every entity of evry variable (country, GDP ...)
             try:
                 self.save_to_file = os.path.join(self.TO_EXCEL_OUTPUT, str(dic["time_dim_value"]) + "_" + group + "_o.xlsx")
-                print("=" * 50, "\n", group, "\n", self.save_to_file, "\n", "=" * 50)
+                # print("=" * 50, "\n", group, "\n", self.save_to_file, "\n", "=" * 50)
 
                 self.to_save = []
                 # print("file_path\n", self.save_to_file, "\n", "="*50)
@@ -1795,6 +1796,9 @@ class BasePotentialAlgo(object):
 
                 first_row = pd.DataFrame(df_mm.T.loc["min"]).T.reset_index().drop(['index'], axis=1)
                 second_row = pd.DataFrame(df_mm.T.loc["max"]).T.reset_index().drop(['index'], axis=1)
+
+                # print(df_mm.T.loc["measure_dim"])
+
                 first_row.columns = df_mm.T.loc["measure_dim"]
                 second_row.columns = df_mm.T.loc["measure_dim"]
 
@@ -1841,7 +1845,10 @@ class BasePotentialAlgo(object):
                 df_n2[df_n2 < 0] = 0
                 df_n2[df_n2 > 1] = 1
 
+                # print(df_n2)
+
                 self.add_to_save(title='Normalized-2', a=df_n2, cols=None)
+
                 # print("  df_n2\n", df_n2, "\n", "="*100)
 
                 # if we have only one measure of the variable
