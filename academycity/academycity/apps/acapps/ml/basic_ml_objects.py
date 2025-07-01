@@ -380,6 +380,183 @@ class BasePotentialAlgo(object):
         self.is_calculate_min_max = None
         # print('-'*50, '\n', "90003-000-10 BasePotentialAlgo\n", dic, '\n', '-'*50)
 
+    def check_country_el(self, cc):
+        if cc == "Upper Volta":
+            cc = "Burkina Faso"
+        elif cc == "Kyrgyz Republiuc":
+            cc = "Kyrgyz Republic"
+        elif cc == "Kyrgyzstan":
+            cc = "Kyrgyz Republic"
+        elif cc == "Lao":
+            cc = "Laos"
+        elif cc == "Macedonia, FYR":
+            cc = "Macedonia"
+        elif cc == "Yemen, Rep":
+            cc = "Yemen"
+        elif cc == "Bosnia and Herzegovina":
+            cc = "Bosnia"
+        elif cc == "Comoro Islands":
+            cc = "Comoros"
+        elif cc == "Czechia":
+            cc = "Czech Republic"
+        elif cc == "Ethiopia  and  Eritrea":
+            cc = "Ethiopia"
+        elif cc == "Serbia and Montenegro":
+            cc = "Serbia"
+        elif cc == "Serbia/Montenegro/Kosovo":
+            cc = "Serbia"
+        elif cc == "Burma":
+            cc = "Myanmar"
+        elif cc == "Kampuchea, Dem.":
+            cc = "Cambodia"
+        elif cc == "Kampuchea.Dem.":
+            cc = "Cambodia"
+        elif cc == "Cabo Verde":
+            cc = "Cape Verde"
+        elif cc == "Central African Republic":
+            cc = "Central African Rep."
+        elif cc == "Central Arab Rep.":
+            cc = "Central African Rep."
+        elif cc == "China (Mainland)":
+            cc = "China"
+        elif cc == "Congo":
+            cc = "Congo, Dem. Rep."
+        elif cc == "DR Congo":
+            cc = "Congo, Dem. Rep."
+        elif cc == "Democratic Republic Of The Congo":
+            cc = "Congo, Dem. Rep."
+        elif cc == "Democratic Republic Of the Congo":
+            cc = "Congo, Dem. Rep."
+        elif cc == "Zaire":
+            cc = "Congo, Dem. Rep."
+        elif cc == "Zaire (Congo Kinshasa)":
+            cc = "Congo, Dem. Rep."
+        elif cc == "Republic of the Congo":
+            cc = "Congo, Rep."
+        elif cc == "Congo 'Brazzaville'":
+            cc = "Congo, Rep."
+        elif cc == "Congo' People's Rep.":
+            cc = "Congo, Rep."
+        elif cc == "Congo, People's Rep.":
+            cc = "Congo, Rep."
+        elif cc == "Congo,People's rep.":
+            cc = "Congo, Rep."
+        elif cc == "Congo, People's Rep":
+            cc = "Congo, Rep."
+        elif cc == "Côte d'Ivoire":
+            cc = "Cote d'Ivoire"
+        elif cc == "Ivory Coast":
+            cc = "Cote d'Ivoire"
+        elif cc == "Dominican Republic":
+            cc = "Dominican Rep."
+        elif cc == "Egypt, Arab Rep.":
+            cc = "Egypt"
+        elif cc == "El Salvodor":
+            cc = "El Salvador"
+        elif cc == "Eswatini (Swaziland)":
+            cc = "Eswatini"
+        elif cc == "Swaziland":
+            cc = "Eswatini"
+        elif cc == "Eritrea and Ethiopia":
+            cc = "Ethiopia"
+        elif cc == "Ethiopia and Eritrea":
+            cc = "Ethiopia"
+        elif cc == "Germany  (West)":
+            cc = "Germany"
+        elif cc == "Iran,Islamic Rep.":
+            cc = "Iran"
+        elif cc == "Korea Rep.":
+            cc = "Korea, Rep"
+        elif cc == "Turkiye":
+            cc = "Turkey"
+        elif cc == "Kampuchea":
+            cc = "Cambodia"
+        elif cc == "Yemen, Arab Rep.":
+            cc = "Yemen"
+        elif cc == "Gambia, The":
+            cc = "Gambia"
+        elif cc == "Germany, Fed Rep.":
+            cc = "Germany"
+        elif cc == "Germany Fed. Rep.":
+            cc = "Germany"
+        elif cc == "Germany, Fed. Rep.":
+            cc = "Germany"
+        elif cc == "Guinea-bissau":
+            cc = "Guinea Bissau"
+        elif cc == "Guinea-Bissau":
+            cc = "Guinea Bissau"
+        elif cc == "Haïti":
+            cc = "Haiti"
+        elif cc == "Hong Kong SAR":
+            cc = "Hong Kong"
+        elif cc == "Hong Kong (China)":
+            cc = "Hong Kong"
+        elif cc == "China-Hong Kong":
+            cc = "Hong Kong"
+        elif cc == "Hong Kong SAR, China":
+            cc = "Hong Kong"
+        elif cc == "Hong Kong, China":
+            cc = "Hong Kong"
+        elif cc == "Indonesia (including Timor until 1999)":
+            cc = "Indonesia"
+        elif cc == "Iran, Islamic Rep.":
+            cc = "Iran"
+        elif cc == "Korea":
+            cc = "Korea, Rep"
+        elif cc == "South Korea":
+            cc = "Korea, Rep"
+        elif cc == "Republic Of Korea":
+            cc = "Korea, Rep"
+        elif cc == "Korea, Rep. of":
+            cc = "Korea, Rep"
+        elif cc == "Korea, Rep.":
+            cc = "Korea, Rep"
+        elif cc == "Korea, Dem. People's Rep":
+            cc = "North Korea"
+        elif cc == "Lao People's Democratic Republic":
+            cc = "Laos"
+        elif cc == "Lao PDR":
+            cc = "Laos"
+        elif cc == "Republic Of Moldova":
+            cc = "Moldova"
+        elif cc == "Republic Of North Macedonia":
+            cc = "Macedonia"
+        elif cc == "Papua New  Guinea":
+            cc = "Papua New Guinea"
+        elif cc == "North Macedonia":
+            cc = "Macedonia"
+        elif cc == "Russian Federation":
+            cc = "Russia"
+        elif cc == "Slovak Republic":
+            cc = "Slovakia"
+        elif cc == "Syrian Arab Republic":
+            cc = "Syria"
+        elif cc == "Syrian Arab Rep.":
+            cc = "Syria"
+        elif cc == "turkiye":
+            cc = "Turkey"
+        elif cc == "turkey":
+            cc = "Turkey"
+        elif cc == "USA":
+            cc = "United States"
+        elif cc == "United States Of America":
+            cc = "United States"
+        elif cc == "Total Former USSR":
+            cc = "USSR"
+        elif cc == "United Republic Of Tanzania":
+            cc = "Tanzania"
+        elif cc == "Yemen Arab Rep.":
+            cc = "Yemen"
+        elif cc == "Yemen, Rep.":
+            cc = "Yemen"
+        elif cc == "Venezuela, RB":
+            cc = "Venezuela"
+        elif cc == "Macau":
+            cc = "China-Macau"
+        if cc == "Viet Nam":
+            cc = "Vietnam"
+        return cc
+
     def get_dim_data_frame(self, dic):
         # print("90066-106-11 PotentialAlgo get_dim_data_frame: \n", dic, "\n", "="*50)
 
@@ -457,7 +634,7 @@ class BasePotentialAlgo(object):
 
     # This function create a dic for df. DataFrame for every Grou of variables {"GDP": dataframe ....}
     def pre_process_data(self, dic):
-        print("90033-133 pre_process_data: \n", dic, "\n", "="*50)
+        # print("90033-133 pre_process_data: \n", dic, "\n", "="*50)
         year_ = str(dic["time_dim_value"])
 
         groups = self.model_measure_group.objects.filter(~Q(group_name__in=self.do_not_include_groups)).all()
@@ -504,7 +681,7 @@ class BasePotentialAlgo(object):
                     df = df.pivot(index=self.entity_name+"_dim", columns='measure_dim', values=self.value_column)
                 except Exception as ex:
                     print(ex)
-                print("90-111-2-100\n", k ,"\n", df)
+                # print("90-111-2-100\n", k ,"\n", df)
 
                 ll_dfs[k] = df.apply(pd.to_numeric, errors='coerce').round(6)
                 for f__ in ll_dfs[k]:
@@ -1091,7 +1268,6 @@ class BasePotentialAlgo(object):
 
         result = {"status": "ok", "msg": "completed ok"}
         return result
-
 
 
     # # # Not used. Created to picking best min max. we changed.

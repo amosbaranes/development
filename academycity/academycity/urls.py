@@ -71,6 +71,7 @@ urlpatterns += i18n_patterns(
 
     url(r'case1/', include('academycity.apps.acapps.case1.urls')),
 
+    url(r'el/', include('academycity.apps.acapps.el.urls')),
     url(r'ao/', include('academycity.apps.acapps.ao.urls')),
     url(r'potential/', include('academycity.apps.acapps.potential.urls')),
     url(r'fuzzyforcast/', include('academycity.apps.acapps.fuzzyforcast.urls')),
